@@ -5,7 +5,8 @@ import type { PoolClient } from "pg";
 
 import { registrar } from "@/lib/auditoria";
 import { requerirRol, requerirUsuario } from "@/lib/auth";
-import { enTransaccion } from "@/lib/db";
+import { enTransaccion, fijarContexto } from "@/lib/db";
+import { contextoDe } from "@/server/contabilidad/sesion";
 import type { Permiso } from "@/lib/rbac";
 import {
   accionesPermitidas,
@@ -214,6 +215,7 @@ export async function avanzarSolicitud(
   }
 
   const nuevo = estadoTrasAccion(accion, solicitud.requiere_direccion);
+  const contexto = await contextoDe(usuario);
   const cierra = nuevo === "rechazada" || nuevo === "completada" || nuevo === "cancelada";
 
   try {
@@ -248,6 +250,15 @@ export async function avanzarSolicitud(
          VALUES ($1, $2, $3, NULLIF($4, ''), $5)`,
         [id, solicitud.estado, nuevo, comentario, usuario.id],
       );
+
+      // Un gasto aprobado en su ÚLTIMO nivel nace como cuenta por pagar en
+      // contabilidad (§4.5), en esta misma transacción: si la aprobación se
+      // deshace, la deuda también. La bitácora contable exige identidad,
+      // así que se fija aquí, dentro de la transacción ya abierta.
+      if (nuevo === "aprobada" && solicitud.tipo === "gasto") {
+        await fijarContexto(cliente, contexto);
+        await cliente.query(`SELECT contabilidad.crear_cxp_desde_solicitud($1)`, [id]);
+      }
 
       const aviso = `#${solicitud.folio} · ${solicitud.titulo}`;
 

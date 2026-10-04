@@ -14,6 +14,7 @@ import { claveDia, fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
+import { vencenEn } from "@/server/contabilidad/cxp/consultas";
 import {
   borradoresPendientes,
   leerFiltroRecibos,
@@ -31,11 +32,9 @@ export async function generateMetadata({
 }
 
 /**
- * Inicio del portal de contabilidad (§4.1), con lo que ya existe tras la
- * Fase 2: saldos por cuenta, la tasa del día, lo que espera ser
- * contabilizado y lo último registrado. Cuentas por pagar, cajas,
- * presupuestos y obligaciones fiscales llegan con sus fases; hasta
- * entonces no se pintan bloques vacíos que parezcan datos.
+ * Inicio del portal de contabilidad (§4.1), con saldos por cuenta, la tasa del
+ * día, cuentas por pagar por vencer, lo que espera ser contabilizado y lo
+ * último registrado.
  *
  * La puerta es `contabilidad.leer`, no el rol: `super_admin` entra a mirar
  * (auditoría) y no ve ningún botón que escriba.
@@ -49,13 +48,15 @@ export default async function PortalContabilidad({
   const idioma = locale === "en" ? "en" : "es";
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
+  const [t, tc, tcxp, cuentas, tasa, pendientes, recientes, vencen30] = await Promise.all([
     getTranslations({ locale, namespace: "contab.inicio" }),
     getTranslations({ locale, namespace: "contab" }),
+    getTranslations({ locale, namespace: "contab.cxp" }),
     cuentasConSaldo(),
     tasaVigente(),
     borradoresPendientes(),
     recibos(leerFiltroRecibos({}), 5),
+    vencenEn(30),
   ]);
 
   const activas = cuentas.filter((c) => c.estado === "activa");
@@ -125,6 +126,47 @@ export default async function PortalContabilidad({
               : t("tasaDe", { compra: tasa.compra, venta: tasa.venta, fuente: tasa.fuente, fecha: fechaCorta(tasa.fecha, idioma) })
             : t("tasaVacia")}
         </p>
+      </section>
+
+      {/* Cuentas por pagar por vencer */}
+      <section className="space-y-4 border-t border-linea pt-8">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="texto-titulo-seccion">{tcxp("titulo")}</h2>
+            <p className="texto-meta">{tcxp("subtitulo")}</p>
+          </div>
+          <Link
+            href="/contabilidad/cuentas-por-pagar"
+            className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-marca-600 hover:underline"
+          >
+            {t("verTodos")}
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+
+        {vencen30.length === 0 ? (
+          <div className="rounded-tarjeta border border-linea bg-background p-6 text-sm text-tinta-2">
+            No hay cuentas por pagar que venzan en los próximos 30 días.
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {vencen30.map((v) => (
+              <Link
+                key={v.moneda}
+                href="/contabilidad/cuentas-por-pagar"
+                className={`${TARJETA.interactiva} block p-5`}
+              >
+                <p className="texto-meta">Vencen en 30 días ({v.moneda})</p>
+                <p className="mt-1 text-2xl font-bold text-tinta">
+                  <Monto valor={v.total} moneda={v.moneda} />
+                </p>
+                <p className="texto-meta mt-1">
+                  {v.cantidad} {v.cantidad === 1 ? "cuenta por pagar" : "cuentas por pagar"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="space-y-4 border-t border-linea pt-8">

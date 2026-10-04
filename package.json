@@ -22,7 +22,7 @@
     "db:seed:portales": "node scripts/seed-portales.mjs",
     "db:seed:contabilidad": "node scripts/seed-contabilidad.mjs",
     "db:probar:contabilidad": "node scripts/probar-contabilidad.mjs",
-    "test:contabilidad": "node --test scripts/probar-numeros-a-letras.mjs scripts/probar-adaptadores.mjs"
+    "test:contabilidad": "node --test scripts/probar-numeros-a-letras.mjs scripts/probar-adaptadores.mjs scripts/probar-identificacion.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
