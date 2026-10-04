@@ -25,6 +25,10 @@ const ESPACIOS_BASE = [
   // La campana de avisos está en la barra superior, así que su espacio es del
   // armazón y no de ninguna página.
   "notifications",
+  // El widget flotante de IA vive en el armazón y está presente en todas las vistas
+  "widgetIA",
+  // Espacio del módulo de contabilidad para filtros, pestañas y estados
+  "contab",
 ] as const;
 
 /**
