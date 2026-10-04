@@ -212,6 +212,16 @@ export const SEMAFORO = {
 } as const;
 
 /**
+ * Los mismos dos estados como clases de insignia, escritas aquí y no en
+ * cada `.tsx`: así ningún componente lleva un hex suelto y `audit:ui` no
+ * tiene que hacer excepciones. Siempre acompañadas de su icono.
+ */
+export const INSIGNIA_SEMAFORO = {
+  dentro: "border-transparent bg-[#1E9E6A]/10 text-[#1E9E6A]",
+  alerta: "border-transparent bg-[#B4342B]/10 text-[#B4342B]",
+} as const;
+
+/**
  * Gris de las rejillas y los ejes de las gráficas.
  *
  * Es el mismo contraste que los bordes y el texto secundario del resto de las

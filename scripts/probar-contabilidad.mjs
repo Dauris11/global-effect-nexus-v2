@@ -15,6 +15,10 @@
 //   (f) DELETE en una tabla contable falla
 //   (g) un período cerrado no admite registros
 //   (h) app.accion y app.motivo llegan a la bitácora
+//   (i) contabilizar un recibo crea su movimiento y un asiento cuadrado
+//   (j) anularlo deja contra-asiento y el libro vuelve a su saldo
+//   (k) una transferencia USD→DOP registra la diferencia cambiaria
+//   (l) conciliar empareja por importe y fecha, y cerrar bloquea
 //
 // Casi todo corre dentro de una transacción que termina en ROLLBACK:
 // en contabilidad nada se borra, así que una prueba que hiciera COMMIT
@@ -307,6 +311,127 @@ async function probarAccionNombrada(usuarioId) {
   });
 }
 
+/** Un recibo borrador de prueba en la cuenta indicada. Devuelve su id. */
+async function reciboDePrueba(c, usuarioId, { tipo = "ingreso", cuenta = "Santa Cruz DOP", monto = "1500.00", tasa = null } = {}) {
+  const { rows: [r] } = await c.query(
+    `INSERT INTO contabilidad.recibo
+       (tipo, numero, fecha, periodo_id, cuenta_bancaria_id, moneda, tasa, monto, concepto,
+        categoria_id, fondo_id, forma_pago, referencia, creado_por)
+     SELECT $1, -1 * (1 + (random() * 1e6)::int), CURRENT_DATE, contabilidad.periodo_para(CURRENT_DATE),
+            cb.id, cb.moneda, $4, $3, 'Recibo de prueba',
+            (SELECT id FROM contabilidad.categoria WHERE tipo = $1 AND cuenta_id IS NOT NULL LIMIT 1),
+            (SELECT id FROM contabilidad.fondo WHERE nombre = 'General'),
+            'transferencia', 'REF-PRUEBA-1', $5
+       FROM contabilidad.cuenta_bancaria cb WHERE cb.nombre = $2
+     RETURNING id`,
+    [tipo, cuenta, monto, tasa, usuarioId],
+  );
+  return r.id;
+}
+
+async function asientoCuadra(c, asientoId) {
+  const { rows: [a] } = await c.query(
+    `SELECT sum(debe) = sum(haber) AND sum(debe) > 0 AS ok FROM contabilidad.asiento_linea WHERE asiento_id = $1`,
+    [asientoId],
+  );
+  return a.ok === true;
+}
+
+async function probarRecibos(usuarioId) {
+  await enPrueba(usuarioId, async (c) => {
+    const id = await reciboDePrueba(c, usuarioId);
+    await c.query(`SELECT contabilidad.contabilizar_recibo($1)`, [id]);
+    await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
+    const { rows: [r] } = await c.query(
+      `SELECT r.estado, r.asiento_id, m.importe::text AS importe
+         FROM contabilidad.recibo r JOIN contabilidad.movimiento_bancario m ON m.id = r.movimiento_id
+        WHERE r.id = $1`,
+      [id],
+    );
+    if (r.estado === "contabilizado" && r.importe === "1500.00" && (await asientoCuadra(c, r.asiento_id))) {
+      pasar("(i) contabilizar crea el movimiento (+1500) y un asiento cuadrado");
+    } else fallar("(i) contabilizar", JSON.stringify(r));
+
+    await c.query(`SELECT contabilidad.anular_recibo($1, 'Prueba de anulación')`, [id]);
+    await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
+    const { rows: [a] } = await c.query(
+      `SELECT r.estado, m.estado AS mov, r.contra_asiento_id,
+              (SELECT sum(l.debe) - sum(l.haber) FROM contabilidad.asiento_linea l
+                 JOIN contabilidad.cuenta_bancaria cb ON cb.cuenta_contable_id = l.cuenta_id
+                WHERE cb.id = r.cuenta_bancaria_id
+                  AND l.asiento_id IN (r.asiento_id, r.contra_asiento_id))::text AS neto
+         FROM contabilidad.recibo r JOIN contabilidad.movimiento_bancario m ON m.id = r.movimiento_id
+        WHERE r.id = $1`,
+      [id],
+    );
+    if (a.estado === "anulado" && a.mov === "anulado" && a.contra_asiento_id && a.neto === "0.00") {
+      pasar("(j) anular deja contra-asiento y el banco vuelve a cero");
+    } else fallar("(j) anular", JSON.stringify(a));
+
+    esperarError(
+      "(j2) anular sin motivo rechazado",
+      await errorDe(c, `SELECT contabilidad.anular_recibo($1, '')`, [await reciboDePrueba(c, usuarioId)]),
+      "motivo",
+    );
+  });
+}
+
+async function probarTransferencia(usuarioId) {
+  await enPrueba(usuarioId, async (c) => {
+    await c.query(
+      `INSERT INTO contabilidad.tasa_cambio (fecha, compra, venta, fuente)
+       VALUES (CURRENT_DATE, 60.00, 60.50, 'PRUEBA')
+       ON CONFLICT (fecha) DO UPDATE SET venta = 60.50`,
+    );
+    // 100 USD salen; el banco acredita 6 000 DOP (a 60.00), la referencia
+    // es 60.50: se perdieron 50 pesos en el cambio.
+    const { rows: [t] } = await c.query(
+      `SELECT contabilidad.transferir(
+         (SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz USD'),
+         (SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP'),
+         CURRENT_DATE, 100.00, 6000.00, 'Cambio de prueba', NULL) AS id`,
+    );
+    await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
+    const { rows: [r] } = await c.query(
+      `SELECT diferencia_cambiaria::text AS dif, tasa_aplicada::text AS tasa, asiento_id
+         FROM contabilidad.transferencia_interna WHERE id = $1`,
+      [t.id],
+    );
+    if (r.dif === "-50.00" && r.tasa === "60.0000" && (await asientoCuadra(c, r.asiento_id))) {
+      pasar("(k) transferencia USD→DOP: tasa 60.0000, diferencia −50.00 y asiento cuadrado");
+    } else fallar("(k) transferencia", JSON.stringify(r));
+  });
+}
+
+async function probarConciliacion(usuarioId) {
+  await enPrueba(usuarioId, async (c) => {
+    const id = await reciboDePrueba(c, usuarioId, { monto: "777.77" });
+    await c.query(`SELECT contabilidad.contabilizar_recibo($1)`, [id]);
+    const { rows: [conc] } = await c.query(
+      `INSERT INTO contabilidad.conciliacion (cuenta_id, desde, hasta, saldo_banco, creado_por)
+       SELECT id, CURRENT_DATE - 30, CURRENT_DATE + 3, 0, $1
+         FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP'
+       RETURNING id`,
+      [usuarioId],
+    );
+    await c.query(
+      `INSERT INTO contabilidad.conciliacion_linea (conciliacion_id, linea, fecha, descripcion, referencia, monto)
+       VALUES ($1, 2, CURRENT_DATE + 2, 'DEPOSITO', 'REF-PRUEBA-1', 777.77)`,
+      [conc.id],
+    );
+    const { rows: [p] } = await c.query(`SELECT contabilidad.proponer_emparejamientos($1) AS n`, [conc.id]);
+    await c.query(`UPDATE contabilidad.conciliacion_linea SET confirmada = true WHERE conciliacion_id = $1`, [conc.id]);
+    await c.query(`SELECT contabilidad.cerrar_conciliacion($1)`, [conc.id]);
+    if (p.n >= 1) pasar("(l1) la propuesta empareja por importe, fecha ±3 días y referencia");
+    else fallar("(l1) proponer", `emparejó ${p.n}`);
+    esperarError(
+      "(l2) un movimiento conciliado no se puede anular",
+      await errorDe(c, `SELECT contabilidad.anular_recibo($1, 'Prueba tras conciliar')`, [id]),
+      "conciliad",
+    );
+  });
+}
+
 async function main() {
   console.log("\nPruebas de los cimientos de contabilidad\n");
   const usuarioId = await usuarioDePrueba();
@@ -319,6 +444,9 @@ async function main() {
   await probarSinBorrado(usuarioId);
   await probarPeriodoCerrado(usuarioId);
   await probarAccionNombrada(usuarioId);
+  await probarRecibos(usuarioId);
+  await probarTransferencia(usuarioId);
+  await probarConciliacion(usuarioId);
 
   console.log(`\nResultado: ${ok} pasaron, ${fail} fallaron`);
   await pool.end();

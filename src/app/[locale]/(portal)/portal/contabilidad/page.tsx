@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  BarChart3,
-  DollarSign,
-  HandCoins,
-  Receipt,
-} from "lucide-react";
+import { ArrowRight, Info, Landmark, Plus, ReceiptText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { AccesosPortal, BannerPortal } from "@/components/layout/banner-portal";
-import { Card, CardContent } from "@/components/ui/card";
+import { InsigniaEstadoRecibo, Monto } from "@/components/contabilidad/comun";
+import { ListaRecibos } from "@/components/contabilidad/recibos/lista-recibos";
+import { Button } from "@/components/ui/button";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
-import { requerirRol } from "@/lib/auth";
-import { montoUsd } from "@/lib/finanzas";
-import { MOVIMIENTO, TARJETA, VACIO } from "@/lib/paleta";
-import { cn } from "@/lib/utils";
+import { requerirPermiso } from "@/lib/auth";
+import { formatearMonto, numeroDocumento, SERIE_RECIBO, sumarMontos } from "@/lib/contabilidad/formato";
+import { claveDia, fechaCorta } from "@/lib/fechas";
+import { TARJETA } from "@/lib/paleta";
+import { usuarioTienePermiso } from "@/lib/rbac";
+import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
 import {
-  resumenDelMesEnCurso,
-  ultimosMovimientos,
-} from "@/server/finanzas/consultas";
+  borradoresPendientes,
+  leerFiltroRecibos,
+  recibos,
+} from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
   params,
@@ -27,27 +26,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "modules" });
-
-  return { title: t("accountingPortal.title") };
+  const t = await getTranslations({ locale, namespace: "contab.inicio" });
+  return { title: t("antetitulo") };
 }
 
 /**
- * Portal de contabilidad: el mes en curso y lo último que se movió.
+ * Inicio del portal de contabilidad (§4.1), con lo que ya existe tras la
+ * Fase 2: saldos por cuenta, la tasa del día, lo que espera ser
+ * contabilizado y lo último registrado. Cuentas por pagar, cajas,
+ * presupuestos y obligaciones fiscales llegan con sus fases; hasta
+ * entonces no se pintan bloques vacíos que parezcan datos.
  *
- * Ya no lleva cifras vacías. El esqueleto que había aquí las omitía a propósito
- * —"un balance a cero en la pantalla de quien lleva las cuentas no es un dato
- * neutro, es un dato equivocado"— y esa decisión sigue en pie: ahora las
- * cifras salen de `transaccion`, así que un cero en pantalla significa que
- * este mes no se ha registrado nada, que es información y no relleno.
- *
- * El mes lo decide la base (`date_trunc('month', CURRENT_DATE)`), no el reloj
- * del navegador ni el del servidor: ver la cabecera de
- * `resumenDelMesEnCurso()`.
- *
- * `requerirRol` y no `requerirPermiso('finanzas.leer')`: esto es la puerta de
- * entrada de un rol, igual que los otros cinco portales, y `super_admin` entra
- * a todos. Las pantallas de dentro sí cierran por permiso.
+ * La puerta es `contabilidad.leer`, no el rol: `super_admin` entra a mirar
+ * (auditoría) y no ve ningún botón que escriba.
  */
 export default async function PortalContabilidad({
   params,
@@ -55,134 +46,125 @@ export default async function PortalContabilidad({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const idioma = locale === "en" ? "en" : "es";
+  const usuario = await requerirPermiso("contabilidad.leer");
 
-  await requerirRol(["contabilidad", "super_admin"]);
-
-  const [t, tm, tf, mes, ultimos] = await Promise.all([
-    getTranslations({ locale, namespace: "accountingPortal" }),
-    getTranslations({ locale, namespace: "modules" }),
-    getTranslations({ locale, namespace: "finance" }),
-    resumenDelMesEnCurso(),
-    ultimosMovimientos(6),
+  const [t, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
+    getTranslations({ locale, namespace: "contab.inicio" }),
+    getTranslations({ locale, namespace: "contab" }),
+    cuentasConSaldo(),
+    tasaVigente(),
+    borradoresPendientes(),
+    recibos(leerFiltroRecibos({}), 5),
   ]);
 
+  const activas = cuentas.filter((c) => c.estado === "activa");
+  // El total en pesos solo si TODAS las cuentas tienen equivalente: un
+  // total que omite en silencio la cuenta en dólares sería falso.
+  const totalDop = activas.every((c) => c.saldo_dop !== null)
+    ? sumarMontos(activas.map((c) => c.saldo_dop ?? "0"))
+    : null;
+  const tasaVieja = tasa && tasa.fecha < claveDia();
+
   return (
-    <div className="space-y-6">
-      <BannerPortal
-        rol="contabilidad"
-        icono={DollarSign}
-        insignia={t("eyebrow")}
-        titulo={tm("accountingPortal.title")}
-        subtitulo={t("summary")}
-        kpis={[
-          // Sin decimales en el banner: son cifras de un vistazo, y los
-          // centavos se leen en la tabla de movimientos, que es donde
-          // significan algo.
-          { valor: montoUsd(mes.ingresos, 0), etiqueta: t("kpi.income") },
-          { valor: montoUsd(mes.egresos, 0), etiqueta: t("kpi.expense") },
-          { valor: montoUsd(mes.balance, 0), etiqueta: t("kpi.balance") },
-          { valor: String(mes.movimientos), etiqueta: t("kpi.entries") },
-        ]}
+    <div className="mx-auto max-w-6xl space-y-8 md:space-y-10">
+      <EncabezadoPagina
+        antetitulo={t("antetitulo")}
+        titulo={t("titulo")}
+        subtitulo={t("subtitulo")}
+        acciones={
+          usuarioTienePermiso(usuario, "contabilidad.registrar") ? (
+            <Button asChild>
+              <Link href="/contabilidad/recibos/nuevo">
+                <Plus className="size-4" />
+                {t("nuevoRecibo")}
+              </Link>
+            </Button>
+          ) : null
+        }
       />
 
-      <p className="text-muted-foreground text-xs">{t("monthHint")}</p>
-
-      <AccesosPortal
-        accesos={[
-          {
-            href: "/contabilidad",
-            icono: DollarSign,
-            color: "bg-[#2096BA]/10 text-[#187a99]",
-            titulo: tm("accounting.title"),
-            texto: tm("accounting.desc"),
-          },
-          {
-            href: "/reportes",
-            icono: BarChart3,
-            color: "bg-[#2096BA]/10 text-[#187a99]",
-            titulo: tm("reports.title"),
-            texto: tm("reports.desc"),
-          },
-          {
-            href: "/patrocinadores",
-            icono: HandCoins,
-            color: "bg-[#2096BA]/10 text-[#187a99]",
-            titulo: tm("sponsors.title"),
-            texto: tm("sponsors.desc"),
-          },
-        ]}
-      />
-
-      <Card className={TARJETA.contenido}>
-        <CardContent className="space-y-3 pt-5">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="text-sm font-semibold">{t("recent.title")}</p>
-              <p className="text-muted-foreground text-xs">
-                {t("recent.hint")}
-              </p>
-            </div>
-
-            <Link
-              href="/contabilidad"
-              className="shrink-0 text-xs font-medium text-[#187a99] hover:underline"
-            >
-              {t("recent.all")}
-            </Link>
-          </div>
-
-          {ultimos.length === 0 ? (
-            <div className={VACIO.contenedor}>
-              <span className={VACIO.icono}>
-                <Receipt className="size-6" />
-              </span>
-              <p className={VACIO.titulo}>{t("recent.empty")}</p>
-              <p className={VACIO.descripcion}>{t("recent.emptyHint")}</p>
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {ultimos.map((fila) => {
-                const entra = fila.tipo === "ingreso";
-                const estilo = MOVIMIENTO[entra ? "ingreso" : "egreso"];
-                const Flecha = entra ? ArrowUpRight : ArrowDownRight;
-
-                return (
-                  <li key={fila.id} className={TARJETA.fila}>
-                    <span
-                      className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                        estilo.cuadro,
-                      )}
-                    >
-                      <Flecha className="size-4" />
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {fila.concepto}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {tf(`category.${fila.categoria}` as never)} ·{" "}
-                        {fila.fecha}
-                      </p>
-                    </div>
-
-                    <span
-                      className={cn(
-                        "shrink-0 text-sm font-bold tabular-nums",
-                        estilo.texto,
-                      )}
-                    >
-                      {estilo.signo}
-                      {montoUsd(fila.monto)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="texto-titulo-seccion">{t("saldos")}</h2>
+          {totalDop && (
+            <p className="text-right">
+              <span className="texto-meta block">{t("totalDop")}</span>
+              <span className="text-lg font-semibold text-tinta">{formatearMonto(totalDop, "DOP")}</span>
+            </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+        {activas.length === 0 ? (
+          <EstadoVacio icono={Landmark} titulo={tc("bancos.vacio")} texto={tc("bancos.vacioTexto")} />
+        ) : (
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {activas.map((cuenta) => (
+              <li key={cuenta.id} className="min-w-0">
+                <Link href={`/contabilidad/bancos/${cuenta.id}`} className={`${TARJETA.interactiva} block p-5`}>
+                  <p className="texto-meta">{cuenta.nombre}</p>
+                  <p className="mt-1 text-2xl font-semibold text-tinta">
+                    <Monto valor={cuenta.saldo} moneda={cuenta.moneda} />
+                  </p>
+                  {cuenta.moneda === "USD" && (
+                    <p className="texto-meta">
+                      {cuenta.saldo_dop
+                        ? t("equivalente", { monto: formatearMonto(cuenta.saldo_dop, "DOP") })
+                        : t("sinTasa")}
+                    </p>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="flex items-start gap-2 text-sm text-tinta-2">
+          <Info className="mt-0.5 size-4 shrink-0 text-marca-600" />
+          {tasa
+            ? tasaVieja
+              ? t("tasaVieja", { fecha: fechaCorta(tasa.fecha, idioma) })
+              : t("tasaDe", { compra: tasa.compra, venta: tasa.venta, fuente: tasa.fuente, fecha: fechaCorta(tasa.fecha, idioma) })
+            : t("tasaVacia")}
+        </p>
+      </section>
+
+      <section className="space-y-4 border-t border-linea pt-8">
+        <h2 className="texto-titulo-seccion">{t("pendientes")}</h2>
+        {pendientes.length === 0 ? (
+          <EstadoVacio icono={ReceiptText} titulo={t("pendientesVacio")} texto={t("pendientesTexto")} />
+        ) : (
+          <ul className={TARJETA.contenido}>
+            {pendientes.map((fila) => (
+              <li key={fila.id} className="border-b border-linea last:border-b-0">
+                <Link href={`/contabilidad/recibos/${fila.id}`} className="flex min-h-11 items-center gap-3 px-4 py-3 hover:bg-muted/50">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-tinta">
+                      {numeroDocumento(SERIE_RECIBO[fila.tipo], fila.numero)} · {fila.concepto}
+                    </span>
+                    <span className="texto-meta block">
+                      {fechaCorta(fila.fecha, idioma)} · {fila.creado_por}
+                    </span>
+                  </span>
+                  <Monto valor={fila.monto} moneda={fila.moneda} className="font-medium" />
+                  <InsigniaEstadoRecibo estado={fila.estado} etiqueta={tc(`estado.${fila.estado}`)} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-4 border-t border-linea pt-8">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="texto-titulo-seccion">{t("recientes")}</h2>
+          <Link href="/contabilidad/recibos" className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-marca-600 hover:underline">
+            {t("verTodos")}
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+        {recientes.length > 0 && <ListaRecibos filas={recientes.slice(0, 5)} idioma={idioma} />}
+      </section>
+
+      <p className="texto-meta">{t("proximamente")}</p>
     </div>
   );
 }

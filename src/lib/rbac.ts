@@ -165,7 +165,7 @@ export function esRol(valor: unknown): valor is Rol {
 const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   // super_admin: solo lectura y auditoría en contabilidad.
   // Separación de funciones: quien audita no opera.
-  // finanzas.escribir retirado en migración 0034.
+  // finanzas.escribir retirado en 0034 (a super_admin) y en 0036 (a todos).
   super_admin: [
     "academico.escribir",
     "academico.leer",
@@ -215,8 +215,6 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.
-  // `finanzas.escribir` sigue aquí (y en rol_permiso) mientras la
-  // pantalla vieja de /contabilidad viva: la retira la Fase 2.
   contabilidad: [
     "contabilidad.aprobar",
     "contabilidad.asiento_manual",
@@ -226,7 +224,6 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "contabilidad.leer",
     "contabilidad.nomina",
     "contabilidad.registrar",
-    "finanzas.escribir",
     "finanzas.leer",
     "patrocinadores.leer",
   ],

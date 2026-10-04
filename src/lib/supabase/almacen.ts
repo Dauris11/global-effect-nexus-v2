@@ -241,3 +241,49 @@ export async function borrarDocumento(ruta: string | null): Promise<void> {
     console.error("[almacen] no se pudo borrar el archivo", error);
   }
 }
+
+/**
+ * Contabilidad: comprobantes, facturas y estados de cuenta (migración 0036).
+ *
+ * Bucket propio y privado, aparte de `documentos`: lo que hay aquí lo pide
+ * un auditor, y mezclarlo con entregas de estudiantes haría imposible decir
+ * quién pudo tocar qué. Sin upsert: un comprobante no se sustituye, se
+ * archiva y se sube otro (la fila guarda su sha256 para detectar cambios).
+ */
+const CONTABILIDAD = "contabilidad";
+
+export async function subirContable(
+  ruta: string,
+  archivo: File,
+): Promise<{ ok: true; ruta: string } | { ok: false }> {
+  return subir(CONTABILIDAD, ruta, archivo, false);
+}
+
+/**
+ * Enlace firmado de CINCO minutos (§4.11), la mitad que el de `documentos`:
+ * el enlace se pide al pulsar "descargar", no al pintar la pantalla, así
+ * que no hace falta más.
+ */
+export async function enlaceContable(ruta: string): Promise<string | null> {
+  const { url, secreto } = credenciales();
+
+  const res = await fetch(`${url}/storage/v1/object/sign/${CONTABILIDAD}/${ruta}`, {
+    method: "POST",
+    headers: {
+      apikey: secreto,
+      Authorization: `Bearer ${secreto}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ expiresIn: 300 }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error("[almacen] no se pudo firmar el enlace contable:", res.status);
+    return null;
+  }
+
+  const { signedURL } = (await res.json()) as { signedURL: string };
+
+  return `${url}/storage/v1${signedURL}`;
+}

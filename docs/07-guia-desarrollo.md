@@ -99,14 +99,16 @@ Roles (6): `super_admin`, `admin`, `docente`, `estudiante`, `contabilidad`, `hab
 - **La solicitud no ejecuta efectos.** "Aprobada" es la decisión; el módulo dueño (contabilidad, expedientes, patrocinio) hace el cambio y entonces se marca `completada`.
 - **Cada cambio de estado** escribe una fila en `solicitud_paso` y una notificación; aprobar, rechazar y completar van además a `audit_log`. Rechazar exige comentario.
 
-### Regla crítica — contabilidad (esquema `contabilidad`, migraciones 0032-0035)
+### Regla crítica — contabilidad (esquema `contabilidad`, migraciones 0032-0036)
 - **Toda tabla nueva de `contabilidad.*` llama `SELECT contabilidad.auditar_tabla('contabilidad.<tabla>')`** al final de su migración. Eso instala la bitácora, prohíbe `DELETE`/`TRUNCATE` y bloquea los registros de un período cerrado. Una tabla sin esa llamada queda fuera de la auditoría.
 - **Toda escritura contable usa `enTransaccionComo(contexto, …)`** (`src/lib/db.ts`), nunca `enTransaccion`: el disparador aborta si falta `app.usuario_id`. Ese fallo es intencional.
 - **Cuando un UPDATE es aprobar, anular, pagar, conciliar o cerrar/reabrir**, se llama `fijarAccion(cliente, accion, motivo)` antes (`src/server/contabilidad/bitacora.ts`); si no, el auditor ve un «editar».
 - **Las lecturas sensibles** (nómina, volantes, exportaciones, adjuntos) pasan por `registrarLectura()`. La base no ve lecturas.
 - **Nada se borra:** lo que está mal se anula con motivo. Una tabla con fecha contable lleva `periodo_id` para que el bloqueo de período cerrado la cubra.
 - **Permisos por persona:** `requerirPermiso` resuelve el rol más las excepciones de `usuario_permiso` (`usuarioTienePermiso` en `src/lib/rbac.ts`). `super_admin` solo lee y audita.
-- Pruebas: `npm run db:probar:contabilidad`.
+- **El dinero que se mueve lo mueve la base:** `contabilidad.contabilizar_recibo`, `anular_recibo`, `transferir` y `cerrar_conciliacion` (0036) crean movimiento, asiento y contra-asiento en la misma transacción. Una pantalla nueva las llama; no reescribe sus pasos en TypeScript.
+- **Montos como texto** de punta a punta (`::text` en el SELECT); para sumar en pantalla, `sumarMontos` de `src/lib/contabilidad/formato.ts`, en centavos.
+- Pruebas: `npm run db:probar:contabilidad` (contra la BD) y `npm run test:contabilidad` (monto en letras y adaptadores, sin BD).
 
 ---
 

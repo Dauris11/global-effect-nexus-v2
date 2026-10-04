@@ -176,7 +176,9 @@ export const REGLAS: Record<TipoSolicitud, ReglaTipo> = {
     // Cualquiera del personal: la lista vacía de abajo no aplica a los
     // internos, ver `puedeCrear`.
     crea: [],
-    revisa: "finanzas.escribir",
+    // Desde la 0036 lo revisa quien aprueba en contabilidad. Antes era
+    // `finanzas.escribir`, que se retiró con la pantalla de transacciones.
+    revisa: "contabilidad.aprobar",
     estudiante: "no",
     monto: "obligatorio",
     fecha: "opcional",
@@ -318,7 +320,7 @@ export function revisaAlgo(rol: Rol): boolean {
   return (
     tienePermiso(rol, "solicitudes.gestionar") ||
     tienePermiso(rol, "solicitudes.direccion") ||
-    tienePermiso(rol, "finanzas.escribir")
+    tienePermiso(rol, "contabilidad.aprobar")
   );
 }
 
