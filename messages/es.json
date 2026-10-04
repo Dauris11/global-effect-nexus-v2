@@ -27,7 +27,8 @@
     "needAccess": "¿No tienes acceso? Los usuarios se invitan desde administración.",
     "showPassword": "Ver la contraseña",
     "hidePassword": "Ocultar la contraseña",
-    "or": "o"
+    "or": "o",
+    "signInHeading": "Entra a tu portal"
   },
   "nav": {
     "adminPortal": "Portal administrativo",
@@ -206,7 +207,18 @@
     "role_docente": "Docente",
     "role_estudiante": "Estudiante",
     "role_contabilidad": "Contabilidad",
-    "role_habitudes": "Habitudes"
+    "role_habitudes": "Habitudes",
+    "access_portal_desc": "Estudiantes, docentes y personal entran aquí con su cuenta.",
+    "access_meals_desc": "Apúntate al almuerzo del día antes de la hora de corte.",
+    "access_requests_desc": "Pide una constancia, una carta o una cita con administración.",
+    "footerContact": "Contacto",
+    "heroCarousel": "Imágenes de la Fundación",
+    "menuSections": "Secciones",
+    "role_students": "Estudiantes",
+    "role_teachers": "Docentes",
+    "role_accounting": "Contabilidad",
+    "searchPill": "¿A dónde quieres ir?",
+    "searchPillHint": "Portal, comida o trámites"
   },
   "comida": {
     "title": "Inscripción de comida",
@@ -290,7 +302,8 @@
     "qaFinance": "Flujo financiero",
     "qaSponsors": "Patrocinadores",
     "qaTasks": "Tareas",
-    "qaCalendar": "Calendario"
+    "qaCalendar": "Calendario",
+    "subtitle": "Lo que pasa hoy en la Fundación, de un vistazo."
   },
   "admin": {
     "eyebrow": "Operaciones",
@@ -1345,6 +1358,14 @@
         "retirada": "Retirada",
         "aprobada": "Aprobada",
         "reprobada": "Reprobada"
+      },
+      "columns": {
+        "subject": "Materia",
+        "schedule": "Horario",
+        "room": "Aula",
+        "teacher": "Docente",
+        "credits": "Créditos",
+        "status": "Estado"
       }
     },
     "gradesPage": {
@@ -1407,7 +1428,11 @@
       "errSize": "El archivo pasa de 10 MB.",
       "errEmpty": "No has elegido ningún archivo.",
       "errNotYours": "Esa tarea no es de una de tus clases.",
-      "errGeneric": "No se pudo subir. Inténtalo otra vez."
+      "errGeneric": "No se pudo subir. Inténtalo otra vez.",
+      "filterLabel": "Filtrar por estado",
+      "filterAll": "Todas",
+      "filterEmpty": "Nada en este estado",
+      "filterEmptyHint": "No tienes tareas ni exámenes en este estado. Elige «Todas» para ver el resto."
     },
     "agenda": {
       "eyebrow": "Mi agenda",

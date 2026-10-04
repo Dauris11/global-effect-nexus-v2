@@ -27,7 +27,8 @@
     "needAccess": "No access yet? Users are invited from administration.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "or": "or"
+    "or": "or",
+    "signInHeading": "Sign in to your portal"
   },
   "nav": {
     "adminPortal": "Administration portal",
@@ -206,7 +207,18 @@
     "role_docente": "Teacher",
     "role_estudiante": "Student",
     "role_contabilidad": "Accounting",
-    "role_habitudes": "Habitudes"
+    "role_habitudes": "Habitudes",
+    "access_portal_desc": "Students, teachers and staff sign in here with their account.",
+    "access_meals_desc": "Sign up for today's lunch before the cut-off time.",
+    "access_requests_desc": "Request a certificate, a letter or a meeting with administration.",
+    "footerContact": "Contact",
+    "heroCarousel": "Images of the Foundation",
+    "menuSections": "Sections",
+    "role_students": "Students",
+    "role_teachers": "Teachers",
+    "role_accounting": "Accounting",
+    "searchPill": "Where do you want to go?",
+    "searchPillHint": "Portal, meals or requests"
   },
   "comida": {
     "title": "Meal sign-up",
@@ -290,7 +302,8 @@
     "qaFinance": "Financial flow",
     "qaSponsors": "Sponsors",
     "qaTasks": "Tasks",
-    "qaCalendar": "Calendar"
+    "qaCalendar": "Calendar",
+    "subtitle": "What is happening at the Foundation today, at a glance."
   },
   "admin": {
     "eyebrow": "Operations",
@@ -1345,6 +1358,14 @@
         "retirada": "Withdrawn",
         "aprobada": "Passed",
         "reprobada": "Failed"
+      },
+      "columns": {
+        "subject": "Subject",
+        "schedule": "Schedule",
+        "room": "Room",
+        "teacher": "Teacher",
+        "credits": "Credits",
+        "status": "Status"
       }
     },
     "gradesPage": {
@@ -1407,7 +1428,11 @@
       "errSize": "The file is over 10 MB.",
       "errEmpty": "You have not chosen a file.",
       "errNotYours": "That task is not from one of your classes.",
-      "errGeneric": "Could not upload. Try again."
+      "errGeneric": "Could not upload. Try again.",
+      "filterLabel": "Filter by status",
+      "filterAll": "All",
+      "filterEmpty": "Nothing with this status",
+      "filterEmptyHint": "You have no assignments or exams with this status. Choose “All” to see the rest."
     },
     "agenda": {
       "eyebrow": "My agenda",
