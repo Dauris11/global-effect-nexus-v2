@@ -91,3 +91,65 @@ export async function enTransaccion<T>(
     cliente.release();
   }
 }
+
+/**
+ * Contexto de red que se adjunta a cada transacción contable.
+ * El disparador de bitácora lo lee con current_setting().
+ */
+export type ContextoTransaccion = {
+  /** UUID del usuario en public.usuario (no el auth_user_id de Supabase). */
+  usuarioId: string;
+  ip?: string;
+  agente?: string;
+  sesionId?: string;
+};
+
+/**
+ * Como `enTransaccion`, pero fija el contexto del usuario antes del trabajo.
+ *
+ * Por qué existe esta función:
+ *   El módulo de contabilidad exige que toda escritura lleve identidad:
+ *   el disparador de bitácora (0033) lee `app.usuario_id` con
+ *   `current_setting` y aborta si no existe. `enTransaccion` no fija ese
+ *   valor, por eso contabilidad DEBE usar `enTransaccionComo`. Si alguien
+ *   llama `enTransaccion` contra una tabla de `contabilidad.*`, el disparador
+ *   rechazará la operación —ese es el comportamiento buscado—.
+ *
+ *   `is_local = true` en `set_config` limita el valor a la transacción actual:
+ *   cuando termina el COMMIT/ROLLBACK, Postgres descarta los valores, sin
+ *   riesgo de que un pool recicle la conexión con el usuario anterior.
+ */
+export async function enTransaccionComo<T>(
+  contexto: ContextoTransaccion,
+  trabajo: (cliente: import("pg").PoolClient) => Promise<T>,
+): Promise<T> {
+  const cliente = await pool.connect();
+
+  try {
+    await cliente.query("BEGIN");
+
+    // Fijar el contexto dentro de esta transacción (is_local = true).
+    await cliente.query(
+      `SELECT
+         set_config('app.usuario_id', $1, true),
+         set_config('app.ip',         $2, true),
+         set_config('app.agente',     $3, true),
+         set_config('app.sesion',     $4, true)`,
+      [
+        contexto.usuarioId,
+        contexto.ip      ?? '',
+        contexto.agente  ?? '',
+        contexto.sesionId ?? '',
+      ],
+    );
+
+    const resultado = await trabajo(cliente);
+    await cliente.query("COMMIT");
+    return resultado;
+  } catch (error) {
+    await cliente.query("ROLLBACK");
+    throw error;
+  } finally {
+    cliente.release();
+  }
+}

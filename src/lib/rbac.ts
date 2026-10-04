@@ -51,6 +51,18 @@ export const PERMISOS = [
   "academico.escribir",
   "academico.leer",
   "calificaciones.registrar",
+  // Permisos finos de contabilidad (migración 0034).
+  // Los permisos finanzas.* siguen existiendo para compatibilidad
+  // con el dashboard viejo; el módulo nuevo usa contabilidad.*
+  "contabilidad.aprobar",
+  "contabilidad.asiento_manual",
+  "contabilidad.auditar",
+  "contabilidad.cerrar_periodo",
+  "contabilidad.conciliar",
+  "contabilidad.configurar",
+  "contabilidad.leer",
+  "contabilidad.nomina",
+  "contabilidad.registrar",
   "expedientes.eliminar",
   "expedientes.escribir",
   "expedientes.leer",
@@ -147,14 +159,18 @@ export function esRol(valor: unknown): valor is Rol {
  * aquí, nunca solo aquí.
  */
 const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
+  // super_admin: solo lectura y auditoría en contabilidad.
+  // Separación de funciones: quien audita no opera.
+  // finanzas.escribir retirado en migración 0034.
   super_admin: [
     "academico.escribir",
     "academico.leer",
     "calificaciones.registrar",
+    "contabilidad.auditar",
+    "contabilidad.leer",
     "expedientes.eliminar",
     "expedientes.escribir",
     "expedientes.leer",
-    "finanzas.escribir",
     "finanzas.leer",
     "ia.administrar",
     "ia.usar",
@@ -193,8 +209,17 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "academico.leer",
     "ia.usar",
   ],
+  // contabilidad: todos los permisos del módulo menos auditar.
+  // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.
   contabilidad: [
-    "finanzas.escribir",
+    "contabilidad.aprobar",
+    "contabilidad.asiento_manual",
+    "contabilidad.cerrar_periodo",
+    "contabilidad.conciliar",
+    "contabilidad.configurar",
+    "contabilidad.leer",
+    "contabilidad.nomina",
+    "contabilidad.registrar",
     "finanzas.leer",
     "patrocinadores.leer",
   ],
@@ -207,4 +232,32 @@ export function tienePermiso(rol: Rol, permiso: Permiso): boolean {
 /** Comprueba varios permisos a la vez; basta con uno para pasar. */
 export function tieneAlgunPermiso(rol: Rol, permisos: readonly Permiso[]): boolean {
   return permisos.some((permiso) => tienePermiso(rol, permiso));
+}
+
+/**
+ * Tipo que describe las excepciones individuales de un usuario.
+ * Viene de la tabla `usuario_permiso` (migración 0034).
+ * Se resuelve en la server action o en requerirPermiso cuando
+ * la consulta incluye las excepciones del usuario.
+ */
+export type ExcepcionPermiso = {
+  permiso: Permiso;
+  concedido: boolean; // true = suma al rol, false = resta al rol
+};
+
+/**
+ * Resuelve si un usuario tiene un permiso considerando:
+ *   1. Los permisos de su rol (PERMISOS_POR_ROL).
+ *   2. Las excepciones individuales de `usuario_permiso`.
+ *
+ * Regla: una excepción revocada (concedido=false) gana sobre el rol.
+ */
+export function tienePermisoConExcepciones(
+  rol: Rol,
+  permiso: Permiso,
+  excepciones: readonly ExcepcionPermiso[],
+): boolean {
+  const excepcion = excepciones.find((e) => e.permiso === permiso);
+  if (excepcion !== undefined) return excepcion.concedido;
+  return tienePermiso(rol, permiso);
 }
