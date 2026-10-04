@@ -6,26 +6,34 @@
 // (o node scripts/seed-contabilidad.mjs)
 //
 // Qué siembra:
-//   - Banco "Banco Múltiple Santa Cruz" (primer banco del sistema)
-//   - Cuentas DEMO: Santa Cruz USD y Santa Cruz DOP
 //   - Catálogo de cuentas básico para una ASFL dominicana
 //   - Categorías de ingresos y egresos
 //   - Fondo "General"
 //   - Parámetros de nómina vigentes (TSS 2026, ISR 2026 y 2027)
 //     con tasas del empleador marcadas como NULL + nota "validar con el contador"
-//   - Secuencias: RI, CE, PG, CH, AR, AS
+//   - Secuencias: RI, CE, PG, CH, AR, AS, NM, FP
 //   - Período del mes actual (abierto)
 //
 // El seed es idempotente: si ya existen los datos, los actualiza
 // sin duplicar. Nunca borra datos contables.
+//
+// El banco "Banco Múltiple Santa Cruz" y sus cuentas DEMO (USD y DOP) se
+// siembran en la Fase 2, que es la que crea las tablas `banco` y
+// `cuenta_bancaria`.
 
 import pg from "pg";
+import { config } from "dotenv";
+
+// Inyectar .env.local antes de leer process.env (igual que migrate.mjs)
+config({ path: ".env.local" });
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes("localhost")
-    ? undefined
-    : { rejectUnauthorized: false },
+  // SSL solo en conexiones remotas (Supabase/Supavisor).
+  // En local (localhost o 127.0.0.1) Postgres no tiene SSL.
+  ssl: process.env.DATABASE_URL?.includes("supabase.co")
+    ? { rejectUnauthorized: false }
+    : undefined,
 });
 
 // Usuario de sistema para el contexto de la bitácora durante el seed.

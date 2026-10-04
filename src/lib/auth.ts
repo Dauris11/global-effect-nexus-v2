@@ -3,9 +3,11 @@ import { getLocale } from "next-intl/server";
 import { redirigir } from "@/i18n/navigation";
 import { consultarUna } from "@/lib/db";
 import {
+  esPermiso,
   esRol,
   PORTAL_POR_ROL,
-  tienePermiso,
+  usuarioTienePermiso,
+  type ExcepcionPermiso,
   type Permiso,
   type Rol,
 } from "@/lib/rbac";
@@ -38,6 +40,12 @@ export type UsuarioSesion = {
    * columna más en una consulta que ya se hace en cada petición.
    */
   fotoUrl: string | null;
+  /**
+   * Excepciones de `usuario_permiso`. Viajan en la sesión porque el
+   * permiso de contabilidad es de la persona, no del rol: un auxiliar con
+   * `registrar` y sin `aprobar` tiene el mismo rol que quien aprueba.
+   */
+  excepciones: ExcepcionPermiso[];
 };
 
 type FilaUsuario = {
@@ -48,6 +56,7 @@ type FilaUsuario = {
   activo: boolean;
   rol_nombre: string;
   foto_url: string | null;
+  excepciones: { permiso: string; concedido: boolean }[];
 };
 
 /**
@@ -73,7 +82,16 @@ export async function obtenerUsuarioActual(): Promise<UsuarioSesion | null> {
             u.idioma,
             u.activo,
             u.foto_url,
-            r.nombre AS rol_nombre
+            r.nombre AS rol_nombre,
+            -- En la misma consulta que ya se hace en cada petición, para
+            -- no sumar un viaje a la base por las excepciones.
+            coalesce((
+              SELECT json_agg(json_build_object('permiso', p.codigo,
+                                                'concedido', up.concedido))
+                FROM usuario_permiso up
+                JOIN permiso p ON p.id = up.permiso_id
+               WHERE up.usuario_id = u.id
+            ), '[]'::json) AS excepciones
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE u.auth_user_id = $1`,
@@ -90,6 +108,9 @@ export async function obtenerUsuarioActual(): Promise<UsuarioSesion | null> {
     rol: fila.rol_nombre,
     authUserId: user.id,
     fotoUrl: fila.foto_url,
+    excepciones: fila.excepciones.flatMap((e) =>
+      esPermiso(e.permiso) ? [{ permiso: e.permiso, concedido: e.concedido }] : [],
+    ),
   };
 }
 
@@ -127,7 +148,7 @@ export async function requerirPermiso(
 ): Promise<UsuarioSesion> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, permiso)) {
+  if (!usuarioTienePermiso(usuario, permiso)) {
     redirigir(PORTAL_POR_ROL[usuario.rol], await getLocale());
   }
 

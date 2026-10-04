@@ -7,6 +7,23 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
+- [ ] **Contabilidad, Fase 2:** sus migraciones empiezan en la **0036**, no en
+      la 0035 que dice `docs/prompts/portal-contabilidad.md` (la 0035 la ocupó
+      el arreglo de la bitácora). `banco` y las cuentas «Santa Cruz USD/DOP»
+      se siembran en esa fase: en la Fase 1 todavía no existían sus tablas.
+      La Fase 2 también retira `finanzas.escribir` del rol `contabilidad`,
+      junto con la pantalla vieja de `/contabilidad`.
+- [ ] **Contabilidad:** la regla «quien registra no aprueba» todavía no tiene
+      dónde aplicarse (no hay acciones de aprobar). Se escribe en la primera
+      server action que contabilice, en la Fase 2.
+- [ ] **`npm run audit:ui` falla con 299 hex sueltos** en `.tsx` (sobre todo
+      el `SEMAFORO` escrito como `bg-[#1E9E6A]` en solicitudes, patrocinadores,
+      operaciones y perfil). Ya fallaba en `cca04bf`, antes de contabilidad.
+      Decidir si `scripts/auditar-ui.mjs` admite el `SEMAFORO` (la norma lo
+      exige escrito así) o si pasa a un token.
+- [ ] **Contabilidad:** `usuario_permiso` no tiene pantalla. Hoy una
+      excepción solo se da por SQL; hace falta en `/configuracion` antes de
+      que exista un auxiliar contable.
 - [ ] **Habitudes, a medias.** Ya tiene una puerta que abre
       (`/administrativo/solicitudes`): pide el alta de un candidato del embudo
       y la aprueba administración. Pero `/expedientes` sigue cerrada para ese
@@ -137,6 +154,26 @@ módulo) — esto es solo la cola de pendientes concretos.
       construir academias, servicios, reportes y chat IA hay que elegir con
       cuáles se cierran esas puertas (o añadirlos a `rol_permiso` y a
       `rbac.ts`, que es un cambio de base).
+
+## Hechos el 4 de octubre de 2026 — cimientos de contabilidad
+
+- [x] Esquema `contabilidad` con secuencias sin huecos, parámetros con
+      vigencia, períodos, catálogo, fondos, categorías y asientos con cuadre
+      diferido (0032); bitácora (0033); permisos finos y `usuario_permiso`
+      (0034).
+- [x] **0035:** la cadena de hash de la 0033 no se podía verificar (el
+      disparador encadenaba por tabla, el verificador en global, el orden era
+      aleatorio dentro de una transacción y el hash no cubría motivo, IP ni
+      hora). Ahora es una cadena global con `orden` sin huecos, hash de la fila
+      entera y un verificador que dice qué fila y por qué (`hueco`, `enlace` o
+      `hash`). Además: nada se borra (DELETE y TRUNCATE prohibidos), los
+      períodos cerrados no se tocan y los roles de la API pública no ven el
+      esquema.
+- [x] `requerirPermiso` resuelve los permisos por persona (rol + excepciones).
+- [x] Restaurado `finanzas.escribir` del rol `contabilidad` en `rbac.ts`: se
+      había quitado solo ahí (la base lo seguía dando) y la pantalla vieja de
+      `/contabilidad` se quedaba sin escritura.
+- [x] `npm run db:probar:contabilidad`: 13 pruebas, todas en verde.
 
 ## Hechos el 3 de octubre de 2026 — de psicología a ERP
 
