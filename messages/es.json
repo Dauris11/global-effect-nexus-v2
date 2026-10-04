@@ -26,7 +26,8 @@
     "backHome": "Volver al inicio",
     "needAccess": "¿No tienes acceso? Los usuarios se invitan desde administración.",
     "showPassword": "Ver la contraseña",
-    "hidePassword": "Ocultar la contraseña"
+    "hidePassword": "Ocultar la contraseña",
+    "or": "o"
   },
   "nav": {
     "adminPortal": "Portal administrativo",
@@ -191,7 +192,17 @@
     "access_requests_tag": "Trámites",
     "access_requests_title": "Solicitudes y trámites",
     "work_events_title": "Eventos y comunidad",
-    "work_events_tag": "Comunidad"
+    "work_events_tag": "Comunidad",
+    "accessTitle": "Accede a tu portal",
+    "accessText": "Ingresa con tus credenciales institucionales al portal que corresponde a tu rol.",
+    "accessRolesTitle": "Portales disponibles",
+    "accessRolesText": "Estudiantes, docentes, administración y contabilidad tienen su propio espacio.",
+    "role_super_admin": "Dirección",
+    "role_admin": "Administración",
+    "role_docente": "Docente",
+    "role_estudiante": "Estudiante",
+    "role_contabilidad": "Contabilidad",
+    "role_habitudes": "Habitudes"
   },
   "comida": {
     "title": "Inscripción de comida",
@@ -1349,7 +1360,8 @@
         "proyecto": "Proyecto",
         "participacion": "Participación",
         "final": "Nota final"
-      }
+      },
+      "typeColumn": "Tipo"
     },
     "classroom": {
       "eyebrow": "Aula virtual",
@@ -1436,7 +1448,13 @@
       "forbiddenHint": "Tu perfil no tiene habilitado el uso del asistente. Escríbele a la coordinación de la Fundación si crees que debería estarlo."
     },
     "requestsTitle": "Mis solicitudes",
-    "requestsDesc": "Constancias, cartas, permisos y citas con administración."
+    "requestsDesc": "Constancias, cartas, permisos y citas con administración.",
+    "next": {
+      "title": "Próximo evento",
+      "empty": "Sin eventos próximos",
+      "emptyHint": "No tienes actividades programadas por ahora.",
+      "assignment": "Tarea"
+    }
   },
   "teacherPortal": {
     "eyebrow": "Portal docente",

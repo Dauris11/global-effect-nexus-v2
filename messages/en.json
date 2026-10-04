@@ -26,7 +26,8 @@
     "backHome": "Back to home",
     "needAccess": "No access yet? Users are invited from administration.",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "or": "or"
   },
   "nav": {
     "adminPortal": "Administration portal",
@@ -191,7 +192,17 @@
     "access_requests_tag": "Paperwork",
     "access_requests_title": "Requests and paperwork",
     "work_events_title": "Events and community",
-    "work_events_tag": "Community"
+    "work_events_tag": "Community",
+    "accessTitle": "Access your portal",
+    "accessText": "Sign in with your institutional credentials to your role-based portal.",
+    "accessRolesTitle": "Available portals",
+    "accessRolesText": "Students, teachers, administration, and accounting each have their own space.",
+    "role_super_admin": "Director",
+    "role_admin": "Administration",
+    "role_docente": "Teacher",
+    "role_estudiante": "Student",
+    "role_contabilidad": "Accounting",
+    "role_habitudes": "Habitudes"
   },
   "comida": {
     "title": "Meal sign-up",
@@ -1349,7 +1360,8 @@
         "proyecto": "Project",
         "participacion": "Participation",
         "final": "Final grade"
-      }
+      },
+      "typeColumn": "Type"
     },
     "classroom": {
       "eyebrow": "Virtual classroom",
@@ -1436,7 +1448,13 @@
       "forbiddenHint": "Your profile doesn't have the assistant enabled. Write to the Foundation's coordination team if you think it should."
     },
     "requestsTitle": "My requests",
-    "requestsDesc": "Certificates, letters, leave and appointments with administration."
+    "requestsDesc": "Certificates, letters, leave and appointments with administration.",
+    "next": {
+      "title": "Next event",
+      "empty": "No upcoming events",
+      "emptyHint": "You have no scheduled activities for now.",
+      "assignment": "Assignment"
+    }
   },
   "teacherPortal": {
     "eyebrow": "Teacher portal",
