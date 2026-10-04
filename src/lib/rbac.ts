@@ -203,10 +203,12 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   ],
   habitudes: [
     "expedientes.postular",
+    "ia.usar",
   ],
   docente: [
     "academico.leer",
     "calificaciones.registrar",
+    "ia.usar",
     "operaciones.leer",
   ],
   estudiante: [
@@ -225,6 +227,7 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "contabilidad.nomina",
     "contabilidad.registrar",
     "finanzas.leer",
+    "ia.usar",
     "patrocinadores.leer",
   ],
 };

@@ -7,6 +7,14 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
+- [x] **Asistente de IA Flotante (Widget Universal):** Pop-up flotante interactivo
+      accesible en todas las pantallas del sistema tras iniciar sesión
+      (`WidgetFlotanteIA` en `(portal)/layout.tsx`), selector de modo
+      («Consultas» vs «Acciones»), comandos de voz vía Web Speech API, base de
+      conocimiento por departamento/rol, restricción estricta para estudiantes
+      (solo consultas sobre normativas de la Fundación y vida académica), y
+      ejecución de acciones con tarjetas interactivas y navegación automática
+      (migración `0038_ia_asistente_global.sql`).
 - [x] **Contabilidad, Fase 3:** Proveedores, cuentas por pagar y Gantt de
       vencimientos completados (migración 0037, validación RNC/cédula,
       pantallas /contabilidad/proveedores, /contabilidad/cuentas-por-pagar,

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { WidgetFlotanteIA } from "@/components/ia/widget-flotante-ia";
 import { AppShell } from "@/components/layout/app-shell";
 import { requerirUsuario } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
@@ -102,6 +103,15 @@ export default async function LayoutPortal({
       cerrarSesion={cerrarSesion}
     >
       {children}
+      <WidgetFlotanteIA
+        usuario={{
+          id: usuario.id,
+          nombre: usuario.nombre,
+          rol: usuario.rol,
+          idioma: usuario.idioma,
+        }}
+        tipoEstudiante={tipoEstudiante}
+      />
     </AppShell>
   );
 }
