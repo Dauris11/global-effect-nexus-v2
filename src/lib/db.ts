@@ -128,20 +128,7 @@ export async function enTransaccionComo<T>(
   try {
     await cliente.query("BEGIN");
 
-    // Fijar el contexto dentro de esta transacción (is_local = true).
-    await cliente.query(
-      `SELECT
-         set_config('app.usuario_id', $1, true),
-         set_config('app.ip',         $2, true),
-         set_config('app.agente',     $3, true),
-         set_config('app.sesion',     $4, true)`,
-      [
-        contexto.usuarioId,
-        contexto.ip      ?? '',
-        contexto.agente  ?? '',
-        contexto.sesionId ?? '',
-      ],
-    );
+    await fijarContexto(cliente, contexto);
 
     const resultado = await trabajo(cliente);
     await cliente.query("COMMIT");
@@ -152,4 +139,26 @@ export async function enTransaccionComo<T>(
   } finally {
     cliente.release();
   }
+}
+
+/**
+ * Fija el contexto de la bitácora en una transacción YA abierta.
+ *
+ * Para el caso en que otro módulo, dentro de su propia transacción, tiene
+ * que escribir en `contabilidad.*`: la aprobación de una solicitud de gasto
+ * crea su cuenta por pagar en la misma transacción que cambia el estado de
+ * la solicitud, y no puede abrir otra. `is_local = true`: el valor muere con
+ * la transacción.
+ */
+export async function fijarContexto(
+  cliente: import("pg").PoolClient,
+  contexto: ContextoTransaccion,
+): Promise<void> {
+  await cliente.query(
+    `SELECT set_config('app.usuario_id', $1, true),
+            set_config('app.ip',         $2, true),
+            set_config('app.agente',     $3, true),
+            set_config('app.sesion',     $4, true)`,
+    [contexto.usuarioId, contexto.ip ?? "", contexto.agente ?? "", contexto.sesionId ?? ""],
+  );
 }

@@ -7,10 +7,13 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
-- [ ] **Contabilidad, Fase 3 en adelante:** el documento
-      `docs/prompts/portal-contabilidad.md` numera las migraciones desde la
-      0035; van **dos por delante** (0035 fue el arreglo de la bitácora y la
-      Fase 2 usó la 0036). La Fase 3 empieza en la **0037**.
+- [x] **Contabilidad, Fase 3:** Proveedores, cuentas por pagar y Gantt de
+      vencimientos completados (migración 0037, validación RNC/cédula,
+      pantallas /contabilidad/proveedores, /contabilidad/cuentas-por-pagar,
+      /contabilidad/cuentas-por-pagar/gantt, /contabilidad/facturas/[id], y
+      alertas antifraude correspondientes).
+- [ ] **Contabilidad, Fase 4:** Cajas y cuadre de caja (migración 0038, reposición
+      desde banco, pantallas en /contabilidad/cajas y alertas de arqueo).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD
       (`contabilidad.tasa_referencia`); puede preferir compra o promedio.

@@ -19,6 +19,12 @@
 //   (j) anularlo deja contra-asiento y el libro vuelve a su saldo
 //   (k) una transferencia USD→DOP registra la diferencia cambiaria
 //   (l) conciliar empareja por importe y fecha, y cerrar bloquea
+//   (m) aprobar una factura deja asiento cuadrado y cuenta por pagar por el neto
+//   (n) el mismo NCF no se repite para el mismo proveedor
+//   (o) pagar en dos partes lleva la cuenta a pagada, con comprobante de egreso
+//   (p) cambiar la cuenta del proveedor y pagarle levanta las dos alertas
+//   (q) una factura con pagos no se anula
+//   (r) una solicitud de gasto produce una sola cuenta por pagar
 //
 // Casi todo corre dentro de una transacción que termina en ROLLBACK:
 // en contabilidad nada se borra, así que una prueba que hiciera COMMIT
@@ -432,6 +438,114 @@ async function probarConciliacion(usuarioId) {
   });
 }
 
+async function proveedorDePrueba(c, usuarioId) {
+  const { rows: [p] } = await c.query(
+    `INSERT INTO contabilidad.proveedor (tipo, identificacion, nombre, creado_por)
+     VALUES ('juridica', '100000004', 'Proveedor de prueba', $1) RETURNING id`,
+    [usuarioId],
+  );
+  return p.id;
+}
+
+async function facturaDePrueba(c, usuarioId, proveedor, ncf = "B0100000001") {
+  const { rows: [f] } = await c.query(
+    `INSERT INTO contabilidad.factura_proveedor
+       (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda,
+        subtotal, itbis, retencion_isr, retencion_itbis, concepto, categoria_id, fondo_id, creado_por)
+     VALUES (contabilidad.siguiente_numero('FP'), $1, $2, CURRENT_DATE, CURRENT_DATE + 30,
+             contabilidad.periodo_para(CURRENT_DATE), 'DOP', 1000.00, 180.00, 100.00, 54.00,
+             'Factura de prueba',
+             (SELECT id FROM contabilidad.categoria WHERE nombre = 'Materiales y suministros'),
+             (SELECT id FROM contabilidad.fondo WHERE nombre = 'General'), $3)
+     RETURNING id`,
+    [proveedor, ncf, usuarioId],
+  );
+  return f.id;
+}
+
+async function probarCuentasPorPagar(usuarioId) {
+  await enPrueba(usuarioId, async (c) => {
+    const proveedor = await proveedorDePrueba(c, usuarioId);
+    const factura = await facturaDePrueba(c, usuarioId, proveedor);
+    const { rows: [{ cxp }] } = await c.query(`SELECT contabilidad.aprobar_factura($1) AS cxp`, [factura]);
+    await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
+    const { rows: [r] } = await c.query(
+      `SELECT x.monto::text AS monto, x.estado, f.asiento_id
+         FROM contabilidad.cuenta_por_pagar x JOIN contabilidad.factura_proveedor f ON f.cuenta_por_pagar_id = x.id
+        WHERE x.id = $1`,
+      [cxp],
+    );
+    // 1000 + 180 de ITBIS − 100 de ISR − 54 de ITBIS retenido = 1026
+    if (r.monto === "1026.00" && r.estado === "pendiente" && (await asientoCuadra(c, r.asiento_id))) {
+      pasar("(m) factura aprobada: cuenta por pagar por el neto (1026.00) y asiento cuadrado");
+    } else fallar("(m) aprobar factura", JSON.stringify(r));
+
+    await c.query("SAVEPOINT ncf");
+    let errNcf = null;
+    try {
+      await facturaDePrueba(c, usuarioId, proveedor);
+    } catch (e) {
+      errNcf = e;
+    }
+    await c.query("ROLLBACK TO SAVEPOINT ncf");
+    esperarError("(n) NCF repetido para el mismo proveedor rechazado", errNcf, "duplicate key");
+
+    // (p) primero la cuenta original y luego el cambio.
+    await c.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, 'Banco X', 'corriente', 'DOP', '1111')`, [proveedor]);
+    await c.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, 'Banco Y', 'corriente', 'DOP', '2222')`, [proveedor]);
+
+    const cuenta = `(SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP')`;
+    await c.query(`SELECT contabilidad.pagar_cxp($1, ${cuenta}, CURRENT_DATE, 26.00, 'transferencia', 'P1', NULL)`, [cxp]);
+    await c.query(`SELECT contabilidad.pagar_cxp($1, ${cuenta}, CURRENT_DATE, 1000.00, 'cheque', 'P2', NULL)`, [cxp]);
+    await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
+    const { rows: [pg] } = await c.query(
+      `SELECT x.estado, x.saldo::text AS saldo, count(p.*)::int AS pagos,
+              bool_and(r.estado = 'contabilizado' AND r.tipo = 'egreso') AS egresos
+         FROM contabilidad.cuenta_por_pagar x
+         JOIN contabilidad.pago p ON p.cuenta_por_pagar_id = x.id
+         JOIN contabilidad.recibo r ON r.id = p.recibo_id
+        WHERE x.id = $1 GROUP BY x.estado, x.saldo`,
+      [cxp],
+    );
+    if (pg.estado === "pagada" && pg.saldo === "0.00" && pg.pagos === 2 && pg.egresos) {
+      pasar("(o) dos pagos llevan la cuenta a pagada, cada uno con su comprobante de egreso");
+    } else fallar("(o) pagar", JSON.stringify(pg));
+
+    const { rows: alertas } = await c.query(
+      `SELECT tipo FROM contabilidad.alerta WHERE creado_en >= now() - interval '1 minute'
+        AND (registro_id = $1 OR detalle->>'proveedor' = 'Proveedor de prueba')`,
+      [proveedor],
+    );
+    const tipos = new Set(alertas.map((a) => a.tipo));
+    if (tipos.has("cambio_cuenta_proveedor") && tipos.has("cambio_cuenta_y_pago")) {
+      pasar("(p) cambio de cuenta del proveedor + pago levanta las dos alertas");
+    } else fallar("(p) alertas", JSON.stringify([...tipos]));
+
+    esperarError(
+      "(q) una factura con pagos no se anula",
+      await errorDe(c, `SELECT contabilidad.anular_factura($1, 'Prueba de anulación')`, [factura]),
+      "tiene pagos",
+    );
+  });
+}
+
+async function probarSolicitudACxp(usuarioId) {
+  await enPrueba(usuarioId, async (c) => {
+    const { rows: [s] } = await c.query(
+      `INSERT INTO solicitud (tipo, estado, titulo, solicitante_id, monto)
+       VALUES ('gasto', 'aprobada', 'Gasto de prueba', $1, 250.00) RETURNING id`,
+      [usuarioId],
+    );
+    const { rows: [a] } = await c.query(`SELECT contabilidad.crear_cxp_desde_solicitud($1) AS id`, [s.id]);
+    const { rows: [b] } = await c.query(`SELECT contabilidad.crear_cxp_desde_solicitud($1) AS id`, [s.id]);
+    const { rows: [x] } = await c.query(
+      `SELECT moneda, monto::text AS monto, origen FROM contabilidad.cuenta_por_pagar WHERE id = $1`, [a.id]);
+    if (a.id === b.id && x.moneda === "USD" && x.monto === "250.00" && x.origen === "solicitud") {
+      pasar("(r) la solicitud de gasto produce una sola cuenta por pagar en USD");
+    } else fallar("(r) solicitud → cuenta por pagar", JSON.stringify({ a, b, x }));
+  });
+}
+
 async function main() {
   console.log("\nPruebas de los cimientos de contabilidad\n");
   const usuarioId = await usuarioDePrueba();
@@ -447,6 +561,8 @@ async function main() {
   await probarRecibos(usuarioId);
   await probarTransferencia(usuarioId);
   await probarConciliacion(usuarioId);
+  await probarCuentasPorPagar(usuarioId);
+  await probarSolicitudACxp(usuarioId);
 
   console.log(`\nResultado: ${ok} pasaron, ${fail} fallaron`);
   await pool.end();
