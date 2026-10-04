@@ -75,6 +75,8 @@ async function seedSecuencias(cliente) {
     { clave: "AS", prefijo: "AS-" },  // Asiento contable
     { clave: "NM", prefijo: "NM-" },  // Nómina
     { clave: "FP", prefijo: "FP-" },  // Factura de proveedor
+    { clave: "TR", prefijo: "TR-" },  // Transferencia interna
+    { clave: "MB", prefijo: "MB-" },  // Movimiento bancario
   ];
 
   for (const s of series) {
@@ -98,38 +100,44 @@ async function seedFondo(cliente) {
 }
 
 async function seedCategorias(cliente) {
+  // `cuenta` es la contrapartida del asiento que genera un recibo de esa
+  // categoría: sin ella, contabilizar_recibo() se niega. `legado` es el
+  // código de la 0011 que devuelve la vista `transaccion`.
   const categorias = [
     // Ingresos
-    { nombre: "Donaciones nacionales",     tipo: "ingreso" },
-    { nombre: "Donaciones internacionales",tipo: "ingreso" },
-    { nombre: "Aportes de patrocinadores", tipo: "ingreso" },
-    { nombre: "Cuotas de programas",       tipo: "ingreso" },
-    { nombre: "Otros ingresos",            tipo: "ingreso" },
+    { nombre: "Donaciones nacionales",      tipo: "ingreso", cuenta: "4.1.01.01", legado: "donacion" },
+    { nombre: "Donaciones internacionales", tipo: "ingreso", cuenta: "4.1.01.02", legado: "donacion" },
+    { nombre: "Aportes de patrocinadores",  tipo: "ingreso", cuenta: "4.1.01.03", legado: "beca" },
+    { nombre: "Cuotas de programas",        tipo: "ingreso", cuenta: "4.2.01.01", legado: "otro" },
+    { nombre: "Otros ingresos",             tipo: "ingreso", cuenta: "4.9.01.02", legado: "otro" },
     // Egresos
-    { nombre: "Nómina",                    tipo: "egreso" },
-    { nombre: "Alquiler",                  tipo: "egreso" },
-    { nombre: "Servicios básicos",         tipo: "egreso" },
-    { nombre: "Materiales y suministros",  tipo: "egreso" },
-    { nombre: "Transporte",                tipo: "egreso" },
-    { nombre: "Comunicaciones",            tipo: "egreso" },
-    { nombre: "Equipos y tecnología",      tipo: "egreso" },
-    { nombre: "Capacitación",              tipo: "egreso" },
-    { nombre: "Gastos bancarios",          tipo: "egreso" },
-    { nombre: "Impuestos y retenciones",   tipo: "egreso" },
-    { nombre: "Gastos de operación",       tipo: "egreso" },
-    { nombre: "Caja chica",                tipo: "egreso" },
-    { nombre: "Otros egresos",             tipo: "egreso" },
+    { nombre: "Becas y ayudas",             tipo: "egreso",  cuenta: "5.4.01.03", legado: "beca" },
+    { nombre: "Nómina",                     tipo: "egreso",  cuenta: "5.1.01.01", legado: "salario" },
+    { nombre: "Alquiler",                   tipo: "egreso",  cuenta: "5.2.01.01", legado: "operativo" },
+    { nombre: "Servicios básicos",          tipo: "egreso",  cuenta: "5.2.01.02", legado: "operativo" },
+    { nombre: "Materiales y suministros",   tipo: "egreso",  cuenta: "5.2.01.04", legado: "material" },
+    { nombre: "Transporte",                 tipo: "egreso",  cuenta: "5.2.01.05", legado: "operativo" },
+    { nombre: "Comunicaciones",             tipo: "egreso",  cuenta: "5.2.01.03", legado: "operativo" },
+    { nombre: "Equipos y tecnología",       tipo: "egreso",  cuenta: "1.2.01.01", legado: "material" },
+    { nombre: "Capacitación",               tipo: "egreso",  cuenta: "5.4.01.01", legado: "evento" },
+    { nombre: "Gastos bancarios",           tipo: "egreso",  cuenta: "5.3.01.01", legado: "operativo" },
+    { nombre: "Impuestos y retenciones",    tipo: "egreso",  cuenta: "5.9.01.01", legado: "otro" },
+    { nombre: "Gastos de operación",        tipo: "egreso",  cuenta: "5.2.01.06", legado: "operativo" },
+    { nombre: "Caja chica",                 tipo: "egreso",  cuenta: "5.9.01.01", legado: "operativo" },
+    { nombre: "Otros egresos",              tipo: "egreso",  cuenta: "5.9.01.01", legado: "otro" },
   ];
 
   for (const c of categorias) {
     await cliente.query(
-      `INSERT INTO contabilidad.categoria (nombre, tipo)
-       VALUES ($1, $2)
-       ON CONFLICT (nombre) DO NOTHING`,
-      [c.nombre, c.tipo],
+      `INSERT INTO contabilidad.categoria (nombre, tipo, cuenta_id, codigo_legado)
+       VALUES ($1, $2, (SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $3), $4)
+       ON CONFLICT (nombre) DO UPDATE SET
+         cuenta_id = coalesce(contabilidad.categoria.cuenta_id, EXCLUDED.cuenta_id),
+         codigo_legado = EXCLUDED.codigo_legado`,
+      [c.nombre, c.tipo, c.cuenta, c.legado],
     );
   }
-  console.log("  ✓ Categorías");
+  console.log("  ✓ Categorías con su cuenta contable");
 }
 
 async function seedCatalogoCuentas(cliente) {
@@ -181,6 +189,7 @@ async function seedCatalogoCuentas(cliente) {
     { codigo: "4.9",     nombre: "Otros Ingresos",               tipo: "ingreso",   padre: "4",  hoja: false },
     { codigo: "4.9.01.01", nombre: "Intereses bancarios",        tipo: "ingreso",   padre: "4.9",hoja: true },
     { codigo: "4.9.01.02", nombre: "Otros ingresos varios",      tipo: "ingreso",   padre: "4.9",hoja: true },
+    { codigo: "4.9.01.03", nombre: "Diferencia cambiaria (ganancia)", tipo: "ingreso", padre: "4.9", hoja: true },
     // GASTOS
     { codigo: "5",       nombre: "GASTOS",                       tipo: "gasto",     padre: null, hoja: false },
     { codigo: "5.1",     nombre: "Gastos de Personal",           tipo: "gasto",     padre: "5",  hoja: false },
@@ -201,6 +210,7 @@ async function seedCatalogoCuentas(cliente) {
     { codigo: "5.4",     nombre: "Gastos de Programas",          tipo: "gasto",     padre: "5",  hoja: false },
     { codigo: "5.4.01.01", nombre: "Capacitación y formación",   tipo: "gasto",     padre: "5.4",hoja: true },
     { codigo: "5.4.01.02", nombre: "Materiales de programas",    tipo: "gasto",     padre: "5.4",hoja: true },
+    { codigo: "5.4.01.03", nombre: "Becas otorgadas",            tipo: "gasto",     padre: "5.4",hoja: true },
     { codigo: "5.9",     nombre: "Otros Gastos",                 tipo: "gasto",     padre: "5",  hoja: false },
     { codigo: "5.9.01.01", nombre: "Gastos varios",              tipo: "gasto",     padre: "5.9",hoja: true },
   ];
@@ -406,8 +416,9 @@ async function main() {
     console.log("Sembrando contabilidad…");
     await seedSecuencias(cliente);
     await seedFondo(cliente);
-    await seedCategorias(cliente);
+    // El catálogo primero: las categorías se enlazan a sus cuentas.
     await seedCatalogoCuentas(cliente);
+    await seedCategorias(cliente);
     await seedParametrosNomina(cliente);
     await seedPeriodoActual(cliente);
 

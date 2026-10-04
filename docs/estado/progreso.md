@@ -1,6 +1,6 @@
 # Progreso — Global Effect Nexus
 
-Estado real de cada pantalla del sistema, a **3 de octubre de 2026**.
+Estado real de cada pantalla del sistema, a **4 de octubre de 2026**.
 
 > **Cambio de alcance (3 oct 2026).** La Fundación cerró el departamento de
 > Psicología y todo lo que hacía pasó a administración. El sistema se describe
@@ -180,8 +180,17 @@ expediente), que sigue vivo porque no era clínico.
 
 | Estado | Módulo | Ruta | Sprint | Qué falta |
 |---|---|---|---|---|
-| ✅ | **Mi portal** | `/portal/contabilidad` | S7 | Las cuatro cifras del mes en curso —ingresos, egresos, balance y movimientos—, los tres accesos y los seis últimos movimientos. **El mes lo decide la base** (`date_trunc('month', CURRENT_DATE)`) y no el reloj del navegador ni el del servidor: el primer día del mes a las 20:00 de Santo Domingo, un servidor en UTC ya está en el día siguiente. El esqueleto omitía las cifras a propósito —«un balance a cero en la pantalla de quien lleva las cuentas no es un dato neutro»— y esa decisión sigue en pie: ahora el cero significa que este mes no se ha registrado nada |
-| ✅ | Contabilidad | `/contabilidad` | S7 | Ver el Portal 1 |
+> **Portal nuevo en construcción por fases** (`docs/prompts/portal-contabilidad.md`).
+> Fase 1 (cimientos: esquema `contabilidad`, bitácora con cadena de hash,
+> permisos por persona) y Fase 2 (bancos, recibos, conciliación) hechas el
+> 4 oct 2026. Las fases 3 a 9 (proveedores y cuentas por pagar, cajas, nómina,
+> presupuestos, reportes, archivos, visor del auditor) están por hacer.
+
+| ✅ | **Inicio** | `/portal/contabilidad` | Fase 2 | Saldo por cuenta en su moneda y su equivalente en pesos con la tasa del día (el total en pesos solo sale si **todas** las cuentas tienen equivalente), borradores por contabilizar y recibos recientes. La puerta es `contabilidad.leer`: `super_admin` mira y no ve ningún botón que escriba. Cuentas por pagar, cajas, presupuestos y calendario fiscal llegan con sus fases |
+| ✅ | **Bancos y libros** | `/contabilidad/bancos`, `/contabilidad/bancos/[cuenta]` | Fase 2 | Santa Cruz USD y DOP (números DEMO). Libro con **saldo corrido calculado sobre toda la historia** y recortado al rango, totales del rango y anulados tachados. Transferencia entre cuentas propias con tasa aplicada y **diferencia cambiaria** contra la tasa de referencia del día. Tasa del día (compra/venta, BCRD) |
+| ✅ | **Conciliación** | `/contabilidad/bancos/[cuenta]/conciliacion` | Fase 2 | Importa el estado de cuenta en **CSV** con las columnas del banco (precargadas desde `banco.config_estado`), propone parejas por importe, fecha ±3 días y referencia, el contable confirma o descarta y el reporte cuadra banco ajustado contra libros ajustado. Cerrar bloquea los movimientos. **Excel no**: hay que exportar a CSV desde la banca en línea |
+| ✅ | **Recibos** | `/contabilidad/recibos` | Fase 2 | Ingresos (RI) y egresos (CE) en una consulta con todos los filtros de §4.3 en la URL, totales por tipo y moneda sobre el filtro entero, exportación CSV (queda en la bitácora). Borrador → contabilizado (movimiento + asiento en una transacción de la base) → anulado con motivo y contra-asiento. **Quien registra no aprueba**, salvo que sea la única cuenta con `aprobar` (queda dicho en la bitácora). Adjuntos en el bucket privado `contabilidad` con sha256. Recibo imprimible con monto en letras, firmas y QR |
+| ✅ | Contabilidad | `/contabilidad` | Fase 2 | Redirige al inicio: la pantalla de transacciones de la 0011 se retiró y `transaccion` es ahora una vista de solo lectura sobre los recibos |
 | ✅ | Reportes | `/reportes` | S11 | Ver el Portal 1. Contabilidad ve las tres pestañas |
 
 ---

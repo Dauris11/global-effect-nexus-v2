@@ -10,6 +10,7 @@ import {
   GraduationCap,
   HandCoins,
   Inbox,
+  Landmark,
   Home,
   LayoutDashboard,
   Library,
@@ -19,6 +20,7 @@ import {
   MoreHorizontal,
   MonitorPlay,
   Presentation,
+  ReceiptText,
   Settings,
   Shield,
   Sparkles,
@@ -258,12 +260,27 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     icono: DollarSign,
     secciones: [
       {
+        // `contabilidad.leer` y no `finanzas.leer`: super_admin entra a
+        // mirar (y a auditar), pero las acciones de escritura del módulo le
+        // responden que no. `admin` no tiene ninguno de los dos.
         items: [
           {
             etiqueta: "accounting",
-            href: "/contabilidad",
+            href: "/portal/contabilidad",
             icono: DollarSign,
-            permiso: "finanzas.leer",
+            permiso: "contabilidad.leer",
+          },
+          {
+            etiqueta: "banks",
+            href: "/contabilidad/bancos",
+            icono: Landmark,
+            permiso: "contabilidad.leer",
+          },
+          {
+            etiqueta: "receipts",
+            href: "/contabilidad/recibos",
+            icono: ReceiptText,
+            permiso: "contabilidad.leer",
           },
         ],
       },
@@ -538,37 +555,43 @@ const MENU_HABITUDES: AreaNav[] = [
   },
 ];
 
+/**
+ * Contabilidad ve UNA sola área (§1.1 de docs/prompts/portal-contabilidad.md):
+ * su departamento. El perfil va en el menú del avatar. Solicitudes y
+ * Reportes siguen dentro del área porque son trabajo del departamento:
+ * contabilidad revisa los gastos que se piden, y los reportes financieros
+ * viven en /reportes hasta la Fase 7.
+ */
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
-    clave: "panel",
-    etiqueta: "accountingPortal",
-    icono: Home,
-    secciones: [
-      {
-        items: [
-          {
-            etiqueta: "accountingPortal",
-            href: "/portal/contabilidad",
-            icono: DollarSign,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    clave: "finanzas",
-    etiqueta: "finances",
+    clave: "contabilidad",
+    etiqueta: "accounting",
     icono: DollarSign,
     secciones: [
       {
         items: [
           {
-            etiqueta: "accounting",
-            href: "/contabilidad",
-            icono: DollarSign,
-            permiso: "finanzas.leer",
+            etiqueta: "accountingHome",
+            href: "/portal/contabilidad",
+            icono: Home,
           },
-          // Contabilidad aprueba los gastos (`finanzas.escribir`).
+          {
+            etiqueta: "banks",
+            href: "/contabilidad/bancos",
+            icono: Landmark,
+            permiso: "contabilidad.leer",
+          },
+          {
+            etiqueta: "receipts",
+            href: "/contabilidad/recibos",
+            icono: ReceiptText,
+            permiso: "contabilidad.leer",
+          },
+        ],
+      },
+      {
+        etiqueta: "department",
+        items: [
           {
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
@@ -705,7 +728,8 @@ const PRIORIDAD_MOVIL = [
   "/administrativo/tareas",
   "/academico/calificaciones",
   "/academico/cursos",
-  "/contabilidad",
+  "/contabilidad/recibos",
+  "/contabilidad/bancos",
 ];
 
 /** Etiqueta corta para la pestaña: en 11 px "Portal administrativo" no cabe. */

@@ -7,18 +7,35 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
-- [ ] **Contabilidad, Fase 2:** sus migraciones empiezan en la **0036**, no en
-      la 0035 que dice `docs/prompts/portal-contabilidad.md` (la 0035 la ocupó
-      el arreglo de la bitácora). `banco` y las cuentas «Santa Cruz USD/DOP»
-      se siembran en esa fase: en la Fase 1 todavía no existían sus tablas.
-      La Fase 2 también retira `finanzas.escribir` del rol `contabilidad`,
-      junto con la pantalla vieja de `/contabilidad`.
-- [ ] **Contabilidad:** la regla «quien registra no aprueba» todavía no tiene
-      dónde aplicarse (no hay acciones de aprobar). Se escribe en la primera
-      server action que contabilice, en la Fase 2.
+- [ ] **Contabilidad, Fase 3 en adelante:** el documento
+      `docs/prompts/portal-contabilidad.md` numera las migraciones desde la
+      0035; van **dos por delante** (0035 fue el arreglo de la bitácora y la
+      Fase 2 usó la 0036). La Fase 3 empieza en la **0037**.
+- [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
+      valorar dólares en pesos es la **venta** del BCRD
+      (`contabilidad.tasa_referencia`); puede preferir compra o promedio.
+- [ ] **Contabilidad:** la vista `public.transaccion` (compatibilidad con el
+      panel general, `/reportes` y el asistente) está en dólares; un recibo en
+      pesos sin tasa registrada para su fecha **no aparece ahí**. Se resuelve
+      en la Fase 7, cuando esas pantallas lean los recibos directamente.
+- [ ] **Contabilidad:** no hay pantalla de Configuración contable (§4.13): un
+      banco nuevo, una cuenta real o las columnas del estado de cuenta se
+      cargan por SQL. Antes de usar el módulo con cuentas reales.
+- [ ] **Contabilidad:** los adjuntos se suben y se descargan (con bitácora),
+      pero todavía no se pueden archivar desde la pantalla.
+- [ ] **Datos de prueba en la base de desarrollo:** el recibo RI-000001
+      «PRUEBA E2E» (RD$2,500.75) y una conciliación abierta de Santa Cruz DOP
+      del 1 al 4 oct 2026. Se crearon al probar la Fase 2 en el navegador; en
+      contabilidad nada se borra, así que se quedan (anular el recibo exigiría
+      descartar antes su pareja en la conciliación).
+- [ ] **Faltan claves de `landing`** en `messages/*.json`
+      (`access_portal_desc`, `role_students`, `heroCarousel`, `searchPill`…):
+      `npm run build` avisa `MISSING_MESSAGE` en `/`. Ya faltaban en
+      `cca04bf`; `i18n:check` no las ve porque `page.tsx` usa varios
+      espacios de nombres.
 - [ ] **`npm run audit:ui` falla con 299 hex sueltos** en `.tsx` (sobre todo
       el `SEMAFORO` escrito como `bg-[#1E9E6A]` en solicitudes, patrocinadores,
-      operaciones y perfil). Ya fallaba en `cca04bf`, antes de contabilidad.
+      operaciones y perfil). Ya fallaba en `cca04bf`, antes de contabilidad (299; 288 tras retirar la pantalla vieja de `/contabilidad`). Lo nuevo de contabilidad no añade ninguno: las insignias del semáforo están en `INSIGNIA_SEMAFORO` de `paleta.ts`.
       Decidir si `scripts/auditar-ui.mjs` admite el `SEMAFORO` (la norma lo
       exige escrito así) o si pasa a un token.
 - [ ] **Contabilidad:** `usuario_permiso` no tiene pantalla. Hoy una
@@ -156,6 +173,17 @@ módulo) — esto es solo la cola de pendientes concretos.
       `rbac.ts`, que es un cambio de base).
 
 ## Hechos el 4 de octubre de 2026 — cimientos de contabilidad
+
+- [x] **Fase 2 (0036):** bancos y cuentas (Santa Cruz USD/DOP, DEMO), libro
+      de banco, recibos de ingreso y comprobantes de egreso, transferencias
+      con diferencia cambiaria y conciliación por CSV; contabilizar, anular y
+      transferir son funciones de la base. `transaccion` pasó a recibos y
+      quedó como vista. Retirados la pantalla vieja y `finanzas.escribir`; los
+      gastos de Solicitudes los revisa ahora `contabilidad.aprobar`.
+- [x] Adaptadores de banco (`src/server/contabilidad/bancos/`) sin layout
+      inventado y monto en letras propio (es/en, DOP/USD).
+- [x] Pruebas: `npm run db:probar:contabilidad` (19) y
+      `npm run test:contabilidad` (53).
 
 - [x] Esquema `contabilidad` con secuencias sin huecos, parámetros con
       vigencia, períodos, catálogo, fondos, categorías y asientos con cuadre
