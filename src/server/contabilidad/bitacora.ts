@@ -12,10 +12,18 @@
 import type { PoolClient } from "pg";
 
 import { enTransaccionComo, type ContextoTransaccion } from "@/lib/db";
-import type { Permiso } from "@/lib/rbac";
 
 /** Acciones de lectura que deben quedar en la bitácora. */
 type AccionLectura = "exportar" | "ver_nomina" | "leer";
+
+/** Acciones con nombre propio que una escritura puede declarar. */
+type AccionEscritura =
+  | "aprobar"
+  | "anular"
+  | "pagar"
+  | "conciliar"
+  | "cerrar_periodo"
+  | "reabrir_periodo";
 
 /**
  * Registra una lectura sensible en `contabilidad.bitacora`.
@@ -30,67 +38,54 @@ export async function registrarLectura(
   registroId?: string,
   motivo?: string,
 ): Promise<void> {
+  // La cadena de hash (orden, hash_anterior, hash) la pone el disparador
+  // tg_bitacora_encadenar (0035). Calcularla aquí abriría una segunda
+  // implementación que tarde o temprano dejaría de coincidir con la de
+  // verificar_bitacora().
   await enTransaccionComo(contexto, async (cliente: PoolClient) => {
-    // Calculamos el hash de esta fila encadenado con el anterior.
-    // Para lecturas, antes y despues son null; el hash sigue la cadena
-    // para no romperla si se intercalan lecturas entre escrituras.
-    const { rows } = await cliente.query<{ hash: string }>(
-      `SELECT hash
-         FROM contabilidad.bitacora
-        WHERE tabla = $1
-        ORDER BY ocurrido_en DESC, id DESC
-        LIMIT 1`,
-      [tabla],
-    );
-
-    const hashAnterior = rows[0]?.hash ?? null;
-
-    const cadena = [
-      hashAnterior ?? "",
-      contexto.usuarioId,
-      accion,
-      tabla,
-      registroId ?? "",
-      "", // antes (null en lectura)
-      "", // despues (null en lectura)
-    ].join("");
-
-    // Delegamos el cálculo del hash y la inserción a SQL para usar pgcrypto.
     await cliente.query(
       `INSERT INTO contabilidad.bitacora (
          usuario_id, usuario_nombre, usuario_email, usuario_rol,
          ip, agente, sesion_id,
-         accion, tabla, registro_id,
-         antes, despues, motivo,
-         hash_anterior, hash
+         accion, tabla, registro_id, motivo, hash
        )
-       SELECT
-         $1::uuid,
-         u.nombre,
-         u.email::text,
-         r.nombre,
-         $2, $3, $4,
-         $5, $6, $7::uuid,
-         NULL, NULL, $8,
-         $9,
-         encode(digest($10, 'sha256'), 'hex')
+       SELECT $1::uuid, u.nombre, u.email::text, r.nombre,
+              $2, $3, $4,
+              $5, $6, $7::uuid, $8, ''
          FROM public.usuario u
          JOIN public.rol r ON r.id = u.rol_id
         WHERE u.id = $1::uuid`,
       [
         contexto.usuarioId,
-        contexto.ip       ?? "",
-        contexto.agente   ?? "",
-        contexto.sesionId ?? "",
+        contexto.ip ?? null,
+        contexto.agente ?? null,
+        contexto.sesionId ?? null,
         accion,
         tabla,
         registroId ?? null,
         motivo ?? null,
-        hashAnterior,
-        cadena,
       ],
     );
   });
+}
+
+/**
+ * Da nombre a lo que la transacción está a punto de escribir.
+ *
+ * El disparador solo ve INSERT o UPDATE; para el auditor, "editar" un
+ * recibo y "anularlo" no son lo mismo. Se llama dentro de
+ * `enTransaccionComo`, justo antes del UPDATE, y vale hasta el final de
+ * la transacción (o hasta la siguiente llamada).
+ */
+export async function fijarAccion(
+  cliente: PoolClient,
+  accion: AccionEscritura,
+  motivo?: string,
+): Promise<void> {
+  await cliente.query(
+    `SELECT set_config('app.accion', $1, true), set_config('app.motivo', $2, true)`,
+    [accion, motivo ?? ""],
+  );
 }
 
 /**

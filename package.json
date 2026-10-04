@@ -20,7 +20,8 @@
     "db:seed:usuarios": "node scripts/seed-usuarios.mjs",
     "db:seed:operaciones": "node scripts/seed-operaciones.mjs",
     "db:seed:portales": "node scripts/seed-portales.mjs",
-    "db:seed:contabilidad": "node scripts/seed-contabilidad.mjs"
+    "db:seed:contabilidad": "node scripts/seed-contabilidad.mjs",
+    "db:probar:contabilidad": "node scripts/probar-contabilidad.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

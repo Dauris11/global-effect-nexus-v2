@@ -127,6 +127,10 @@ export const ESTILO_POR_ROL: Record<
 };
 
 
+export function esPermiso(valor: unknown): valor is Permiso {
+  return typeof valor === "string" && (PERMISOS as readonly string[]).includes(valor);
+}
+
 export function esRol(valor: unknown): valor is Rol {
   return typeof valor === "string" && (ROLES as readonly string[]).includes(valor);
 }
@@ -211,6 +215,8 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.
+  // `finanzas.escribir` sigue aquí (y en rol_permiso) mientras la
+  // pantalla vieja de /contabilidad viva: la retira la Fase 2.
   contabilidad: [
     "contabilidad.aprobar",
     "contabilidad.asiento_manual",
@@ -220,6 +226,7 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "contabilidad.leer",
     "contabilidad.nomina",
     "contabilidad.registrar",
+    "finanzas.escribir",
     "finanzas.leer",
     "patrocinadores.leer",
   ],
@@ -235,10 +242,9 @@ export function tieneAlgunPermiso(rol: Rol, permisos: readonly Permiso[]): boole
 }
 
 /**
- * Tipo que describe las excepciones individuales de un usuario.
- * Viene de la tabla `usuario_permiso` (migración 0034).
- * Se resuelve en la server action o en requerirPermiso cuando
- * la consulta incluye las excepciones del usuario.
+ * Excepción individual al reparto por rol, de `usuario_permiso` (0034).
+ * Existe para el auxiliar contable que registra pero no aprueba: así
+ * nadie aprueba lo que él mismo registró sin crear un rol para una persona.
  */
 export type ExcepcionPermiso = {
   permiso: Permiso;
@@ -246,18 +252,18 @@ export type ExcepcionPermiso = {
 };
 
 /**
- * Resuelve si un usuario tiene un permiso considerando:
- *   1. Los permisos de su rol (PERMISOS_POR_ROL).
- *   2. Las excepciones individuales de `usuario_permiso`.
+ * Permiso de una PERSONA: su rol más sus excepciones. Una excepción, sea
+ * para conceder o para revocar, gana sobre el rol.
  *
- * Regla: una excepción revocada (concedido=false) gana sobre el rol.
+ * Recibe el usuario de la sesión y no el rol suelto porque `tienePermiso`
+ * por rol sigue siendo correcto para todo lo que no tiene excepciones;
+ * contabilidad y `requerirPermiso` usan esta.
  */
-export function tienePermisoConExcepciones(
-  rol: Rol,
+export function usuarioTienePermiso(
+  usuario: { rol: Rol; excepciones: readonly ExcepcionPermiso[] },
   permiso: Permiso,
-  excepciones: readonly ExcepcionPermiso[],
 ): boolean {
-  const excepcion = excepciones.find((e) => e.permiso === permiso);
+  const excepcion = usuario.excepciones.find((e) => e.permiso === permiso);
   if (excepcion !== undefined) return excepcion.concedido;
-  return tienePermiso(rol, permiso);
+  return tienePermiso(usuario.rol, permiso);
 }
