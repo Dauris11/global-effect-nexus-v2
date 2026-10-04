@@ -1,0 +1,425 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/**
+ * Global Effect Nexus — tokens de diseño. La norma está en
+ * docs/09-sistema-visual.md; este archivo la hace compilable.
+ *
+ * REGLA DURA DE MARCA: el sitio entero se pinta con cuatro cosas —azul claro
+ * institucional (#2096BA), azul oscuro (#187a99 y #0a6a8a), blanco y negro
+ * (#171A1D)— más los grises neutros de fondo y borde. Ningún otro tono, en
+ * ningún sitio: ni botones, ni avisos, ni gráficas, ni acentos por rol.
+ *
+ * Lo que antes distinguía por color —emerald para bien, rojo para mal, un tono
+ * por rol— ahora distingue por PESO dentro del mismo azul: cuanto más oscuro,
+ * más importa. Es la única forma de mantener una escala legible sin salirse de
+ * la marca.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * LENGUAJE "APP WEB" (oct 2026, docs/09-sistema-visual.md).
+ *
+ * Blanco como lienzo, tinta fuerte y UN acento —el turquesa— reservado al CTA,
+ * a lo activo, a los enlaces y al foco. Las superficies se separan por espacio
+ * y por una línea fina, no por cajas grises. Por eso hay más tokens neutros
+ * que de color: es lo que más se usa.
+ *
+ * Tinta, línea y superficie son VARIABLES y no colores fijos: en modo oscuro se
+ * invierten, y un `text-tinta` escrito con hex se quedaría negro sobre negro.
+ * La escala `marca-*` sí es fija: el turquesa es el mismo de día y de noche.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #171a1d;
+
+  --card: #ffffff;
+  --card-foreground: #171a1d;
+
+  --popover: #ffffff;
+  --popover-foreground: #171a1d;
+
+  /* Turquesa institucional. Hover: #187a99. */
+  --primary: #2096ba;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f6f7f9;
+  --secondary-foreground: #171a1d;
+
+  --muted: #f6f7f9;
+  --muted-foreground: #5b6470;
+
+  --accent: #f2f4f6;
+  --accent-foreground: #171a1d;
+
+  /* Lo destructivo no es rojo: es negro. La gravedad se dice con el tono más
+     pesado y con el icono, no con el matiz. */
+  --destructive: #171a1d;
+  --destructive-foreground: #ffffff;
+
+  --border: #ebeef1;
+  --input: #d5dbe1;
+  /* El foco es tinta, como en Airbnb: el turquesa ya marca lo activo, y un
+     anillo turquesa sobre un botón turquesa no se ve. */
+  --ring: #171a1d;
+
+  /* Neutros con nombre propio (utilidades text-tinta-2, border-linea…). */
+  --tinta: #171a1d;
+  --tinta-2: #5b6470;
+  --tinta-3: #8a929c;
+  --linea: #ebeef1;
+  --linea-fuerte: #d5dbe1;
+
+  /* Barra lateral CLARA: blanca, con borde fino y el activo en gris suave. */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #171a1d;
+  --sidebar-primary: #2096ba;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2f4f6;
+  --sidebar-accent-foreground: #171a1d;
+  --sidebar-border: #ebeef1;
+  --sidebar-ring: #171a1d;
+
+  /* Series de gráficos: una rampa del mismo azul, de oscuro a claro, y el gris
+     neutro al final. */
+  --chart-1: #0a6a8a;
+  --chart-2: #2096ba;
+  --chart-3: #5fb8d4;
+  --chart-4: #94a3b8;
+  --chart-5: #171a1d;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.06);
+  --shadow-elevada: 0 6px 20px rgb(0 0 0 / 0.12);
+}
+
+.dark {
+  --background: #111416;
+  --foreground: #f4f6f8;
+
+  --card: #181b1e;
+  --card-foreground: #f4f6f8;
+
+  --popover: #181b1e;
+  --popover-foreground: #f4f6f8;
+
+  --primary: #2096ba;
+  --primary-foreground: #ffffff;
+
+  --secondary: #1f2326;
+  --secondary-foreground: #f4f6f8;
+
+  --muted: #1f2326;
+  --muted-foreground: #a3abb4;
+
+  --accent: #23282c;
+  --accent-foreground: #f4f6f8;
+
+  --destructive: #f4f6f8;
+  --destructive-foreground: #171a1d;
+
+  --border: #2a2f35;
+  --input: #363c43;
+  --ring: #f4f6f8;
+
+  --tinta: #f4f6f8;
+  --tinta-2: #a3abb4;
+  --tinta-3: #7d8690;
+  --linea: #2a2f35;
+  --linea-fuerte: #363c43;
+
+  --sidebar: #111416;
+  --sidebar-foreground: #f4f6f8;
+  --sidebar-accent: #1f2326;
+  --sidebar-accent-foreground: #f4f6f8;
+  --sidebar-border: #2a2f35;
+  --sidebar-ring: #f4f6f8;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.3);
+  --shadow-elevada: 0 6px 20px rgb(0 0 0 / 0.45);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-tinta: var(--tinta);
+  --color-tinta-2: var(--tinta-2);
+  --color-tinta-3: var(--tinta-3);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-elevada: var(--shadow-elevada);
+
+  /* Inter es la única familia del sistema (pesos 300-900). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Escala de la marca, derivada de #2096BA: 300, 500, 600 y 700 son los cuatro
+ * azules de siempre (#5FB8D4, #2096BA, #187a99, #0a6a8a); el resto se
+ * interpolan para fondos suaves (50–200) y para texto muy oscuro (800–900).
+ * Fija en los dos modos: el turquesa no cambia de noche.
+ */
+@theme {
+  --color-marca-50: #eef8fb;
+  --color-marca-100: #d5eef6;
+  --color-marca-200: #addded;
+  --color-marca-300: #5fb8d4;
+  --color-marca-400: #3fa7c7;
+  --color-marca-500: #2096ba;
+  --color-marca-600: #187a99;
+  --color-marca-700: #0a6a8a;
+  --color-marca-800: #0b5770;
+  --color-marca-900: #0c4558;
+
+  /* Tres radios y la píldora. Nada más: control (botón, input), tarjeta y
+     hoja (diálogo, hoja inferior, tarjeta de login). */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-hoja: 24px;
+}
+
+/*
+ * Escala tipográfica semántica. Una página dice "esto es un título de
+ * sección", no "22px semibold": si mañana cambia el tamaño, cambia aquí.
+ */
+@utility texto-titulo-pagina {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+
+  @media (width >= 48rem) {
+    font-size: 32px;
+  }
+}
+
+@utility texto-titulo-seccion {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
+}
+
+@utility texto-titulo-tarjeta {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+@utility texto-meta {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tinta-3);
+}
+
+/* Scroll horizontal sin barra visible: fila de chips y carruseles. */
+@utility sin-barra {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* 15 px de cuerpo en el portal: entre el 14 de un panel denso y el 16 de
+     una página para leer. La landing sube a 16 en su propio contenedor. */
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+}
+
+/*
+ * Transición entre páginas. Solo funciona donde el navegador la soporta, y
+ * donde no, no pasa nada: la navegación sigue igual, sin fundido.
+ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: ease;
+}
+
+/**
+ * Impresión: las listas de comida y de servicios mensuales se imprimen desde
+ * el navegador. `.no-imprimir` desaparece y las tarjetas pierden sombra para
+ * no gastar tinta.
+ */
+@media print {
+  .no-imprimir {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+}
+
+/**
+ * Sistema de micro-animaciones — Global Effect Nexus
+ *
+ * REGLA: solo estas tres (más la transición de página de arriba). Añadir más
+ * aquí antes de usarlas en los portales para que el equipo no invente
+ * animaciones sueltas por cada módulo. Ninguna rebota.
+ *
+ *  animate-fade-in-up  →  entrada de página / sección
+ *  animate-shimmer     →  skeleton / placeholder de carga
+ *  animate-soft-pulse  →  badge de estado activo / indicador vivo
+ *
+ * Uso en Tailwind: className="animate-fade-in-up"
+ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease both;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--linea) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.animate-soft-pulse {
+  animation: softPulse 2.4s ease-in-out infinite;
+}
+
+/**
+ * Clases de interacción reutilizables para cards y botones.
+ *
+ * .card-interactiva  →  tarjeta clicable con hover lift
+ * .btn-press         →  micro-compresión al pulsar cualquier botón
+ * .icon-hover        →  escala del icono al hacer hover en el padre (grupo)
+ *
+ * Uso: siempre combinar con `group` en el contenedor para que icon-hover funcione.
+ */
+.card-interactiva {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-interactiva:hover {
+  box-shadow: var(--shadow-elevada);
+  transform: translateY(-2px);
+}
+
+.card-interactiva:active {
+  transform: scale(0.98);
+}
+
+.btn-press {
+  transition: transform 0.12s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/*
+ * Movimiento reducido: quien lo pide en su sistema no ve ninguna animación ni
+ * transición, ni las de arriba ni las de `tw-animate-css`. Se apaga aquí, una
+ * vez, y no en cada componente.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}

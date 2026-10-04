@@ -1,0 +1,599 @@
+// ================================================================
+// Global Effect Nexus — Esquema de base de datos (DBML)
+// Generado desde PostgreSQL 17 (Supabase). Importar en https://dbdiagram.io
+// 35 tablas · 7 enums · pgvector. Refleja migraciones 0001-0013, con 0030
+// (fin de psicologia) y 0031 (solicitudes y aprobaciones) aplicadas.
+// ================================================================
+
+Enum estado_estudiante {
+  "reclutado"
+  "postulado"
+  "academia_liderazgo"
+  "standby_tecnico"
+  "activo"
+  "inactivo"
+  "graduado"
+  "suspendido"
+}
+
+Enum genero {
+  "masculino"
+  "femenino"
+  "otro"
+}
+
+Enum parentesco {
+  "padre"
+  "madre"
+  "tutor"
+  "madrastra"
+  "padrastro"
+  "hermano"
+  "hermana"
+  "otro"
+}
+
+Enum tipo_estudiante {
+  "becado"
+  "regular"
+}
+
+Enum tipo_evaluacion {
+  "examen"
+  "tarea"
+  "proyecto"
+  "participacion"
+  "final"
+}
+
+Enum tipo_patrocinador {
+  "empresa"
+  "persona"
+  "iglesia"
+  "ong"
+  "otro"
+}
+
+Enum tipo_transaccion {
+  "ingreso"
+  "egreso"
+}
+
+// ---- Identidad y RBAC ----
+Table rol {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [unique, not null]
+  descripcion text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Roles del sistema (RBAC)'
+}
+
+Table permiso {
+  id uuid [pk, default: `gen_random_uuid()`]
+  codigo text [unique, not null]
+  descripcion text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Permisos por modulo/accion'
+}
+
+Table rol_permiso {
+  rol_id uuid [not null]
+  permiso_id uuid [not null]
+  indexes {
+    (rol_id, permiso_id) [pk]
+  }
+  Note: 'Union N:M rol-permiso'
+}
+
+Table usuario {
+  id uuid [pk, default: `gen_random_uuid()`]
+  email citext [unique, not null]
+  password_hash text [not null]
+  nombre text [not null]
+  idioma text [not null, default: `'es'`]
+  activo boolean [not null, default: `true`]
+  rol_id uuid [not null]
+  ultimo_acceso timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Usuarios con credenciales'
+}
+
+// ---- Transversal ----
+Table documento {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  storage_key text [unique, not null]
+  tipo text
+  mime text
+  tamano_bytes bigint
+  subido_por_id uuid
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Metadatos de archivos en Storage'
+}
+
+Table notificacion {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid [not null]
+  titulo text [not null]
+  mensaje text [not null]
+  tipo text [not null, default: `'info'`]
+  leida boolean [not null, default: `false`]
+  enlace text
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Notificaciones internas'
+}
+
+Table audit_log {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid
+  accion text [not null]
+  entidad text [not null]
+  entidad_id uuid
+  datos jsonb
+  ip inet
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Bitacora de auditoria'
+}
+
+// ---- Patrocinio ----
+Table patrocinador {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  tipo tipo_patrocinador [not null, default: `'persona'`]
+  email citext
+  telefono text
+  pais text
+  estado text [not null, default: `'activo'`]
+  monto_mensual numeric(10,2) [default: `0.00`]
+  notas text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Patrocinadores de la fundacion'
+}
+
+// ---- Estudiantes ----
+Table estudiante {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  cedula text [unique]
+  email citext
+  telefono text
+  fecha_nacimiento date
+  lugar_nacimiento text
+  nacionalidad text [default: `'Dominicana'`]
+  genero genero
+  sexo_documento text
+  religion text
+  foto_id uuid
+  tipo tipo_estudiante [not null, default: `'regular'`]
+  estado estado_estudiante [not null, default: `'activo'`]
+  programa text
+  donde_estudia text
+  universidad text
+  fecha_ingreso date
+  patrocinador_id uuid
+  facilitador_habitudes text
+  centro_educativo text
+  director_centro text
+  imagen_habitudes_id uuid
+  breve_historia_habitudes text
+  amonestaciones text
+  solicitudes_pendientes text
+  envio_correo_patrocinador text [default: `'pendiente'`]
+  asistio_reunion_mensual text [default: `'no'`]
+  expediente_id uuid
+  notas_adicionales text
+  usuario_id uuid [unique]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Nucleo del expediente estudiantil'
+}
+
+Table familiar {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  parentesco parentesco [not null]
+  nombre text [not null]
+  edad integer
+  telefono text
+  profesion text
+  Note: 'Familiares del estudiante (1:N)'
+}
+
+Table perfil_vivienda {
+  estudiante_id uuid [pk]
+  con_quien_vive text
+  por_que_vive_con_esa_persona text
+  hermanos_cantidad integer [default: `0`]
+  casa_propia text
+  tipo_casa text
+  bano_dentro text
+  habitaciones integer [default: `0`]
+  camas integer [default: `0`]
+  quienes_duermen_cama text
+  direccion text
+  comunidad text
+  ciudad_residencia text
+  pais_residencia text [default: `'República Dominicana'`]
+  Note: 'Condiciones de vivienda (1:1)'
+}
+
+Table perfil_salud {
+  estudiante_id uuid [pk]
+  enfermedades text
+  alergias text
+  contacto_emergencia_nombre text
+  contacto_emergencia_telefono text
+  Note: 'Salud y emergencias (1:1)'
+}
+
+Table perfil_socioeconomico {
+  estudiante_id uuid [pk]
+  historia_de_vida text
+  situacion_familiar text
+  situacion_economica text
+  motivo_beca text
+  metas_academicas text
+  Note: 'Contexto socioeconomico (1:1)'
+}
+
+Table asignacion_beca {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  patrocinador_id uuid [not null]
+  monto numeric(10,2) [not null]
+  fecha_inicio date [not null, default: `CURRENT_DATE`]
+  fecha_fin date
+  estado text [not null, default: `'activo'`]
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Historial de becas'
+}
+
+// ---- Academico ----
+Table periodo {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [unique, not null]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  estado text [not null, default: `'planificado'`]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Periodos academicos'
+}
+
+Table materia {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  codigo text
+  descripcion text
+  periodo_id uuid
+  creditos integer [default: `3`]
+  profesor_nombre text
+  profesor_usuario_id uuid
+  estado text [not null, default: `'activa'`]
+  horario text
+  aula text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Materias academicas'
+}
+
+Table curso {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  descripcion text
+  docente text
+  docente_usuario_id uuid
+  periodo_id uuid
+  estado text [not null, default: `'activo'`]
+  capacidad integer [default: `30`]
+  inscritos integer [default: `0`]
+  horario text
+  modalidad text [not null, default: `'presencial'`]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Cursos tecnicos'
+}
+
+Table inscripcion {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  materia_id uuid [not null]
+  periodo_id uuid [not null]
+  estado text [not null, default: `'activa'`]
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Matricula estudiante-materia-periodo'
+}
+
+Table calificacion {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  curso_id uuid [not null]
+  periodo_id uuid [not null]
+  nota numeric(5,2) [not null]
+  tipo_evaluacion tipo_evaluacion [not null, default: `'examen'`]
+  observaciones text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Calificaciones por evaluacion'
+}
+
+Table historial_calificacion {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  cuatrimestre text [not null]
+  materia text [not null]
+  nota_numerica numeric(5,2) [not null]
+  nota_letra text [not null]
+  gpa numeric(3,2) [not null]
+  estado text [not null, default: `'aprobada'`]
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Historial academico (GPA)'
+}
+
+// ---- Academias ----
+Table academia {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  tipo text [not null, default: `'liderazgo'`]
+  descripcion text
+  facilitador text
+  estado text [not null, default: `'activa'`]
+  participantes integer [default: `0`]
+  fecha_inicio date
+  fecha_fin date
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Programas extracurriculares'
+}
+
+Table material {
+  id uuid [pk, default: `gen_random_uuid()`]
+  titulo text [not null]
+  descripcion text
+  academia_id uuid [not null]
+  tipo text [not null, default: `'documento'`]
+  documento_id uuid
+  enlace_url text
+  autor text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Materiales educativos'
+}
+
+// ---- Solicitudes y aprobaciones (0031) ----
+// Sustituye al antiguo dominio de psicologia, retirado en 0030 (la Fundacion
+// elimino el departamento, oct 2026).
+Table solicitud {
+  id uuid [pk, default: `gen_random_uuid()`]
+  folio bigint [unique, not null, increment, note: 'GENERATED ALWAYS AS IDENTITY; numero legible']
+  tipo text [not null, note: 'constancia|carta|cita_administracion|permiso|otro|alta_expediente|beca|gasto']
+  estado text [not null, default: `'enviada'`, note: 'enviada|en_revision|pendiente_direccion|aprobada|rechazada|completada|cancelada']
+  titulo text [not null]
+  detalle text
+  solicitante_id uuid
+  estudiante_id uuid [note: 'CHECK: obligatorio en alta_expediente y beca']
+  monto numeric(12,2) [note: 'USD, CHECK > 0; obligatorio en gasto']
+  fecha_requerida date
+  hora_preferida text
+  requiere_direccion boolean [not null, default: `false`, note: 'Se fija al crear']
+  responsable_id uuid
+  respuesta text
+  resuelta_en timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Tramites del estudiante y aprobaciones internas'
+}
+
+Table solicitud_paso {
+  id uuid [pk, default: `gen_random_uuid()`]
+  solicitud_id uuid [not null]
+  estado_anterior text
+  estado_nuevo text [not null]
+  comentario text
+  usuario_id uuid
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Linea de tiempo de cada solicitud'
+}
+
+// ---- Operaciones ----
+Table proyecto {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  descripcion text
+  responsable text
+  estado text [not null, default: `'planificacion'`]
+  fecha_inicio date
+  fecha_fin date
+  progreso integer [default: `0`]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Proyectos'
+}
+
+Table tarea {
+  id uuid [pk, default: `gen_random_uuid()`]
+  titulo text [not null]
+  descripcion text
+  proyecto_id uuid
+  visibilidad text [not null, default: `'asignados'`]
+  estado text [not null, default: `'pendiente'`]
+  prioridad text [not null, default: `'media'`]
+  fecha_limite date
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Tareas Kanban'
+}
+
+Table tarea_asignado {
+  tarea_id uuid [not null]
+  usuario_id uuid [not null]
+  indexes {
+    (tarea_id, usuario_id) [pk]
+  }
+  Note: 'Union N:M tarea-usuario'
+}
+
+Table evento {
+  id uuid [pk, default: `gen_random_uuid()`]
+  titulo text [not null]
+  descripcion text
+  tipo text [not null, default: `'otro'`]
+  fecha date [not null]
+  hora_inicio text
+  hora_fin text
+  ubicacion text
+  responsable text
+  estado text [not null, default: `'programado'`]
+  tarea_id uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Eventos de calendario'
+}
+
+Table registro_servicio {
+  id uuid [pk, default: `gen_random_uuid()`]
+  estudiante_id uuid [not null]
+  mes text [not null]
+  hizo_servicio boolean [not null, default: `false`]
+  asistio_reunion boolean [not null, default: `false`]
+  notas text
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Servicio comunitario mensual'
+}
+
+// ---- Bienestar ----
+Table inscripcion_comida {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nombre text [not null]
+  fecha date [not null, default: `CURRENT_DATE`]
+  hora_inscripcion text [not null, default: `to_char(CURRENT_TIMESTAMP, 'HH24:MI:SS'`]
+  confirmado boolean [not null, default: `true`]
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Inscripcion diaria de almuerzo'
+}
+
+// ---- Finanzas ----
+Table transaccion {
+  id uuid [pk, default: `gen_random_uuid()`]
+  concepto text [not null]
+  tipo tipo_transaccion [not null]
+  monto numeric(12,2) [not null]
+  categoria text [not null, default: `'otro'`]
+  fecha date [not null, default: `CURRENT_DATE`]
+  referencia text
+  notas text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  metadata jsonb [not null, default: `'{}'`]
+  Note: 'Ingresos y egresos'
+}
+
+// ---- Inteligencia Artificial ----
+Table conversacion_ia {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id uuid
+  ambito text [not null, default: `'interno'`]
+  titulo text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Conversaciones del asistente IA'
+}
+
+Table mensaje_ia {
+  id uuid [pk, default: `gen_random_uuid()`]
+  conversacion_id uuid [not null]
+  rol text [not null]
+  contenido text [not null]
+  tokens integer
+  created_at timestamptz [not null, default: `now()`]
+  Note: 'Mensajes de conversacion'
+}
+
+Table extraccion_ocr {
+  id uuid [pk, default: `gen_random_uuid()`]
+  documento_id uuid
+  estudiante_id uuid
+  estado text [not null, default: `'pendiente'`]
+  modelo text
+  confianza numeric(5,2)
+  datos_extraidos jsonb
+  mensaje_error text
+  creado_por_id uuid
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Trazabilidad de OCR'
+}
+
+Table fragmento_conocimiento {
+  id uuid [pk, default: `gen_random_uuid()`]
+  fuente_tipo text [not null]
+  fuente_id uuid
+  contenido text [not null]
+  metadata jsonb
+  embedding vector(1536)
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  Note: 'Base de conocimiento vectorial (RAG)'
+}
+
+// ---- Relaciones (claves foraneas) ----
+Ref: asignacion_beca.estudiante_id > estudiante.id [delete: cascade]
+Ref: asignacion_beca.patrocinador_id > patrocinador.id [delete: cascade]
+Ref: audit_log.usuario_id > usuario.id [delete: set null]
+Ref: calificacion.curso_id > curso.id [delete: cascade]
+Ref: calificacion.estudiante_id > estudiante.id [delete: cascade]
+Ref: calificacion.periodo_id > periodo.id [delete: cascade]
+Ref: curso.docente_usuario_id > usuario.id [delete: set null]
+Ref: conversacion_ia.usuario_id > usuario.id [delete: set null]
+Ref: curso.periodo_id > periodo.id [delete: set null]
+Ref: documento.subido_por_id > usuario.id [delete: set null]
+Ref: estudiante.expediente_id > documento.id [delete: set null]
+Ref: estudiante.foto_id > documento.id [delete: set null]
+Ref: estudiante.imagen_habitudes_id > documento.id [delete: set null]
+Ref: estudiante.patrocinador_id > patrocinador.id [delete: set null]
+Ref: estudiante.usuario_id > usuario.id [delete: set null]
+Ref: evento.tarea_id > tarea.id [delete: set null]
+Ref: extraccion_ocr.creado_por_id > usuario.id [delete: set null]
+Ref: materia.profesor_usuario_id > usuario.id [delete: set null]
+Ref: extraccion_ocr.documento_id > documento.id [delete: set null]
+Ref: extraccion_ocr.estudiante_id > estudiante.id [delete: set null]
+Ref: familiar.estudiante_id > estudiante.id [delete: cascade]
+Ref: historial_calificacion.estudiante_id > estudiante.id [delete: cascade]
+Ref: inscripcion.estudiante_id > estudiante.id [delete: cascade]
+Ref: inscripcion.materia_id > materia.id [delete: cascade]
+Ref: inscripcion.periodo_id > periodo.id [delete: cascade]
+Ref: materia.periodo_id > periodo.id [delete: set null]
+Ref: material.academia_id > academia.id [delete: cascade]
+Ref: material.documento_id > documento.id [delete: set null]
+Ref: mensaje_ia.conversacion_id > conversacion_ia.id [delete: cascade]
+Ref: notificacion.usuario_id > usuario.id [delete: cascade]
+Ref: perfil_salud.estudiante_id > estudiante.id [delete: cascade]
+Ref: perfil_socioeconomico.estudiante_id > estudiante.id [delete: cascade]
+Ref: perfil_vivienda.estudiante_id > estudiante.id [delete: cascade]
+Ref: registro_servicio.estudiante_id > estudiante.id [delete: cascade]
+Ref: rol_permiso.permiso_id > permiso.id [delete: cascade]
+Ref: rol_permiso.rol_id > rol.id [delete: cascade]
+Ref: solicitud.estudiante_id > estudiante.id [delete: restrict]
+Ref: solicitud.responsable_id > usuario.id [delete: set null]
+Ref: solicitud.solicitante_id > usuario.id [delete: set null]
+Ref: solicitud_paso.solicitud_id > solicitud.id [delete: cascade]
+Ref: solicitud_paso.usuario_id > usuario.id [delete: set null]
+Ref: tarea.proyecto_id > proyecto.id [delete: set null]
+Ref: tarea_asignado.tarea_id > tarea.id [delete: cascade]
+Ref: tarea_asignado.usuario_id > usuario.id [delete: cascade]
+Ref: usuario.rol_id > rol.id [delete: no action]

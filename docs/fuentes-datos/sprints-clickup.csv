@@ -1,0 +1,598 @@
+Task ID,Task Name,Description,Status,Priority,Estimado (dias),Start Date,Due Date,Sprint,Fase,Subtask IDs
+1,S0 — Planeamiento y diseno,"META SMART
+Especifico: Dejar listo el diseno y el entorno antes de escribir DDL.
+Medible: ERD aprobado, diccionario de datos completo, matriz roles x permisos y repo Next.js corriendo con pg.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"2,6,11,15,19,23,27,31,35,39"
+2,Levantar requerimientos y casos de uso (27 modulos),,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"3,4,5"
+3,Listar modulos y actores,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+4,Casos de uso por modulo,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+5,Reglas de negocio,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+6,Disenar ERD completo,,to do,Urgent,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"7,8,9,10"
+7,Entidades y atributos,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+8,Relaciones y cardinalidad,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+9,Capa de identidad,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+10,Revision y aprobacion,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+11,"Diccionario de datos (tabla por tabla, columna por columna)",,to do,Urgent,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"12,13,14"
+12,Plantilla del diccionario,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+13,Documentar cada tabla y columna,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+14,Revision,,to do,Urgent,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+15,Definir tipos ENUM y catalogos,,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"16,17,18"
+16,Enums de estudiante/academico,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+17,Enums de finanzas/operacion,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+18,Validar con el ERD,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+19,Definir matriz de roles x permisos (6 roles),,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"20,21,22"
+20,Listar permisos por modulo,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+21,Asignar permisos a cada rol,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+22,Definir menus por rol,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+23,Inicializar repo Next.js + TypeScript,,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"24,25,26"
+24,Crear proyecto + estructura,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+25,ESLint/Prettier,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+26,Convenciones de git,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+27,Configurar conexion pg (pool) + .env,,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"28,29,30"
+28,lib/db.ts con Pool,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+29,Variables .env,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+30,Probar conexion,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+31,Configurar runner de migraciones,,to do,High,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"32,33,34"
+32,Instalar node-pg-migrate,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+33,Carpeta db/migrations,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+34,Migracion de prueba up/down,,to do,High,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+35,Configurar i18n (next-intl) es/en,,to do,Normal,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"36,37,38"
+36,Segmento [locale],,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+37,messages/es.json y en.json,,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+38,Middleware de idioma,,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+39,Integrar Tailwind + shadcn/ui + tokens,,to do,Normal,2,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,"40,41,42"
+40,Copiar componentes shadcn,,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+41,Design tokens (index.css),,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+42,Layout base,,to do,Normal,,2026-07-06,2026-07-17,S0 — Planeamiento y diseno,Planeamiento,
+43,S1 — BD Identidad y transversales,"META SMART
+Especifico: Crear y migrar identidad, acceso y soporte con FKs, indices, triggers y seed.
+Medible: 7 tablas migradas + funcion set_updated_at + seed con 6 roles, permisos y admin.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"44,48,52,56,60,71,80,88,96"
+44,Infra: pgcrypto + funcion/trigger set_updated_at,,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"45,46,47"
+45,CREATE EXTENSION pgcrypto,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+46,Funcion set_updated_at(),,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+47,Patron de trigger reutilizable,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+48,Tabla rol,,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"49,50,51"
+49,id — UUID PK,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+50,nombre — TEXT NOT NULL UNIQUE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+51,descripcion — TEXT,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+52,Tabla permiso,,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"53,54,55"
+53,id — UUID PK,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+54,codigo — TEXT NOT NULL UNIQUE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+55,descripcion — TEXT,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+56,Tabla rol_permiso (union),,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"57,58,59"
+57,rol_id — UUID FK rol(id) CASCADE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+58,permiso_id — UUID FK permiso(id) CASCADE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+59,"PK compuesta (rol_id, permiso_id)",,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+60,Tabla usuario,,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"61,62,63,64,65,66,67,68,69,70"
+61,id — UUID PK,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+62,email — TEXT NOT NULL UNIQUE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+63,password_hash — TEXT NOT NULL,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+64,nombre — TEXT NOT NULL,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+65,idioma — TEXT DEFAULT 'es',,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+66,activo — BOOLEAN DEFAULT TRUE,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+67,rol_id — UUID FK rol(id),,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+68,created_at — TIMESTAMPTZ,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+69,updated_at — TIMESTAMPTZ + trigger,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+70,indice idx_usuario_rol,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+71,Tabla documento (reemplaza *_url),,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"72,73,74,75,76,77,78,79"
+72,id — UUID PK,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+73,nombre — TEXT NOT NULL,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+74,storage_key — TEXT NOT NULL,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+75,tipo — TEXT,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+76,mime — TEXT,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+77,tamano_bytes — BIGINT,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+78,subido_por — UUID FK usuario(id),,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+79,created_at — TIMESTAMPTZ,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+80,Tabla notificacion,,to do,Normal,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"81,82,83,84,85,86,87"
+81,id — UUID PK,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+82,usuario_id — UUID FK usuario(id),,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+83,titulo — TEXT,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+84,mensaje — TEXT,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+85,tipo — TEXT,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+86,leida — BOOLEAN DEFAULT FALSE,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+87,created_at — TIMESTAMPTZ,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+88,Tabla audit_log,,to do,Normal,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"89,90,91,92,93,94,95"
+89,id — UUID PK,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+90,usuario_id — UUID FK usuario(id),,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+91,accion — TEXT,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+92,entidad — TEXT,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+93,entidad_id — UUID,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+94,datos — JSONB,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+95,created_at — TIMESTAMPTZ,,to do,Normal,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+96,"seed.sql: roles, permisos y admin inicial",,to do,High,2,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,"97,98,99,100"
+97,Insertar 6 roles,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+98,Insertar permisos por modulo,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+99,Vincular rol_permiso,,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+100,Crear usuario super_admin (hash),,to do,High,,2026-07-20,2026-07-31,S1 — BD Identidad y transversales,Base de datos,
+101,S2 — BD Estudiante y Academico,"META SMART
+Especifico: Construir el nucleo del beneficiario (normalizado) y el dominio academico.
+Medible: 10 tablas migradas (estudiante + 4 perfiles + periodo, materia, curso, inscripcion, calificacion, historial) con enums y FKs.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"102,106,127,135,148,154,161,167,178,189,197,205"
+102,Crear enums (estudiante y academico),,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"103,104,105"
+103,"tipo_estudiante, estado_estudiante, genero, parentesco",,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+104,"estado_materia, estado_curso, modalidad_curso",,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+105,"tipo_evaluacion, nota_letra, estado_historial",,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+106,Tabla estudiante (normalizada),,to do,Urgent,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126"
+107,id — UUID PK,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+108,nombre — TEXT NOT NULL,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+109,cedula — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+110,email — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+111,telefono — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+112,fecha_nacimiento — DATE,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+113,genero — genero,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+114,nacionalidad — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+115,religion — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+116,foto_id — UUID FK documento(id),,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+117,tipo — tipo_estudiante DEFAULT regular,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+118,estado — estado_estudiante DEFAULT activo,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+119,programa — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+120,universidad — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+121,fecha_ingreso — DATE,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+122,centro_educativo — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+123,facilitador_habitudes — TEXT,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+124,usuario_id — UUID UNIQUE FK usuario(id),,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+125,patrocinador_id — UUID FK patrocinador(id),,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+126,created_at / updated_at + trigger,,to do,Urgent,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+127,Tabla familiar,,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"128,129,130,131,132,133,134"
+128,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+129,estudiante_id — UUID FK estudiante(id) CASCADE,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+130,parentesco — parentesco NOT NULL,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+131,nombre — TEXT NOT NULL,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+132,edad — INTEGER,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+133,telefono — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+134,profesion — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+135,Tabla perfil_vivienda (1:1),,to do,Normal,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"136,137,138,139,140,141,142,143,144,145,146,147"
+136,estudiante_id — UUID PK FK estudiante(id),,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+137,con_quien_vive — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+138,casa_propia — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+139,tipo_casa — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+140,bano_dentro — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+141,habitaciones — INT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+142,camas — INT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+143,quienes_duermen_cama — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+144,direccion — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+145,comunidad — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+146,ciudad — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+147,pais — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+148,Tabla perfil_salud (1:1),,to do,Normal,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"149,150,151,152,153"
+149,estudiante_id — UUID PK FK estudiante(id),,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+150,enfermedades — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+151,alergias — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+152,contacto_emergencia_nombre — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+153,contacto_emergencia_telefono — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+154,Tabla perfil_socioeconomico (1:1),,to do,Normal,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"155,156,157,158,159,160"
+155,estudiante_id — UUID PK FK estudiante(id),,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+156,historia_de_vida — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+157,situacion_familiar — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+158,situacion_economica — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+159,motivo_beca — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+160,metas_academicas — TEXT,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+161,Tabla periodo,,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"162,163,164,165,166"
+162,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+163,nombre — TEXT NOT NULL (2026-I),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+164,fecha_inicio — DATE,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+165,fecha_fin — DATE,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+166,estado — TEXT (planificado/activo/completado),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+167,Tabla materia,,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"168,169,170,171,172,173,174,175,176,177"
+168,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+169,nombre — TEXT NOT NULL,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+170,codigo — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+171,descripcion — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+172,periodo_id — UUID FK periodo(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+173,creditos — INT DEFAULT 3,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+174,profesor_nombre — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+175,estado — estado_materia DEFAULT activa,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+176,horario — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+177,aula — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+178,Tabla curso (tecnicos),,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"179,180,181,182,183,184,185,186,187,188"
+179,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+180,nombre — TEXT NOT NULL,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+181,descripcion — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+182,docente — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+183,periodo_id — UUID FK periodo(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+184,estado — estado_curso DEFAULT activo,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+185,capacidad — INT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+186,inscritos — INT DEFAULT 0,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+187,horario — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+188,modalidad — modalidad_curso DEFAULT presencial,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+189,Tabla inscripcion (matricula),,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"190,191,192,193,194,195,196"
+190,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+191,estudiante_id — UUID FK estudiante(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+192,materia_id — UUID FK materia(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+193,periodo_id — UUID FK periodo(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+194,estado — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+195,created_at — TIMESTAMPTZ,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+196,"UNIQUE (estudiante_id, materia_id, periodo_id)",,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+197,Tabla calificacion,,to do,High,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"198,199,200,201,202,203,204"
+198,id — UUID PK,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+199,estudiante_id — UUID FK estudiante(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+200,curso_id — UUID FK curso(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+201,periodo_id — UUID FK periodo(id),,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+202,"nota — NUMERIC(5,2) NOT NULL",,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+203,tipo_evaluacion — tipo_evaluacion,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+204,observaciones — TEXT,,to do,High,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+205,Tabla historial_calificacion,,to do,Normal,2,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,"206,207,208,209,210,211,212,213"
+206,id — UUID PK,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+207,estudiante_id — UUID FK estudiante(id),,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+208,cuatrimestre — TEXT NOT NULL,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+209,materia — TEXT NOT NULL,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+210,"nota_numerica — NUMERIC(5,2) NOT NULL",,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+211,nota_letra — nota_letra,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+212,"gpa — NUMERIC(3,2)",,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+213,estado — estado_historial DEFAULT aprobada,,to do,Normal,,2026-08-03,2026-08-14,S2 — BD Estudiante y Academico,Base de datos,
+214,S3 — BD Dominios restantes,"META SMART
+Especifico: Construir patrocinio, finanzas, psicologia, operacion, academias y bienestar.
+Medible: 12 tablas migradas con enums y FKs. Esquema 100% completo.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"215,225,234,243,253,261,270,280,284,296,304,314,322"
+215,Tabla patrocinador,,to do,High,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"216,217,218,219,220,221,222,223,224"
+216,id — UUID PK,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+217,nombre — TEXT NOT NULL,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+218,tipo — tipo_patrocinador DEFAULT persona,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+219,email — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+220,telefono — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+221,pais — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+222,estado — TEXT DEFAULT activo,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+223,"monto_mensual — NUMERIC(10,2)",,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+224,notas — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+225,Tabla asignacion_beca,,to do,High,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"226,227,228,229,230,231,232,233"
+226,id — UUID PK,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+227,estudiante_id — UUID FK estudiante(id),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+228,patrocinador_id — UUID FK patrocinador(id),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+229,"monto — NUMERIC(10,2)",,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+230,fecha_inicio — DATE,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+231,fecha_fin — DATE,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+232,estado — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+233,created_at — TIMESTAMPTZ,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+234,Tabla transaccion,,to do,High,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"235,236,237,238,239,240,241,242"
+235,id — UUID PK,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+236,concepto — TEXT NOT NULL,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+237,tipo — tipo_transaccion NOT NULL (ingreso/egreso),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+238,"monto — NUMERIC(10,2) NOT NULL",,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+239,categoria — categoria_transaccion DEFAULT otro,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+240,fecha — DATE,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+241,referencia — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+242,notas — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+243,Tabla cita_psicologia,,to do,High,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"244,245,246,247,248,249,250,251,252"
+244,id — UUID PK,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+245,estudiante_id — UUID FK estudiante(id),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+246,psicologo_id — UUID FK usuario(id),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+247,tipo_registro — TEXT DEFAULT cita,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+248,fecha — DATE NOT NULL,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+249,hora — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+250,nivel_confidencialidad — TEXT DEFAULT medio,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+251,estado — TEXT DEFAULT programada,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+252,riesgos — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+253,Tabla nota_psicologica (CONFIDENCIAL),,to do,Urgent,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"254,255,256,257,258,259,260"
+254,id — UUID PK,,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+255,cita_id — UUID FK cita_psicologia(id),,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+256,estudiante_id — UUID FK estudiante(id),,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+257,contenido — TEXT (confidencial),,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+258,creado_por — UUID FK usuario(id),,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+259,created_at — TIMESTAMPTZ,,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+260,ACCESO: solo permiso psicologia.leer,,to do,Urgent,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+261,Tabla proyecto,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"262,263,264,265,266,267,268,269"
+262,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+263,nombre — TEXT NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+264,descripcion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+265,responsable — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+266,estado — TEXT DEFAULT planificacion,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+267,fecha_inicio — DATE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+268,fecha_fin — DATE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+269,progreso — INT DEFAULT 0,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+270,Tabla tarea,,to do,High,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"271,272,273,274,275,276,277,278,279"
+271,id — UUID PK,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+272,titulo — TEXT NOT NULL,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+273,descripcion — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+274,asignado_a — TEXT,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+275,proyecto_id — UUID FK proyecto(id),,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+276,visibilidad — TEXT DEFAULT asignados,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+277,estado — TEXT DEFAULT pendiente,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+278,prioridad — TEXT DEFAULT media,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+279,fecha_limite — DATE,,to do,High,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+280,Tabla tarea_asignado (union),,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"281,282,283"
+281,tarea_id — UUID FK tarea(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+282,usuario_id — UUID FK usuario(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+283,"PK (tarea_id, usuario_id)",,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+284,Tabla evento,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"285,286,287,288,289,290,291,292,293,294,295"
+285,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+286,titulo — TEXT NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+287,descripcion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+288,tipo — TEXT DEFAULT otro,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+289,fecha — DATE NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+290,hora_inicio — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+291,hora_fin — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+292,ubicacion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+293,responsable — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+294,estado — TEXT DEFAULT programado,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+295,tarea_id — UUID FK tarea(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+296,Tabla registro_servicio,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"297,298,299,300,301,302,303"
+297,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+298,estudiante_id — UUID FK estudiante(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+299,mes — TEXT NOT NULL (YYYY-MM),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+300,hizo_servicio — BOOLEAN DEFAULT FALSE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+301,asistio_reunion — BOOLEAN DEFAULT FALSE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+302,notas — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+303,"UNIQUE (estudiante_id, mes)",,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+304,Tabla academia,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"305,306,307,308,309,310,311,312,313"
+305,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+306,nombre — TEXT NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+307,tipo — TEXT DEFAULT liderazgo,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+308,descripcion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+309,facilitador — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+310,estado — TEXT DEFAULT activa,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+311,participantes — INT DEFAULT 0,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+312,fecha_inicio — DATE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+313,fecha_fin — DATE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+314,Tabla material,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"315,316,317,318,319,320,321"
+315,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+316,titulo — TEXT NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+317,descripcion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+318,academia_id — UUID FK academia(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+319,tipo — TEXT DEFAULT documento,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+320,documento_id — UUID FK documento(id),,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+321,autor — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+322,Tabla inscripcion_comida,,to do,Normal,2,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,"323,324,325,326,327,328"
+323,id — UUID PK,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+324,nombre — TEXT NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+325,fecha — DATE NOT NULL,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+326,hora_inscripcion — TEXT,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+327,confirmado — BOOLEAN DEFAULT TRUE,,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+328,"UNIQUE (nombre, fecha)",,to do,Normal,,2026-08-17,2026-08-28,S3 — BD Dominios restantes,Base de datos,
+329,"S4 — Backend nucleo (auth, RBAC, i18n)","META SMART
+Especifico: Montar autenticacion, control de acceso y la base transversal sobre la BD.
+Medible: Login con Auth.js (credenciales+JWT), middleware por rol, helper can(), capa de queries, i18n operativo y subida de archivos.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"330,335,339,343,347,351"
+330,Auth.js (credenciales + JWT),,to do,Urgent,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"331,332,333,334"
+331,Proveedor de credenciales contra usuario,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+332,Verificacion con bcrypt/argon2,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+333,Sesion JWT con rol y permisos,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+334,Pantalla de login,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+335,Middleware por rol + helper can(),,to do,Urgent,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"336,337,338"
+336,middleware.ts proteccion por grupo de rutas,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+337,"lib/rbac.ts can(usuario, permiso)",,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+338,Redireccion segun rol,,to do,Urgent,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+339,Capa base de queries pg,,to do,High,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"340,341,342"
+340,Helpers de query parametrizada,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+341,Transacciones,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+342,Mapeo a interfaces TS + Zod,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+343,i18n operativo (es/en) + selector,,to do,Normal,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"344,345,346"
+344,Diccionarios base,,to do,Normal,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+345,Traduccion de enums por clave,,to do,Normal,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+346,Guardar idioma del usuario,,to do,Normal,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+347,Subida de archivos + tabla documento,,to do,High,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"348,349,350"
+348,Integrar storage (S3/UploadThing),,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+349,Guardar metadatos en documento,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+350,Referenciar foto/expediente,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+351,Layout: AppLayout + Sidebar por rol + TopBar,,to do,High,2,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,"352,353,354"
+352,Portar AppLayout,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+353,Sidebar dinamico segun rol,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+354,TopBar,,to do,High,,2026-08-31,2026-09-11,"S4 — Backend nucleo (auth, RBAC, i18n)",Backend,
+355,S5 — Expedientes y Dashboard,"META SMART
+Especifico: Entregar el modulo mas grande (Expedientes) y el Dashboard.
+Medible: CRUD con formulario de 6 pestanas, detalle con GPA, OCR, y Dashboard con tarjetas y graficos.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"356,361,368,372,376"
+356,CRUD de expedientes + buscador,,to do,High,2,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"357,358,359,360"
+357,Crear/ver/editar/eliminar (estudiante + hijas),,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+358,BuscadorEstudiantes con dropdown,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+359,Filtros por pestanas,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+360,Control de acceso,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+361,Formulario por pestanas (6 secciones),,to do,High,2,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"362,363,364,365,366,367"
+362,Personal y Academico,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+363,Habitudes,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+364,Familia (FormFamiliar),,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+365,Historia,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+366,Seguimiento (FormSeguimiento),,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+367,Validacion Zod,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+368,Vista de detalle con GPA y graficos,,to do,High,2,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"369,370,371"
+369,Modal con pestanas,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+370,Calculo de GPA/promedio,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+371,Graficos de tendencia (Recharts),,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+372,OCR con IA (subir documento),,to do,Normal,2,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"373,374,375"
+373,Subida a storage,,to do,Normal,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+374,Llamada a LLM para extraer datos,,to do,Normal,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+375,Precargar formulario / guardar en perfil,,to do,Normal,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+376,Dashboard principal,,to do,High,2,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,"377,378,379,380"
+377,StatCards (activos/becados/cursos/tareas/balance),,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+378,Grafico flujo financiero,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+379,Circular becados vs regulares,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+380,Eventos y tareas prioritarias,,to do,High,,2026-09-14,2026-09-25,S5 — Expedientes y Dashboard,Implementacion,
+381,S6 — Academico (modulos) y portales,"META SMART
+Especifico: Entregar el flujo academico y los portales de estudiante y profesor.
+Medible: Materias, Cursos, Calificaciones, Historial, Prematricula, Periodos + Portal Estudiante y Profesor.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"382,387,391,395,400"
+382,Materias y Cursos tecnicos,,to do,High,2,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"383,384,385,386"
+383,CRUD materias,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+384,CRUD cursos (indicador de cupo),,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+385,Busqueda,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+386,Vista responsive,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+387,Calificaciones (color por nota),,to do,High,2,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"388,389,390"
+388,Registro de notas,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+389,Tabla con codigo de color,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+390,Busqueda,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+391,Historial + Prematricula + Periodos,,to do,High,2,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"392,393,394"
+392,Historial por estudiante (promedios),,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+393,Prematricula por dropdowns,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+394,Gestion de periodos,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+395,Portal Estudiante,,to do,High,2,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"396,397,398,399"
+396,Banner promedio/GPA,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+397,Materias y calificaciones,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+398,Condicion en la fundacion,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+399,Proximos eventos,,to do,High,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+400,Portal Profesor,,to do,Normal,2,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,"401,402,403"
+401,Banner cursos/inscritos/notas,,to do,Normal,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+402,Lista de cursos activos,,to do,Normal,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+403,Accesos rapidos,,to do,Normal,,2026-09-28,2026-10-09,S6 — Academico (modulos) y portales,Implementacion,
+404,S7 — Patrocinio y Finanzas,"META SMART
+Especifico: Entregar patrocinadores, becas y contabilidad.
+Medible: Patrocinadores, Asignacion de Becas y Contabilidad con estadisticas + Portal Contabilidad.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,"405,409,413,417"
+405,Patrocinadores (CRUD + estadisticas),,to do,High,2,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,"406,407,408"
+406,CRUD patrocinadores,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+407,Aporte total y paises,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+408,Filtros por estado,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+409,Asignacion de becas,,to do,High,2,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,"410,411,412"
+410,Vincular estudiante+patrocinador+monto,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+411,Vista de becados,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+412,Vista de patrocinadores activos,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+413,Contabilidad (transacciones + balance),,to do,High,2,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,"414,415,416"
+414,Registro de transacciones,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+415,Ingresos/egresos/balance,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+416,Filtros + tabla coloreada,,to do,High,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+417,Portal Contabilidad,,to do,Normal,2,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,"418,419,420"
+418,Banner ingresos/egresos/balance,,to do,Normal,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+419,Ultimas transacciones,,to do,Normal,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+420,Acceso a reportes,,to do,Normal,,2026-10-12,2026-10-23,S7 — Patrocinio y Finanzas,Implementacion,
+421,S8 — Psicologia,"META SMART
+Especifico: Entregar Psicologia con control de acceso estricto a datos confidenciales.
+Medible: Citas con confidencialidad, notas clinicas protegidas por permiso, agendamiento del estudiante y Portal Psicologia.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,"422,426,430,434"
+422,Gestion de citas y seguimientos,,to do,High,2,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,"423,424,425"
+423,Registrar cita (tipo/fecha/confidencialidad/riesgos),,to do,High,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+424,Completar/cancelar,,to do,High,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+425,Estadisticas y filtros,,to do,High,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+426,Acceso estricto a notas confidenciales,,to do,Urgent,2,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,"427,428,429"
+427,Restringir por permiso psicologia.leer,,to do,Urgent,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+428,Registrar accesos en audit_log,,to do,Urgent,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+429,Ocultar del perfil general,,to do,Urgent,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+430,Agendar cita (estudiante),,to do,Normal,2,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,"431,432,433"
+431,Formulario de solicitud,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+432,Confirmacion,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+433,Notificacion al psicologo,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+434,Portal Psicologia,,to do,Normal,2,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,"435,436,437"
+435,Banner citas/confidencialidad/riesgos,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+436,Proximas citas,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+437,Accesos,,to do,Normal,,2026-10-26,2026-11-06,S8 — Psicologia,Implementacion,
+438,S9 — Administrativo y Calendario,"META SMART
+Especifico: Entregar tareas (Kanban + automatizaciones), proyectos, personal y calendario.
+Medible: Kanban con email + evento automatico, proyectos con progreso, personal y calendario mensual + agenda.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"439,444,448,452,456"
+439,Tareas (Kanban) + asignacion multiple,,to do,High,2,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"440,441,442,443"
+440,Tablero 3 columnas,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+441,Crear tarea (prioridad/visibilidad),,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+442,Asignacion multiple,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+443,Cambio de estado,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+444,Automatizaciones al crear tarea,,to do,High,2,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"445,446,447"
+445,Email a cada asignado,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+446,Crear evento en calendario,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+447,Invalidar/refrescar vistas,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+448,Proyectos + Gestion de personal,,to do,Normal,2,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"449,450,451"
+449,CRUD proyectos (barra de progreso),,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+450,Lista de usuarios + estadisticas,,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+451,Roles,,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+452,Calendario mensual + agenda 30 dias,,to do,High,2,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"453,454,455"
+453,Vista mensual con indicadores,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+454,Panel del dia,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+455,Agenda combinada eventos+tareas,,to do,High,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+456,Portal Administrativo,,to do,Normal,2,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,"457,458,459"
+457,Banner tareas/proyectos/estudiantes,,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+458,8 accesos,,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+459,Tareas urgentes,,to do,Normal,,2026-11-09,2026-11-20,S9 — Administrativo y Calendario,Implementacion,
+460,S10 — Modulos restantes y paginas publicas,"META SMART
+Especifico: Cerrar los modulos restantes y las paginas publicas.
+Medible: Academias/Materiales, Servicios mensuales (PDF), Comida (publica), Configuracion, Sitemap y Landing.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"461,465,470,475,479"
+461,Academias/Programas + Materiales,,to do,Normal,2,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"462,463,464"
+462,CRUD academias,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+463,CRUD materiales (documento_id),,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+464,Iconos por tipo,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+465,Servicios mensuales (toggles + PDF),,to do,Normal,2,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"466,467,468,469"
+466,Selector de mes,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+467,Tabla de toggles servicio/reunion,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+468,Estadisticas,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+469,Exportar a PDF,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+470,Inscripcion de comida (publica),,to do,Normal,2,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"471,472,473,474"
+471,Ruta publica /comida,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+472,Limite 8:30 AM + no duplicados,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+473,Contador / lista admin,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+474,Refresco automatico,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+475,Configuracion + Sitemap,,to do,Normal,2,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"476,477,478"
+476,Gestion de usuarios y roles,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+477,Info del sistema,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+478,Mapa de navegacion,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+479,Landing publica (Inicio),,to do,Normal,2,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,"480,481,482"
+480,Hero slider + estadisticas,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+481,Selector de portales,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+482,Eventos + boton comida + footer,,to do,Normal,,2026-11-23,2026-12-04,S10 — Modulos restantes y paginas publicas,Implementacion,
+483,S11 — IA y Reportes,"META SMART
+Especifico: Entregar los asistentes de IA y el dashboard analitico.
+Medible: Chat IA interno con contexto de la BD, Chat IA estudiantil y Reportes (Proyectos/Academico/Contabilidad).
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,"484,489,493"
+484,Chat IA interno (contexto de la BD),,to do,Normal,2,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,"485,486,487,488"
+485,Construir contexto desde entidades,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+486,Enviar al LLM,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+487,Render markdown + prompts,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+488,Reiniciar conversacion,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+489,Chat IA estudiantil,,to do,Normal,2,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,"490,491,492"
+490,Contexto academico del estudiante,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+491,Interfaz de chat,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+492,Pruebas,,to do,Normal,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+493,Reportes visuales (3 secciones),,to do,High,2,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,"494,495,496,497"
+494,Seccion Proyectos (KPIs + graficos),,to do,High,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+495,Seccion Academico (rangos de notas),,to do,High,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+496,Seccion Contabilidad (area + categorias),,to do,High,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+497,Datos en tiempo real,,to do,High,,2026-12-07,2026-12-18,S11 — IA y Reportes,Implementacion,
+498,"S12 — Migracion, QA y Seguridad","META SMART
+Especifico: Migrar datos reales, endurecer seguridad y asegurar calidad.
+Medible: Migracion >=30% de registros, pruebas de flujos criticos y revision de seguridad.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,"499,503,509"
+499,Migrar >=30% de registros actuales,,to do,High,2,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,"500,501,502"
+500,Limpieza de datos fisicos/Excel,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+501,Scripts de carga a PostgreSQL,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+502,Validacion de integridad,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+503,Pruebas de flujos criticos,,to do,High,2,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,"504,505,506,507,508"
+504,Auth/RBAC,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+505,Expedientes y calificaciones/GPA,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+506,Contabilidad,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+507,Confidencialidad de psicologia,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+508,Automatizaciones de tareas,,to do,High,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+509,Revision de seguridad,,to do,Urgent,2,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,"510,511,512,513"
+510,Verificar queries parametrizadas,,to do,Urgent,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+511,Control de acceso por permiso,,to do,Urgent,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+512,Proteccion de notas confidenciales,,to do,Urgent,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+513,Manejo de sesiones,,to do,Urgent,,2026-12-21,2027-01-01,"S12 — Migracion, QA y Seguridad",Estabilizacion,
+514,S13 — Despliegue y Tesis,"META SMART
+Especifico: Desplegar a produccion y dejar la documentacion de tesis lista.
+Medible: Sistema desplegado, UAT aprobado y documentacion entregada.
+Alcanzable: equipo de 2, stack Next.js+pg+PostgreSQL.
+Relevante: avanza el entregable de tesis.
+Temporal: 2 semanas.",to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,"515,519,523"
+515,Desplegar a produccion,,to do,High,2,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,"516,517,518"
+516,Configurar entorno + BD gestionada,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+517,Variables + dominio,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+518,Backups,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+519,UAT con la fundacion,,to do,High,2,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,"520,521,522"
+520,Pruebas por rol con usuarios reales,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+521,Recoger feedback,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+522,Ajustes finales,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+523,Documentacion final de tesis,,to do,High,2,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,"524,525,526,527"
+524,Capitulos arquitectura y seguridad,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+525,Diccionario de datos + ER/DFD,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+526,Manuales de usuario y tecnico,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
+527,Conclusiones,,to do,High,,2027-01-04,2027-01-15,S13 — Despliegue y Tesis,Cierre,
