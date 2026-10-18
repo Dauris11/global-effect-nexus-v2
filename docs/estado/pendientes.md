@@ -53,9 +53,14 @@ módulo) — esto es solo la cola de pendientes concretos.
       calificaciones con feedback docente y plantillas rápidas (`EvaluadorEntregasMoodle`), y
       **Vista de Estudiante** interactiva (`VistaEstudianteModal`) para que el docente simule y verifique la experiencia del alumno sin alterar datos reales
       (migración `0042_aula_virtual_moodle_y_matricula_360.sql` y `scripts/seed-moodle-g360.mjs`).
-- [ ] **Programa Habitudes — Hub Colaborativo y Evidencias de Liceos:** Repositorio
-      compartido de diapositivas (PowerPoint/PDF) e imágenes didácticas para los profesores
-      que acuden a liceos, y módulo móvil de subida de evidencias fotográficas de clases impartidas.
+- [x] **Programa Habitudes — Hub Colaborativo y Evidencias de Liceos:** Repositorio
+      compartido de diapositivas (`.pptx`), guías de facilitador (`.pdf`), dinámicas de taller (`.docx`)
+      e infografías didácticas con contador de descargas y subida colaborativa (`HubRecursos` en `/habitudes`);
+      módulo móvil nativo de registro de visitas a liceos de La Vega con captura de evidencias fotográficas
+      vía cámara del smartphone (`<input capture="environment" accept="image/*">`), selector de tanda,
+      conteo rápido de estudiantes impactados (+5/+15/+30) y galería visual de evidencias en alta resolución
+      con lightbox interactivo (`RegistroVisitaLiceo` y `GaleriaEvidencias`),
+      respaldado por la migración `0043_habitudes_hub_y_evidencias_liceos.sql` y `scripts/seed-habitudes.mjs`.
 - [x] **Inventario Institucional y Activos Fijos con Códigos QR (Módulo 30):** Catálogo de mobiliario,
       herramientas (Casa de Herramientas), tecnología, electrodomésticos y vehículos (migración `0040_inventario_activos_qr.sql`);
       captura y visualización de fotografías, generación automática e impresión de etiquetas con Códigos QR

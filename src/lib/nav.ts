@@ -163,6 +163,11 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/academias/materiales",
             icono: Library,
           },
+          {
+            etiqueta: "habitudesHub",
+            href: "/habitudes",
+            icono: BookOpen,
+          },
         ],
       },
     ],
@@ -518,6 +523,11 @@ const MENU_DOCENTE: AreaNav[] = [
             icono: Star,
             permiso: "calificaciones.registrar",
           },
+          {
+            etiqueta: "habitudesHub",
+            href: "/habitudes",
+            icono: BookOpen,
+          },
         ],
       },
     ],
@@ -563,12 +573,17 @@ const MENU_DOCENTE: AreaNav[] = [
  */
 const MENU_HABITUDES: AreaNav[] = [
   {
-    clave: "expedientes",
-    etiqueta: "records",
-    icono: Users,
+    clave: "habitudes",
+    etiqueta: "habitudes",
+    icono: Sparkles,
     secciones: [
       {
         items: [
+          {
+            etiqueta: "habitudesHub",
+            href: "/habitudes",
+            icono: BookOpen,
+          },
           {
             etiqueta: "applicants",
             href: "/expedientes",
