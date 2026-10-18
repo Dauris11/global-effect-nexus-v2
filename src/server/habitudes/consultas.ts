@@ -285,7 +285,7 @@ export async function listarDocentesYEstudiantesParaAsignacion(): Promise<{
   );
 
   const estudiantes = await consultar<{ id: string; nombre: string; matricula: string | null }>(
-    `SELECT id, nombre, matricula
+    `SELECT id, nombre, coalesce(cedula, centro_educativo) AS matricula
        FROM public.estudiante
       WHERE estado = 'activo'
       ORDER BY nombre ASC
