@@ -39,13 +39,13 @@ find 'src/app/[locale]' -name page.tsx             # lo que existe de verdad
 
 ## Cuadro general
 
-Las 37 rutas que declara `src/lib/nav.ts` tienen página, más la landing pública,
-la inscripción de comida, el acceso y el retorno de OAuth. **Ninguna da
-404.**
+Todas las rutas declaradas en `src/lib/nav.ts` tienen página funcional, más la landing pública,
+la inscripción de comida, el acceso, los endpoints de exportación y el retorno de OAuth. **Ninguna da 404.**
+El proyecto compila al 100% en Next.js con Turbopack (123 rutas de producción y 0 errores de TypeScript).
 
 | Estado | Rutas |
 |---|---:|
-| ✅ Funcional | 44 páginas + el retorno de OAuth |
+| ✅ Funcional | 48 páginas + API endpoints + OAuth |
 | 🟡 Esqueleto | **0** |
 | ⬜ Sin ruta | 0 |
 

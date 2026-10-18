@@ -20,7 +20,7 @@ import { tienePermiso } from "@/lib/rbac";
  */
 
 export type EntradaCalendario = {
-  origen: "evento" | "tarea" | "asignacion" | "cita";
+  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion";
   id: string;
   titulo: string;
   /** Tipo del evento, proyecto de la tarea o estado de la cita. */
@@ -95,24 +95,38 @@ export async function calendarioDelMes({
     [usuarioId, desde, hasta],
   );
 
+  const esAdmin = rol === "super_admin" || rol === "admin";
+  const reuniones = await consultar<EntradaCalendario>(
+    `SELECT 'reunion' AS origen,
+            r.id,
+            r.titulo,
+            r.tipo AS detalle,
+            to_char(r.fecha, 'YYYY-MM-DD') AS dia,
+            to_char(r.hora_inicio, 'HH24:MI') AS hora,
+            r.estado,
+            r.lugar_o_enlace AS ubicacion,
+            to_char(r.hora_fin, 'HH24:MI') AS hora_fin,
+            r.descripcion,
+            (CASE WHEN r.estado = 'programada' THEN 'alta' ELSE 'media' END)::text AS prioridad
+       FROM reunion r
+      WHERE r.estado <> 'cancelada'
+        AND r.fecha BETWEEN $2::date AND $3::date
+        AND (
+          $4::boolean = true
+          OR r.organizador_usuario_id = $1
+          OR EXISTS (
+            SELECT 1 FROM reunion_participante rp
+             WHERE rp.reunion_id = r.id AND rp.usuario_id = $1
+          )
+        )
+      ORDER BY r.fecha, r.hora_inicio`,
+    [usuarioId, desde, hasta, esAdmin],
+  );
+
+  const baseConReuniones = [...institucional, ...reuniones];
+
   /*
    * LO QUE VENCE EN SUS CLASES, solo para el docente.
-   *
-   * Era el hueco de su portal: el calendario le enseñaba los actos
-   * institucionales y las tareas administrativas que le asignaran, pero no lo
-   * único que de verdad tiene fecha en su trabajo —las tareas y exámenes que
-   * él publicó—. Un docente abría el calendario, no veía nada suyo y no
-   * volvía.
-   *
-   * Las tres uniones son los tres programas que da: materia universitaria,
-   * curso técnico y clase de Global Effect 360. Cada uno enlaza al docente por
-   * su propia clave (`profesor_usuario_id`, `docente_usuario_id`, `docente_id`)
-   * y NUNCA por el nombre: la 0019 añadió esas claves precisamente porque
-   * comparar texto libre le acaba enseñando a alguien la clase de otro.
-   *
-   * `fecha_vencimiento` es TIMESTAMPTZ y pasa por `to_char` en la base, igual
-   * que en la agenda del estudiante: el día que se pinta no puede depender de
-   * la zona horaria del proceso que renderiza.
    */
   if (rol === "docente") {
     const clases = await consultar<EntradaCalendario>(
@@ -126,8 +140,6 @@ export async function calendarioDelMes({
               NULL AS ubicacion,
               NULL AS hora_fin,
               a.descripcion,
-              -- Un examen pesa más que una tarea en la agenda de quien lo va a
-              -- corregir, y el color del calendario sale de la prioridad.
               (CASE WHEN a.tipo = 'examen' THEN 'alta' ELSE 'media' END)::text AS prioridad
          FROM asignacion a
          LEFT JOIN materia     mu ON mu.id = a.materia_id
@@ -142,18 +154,16 @@ export async function calendarioDelMes({
       [usuarioId, desde, hasta],
     );
 
-    return ordenar([...institucional, ...clases]);
+    return ordenar([...baseConReuniones, ...clases]);
   }
 
   // Las citas con administración, solo para quien las atiende. Para
   // cualquier otro rol esta consulta no se lanza.
-  if (!tienePermiso(rol, "solicitudes.gestionar")) return institucional;
+  if (!tienePermiso(rol, "solicitudes.gestionar")) return ordenar(baseConReuniones);
 
   /*
    * Las citas son solicitudes `cita_administracion` (0031) que siguen vivas:
-   * pedidas, en revisión o ya aprobadas. Las rechazadas y canceladas no van a
-   * pasar y las completadas ya pasaron. La prioridad sube con el estado: una
-   * aprobada es una cita que hay que cumplir.
+   * pedidas, en revisión o ya aprobadas.
    */
   const citas = await consultar<EntradaCalendario>(
     `SELECT 'cita' AS origen,
@@ -176,16 +186,11 @@ export async function calendarioDelMes({
     [desde, hasta],
   );
 
-  return ordenar([...institucional, ...citas]);
+  return ordenar([...baseConReuniones, ...citas]);
 }
 
 /**
  * Junta dos orígenes ya ordenados en una sola lista por día y hora.
- *
- * Cada consulta ordena lo suyo en la base; lo que no puede hacer la base es
- * intercalar dos resultados distintos, y eso es lo único que se hace aquí. Sin
- * hora va primero, que es la convención del resto del calendario ("todo el
- * día" arriba).
  */
 function ordenar(entradas: EntradaCalendario[]): EntradaCalendario[] {
   return entradas.sort((a, b) =>
@@ -197,9 +202,6 @@ function ordenar(entradas: EntradaCalendario[]): EntradaCalendario[] {
 
 /**
  * Meses que tienen algo, para no ofrecer navegación hacia el vacío.
- *
- * Se limita a los doce meses alrededor de hoy: un calendario que ofrece saltar a
- * 2019 porque hay un evento suelto no ayuda a nadie.
  */
 export async function mesesConAlgo(usuarioId: string): Promise<string[]> {
   const filas = await consultar<{ mes: string }>(
@@ -215,6 +217,13 @@ export async function mesesConAlgo(usuarioId: string): Promise<string[]> {
        JOIN tarea_asignado ta ON ta.tarea_id = t.id
       WHERE ta.usuario_id = $1
         AND t.fecha_limite BETWEEN CURRENT_DATE - 180 AND CURRENT_DATE + 180
+
+      UNION
+
+     SELECT DISTINCT to_char(r.fecha, 'YYYY-MM') AS mes
+       FROM reunion r
+      WHERE r.estado <> 'cancelada'
+        AND r.fecha BETWEEN CURRENT_DATE - 180 AND CURRENT_DATE + 180
 
       ORDER BY mes`,
     [usuarioId],

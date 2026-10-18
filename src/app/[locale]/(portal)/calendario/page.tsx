@@ -86,7 +86,9 @@ export default async function PaginaCalendario({
         ? puedeCrear
         : fila.origen === "cita"
           ? puedeMoverCitas
-          : false,
+          : fila.origen === "reunion"
+            ? true
+            : false,
   }));
 
   return (

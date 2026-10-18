@@ -20,7 +20,7 @@ import { consultar } from "@/lib/db";
  */
 
 export type EntradaAgenda = {
-  origen: "evento" | "asignacion" | "solicitud";
+  origen: "evento" | "asignacion" | "solicitud" | "reunion";
   id: string;
   titulo: string;
   /** Tipo de evento, materia de la asignación o tipo de trámite, según el origen. */
@@ -94,6 +94,27 @@ export async function agendaDelEstudiante(
         AND s.estado NOT IN ('rechazada', 'cancelada')
         AND to_char(s.fecha_requerida, 'YYYY-MM') = $2
 
+      UNION ALL
+
+     SELECT 'reunion' AS origen,
+            r.id,
+            r.titulo,
+            r.tipo AS detalle,
+            to_char(r.fecha, 'YYYY-MM-DD') AS dia,
+            to_char(r.hora_inicio, 'HH24:MI') AS hora,
+            r.estado,
+            r.lugar_o_enlace AS ubicacion
+       FROM reunion r
+      WHERE r.estado <> 'cancelada'
+        AND to_char(r.fecha, 'YYYY-MM') = $2
+        AND (
+          r.estudiante_id = $1
+          OR EXISTS (
+            SELECT 1 FROM reunion_participante rp
+             WHERE rp.reunion_id = r.id AND rp.estudiante_id = $1
+          )
+        )
+
       ORDER BY dia, hora NULLS FIRST`,
     [estudianteId, mes],
   );
@@ -129,6 +150,19 @@ export async function mesesConAgenda(estudianteId: string): Promise<string[]> {
         WHERE estudiante_id = $1
           AND fecha_requerida IS NOT NULL
           AND estado NOT IN ('rechazada', 'cancelada')
+
+       UNION ALL
+
+       SELECT to_char(fecha, 'YYYY-MM') AS mes
+         FROM reunion
+        WHERE estado <> 'cancelada'
+          AND (
+            estudiante_id = $1
+            OR EXISTS (
+              SELECT 1 FROM reunion_participante rp
+               WHERE rp.reunion_id = reunion.id AND rp.estudiante_id = $1
+            )
+          )
      ) AS meses
      ORDER BY mes DESC
      LIMIT 18`,

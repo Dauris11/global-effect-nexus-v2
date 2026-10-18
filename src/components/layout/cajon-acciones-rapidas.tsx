@@ -10,6 +10,7 @@ import {
   Package,
   Receipt,
   Sparkles,
+  Users,
   X,
   Zap,
 } from "lucide-react";
@@ -86,8 +87,8 @@ export function CajonAccionesRapidas({
     {
       titulo: "Agendar Reunión",
       descripcion: "Reuniones institucionales y asesorías",
-      href: "/calendario",
-      icono: CalendarDays,
+      href: "/reuniones?agendar=true",
+      icono: Users,
       badge: "Agenda",
       roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes"],
     },

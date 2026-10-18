@@ -33,6 +33,8 @@ const ESPACIOS_BASE = [
   "moodle",
   // Espacio del programa Habitudes y visitas a liceos
   "habitudes",
+  // Espacio de la agenda institucional de reuniones
+  "reuniones",
 ] as const;
 
 /**

@@ -70,9 +70,14 @@ módulo) — esto es solo la cola de pendientes concretos.
       en `src/app/manifest.ts` para modo standalone en iOS/Android sin barra de URL, barra inferior táctil
       con botón central elevado de acceso rápido táctil (`BarraInferior`) y cajón deslizable nativo
       (`CajonAccionesRapidas`) con atajos a cámara QR, rendición de comprobantes, tareas del día, agenda y Nexus IA por voz.
-- [ ] **Agenda de Reuniones Institucionales para Todo el Personal:** Agendamiento de
-      reuniones internas entre colaboradores y citas solicitadas por estudiantes (asesorías,
-      tutorías, seguimiento administrativo), extinguiendo definitivamente las citas clínicas.
+- [x] **Agenda de Reuniones Institucionales para Todo el Personal (Sustitución de Psicología):** Agendamiento
+      de reuniones institucionales para todo el personal y estudiantes (coordinación operativa, tutorías académicas,
+      seguimiento vocacional, consejos de dirección y reuniones departamentales), respaldado por la migración
+      `0044_agenda_institucional_reuniones.sql` y `scripts/seed-reuniones.mjs`; hub interactivo (`/reuniones`),
+      soporte para modalidades presencial, virtual e híbrida con sala o enlace de Google Meet/Zoom, registro de
+      participantes con roles y confirmación de asistencia, diálogo de redacción de minutas de acuerdos y compromisos,
+      integración en tiempo real con el calendario general del personal (`/calendario`) y la agenda del estudiante
+      (`/portal/estudiante/calendario`), y atajo táctil nativo en el cajón de acciones rápidas móvil.
 - [x] **Contabilidad, Fase 4:** Cajas y cuadre de caja completados (migración `0039_contabilidad_cajas_y_asignacion.sql`, reposición desde banco con `contabilidad.reponer_caja`, pantallas `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, contador interactivo de arqueos por denominación DOP/USD en `/contabilidad/cajas/[id]/arqueo`, alertas automáticas de descuadre `diferencia_caja`, OCR inteligente de facturas de proveedores con asignación doble a solicitante y programa institucional, e importación/exportación a Excel .xlsx con auditoría).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD

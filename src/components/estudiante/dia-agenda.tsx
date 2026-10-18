@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardCheck, Inbox, MapPin } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Inbox, MapPin, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { tipoDeEvento } from "@/components/estudiante/periodos";
@@ -18,6 +18,7 @@ const ICONO_ORIGEN = {
   evento: CalendarDays,
   asignacion: ClipboardCheck,
   solicitud: Inbox,
+  reunion: Users,
 } as const;
 
 /**
@@ -74,7 +75,9 @@ export async function DiaAgenda({
                     ? t(`agenda.eventType.${tipoDeEvento(entrada.detalle)}`)
                     : entrada.origen === "asignacion"
                       ? entrada.detalle
-                      : tSolicitud(`type.${entrada.detalle}` as never)}
+                      : entrada.origen === "reunion"
+                        ? entrada.detalle ?? "Reunión"
+                        : tSolicitud(`type.${entrada.detalle}` as never)}
                 </p>
 
                 {entrada.ubicacion && (
@@ -97,6 +100,12 @@ export async function DiaAgenda({
                     }
                   >
                     {t(`agenda.assignment.${entrada.estado}`)}
+                  </Badge>
+                )}
+
+                {entrada.origen === "reunion" && (
+                  <Badge variant="marca">
+                    {entrada.estado}
                   </Badge>
                 )}
 

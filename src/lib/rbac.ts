@@ -87,6 +87,9 @@ export const PERMISOS = [
   "proyectos.asignar_rol",
   "rendicion.enviar",
   "rendicion.revisar",
+  "reuniones.agendar",
+  "reuniones.gestionar",
+  "reuniones.leer",
   "solicitudes.direccion",
   "solicitudes.gestionar",
   "usuarios.administrar",
@@ -205,6 +208,9 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "habitudes.evidencias.subir",
     "habitudes.recursos.leer",
     "habitudes.recursos.subir",
+    "reuniones.agendar",
+    "reuniones.gestionar",
+    "reuniones.leer",
     "solicitudes.direccion",
     "solicitudes.gestionar",
     "usuarios.administrar",
@@ -230,6 +236,9 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "patrocinadores.leer",
     "rendicion.enviar",
     "rendicion.revisar",
+    "reuniones.agendar",
+    "reuniones.gestionar",
+    "reuniones.leer",
     "solicitudes.gestionar",
   ],
   habitudes: [
@@ -239,6 +248,8 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "habitudes.recursos.subir",
     "ia.usar",
     "rendicion.enviar",
+    "reuniones.agendar",
+    "reuniones.leer",
   ],
   docente: [
     "academico.leer",
@@ -249,10 +260,14 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "ia.usar",
     "operaciones.leer",
     "rendicion.enviar",
+    "reuniones.agendar",
+    "reuniones.leer",
   ],
   estudiante: [
     "academico.leer",
     "ia.usar",
+    "reuniones.agendar",
+    "reuniones.leer",
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.
@@ -272,6 +287,8 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "patrocinadores.leer",
     "rendicion.enviar",
     "rendicion.revisar",
+    "reuniones.agendar",
+    "reuniones.leer",
   ],
 };
 
