@@ -332,6 +332,12 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         items: [
           { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          {
+            etiqueta: "meetings",
+            href: "/reuniones",
+            icono: Users,
+            permiso: "reuniones.leer",
+          },
           // La línea de tiempo cierra su propia puerta (junta datos
           // académicos y de operaciones), pero se ofrece solo a quien
           // lleva operaciones: es el que la va a usar de verdad.
@@ -456,6 +462,11 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             href: "/portal/estudiante/calendario",
             icono: CalendarDays,
           },
+          {
+            etiqueta: "meetings",
+            href: "/reuniones",
+            icono: Users,
+          },
           // Trámites con administración: constancias, cartas, citas y
           // permisos. Va en la agenda porque casi todo lo que pide tiene
           // fecha, y la cita aprobada aparece en su calendario.
@@ -540,6 +551,11 @@ const MENU_DOCENTE: AreaNav[] = [
       {
         items: [
           { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          {
+            etiqueta: "meetings",
+            href: "/reuniones",
+            icono: Users,
+          },
           // La línea de tiempo cierra su propia puerta (junta datos
           // académicos y de operaciones), pero se ofrece solo a quien
           // lleva operaciones: es el que la va a usar de verdad.

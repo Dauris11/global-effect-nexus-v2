@@ -43,6 +43,7 @@
     "scholarships": "Scholarships",
     "accounting": "Accounting",
     "calendar": "Calendar",
+    "meetings": "Meetings",
     "timeline": "Timeline",
     "chatIa": "AI Chat",
     "chatIaAdmin": "AI Chat Admin",
@@ -486,7 +487,8 @@
       "event": "Event",
       "task": "Task",
       "assignment": "Class deadline",
-      "appointment": "Administration appointment"
+      "appointment": "Administration appointment",
+      "meeting": "Institutional meeting"
     },
     "eventType": {
       "academico": "Academic",
@@ -3344,6 +3346,98 @@
     "emptyVisitsTitle": "No visits logged for this school",
     "emptyVisitsSubtitle": "Use the 'Log Field Visit' tab to submit the first visit report with photos.",
     "statusCompleted": "Completed"
+  },
+  "reuniones": {
+    "eyebrow": "Operations & Support",
+    "title": "Institutional Meetings",
+    "description": "Collaborative agenda for team coordination, student tutoring sessions, educational follow-ups, and leadership agreements.",
+    "metrics": {
+      "total": "Total Meetings",
+      "scheduled": "Scheduled",
+      "completedMonth": "Completed this Month",
+      "attendees": "Invocations"
+    },
+    "filters": {
+      "searchPlaceholder": "Search meeting or attendee...",
+      "status": "Status",
+      "all": "All statuses",
+      "type": "Meeting type",
+      "allTypes": "All types"
+    },
+    "types": {
+      "coordinacion": "Operational Coordination",
+      "tutoria": "Academic Tutoring",
+      "seguimiento_estudiante": "Student Follow-up",
+      "departamental": "Departmental Meeting",
+      "direccion": "Leadership Board",
+      "general": "General Meeting"
+    },
+    "modality": {
+      "presencial": "In-person",
+      "virtual": "Virtual",
+      "hibrida": "Hybrid"
+    },
+    "status": {
+      "programada": "Scheduled",
+      "en_curso": "In progress",
+      "realizada": "Completed",
+      "cancelada": "Cancelled",
+      "reprogramada": "Rescheduled"
+    },
+    "cards": {
+      "attendees": "Attendees",
+      "host": "Host"
+    },
+    "minuta": {
+      "title": "Meeting Minutes & Agreements"
+    },
+    "actions": {
+      "scheduleNew": "Schedule Meeting",
+      "writeMinuta": "Draft Minutes",
+      "editMinuta": "Edit Minutes",
+      "saveMinuta": "Save Minutes & Agreements",
+      "cancel": "Cancel Meeting",
+      "confirmCancel": "Confirm Cancellation",
+      "confirmSchedule": "Schedule Meeting",
+      "saving": "Saving...",
+      "cancelling": "Cancelling...",
+      "back": "Back"
+    },
+    "dialogSchedule": {
+      "title": "Schedule New Meeting",
+      "description": "Invite Foundation team members or schedule a tutoring session with a student.",
+      "subject": "Subject or title",
+      "subjectPlaceholder": "e.g., Weekly Academies Coordination",
+      "type": "Meeting type",
+      "modality": "Modality",
+      "date": "Date",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "roomOrLink": "Location / Room or virtual link",
+      "linkVirtual": "Virtual link (Google Meet / Zoom)",
+      "roomPlaceholder": "e.g., Board Room B or meet.google.com/...",
+      "descriptionLabel": "Meeting purpose / Agenda points",
+      "descPlaceholder": "Outline key discussion points...",
+      "inviteParticipants": "Invite staff or students",
+      "searchAttendeesPlaceholder": "Search by name or email..."
+    },
+    "dialogMinuta": {
+      "title": "Meeting Minutes & Agreements",
+      "conclusionsAndAgreements": "Agreements, decisions, and commitments",
+      "placeholder": "1. Report deadline agreed upon.\n2. Teaching team will follow up on student attendance.\n3. Next session set for Tuesday.",
+      "attendanceCheck": "Attendance Check",
+      "markCompleted": "Mark this meeting as 'Completed'"
+    },
+    "dialogCancel": {
+      "title": "Cancel Meeting",
+      "description": "Are you sure you want to cancel meeting #{folio} — '{titulo}'?",
+      "reason": "Cancellation reason",
+      "reasonPlaceholder": "Briefly state the reason for cancellation..."
+    },
+    "empty": {
+      "title": "No meetings in this view",
+      "description": "Use the 'Schedule Meeting' button to convene the first session."
+    }
   }
 }
 

@@ -258,6 +258,44 @@ export async function moverEntrada(
         entidadId: movida.id,
         datos: { dia, hora: horaValida || null },
       });
+    } else if (origen === "reunion") {
+      const reunion = await consultarUna<{
+        id: string;
+        organizador_usuario_id: string;
+      }>("SELECT id, organizador_usuario_id FROM reunion WHERE id = $1", [id]);
+
+      if (!reunion) return { estado: "no_encontrado" };
+
+      const puedeMover =
+        tienePermiso(usuario.rol, "reuniones.gestionar") ||
+        reunion.organizador_usuario_id === usuario.id;
+
+      if (!puedeMover) return { estado: "no_permitido" };
+
+      const movida = await consultarUna<{ id: string }>(
+        `UPDATE reunion
+            SET fecha = $2::date,
+                hora_inicio = COALESCE(NULLIF($3, '')::time, hora_inicio),
+                hora_fin = CASE
+                  WHEN NULLIF($3, '') IS NULL THEN hora_fin
+                  WHEN hora_inicio IS NULL OR hora_fin IS NULL THEN hora_fin
+                  ELSE ($3::time + (hora_fin - hora_inicio))
+                END,
+                actualizado_en = now()
+          WHERE id = $1
+        RETURNING id`,
+        [id, dia, horaValida],
+      );
+
+      if (!movida) return { estado: "no_encontrado" };
+
+      await registrar({
+        usuarioId: usuario.id,
+        accion: "reunion.movida",
+        entidad: "reunion",
+        entidadId: movida.id,
+        datos: { dia, hora: horaValida || null },
+      });
     } else {
       return { estado: "solo_lectura" };
     }

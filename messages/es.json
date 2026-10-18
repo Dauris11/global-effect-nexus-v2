@@ -43,6 +43,7 @@
     "scholarships": "Becas",
     "accounting": "Contabilidad",
     "calendar": "Calendario",
+    "meetings": "Reuniones",
     "timeline": "Línea de tiempo",
     "chatIa": "Chat IA",
     "chatIaAdmin": "Chat IA Admin",
@@ -486,7 +487,8 @@
       "event": "Evento",
       "task": "Tarea",
       "assignment": "Entrega de clase",
-      "appointment": "Cita con administración"
+      "appointment": "Cita con administración",
+      "meeting": "Reunión institucional"
     },
     "eventType": {
       "academico": "Académico",
@@ -3344,6 +3346,98 @@
     "emptyVisitsTitle": "No hay visitas registradas para este liceo",
     "emptyVisitsSubtitle": "Utiliza la pestaña 'Registrar Visita' para subir el primer reporte con fotos.",
     "statusCompleted": "Completada"
+  },
+  "reuniones": {
+    "eyebrow": "Operaciones y Acompañamiento",
+    "title": "Reuniones Institucionales",
+    "description": "Agenda colaborativa para coordinación del equipo, tutorías con estudiantes, seguimiento pedagógico y acuerdos de dirección.",
+    "metrics": {
+      "total": "Total Reuniones",
+      "scheduled": "Programadas",
+      "completedMonth": "Realizadas este Mes",
+      "attendees": "Convocatorias"
+    },
+    "filters": {
+      "searchPlaceholder": "Buscar reunión o participante...",
+      "status": "Estado",
+      "all": "Todos los estados",
+      "type": "Tipo de reunión",
+      "allTypes": "Todos los tipos"
+    },
+    "types": {
+      "coordinacion": "Coordinación Operativa",
+      "tutoria": "Tutoría Académica",
+      "seguimiento_estudiante": "Seguimiento a Estudiante",
+      "departamental": "Reunión Departamental",
+      "direccion": "Consejo de Dirección",
+      "general": "Reunión General"
+    },
+    "modality": {
+      "presencial": "Presencial",
+      "virtual": "Virtual",
+      "hibrida": "Híbrida"
+    },
+    "status": {
+      "programada": "Programada",
+      "en_curso": "En curso",
+      "realizada": "Realizada",
+      "cancelada": "Cancelada",
+      "reprogramada": "Reprogramada"
+    },
+    "cards": {
+      "attendees": "Participantes",
+      "host": "Anfitrión"
+    },
+    "minuta": {
+      "title": "Minuta y Acuerdos de la Sesión"
+    },
+    "actions": {
+      "scheduleNew": "Agendar Reunión",
+      "writeMinuta": "Redactar Minuta",
+      "editMinuta": "Editar Minuta",
+      "saveMinuta": "Guardar Minuta y Acuerdos",
+      "cancel": "Cancelar Reunión",
+      "confirmCancel": "Confirmar Cancelación",
+      "confirmSchedule": "Programar Reunión",
+      "saving": "Guardando...",
+      "cancelling": "Cancelando...",
+      "back": "Volver"
+    },
+    "dialogSchedule": {
+      "title": "Agendar Nueva Reunión",
+      "description": "Convoca a miembros del personal de la Fundación o agenda una sesión de tutoría con un estudiante.",
+      "subject": "Título o asunto",
+      "subjectPlaceholder": "Ej. Coordinación Semanal de Academias",
+      "type": "Tipo de reunión",
+      "modality": "Modalidad",
+      "date": "Fecha",
+      "startTime": "Hora inicio",
+      "endTime": "Hora fin",
+      "roomOrLink": "Lugar / Sala o enlace virtual",
+      "linkVirtual": "Enlace virtual (Google Meet / Zoom)",
+      "roomPlaceholder": "Ej. Sala de Juntas B o meet.google.com/...",
+      "descriptionLabel": "Objetivo de la reunión / Puntos a tratar",
+      "descPlaceholder": "Indica los puntos de la agenda a discutir...",
+      "inviteParticipants": "Invitar colaboradores o estudiantes",
+      "searchAttendeesPlaceholder": "Buscar por nombre o correo..."
+    },
+    "dialogMinuta": {
+      "title": "Minuta y Acuerdos de la Reunión",
+      "conclusionsAndAgreements": "Acuerdos, decisiones y compromisos tomados",
+      "placeholder": "1. Se acordó la fecha de entrega de reportes.\n2. Docencia dará seguimiento a los casos de inasistencia.\n3. Próxima sesión fijada para el martes.",
+      "attendanceCheck": "Pase de Asistencia",
+      "markCompleted": "Marcar esta reunión como 'Realizada'"
+    },
+    "dialogCancel": {
+      "title": "Cancelar Reunión",
+      "description": "¿Estás seguro de cancelar la reunión #{folio} — '{titulo}'?",
+      "reason": "Motivo de la cancelación",
+      "reasonPlaceholder": "Explica brevemente la razón de la cancelación..."
+    },
+    "empty": {
+      "title": "No hay reuniones en esta vista",
+      "description": "Utiliza el botón 'Agendar Reunión' para convocar la primera sesión."
+    }
   }
 }
 

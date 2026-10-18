@@ -90,7 +90,7 @@ import {
  */
 
 export type Entrada = {
-  origen: "evento" | "tarea" | "asignacion" | "cita";
+  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion";
   id: string;
   titulo: string;
   detalle: string | null;
@@ -113,16 +113,14 @@ type Vista = "mes" | "semana" | "dia" | "lista";
  * El color lo da el origen, no una elección.
  *
  * Azul oscuro para las citas con administración, negro para lo que tiene fecha límite, azul de la
- * casa para lo institucional y azul claro para lo que vence en una clase.
- * Cuatro pesos del mismo color: se distinguen sin salirse de la marca y se leen
- * igual en escala de grises. El azul claro va con texto en tinta y no en
- * blanco, que sobre ese tono no se lee.
+ * casa para lo institucional, azul medio para reuniones y azul claro para lo que vence en una clase.
  */
 const COLOR_ORIGEN = {
   cita: "bg-[#0a6a8a] text-white",
   tarea: "bg-[#171A1D] text-white",
   evento: "bg-[#2096BA] text-white",
   asignacion: "bg-[#5FB8D4] text-[#171A1D]",
+  reunion: "bg-[#187a99] text-white",
 } as const;
 
 /** Del origen a su clave en `calendar.origin.*`. */
@@ -131,6 +129,7 @@ const LLAVE_ORIGEN = {
   tarea: "task",
   cita: "appointment",
   asignacion: "assignment",
+  reunion: "meeting",
 } as const;
 
 const TIPOS_EVENTO = [
