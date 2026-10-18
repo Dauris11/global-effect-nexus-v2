@@ -13,6 +13,8 @@ import {
   usuariosAsignables,
 } from "@/server/operaciones/consultas";
 
+import { Link } from "@/i18n/navigation";
+
 export async function generateMetadata({
   params,
 }: {
@@ -60,14 +62,23 @@ export default async function PaginaTareas({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("hub.link_tasks")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <ListTodo className="size-5 text-[#2096BA]" />
-          {t("tasks.title")}
-        </h1>
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
+            {t("hub.link_tasks")}
+          </p>
+          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
+            <ListTodo className="size-5 text-marca-500" />
+            {t("tasks.title")}
+          </h1>
+        </div>
+
+        <Link
+          href="/administrativo/tareas/hoy"
+          className="inline-flex min-h-[40px] items-center rounded-lg border border-marca-500/30 bg-marca-50 px-3.5 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
+        >
+          {t("hub.link_my_day")}
+        </Link>
       </div>
 
       <NextIntlClientProvider messages={mensajes}>

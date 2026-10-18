@@ -69,7 +69,7 @@ export function CajonAccionesRapidas({
     {
       titulo: "Rendir Gasto / Factura",
       descripcion: "Carga de comprobante fiscal",
-      href: "/administrativo/solicitudes",
+      href: "/administrativo/rendiciones",
       icono: Receipt,
       badge: "Comprobante",
       roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes"],
@@ -77,7 +77,7 @@ export function CajonAccionesRapidas({
     {
       titulo: "Lo que me toca hoy",
       descripcion: "Torre de control y mis tareas",
-      href: "/administrativo/tareas",
+      href: "/administrativo/tareas/hoy",
       icono: CheckSquare,
       badge: "Mi Día",
       roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes"],

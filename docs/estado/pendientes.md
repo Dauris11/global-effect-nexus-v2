@@ -27,20 +27,24 @@ módulo) — esto es solo la cola de pendientes concretos.
       pantallas /contabilidad/proveedores, /contabilidad/cuentas-por-pagar,
       /contabilidad/cuentas-por-pagar/gantt, /contabilidad/facturas/[id], y
       alertas antifraude correspondientes).
-- [ ] **Torre de Control del Colaborador ("Lo que me toca hoy"):** Centro operativo
-      diario para cada empleado con tareas para hoy, tareas vencidas y tareas por hacer;
-      estados de avance reales (`por_hacer`, `en_progreso`, `en_revision`, `completada`),
-      bitácora de actividades registradas en el día y autoasignación de tareas prioritarias
-      (pagos urgentes, compras con comprobante fiscal, diligencias exteriores).
-- [ ] **Gestión de Proyectos Institucionales por Rol (Gobierno Superadmin):**
-      Asignación de proyectos a todo el personal institucional según su rol y departamento,
-      gobernado exclusivamente por `super_admin` con permisos granulares; interfaz
-      y gestor contextual estilo Claude sincronizado con calendario institucional y tareas.
-- [ ] **Rendición de Gastos y Facturas de Empleados hacia Contabilidad:** Flujo
-      integrado para que cualquier colaborador institucional cargue facturas con
-      comprobante fiscal (NCF) $\rightarrow$ Contabilidad recibe, valida ante DGII, e
-      imputa al programa correspondiente (Casa de Herramientas, Juan Bosch, Becas, etc.)
-      y a la persona asignada.
+- [x] **Torre de Control del Colaborador ("Lo que me toca hoy"):** Centro operativo
+      diario para cada empleado (`/administrativo/tareas/hoy` y `VistaHoy`),
+      con tareas para hoy, tareas vencidas y tareas por hacer; estados de avance
+      reales (`por_hacer`, `en_progreso`, `en_revision`, `completada`), bitácora diaria
+      de actividades con registro de horas y minutos (`colaborador_bitacora_diaria`),
+      resumen de indicadores en cabecera y autoasignación de tareas prioritarias
+      (migración `0041_torre_control_y_rendicion_gastos.sql`).
+- [x] **Gestión de Proyectos Institucionales por Rol (Gobierno Superadmin):**
+      Asignación y gobernanza exclusiva de proyectos por el `super_admin`
+      (`/administrativo/proyectos/roles` y `MatrizProyectosRoles` con permisos `proyectos.asignar_rol`),
+      asociando proyectos a roles institucionales (`admin`, `docente`, `contabilidad`, `habitudes`)
+      en `public.proyecto_rol`, visualización contextual de programas en la jornada del colaborador.
+- [x] **Rendición de Gastos y Facturas de Empleados hacia Contabilidad:** Flujo
+      integrado (`/administrativo/rendiciones`, `FormularioRendicionGasto`, `ListaRendiciones`)
+      para que cualquier colaborador institucional con `rendicion.enviar` cargue comprobantes fiscales
+      con captura de foto y escaneo inteligente de OCR (NCF dominicano B01/B02/E31, RNC, proveedor, montos e ITBIS),
+      imputación a programas sociales (Casa de Herramientas, Becas, etc.) y bandeja de aprobación
+      y rechazo con validación fiscal ante DGII para Contabilidad (`rendicion.revisar`).
 - [ ] **Global 360 y Aula Virtual (Estilo Moodle):** Selección y matrícula cuatrimestral
       obligatoria (dos veces por cuatrimestre) de materias con horarios y docentes asignados;
       módulo de tareas estilo Moodle con restricciones de formato/tamaño (MB), buzón de entregas,
