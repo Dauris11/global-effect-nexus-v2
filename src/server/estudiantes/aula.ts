@@ -32,6 +32,7 @@ export type AsignacionDelEstudiante = {
   fecha_vencimiento: Date | null;
   materia: string;
   materia_codigo: string | null;
+  docente_nombre?: string | null;
   /** `null` cuando el docente aún no ha abierto una fila de entrega. */
   estado_entrega: "pendiente" | "entregado" | "calificado" | "tarde" | null;
   fecha_entrega: Date | null;
@@ -39,14 +40,23 @@ export type AsignacionDelEstudiante = {
   comentario_profesor: string | null;
   /** Lo calcula la base: vencida y sin entregar. */
   vencida: boolean;
+  // Campos Moodle
+  limite_mb?: number;
+  formatos_permitidos?: string[];
+  puntaje_maximo?: number;
+  permite_entregas_tardias?: boolean;
+  instrucciones_entrega?: string | null;
+  entrega_id?: string | null;
+  entrega_archivo_nombre?: string | null;
+  entrega_archivo_tamano_mb?: number | null;
+  entrega_archivo_formato?: string | null;
+  entrega_comentario_estudiante?: string | null;
 };
 
 /**
  * Asignaciones de las materias en las que el estudiante está inscrito ahora.
  *
- * Solo `inscripcion.estado = 'activa'`: las tareas de una materia que retiró
- * ya no son suyas, y las de un período cerrado solo servirían para llenar la
- * pantalla de pendientes imposibles de entregar.
+ * Incluye materias del instituto, materias universitarias y Global 360.
  */
 export async function asignacionesDelEstudiante(
   estudianteId: string,
@@ -59,24 +69,47 @@ export async function asignacionesDelEstudiante(
             a.archivo_url,
             a.fecha_publicacion,
             a.fecha_vencimiento,
-            m.nombre AS materia,
-            m.codigo AS materia_codigo,
-            e.estado::text AS estado_entrega,
+            coalesce(m.nombre, c.nombre, m360.nombre, 'Asignatura') AS materia,
+            coalesce(m.codigo, c.codigo, m360.codigo) AS materia_codigo,
+            doc.nombre AS docente_nombre,
+            coalesce(e.estado::text, 'pendiente') AS estado_entrega,
             e.fecha_entrega,
             e.calificacion::float8 AS calificacion,
             e.comentario_profesor,
             (a.fecha_vencimiento IS NOT NULL
              AND a.fecha_vencimiento < now()
-             AND coalesce(e.estado::text, 'pendiente') = 'pendiente') AS vencida
+             AND coalesce(e.estado::text, 'pendiente') = 'pendiente') AS vencida,
+            coalesce(a.limite_mb, 15)::int AS limite_mb,
+            coalesce(a.formatos_permitidos, ARRAY['pdf', 'docx', 'zip'])::text[] AS formatos_permitidos,
+            coalesce(a.puntaje_maximo, 100.00)::float8 AS puntaje_maximo,
+            coalesce(a.permite_entregas_tardias, true) AS permite_entregas_tardias,
+            a.instrucciones_entrega,
+            e.id AS entrega_id,
+            e.archivo_nombre AS entrega_archivo_nombre,
+            e.archivo_tamano_mb::float8 AS entrega_archivo_tamano_mb,
+            e.archivo_formato AS entrega_archivo_formato,
+            e.comentario_estudiante AS entrega_comentario_estudiante
        FROM asignacion a
-       JOIN materia m ON m.id = a.materia_id
-       JOIN inscripcion i
-         ON i.materia_id = a.materia_id
-        AND i.estudiante_id = $1
-        AND i.estado = 'activa'
+       LEFT JOIN materia m ON m.id = a.materia_id
+       LEFT JOIN curso c ON c.id = a.curso_id
+       LEFT JOIN materia_360 m360 ON m360.id = a.materia_360_id
+       LEFT JOIN usuario doc ON doc.id = a.creada_por_id
        LEFT JOIN entrega_estudiante e
          ON e.asignacion_id = a.id
         AND e.estudiante_id = $1
+      WHERE (
+        a.materia_id IN (
+          SELECT i.materia_id FROM inscripcion i
+           WHERE i.estudiante_id = $1 AND i.estado = 'activa'
+        )
+        OR
+        a.materia_360_id IN (
+          SELECT i360.materia_id FROM inscripcion_360 i360
+           WHERE i360.estudiante_id = $1 AND i360.estado IN ('cursando', 'prematriculada')
+        )
+        OR
+        (a.materia_id IS NULL AND a.curso_id IS NULL AND a.materia_360_id IS NULL)
+      )
       ORDER BY a.fecha_vencimiento ASC NULLS LAST, a.fecha_publicacion DESC`,
     [estudianteId],
   );

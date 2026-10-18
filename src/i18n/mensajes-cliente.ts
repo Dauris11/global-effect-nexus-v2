@@ -29,6 +29,8 @@ const ESPACIOS_BASE = [
   "widgetIA",
   // Espacio del módulo de contabilidad para filtros, pestañas y estados
   "contab",
+  // Espacio del aula virtual Moodle y matrícula 360
+  "moodle",
 ] as const;
 
 /**

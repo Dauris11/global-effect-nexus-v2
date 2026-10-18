@@ -202,6 +202,15 @@ export async function publicarTarea(
   const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 900);
   const tipo = String(datos.get("tipo") ?? "tarea");
   const vence = String(datos.get("vence") ?? "").trim();
+  const limiteMb = Math.max(1, Math.min(100, Number(datos.get("limite_mb") || 15)));
+  const formatosRaw = String(datos.get("formatos_permitidos") || "pdf, docx, zip");
+  const formatosPermitidos = formatosRaw
+    .split(",")
+    .map((f) => f.trim().replace(/^\./, "").toLowerCase())
+    .filter(Boolean);
+  const puntajeMaximo = Math.max(1, Math.min(1000, Number(datos.get("puntaje_maximo") || 100)));
+  const permiteTardias = datos.get("permite_entregas_tardias") !== "false";
+  const instrucciones = String(datos.get("instrucciones_entrega") ?? "").trim().slice(0, 2000);
 
   if (!titulo) return { estado: "nombre_vacio" };
   if (tipo !== "tarea" && tipo !== "examen") return { estado: "invalido" };
@@ -221,26 +230,34 @@ export async function publicarTarea(
     const creada =
       clase === "curso"
         ? await consultarUna<{ id: string }>(
-            `INSERT INTO asignacion (titulo, descripcion, tipo, curso_id, fecha_vencimiento, creada_por_id)
+            `INSERT INTO asignacion (
+               titulo, descripcion, tipo, curso_id, fecha_vencimiento, creada_por_id,
+               limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
+             )
              SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, c.id,
-                    NULLIF($4, '')::timestamptz, $5
+                    NULLIF($4, '')::timestamptz, $5,
+                    $8, $9, $10, $11, NULLIF($12, '')
                FROM curso c
               WHERE c.id = $6
                 AND ($7::uuid IS NULL OR c.docente_usuario_id = $7)
              RETURNING id`,
             [titulo, descripcion, tipo, vence, usuario.id, idUnidad,
-             puedeTodo ? null : usuario.id],
+             puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
           )
         : await consultarUna<{ id: string }>(
-            `INSERT INTO asignacion (titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id)
+            `INSERT INTO asignacion (
+               titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
+               limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
+             )
              SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
-                    NULLIF($4, '')::timestamptz, $5
+                    NULLIF($4, '')::timestamptz, $5,
+                    $8, $9, $10, $11, NULLIF($12, '')
                FROM materia_360 m
               WHERE m.id = $6
                 AND ($7::uuid IS NULL OR m.docente_id = $7)
              RETURNING id`,
             [titulo, descripcion, tipo, vence, usuario.id, idUnidad,
-             puedeTodo ? null : usuario.id],
+             puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
           );
 
     if (!creada) return { estado: "no_encontrado" };

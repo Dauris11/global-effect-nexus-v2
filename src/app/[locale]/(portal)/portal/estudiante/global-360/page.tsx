@@ -10,6 +10,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
+import { MatriculaCuatrimestral360 } from "@/components/estudiante/matricula-cuatrimestral-360";
 import {
   TarjetaMateriaG360,
   type MateriaG360,
@@ -30,6 +31,10 @@ import {
   catalogoConSituacion,
   ventanaVigente,
 } from "@/server/global360/consultas";
+import {
+  catalogoMatricula360,
+  ventanaMatriculaActiva,
+} from "@/server/moodle/consultas";
 
 export async function generateMetadata({
   params,
@@ -88,11 +93,14 @@ export default async function PaginaGlobal360({
     );
   }
 
-  const [materias, avance, ventana] = await Promise.all([
-    catalogoConSituacion(estudiante.id),
-    avanceEn360(estudiante.id),
-    ventanaVigente(),
-  ]);
+  const [materias, avance, ventana, catalogoMatricula, ventanaMatricula] =
+    await Promise.all([
+      catalogoConSituacion(estudiante.id),
+      avanceEn360(estudiante.id),
+      ventanaVigente(),
+      catalogoMatricula360(estudiante.id),
+      ventanaMatriculaActiva(),
+    ]);
 
   const dadas = materias.filter((m) => m.situacion === "aprobada");
   const porDar = materias.filter((m) => m.situacion !== "aprobada");
@@ -160,6 +168,12 @@ export default async function PaginaGlobal360({
         <StatCard icono={CircleDashed} valor={porDar.length} etiqueta={t("pending")} />
         <StatCard icono={CircleCheck} valor={dadas.length} etiqueta={t("taken")} />
       </div>
+
+      {/* Selector interactivo de matrícula cuatrimestral por rondas */}
+      <MatriculaCuatrimestral360
+        materiasIniciales={catalogoMatricula}
+        ventana={ventanaMatricula}
+      />
 
       <section className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">

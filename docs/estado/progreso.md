@@ -128,8 +128,8 @@ Cerrado. Es el único portal completo de punta a punta.
 | ✅ | Mi portal | `/portal/estudiante` | — |
 | ✅ | **Mis materias** | `/portal/estudiante/prematricula` | Su matrícula período a período **y la elección de las del próximo**: dentro de la ventana de prematrícula el becado se inscribe y se quita él mismo. Fuera de la ventana vuelve a ser solo lectura. La ventana se comprueba **dentro del INSERT**, no antes con un `if` |
 | ✅ | Calificaciones | `/portal/estudiante/calificaciones` | — |
-| ✅ | **Global Effect 360** | `/portal/estudiante/global-360` | Materias dadas y por dar, avance de obligatorias y opcionales, y prematrícula desde la propia pantalla cuando la ventana está abierta. Solo para becados: la base lo impone con un trigger |
-| ✅ | Aula virtual | `/portal/estudiante/aula-virtual` | **Entrega de PDF funcionando**: sube al bucket privado y pasa a revisión del profesor. Probado de punta a punta, incluido que sin enlace firmado no se descarga |
+| ✅ | **Global Effect 360** | `/portal/estudiante/global-360` | Matrícula cuatrimestral obligatoria en 2 rondas (`MatriculaCuatrimestral360`: Ronda 1 Regular, Ronda 2 Ajustes) con cupos en vivo, aulas, horarios y docentes. Materias dadas y por dar, avance de obligatorias y opcionales. Base con triggers y validaciones de cupo estricto. |
+| ✅ | **Aula virtual (Estilo Moodle)** | `/portal/estudiante/aula-virtual` | Buzón de entregas Moodle (`BuzonTareaMoodle` y `BotonBuzonMoodle`) con límites en MB, formatos permitidos (.pdf, .docx, .zip), advertencia de entrega tardía, rúbricas de evaluación, visualización de feedback docente y calificación. |
 | ✅ | Calendario | `/portal/estudiante/calendario` | — |
 | ✅ | Chat IA | `/portal/estudiante/chat` | Funciona con el contexto académico del propio estudiante. El RAG con embeddings sobre `fragmento_conocimiento` es **S11**. Hoy la clave de Anthropic de `.env.local` es inválida (401), así que responde "no está configurado" |
 | ✅ | **Mis solicitudes** | `/portal/estudiante/solicitudes` | Constancia, carta, cita con administración, permiso u otro trámite. Una solicitud abierta por tipo, la ficha sale de la sesión, y la línea de tiempo enseña cada paso con quién lo dio. Solo puede cancelar mientras nadie la haya decidido. Sustituye a la cita de psicología |
@@ -141,7 +141,7 @@ Cerrado. Es el único portal completo de punta a punta.
 | Estado | Módulo | Ruta | Sprint | Qué falta |
 |---|---|---|---|---|
 | ✅ | **Mi portal** | `/portal/profesor` | S6 | KPIs reales (cursos activos, estudiantes, notas registradas y entregas por revisar) y tres listas separadas —cursos técnicos, materias universitarias a su nombre y clases de 360—, porque son tres programas distintos. **No edita nada**: registrar, publicar tarea y revisar viven en `/academico/*`, que es donde están los formularios con sus comprobaciones |
-| ✅ | Cursos técnicos y clases de 360 | `/academico/cursos` | S6 | Ve **solo lo suyo**; administración ve todo |
+| ✅ | **Cursos técnicos y clases de 360** | `/academico/cursos` | S6 | Ve **solo lo suyo**; administración ve todo. Publicación de tareas con configuración Moodle (MB, formatos, rúbricas y entregas tardías), evaluación con retroalimentación y Vista de Estudiante (simulación interactiva). |
 | ✅ | Materias y períodos | `/academico/materias` · `/academico/periodos` | S6 | Los lee con `academico.leer`; escribirlos pide `academico.escribir`, que el docente no tiene |
 | ✅ | Calificaciones | `/academico/calificaciones` | S6 | Registra las de sus cursos; las ajenas las ve pero no las toca |
 | ✅ | **Calendario** | `/calendario` | S9 | Ya enseña **lo que vence en sus clases**: las tareas y exámenes que publicó, sobre las tres vías que puede dar —materia universitaria, curso técnico y clase de 360—, enlazadas por la clave del docente y nunca por su nombre (la 0019 existe por eso). Antes solo veía actos institucionales y tareas administrativas, así que abría el calendario, no encontraba nada suyo y no volvía |

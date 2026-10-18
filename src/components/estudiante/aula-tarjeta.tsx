@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { EntregarTarea } from "@/components/estudiante/entregar-tarea";
+import { BotonBuzonMoodle } from "@/components/estudiante/boton-buzon-moodle";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Locale } from "@/i18n/routing";
@@ -188,14 +188,8 @@ export function TarjetaAsignacion({
             )}
           </div>
 
-          {puedeEntregar && (
-            <EntregarTarea
-              asignacionId={fila.id}
-              yaEntregada={
-                fila.estado_entrega === "entregado" ||
-                fila.estado_entrega === "tarde"
-              }
-            />
+          {evaluable && (
+            <BotonBuzonMoodle fila={fila} />
           )}
         </div>
       )}

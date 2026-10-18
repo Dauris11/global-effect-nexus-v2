@@ -760,6 +760,66 @@ function FormularioTarea({
         />
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label htmlFor={`t-limite-${unidad}`}>{t("courses.taskMaxMb")}</Label>
+          <Input
+            id={`t-limite-${unidad}`}
+            name="limite_mb"
+            type="number"
+            min={1}
+            max={100}
+            defaultValue={15}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`t-formatos-${unidad}`}>{t("courses.taskFormats")}</Label>
+          <Input
+            id={`t-formatos-${unidad}`}
+            name="formatos_permitidos"
+            defaultValue="pdf, docx, zip"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`t-puntos-${unidad}`}>{t("courses.taskMaxPoints")}</Label>
+          <Input
+            id={`t-puntos-${unidad}`}
+            name="puntaje_maximo"
+            type="number"
+            min={1}
+            max={1000}
+            defaultValue={100}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor={`t-instrucciones-${unidad}`}>{t("courses.taskRubric")}</Label>
+        <Textarea
+          id={`t-instrucciones-${unidad}`}
+          name="instrucciones_entrega"
+          placeholder={t("courses.taskRubricPlaceholder")}
+          maxLength={1500}
+          rows={2}
+        />
+      </div>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          id={`t-tardias-${unidad}`}
+          name="permite_entregas_tardias"
+          value="true"
+          defaultChecked
+          className="size-4 rounded border-input text-marca-600 focus:ring-ring"
+        />
+        <span className="text-xs text-tinta-2">
+          {t("courses.taskAllowLate")}
+        </span>
+      </label>
+
       <p className="text-muted-foreground text-xs">{t("courses.taskDueHint")}</p>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
