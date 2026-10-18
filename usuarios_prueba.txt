@@ -53,6 +53,14 @@ GlobalEffect2026!
    - Portal:       /habitudes
    - Permisos:     Hub colaborativo de recursos, registro fotográfico en liceos, reclutas del embudo y postulación.
 
+7. DIRECTOR DE HABITUDES (DH)
+   - Rol:          dir_habitudes (DH)
+   - Nombre:       Director Habitudes La Vega
+   - Email:        director.habitudes@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /habitudes
+   - Permisos:     Supervisión pedagógica, mapa interactivo de La Vega, monitoreo de profesores y evidencias, asignación a liceos.
+
 --------------------------------------------------------------------------------
 OTRAS CUENTAS EXISTENTES EN LA BASE DE DATOS:
 --------------------------------------------------------------------------------

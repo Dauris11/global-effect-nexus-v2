@@ -24,6 +24,60 @@ export interface HabitudesLiceo {
   telefono: string | null;
   direccion: string | null;
   activo: boolean;
+  municipio?: string | null;
+  distrito_municipal?: string | null;
+  sector?: string | null;
+  calle?: string | null;
+  latitud?: number | null;
+  longitud?: number | null;
+  profesoresAsignados?: Array<{
+    profesorId: string;
+    profesorNombre: string;
+    tanda: TandaLiceo;
+  }>;
+  totalEstudiantes?: number;
+}
+
+export interface HabitudesLiceoProfesor {
+  id: string;
+  liceoId: string;
+  liceoNombre: string;
+  profesorId: string;
+  profesorNombre: string;
+  profesorEmail: string;
+  tanda: TandaLiceo;
+  materiaTaller: string;
+  activo: boolean;
+  asignadoEn: string;
+}
+
+export interface HabitudesLiceoEstudiante {
+  id: string;
+  liceoId: string;
+  liceoNombre: string;
+  estudianteId: string;
+  estudianteNombre: string;
+  estudianteMatricula?: string | null;
+  grado?: string | null;
+  seccion?: string | null;
+  activo: boolean;
+  registradoEn: string;
+}
+
+export interface ProfesorMonitoreoItem {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  liceosAsignados: Array<{
+    liceoId: string;
+    liceoNombre: string;
+    tanda: TandaLiceo;
+    municipio: string;
+  }>;
+  totalEvidencias: number;
+  estudiantesImpactados: number;
+  ultimaVisita?: string | null;
 }
 
 export interface HabitudesRecurso {

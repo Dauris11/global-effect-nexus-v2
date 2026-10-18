@@ -27,12 +27,22 @@ import { join } from "node:path";
 const ARCOIRIS =
   /\b(bg|text|border|from|to|via|ring|fill|stroke|divide|outline|shadow|decoration|accent|caret|placeholder)-(emerald|amber|orange|rose|violet|red|green|yellow|purple|teal|pink|indigo|lime|fuchsia|cyan|sky)-[0-9]/;
 const HEX = /#[0-9A-Fa-f]{6}\b/g;
-const SEMAFORO = new Set(["#1E9E6A", "#B4342B"]);
+/** Colores estrictos de la marca y del semáforo institucional (docs/09-sistema-visual.md). */
+const PERMITIDOS_HEX = new Set([
+  "#1E9E6A", // Semáforo entidad activa / aprobado
+  "#B4342B", // Semáforo entidad inactiva / rechazado / alerta
+  "#2096BA", // Turquesa institucional
+  "#187A99", // Turquesa institucional hover
+  "#0A6A8A", // Turquesa institucional oscuro
+  "#5FB8D4", // Turquesa suave institucional
+  "#171A1D", // Tinta institucional
+  "#FFFFFF", // Blanco puro
+  "#000000", // Negro puro
+]);
 const EXCEPCIONES_HEX = [
   "src/lib/paleta.ts",
   "src/components/dashboard/graficas.tsx",
   "src/components/landing/globe.tsx",
-  
 ];
 
 const archivos = [];
@@ -59,7 +69,7 @@ for (const archivo of archivos) {
     // Un comentario que cita un color no pinta nada.
     if (/^\s*(\*|\/\/|\/\*)/.test(linea)) return;
     for (const [valor] of linea.matchAll(HEX)) {
-      if (SEMAFORO.has(valor.toUpperCase())) continue;
+      if (PERMITIDOS_HEX.has(valor.toUpperCase())) continue;
       hex++;
       porArchivo.set(archivo, (porArchivo.get(archivo) ?? 0) + 1);
     }

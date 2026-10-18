@@ -693,6 +693,7 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   estudiante: MENU_ESTUDIANTE,
   contabilidad: MENU_CONTABILIDAD,
   habitudes: MENU_HABITUDES,
+  dir_habitudes: MENU_HABITUDES,
 };
 
 /**

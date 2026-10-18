@@ -23,6 +23,7 @@ const USUARIOS = [
   { email: "docente@globaleffect.org",       nombre: "Roberto Gómez",               rol: "docente" },
   { email: "estudiante@globaleffect.org",    nombre: "Yeimy Rodríguez",             rol: "estudiante" },
   { email: "habitudes@globaleffect.org",     nombre: "Laura Fermín",                rol: "habitudes" },
+  { email: "director.habitudes@globaleffect.org", nombre: "Director Habitudes La Vega", rol: "dir_habitudes" },
   { email: "contabilidad@globaleffect.org",  nombre: "Ana Santana",                 rol: "contabilidad" },
 ];
 

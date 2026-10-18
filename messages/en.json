@@ -2342,7 +2342,8 @@
     "docente": "Teacher",
     "estudiante": "Student",
     "contabilidad": "Accounting",
-    "habitudes": "Habitudes"
+    "habitudes": "Habitudes",
+    "dir_habitudes": "Director of Habitudes (DH)"
   },
   "requests": {
     "studentEyebrow": "My portal",
@@ -3059,6 +3060,7 @@
     "rolAdmin": "Administration",
     "rolSuperAdmin": "Super Admin",
     "rolHabitudes": "Habitudes",
+    "rolDirHabitudes": "Director of Habitudes (DH)",
     "placeholderConsultas": "Ask a question about regulations, subjects, or data…",
     "placeholderAcciones": "State or speak an action (e.g. 'Take me to Accounts Payable')…",
     "enviar": "Send",
@@ -3290,6 +3292,8 @@
     "tabLogVisitShort": "Log Visit",
     "tabEvidences": "Evidence & Gallery",
     "tabEvidencesShort": "Gallery",
+    "tabSupervision": "DH Supervision & La Vega Map",
+    "tabSupervisionShort": "Supervision",
     "searchPlaceholder": "Search by title, format, or keyword...",
     "uploadResourceButton": "Share Resource",
     "catAll": "All",

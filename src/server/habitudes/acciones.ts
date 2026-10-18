@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
-import { requerirUsuario } from "@/lib/auth";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
+import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { tienePermiso } from "@/lib/rbac";
 
 export type AccionHabitudesResultado = {
@@ -143,5 +144,249 @@ export async function registrarVisitaLiceoAction(
   } catch (err) {
     console.error("[habitudes] Error al registrar visita:", err);
     return { ok: false, mensaje: "Error de servidor al guardar la visita." };
+  }
+}
+
+/**
+ * Asigna un profesor de Habitudes a un liceo en La Vega con su tanda correspondiente.
+ * Exclusivo de Director de Habitudes (DH), Admin o Superadmin.
+ */
+export async function asignarProfesorLiceoAction({
+  liceoId,
+  profesorId,
+  tanda,
+  materiaTaller,
+}: {
+  liceoId: string;
+  profesorId: string;
+  tanda: string;
+  materiaTaller?: string;
+}): Promise<AccionHabitudesResultado> {
+  const usuario = await requerirPermiso("habitudes.supervisar");
+
+  try {
+    const res = await consultarUna<{ id: string }>(
+      `INSERT INTO public.habitudes_liceo_profesor (
+         liceo_id, profesor_id, tanda, materia_taller, asignado_por
+       ) VALUES ($1, $2, $3, COALESCE($4, 'Liderazgo Habitudes'), $5)
+       ON CONFLICT (liceo_id, profesor_id, tanda)
+       DO UPDATE SET activo = true,
+                     materia_taller = EXCLUDED.materia_taller
+       RETURNING id`,
+      [liceoId, profesorId, tanda, materiaTaller || null, usuario.id],
+    );
+
+    if (!res) return { ok: false, mensaje: "No se pudo asignar el profesor al liceo." };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "habitudes.liceo.profesor_asignado",
+      entidad: "habitudes_liceo_profesor",
+      entidadId: res.id,
+      datos: { liceoId, profesorId, tanda },
+    });
+
+    revalidatePath("/habitudes");
+    return { ok: true, mensaje: "Profesor asignado al liceo exitosamente.", id: res.id };
+  } catch (err) {
+    console.error("[habitudes] Error al asignar profesor:", err);
+    return { ok: false, mensaje: "Error al registrar la asignación del docente." };
+  }
+}
+
+/**
+ * Vincula un estudiante de la Fundación a un liceo de Habitudes.
+ */
+export async function asignarEstudianteLiceoAction({
+  liceoId,
+  estudianteId,
+  grado,
+  seccion,
+}: {
+  liceoId: string;
+  estudianteId: string;
+  grado?: string;
+  seccion?: string;
+}): Promise<AccionHabitudesResultado> {
+  const usuario = await requerirPermiso("habitudes.supervisar");
+
+  try {
+    const res = await consultarUna<{ id: string }>(
+      `INSERT INTO public.habitudes_liceo_estudiante (
+         liceo_id, estudiante_id, grado, seccion, registrado_por
+       ) VALUES ($1, $2, COALESCE($3, '5to Secundaria'), COALESCE($4, 'A'), $5)
+       ON CONFLICT (liceo_id, estudiante_id)
+       DO UPDATE SET activo = true, grado = EXCLUDED.grado, seccion = EXCLUDED.seccion
+       RETURNING id`,
+      [liceoId, estudianteId, grado || null, seccion || null, usuario.id],
+    );
+
+    if (!res) return { ok: false, mensaje: "No se pudo registrar al estudiante en el liceo." };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "habitudes.liceo.estudiante_asignado",
+      entidad: "habitudes_liceo_estudiante",
+      entidadId: res.id,
+      datos: { liceoId, estudianteId },
+    });
+
+    revalidatePath("/habitudes");
+    return { ok: true, mensaje: "Estudiante vinculado al liceo con éxito.", id: res.id };
+  } catch (err) {
+    console.error("[habitudes] Error al vincular estudiante:", err);
+    return { ok: false, mensaje: "Error al registrar vinculación del estudiante." };
+  }
+}
+
+/**
+ * Guarda las coordenadas y dirección de un liceo, verificando la regla estricta de La Vega.
+ */
+export async function guardarUbicacionLiceoAction({
+  liceoId,
+  latitud,
+  longitud,
+  municipio,
+  distritoMunicipal,
+  sector,
+  calle,
+}: {
+  liceoId: string;
+  latitud: number;
+  longitud: number;
+  municipio: string;
+  distritoMunicipal?: string;
+  sector?: string;
+  calle?: string;
+}): Promise<AccionHabitudesResultado> {
+  const usuario = await requerirPermiso("habitudes.supervisar");
+
+  // Regla estricta: debe estar dentro de la provincia de La Vega
+  if (!estaEnLaVega(latitud, longitud)) {
+    return {
+      ok: false,
+      mensaje: "Error: La ubicación debe estar estrictamente dentro de la provincia de La Vega.",
+    };
+  }
+
+  try {
+    await consultarUna(
+      `UPDATE public.habitudes_liceo
+          SET latitud = $1,
+              longitud = $2,
+              municipio = $3,
+              distrito_municipal = $4,
+              sector = $5,
+              calle = $6
+        WHERE id = $7
+       RETURNING id`,
+      [
+        latitud,
+        longitud,
+        municipio,
+        distritoMunicipal || null,
+        sector || null,
+        calle || null,
+        liceoId,
+      ],
+    );
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "habitudes.liceo.geolocalizado",
+      entidad: "habitudes_liceo",
+      entidadId: liceoId,
+      datos: { latitud, longitud, municipio },
+    });
+
+    revalidatePath("/habitudes");
+    return { ok: true, mensaje: "Ubicación del liceo guardada correctamente en La Vega." };
+  } catch (err) {
+    console.error("[habitudes] Error al guardar geolocalización de liceo:", err);
+    return { ok: false, mensaje: "Error al actualizar coordenadas del liceo." };
+  }
+}
+
+/**
+ * Guarda la ubicación de vivienda de un estudiante en su expediente,
+ * validando que caiga estrictamente dentro de la provincia de La Vega.
+ */
+export async function guardarUbicacionViviendaEstudianteAction({
+  estudianteId,
+  latitud,
+  longitud,
+  municipio,
+  distritoMunicipal,
+  sector,
+  calle,
+  numeroCasa,
+  referenciaUbicacion,
+}: {
+  estudianteId: string;
+  latitud: number;
+  longitud: number;
+  municipio: string;
+  distritoMunicipal?: string;
+  sector?: string;
+  calle?: string;
+  numeroCasa?: string;
+  referenciaUbicacion?: string;
+}): Promise<AccionHabitudesResultado> {
+  const usuario = await requerirUsuario();
+
+  if (!tienePermiso(usuario.rol, "expedientes.escribir")) {
+    return { ok: false, mensaje: "No tienes permiso para actualizar expedientes de estudiantes." };
+  }
+
+  // Regla estricta: debe pertenecer a la provincia de La Vega
+  if (!estaEnLaVega(latitud, longitud)) {
+    return {
+      ok: false,
+      mensaje: "La vivienda del estudiante debe ubicarse estrictamente en la provincia de La Vega.",
+    };
+  }
+
+  try {
+    await consultarUna(
+      `INSERT INTO public.perfil_vivienda (
+         estudiante_id, municipio, distrito_municipal, sector, calle, numero_casa, referencia_ubicacion, latitud, longitud, ciudad_residencia
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'La Vega')
+       ON CONFLICT (estudiante_id)
+       DO UPDATE SET municipio = EXCLUDED.municipio,
+                     distrito_municipal = EXCLUDED.distrito_municipal,
+                     sector = EXCLUDED.sector,
+                     calle = EXCLUDED.calle,
+                     numero_casa = EXCLUDED.numero_casa,
+                     referencia_ubicacion = EXCLUDED.referencia_ubicacion,
+                     latitud = EXCLUDED.latitud,
+                     longitud = EXCLUDED.longitud,
+                     ciudad_residencia = 'La Vega'
+       RETURNING estudiante_id`,
+      [
+        estudianteId,
+        municipio,
+        distritoMunicipal || null,
+        sector || null,
+        calle || null,
+        numeroCasa || null,
+        referenciaUbicacion || null,
+        latitud,
+        longitud,
+      ],
+    );
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "expediente.vivienda.geolocalizada",
+      entidad: "perfil_vivienda",
+      entidadId: estudianteId,
+      datos: { latitud, longitud, municipio, sector },
+    });
+
+    revalidatePath(`/expedientes/${estudianteId}`);
+    return { ok: true, mensaje: "Ubicación de vivienda guardada exitosamente en el expediente." };
+  } catch (err) {
+    console.error("[expedientes] Error al guardar vivienda:", err);
+    return { ok: false, mensaje: "Error de servidor al guardar la ubicación de vivienda." };
   }
 }

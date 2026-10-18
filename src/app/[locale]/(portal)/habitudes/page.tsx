@@ -12,6 +12,7 @@ import { getTranslations } from "next-intl/server";
 
 import { GaleriaEvidencias } from "@/components/habitudes/galeria-evidencias";
 import { HubRecursos } from "@/components/habitudes/hub-recursos";
+import { PanelDirectorHabitudes } from "@/components/habitudes/panel-director-habitudes";
 import { RegistroVisitaLiceo } from "@/components/habitudes/registro-visita-liceo";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { StatCard } from "@/components/ui/stat-card";
@@ -19,10 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requerirRol } from "@/lib/auth";
 import { tienePermiso } from "@/lib/rbac";
 import {
+  listarDocentesYEstudiantesParaAsignacion,
   listarLiceosHabitudes,
   listarRecursosHabitudes,
   listarVisitasEvidenciasHabitudes,
   metricasHabitudes,
+  monitoreoProfesoresHabitudes,
 } from "@/server/habitudes/consultas";
 
 export async function generateMetadata({
@@ -44,6 +47,7 @@ export default async function PaginaHabitudesHub({
   const { locale } = await params;
   const usuario = await requerirRol([
     "habitudes",
+    "dir_habitudes",
     "docente",
     "admin",
     "super_admin",
@@ -62,6 +66,17 @@ export default async function PaginaHabitudesHub({
     usuario.rol,
     "habitudes.evidencias.subir",
   );
+  const puedeSupervisar = tienePermiso(
+    usuario.rol,
+    "habitudes.supervisar",
+  );
+
+  const [profesoresMonitoreo, datosAsignacion] = puedeSupervisar
+    ? await Promise.all([
+        monitoreoProfesoresHabitudes(),
+        listarDocentesYEstudiantesParaAsignacion(),
+      ])
+    : [[], { docentes: [], estudiantes: [] }];
 
   return (
     <div className="space-y-6">
@@ -97,8 +112,15 @@ export default async function PaginaHabitudesHub({
       </div>
 
       {/* Pestañas Operativas del Hub */}
-      <Tabs defaultValue="recursos" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-xl">
+      <Tabs defaultValue={puedeSupervisar ? "supervision" : "recursos"} className="space-y-6">
+        <TabsList className={`grid w-full ${puedeSupervisar ? "grid-cols-2 sm:grid-cols-4 max-w-2xl" : "grid-cols-3 max-w-xl"}`}>
+          {puedeSupervisar && (
+            <TabsTrigger value="supervision" className="gap-2">
+              <Sparkles className="size-4 text-[#2096BA]" />
+              <span className="hidden sm:inline">{t("tabSupervision")}</span>
+              <span className="sm:hidden">{t("tabSupervisionShort")}</span>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="recursos" className="gap-2">
             <BookOpen className="size-4" />
             <span className="hidden sm:inline">{t("tabResources")}</span>
@@ -117,6 +139,18 @@ export default async function PaginaHabitudesHub({
             <span className="sm:hidden">{t("tabEvidencesShort")}</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Tab 0 (Supervisión DH & Mapa La Vega) */}
+        {puedeSupervisar && (
+          <TabsContent value="supervision" className="space-y-4">
+            <PanelDirectorHabitudes
+              liceos={liceos}
+              profesores={profesoresMonitoreo}
+              docentesDisponibles={datosAsignacion.docentes}
+              estudiantesDisponibles={datosAsignacion.estudiantes}
+            />
+          </TabsContent>
+        )}
 
         {/* Tab 1: Repositorio de Recursos */}
         <TabsContent value="recursos" className="space-y-4">

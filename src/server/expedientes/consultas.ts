@@ -211,6 +211,14 @@ export type ExpedienteCompleto = {
   direccion: string | null;
   comunidad: string | null;
   ciudad_residencia: string | null;
+  municipio?: string | null;
+  distrito_municipal?: string | null;
+  sector?: string | null;
+  calle?: string | null;
+  numero_casa?: string | null;
+  referencia_ubicacion?: string | null;
+  latitud?: number | null;
+  longitud?: number | null;
   enfermedades: string | null;
   alergias: string | null;
   contacto_emergencia_nombre: string | null;
@@ -276,6 +284,14 @@ export async function obtenerExpediente(
             v.direccion,
             v.comunidad,
             v.ciudad_residencia,
+            v.municipio,
+            v.distrito_municipal,
+            v.sector,
+            v.calle,
+            v.numero_casa,
+            v.referencia_ubicacion,
+            v.latitud::float AS latitud,
+            v.longitud::float AS longitud,
             s.enfermedades,
             s.alergias,
             s.contacto_emergencia_nombre,
