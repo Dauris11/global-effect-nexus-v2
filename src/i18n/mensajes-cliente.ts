@@ -31,6 +31,8 @@ const ESPACIOS_BASE = [
   "contab",
   // Espacio del aula virtual Moodle y matrícula 360
   "moodle",
+  // Espacio del programa Habitudes y visitas a liceos
+  "habitudes",
 ] as const;
 
 /**

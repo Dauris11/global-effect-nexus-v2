@@ -9,6 +9,7 @@ import {
   FileText,
   Package,
   Receipt,
+  Sparkles,
   X,
   Zap,
 } from "lucide-react";
@@ -97,6 +98,14 @@ export function CajonAccionesRapidas({
       icono: Package,
       badge: "Patrimonio",
       roles: ["super_admin", "admin", "contabilidad"],
+    },
+    {
+      titulo: "Habitudes & Liceos",
+      descripcion: "Recursos y evidencias en colegios",
+      href: "/habitudes",
+      icono: Sparkles,
+      badge: "Liceos",
+      roles: ["super_admin", "admin", "docente", "habitudes"],
     },
     {
       titulo: "Nexus Asistente IA",
