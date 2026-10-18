@@ -4,6 +4,7 @@ import { contextoDe } from "@/server/contabilidad/sesion";
 import { registrarLectura } from "@/server/contabilidad/bitacora";
 import {
   exportarFormato606Excel,
+  exportarFormato607Excel,
   exportarLibroBancoExcel,
   exportarCxpExcel,
 } from "@/server/contabilidad/excel/exportaciones";
@@ -39,6 +40,21 @@ export async function GET(
         "contabilidad.factura_proveedor",
         undefined,
         `Exportación reporte DGII 606 de ${anio}-${mes}`,
+      );
+    } else if (tipo === "607") {
+      const hoy = new Date();
+      const anio = parseInt(searchParams.get("anio") ?? String(hoy.getFullYear()), 10);
+      const mes = parseInt(searchParams.get("mes") ?? String(hoy.getMonth() + 1), 10);
+
+      buffer = await exportarFormato607Excel({ anio, mes });
+      nombreArchivo = `DGII_607_${anio}_${String(mes).padStart(2, "0")}.xlsx`;
+
+      await registrarLectura(
+        contexto,
+        "exportar",
+        "contabilidad.recibo",
+        undefined,
+        `Exportación reporte DGII 607 de ${anio}-${mes}`,
       );
     } else if (tipo === "bancos") {
       const cuentaId = searchParams.get("cuentaId");

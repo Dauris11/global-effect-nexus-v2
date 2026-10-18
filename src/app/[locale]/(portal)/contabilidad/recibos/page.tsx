@@ -73,6 +73,12 @@ export default async function PaginaRecibos({
         acciones={
           <>
             <Button asChild variant="secondary">
+              <a href="/api/contabilidad/exportar/607" download>
+                <Download className="size-4" />
+                {t("exportar607")}
+              </a>
+            </Button>
+            <Button asChild variant="secondary">
               {/* <a> y no <Link>: es una descarga, no una navegación. */}
               <a
                 href={`${getPathname({ href: "/contabilidad/recibos/exportar", locale })}${consulta ? `?${consulta}` : ""}`}

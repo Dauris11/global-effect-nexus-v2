@@ -278,3 +278,93 @@ export async function exportarCxpExcel(): Promise<Buffer> {
     },
   });
 }
+
+/**
+ * EXPORTACIÓN FORMATO 607 (Ventas e Ingresos para DGII).
+ *
+ * Genera el libro Excel normativo para el reporte oficial de ingresos de la DGII
+ * conforme a la Norma General 06-2018 para ISFL (Fundaciones).
+ * Detalla recibos de ingresos por donaciones, cuotas y aportes.
+ */
+export async function exportarFormato607Excel(params: {
+  anio: number;
+  mes: number;
+}): Promise<Buffer> {
+  const recibos = await consultar<{
+    numero: number;
+    fecha: string;
+    identificacion: string | null;
+    beneficiario: string | null;
+    monto_dop: string;
+    forma_pago: string;
+    concepto: string;
+    referencia: string | null;
+  }>(
+    `SELECT
+       r.numero,
+       to_char(r.fecha, 'YYYY-MM-DD') AS fecha,
+       coalesce(p.identificacion, '') AS identificacion,
+       coalesce(r.beneficiario, p.nombre, 'Donante / Tercero') AS beneficiario,
+       coalesce(r.monto_dop, r.monto)::text AS monto_dop,
+       r.forma_pago,
+       r.concepto,
+       r.referencia
+     FROM contabilidad.recibo r
+     JOIN contabilidad.periodo_contable pc ON r.periodo_id = pc.id
+     LEFT JOIN public.patrocinador p ON r.patrocinador_id = p.id
+     WHERE pc.anio = $1 AND pc.mes = $2
+       AND r.tipo = 'ingreso'
+       AND r.estado = 'contabilizado'
+     ORDER BY r.fecha ASC, r.numero ASC`,
+    [params.anio, params.mes],
+  );
+
+  const columnas: ColumnaExcel[] = [
+    { header: "No. Recibo", key: "numero", width: 14, formato: "entero" },
+    { header: "RNC / Cédula", key: "rnc", width: 16, formato: "texto" },
+    { header: "Tipo Id", key: "tipo_id", width: 12, formato: "texto" },
+    { header: "NCF / Comprobante", key: "ncf", width: 18, formato: "texto" },
+    { header: "Cliente / Donante", key: "cliente", width: 28, formato: "texto" },
+    { header: "Fecha Emisión", key: "fecha", width: 14, formato: "fecha" },
+    { header: "Monto Facturado (DOP)", key: "monto", width: 22, formato: "moneda" },
+    { header: "ITBIS Facturado", key: "itbis", width: 16, formato: "moneda" },
+    { header: "Tipo de Ingreso (DGII)", key: "tipo_ingreso", width: 26, formato: "texto" },
+    { header: "Forma de Pago", key: "forma_pago", width: 18, formato: "texto" },
+    { header: "Concepto / Detalle", key: "concepto", width: 35, formato: "texto" },
+  ];
+
+  let sumTotal = 0;
+  const filas = recibos.map((r) => {
+    const monto = parseFloat(r.monto_dop);
+    sumTotal += monto;
+
+    const rncLimpio = r.identificacion ? r.identificacion.replace(/[^0-9]/g, "") : "";
+    const tipoId = rncLimpio.length === 9 ? "1 (RNC)" : rncLimpio.length === 11 ? "2 (Cédula)" : "3 (Otros)";
+    const ncf = `B02${String(r.numero).padStart(8, "0")}`;
+
+    return {
+      numero: r.numero,
+      rnc: rncLimpio || "Clientes Varios",
+      tipo_id: tipoId,
+      ncf,
+      cliente: r.beneficiario,
+      fecha: r.fecha,
+      monto,
+      itbis: 0,
+      tipo_ingreso: "02 - Donaciones / Aportes ISFL",
+      forma_pago: r.forma_pago.toUpperCase(),
+      concepto: r.concepto,
+    };
+  });
+
+  return crearLibroExcel({
+    tituloHoja: `DGII 607 - ${params.anio}-${String(params.mes).padStart(2, "0")}`,
+    columnas,
+    filas,
+    totales: {
+      cliente: "TOTAL FACTURADO",
+      monto: sumTotal,
+      itbis: 0,
+    },
+  });
+}

@@ -104,7 +104,7 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   docente: "/portal/profesor",
   estudiante: "/portal/estudiante",
   contabilidad: "/portal/contabilidad",
-  habitudes: "/expedientes",
+  habitudes: "/habitudes",
 };
 
 /** El único acento del sistema: azul de la marca al azul más oscuro. */

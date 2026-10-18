@@ -50,8 +50,8 @@ GlobalEffect2026!
    - Nombre:       Laura Fermín
    - Email:        habitudes@globaleffect.org
    - Contraseña:   GlobalEffect2026!
-   - Portal:       /expedientes
-   - Permisos:     Reclutas del embudo, clases y postulación de candidatos a expedientes.
+   - Portal:       /habitudes
+   - Permisos:     Hub colaborativo de recursos, registro fotográfico en liceos, reclutas del embudo y postulación.
 
 --------------------------------------------------------------------------------
 OTRAS CUENTAS EXISTENTES EN LA BASE DE DATOS:

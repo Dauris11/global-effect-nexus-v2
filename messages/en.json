@@ -2675,6 +2675,7 @@
       "subtitulo": "Income receipts and payment vouchers, in a single search.",
       "nuevo": "New receipt",
       "exportar": "Export CSV",
+      "exportar607": "Export DGII 607 (Excel)",
       "filtros": "Filters",
       "masFiltros": "More filters",
       "aplicar": "Apply",
