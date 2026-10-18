@@ -21,6 +21,7 @@
     "db:seed:operaciones": "node scripts/seed-operaciones.mjs",
     "db:seed:portales": "node scripts/seed-portales.mjs",
     "db:seed:contabilidad": "node scripts/seed-contabilidad.mjs",
+    "db:seed:inventario": "node scripts/seed-inventario.mjs",
     "db:probar:contabilidad": "node scripts/probar-contabilidad.mjs",
     "test:contabilidad": "node --test scripts/probar-numeros-a-letras.mjs scripts/probar-adaptadores.mjs scripts/probar-identificacion.mjs"
   },
@@ -40,6 +41,7 @@
     "cobe": "^2.0.1",
     "date-fns": "^4.4.0",
     "exceljs": "^4.4.0",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.23.0",
     "next": "^16.2.10",
     "next-intl": "^4.13.1",

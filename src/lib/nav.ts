@@ -3,6 +3,7 @@ import {
   Bot,
   BookOpen,
   CalendarDays,
+  Camera,
   GanttChartSquare,
   ClipboardList,
   DollarSign,
@@ -19,6 +20,7 @@ import {
   Megaphone,
   MoreHorizontal,
   MonitorPlay,
+  Package,
   Presentation,
   ReceiptText,
   Settings,
@@ -238,6 +240,18 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         etiqueta: "operations",
         items: [
+          {
+            etiqueta: "inventory",
+            href: "/administrativo/inventario",
+            icono: Package,
+            permiso: "inventario.leer",
+          },
+          {
+            etiqueta: "scanQr",
+            href: "/administrativo/inventario/escanear",
+            icono: Camera,
+            permiso: "inventario.auditar",
+          },
           {
             etiqueta: "monthlyServices",
             href: "/servicios-mensuales",
@@ -778,6 +792,8 @@ const ETIQUETA_CORTA: Record<string, string> = {
   "/portal/estudiante/aula-virtual": "classroom",
   "/portal/estudiante/solicitudes": "requests",
   "/administrativo/solicitudes": "requests",
+  "/administrativo/inventario": "inventory",
+  "/administrativo/inventario/escanear": "scanQr",
 };
 
 /**

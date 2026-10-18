@@ -126,6 +126,23 @@ export function WidgetFlotanteIA({
     }
   }, [mensajes.length, enviando, abierto]);
 
+  // Listener para invocar el widget desde acciones rápidas o atajos
+  useEffect(() => {
+    const handleAbrir = () => {
+      setAbierto(true);
+      if (!historialCargadoRef.current) {
+        historialCargadoRef.current = true;
+        setCargandoHistorial(true);
+        obtenerHistorialWidget()
+          .then((datos) => setMensajes(datos))
+          .catch(() => {})
+          .finally(() => setCargandoHistorial(false));
+      }
+    };
+    window.addEventListener("abrir-widget-ia", handleAbrir);
+    return () => window.removeEventListener("abrir-widget-ia", handleAbrir);
+  }, []);
+
   // Inicializar Web Speech API para comandos de voz
   useEffect(() => {
     if (typeof window === "undefined" || !soportaVoz) return;
