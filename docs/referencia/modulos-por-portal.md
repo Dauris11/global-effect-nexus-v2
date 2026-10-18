@@ -17,21 +17,44 @@ entrada y un conjunto de módulos accesibles desde la barra
 lateral. Los roles controlan tanto la navegación como el acceso
 a rutas.
 
-En octubre de 2026 la Fundación eliminó el departamento de
-Psicología: su portal, su módulo de citas y su rol
-desaparecieron, y el expediente del estudiante pasó a manos de
-administración (admin y super_admin). La cita del estudiante la
-sustituye el módulo Solicitudes y aprobaciones.
+En octubre de 2026 la Fundación eliminó definitivamente el departamento
+de Psicología: su portal y sus roles desaparecieron. Los expedientes
+son de gestión administrativa y las antiguas citas de psicología pasaron a
+ser una **Agenda de Reuniones Institucionales** para todo el personal,
+agendables tanto por estudiantes como por colaboradores internos.
+
+El departamento de **Contabilidad** asume el rol neurálgico central
+del ERP, garantizando estricta consistencia contable y tributaria ante
+la DGII (reportes 606/607, NCF B01/E31, retenciones, cajas chicas,
+arqueos físicos y recepción de facturas rendidas por empleados).
+
+Se incorporan al alcance:
+  • **Torre de Control del Colaborador ("Lo que me toca hoy"):** panel
+    diario con tareas de hoy, vencidas, pendientes y estados reales,
+    autoasignación de tareas prioritarias e interfaz ágil tipo Claude.
+  • **Proyectos por Rol:** asignación de proyectos gobernada por el
+    `super_admin` con permisos granulares para todo el personal.
+  • **Global 360 y Aula Virtual (Moodle-like):** matrícula semestral,
+    horarios, profesores asignados, gestión de tareas con vista de
+    estudiante para el docente y control de extensiones/peso de archivo.
+  • **Habitudes Colaborativo:** hub compartido de diapositivas e imágenes
+    para liceos y registro fotográfico de evidencias docentes.
+  • **Inventario de Activos con QR Mobile:** catálogo de muebles y
+    equipos con fotos, generación/impresión de QR y escaneo móvil.
 
 Roles disponibles (6):
-  • super_admin      — Dirección (acceso total, segundo nivel
-                       de aprobación)
-  • admin            — Personal administrativo (dueño del
-                       expediente)
-  • docente          — Docente de Cursos Técnicos
-  • estudiante       — Estudiante de Curso Técnico
-  • contabilidad     — Contabilidad
-  • habitudes        — Postula candidatos al expediente
+  • super_admin      — Dirección General (acceso total, permisos granulares,
+                       asignación de proyectos, auditoría contable inmutable)
+  • admin            — Coordinación Operativa (expedientes administrativos,
+                       personal, inventario QR, solicitudes y proyectos)
+  • docente          — Docente (cursos técnicos, materias Global 360, aula
+                       virtual Moodle con vista de alumno y calificaciones)
+  • estudiante       — Estudiante (materias, notas, matrícula Global 360,
+                       aula virtual, agenda de reuniones y solicitudes)
+  • contabilidad     — Contabilidad y Finanzas (libros de banco, cajas chicas,
+                       arqueos, rendición de gastos internos, DGII 606)
+  • habitudes        — Facilitadores de Habitudes (hub docente, diapositivas,
+                       evidencias en liceos y embudo de candidatos)
 
 ══════════════════════════════════════════════════════════════════
   PORTAL 1 — ADMINISTRADOR (acceso total)
@@ -200,30 +223,28 @@ Banner: from-slate-700 to-slate-900 · icono Shield
 ──────────────────────────────────────────────────────────────
 1.7 ADMINISTRATIVO (grupo desplegable)
 ──────────────────────────────────────────────────────────────
-  1.7.1 Tareas (/administrativo/tareas)
-    Función: Gestión estilo Asana/Kanban con notificaciones.
-    • 3 columnas: Pendiente / En Progreso / Completada.
-    • Tarjetas con: título, descripción, badge de prioridad
-      (baja/media/alta/urgente), asignado, fecha límite,
-      visibilidad (todos/asignados).
-    • Dropdown para cambiar estado (solo admin).
-    • Modal: título, descripción, prioridad, fecha límite,
-      proyecto, visibilidad, selección de usuarios asignados.
-    • Al crear: envía email + crea evento en calendario a cada
-      usuario asignado.
+  1.7.1 Tareas y Torre de Control (/administrativo/tareas)
+    Función: Gestión estilo Asana/Kanban y Torre de Control diaria.
+    • Torre de Control ("Lo que me toca hoy"): tareas para hoy,
+      vencidas y pendientes con estados reales: por_hacer,
+      en_progreso, en_revision, completada.
+    • Autoasignación de tareas prioritarias (pagos, compras,
+      gestiones externas).
+    • Gestor ágil con experiencia visual contextual inspirada en Claude.
+    • Tablero Kanban: columnas por estado, notificaciones por email
+      y sincronización automática con calendario.
 
-  1.7.2 Proyectos (/administrativo/proyectos)
-    Función: Gestión y seguimiento de proyectos.
-    • Grid de tarjetas: nombre, descripción, badge de estado
-      (planificación/en curso/completado/pausado), barra de
-      progreso, responsable, fecha inicio.
-    • Modal: nombre, descripción, responsable, fechas.
+  1.7.2 Proyectos Institucionales (/administrativo/proyectos)
+    Función: Asignación y gobierno de proyectos institucionales.
+    • Asignación por rol: cada empleado (excepto estudiantes)
+      tiene asignados proyectos según su departamento.
+    • Gobierno exclusivo del super_admin mediante permisos granulares.
+    • Desglose de hitos, tareas y cronograma en calendario.
 
   1.7.3 Personal (/administrativo/personal)
-    Función: Usuarios internos y control de roles/permisos.
+    Función: Usuarios internos y matriz de permisos granulares.
     • 3 KPIs: Total Usuarios · Administradores · Regulares.
-    • Lista de usuarios con avatar, nombre, email, badge de rol.
-    • Grid de 6 roles con descripción y permisos detallados.
+    • Asignación de roles y permisos especiales por super_admin.
 
 ──────────────────────────────────────────────────────────────
 1.8 SERVICIOS MENSUALES (/servicios-mensuales)
@@ -232,91 +253,70 @@ Banner: from-slate-700 to-slate-900 · icono Shield
   • Selector de mes (12 meses hacia atrás).
   • 3 StatCards: Activos · Hicieron Servicio · Asistieron Reunión.
   • Tabla estilo Excel: # · estudiante (con foto) · programa ·
-    checkbox Servicio Mensual (CheckCircle2/XCircle) · checkbox
-    Reunión Mensual.
+    checkbox Servicio Mensual · checkbox Reunión Mensual.
   • Botón "Imprimir PDF" que genera reporte imprimible.
 
 ──────────────────────────────────────────────────────────────
 1.9 LISTA DE COMIDA (/inscripcion-comida)
 ──────────────────────────────────────────────────────────────
-  Función: Inscripción diaria para almuerzo.
+  Función: Inscripción diaria para almuerzo con pre-registro semanal.
   • Formulario de nombre con límite de hora (8:30 AM).
-  • Contador de inscritos (si es admin, lista completa con
-    hora de inscripción + botón imprimir).
-  • Si no es admin, solo contador con candado.
-  • Validación: no duplicados, horario límite.
+  • Lista con hora de inscripción y botón de impresión sin sidebar.
 
 ──────────────────────────────────────────────────────────────
-1.10 CONTABILIDAD (/contabilidad)
+1.10 CONTABILIDAD Y FINANZAS (/portal/contabilidad, /contabilidad)
 ──────────────────────────────────────────────────────────────
-  Función: Control de ingresos, egresos y becas.
-  • 3 StatCards: Total Ingresos · Total Egresos · Balance.
-  • Tabs: Todos / Ingresos / Egresos.
-  • Tabla: concepto, tipo (badge), categoría, monto (color),
-    fecha.
-  • Modal: concepto, tipo, monto, categoría (beca/donación/
-    operativo/salario/material/evento/otro), fecha, referencia.
+  Función: Gestión financiera centralizada con rigor legal DGII.
+  • Bancos: Banco Santa Cruz DOP y USD con saldo corrido histórico.
+  • Conciliación inteligente con estados de cuenta en Excel (.xlsx) y CSV.
+  • Cajas chicas/operativas por persona o departamento con reposición
+    automática desde banco (reponer_caja).
+  • Arqueos interactivos por denominación física (billetes RD$2000-50,
+    monedas y USD) con alerta automática por descuadre >= RD$200.
+  • Facturación con OCR inteligente (RNC, NCF B01/E31, montos e ITBIS).
+  • Recepción y validación de facturas rendidas por empleados con
+    imputación a programas (Casa de Herramientas, Juan Bosch, etc.).
+  • Exportaciones oficiales DGII 606 y Cuentas por Pagar a Excel (.xlsx).
+  • Auditoría inmutable con cadena de hash SHA-256.
 
 ──────────────────────────────────────────────────────────────
-1.11 REPORTES (/reportes)
+1.11 INVENTARIO DE ACTIVOS CON CÓDIGOS QR (/administrativo/inventario)
 ──────────────────────────────────────────────────────────────
-  Función: Reportes visuales con gráficos.
-  • 3 secciones con tabs:
-    (a) Proyectos: KPIs (total/en curso/completados/avance
-        promedio), PieChart distribución por estado, BarChart
-        horizontal % avance, BarChart tareas por proyecto.
-    (b) Académico: KPIs (registros/promedio/aprobados/
-        reprobados), BarChart distribución de notas por rango,
-        BarChart promedio por tipo de evaluación, BarChart
-        promedio por curso.
-    (c) Contabilidad: KPIs (ingresos/egresos/balance/transacc.),
-        AreaChart evolución mensual (6 meses), BarChart
-        ingresos vs egresos por categoría, PieChart distribución
-        de egresos.
+  Función: Control integral de activos físicos de la Fundación.
+  • Registro de mobiliario y equipos (muebles, cuadros, televisores,
+    herramientas) con foto del artículo y estado.
+  • Generación automática de Código QR único e imprimible para cada bien.
+  • Vista móvil con lector de cámara QR para inventarios in situ.
 
 ──────────────────────────────────────────────────────────────
-1.12 CHAT IA ADMIN (/chat-ia)
+1.12 REPORTES (/reportes)
 ──────────────────────────────────────────────────────────────
-  Función: Asistente IA interno para consultas institucionales.
-  • Chat con contexto de datos del sistema (estudiantes, cursos,
-    transacciones, academias, eventos, tareas, patrocinadores).
-  • 5 prompts rápidos.
-  • Respuestas en Markdown.
-  • Botón reiniciar.
+  Función: Reportes analíticos con gráficos (Proyectos, Académico,
+  Finanzas) y exportaciones a hojas de cálculo.
 
 ──────────────────────────────────────────────────────────────
-1.13 CALENDARIO (/calendario)
+1.13 CHAT IA UNIVERSAL (/chat-ia)
 ──────────────────────────────────────────────────────────────
-  Función: Planificación de eventos y agenda.
-  • Tabs: Calendario / Agenda próxima.
-  • Vista calendario mensual con puntos de color (primary =
-    eventos, orange = tareas).
-  • Panel lateral de día seleccionado con eventos y tareas.
-  • Agenda: próximos 20 eventos/tareas con fecha, hora, tipo,
-    prioridad.
-  • Modal "Nuevo Evento": título, descripción, tipo (académico/
-    administrativo/social/reunión/otro), fecha, horas, ubicación,
-    responsable.
+  Función: Asistente con IA contextual institucional por departamento.
 
 ──────────────────────────────────────────────────────────────
-1.14 CONFIGURACIÓN (/configuracion)
+1.14 CALENDARIO Y REUNIONES INSTITUCIONALES (/calendario)
 ──────────────────────────────────────────────────────────────
-  Función: Administración de usuarios y roles.
-  • Tabla de usuarios (nombre, email, rol).
-  • Card de información del sistema (plataforma, versión,
-    módulos).
-  • Card de roles disponibles con descripción.
+  Función: Planificación de eventos institucionales y agenda de
+  reuniones para todo el personal y estudiantes (tutorías/asesorías).
 
 ──────────────────────────────────────────────────────────────
-1.15 MAPA DEL SITIO (/sitemap)
+1.15 CONFIGURACIÓN (/configuracion)
+──────────────────────────────────────────────────────────────
+  Función: Administración de usuarios, roles y parámetros institucionales.
+
+──────────────────────────────────────────────────────────────
+1.16 MAPA DEL SITIO (/sitemap)
 ──────────────────────────────────────────────────────────────
   Función: Visualización jerárquica de portales y módulos.
-  • Grid de 4 portales con sub-módulos.
-  • Módulos compartidos.
-  • Flujos de navegación automáticos.
 
 ══════════════════════════════════════════════════════════════════
-  PORTAL 2 — ESTUDIANTE (Curso Técnico)
+  PORTAL 2 — ESTUDIANTE (Con Global 360 y Moodle Integrado)
 ══════════════════════════════════════════════════════════════════
 Banner: from-blue-500 to-blue-700 · icono GraduationCap
 
@@ -324,125 +324,161 @@ Banner: from-blue-500 to-blue-700 · icono GraduationCap
 2.1 MI PORTAL (/portal/estudiante)
 ──────────────────────────────────────────────────────────────
   Función: Dashboard personal del estudiante.
-  • Banner hero con: GPA, promedio %, materias activas,
-    servicio mensual.
-  • Cards de navegación: Materias, Calificaciones, Solicitudes,
-    Servicios.
-  • Lista de materias inscritas con horario y aula.
-  • Historial de calificaciones por cuatrimestre.
-  • Estado de servicio comunitario y reunión mensual.
-  • Próximos eventos.
+  • Banner hero con: GPA, promedio %, materias activas, servicio.
+  • Accesos directos a Materias, Calificaciones, Solicitudes,
+    Global 360 y Aula Virtual.
+  • Agenda de reuniones y próximos eventos.
 
 ──────────────────────────────────────────────────────────────
-2.2 MIS MATERIAS (/academico/materias)
+2.2 GLOBAL 360 Y PREMATRÍCULA (/portal/estudiante/global-360)
 ──────────────────────────────────────────────────────────────
-  Función: Consulta de materias inscritas (lectura).
+  Función: Selección y matrícula obligatoria dos veces por cuatrimestre.
+  • Catálogo de materias obligatorias institucionales.
+  • Selección de horarios y asignaturas con profesor designado.
 
 ──────────────────────────────────────────────────────────────
-2.3 CALIFICACIONES (/academico/calificaciones)
+2.3 AULA VIRTUAL (ESTILO MOODLE) (/portal/estudiante/aula-virtual)
 ──────────────────────────────────────────────────────────────
-  Función: Consulta de sus notas (lectura).
+  Función: Entrega de asignaciones y tareas académicas.
+  • Consulta de tareas pendientes con fecha límite y requerimientos.
+  • Zona de carga con validación de extensiones (.pdf, .docx, .zip)
+    y tamaño máximo estipulado por el docente.
+  • Estado de entrega, calificación recibida y retroalimentación.
 
 ──────────────────────────────────────────────────────────────
-2.4 SOLICITUDES (/portal/estudiante/solicitudes)
+2.4 MIS MATERIAS Y CALIFICACIONES (/academico/materias, /academico/calificaciones)
 ──────────────────────────────────────────────────────────────
-  Función: Trámites del estudiante ante administración.
-  • Formulario de trámite: constancia (de estudios o de beca),
-    carta (recomendación o referencia), cita con administración
-    (fecha y hora preferidas), permiso (ausencia) u otro.
-  • "Mis solicitudes": folio, estado y línea de tiempo de cada
-    paso con el comentario del revisor.
-  • Puede cancelar mientras esté en enviada o en_revision.
-  • Recibe una notificación en cada cambio de estado.
-  • Las citas con administración aprobadas o en curso aparecen
-    en su calendario.
+  Función: Consulta de materias y notas (lectura).
+
+──────────────────────────────────────────────────────────────
+2.5 SOLICITUDES Y AGENDA DE REUNIONES (/portal/estudiante/solicitudes)
+──────────────────────────────────────────────────────────────
+  Función: Trámites del estudiante y coordinación de reuniones.
+  • Constancias, cartas, permisos u otros trámites con folio y tracking.
+  • Agendamiento de reuniones con personal institucional o tutores.
 
 ══════════════════════════════════════════════════════════════════
-  PORTAL 3 — PROFESOR (Docente)
+  PORTAL 3 — PROFESOR (Con Vista Moodle y Hub Habitudes)
 ══════════════════════════════════════════════════════════════════
 Banner: from-amber-500 to-amber-700 · icono BookOpen
 
 ──────────────────────────────────────────────────────────────
 3.1 MI PORTAL (/portal/profesor)
 ──────────────────────────────────────────────────────────────
-  Función: Dashboard del docente.
-  • Resumen con KPIs: cursos activos, materias, calificaciones
-    registradas.
-  • Grid de navegación a módulos académicos.
-  • Lista de cursos activos con inscritos, horario y modalidad.
+  Función: Dashboard docente con cursos, materias y alumnos.
 
 ──────────────────────────────────────────────────────────────
-3.2 MIS MATERIAS (/academico/materias)
+3.2 AULA VIRTUAL MOODLE-LIKE (/portal/profesor/aula-virtual)
 ──────────────────────────────────────────────────────────────
-  Función: Gestión de materias asignadas.
+  Función: Gestión y revisión de tareas de cursos y Global 360.
+  • Creación de asignaciones: título, instrucciones, curso, fecha límite.
+  • Configuración de entrega: límite de tamaño (MB) y formatos permitidos.
+  • **Vista de Estudiante:** previsualización exacta de cómo ve el
+    alumno la tarea antes de publicarla.
+  • Calificación ágil y retroalimentación docente para cada entrega.
 
 ──────────────────────────────────────────────────────────────
-3.3 CALIFICACIONES (/academico/calificaciones)
+3.3 HUB COLABORATIVO HABITUDES (/portal/profesor/habitudes)
 ──────────────────────────────────────────────────────────────
-  Función: Registro de notas de estudiantes.
+  Función: Recursos y evidencias para profesores que van a liceos.
+  • Banco compartido de diapositivas (PowerPoint/PDF) e imágenes de clase.
+  • Carga móvil de evidencias fotográficas de clases impartidas en liceos.
 
 ──────────────────────────────────────────────────────────────
-3.4 CURSOS (/academico/cursos)
+3.4 CALIFICACIONES Y CURSOS (/academico/calificaciones, /academico/cursos)
 ──────────────────────────────────────────────────────────────
-  Función: Gestión de cursos a cargo.
-
-──────────────────────────────────────────────────────────────
-3.5 CALENDARIO (/calendario)
-──────────────────────────────────────────────────────────────
-  Función: Visualización de eventos y agenda.
+  Función: Calificación de estudiantes y gestión de cursos asignados.
 
 ══════════════════════════════════════════════════════════════════
-  PORTAL 4 — ADMINISTRATIVO
+  PORTAL 4 — ADMINISTRATIVO Y COLABORADORES
 ══════════════════════════════════════════════════════════════════
 Banner: from-orange-500 to-orange-700 · icono ClipboardList
 
 ──────────────────────────────────────────────────────────────
-4.1 MI PORTAL (/portal/administrativo)
+4.1 TORRE DE CONTROL ("LO QUE ME TOCA HOY") (/portal/administrativo)
 ──────────────────────────────────────────────────────────────
-  Función: Dashboard administrativo.
-  • KPIs: tareas pendientes, proyectos activos, estudiantes,
-    patrocinadores, solicitudes por atender.
-  • Grid de accesos: Expedientes, Patrocinadores, Proyectos,
-    Servicios, Solicitudes, Chat IA.
-  • Lista de tareas urgentes pendientes.
+  Función: Centro operativo diario de cada colaborador institucional.
+  • "Lo que me toca hoy": panel con tareas de hoy, vencidas y
+    pendientes por hacer.
+  • Estados de tarea: por_hacer, en_progreso, en_revision, completada.
+  • Autoasignación de tareas prioritarias (pagos urgentes, compras,
+    diligencias exteriores o coordinación en terreno).
+  • Bitácora diaria de actividades ejecutadas por el empleado.
 
 ──────────────────────────────────────────────────────────────
-4.2 EXPEDIENTES (/expedientes)
-4.3 PATROCINADORES (/patrocinadores)
-4.4 SERVICIOS MENSUALES (/servicios-mensuales)
-4.5 LISTA DE COMIDA (/inscripcion-comida)
-4.6 TAREAS (/administrativo/tareas)
-4.7 PROYECTOS (/administrativo/proyectos)
-4.8 SOLICITUDES (/administrativo/solicitudes)
-4.9 CALENDARIO (/calendario)
-4.10 CHAT IA (/chat-ia)
+4.2 PROYECTOS POR ROL (/administrativo/proyectos)
 ──────────────────────────────────────────────────────────────
-  (Funciones idénticas a las descritas en el Portal Admin.)
+  Función: Gestión de proyectos asignados por el super_admin.
+  • Proyectos institucionales activos según el rol del empleado.
+  • Desglose de tareas asignadas con vencimientos en calendario.
+
+──────────────────────────────────────────────────────────────
+4.3 RENDICIÓN DE FACTURAS A CONTABILIDAD (/administrativo/solicitudes)
+──────────────────────────────────────────────────────────────
+  Función: Carga de facturas con comprobante fiscal (NCF) por gastos.
+  • El colaborador sube la factura $\rightarrow$ Contabilidad la valida
+    e imputa al programa correspondiente (Casa de Herramientas,
+    Juan Bosch, Universidad, etc.) y a la persona responsable.
+
+──────────────────────────────────────────────────────────────
+4.4 INVENTARIO MÓVIL CON QR (/administrativo/inventario)
+──────────────────────────────────────────────────────────────
+  Función: Consulta y escaneo móvil de muebles y equipos con código QR.
+
+──────────────────────────────────────────────────────────────
+4.5 EXPEDIENTES, PATROCINADORES Y REUNIONES
+──────────────────────────────────────────────────────────────
+  (Expedientes administrativos, becas, agenda de reuniones institucionales).
 
 ══════════════════════════════════════════════════════════════════
-  PORTAL 5 — CONTABILIDAD
+  PORTAL 5 — CONTABILIDAD Y FINANZAS
 ══════════════════════════════════════════════════════════════════
 Banner: from-violet-500 to-violet-700 · icono DollarSign
 
 ──────────────────────────────────────────────────────────────
-5.1 MI PORTAL (/portal/contabilidad)
+5.1 PANEL FINANCIERO Y AUDITORÍA (/portal/contabilidad)
 ──────────────────────────────────────────────────────────────
-  Función: Dashboard financiero.
-  • KPIs: ingresos totales, egresos, balance actual.
-  • Grid de navegación a Contabilidad y Reportes.
-  • Lista de transacciones recientes (6) con tipo y monto.
+  Función: Centro de mando del departamento más crítico del ERP.
+  • Consistencia de números para cumplimiento tributario DGII sin contradicciones.
+  • Saldos de cuentas en bancos y cajas chicas al instante.
+  • Recepción de facturas de compras y rendiciones de empleados.
 
 ──────────────────────────────────────────────────────────────
-5.2 CONTABILIDAD (/contabilidad)
+5.2 BANCOS Y CONCILIACIONES (/contabilidad/bancos)
 ──────────────────────────────────────────────────────────────
-  Función: Registro de transacciones (ver 1.10). Revisa las
-  solicitudes de gasto (finanzas.escribir) y registra el gasto
-  cuando se aprueba.
+  Función: Libros de banco con saldo histórico y conciliación en Excel/CSV.
 
 ──────────────────────────────────────────────────────────────
-5.3 REPORTES (/reportes)
+5.3 CAJAS Y ARQUEOS (/contabilidad/cajas)
 ──────────────────────────────────────────────────────────────
-  Función: Reportes visuales con énfasis financiero (ver 1.11).
+  Función: Cajas chicas por persona/departamento, reposición automática
+  desde banco y arqueos por denominación física (billetes y monedas)
+  con alertas por descuadre >= RD$200.
+
+──────────────────────────────────────────────────────────────
+5.4 PROVEEDORES, FACTURACIÓN OCR Y DGII 606 (/contabilidad/proveedores, /contabilidad/cuentas-por-pagar)
+──────────────────────────────────────────────────────────────
+  Función: RNC/cédula DGII, escaneo OCR de facturas NCF B01/E31,
+  Gantt de cuentas por pagar y exportación oficial de reportes DGII 606 a Excel.
+
+══════════════════════════════════════════════════════════════════
+══════════════════════════════════════════════════════════════════
+  PORTAL 6 — HABITUDES (Facilitadores en Liceos)
+══════════════════════════════════════════════════════════════════
+Banner: from-teal-500 to-teal-700 · icono Users
+
+──────────────────────────────────────────────────────────────
+6.1 HUB COLABORATIVO HABITUDES (/academias/habitudes)
+──────────────────────────────────────────────────────────────
+  Función: Espacio de trabajo docente para visitas a liceos.
+  • Banco compartido de diapositivas (PowerPoint/PDF) e imágenes didácticas.
+  • Carga y consulta de recursos pedagógicos disponibles para todo el equipo.
+  • Registro fotográfico y de evidencias de clases impartidas en escuelas.
+
+──────────────────────────────────────────────────────────────
+6.2 CANDIDATOS DEL EMBUDO (/expedientes)
+──────────────────────────────────────────────────────────────
+  Función: Postulación de candidatos reclutados en los liceos.
 
 ══════════════════════════════════════════════════════════════════
   PORTAL ADICIONAL — CURSOS TÉCNICOS
@@ -451,12 +487,7 @@ Banner: from-violet-500 to-violet-700 · icono DollarSign
 ──────────────────────────────────────────────────────────────
 CT.1 PORTAL CURSOS TÉCNICOS (/portal/cursos-tecnicos)
 ──────────────────────────────────────────────────────────────
-  Función: Página de selección de sub-portal para cursos
-  técnicos.
-  • 2 tarjetas grandes: Portal de Estudiantes (azul) y Portal
-    de Docentes (ámbar), cada una con features y botón Acceder.
-  • Al seleccionar, setea el rol y navega al portal
-    correspondiente.
+  Función: Página de selección de sub-portal para cursos técnicos.
 
 ──────────────────────────────────────────────────────────────
 CT.2 PORTAL ESTUDIANTE CT (/portal/estudiante-ct)
@@ -471,14 +502,14 @@ CT.2 PORTAL ESTUDIANTE CT (/portal/estudiante-ct)
 ══════════════════════════════════════════════════════════════════
 
 ──────────────────────────────────────────────────────────────
-DASHBOARD (/dashboard) — accesible desde cualquier rol
+DASHBOARD (/dashboard) — accesible según permisos de rol
 ──────────────────────────────────────────────────────────────
   Vista general global (ver 1.1).
 
 ──────────────────────────────────────────────────────────────
-CALENDARIO (/calendario) — accesible desde varios roles
+CALENDARIO Y REUNIONES (/calendario) — compartido
 ──────────────────────────────────────────────────────────────
-  Eventos y agenda (ver 1.13).
+  Eventos institucionales, agenda de reuniones y tareas (ver 1.14).
 
 ──────────────────────────────────────────────────────────────
 INSCRIPCIÓN COMIDA (/comida) — pública, sin login
@@ -490,46 +521,44 @@ INSCRIPCIÓN COMIDA (/comida) — pública, sin login
   CHAT IA ESTUDIANTIL (/chat-ia-estudiantil)
 ══════════════════════════════════════════════════════════════════
   Función: Asistente IA para estudiantes.
-  • Chat con contexto de estudiantes, cursos y materias.
-  • 5 preguntas rápidas (requisitos de beca, prematrícula,
-    reprobar materia, reglamento de asistencia, cómo pedir una
-    constancia o cita con administración).
-  • Respuestas en Markdown.
+  • Chat con contexto de estudiantes, cursos, materias y vida académica.
+  • Consultas sobre becas, prematrícula, normativas y trámites.
 
 ══════════════════════════════════════════════════════════════════
   RESUMEN DE ENTIDADES POR MÓDULO
 ══════════════════════════════════════════════════════════════════
 
-  Estudiante        → Expedientes
-  Materia           → Materias
-  Curso             → Cursos
+  Estudiante        → Expedientes Administrativos
+  Materia           → Materias, Global 360
+  Curso             → Cursos Técnicos, Global 360
   Calificacion      → Calificaciones, Historial, Prematrícula
+  Tarea             → Torre de Control, Tareas, Moodle, Calendario
+  Proyecto          → Proyectos por Rol, Reportes
+  ActivoInventario  → Inventario Físico con Códigos QR
+  Reunion           → Agenda de Reuniones Institucionales
+  MaterialHabitudes → Hub de Materiales y Evidencias de Liceos
   Academia          → Programas
-  Material          → Materiales
   Patrocinador      → Patrocinadores, Becas
-  Transaccion       → Contabilidad, Reportes
-  Tarea             → Tareas, Reportes, Calendario
-  Proyecto          → Proyectos, Reportes
-  Evento            → Calendario, Dashboard
-  Solicitud         → Solicitudes (bandeja y portal estudiante),
-                      Calendario
+  CuentaBancaria    → Bancos, Conciliación
+  Caja              → Cajas Chicas, Arqueos
+  FacturaProveedor  → Proveedores, OCR, Rendición de Empleados
+  Recibo            → Recibos de Ingreso, Comprobantes de Egreso
+  Solicitud         → Solicitudes y Aprobaciones, Rendiciones
   SolicitudPaso     → Línea de tiempo de Solicitudes
   RegistroServicio  → Servicios Mensuales
   InscripcionComida → Inscripción Comida
-  User              → Configuración, Personal
+  User              → Configuración, Personal, RBAC
 
 ══════════════════════════════════════════════════════════════════
   RESUMEN TOTAL
 ══════════════════════════════════════════════════════════════════
 
-  5 portales por rol + 1 portal selector de cursos técnicos
-  27+ módulos funcionales
-  16 entidades de base de datos
-  Acceso controlado por rol (6 roles)
-  Módulos compartidos: Dashboard, Calendario, Comida
-  Módulos públicos: Inscripción Comida (/comida sin login)
-  Integraciones: OCR (InvokeLLM+UploadFile), Email (SendEmail),
-    Chat IA (InvokeLLM), impresión PDF
+  6 portales por rol + 1 portal selector de cursos técnicos
+  30 módulos funcionales estructurados
+  Consistencia contable estricta bajo normativa DGII
+  Torre de Control del Colaborador y Proyectos por Rol (super_admin)
+  Aula Virtual estilo Moodle para Global 360 y Hub Habitudes
+  Inventario de Activos Fijos con fotos y Códigos QR mobile-first
 
 ================================================================
   FIN DEL DOCUMENTO
