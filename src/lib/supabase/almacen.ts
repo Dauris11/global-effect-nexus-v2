@@ -185,30 +185,35 @@ export async function enlaceDeDocumento(
 ): Promise<string | null> {
   if (!ruta) return null;
 
-  const { url, secreto } = credenciales();
+  try {
+    const { url, secreto } = credenciales();
 
-  const res = await fetch(
-    `${url}/storage/v1/object/sign/${DOCUMENTOS}/${ruta}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: secreto,
-        Authorization: `Bearer ${secreto}`,
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${url}/storage/v1/object/sign/${DOCUMENTOS}/${ruta}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: secreto,
+          Authorization: `Bearer ${secreto}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ expiresIn: segundos }),
+        cache: "no-store",
       },
-      body: JSON.stringify({ expiresIn: segundos }),
-      cache: "no-store",
-    },
-  );
+    );
 
-  if (!res.ok) {
-    console.error("[almacen] no se pudo firmar el enlace:", res.status);
+    if (!res.ok) {
+      console.error("[almacen] no se pudo firmar el enlace:", res.status);
+      return null;
+    }
+
+    const { signedURL } = (await res.json()) as { signedURL: string };
+
+    return `${url}/storage/v1${signedURL}`;
+  } catch (error) {
+    console.error("[almacen] error al firmar enlace de documento:", error);
     return null;
   }
-
-  const { signedURL } = (await res.json()) as { signedURL: string };
-
-  return `${url}/storage/v1${signedURL}`;
 }
 
 /**
