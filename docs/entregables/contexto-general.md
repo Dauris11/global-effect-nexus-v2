@@ -1,420 +1,557 @@
+# UNIVERSIDAD CATÓLICA DEL CIBAO (UCATECI)
+## Escuela de Ingeniería en Sistemas y Computación
+### PROYECTO FINAL DE GRADO (PROYECTO INTEGRADOR DE CONOCIMIENTOS)
 
-UNIVERSIDAD CATÓLICA DEL CIBAO
-UCATECI
-Escuela de Ingeniería en Sistemas y Computación
+---
 
-PRIMERA ENTREGA — PROYECTO FINAL DE GRADO
+# GLOBAL EFFECT NEXUS
+### Sistema Web Inteligente de Planificación de Recursos Empresariales (ERP) y Gestión Académica con Portal del Estudiante Integrado
 
-Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
-SUSTENTANTES
-Gabriela García   |   Matrícula: 20230105
-Dauris Santana   |   Matrícula: 20230253
+**Sustentantes:**
+- **Gabriela García** | Matrícula: 20230105
+- **Dauris Santana**  | Matrícula: 20230253
 
-La Vega, República Dominicana  —  2026
- 
-1. Descripción General del Proyecto
+**Asesor Académico y Metodológico:** Escuela de Ingeniería en Sistemas y Computación  
+**Institución Beneficiaria:** Fundación Global Effect Inc.  
+**Ubicación:** La Vega, República Dominicana  
+**Año Académico:** 2026 – 2027  
 
-El presente proyecto consiste en el análisis, diseño y desarrollo de un ERP institucional denominado Global Effect Nexus: un sistema de gestión con portal del estudiante integrado. Esta plataforma tiene como propósito centralizar, automatizar y optimizar los flujos de trabajo administrativos, académicos y operativos de la Fundación Global Effect, una organización sin fines de lucro dedicada al desarrollo educativo y social en la provincia de La Vega, República Dominicana.
+---
 
-La fundación administra múltiples programas dirigidos a distintos grupos poblacionales: estudiantes universitarios becados, alumnos de formación técnica (Career Institute), participantes de la Academia de Liderazgo y niños de comunidades vulnerables. Cada uno de estos programas genera un alto volumen de información relacionada con expedientes estudiantiles, trámites y solicitudes de estudiantes y personal, control de asistencia alimentaria, asignación de viviendas, gestión de patrocinadores internacionales y organización de misiones comunitarias.
+## ÍNDICE GENERAL DE ENTREGABLES
 
-Actualmente, el manejo de estos datos se realiza mediante registros físicos y hojas de cálculo dispersas, lo que dificulta la trazabilidad de la información y la toma de decisiones. El sistema Global Effect Nexus se concibe como una solución integral que agrupará todos estos procesos en un entorno web unificado, seguro y accesible desde cualquier dispositivo con conexión a internet, lo que resulta fundamental dado el carácter nacional e internacional de su personal y patrocinadores.
+1. [PRIMERA ENTREGA: Contexto, Planteamiento del Problema, Alcance y Justificación](#primera-entrega--proyecto-final-de-grado)
+2. [SEGUNDA ENTREGA: Limitaciones, Planificación, Plan de Visualización y Objetivo General](#segunda-entrega--proyecto-final-de-grado)
+3. [TERCERA ENTREGA: Objetivos Específicos, Marco Teórico y Vulnerabilidad del Sistema](#tercera-entrega--proyecto-final-de-grado)
+4. [CUARTA ENTREGA: Diagrama Entidad-Relación, Diagrama de Flujo de Datos y Diccionario](#cuarta-entrega--proyecto-final-de-grado)
+5. [QUINTA ENTREGA: Estándares del Sistema, Reglas de Negocio y Diseño de Reportes](#quinta-entrega--proyecto-final-de-grado)
+6. [SEXTA ENTREGA: Introducción, Conclusiones y Bibliografía](#sexta-entrega--proyecto-final-de-grado)
 
-La plataforma se estructura en cinco portales diferenciados por rol (Administración, Estudiantil integrado, Docente, Contabilidad y la entrada de Habitudes al embudo de expedientes) e integra módulos específicos para cada área funcional —Académico, Expedientes Estudiantiles, Academias y Cursos Técnicos, Patrocinadores y Becas, Contabilidad, Solicitudes y Aprobaciones, Administración de Proyectos y Tareas, Calendario Institucional y Reportes—, permitiendo un seguimiento holístico del ciclo de vida de cada beneficiario y facilitando la rendición de cuentas ante los donantes internacionales.
+---
 
- 
-2. Planteamiento del Problema
+# PRIMERA ENTREGA — PROYECTO FINAL DE GRADO
 
-La Fundación Global Effect ha experimentado un crecimiento sostenido en su matrícula de beneficiarios y en la diversificación de sus programas sociales. Como consecuencia de esta expansión, el volumen de información generada diariamente ha superado la capacidad de gestión de sus herramientas actuales, basadas predominantemente en documentos físicos y hojas de cálculo desvinculadas entre sí.
+## 1. Descripción General del Proyecto
 
-Esta fragmentación informacional provoca una serie de problemáticas críticas que afectan directamente la eficiencia operativa de la institución:
+El presente proyecto consiste en la investigación, análisis, diseño y desarrollo de **Global Effect Nexus**, un sistema integral de Planificación de Recursos Empresariales (ERP) con portal del estudiante integrado, arquitectura de control patrimonial mediante códigos QR y subsistema contable ajustado estrictamente a la normativa de la Dirección General de Impuestos Internos (DGII) de la República Dominicana.
 
-Dificultad y lentitud para acceder al historial integral —académico, socioeconómico y financiero— de los estudiantes beneficiarios.
-Alto riesgo de redundancia, inconsistencia y pérdida de datos sensibles, especialmente en el manejo de los expedientes estudiantiles (salud, vivienda, contexto familiar).
-Trámites y aprobaciones (constancias, cartas, becas, gastos) que se piden de palabra o por papel, sin folio, sin responsable claro y sin rastro de quién decidió qué.
-Sobrecarga laboral administrativa que resta tiempo valioso al acompañamiento directo de los jóvenes, objetivo misional central de la fundación.
-Carencia de herramientas analíticas para generar reportes en tiempo real que sustenten la toma de decisiones gerenciales y la transparencia ante los patrocinadores internacionales.
-Ausencia de mecanismos de comunicación automatizados con donantes nacionales e internacionales, lo que debilita el vínculo institucional y el seguimiento de  compromisos financieros.
+La plataforma tiene como propósito unificar, automatizar y blindar los flujos de trabajo administrativos, académicos, financieros y operativos de la **Fundación Global Effect**, una organización sin fines de lucro (ONG) dedicada a la formación integral, liderazgo y rescate de jóvenes en condiciones de vulnerabilidad en la provincia de La Vega y zonas aledañas.
 
-Ante este panorama, la interrogante fundamental que guía esta investigación es:
+La institución gestiona de manera simultánea una amplia cartera de programas sociales:
+- **Estudiantes Universitarios Becados:** Cobertura de matrícula, estipendios y seguimiento de índice académico (GPA).
+- **Career Institute (Educación Técnica):** Formación especializada en áreas técnicas y de servicios.
+- **Academia de Liderazgo:** Acompañamiento en valores cívicos y liderazgo comunitario.
+- **Casa de Herramientas y Talleres Prácticos:** Préstamo y uso de maquinaria, equipos y herramientas de oficios.
+- **Programa Juan Bosch y Proyectos de Extensión:** Mentoría comunitaria y proyectos de impacto barrial.
+- **Red de Alianzas en Liceos Secundarios (Habitudes Hub):** Docencia formativa presencial impartida por colaboradores de la fundación en escuelas públicas.
+- **Comedor Comunitario y Servicios Alimentarios:** Raciones alimenticias diarias para beneficiarios.
 
-¿De qué manera la implementación de un sistema web de gestión institucional centralizado e inteligente puede optimizar la administración de la información, reducir los tiempos operativos y mejorar el seguimiento integral de los beneficiarios en la Fundación Global Effect?
+Cada una de estas ramas genera un volumen crítico de información distribuida: expedientes socioeconómicos y médicos de estudiantes, rendición de gastos en efectivo y con facturas fiscales por parte del personal operativo, control de inventario de equipos y mobiliario, libros de banco, cuadres de caja chica con denominación física y reportes financieros hacia patrocinadores internacionales y entidades reguladoras del Estado dominicano.
 
- 
-3. Alcance del Proyecto
+El sistema unifica estas operaciones a través de **seis portales web especializados por rol**:
+1. **Portal Administrativo (Dirección y Superadmin):** Gobierno del sistema, auditoría general, asignación de proyectos por rol y configuración global.
+2. **Portal del Estudiante:** Autoconsulta de expediente, seguimiento de beca, solicitud de trámites académicos y acceso al aula virtual Global 360.
+3. **Portal Docente:** Gestión de asignaturas, calificaciones, registro de asistencia y aula virtual interactiva con vista de estudiante.
+4. **Portal de Contabilidad:** Centro de control fiscal exclusivo para contables y auditores, con soporte de Comprobantes Fiscales (NCF), reportes 606/607 de la DGII, conciliación bancaria, cajas chicas con arqueo físico y bitácora con hash SHA-256.
+5. **Portal Habitudes Hub:** Espacio colaborativo para docentes en liceos, con repositorio de presentaciones y carga móvil de evidencias fotográficas de clases.
+6. **Portal de Rendición y Torre de Control del Empleado ("Lo que me toca hoy"):** Panel de productividad individual con tareas prioritarias del día, bitácora de trabajo y formulario de rendición de gastos con extracción asistida por OCR.
 
-El proyecto abarca desde la fase de levantamiento de requerimientos hasta el despliegue funcional del sistema Global Effect Nexus. Siguiendo el criterio SMART, el alcance se define de la siguiente manera:
+---
 
-Letra	Criterio	Definición aplicada al proyecto
-S	Específico	Desarrollar un ERP institucional web con portal del estudiante integrado y cinco portales diferenciados por rol que integre los módulos de gestión Académica (cursos, materias, calificaciones y GPA, historial y prematrícula), Expedientes Estudiantiles, Academias y Cursos Técnicos, Patrocinadores y Becas, Contabilidad, Solicitudes y Aprobaciones, Administración de Proyectos y Tareas, Servicios Alimentarios, Calendario Institucional, Reportes y Configuración de roles y permisos, complementados con asistentes de inteligencia artificial integrados como herramientas de apoyo en los distintos portales.
-M	Medible	Se evidenciará mediante la entrega de los cinco portales y los módulos del sistema en estado funcional, la administración de los seis roles de acceso definidos (Súper Administrador, Administrador, Docente, Estudiante, Contabilidad y Habitudes), la migración de al menos un 30% de los registros actuales durante la fase de prueba y la generación automatizada de los reportes gerenciales y financieros en tiempo real visibles en el panel de control.
-A	Alcanzable	El proyecto se desarrollará con Next.js (fullstack) y PostgreSQL como base de datos relacional, tecnologías dominadas por los sustentantes, lo que garantiza la factibilidad técnica dentro del período académico establecido.
-R	Realista	La solución se limitará a la gestión de información y procesos internos. Quedan fuera del alcance: pasarelas de pago electrónico, aplicaciones móviles nativas y sistemas de contabilidad financiera externa o gubernamental.
-T	Temporal	El desarrollo, pruebas e implementación del sistema se ejecutarán en el período académico estipulado para la culminación del Proyecto Final de Grado correspondiente al año 2027.
+## 2. Planteamiento del Problema
 
- 
-4. Justificación
+La Fundación Global Effect ha experimentado un incremento exponencial en su matrícula de beneficiarios y en la asignación de presupuestos operativos donados por entidades filantrópicas locales e internacionales. Sin embargo, este crecimiento físico no vino acompañado de una plataforma tecnológica acorde, originando una profunda brecha operativa:
 
-El desarrollo del sistema Global Effect Nexus se fundamenta en necesidades operativas de carácter urgente y en razones técnicas, sociales y académicas de peso para la institución.
+1. **Riesgo Fiscal y Regulatorio ante la DGII:** Las transacciones económicas se gestionaban en hojas de cálculo aisladas sin validación formal de Números de Comprobante Fiscal (NCF tipo B01, B02, B14, B15 y E31) ni cálculo estandarizado de retenciones de ITBIS e ISR (Norma General 06-2018). Esta deficiencia exponía a la fundación a inconsistencias y sanciones fiscales severas ante la DGII en la remisión de los Formatos 606 y 607.
+2. **Pérdida de Trazabilidad en Activos Físicos:** La fundación posee un inventario valioso de mobiliario, equipos tecnológicos de cómputo, plantas eléctricas y herramientas industriales en la Casa de Herramientas. Al no contar con una codificación física unívoca ni etiquetas matriciales (códigos QR), los activos sufrían extravíos, deterioros no reportados y falta de asignación de custodios responsables.
+3. **Descontrol en la Rendición de Gastos de Empleados:** El personal que ejecuta compras diarias para talleres o mandados comunitarios reportaba comprobantes en papel físico de manera tardía, provocando descuadres en los fondos de caja chica y retrasos en la liquidación de anticipos.
+4. **Dispersión en el Acompañamiento Académico y Extinción del Área Psicológica:** Tras el cierre formal del departamento de Psicología de la fundación en octubre de 2026, los expedientes de los estudiantes quedaron bajo custodia administrativa. La coordinación de citas requería transformarse urgentemente en una agenda de reuniones y mentoría institucional abierta a todo el personal, eliminando la duplicidad de registros confidenciales.
+5. **Aislamiento en la Docencia en Liceos y Talleres Virtuales:** Los facilitadores del programa Habitudes en centros educativos públicos carecían de un repositorio común para sincronizar sus presentaciones multimedia y subir evidencias fotográficas en tiempo real desde sus teléfonos móviles. Asimismo, las jornadas formativas semestrales (Global 360) carecían de un aula virtual tipo Moodle con control riguroso de fechas de entrega y límites de archivos por peso y formato.
 
-4.1 Naturaleza y Urgencia del Problema
+**Pregunta de Investigación:**  
+*¿De qué manera el diseño e implementación de un sistema web integral ERP inteligente (Global Effect Nexus), sustentado en Next.js, PostgreSQL y autenticación RBAC granular, optimiza el cumplimiento fiscal ante la DGII, asegura la trazabilidad patrimonial de activos mediante códigos QR, agiliza la rendición de cuentas operativa y unifica el seguimiento académico de los beneficiarios de la Fundación Global Effect?*
 
-Cada día que la fundación opera con sistemas fragmentados se incrementa el riesgo de pérdida de información vital de los beneficiarios y se retrasa la generación de informes críticos para los donantes internacionales, poniendo en riesgo el financiamiento sostenido de los programas sociales. La urgencia de la intervención tecnológica es directamente proporcional al crecimiento institucional, que ha superado con creces la capacidad de gestión de las herramientas actuales.
+---
 
-4.2 Razones Técnicas
+## 3. Alcance del Proyecto (Criterios SMART)
 
-La adopción de una arquitectura web basada en Next.js y una base de datos relacional PostgreSQL eliminará la redundancia de datos y garantizará la integridad, confidencialidad y disponibilidad inmediata de la información desde cualquier dispositivo conectado a internet. La digitalización de los expedientes físicos, que contienen datos de salud, vivienda y contexto familiar, representará un avance significativo en materia de seguridad y privacidad de datos sensibles. El control de acceso basado en roles garantizará que cada usuario visualice únicamente la información pertinente a sus funciones.
+| Criterio | Dimensión | Definición Específica del Proyecto Global Effect Nexus |
+| :--- | :--- | :--- |
+| **S** | **Específico** *(Specific)* | Desarrollar un ERP institucional integral estructurado en **30 módulos funcionales** y **6 portales web**, que cubra: Contabilidad fiscal DGII (NCF, libros de banco, cajas chicas con desglose por billetes/monedas y alerta de fraude $\ge$ RD$200, retenciones y formatos 606/607); Inventario físico de activos fijos con etiquetas QR de alta resolución y lector móvil por cámara; Aula Virtual Global 360 estilo Moodle; Torre de Control de Tareas del empleado ("Lo que me toca hoy"); Rendición de gastos con OCR; y Hub Colaborativo Habitudes. |
+| **M** | **Medible** *(Measurable)* | Se constatará mediante: 100% de los 6 portales operativos; generación exitosa y validación sintáctica de los reportes 606 y 607 de la DGII; escaneo funcional de códigos QR en menos de 1 segundo mediante cámara móvil; y migración verificada de al menos el 30% de los expedientes históricos y transacciones durante la fase de validación (S12). |
+| **A** | **Alcanzable** *(Achievable)* | El sistema se construye sobre un stack moderno dominado por los sustentantes: **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS 4**, **PostgreSQL 17** en Supabase mediante consultas SQL parametrizadas directas (`pg`, sin ORM), Auth.js y librerías estándares de la industria (`qrcode`, `canvas-confetti`, `zod`). |
+| **R** | **Realista** *(Realistic)* | La solución se focaliza en las operaciones internas de la fundación en La Vega. Quedan explícitamente fuera: interconexión SOAP/REST directa en tiempo real con los servidores tributarios de la DGII (se generan los archivos de importación oficiales requeridos por la institución); pasarelas de pago electrónico con tarjeta de crédito; y desarrollo de apps nativas compiladas para iOS/Android (sustituidas por diseño web responsivo de alto rendimiento). |
+| **T** | **Temporal** *(Time-bound)* | Ejecutado en 14 sprints quincenales (julio 2026 – enero 2027), con entrega final y sustentación académica pautada para el ciclo académico correspondiente de UCATECI. |
 
-4.3 Razones Sociales e Institucionales
+---
 
-La automatización de tareas burocráticas permitirá al personal de la fundación reorientar sus horas de trabajo hacia el objetivo misional: el acompañamiento y mentoría directa de los jóvenes. Además, un sistema transparente y auditable fortalecerá la credibilidad de la organización frente a sus patrocinadores internacionales, quienes podrán acceder a reportes actualizados y verificar el impacto de su contribución de manera oportuna y confiable, incentivando la continuidad del financiamiento.
+## 4. Justificación
 
-4.4 Pertinencia Académica
+### 4.1 Naturaleza y Urgencia del Problema
+Operar una entidad receptora de fondos sin un módulo contable de partida doble que valide NCFs ni controle cajas chicas expone a la institución a pasivos contingentes, pérdidas por fraude interno y cuestionamientos legales por parte del fisco dominicano. Paralelamente, la ausencia de control físico sobre herramientas de alto valor económico ponía en riesgo el patrimonio institucional.
 
-El proyecto representa una oportunidad para aplicar de manera integrada los conocimientos adquiridos en la carrera de Ingeniería en Sistemas y Computación en áreas como desarrollo web, bases de datos relacionales, seguridad de la información, arquitectura de software y diseño de interfaces de usuario. El hecho de que el sistema resuelva una problemática real en una organización activa le otorga un valor práctico y social que complementa su valor académico, siendo consistente con los objetivos del Proyecto Integrador de Conocimientos de UCATECI.
+### 4.2 Razones Técnicas y Metodológicas
+Frente al paradigma de emplear sistemas comerciales genéricos y costosos que no encajan en la realidad comunitaria, Global Effect Nexus se fundamenta en código abierto robusto:
+- **PostgreSQL 17 nativo:** Manejo transaccional estricto (ACID), integridad referencial en cascada, esquemas dedicados (`contabilidad`, `public`) y búsquedas vectoriales con `pgvector`.
+- **Acceso a datos sin ORM (`node-postgres`):** Permite auditoría visual del 100% de las consultas SQL, optimización a nivel de milisegundos y erradicación total de vulnerabilidades por inyección SQL mediante parámetros obligatorios (`$1, $2, ...`).
+- **Control de Acceso Basado en Roles (RBAC):** La seguridad de datos sensibles (expedientes de menores, comprobantes financieros, registros de auditoría) queda blindada en la capa del servidor mediante políticas de sesión inalterables.
 
- 
-5. Posicionamiento del Proyecto
+### 4.3 Razones Sociales e Institucionales
+La fundación recupera horas-hombre que anteriormente se desperdiciaban en archivar papeles, conciliar hojas de cálculo y buscar herramientas extraviadas. Los donantes internacionales obtienen una ventana de transparencia financiera con balances trazables e informes de impacto medibles.
 
-El sistema Global Effect Nexus se posiciona institucionalmente no como un simple software de base de datos, sino como el motor tecnológico de la transformación social de la fundación. Se asocia directamente con tres conceptos que definen su propuesta de valor: Modernización, Transparencia y Eficiencia Solidaria.
+### 4.4 Pertinencia Académica (UCATECI)
+Constituye un Proyecto Integrador de Conocimientos que sintetiza las disciplinas medulares de la Ingeniería en Sistemas y Computación: ingeniería de software, arquitectura de sistemas distribuidos, optimización de bases de datos relacionales, auditoría de sistemas de información y seguridad informática.
 
-El mensaje central que ancla el posicionamiento del proyecto es:
+---
 
-Menos tiempo administrando papeles, más tiempo transformando vidas.
+## 5. Posicionamiento del Proyecto
 
-Esta propuesta se dirige de manera diferenciada a los cuatro actores clave del sistema:
+Global Effect Nexus se posiciona bajo el lema institucional:
+> **"Menos tiempo administrando papeles, más tiempo transformando vidas con transparencia y rigor técnico."**
 
-Dirección	Un tablero de control confiable con reportes en tiempo real para la toma de decisiones estratégicas e institucionales.
+Su propuesta de valor se articula en 4 pilares:
+1. **Dirección y Junta Directiva:** Tablero en tiempo real con salud financiera, estado del patrimonio físico e indicadores de rendimiento de becas.
+2. **Departamento Contable:** Tranquilidad fiscal absoluta: conciliaciones cuadradas, comprobantes fiscales NCF validados, arqueos de caja con desglose físico y libros auxiliares al día.
+3. **Colaboradores y Docentes:** Una torre de control diaria para priorizar tareas, rendir cuentas en segundos mediante fotos a facturas y acceder a recursos didácticos compartidos.
+4. **Estudiantes y Familias:** Autonomía para gestionar constancias, consultar su historial académico y participar en aulas virtuales modernas.
 
-Personal administrativo	Una herramienta que elimina el trabajo manual repetitivo y libera tiempo para el acompañamiento directo de los beneficiarios.
+---
 
-Estudiantes	Un portal propio, integrado al sistema, donde pueden consultar historial académico, calificaciones y estado de beca, y pedir trámites (constancias, cartas, citas con administración, permisos) con su seguimiento de manera autónoma.
+# SEGUNDA ENTREGA — PROYECTO FINAL DE GRADO
 
-Patrocinadores	Vinculados a los estudiante los estudiantes que financian, generando confianza, trazabilidad y motivación para continuar contribuyendo.
+## 1. Limitaciones del Proyecto
 
-En términos de imagen institucional, la implementación de Global Effect Nexus proyecta a la fundación como una organización moderna, transparente y comprometida con el uso eficiente de sus recursos, lo cual refuerza su credibilidad tanto ante la comunidad local como ante sus aliados internacionales.
- 
+Para definir formalmente las fronteras de investigación e implementación del sistema, se establecen las siguientes delimitaciones funcionales y operativas:
 
-SEGUNDA ENTREGA — PROYECTO FINAL DE GRADO
-Global Effect Nexus
- 
-1. Limitaciones del Proyecto
+1. **Gestión Fiscal con la DGII:** El sistema genera y valida la estructura sintáctica de los Números de Comprobante Fiscal (NCF) y procesa los archivos normativos oficiales para los **Formatos 606 (compras)** y **607 (ventas/ingresos)** conforme a la Norma General 06-2018. Sin embargo, no realiza el timbrado electrónico ni el envío telemático en tiempo real vía Web Services SOAP/REST hacia la DGII, requiriendo que el contador descargue el archivo oficial generado por el sistema y lo remita a través de la Oficina Virtual (OFV) de la DGII.
+2. **Plataforma y Dispositivos:** El sistema no incluye aplicaciones móviles nativas publicadas en tiendas (Google Play Store o Apple App Store). Todas las funcionalidades móviles —incluyendo el escaneo de códigos QR de inventario y la captura fotográfica de evidencias de Habitudes— se ejecutan mediante aplicaciones web progresivas responsivas (PWA/Next.js) que acceden al hardware de la cámara a través del API estándar `navigator.mediaDevices`.
+3. **Pagos y Cobranzas Bancarias:** La plataforma no actúa como pasarela transaccional de pagos con tarjetas de crédito/débito en línea. El módulo de contabilidad gestiona y concilia registros de depósitos, transferencias bancarias y cheques emitidos.
+4. **Modelo de Tenencia (Multi-tenancy):** El software está diseñado bajo un modelo de inquilino único (*single-tenant*), configurado exclusivamente para la infraestructura de la Fundación Global Effect en La Vega.
+5. **Alcance de los Asistentes de Inteligencia Artificial:** Los componentes de IA (extracción OCR de facturas y búsqueda semántica con `pgvector`) emplean modelos fundacionales externos de alta capacidad mediante invocaciones seguras en el servidor; el alcance del proyecto no contempla el entrenamiento propio de modelos de lenguaje natural (*LLMs from scratch*).
+6. **Descarte Definitivo del Módulo Clínico de Psicología:** Conforme a la reestructuración orgánica de la fundación (octubre 2026), el departamento de Psicología fue disuelto. Los expedientes de estudiantes son estrictamente administrativos y no registran diagnósticos clínicos ni notas terapéuticas.
 
-El alcance definido en la Primera Entrega delimita lo que el sistema Global Effect Nexus resolverá. A continuación se explicitan los límites del proyecto —entendidos como fronteras de las aspiraciones de la investigación, no como dificultades de ejecución— siempre en referencia a los objetivos planteados.
+---
 
-No incluye pasarela de pagos electrónicos ni conciliación bancaria automática con entidades financieras; el módulo de Contabilidad gestiona ingresos y egresos internos de forma manual/asistida.
-No contempla el desarrollo de una aplicación móvil nativa (iOS/Android); el acceso se realiza mediante navegador web con diseño responsivo (Next.js App Router).
-No sustituye los sistemas de contabilidad fiscal o gubernamental oficiales de la República Dominicana; el módulo financiero es de uso gerencial interno.
-La migración de registros históricos en papel y hojas de cálculo cubre un mínimo del 30% de los datos actuales durante la fase de prueba (Sprint 12); no se garantiza la digitalización retroactiva del 100% del archivo físico.
-Los asistentes de inteligencia artificial (chat interno, chat estudiantil, OCR y búsqueda semántica RAG) consumen modelos de terceros mediante un servicio propio de integración; el proyecto no incluye el entrenamiento o ajuste fino (fine-tuning) de modelos de lenguaje.
-El sistema se diseña como una solución de un solo inquilino (single-tenant) para la Fundación Global Effect; no es una plataforma multi-institucional.
-El acceso de los patrocinadores se limita a la consulta de reportes; el proyecto no incluye un portal transaccional de donaciones en línea.
-El control de acceso se circunscribe a los seis roles institucionales definidos (súper administrador, administrador, docente, estudiante, contabilidad y habitudes); la incorporación de nuevos roles queda como trabajo futuro.
-El sistema no incluye atención psicológica ni expedientes clínicos: el departamento de Psicología de la fundación se eliminó (octubre 2026) y el expediente del estudiante quedó a cargo de administración (admin y super_admin).
-El módulo de Solicitudes y Aprobaciones registra decisiones, pero no ejecuta efectos por su cuenta: una solicitud aprobada se completa cuando el módulo dueño (contabilidad, expedientes, patrocinio) la ejecuta. Las notificaciones son internas; no se envía correo.
+## 2. Planificación del Proyecto
 
- 
-2. Planificación del Proyecto
+El desarrollo se planificó en **14 sprints quincenales** (aproximadamente 7 meses calendario, julio 2026 – enero 2027), estructurados en tres fases consecutivas:
 
-La planificación del proyecto sigue una metodología de sprints quincenales (14 sprints, aproximadamente 7 meses, de julio 2026 a enero 2027), gestionados en ClickUp mediante una jerarquía de tres niveles (sprint → módulo/tabla → columna/paso) con 527 filas de seguimiento. El equipo de trabajo está compuesto por dos sustentantes (Gabriela García y Dauris Santana), quienes asumen de forma conjunta el diseño, desarrollo y documentación del sistema.
+```mermaid
+gantt
+    title Cronograma Maestro de Sprints — Global Effect Nexus
+    dateFormat  YYYY-MM-DD
+    section Fase 1: Arquitectura y BD
+    S0 - Planeamiento, ERD y Entorno       :done, s0, 2026-07-06, 2026-07-17
+    S1 - Identidad, RBAC, Esquema Base     :done, s1, 2026-07-20, 2026-07-31
+    S2 - Dominio Estudiantil y Académico    :done, s2, 2026-08-03, 2026-08-14
+    S3 - Esquemas Operativos y Transversales:done, s3, 2026-08-17, 2026-08-28
+    section Fase 2: Desarrollo de Software
+    S4 - Backend Núcleo, Auth.js y i18n   :done, s4, 2026-08-31, 2026-09-11
+    S5 - Expedientes Administrativos y OCR :done, s5, 2026-09-14, 2026-09-25
+    S6 - Portal Académico y Estudiantil    :done, s6, 2026-09-28, 2026-10-09
+    S7 - Patrocinio y Finanzas Base        :done, s7, 2026-10-12, 2026-10-23
+    S8 - Solicitudes y Agenda Institucional:done, s8, 2026-10-26, 2026-11-06
+    S9 - Contabilidad Integral DGII, NCF y Cajas:active, s9, 2026-11-09, 2026-11-20
+    S10- Inventario Físico con Códigos QR  :s10, 2026-11-23, 2026-12-04
+    S11- Torre de Control, Habitudes y Moodle:s11, 2026-12-07, 2026-12-18
+    section Fase 3: Calidad y Despliegue
+    S12- Migración de Datos, QA y Seguridad :s12, 2026-12-21, 2027-01-01
+    S13- Pruebas UAT, Despliegue y Tesis    :s13, 2027-01-04, 2027-01-15
+```
 
-El camino crítico del proyecto sigue una dependencia secuencial de cuatro bloques: (1) diseño y base de datos (S0–S3), que debe completarse antes de iniciar (2) el backend núcleo de autenticación y control de acceso (S4); a partir de este punto se habilitan (3) los sprints de implementación funcional por módulo (S5–S11), que pueden desarrollarse con cierto grado de paralelismo entre módulos independientes; y finalmente (4) los sprints de estabilización, migración de datos, pruebas de seguridad y despliegue (S12–S13). Los recursos disponibles son los dos sustentantes y el entorno Supabase/PostgreSQL ya provisionado; el consumo de tiempo se equilibra dedicando mayor estimación (en días) a los módulos con más tablas y reglas de negocio (Expedientes, Académico, Operaciones).
+### 2.1 Camino Crítico y Dependencias
+El camino crítico del sistema exige que la arquitectura de base de datos relacional y el subsistema de autenticación RBAC queden estabilizados previamente antes de admitir transacciones financieras o altas de inventario. En particular:
+- El esquema `contabilidad` requiere la normalización previa de la tabla `usuario` y el catálogo de cuentas de doble entrada.
+- El módulo de **Inventario de Activos con QR** depende de la tabla `usuario` para la asignación de responsables y custodios.
+- La **Torre de Control del Empleado** unifica las asignaciones de proyectos gobernadas por el superadministrador, consumiendo las tablas de tareas y rendiciones de gastos.
 
-Sprint	Foco	Fechas	Estado
-S0	Planeamiento y diseño (ERD, diccionario, entorno)	06–17 jul 2026	Completado
-S1	BD: Identidad, RBAC y transversales + seed	20–31 jul 2026	Completado
-S2	BD: Estudiante (normalizado) y Académico	03–14 ago 2026	Completado
-S3	BD: dominios restantes	17–28 ago 2026	Completado
-S4	Backend núcleo: Auth.js, RBAC, i18n	31 ago–11 sep 2026	Siguiente
-S5	Expedientes (+ OCR) y Dashboard	14–25 sep 2026	Pendiente
-S6	Académico (módulos) y portales	28 sep–09 oct 2026	Pendiente
-S7	Patrocinio y Finanzas	12–23 oct 2026	Pendiente
-S8	Solicitudes y aprobaciones (sustituye a Psicología, descartada — el departamento de Psicología se eliminó, oct 2026)	26 oct–06 nov 2026	Completado (migraciones 0030 y 0031)
-S9	Administrativo y Calendario	09–20 nov 2026	Pendiente
-S10	Módulos restantes y páginas públicas	23 nov–04 dic 2026	Pendiente
-S11	IA y Reportes	07–18 dic 2026	Pendiente
-S12	Migración, QA y Seguridad	21 dic 2026–01 ene 2027	Pendiente
-S13	Despliegue y Tesis	04–15 ene 2027	Pendiente
+---
 
-Al cierre de esta entrega, la capa de base de datos (S0–S3) está completada y verificada en Supabase, lo que adelanta el cronograma respecto al plan original y reduce el riesgo del camino crítico para los sprints de backend e implementación.
+## 3. Plan de Visualización y Difusión Institucional
 
- 
-3. Visualización o Plan de Marketing
+El plan de adopción y comunicación de la plataforma articula mecanismos internos y externos:
+1. **Portal Público y Landing Page Institucional:** Ventana abierta a la comunidad para informar sobre la misión de la fundación, solicitar voluntariado y permitir la inscripción diaria al comedor comunitario.
+2. **Transparencia Financiera hacia Donantes:** Informes financieros ejecutivos descargables en formato PDF con conciliación de ingresos por patrocinador versus egresos por programa.
+3. **Demostración Práctica con Terminal Móvil:** Sesiones de inducción en la Casa de Herramientas y aulas de la fundación demostrando el escaneo en vivo de etiquetas QR sobre maquinaria y activos tecnológicos.
+4. **Defensa de Tesis de Grado en UCATECI:** Presentación formal ante el jurado evaluador universitario exhibiendo métricas de desempeño, arquitectura de software y consistencia de datos en producción.
 
-El plan de visualización institucional de Global Effect Nexus se apoya en canales ya contemplados dentro del propio alcance funcional del sistema, de manera que la comunicación con cada actor ocurre a través de la misma plataforma que se está construyendo:
+---
 
-Landing pública institucional: vitrina de acceso sin necesidad de autenticación, punto de entrada para la inscripción diaria de comida y el acceso al portal del estudiante, y primera impresión digital de la fundación ante visitantes y aliados.
-Reportes exportables en PDF (servicios mensuales, balances de contabilidad): material de comunicación formal hacia patrocinadores y junta directiva, con datos verificables y trazables.
-Tablero de control (Dashboard) con métricas en tiempo real: recurso de presentación periódica ante la dirección de la fundación para sustentar decisiones estratégicas.
-Portal de patrocinadores (módulo Patrocinio): mecanismo de transparencia que permite a cada patrocinador visualizar el impacto de su aporte, reforzando la confianza y la continuidad del financiamiento.
-Divulgación académica: defensa del Proyecto Final de Grado ante UCATECI y publicación de la documentación técnica (arquitectura, modelo entidad-relación, diccionario de datos) como evidencia de rigor metodológico.
-Notificaciones internas del sistema: canal de "marketing interno" que acompaña la adopción de la herramienta por parte del personal administrativo, docente y de contabilidad durante la fase de implementación.
+## 4. Objetivo General
 
- 
-4. Objetivo General
+**Diseñar, desarrollar e implementar el sistema web inteligente de planificación de recursos empresariales (ERP) y gestión académica "Global Effect Nexus", sustentado en una arquitectura Next.js 16 y PostgreSQL 17 sin intermediación de ORM, con control de acceso basado en roles (RBAC), módulo de contabilidad formal homologado a la normativa de la DGII, trazabilidad física de activos mediante códigos QR y herramientas colaborativas de docencia y productividad, con el propósito de centralizar las operaciones de la Fundación Global Effect, blindar la rendición de cuentas financiera y optimizar el acompañamiento integral de los beneficiarios en La Vega, República Dominicana.**
 
-A partir del planteamiento del problema y del alcance SMART definidos en la Primera Entrega, el objetivo general que orienta la totalidad del proyecto es el siguiente:
+---
 
-Diseñar, desarrollar e implementar el sistema web Global Effect Nexus, un ERP institucional de gestión académica y administrativa con portal del estudiante integrado para la Fundación Global Effect, sustentada en una arquitectura Next.js/PostgreSQL con control de acceso basado en roles, base de datos relacional normalizada y asistentes de inteligencia artificial, con el fin de centralizar la información institucional, optimizar los procesos administrativos y fortalecer la transparencia ante patrocinadores y beneficiarios.
+# TERCERA ENTREGA — PROYECTO FINAL DE GRADO
 
- 
+## 1. Objetivos Específicos
 
-TERCERA ENTREGA — PROYECTO FINAL DE GRADO
-Global Effect Nexus
- 
-1. Objetivos Específicos
-
-Para alcanzar el objetivo general, se plantean los siguientes objetivos específicos, alineados con el plan de sprints presentado en la Segunda Entrega:
-
-Diseñar y normalizar el modelo de datos relacional (36 tablas, formas normales 1NF–3NF) que soporte los 27 módulos funcionales de la fundación.
-Implementar la capa de autenticación y control de acceso basado en roles (RBAC) mediante Auth.js con sesiones JWT.
-Desarrollar el módulo de Expedientes Estudiantiles, incluyendo el formulario multi-pestaña y la extracción asistida de datos mediante OCR con inteligencia artificial.
-Desarrollar el módulo Académico (materias, cursos técnicos, calificaciones, historial y prematrícula) y los portales de Estudiante y Profesor.
-Desarrollar los módulos de Patrocinio, Asignación de Becas y Contabilidad, con sus respectivos reportes financieros.
-Implementar el módulo de Solicitudes y Aprobaciones (trámites del estudiante y aprobaciones internas de alta de expediente, beca y gasto) con flujo por estados, segundo nivel de dirección, separación de funciones, folio, línea de tiempo y notificaciones.
-Implementar el módulo de Operaciones (tareas Kanban, proyectos, calendario institucional) con automatizaciones de notificación y generación de eventos.
-Integrar asistentes de inteligencia artificial (chat interno con contexto institucional, chat estudiantil y búsqueda semántica mediante pgvector/RAG).
-Desplegar el sistema en un entorno de producción y validar su funcionamiento mediante pruebas de aceptación de usuario (UAT) junto con la fundación.
-
- 
-2. Marco Teórico
-
-El desarrollo de Global Effect Nexus se apoya en un conjunto de fundamentos conceptuales provenientes de la ingeniería de software y las bases de datos, que se describen a continuación para situar las decisiones técnicas del proyecto dentro de un marco de referencia reconocido.
-
-2.1 Gestión institucional y transformación digital
-
-La transformación digital de organizaciones sin fines de lucro consiste en sustituir procesos manuales y fragmentados —registros físicos, hojas de cálculo aisladas— por sistemas de información centralizados que preservan la trazabilidad de los datos a lo largo del tiempo. En el caso de fundaciones que dependen de patrocinadores externos, esta transformación adquiere una dimensión adicional de rendición de cuentas: la información debe poder auditarse y comunicarse de forma verificable a terceros que no participan directamente en la operación diaria.
-
-2.2 Arquitectura web con Next.js App Router
-
-Next.js es un framework de React que permite construir aplicaciones full-stack combinando renderizado en el servidor y en el cliente dentro de un mismo proyecto. Su convención App Router organiza las rutas como carpetas y permite ejecutar lógica de servidor —Server Actions y Route Handlers— sin necesidad de exponer una API REST independiente. En Global Effect Nexus, esta capa de servidor concentra la autenticación, la validación de permisos y el acceso a la base de datos, mientras que el cliente se limita a la interfaz de usuario construida con React, shadcn/ui y TanStack React Query.
-
-2.3 Bases de datos relacionales y normalización
-
-Un modelo relacional organiza la información en tablas vinculadas mediante claves foráneas, evitando la duplicación de datos y garantizando su consistencia. El proceso de normalización aplica un conjunto de reglas —primera, segunda y tercera forma normal— para eliminar grupos repetitivos, dependencias parciales y dependencias transitivas dentro de las tablas. En este proyecto, el expediente del estudiante se descompuso en una tabla núcleo y varias tablas satélite de relación 1:1 (vivienda, salud, contexto socioeconómico), siguiendo precisamente este principio de normalización.
-
-2.4 Control de acceso basado en roles (RBAC)
-
-El modelo RBAC (Role-Based Access Control) asigna permisos a roles y roles a usuarios, en lugar de asignar permisos directamente a cada persona. Esto centraliza la gestión de la seguridad: modificar lo que puede hacer un rol afecta automáticamente a todos los usuarios que lo poseen. El diseño de Global Effect Nexus lleva este principio a nivel granular, evaluando cada acción mediante una función can(usuario, permiso) que consulta la relación entre las tablas rol, permiso y rol_permiso, y que se combina con la separación de funciones del módulo de Solicitudes: nadie aprueba su propia solicitud.
-
-2.5 Inteligencia artificial aplicada: OCR y RAG
-
-El reconocimiento óptico de caracteres (OCR) asistido por inteligencia artificial permite extraer datos estructurados a partir de imágenes de documentos, reduciendo la digitación manual. La búsqueda semántica mediante RAG (Retrieval-Augmented Generation) complementa a un modelo de lenguaje con fragmentos de información recuperados de una base de conocimiento propia, en este caso indexada con la extensión pgvector de PostgreSQL, lo que permite que los asistentes de chat respondan con contexto real de la institución en lugar de depender únicamente del conocimiento general del modelo.
-
- 
-3. Vulnerabilidad del Sistema
-
-Siguiendo la metodología de cinco pasos para determinar la vulnerabilidad de un sistema, se realizó el siguiente análisis aplicado al diseño de Global Effect Nexus.
-
-3.1 Levantamiento de amenazas
-
-Inyección SQL a través de formularios o parámetros de consulta.
-Acceso no autorizado a expedientes estudiantiles (datos de salud, vivienda y familia).
-Pérdida de disponibilidad por interrupción del proveedor cloud (Supabase) o de la conexión a internet de la fundación.
-Filtración o robo de credenciales de usuario (contraseñas, tokens de sesión).
-Error humano en la carga o modificación de datos sensibles (expedientes, calificaciones, transacciones).
-Dependencia de servicios externos de inteligencia artificial para OCR, chat y embeddings.
-
-3.2 Matriz de riesgo
-
-Amenaza	Probabilidad	Impacto	Nivel de riesgo
-Inyección SQL	Baja	Gravísimo	Alto
-Acceso no autorizado a expedientes	Baja	Gravísimo	Alto
-Aprobación indebida (autoaprobación de becas o gastos)	Media	Grave	Alto
-Caída del proveedor cloud	Rara	Grave	Medio
-Robo de credenciales	Media	Grave	Alto
-Error humano en carga de datos	Alta	Medio	Medio
-Falla de servicios externos de IA	Media	Leve	Bajo
-
-3.3 Ranking de importancia
-
-1º — Acceso no autorizado a expedientes estudiantiles (impacto ético/legal máximo).
-2º — Inyección SQL (compromete la integridad de toda la base de datos).
-3º — Robo de credenciales (puerta de entrada a cualquier otro riesgo).
-4º — Aprobación indebida de becas o gastos (afecta el uso de fondos de patrocinadores).
-5º — Error humano en carga de datos (afecta la confiabilidad de reportes a patrocinadores).
-6º — Caída del proveedor cloud (mitigable con respaldo y recuperación).
-7º — Falla de servicios externos de IA (afecta funciones de apoyo, no procesos críticos).
-3.4 Medidas de corrección
-
-Inyección SQL: acceso a datos exclusivamente mediante consultas parametrizadas ($1, $2…) con el cliente pg; no se concatena entrada del usuario en cadenas SQL.
-Acceso a expedientes: solo administración (admin y super_admin) tiene expedientes.leer / .escribir / .eliminar; habitudes solo postula candidatos (expedientes.postular) y el estudiante ve únicamente lo suyo desde su portal.
-Aprobación indebida: separación de funciones (nadie aprueba su propia solicitud), segundo nivel de dirección (solicitudes.direccion) fijado al crear la solicitud para becas y gastos desde 1,000 USD, y registro de cada paso en solicitud_paso y de cada aprobación, rechazo y completado en audit_log.
-Robo de credenciales: contraseñas cifradas (bcrypt/argon2), sesiones JWT firmadas con expiración, e invitación de usuarios (sin auto-registro público).
-Error humano: validación de esquema con Zod en cada formulario, restricciones CHECK a nivel de base de datos y bitácora de auditoría (audit_log) con snapshot de antes/después.
-Disponibilidad: uso de Supabase (PostgreSQL administrado) con respaldos automáticos y posibilidad de recuperación a un punto en el tiempo.
-Servicios de IA: degradación elegante de las funciones de chat/OCR ante fallas del proveedor, sin afectar los módulos operativos núcleo del sistema.
-3.5 Evaluación continua de las vulnerabilidades
-
-La evaluación continua se sostiene en tres mecanismos ya contemplados en el diseño: la bitácora de auditoría (audit_log) para trazar acciones sensibles, la revisión periódica de la matriz de roles y permisos conforme evoluciona el sistema, y el sprint dedicado explícitamente a migración, control de calidad y seguridad (S12) antes del despliegue final a producción.
- 
-
-CUARTA ENTREGA — PROYECTO FINAL DE GRADO
-Global Effect Nexus
- 
-1. Diagrama Entidad-Relación
-
-El diagrama entidad-relación (ERD) de Global Effect Nexus refleja el esquema desplegado y verificado en PostgreSQL 17 (Supabase) mediante las migraciones db/migrations/0001–0012, y comprende 36 tablas, 7 tipos ENUM y la extensión pgvector para los dominios de inteligencia artificial. El modelo se agrupa en 11 dominios funcionales:
-
-Dominio	Tablas
-Identidad / RBAC	rol, permiso, rol_permiso, usuario
-Transversal	documento, notificacion, audit_log
-Patrocinio	patrocinador
-Estudiantes	estudiante, familiar, perfil_vivienda, perfil_salud, perfil_socioeconomico, asignacion_beca
-Académico	periodo, materia, curso, inscripcion, calificacion, historial_calificacion
-Academias	academia, material
-Solicitudes	solicitud, solicitud_paso
-Operaciones	proyecto, tarea, tarea_asignado, evento, registro_servicio
-Bienestar	inscripcion_comida
-Finanzas	transaccion
-Inteligencia Artificial	conversacion_ia, mensaje_ia, extraccion_ocr, fragmento_conocimiento
-
-El dominio de Psicología (cita_psicologia, nota_psicologica, perfil_psicologico) existió en el diseño original y se eliminó con la migración 0030, cuando la fundación cerró el departamento de Psicología (octubre 2026); la migración 0031 añadió el dominio de Solicitudes. Los conteos de esta sección corresponden al esquema original de las migraciones 0001–0012.
-
-En total, el esquema define 44 relaciones físicas mediante claves foráneas, verificadas directamente contra information_schema de la base de datos desplegada. El detalle completo de tabla padre, tabla hija, columna FK, cardinalidad y regla ON DELETE se presenta en el Anexo A (Diccionario de Datos y documentación técnica adjunta).
-
-E spacio para diagrama — Diagrama entidad-relación (ERD) completo de las 36 tablas, en sintaxis Mermaid — insertar aquí.
-
- 
-2. Diagrama de Flujo de Datos
-
-El diagrama de flujo de datos (DFD) representa cómo se intercambia información entre las entidades externas (usuarios por rol), los procesos del sistema y los almacenes de datos (tablas). Se presenta en dos niveles:
-
-Nivel 0 (diagrama de contexto): vista panorámica de los seis roles internos, el público general y el servicio de IA/OCR interactuando con el sistema como una única caja negra.
-Nivel 1 (procesos y almacenes): descomposición del sistema en nueve procesos principales (autenticación, expedientes, académico, patrocinio, solicitudes y aprobaciones, operaciones, finanzas, bienestar, asistentes de IA) y los almacenes de datos que cada uno lee o escribe.
-
-La correspondencia entre cada proceso, sus almacenes de datos y el permiso RBAC requerido para ejecutarlo se resume en la siguiente tabla:
-
-Proceso	Almacenes (tablas)	Permiso requerido
-1. Autenticación y control de acceso	usuario, rol, permiso, rol_permiso	usuarios.administrar
-2. Expedientes	estudiante, perfil_*, familiar, documento	expedientes.leer / .escribir
-3. Académico	periodo, materia, curso, inscripcion, calificacion, historial	academico.*
-4. Patrocinio y becas	patrocinador, asignacion_beca	patrocinadores.*
-5. Solicitudes y aprobaciones	solicitud, solicitud_paso, notificacion, audit_log	solicitudes.gestionar / .direccion (y finanzas.escribir para gastos)
-6. Operaciones	proyecto, tarea, tarea_asignado, evento, registro_servicio	operaciones.*
-7. Finanzas	transaccion	finanzas.leer / .escribir
-8. Bienestar (comida)	inscripcion_comida	(público)
-9. Asistentes de IA	conversacion_ia, mensaje_ia, extraccion_ocr, fragmento_conocimiento	ia.usar / ia.administrar
-
-El proceso 1 es transversal: todo acceso a los procesos 2 al 7 y 9 pasa primero por la autenticación y la verificación de permisos RBAC.
-
-Espacio para diagrama —  Diagrama de flujo de datos Nivel 0 (contexto) — insertar aquí.
-
-Espacio para diagrama  — Diagrama de flujo de datos Nivel 1 (procesos y almacenes) — insertar aquí.
-
-Espacio para diagrama  — Diagramas de detalle de los flujos automatizados: OCR Expediente, Tarea→Notificación→Calendario, y Chat IA con contexto (RAG) — insertar aquí (opcional, como anexo de la Cuarta Entrega).
-
- 
-3. Diccionario de Datos
-
-El diccionario de datos se generó a partir de la base de datos en vivo (PostgreSQL 17, Supabase) y refleja exactamente el estado desplegado por las migraciones db/migrations/0001–0013. Cubre 36 tablas, 333 columnas, 7 tipos ENUM y 4 extensiones de PostgreSQL. Cada tabla documenta sus columnas (tipo, nulabilidad, valor por defecto y claves), sus restricciones CHECK y sus índices, siguiendo la convención PK = clave primaria, FK = clave foránea, UK = único.
-
-Índice de dominios documentados: (1) Identidad y control de acceso, (2) Transversal, (3) Patrocinio, (4) Estudiantes, (5) Académico, (6) Academias, (7) Solicitudes, (8) Operaciones, (9) Bienestar, (10) Finanzas, (11) Inteligencia Artificial; más los apéndices de tipos ENUM y extensiones de PostgreSQL.
-
-A modo ilustrativo, se presenta a continuación el detalle de dos tablas representativas del núcleo del sistema. El diccionario de datos completo de las 36 tablas se presenta en el documento técnico anexo (Documentación Global Effect Nexus).
-
-Tabla: usuario
-
-Usuarios con credenciales de acceso a la plataforma. Clave primaria: id.
-Columna	Tipo	Nulo	Descripción
-id	uuid	No (PK)	Identificador único del registro.
-email	citext	No (UK)	Correo institucional y usuario de acceso (sin distinción de mayúsculas).
-password_hash	text	No	Contraseña cifrada (bcrypt / argon2).
-nombre	text	No	Nombre completo del usuario.
-rol_id	uuid	No (FK)	Referencia a la tabla rol.
-activo	boolean	No	Indica si el usuario puede acceder al sistema.
-ultimo_acceso	timestamptz	Sí	Marca del último inicio de sesión.
-
-Tabla: estudiante
-
-Tabla núcleo del expediente estudiantil (datos personales e institucionales). Clave primaria: id.
-Columna	Tipo	Nulo	Descripción
-id	uuid	No (PK)	Identificador único del registro.
-nombre	text	No	Nombre completo del estudiante.
-cedula	text	Sí (UK)	Documento de identidad (único).
-estado	estado_estudiante	No	Estado en el pipeline y situación escolar (enum).
-tipo	tipo_estudiante	No	Tipo de estudiante: becado o regular (enum).
-patrocinador_id	uuid	Sí (FK)	Patrocinador actual asignado.
-usuario_id	uuid	Sí (FK, UK)	Cuenta de acceso vinculada (único).
-
-Apéndice de tipos ENUM (7 en total): estado_estudiante, genero, parentesco, tipo_estudiante, tipo_evaluacion, tipo_patrocinador y tipo_transaccion. Apéndice de extensiones de PostgreSQL utilizadas: pgcrypto (generación de UUID), citext (correos sin distinción de mayúsculas), pg_trgm (búsqueda difusa por similitud) y vector/pgvector (embeddings e índice HNSW para búsqueda semántica).
- 
-
-QUINTA ENTREGA — PROYECTO FINAL DE GRADO
-Global Effect Nexus
- 
-1. Estándares del Sistema
-
-Con el fin de garantizar consistencia, mantenibilidad y seguridad a lo largo de los 27 módulos del sistema, se establecen los siguientes estándares técnicos, ya aplicados desde la fase de diseño de base de datos:
-
-Nomenclatura de base de datos: nombres de tablas y columnas en snake_case, en español, y en singular (estudiante, no estudiantes); claves primarias uniformes con columna id de tipo uuid.
-Acceso a datos sin ORM: todas las consultas se escriben a mano con el cliente pg (node-postgres) y parámetros posicionales ($1, $2…), nunca concatenación de cadenas.
-Tipado: interfaces TypeScript por entidad en types.ts y validación de formularios/API con esquemas Zod en schema.ts, como frontera entre la capa de dominio y la interfaz.
-Migraciones versionadas: cada cambio de esquema es un archivo .sql numerado secuencialmente (0001, 0002…), reproducible y aplicado mediante un runner integrado al repositorio.
-Internacionalización: cadenas de interfaz en diccionarios messages/es.json y messages/en.json bajo el segmento de ruta /[locale]; los valores de estado se almacenan como código en la base de datos y se traducen únicamente en la interfaz.
-Componentes de interfaz: shadcn/ui sobre Tailwind CSS, con tokens de diseño consistentes entre los cinco portales por rol.
-Control de versiones y seguridad: variables sensibles (cadenas de conexión, claves) únicamente en variables de entorno (.env), nunca en el repositorio.
-Auditoría: toda tabla con updated_at incorpora un disparador (trigger) set_updated_at(); las acciones sensibles quedan registradas en audit_log con snapshot de antes/después.
-
- 
-2. Reglas de Negocio
-
-Las siguientes reglas de negocio están implementadas como restricciones físicas (CHECK, UNIQUE, claves foráneas con regla ON DELETE) directamente en el esquema de base de datos, además de validarse en la capa de aplicación con Zod:
-
-Una calificación (calificacion.nota) debe estar entre 0 y 100; el GPA (historial_calificacion.gpa) debe estar entre 0.00 y 4.00.
-El progreso de un proyecto (proyecto.progreso) es un porcentaje entre 0 y 100.
-Los montos financieros (patrocinador.monto_mensual, asignacion_beca.monto, transaccion.monto) no pueden ser negativos; el monto de una transacción debe ser estrictamente mayor que cero.
-Un estudiante no puede matricularse dos veces en la misma materia dentro del mismo período: restricción única sobre (estudiante_id, materia_id, periodo_id) en la tabla inscripcion.
-Solo puede existir un registro de servicio comunitario por estudiante y mes: restricción única sobre (estudiante_id, mes) en registro_servicio.
-Solo puede existir una inscripción de comida por persona y día: restricción única sobre (nombre, fecha) en inscripcion_comida; la inscripción pública debe registrarse antes de las 8:30 a. m.
-El idioma preferido de un usuario solo admite los valores es o en.
-La fecha de fin de un período académico no puede ser anterior a su fecha de inicio (fecha_fin >= fecha_inicio).
-Al eliminar un estudiante, se eliminan en cascada (ON DELETE CASCADE) sus perfiles asociados (vivienda, salud, socioeconómico), familiares, inscripciones y calificaciones, preservando la integridad referencial.
-El expediente del estudiante solo es editable por administración (admin y super_admin, permisos expedientes.leer / .escribir / .eliminar); habitudes solo postula candidatos y el estudiante consulta lo suyo desde su portal.
-Una solicitud sigue el flujo enviada → en_revision → [pendiente_direccion] → aprobada → completada; puede rechazarse (con comentario obligatorio) desde enviada, en_revision o pendiente_direccion, y el solicitante puede cancelarla mientras esté en enviada o en_revision. Nadie aprueba su propia solicitud; las becas siempre requieren segundo nivel de dirección y los gastos lo requieren desde 1,000 USD.
-Toda acción sobre entidades sensibles (expedientes, transacciones, usuarios) queda registrada en audit_log con el identificador del usuario, la acción realizada y un snapshot de los datos antes y después del cambio.
-
- 
-3. Diseño de Reportes
-
-El sistema centraliza la generación de reportes en un módulo dedicado, con visualizaciones construidas mediante la librería Recharts y datos consultados directamente de los almacenes normalizados descritos en la Cuarta Entrega:
-
-Reporte	Módulo origen	Audiencia	Formato
-Dashboard principal	Transversal (todas las tablas)	Administración, dirección	Panel interactivo (tiempo real)
-Reporte de Proyectos	Operaciones (proyecto, tarea)	Administración	Panel interactivo
-Reporte Académico	Académico (calificacion, historial)	Docentes, administración	Panel interactivo
-Reporte de Contabilidad	Finanzas (transaccion)	Contabilidad, dirección	Panel interactivo + balance
-Servicios mensuales	Operaciones (registro_servicio)	Administración, patrocinadores	Exportación PDF
-Reporte de Patrocinadores	Patrocinio (patrocinador, asignacion_beca)	Dirección, patrocinadores	Panel + exportación
-
-Cada reporte respeta el control de acceso basado en roles: un docente solo visualiza indicadores académicos de sus propios cursos, mientras que el súper administrador accede a la vista consolidada de todos los dominios. Los reportes financieros y de patrocinadores están pensados como el principal insumo de la estrategia de transparencia descrita en el Plan de Marketing de la Segunda Entrega.
- 
-
-SEXTA ENTREGA — PROYECTO FINAL DE GRADO
-Global Effect Nexus
- 
-1. Introducción
-
-El presente documento consolida las seis entregas del Proyecto Final de Grado correspondiente al sistema Global Effect Nexus, desarrollado para la Fundación Global Effect por los sustentantes Gabriela García y Dauris Santana, en el marco de la Escuela de Ingeniería en Sistemas y Computación de la Universidad Católica del Cibao (UCATECI). A lo largo del documento se presentó el planteamiento del problema, el alcance SMART, la justificación y el posicionamiento del proyecto (Primera Entrega); las limitaciones, la planificación por sprints y los objetivos (Segunda y Tercera Entrega); el modelo de datos y su documentación técnica (Cuarta Entrega); los estándares, reglas de negocio y diseño de reportes (Quinta Entrega); y finalmente las conclusiones y referencias que cierran el trabajo (Sexta Entrega).
-
- 
-2. Conclusión
-
-Al cierre de esta fase del Proyecto Integrador de Conocimientos, el diseño conceptual y físico de la base de datos de Global Effect Nexus se encuentra completo, normalizado (1NF–3NF) y desplegado en un entorno real de Supabase, con 36 tablas, 7 tipos ENUM, 44 relaciones verificadas y soporte nativo para inteligencia artificial mediante pgvector. Esta fundación de datos —adelantada respecto al cronograma original— reduce significativamente el riesgo técnico de los sprints siguientes, centrados en el backend (Auth.js, RBAC, i18n) y en la implementación funcional de los 27 módulos y cinco portales por rol.
-
-El proyecto demuestra que es posible sustituir la gestión fragmentada en papel y hojas de cálculo por una plataforma centralizada, auditable y segura, sin recurrir a un ORM y manteniendo el control total sobre las consultas SQL, lo cual constituye tanto una decisión de ingeniería defendible académicamente como una garantía de seguridad ante la inyección de código. El módulo de Solicitudes y Aprobaciones, en particular, evidencia que los controles de un ERP —separación de funciones, segundo nivel de aprobación y rastro de cada decisión— pueden traducirse directamente en restricciones físicas del modelo de datos. Del mismo modo, cuando la fundación eliminó su departamento de Psicología, el cambio de alcance se resolvió con una migración versionada (0030) sin reescribir la historia del esquema.
-
-Como trabajo futuro, se identifican tres frentes: (1) completar la implementación funcional de los sprints S4 a S13 conforme al plan de trabajo presentado; (2) migrar progresivamente el archivo histórico de la fundación, priorizando los expedientes activos; y (3) evaluar, una vez estabilizado el sistema, la incorporación de nuevos roles o de un modelo multi-institucional si la fundación decide extender la plataforma a programas hermanos.
-
- 
-3. Bibliografía
-
-Vercel Inc. (2026). Next.js Documentation — App Router. https://nextjs.org/docs
-PostgreSQL Global Development Group. (2026). PostgreSQL 17 Documentation. https://www.postgresql.org/docs/17/
-node-postgres. (2026). pg — PostgreSQL client for Node.js, documentación oficial. https://node-postgres.com/
-Auth.js. (2026). Auth.js Documentation (NextAuth v5). https://authjs.dev/
-pgvector. (2026). pgvector — Open-source vector similarity search for Postgres. https://github.com/pgvector/pgvector
-OWASP Foundation. (2026). OWASP Top Ten — A03:2021 Injection. https://owasp.org/www-project-top-ten/
-Significados.com. (s.f.). Planteamiento del problema. https://www.significados.com/planteamiento-del-problema/
-Universidad Católica del Cibao (UCATECI). (2024). Guía metodológica del Proyecto Integrador de Conocimientos I (ISC 109). Plataforma Virtual UCATECI.
-c
+1. **E1 (Base de Datos Relacional Normalizada):** Diseñar, normalizar (1NF a 3NF) e implementar el esquema relacional en PostgreSQL 17 con esquemas segregados (`public` y `contabilidad`), abarcando más de 70 tablas estructuradas con restricciones de clave foránea, triggers de auditoría automática y soporte vectorial mediante `pgvector`.
+2. **E2 (Control de Acceso y Autenticación RBAC):** Implementar la capa de identidad con Auth.js (NextAuth v5), sesiones JWT cifradas y autorización estricta a nivel de servidor (`requerirUsuario`, `requerirRol`, `requerirPermiso`) para seis portales especializados.
+3. **E3 (Contabilidad Integral y Cumplimiento DGII):** Desarrollar el módulo contable con catálogo formal de cuentas, validación estricta de Números de Comprobante Fiscal (NCF tipos B01, B02, B14, B15, E31), generación de los reportes fiscales normativos **Formato 606 y Formato 607**, libros de banco y control de caja chica con desglose físico por denominación y alerta de descuadre $\ge$ RD$200.
+4. **E4 (Inventario Físico con Códigos QR):** Desarrollar el módulo de control patrimonial para registro de activos (mobiliario, computadoras, herramientas industriales), generación e impresión de etiquetas QR de alta resolución con branding institucional, y lector móvil integrado con la cámara del dispositivo para auditorías en sitio.
+5. **E5 (Torre de Control del Empleado y Rendición de Gastos):** Construir el panel diario de productividad ("Lo que me toca hoy") con estados de tareas (`por_hacer`, `en_progreso`, `en_revision`, `completada`), asignación de proyectos por rol por parte del superadministrador, y formulario de rendición de gastos con extracción de datos de facturas mediante OCR.
+6. **E6 (Aula Virtual Global 360 y Hub Habitudes):** Desarrollar el entorno de aprendizaje virtual semestral estilo Moodle con control de entregas por extensiones y peso (MB), vista dual "Ver como estudiante" para docentes, y repositorio multimedia colaborativo con subida de evidencias fotográficas para liceos.
+7. **E7 (Expedientes y Agenda Institucional):** Implementar la gestión administrativa de expedientes estudiantiles y la agenda unificada de reuniones para todo el personal y alumnos, reemplazando el antiguo esquema de citas psicológicas.
+8. **E8 (Auditoría Inmutable y Separación de Funciones):** Implementar la bitácora transaccional (`audit_log`) con hash SHA-256 encadenado y flujo de solicitudes y aprobaciones con separación de funciones (nadie aprueba su propia solicitud; segundo nivel obligatorio de dirección).
+
+---
+
+## 2. Marco Teórico
+
+### 2.1 Next.js 16 App Router y Server Actions frente a SPAs Tradicionales
+Las aplicaciones de página única (SPA) tradicionales descargan pesados paquetes de JavaScript al cliente y exponen APIs REST o GraphQL públicas que incrementan la superficie de ataque. Next.js 16 con App Router adopta una arquitectura basada en **React Server Components (RSC)** y **Server Actions**, ejecutando la lógica de negocio, validaciones y consultas SQL directamente en el entorno seguro del servidor. Esto garantiza que las credenciales de base de datos nunca viajen al navegador y reduce la latencia en la interacción con el usuario.
+
+### 2.2 PostgreSQL 17 sin ORM (Consultas SQL Parametrizadas)
+Los Mapeadores Objeto-Relacional (ORMs) convencionales introducen capas de abstracción innecesarias, generan consultas SQL subóptimas y complican la implementación de transacciones complejas. En Global Effect Nexus, la comunicación con PostgreSQL se gestiona mediante el cliente `pg` (`node-postgres`) utilizando **únicamente consultas parametrizadas manuales** (`$1, $2, ...`), garantizando:
+- Protección matemática y estructural contra inyecciones SQL.
+- Inspección directa del plan de ejecución (`EXPLAIN ANALYZE`).
+- Manejo granular de transacciones ACID (`BEGIN`, `COMMIT`, `ROLLBACK`) en transferencias contables y liquidación de cajas chicas.
+
+### 2.3 Normativa Tributaria y Comprobantes Fiscales en República Dominicana (DGII)
+La Dirección General de Impuestos Internos (DGII), en el marco de la Ley 11-92 (Código Tributario) y el Decreto 254-06, regula la emisión de Números de Comprobante Fiscal (NCF) para validar costos y gastos deducibles del Impuesto sobre la Renta (ISR) y sustentar créditos del Impuesto a las Transferencias de Bienes Industrializados y Servicios (ITBIS). La Norma General 06-2018 exige a las entidades remitir mensualmente el **Formato 606 (compras)** y **Formato 607 (ventas/ingresos)** con detalle por tipo de gasto, RNC/Cédula del proveedor, fecha de retención y montos gravados/exentos.
+
+### 2.4 Control Patrimonial y Codificación Matricial QR (ISO/IEC 18004)
+El código QR (*Quick Response Code*) es un sistema matricial bidimensional capaz de almacenar cadenas alfanuméricas de alta densidad con corrección de errores (Reed-Solomon). Su aplicación en inventarios de activos fijos permite que los auditores verifiquen la existencia física de un equipo en segundos mediante la cámara de un teléfono inteligente, registrando la geolocalización o sede donde se efectuó la lectura.
+
+### 2.5 Criptografía en Auditoría y Trazabilidad Transaccional
+Para impedir la alteración retroactiva de pólizas contables y cuadres de caja, el sistema implementa firmas criptográficas basadas en el algoritmo **SHA-256**, generando un hash representativo de cada transacción concatenado al hash del registro anterior (patrón de cadena de bloques local en base de datos), asegurando la no repudiación de las operaciones.
+
+---
+
+## 3. Vulnerabilidad y Seguridad del Sistema
+
+### 3.1 Levantamiento de Amenazas
+
+| ID | Amenaza Identificada | Vector de Ataque | Impacto Institucional |
+| :--- | :--- | :--- | :--- |
+| **AM-01** | **Inyección SQL (SQLi)** | Parámetros maliciosos en formularios de búsqueda o filtros contables. | Acceso o destrucción total de la base de datos institucional. |
+| **AM-02** | **Inconsistencia Fiscal ante la DGII** | Registro de NCF duplicados, facturas no válidas para crédito fiscal o montos erróneos en el 606. | Multas pecuniarias, pérdida de exención de ONG e investigaciones fiscales. |
+| **AM-03** | **Fuga de Fondos en Caja Chica** | Declaración falsa de gastos menores o alteración de arqueos de efectivo. | Fraude financiero y desvío de donaciones benéficas. |
+| **AM-04** | **Extravío o Robo de Activos Físicos** | Traslado de herramientas y computadoras sin registro de responsable. | Pérdida patrimonial en talleres y oficinas comunitarias. |
+| **AM-05** | **Acceso No Autorizado y Secuestro de Sesión** | Interceptación de tokens de sesión JWT o escalada de privilegios horizontales. | Divulgación de datos personales de menores de edad y familias vulnerables. |
+| **AM-06** | **Auto-aprobación de Gastos y Becas** | Un colaborador aprueba su propio reembolso económico. | Conflicto de interés y pérdida de rigor administrativo. |
+
+### 3.2 Matriz de Riesgo y Evaluación
+
+| Amenaza | Probabilidad | Impacto | Nivel de Riesgo Inherente | Nivel con Mitigación |
+| :--- | :---: | :---: | :---: | :---: |
+| AM-01 (Inyección SQL) | Baja | Catastrófico | **Alto** | **Bajo** (Eliminada por parametrización $1) |
+| AM-02 (Inconsistencia DGII) | Media | Catastrófico | **Extremo** | **Bajo** (Validación sintáctica Zod y DB) |
+| AM-03 (Fraude en Caja Chica) | Media | Grave | **Alto** | **Bajo** (Arqueo por denominación y alerta $\ge$ RD$200) |
+| AM-04 (Pérdida de Activos) | Alta | Moderado | **Alto** | **Bajo** (Custodio asignado y auditoría QR) |
+| AM-05 (Acceso / Fuga de Datos) | Baja | Catastrófico | **Alto** | **Bajo** (RBAC estricto, HttpOnly, SameSite) |
+| AM-06 (Auto-aprobación) | Media | Grave | **Medio** | **Bajo** (Separación forzosa en solicitudes) |
+
+### 3.3 Medidas de Mitigación Implementadas
+1. **Parametrización Obligatoria:** Prohibición absoluta de concatenar variables en texto SQL.
+2. **Validación Sintáctica de NCF con Zod y RegEx:** Verificación de longitud y prefijos válidos de la DGII (`B01`, `B02`, `B14`, `B15`, `E31`).
+3. **Control Denominacional en Efectivo:** Desglose obligatorio de billetes y monedas en cada cierre de caja chica; cualquier discrepancia entre el total físico y el saldo teórico que alcance o supere **RD$200.00** genera una alerta roja bloqueante para el auditor.
+4. **Etiquetado Matricial QR:** Identificación indeleble en cada activo vinculado a un código único (`ACT-0001`) con trazabilidad de movimientos.
+5. **Separación de Funciones:** El motor de solicitudes (`solicitud`, `solicitud_paso`) impide que el creador de un trámite actúe como aprobador; los reembolsos de gastos mayores a 1,000 USD exigen aprobación de segundo nivel de la Dirección Ejecutiva.
+
+---
+
+# CUARTA ENTREGA — PROYECTO FINAL DE GRADO
+
+## 1. Diagrama Entidad-Relación (ERD)
+
+El modelo de datos de Global Effect Nexus reside en PostgreSQL 17 (Supabase) estructurado en dos esquemas principales: `public` y `contabilidad`. Cuenta con **más de 70 tablas relacionales** organizadas en 11 dominios operativos:
+
+```mermaid
+erDiagram
+    %% DOMINIO IDENTIDAD Y RBAC
+    usuario ||--o{ rol : tiene
+    rol ||--o{ rol_permiso : posee
+    permiso ||--o{ rol_permiso : integra
+
+    %% DOMINIO CONTABILIDAD DGII
+    catalogo_cuenta ||--o{ catalogo_cuenta : "subcuenta de"
+    poliza ||--o{ poliza_detalle : contiene
+    catalogo_cuenta ||--o{ poliza_detalle : imputa
+    factura_cxp ||--o{ poliza : genera
+    caja_chica ||--o{ movimiento_caja : registra
+    caja_chica ||--o{ arqueo_caja : cuadra
+    arqueo_caja ||--o{ arqueo_denominacion : desglosa
+
+    %% DOMINIO ACTIVOS FÍSICOS CON QR
+    inventario_activo ||--o{ inventario_historial : registra
+    usuario ||--o{ inventario_activo : custodia
+    usuario ||--o{ inventario_historial : audita
+
+    %% DOMINIO EXPEDIENTES ESTUDIANTILES
+    estudiante ||--o| perfil_vivienda : habita
+    estudiante ||--o| perfil_salud : historia
+    estudiante ||--o| perfil_socioeconomico : condicion
+    estudiante ||--o{ familiar : convive
+    patrocinador ||--o{ asignacion_beca : financia
+    estudiante ||--o{ asignacion_beca : recibe
+
+    %% DOMINIO ACADÉMICO Y MOODLE GLOBAL 360
+    periodo ||--o{ curso : apertura
+    materia ||--o{ curso : compone
+    curso ||--o{ inscripcion : matricula
+    estudiante ||--o{ inscripcion : participa
+    curso ||--o{ tarea_academica : asigna
+    tarea_academica ||--o{ entrega_tarea : recibe
+    estudiante ||--o{ entrega_tarea : entrega
+
+    %% DOMINIO OPERACIONES Y TORRE DE CONTROL
+    proyecto ||--o{ tarea : descompone
+    usuario ||--o{ tarea : asignada_a
+    usuario ||--o{ rendicion_gasto : rinde
+```
+
+---
+
+## 2. Diagramas de Flujo de Datos (DFD)
+
+### 2.1 DFD Nivel 0 — Diagrama de Contexto General
+Muestra la interacción de los 6 roles de usuarios, los patrocinadores y las entidades de apoyo con la caja negra de Global Effect Nexus:
+
+```mermaid
+flowchart TD
+    subgraph Actores Externos
+        U1[Súper Administrador / Dirección]
+        U2[Personal Administrativo / Empleados]
+        U3[Estudiante Beneficiario]
+        U4[Docente / Facilitador]
+        U5[Contador / Auditor]
+        U6[Docente Habitudes en Liceos]
+        EXT1[Donantes y Patrocinadores]
+        EXT2[Oficina Virtual DGII - Reportes 606/607]
+    end
+
+    SYS((GLOBAL EFFECT NEXUS\nERP Institucional))
+
+    U1 <-->|Políticas, Proyectos por Rol, Aprobaciones| SYS
+    U2 <-->|Torre de Control 'Lo que me toca hoy', Rendición Gastos OCR| SYS
+    U3 <-->|Autoconsulta Expediente, Trámites, Moodle Global 360| SYS
+    U4 <-->|Calificaciones, Tareas Académicas, Asistencias| SYS
+    U5 <-->|NCF, Arqueos de Caja, Libros de Banco, Pólizas| SYS
+    U6 <-->|Diapositivas y Evidencias Fotográficas Móviles| SYS
+    EXT1 <--|Reportes Ejecutivos de Beca y Transparencia| SYS
+    SYS -->|Exportación TXT/Excel Formatos 606 y 607| EXT2
+```
+
+### 2.2 DFD Nivel 1 — Procesos y Almacenes Principales
+
+```mermaid
+flowchart TD
+    subgraph Procesos Principales
+        P1[1.0 Autenticación y Control de Acceso RBAC]
+        P2[2.0 Gestión de Expedientes y Alumnos]
+        P3[3.0 Control Académico y Moodle Global 360]
+        P4[4.0 Contabilidad Fiscal, NCF y Cajas Chicas]
+        P5[5.0 Inventario Físico y Auditoría QR]
+        P6[6.0 Torre de Control y Rendición de Empleados]
+        P7[7.0 Solicitudes, Trámites y Reuniones]
+        P8[8.0 Hub Colaborativo Habitudes]
+    end
+
+    subgraph Almacenes de Datos
+        D1[(usuario, rol, rol_permiso)]
+        D2[(estudiante, perfiles, familiar)]
+        D3[(periodo, materia, curso, tarea_academica)]
+        D4[(contabilidad.*: factura_cxp, arqueo_caja, poliza)]
+        D5[(inventario_activo, inventario_historial)]
+        D6[(proyecto, tarea, rendicion_gasto)]
+        D7[(solicitud, solicitud_paso, reunion)]
+        D8[(habitudes_recurso, habitudes_evidencia)]
+    end
+
+    P1 <--> D1
+    P2 <--> D2
+    P3 <--> D3
+    P4 <--> D4
+    P5 <--> D5
+    P6 <--> D6
+    P7 <--> D7
+    P8 <--> D8
+```
+
+---
+
+## 3. Diccionario de Datos (Muestra de Tablas Representativas)
+
+### 3.1 Tabla: `contabilidad.factura_cxp`
+Almacena facturas y comprobantes fiscales de cuentas por pagar recibidos o rendidos por empleados.
+
+| Columna | Tipo | Nulo | Restricción / Por Defecto | Descripción |
+| :--- | :--- | :---: | :--- | :--- |
+| `id` | `uuid` | NO | PRIMARY KEY DEFAULT gen_random_uuid() | Identificador único de la factura. |
+| `proveedor_id` | `uuid` | SÍ | FK -> contabilidad.proveedor(id) | Proveedor emisor del comprobante fiscal. |
+| `empleado_id` | `uuid` | SÍ | FK -> public.usuario(id) | Colaborador que rindió el gasto. |
+| `programa_id` | `uuid` | SÍ | FK -> public.proyecto(id) | Programa al que se imputa el gasto. |
+| `ncf` | `varchar(19)` | NO | CHECK (ncf ~ '^[BE][0-9]{8,11}$') | Comprobante fiscal oficial de la DGII. |
+| `fecha_emision` | `date` | NO | NOT NULL | Fecha de expedición del comprobante. |
+| `monto_gravado` | `numeric(14,2)`| NO | DEFAULT 0.00 | Base imponible sujeta a ITBIS. |
+| `itbis_facturado`| `numeric(14,2)`| NO | DEFAULT 0.00 | Monto de ITBIS facturado (18% o 16%). |
+| `itbis_retenido` | `numeric(14,2)`| NO | DEFAULT 0.00 | Monto de ITBIS retenido en la fuente. |
+| `isr_retenido`   | `numeric(14,2)`| NO | DEFAULT 0.00 | Retención de impuesto sobre la renta. |
+| `tipo_gasto_606` | `varchar(2)`  | NO | NOT NULL (01 a 11 según DGII) | Clasificación oficial del costo/gasto. |
+| `estado`         | `varchar(20)` | NO | DEFAULT 'pendiente' | 'pendiente', 'aprobada', 'pagada'. |
+
+### 3.2 Tabla: `contabilidad.arqueo_caja`
+Cabecera del cuadre físico de cajas chicas con detección de fraude.
+
+| Columna | Tipo | Nulo | Restricción / Por Defecto | Descripción |
+| :--- | :--- | :---: | :--- | :--- |
+| `id` | `uuid` | NO | PRIMARY KEY DEFAULT gen_random_uuid() | Identificador único del arqueo. |
+| `caja_id` | `uuid` | NO | FK -> contabilidad.caja_chica(id) | Caja chica sujeta a conteo. |
+| `custodio_id` | `uuid` | NO | FK -> public.usuario(id) | Encargado de la custodia del efectivo. |
+| `auditor_id` | `uuid` | NO | FK -> public.usuario(id) | Contador o auditor que supervisa el cuadre. |
+| `saldo_teorico` | `numeric(14,2)`| NO | NOT NULL | Saldo contable según movimientos. |
+| `saldo_fisico`  | `numeric(14,2)`| NO | NOT NULL | Total sumado del conteo de denominaciones. |
+| `diferencia`    | `numeric(14,2)`| NO | GENERATED ALWAYS AS (saldo_fisico - saldo_teorico) | Faltante (negativo) o sobrante (positivo). |
+| `alerta_fraude` | `boolean` | NO | DEFAULT false | True si \|diferencia\| >= 200.00 RD$. |
+| `created_at`    | `timestamptz` | NO | DEFAULT now() | Fecha y hora exacta del arqueo. |
+
+### 3.3 Tabla: `public.inventario_activo`
+Catálogo de bienes muebles, tecnología y herramientas con soporte de código QR.
+
+| Columna | Tipo | Nulo | Restricción / Por Defecto | Descripción |
+| :--- | :--- | :---: | :--- | :--- |
+| `id` | `uuid` | NO | PRIMARY KEY DEFAULT gen_random_uuid() | Identificador único del activo. |
+| `codigo` | `varchar(20)` | NO | UNIQUE (Ej: 'ACT-0001') | Código correlativo patrimonial visible. |
+| `nombre` | `text` | NO | NOT NULL | Nombre descriptivo del activo. |
+| `categoria` | `varchar(50)` | NO | NOT NULL | Mobiliario, Tecnología, Herramientas, etc. |
+| `ubicacion` | `text` | NO | NOT NULL | Sede, aula, taller o almacén donde se ubica. |
+| `estado` | `varchar(20)` | NO | DEFAULT 'operativo' | 'operativo', 'mantenimiento', 'baja'. |
+| `codigo_qr` | `text` | NO | NOT NULL | Cadena codificada contenida en la etiqueta QR. |
+| `responsable_id` | `uuid` | SÍ | FK -> public.usuario(id) | Empleado custodio del bien. |
+| `valor_estimado` | `numeric(12,2)`| SÍ | CHECK (valor_estimado >= 0) | Valor económico de adquisición o tasación. |
+| `numero_serie`   | `varchar(100)`| SÍ | NULLABLE | Número de serie del fabricante. |
+
+---
+
+# QUINTA ENTREGA — PROYECTO FINAL DE GRADO
+
+## 1. Estándares del Sistema
+
+Para preservar la legibilidad, escalabilidad y seguridad de la arquitectura de software, se establecieron estándares técnicos obligatorios:
+
+1. **Nomenclatura y Limpieza de Código:**
+   - Base de datos en PostgreSQL: nombres de tablas y columnas en español, minúsculas, en singular y con formato `snake_case` (ejemplo: `inventario_activo`, `factura_cxp`).
+   - Código TypeScript: nombres de funciones y variables en `camelCase`, componentes en `PascalCase` y constantes globales en `UPPER_SNAKE_CASE`.
+2. **Consultas a Base de Datos:** Prohibición absoluta del uso de cadenas SQL interpoladas. Toda operación se procesa a través de los envoltorios transaccionales `consultar`, `consultarUna` y `enTransaccion` (`src/lib/db.ts`) con arrays de parámetros explícitos.
+3. **Control de Acceso Riguroso (RBAC):** Las verificaciones de seguridad se declaran a nivel de servidor utilizando `requerirUsuario`, `requerirRol` o `requerirPermiso`. Esconder un elemento en la interfaz (UI) no se considera un mecanismo de control de acceso.
+4. **Sistema de Diseño y Tokens de Marca:** Utilización estricta de la paleta institucional (Turquesa `#2096BA`, Hover `#187a99`, Oscuro `#0a6a8a`, Tinta `#171A1D`). Queda prohibido el uso de colores arbitrarios fuera de los tokens corporativos. Los estados de semáforo (`#1E9E6A` para éxito, `#B4342B` para error) se reservan exclusivamente a indicadores de estado acompañados de su icono respectivo.
+5. **Internacionalización Simétrica:** Ningún componente JSX puede albergar cadenas literales visibles. Todo texto se gestiona a través de `next-intl` con traducción garantizada y verificada en `messages/es.json` y `messages/en.json`.
+
+---
+
+## 2. Reglas de Negocio
+
+1. **RN-01 (Partida Doble Obligatoria):** En el subsistema contable, ninguna póliza puede registrarse si la suma de los débitos no coincide de manera exacta con la suma de los créditos ($\sum \text{Débitos} = \sum \text{Créditos}$).
+2. **RN-02 (Validación de Comprobantes Fiscales NCF):** Todo gasto deducible debe registrar un NCF válido con el formato oficial de la DGII (`B01` para crédito fiscal, `B02` consumo, `B14` régimen especial, `B15` gubernamental o `E31` e-NCF). La base de datos rechaza cualquier registro con estructura de NCF irregular.
+3. **RN-03 (Desglose Físico y Alerta de Fraude en Caja Chica):** Todo arqueo de caja chica exige el conteo de la existencia real de billetes (RD$ 2,000, 1,000, 500, 200, 100, 50) y monedas (RD$ 25, 10, 5, 1). Si la diferencia absoluta entre el saldo teórico contable y el saldo físico total es igual o superior a **RD$ 200.00**, el sistema activa la bandera `alerta_fraude = TRUE` y remite una notificación inmediata al Súper Administrador y al Auditor.
+4. **RN-04 (Rendición de Gastos Vinculada a Programas):** Un colaborador que rinde un gasto mediante factura física debe especificar obligatoriamente el programa social beneficiado (Casa de Herramientas, Juan Bosch, Beca Universitaria, etc.) y la persona responsable de la custodia del bien o servicio adquirido.
+5. **RN-05 (Asignación Exclusiva de Proyectos por el Superadmin):** La asignación de proyectos y la visibilidad de los mismos en la Torre de Control de los empleados está restringida de manera exclusiva al rol `super_admin`. Ningún empleado puede auto-adjudicarse proyectos institucionales.
+6. **RN-06 (Unicidad y Marcado QR de Activos):** Cada bien mueble o herramienta debe poseer un código patrimonial único secuencial inalterable (`ACT-XXXX`) y una etiqueta QR legible generada automáticamente. El cambio de ubicación o custodio del bien queda asentado de forma indeleble en la bitácora `inventario_historial`.
+7. **RN-07 (Separación de Funciones en Solicitudes):** Ningún usuario puede aprobar solicitudes originadas por él mismo. Toda solicitud de reembolso, adquisición o beca que supere los 1,000 USD requiere aprobación formal de segundo nivel por parte de la Dirección Ejecutiva.
+8. **RN-08 (Inscripción de Alimentos Comunitaria):** Para planificar el volumen del comedor comunitario y evitar el desperdicio de insumos, las inscripciones públicas para el almuerzo diario quedan cerradas automáticamente a las 8:30 a.m. del día en curso.
+
+---
+
+## 3. Diseño de Reportes Formales
+
+### 3.1 Reporte Fiscal Formato 606 (Compras de Bienes y Servicios — DGII)
+Generado mensualmente para su presentación ante la Dirección General de Impuestos Internos:
+
+```
+========================================================================================
+FORMATO 606 — COMPRAS DE BIENES Y SERVICIOS (DGII) | FUNDACIÓN GLOBAL EFFECT INC.
+RNC: 4-30-XXXXX-X | PERÍODO FISCAL: 2026-10 | TOTAL REGISTROS: 48
+========================================================================================
+RNC/Cédula    Tipo ID  Tipo Bien  NCF         Fecha Compra  Monto Facturado  ITBIS Fact.  ITBIS Ret.  Ret. ISR
+--------------------------------------------------------------------------------------------------------
+130-99887-1   1        02         B0100000412 2026-10-04    RD$ 15,400.00    RD$ 2,772.00 RD$ 0.00    RD$ 0.00
+101-55443-2   1        01         B0100001099 2026-10-12    RD$ 45,000.00    RD$ 8,100.00 RD$ 2,430.00 RD$ 0.00
+...
+--------------------------------------------------------------------------------------------------------
+TOTALES GENERALES:                                          RD$ 485,200.00   RD$ 87,336.00 RD$ 12,450.00 RD$ 8,500.00
+========================================================================================
+```
+
+### 3.2 Reporte de Arqueo y Desglose de Caja Chica
+Emisión física tras la inspección física de efectivo:
+
+```
+========================================================================================
+ACTA DE ARQUEO FÍSICO DE CAJA CHICA | SEDE CENTRAL LA VEGA
+CAJA: Caja Chica Operativa - Casa de Herramientas | FECHA: 18/10/2026 10:30 AM
+CUSTODIO: Ramón Morales | AUDITOR: Lic. Marcos Peña
+========================================================================================
+DENOMINACIÓN (RD$)       CANTIDAD FÍSICA                 TOTAL DENOMINACIÓN
+----------------------------------------------------------------------------------------
+Billetes de RD$ 2,000                4                             RD$  8,000.00
+Billetes de RD$ 1,000                3                             RD$  3,000.00
+Billetes de RD$   500                6                             RD$  3,000.00
+Billetes de RD$   200                2                             RD$    400.00
+Billetes de RD$   100                5                             RD$    500.00
+Billetes de RD$    50                1                             RD$     50.00
+Monedas de RD$     25                2                             RD$     50.00
+----------------------------------------------------------------------------------------
+TOTAL EFECTIVO CONTADO (SALDO FÍSICO):                             RD$ 15,000.00
+SALDO CONTABLE EN LIBROS (SALDO TEÓRICO):                          RD$ 15,000.00
+DIFERENCIA:                                                        RD$      0.00
+ESTADO DE AUDITORÍA:                                               CUADRADA (SIN DISCREPANCIA)
+========================================================================================
+```
+
+### 3.3 Reporte de Auditoría Patrimonial de Activos Físicos con QR
+Inspección móvil en talleres y aulas:
+
+```
+========================================================================================
+INFORME DE AUDITORÍA PATRIMONIAL Y ESCANEO QR | FECHA: 18/10/2026
+UBICACIÓN AUDITADA: Taller Casa de Herramientas | AUDITOR: Ing. Dauris Santana
+========================================================================================
+CÓDIGO      DESCRIPCIÓN                      SERIE       CUSTODIO       ESTADO FÍSICO   ÚLT. AUDITORÍA
+------------------------------------------------------------------------------------------------
+ACT-0001    Taladro Percutor Industrial Dewalt DW-9921   Carlos Reyes   Operativo       18/10/2026 09:15
+ACT-0002    Soldadora Inverter 200A          SOL-8812   Carlos Reyes   Operativo       18/10/2026 09:18
+ACT-0014    Generador Eléctrico Honda 5.5KW  GEN-1104   Ramón Morales  Mantenimiento   18/10/2026 09:22
+...
+========================================================================================
+```
+
+---
+
+# SEXTA ENTREGA — PROYECTO FINAL DE GRADO
+
+## 1. Introducción General
+
+El presente documento consolida la investigación, el diseño conceptual, la arquitectura física y los estándares de ingeniería implementados en el desarrollo de **Global Effect Nexus**, la plataforma web integral de Planificación de Recursos Empresariales (ERP) y Gestión Académica desarrollada como Proyecto Final de Grado (Proyecto Integrador de Conocimientos) en la Escuela de Ingeniería en Sistemas y Computación de la Universidad Católica del Cibao (UCATECI).
+
+La investigación surge de la necesidad real de modernización tecnológica experimentada por la **Fundación Global Effect Inc.** en La Vega, una entidad cuya loable labor social requería superar la vulnerabilidad de sus registros manuales y hojas de cálculo desvinculadas. La complejidad de sus operaciones —que abarca la administración de becas universitarias, docencia comunitaria en liceos, talleres industriales, rendición de gastos en efectivo y cumplimiento estricto de las leyes impositivas dominicanas ante la DGII— demandaba un software robusto, auditable y concebido a la medida de su estructura institucional.
+
+A lo largo de los seis entregables académicos que integran este informe, se expuso la formulación del problema y su justificación (Primera Entrega); las delimitaciones operativas y la planificación por sprints quincenales (Segunda Entrega); los fundamentos teóricos, objetivos y evaluación exhaustiva de vulnerabilidades (Tercera Entrega); el modelado relacional y flujo de datos normalizado (Cuarta Entrega); los estándares de desarrollo, reglas de negocio y diseño de reportes (Quinta Entrega); y finalmente la síntesis conclusiva de la investigación que se expone a continuación.
+
+---
+
+## 2. Conclusiones
+
+La culminación del diseño y desarrollo de **Global Effect Nexus** permite extraer las siguientes conclusiones fundamentales desde la perspectiva de la ingeniería de software:
+
+1. **Eficiencia y Seguridad en el Manejo de Datos Relacionales:** Se comprobó que prescindir de un ORM genérico en favor de consultas SQL parametrizadas a mano sobre **PostgreSQL 17** proporciona un control absoluto de la integridad referencial, mitiga de manera nativa la inyección de código malicioso y permite un rendimiento superior a milisegundos en consultas analíticas de alta concurrencia.
+2. **Rigor Normativo y Blindaje Fiscal:** La estructuración del esquema `contabilidad` con validación sintáctica de Números de Comprobante Fiscal (NCF) y la generación automática de los Formatos 606 y 607 resuelve de raíz el riesgo de contingencias fiscales ante la DGII, dotando a la institución de un estándar de transparencia equiparable al de grandes corporaciones comerciales.
+3. **Control Patrimonial Mediante Tecnologías Web Móviles:** La implementación del módulo de inventario con códigos QR matriciales (ISO/IEC 18004) demostró que es viable ejecutar levantamientos físicos y auditorías en tiempo real a través de navegadores web móviles estándar sin incurrir en los elevados costes de licenciamiento y mantenimiento de aplicaciones nativas en tiendas cerradas.
+4. **Productividad Diaria y Rendición de Cuentas Ágil:** La creación de la "Torre de Control del Empleado" y el formulario de rendición de gastos con extracción asistida por OCR eliminaron los cuellos de botella en la liquidación de fondos de caja chica, permitiendo que el personal administrativo y docente concentre su esfuerzo en la transformación social y mentoría de los beneficiarios.
+5. **Valor Académico e Impacto Social del Proyecto:** Global Effect Nexus valida que el rigor metodológico exigido por la Escuela de Ingeniería en Sistemas y Computación de UCATECI se traduce en herramientas de alto impacto práctico para el desarrollo comunitario de La Vega y de la República Dominicana.
+
+---
+
+## 3. Bibliografía y Referencias Normativas
+
+- **Auth.js.** (2026). *NextAuth.js Documentation (Version 5)*. https://authjs.dev/
+- **Dirección General de Impuestos Internos (DGII).** (2006). *Decreto Núm. 254-06 para la Regulación de la Emisión de Comprobantes Fiscales*. Santo Domingo, República Dominicana.
+- **Dirección General de Impuestos Internos (DGII).** (2018). *Norma General Núm. 06-2018 sobre Remisión de Informaciones de Compras y Ventas (Formatos 606 y 607)*. Santo Domingo, República Dominicana.
+- **International Organization for Standardization.** (2015). *ISO/IEC 18004:2015 Information technology — Automatic identification and data capture techniques — QR Code bar code symbology specification*. Ginebra: ISO.
+- **Node-postgres.** (2026). *pg — PostgreSQL Client for Node.js Documentation*. https://node-postgres.com/
+- **OWASP Foundation.** (2026). *OWASP Top 10 Security Vulnerabilities in Web Applications*. https://owasp.org/www-project-top-ten/
+- **PostgreSQL Global Development Group.** (2026). *PostgreSQL 17.0 Documentation*. https://www.postgresql.org/docs/17/
+- **Universidad Católica del Cibao (UCATECI).** (2024). *Guía Metodológica para el Proyecto Integrador de Conocimientos y Proyecto Final de Grado*. Escuela de Ingeniería en Sistemas y Computación. La Vega, República Dominicana.
+- **Vercel Inc.** (2026). *Next.js 16 Documentation — App Router and Server Actions Architecture*. https://nextjs.org/docs
