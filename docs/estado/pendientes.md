@@ -7,6 +7,13 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
+- [x] **Documentación de Entregables de Grado (UCATECI Entregas 1 a 6):** Actualización
+      maestra de [`docs/entregables/contexto-general.md`](../entregables/contexto-general.md) y
+      [`docs/06-plan-de-entregas.md`](../06-plan-de-entregas.md) para cubrir los 30 módulos funcionales,
+      los 6 portales de rol, el subsistema contable formal homologado a DGII (NCF B01/B02/B14/B15/E31,
+      Formatos 606/607, arqueos de caja con desglose de denominaciones y alerta de fraude $\ge$ RD$200),
+      el inventario físico de activos con códigos QR imprimibles y escaneo móvil, la Torre de Control
+      del colaborador, el aula virtual Moodle Global 360 y la agenda institucional de reuniones.
 - [x] **Asistente de IA Flotante (Widget Universal):** Pop-up flotante interactivo
       accesible en todas las pantallas del sistema tras iniciar sesión
       (`WidgetFlotanteIA` en `(portal)/layout.tsx`), selector de modo
