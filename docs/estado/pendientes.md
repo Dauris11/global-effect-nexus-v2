@@ -45,10 +45,14 @@ módulo) — esto es solo la cola de pendientes concretos.
       con captura de foto y escaneo inteligente de OCR (NCF dominicano B01/B02/E31, RNC, proveedor, montos e ITBIS),
       imputación a programas sociales (Casa de Herramientas, Becas, etc.) y bandeja de aprobación
       y rechazo con validación fiscal ante DGII para Contabilidad (`rendicion.revisar`).
-- [ ] **Global 360 y Aula Virtual (Estilo Moodle):** Selección y matrícula cuatrimestral
-      obligatoria (dos veces por cuatrimestre) de materias con horarios y docentes asignados;
-      módulo de tareas estilo Moodle con restricciones de formato/tamaño (MB), buzón de entregas,
-      calificaciones con feedback y **Vista de Estudiante** para que el docente previsualice la tarea.
+- [x] **Global 360 y Aula Virtual (Estilo Moodle):** Selección y matrícula cuatrimestral
+      obligatoria en 2 rondas por cuatrimestre (Ronda 1: Regular, Ronda 2: Ajustes y Bloque 2)
+      con horarios, aulas/Zoom, cupo máximo y docentes asignados (`MatriculaCuatrimestral360` en `/portal/estudiante/global-360`);
+      módulo de tareas estilo Moodle con restricciones estrictas de formato (`.pdf`, `.docx`, `.zip`),
+      límite en MB (`limite_mb`), rúbricas (`instrucciones_entrega`), buzón de entregas estudiantil con notas (`BuzonTareaMoodle` y `BotonBuzonMoodle`),
+      calificaciones con feedback docente y plantillas rápidas (`EvaluadorEntregasMoodle`), y
+      **Vista de Estudiante** interactiva (`VistaEstudianteModal`) para que el docente simule y verifique la experiencia del alumno sin alterar datos reales
+      (migración `0042_aula_virtual_moodle_y_matricula_360.sql` y `scripts/seed-moodle-g360.mjs`).
 - [ ] **Programa Habitudes — Hub Colaborativo y Evidencias de Liceos:** Repositorio
       compartido de diapositivas (PowerPoint/PDF) e imágenes didácticas para los profesores
       que acuden a liceos, y módulo móvil de subida de evidencias fotográficas de clases impartidas.
