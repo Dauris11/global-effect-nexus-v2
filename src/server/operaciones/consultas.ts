@@ -75,10 +75,10 @@ export async function tareasDelTablero({
               WHERE ta.tarea_id = t.id) AS asignados,
             (t.fecha_limite IS NOT NULL
              AND t.fecha_limite < CURRENT_DATE
-             AND t.estado IN ('pendiente', 'en_progreso')) AS vencida
+             AND t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')) AS vencida
        FROM tarea t
        LEFT JOIN proyecto p ON p.id = t.proyecto_id
-      WHERE t.estado IN ('pendiente', 'en_progreso', 'completada')
+      WHERE t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision', 'completada')
         AND ($2::boolean
              OR t.visibilidad = 'todos'
              OR EXISTS (SELECT 1 FROM tarea_asignado ta

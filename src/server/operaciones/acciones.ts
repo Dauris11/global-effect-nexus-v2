@@ -46,7 +46,13 @@ export type EstadoOperaciones = {
 
 const PRIORIDADES = ["baja", "media", "alta", "urgente"];
 const VISIBILIDADES = ["todos", "asignados"];
-const ESTADOS_TAREA = ["pendiente", "en_progreso", "completada"];
+const ESTADOS_TAREA = [
+  "por_hacer",
+  "pendiente",
+  "en_progreso",
+  "en_revision",
+  "completada",
+];
 const ESTADOS_PROYECTO = ["planificacion", "en_curso", "completado", "pausado"];
 
 /**
