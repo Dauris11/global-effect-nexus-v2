@@ -12,6 +12,9 @@ import {
   ESTADOS_CXP,
 } from "@/server/contabilidad/cxp/consultas";
 
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export async function generateMetadata({
   params,
 }: {
@@ -50,7 +53,16 @@ export default async function PaginaCxp({
         antetitulo={t("titulo")}
         titulo={t("titulo")}
         subtitulo={t("subtitulo")}
+        acciones={
+          <Button asChild size="sm" variant="outline">
+            <a href="/api/contabilidad/exportar/cxp" download>
+              <Download className="size-4" />
+              <span>Exportar Excel</span>
+            </a>
+          </Button>
+        }
       />
+
 
       <TablaAntiguedad datos={antiguedad} />
 

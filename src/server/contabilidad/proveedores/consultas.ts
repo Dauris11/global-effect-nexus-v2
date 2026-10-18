@@ -179,6 +179,9 @@ export type DetalleFactura = FilaFactura & {
   fondo_id: string;
   proyecto_id: string | null;
   proyecto: string | null;
+  solicitante_id: string | null;
+  solicitante_nombre: string | null;
+  programa_codigo: string | null;
   creado_por_id: string;
   creado_por: string;
   aprobado_por: string | null;
@@ -196,6 +199,7 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
             f.subtotal::text AS subtotal, f.itbis::text AS itbis,
             f.retencion_isr::text AS retencion_isr, f.retencion_itbis::text AS retencion_itbis,
             f.categoria_id, c.nombre AS categoria, f.fondo_id, f.proyecto_id, pr.nombre AS proyecto,
+            f.solicitante_id, us.nombre AS solicitante_nombre, f.programa_codigo,
             f.creado_por AS creado_por_id, uc.nombre AS creado_por, ua.nombre AS aprobado_por,
             f.motivo_anulacion, a.numero::text AS asiento_numero
        FROM contabilidad.factura_proveedor f
@@ -203,6 +207,7 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
        JOIN contabilidad.categoria c ON c.id = f.categoria_id
        JOIN usuario uc ON uc.id = f.creado_por
        LEFT JOIN usuario ua ON ua.id = f.aprobado_por
+       LEFT JOIN usuario us ON us.id = f.solicitante_id
        LEFT JOIN proyecto pr ON pr.id = f.proyecto_id
        LEFT JOIN contabilidad.cuenta_por_pagar x ON x.id = f.cuenta_por_pagar_id
        LEFT JOIN contabilidad.asiento a ON a.id = f.asiento_id
@@ -210,3 +215,21 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
     [id],
   );
 }
+
+export type UsuarioSolicitante = {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+};
+
+export async function listarUsuariosSolicitantes(): Promise<UsuarioSolicitante[]> {
+  return consultar<UsuarioSolicitante>(
+    `SELECT u.id, u.nombre, u.email, r.nombre AS rol
+       FROM public.usuario u
+       JOIN public.rol r ON u.rol_id = r.id
+      WHERE u.activo = TRUE
+      ORDER BY u.nombre ASC`,
+  );
+}
+

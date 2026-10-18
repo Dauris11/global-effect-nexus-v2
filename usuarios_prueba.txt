@@ -1,0 +1,61 @@
+================================================================================
+GLOBAL EFFECT NEXUS — USUARIOS DE PRUEBA Y CREDENCIALES
+================================================================================
+Contraseña común para todas las cuentas demo:
+GlobalEffect2026!
+================================================================================
+
+1. SUPER ADMINISTRADOR (Acceso Total y Auditoría)
+   - Rol:          super_admin
+   - Nombre:       Administrador Global Effect
+   - Email:        admin@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /dashboard
+   - Permisos:     Acceso total al sistema, auditoría contable, administración de usuarios.
+
+2. COORDINACIÓN Y ADMINISTRACIÓN OPERATIVA
+   - Rol:          admin
+   - Nombre:       Marisol Peña
+   - Email:        coordinacion@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /dashboard
+   - Permisos:     Académico, expedientes, operaciones, patrocinadores, solicitudes.
+
+3. CONTABILIDAD Y FINANZAS
+   - Rol:          contabilidad
+   - Nombre:       Ana Santana
+   - Email:        contabilidad@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /portal/contabilidad
+   - Permisos:     Libros de banco, conciliaciones, recibos, proveedores, CxP, nómina, cajas.
+
+4. PORTAL DOCENTE / PROFESOR
+   - Rol:          docente
+   - Nombre:       Roberto Gómez
+   - Email:        docente@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /portal/profesor
+   - Permisos:     Gestión de cursos técnicos asignados, registro de calificaciones.
+
+5. PORTAL ESTUDIANTIL
+   - Rol:          estudiante
+   - Nombre:       Yeimy Rodríguez
+   - Email:        estudiante@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /portal/estudiante
+   - Permisos:     Consulta de notas, materias cursadas, vida académica.
+
+6. PROGRAMA HABITUDES
+   - Rol:          habitudes
+   - Nombre:       Laura Fermín
+   - Email:        habitudes@globaleffect.org
+   - Contraseña:   GlobalEffect2026!
+   - Portal:       /expedientes
+   - Permisos:     Reclutas del embudo, clases y postulación de candidatos a expedientes.
+
+--------------------------------------------------------------------------------
+OTRAS CUENTAS EXISTENTES EN LA BASE DE DATOS:
+--------------------------------------------------------------------------------
+- Dauris Santana (super_admin):  daurissantana1@gmail.com
+- Psicología (migrado a admin):  psicologia@globaleffect.org
+================================================================================
