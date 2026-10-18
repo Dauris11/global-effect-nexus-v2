@@ -2675,6 +2675,7 @@
       "subtitulo": "Recibos de ingreso y comprobantes de egreso, en una sola consulta.",
       "nuevo": "Nuevo recibo",
       "exportar": "Exportar CSV",
+      "exportar607": "Exportar DGII 607 (Excel)",
       "filtros": "Filtros",
       "masFiltros": "Más filtros",
       "aplicar": "Aplicar",

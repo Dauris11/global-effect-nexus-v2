@@ -109,13 +109,16 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [ ] **Contabilidad:** `usuario_permiso` no tiene pantalla. Hoy una
       excepción solo se da por SQL; hace falta en `/configuracion` antes de
       que exista un auxiliar contable.
-- [ ] **Habitudes, a medias.** Ya tiene una puerta que abre
-      (`/administrativo/solicitudes`): pide el alta de un candidato del embudo
-      y la aprueba administración. Pero `/expedientes` sigue cerrada para ese
-      rol (exige `expedientes.leer`) y `expedientes.postular` sigue sin
-      acción: no puede **crear** la ficha de un candidato nuevo. Decidir si la
-      crea Habitudes (ficha mínima del embudo) o administración al recibir la
-      solicitud.
+- [x] **DGII Formato 607 (Ventas e Ingresos para ISFLs):** Exportación oficial a Excel (.xlsx)
+      conforme a la Norma General 06-2018 de la DGII en `/contabilidad/recibos`,
+      procesando donaciones, recibos de ingresos institucionales, RNC/cédula de aportantes,
+      NCF formal (B02 Consumidor Final / Donación), tipo de ingreso institucional y exención
+      tributaria de ITBIS para fundaciones sin fines de lucro (Ley 122-05).
+- [x] **Portal Habitudes y Hub de Recursos (`/habitudes`):** Redirección oficial del rol
+      `habitudes` a su hub institucional `/habitudes` en `src/lib/rbac.ts` (en lugar de
+      la ruta restringida `/expedientes`), con acceso al repositorio colaborativo
+      de diapositivas, guías y dinámicas, registro móvil de visitas a liceos con fotos,
+      y solicitudes de alta de candidatos vía `/administrativo/solicitudes`.
 - [ ] Los dos `.drawio` de `docs/04-modelo-de-datos/` todavía dibujan las
       tablas de psicología. Los `.md` y el `.dbml` ya están al día; los
       diagramas hay que rehacerlos en draw.io.

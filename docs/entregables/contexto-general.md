@@ -149,14 +149,14 @@ gantt
     S4 - Backend Núcleo, Auth.js y i18n   :done, s4, 2026-08-31, 2026-09-11
     S5 - Expedientes Administrativos y OCR :done, s5, 2026-09-14, 2026-09-25
     S6 - Portal Académico y Estudiantil    :done, s6, 2026-09-28, 2026-10-09
-    S7 - Patrocinio y Finanzas Base        :done, s7, 2026-10-12, 2026-10-23
-    S8 - Solicitudes y Agenda Institucional:done, s8, 2026-10-26, 2026-11-06
-    S9 - Contabilidad Integral DGII, NCF y Cajas:active, s9, 2026-11-09, 2026-11-20
-    S10- Inventario Físico con Códigos QR  :s10, 2026-11-23, 2026-12-04
-    S11- Torre de Control, Habitudes y Moodle:s11, 2026-12-07, 2026-12-18
+    S7 - Patrocinio y Finanzas Base        :done, s7, 2026-09-28, 2026-10-09
+    S8 - Solicitudes y Agenda Institucional:done, s8, 2026-10-10, 2026-10-18
+    S9 - Contabilidad Integral DGII, NCF y Cajas:done, s9, 2026-10-12, 2026-10-18
+    S10- Inventario Físico con Códigos QR  :done, s10, 2026-10-14, 2026-10-18
+    S11- Torre de Control, Habitudes y Moodle:done, s11, 2026-10-16, 2026-10-18
     section Fase 3: Calidad y Despliegue
-    S12- Migración de Datos, QA y Seguridad :s12, 2026-12-21, 2027-01-01
-    S13- Pruebas UAT, Despliegue y Tesis    :s13, 2027-01-04, 2027-01-15
+    S12- Migración de Datos, QA y Seguridad :active, s12, 2026-10-19, 2026-10-31
+    S13- Pruebas UAT, Despliegue y Tesis    :s13, 2026-11-02, 2026-11-15
 ```
 
 ### 2.1 Camino Crítico y Dependencias
