@@ -2342,7 +2342,8 @@
     "docente": "Docente",
     "estudiante": "Estudiante",
     "contabilidad": "Contabilidad",
-    "habitudes": "Habitudes"
+    "habitudes": "Habitudes",
+    "dir_habitudes": "Director de Habitudes (DH)"
   },
   "requests": {
     "studentEyebrow": "Mi portal",
@@ -3059,6 +3060,7 @@
     "rolAdmin": "Administración",
     "rolSuperAdmin": "Super Admin",
     "rolHabitudes": "Habitudes",
+    "rolDirHabitudes": "Director de Habitudes (DH)",
     "placeholderConsultas": "Haz una pregunta sobre normativas, materias o datos…",
     "placeholderAcciones": "Di o escribe una acción (ej: «Llévame a Cuentas por Pagar»)…",
     "enviar": "Enviar",
@@ -3290,6 +3292,8 @@
     "tabLogVisitShort": "Visita",
     "tabEvidences": "Evidencias y Galería",
     "tabEvidencesShort": "Galería",
+    "tabSupervision": "Supervisión DH & Mapa La Vega",
+    "tabSupervisionShort": "Supervisión",
     "searchPlaceholder": "Buscar por título, formato o palabra clave...",
     "uploadResourceButton": "Compartir Recurso",
     "catAll": "Todos",

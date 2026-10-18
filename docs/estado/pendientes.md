@@ -78,6 +78,21 @@ módulo) — esto es solo la cola de pendientes concretos.
       participantes con roles y confirmación de asistencia, diálogo de redacción de minutas de acuerdos y compromisos,
       integración en tiempo real con el calendario general del personal (`/calendario`) y la agenda del estudiante
       (`/portal/estudiante/calendario`), y atajo táctil nativo en el cajón de acciones rápidas móvil.
+- [x] **Gobierno de Permisos de Super Admin por Usuario (`/configuracion/permisos`):** Gestor interactivo
+      para que el `super_admin` (`requerirPermiso("usuarios.administrar")`) audite los permisos base de cada usuario
+      según su rol y configure excepciones granulares (`usuario_permiso`: conceder o revocar individualmente) con
+      motivo justificado y registro en bitácora de auditoría (`audit_log`), filtros por módulo y opción de restablecer
+      los permisos por defecto del rol.
+- [x] **Rol Director de Habitudes (DH) y Supervisión Pedagógica:** Incorporación del rol institucional `dir_habitudes`
+      ("Director de Habitudes (DH)", sigla oficial DH) con permiso `habitudes.supervisar` (`0045_director_habitudes_y_mapa_la_vega.sql`).
+      Panel directivo en `/habitudes` (pestaña Supervisión) para monitorear el progreso de los profesores a su cargo,
+      auditar evidencias fotográficas y horas impartidas, y gestionar la asignación de profesores y estudiantes a liceos.
+- [x] **Mapa Interactivo Acotado a la Provincia de La Vega (Leaflet):** Componente cartográfico institucional
+      (`MapaLaVega`) bloqueado estrictamente a los límites geográficos de la provincia de La Vega (`18.7000 <= lat <= 19.4500`,
+      `-70.9500 <= lng <= -70.3500`, `maxBoundsViscosity: 1.0`), integrando sus 4 municipios (Concepción de La Vega,
+      Jarabacoa, Constanza, Jima Abajo), distritos municipales y sectores.
+      - **Uso 1:** Mapa de liceos en La Vega con profesores asignados, tandas y conteo de alumnos de Habitudes.
+      - **Uso 2:** Ubicación georreferenciada de la vivienda de cada estudiante activo en su expediente (`perfil_vivienda`).
 - [x] **Contabilidad, Fase 4:** Cajas y cuadre de caja completados (migración `0039_contabilidad_cajas_y_asignacion.sql`, reposición desde banco con `contabilidad.reponer_caja`, pantallas `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, contador interactivo de arqueos por denominación DOP/USD en `/contabilidad/cajas/[id]/arqueo`, alertas automáticas de descuadre `diferencia_caja`, OCR inteligente de facturas de proveedores con asignación doble a solicitante y programa institucional, e importación/exportación a Excel .xlsx con auditoría).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD

@@ -330,6 +330,7 @@ export function WidgetFlotanteIA({
     admin: t("rolAdmin"),
     super_admin: t("rolSuperAdmin"),
     habitudes: t("rolHabitudes"),
+    dir_habitudes: t("rolDirHabitudes"),
   }[usuario.rol];
 
   return (

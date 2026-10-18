@@ -15,6 +15,7 @@ import {
 } from "@/lib/expedientes";
 import { tienePermiso } from "@/lib/rbac";
 import { subirAvatar } from "@/lib/supabase/almacen";
+import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { leerDocumentoDeIdentidad } from "@/server/ia/ocr";
 
 /**
@@ -167,13 +168,23 @@ export async function actualizarExpediente(
 
       if (actualizado.rowCount === 0) throw new Error("NO_EXISTE");
 
+      const rawLat = datos.get("latitud");
+      const rawLng = datos.get("longitud");
+      const latitud = rawLat ? parseFloat(String(rawLat)) : null;
+      const longitud = rawLng ? parseFloat(String(rawLng)) : null;
+
+      if (latitud != null && longitud != null && !estaEnLaVega(latitud, longitud)) {
+        throw new Error("UBICACION_FUERA_DE_LA_VEGA");
+      }
+
       await cliente.query(
         `INSERT INTO perfil_vivienda (
            estudiante_id, con_quien_vive, por_que_vive_con_esa_persona,
            hermanos_cantidad, casa_propia, tipo_casa, bano_dentro,
            habitaciones, camas, quienes_duermen_cama, direccion, comunidad,
-           ciudad_residencia
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+           ciudad_residencia, municipio, distrito_municipal, sector, calle,
+           numero_casa, referencia_ubicacion, latitud, longitud
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
          ON CONFLICT (estudiante_id) DO UPDATE SET
            con_quien_vive = EXCLUDED.con_quien_vive,
            por_que_vive_con_esa_persona = EXCLUDED.por_que_vive_con_esa_persona,
@@ -186,7 +197,15 @@ export async function actualizarExpediente(
            quienes_duermen_cama = EXCLUDED.quienes_duermen_cama,
            direccion = EXCLUDED.direccion,
            comunidad = EXCLUDED.comunidad,
-           ciudad_residencia = EXCLUDED.ciudad_residencia`,
+           ciudad_residencia = EXCLUDED.ciudad_residencia,
+           municipio = COALESCE(EXCLUDED.municipio, perfil_vivienda.municipio),
+           distrito_municipal = EXCLUDED.distrito_municipal,
+           sector = EXCLUDED.sector,
+           calle = EXCLUDED.calle,
+           numero_casa = EXCLUDED.numero_casa,
+           referencia_ubicacion = EXCLUDED.referencia_ubicacion,
+           latitud = EXCLUDED.latitud,
+           longitud = EXCLUDED.longitud`,
         [
           id,
           texto("con_quien_vive"),
@@ -201,6 +220,14 @@ export async function actualizarExpediente(
           texto("direccion"),
           texto("comunidad"),
           texto("ciudad_residencia"),
+          texto("municipio") || "Concepción de La Vega",
+          texto("distrito_municipal"),
+          texto("sector"),
+          texto("calle"),
+          texto("numero_casa"),
+          texto("referencia_ubicacion"),
+          latitud,
+          longitud,
         ],
       );
 
@@ -405,13 +432,23 @@ export async function crearExpediente(
 
       if (!id) throw new Error("el expediente no devolvió id");
 
+      const rawLat = datos.get("latitud");
+      const rawLng = datos.get("longitud");
+      const latitud = rawLat ? parseFloat(String(rawLat)) : null;
+      const longitud = rawLng ? parseFloat(String(rawLng)) : null;
+
+      if (latitud != null && longitud != null && !estaEnLaVega(latitud, longitud)) {
+        throw new Error("UBICACION_FUERA_DE_LA_VEGA");
+      }
+
       await cliente.query(
         `INSERT INTO perfil_vivienda (
            estudiante_id, con_quien_vive, por_que_vive_con_esa_persona,
            hermanos_cantidad, casa_propia, tipo_casa, bano_dentro,
            habitaciones, camas, quienes_duermen_cama, direccion, comunidad,
-           ciudad_residencia
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+           ciudad_residencia, municipio, distrito_municipal, sector, calle,
+           numero_casa, referencia_ubicacion, latitud, longitud
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
         [
           id,
           texto("con_quien_vive"),
@@ -426,6 +463,14 @@ export async function crearExpediente(
           texto("direccion"),
           texto("comunidad"),
           texto("ciudad_residencia"),
+          texto("municipio") || "Concepción de La Vega",
+          texto("distrito_municipal"),
+          texto("sector"),
+          texto("calle"),
+          texto("numero_casa"),
+          texto("referencia_ubicacion"),
+          latitud,
+          longitud,
         ],
       );
 

@@ -101,6 +101,14 @@ export default async function PaginaConfiguracion({
     },
     {
       permiso: "usuarios.administrar" as const,
+      href: "/configuracion/permisos",
+      icono: KeyRound,
+      titulo: "Permisos y Excepciones RBAC",
+      descripcion: "Ajusta y conmuta permisos individuales por usuario del sistema (usuario_permiso).",
+      soloMaestro: true,
+    },
+    {
+      permiso: "usuarios.administrar" as const,
       href: "/administrativo/personal",
       icono: UserCog,
       titulo: t("staff.title"),

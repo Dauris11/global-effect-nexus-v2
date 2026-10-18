@@ -26,6 +26,8 @@ export const ROLES = [
   // Postula al candidato y ahí acaba su acceso; el expediente completo es de
   // administración (migración 0030).
   "habitudes",
+  // Director de Habitudes (DH): supervisión pedagógica, monitoreo de profesores y liceos en La Vega
+  "dir_habitudes",
 ] as const;
 
 export type Rol = (typeof ROLES)[number];
@@ -73,6 +75,7 @@ export const PERMISOS = [
   "habitudes.evidencias.subir",
   "habitudes.recursos.leer",
   "habitudes.recursos.subir",
+  "habitudes.supervisar",
   "ia.administrar",
   "ia.usar",
   "inventario.auditar",
@@ -105,6 +108,7 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   estudiante: "/portal/estudiante",
   contabilidad: "/portal/contabilidad",
   habitudes: "/habitudes",
+  dir_habitudes: "/habitudes",
 };
 
 /** El único acento del sistema: azul de la marca al azul más oscuro. */
@@ -138,6 +142,7 @@ export const ESTILO_POR_ROL: Record<
   estudiante: MARCA,
   contabilidad: MARCA,
   habitudes: MARCA,
+  dir_habitudes: MARCA,
 };
 
 
@@ -176,7 +181,7 @@ export function esRol(valor: unknown): valor is Rol {
  * Si algo de esto debe cambiar, se cambia en la base de datos y se refleja
  * aquí, nunca solo aquí.
  */
-const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
+export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   // super_admin: solo lectura y auditoría en contabilidad.
   // Separación de funciones: quien audita no opera.
   // finanzas.escribir retirado en 0034 (a super_admin) y en 0036 (a todos).
@@ -208,6 +213,7 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "habitudes.evidencias.subir",
     "habitudes.recursos.leer",
     "habitudes.recursos.subir",
+    "habitudes.supervisar",
     "reuniones.agendar",
     "reuniones.gestionar",
     "reuniones.leer",
@@ -225,6 +231,7 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "habitudes.evidencias.subir",
     "habitudes.recursos.leer",
     "habitudes.recursos.subir",
+    "habitudes.supervisar",
     "ia.usar",
     "inventario.auditar",
     "inventario.escribir",
@@ -249,6 +256,20 @@ const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "ia.usar",
     "rendicion.enviar",
     "reuniones.agendar",
+    "reuniones.leer",
+  ],
+  dir_habitudes: [
+    "expedientes.postular",
+    "habitudes.evidencias.auditar",
+    "habitudes.evidencias.subir",
+    "habitudes.recursos.leer",
+    "habitudes.recursos.subir",
+    "habitudes.supervisar",
+    "ia.usar",
+    "operaciones.leer",
+    "rendicion.enviar",
+    "reuniones.agendar",
+    "reuniones.gestionar",
     "reuniones.leer",
   ],
   docente: [
