@@ -158,21 +158,22 @@ absorbiendo lo que pasa en los otros portales.
 |---|---|---|---|
 | ✅ | **Mi portal** | `/portal/administrativo` | Cuatro bloques, en este orden: **lo que espera una decisión** (tareas urgentes y vencidas, entregas por calificar, becados sin patrocinador, períodos incoherentes, solicitudes esperando **tu** decisión, materias sin período — cada aviso enlaza a donde se resuelve, y los que están en cero no se dibujan); **doce cifras** de todos los módulos; **todos los módulos** derivados de `menuDe(rol)`, el mismo menú de la barra lateral, así que no puede quedarse desfasada; y **la actividad reciente**, que es la primera lectura de `audit_log` que existe en el sitio |
 
-| ✅ | **Solicitudes y aprobaciones** | `/administrativo/solicitudes` | Una bandeja para todo el personal: **por atender** (lo que espera una decisión suya, nunca lo que pidió él), **pedir** (alta de expediente, beca o gasto, según su rol), **mis solicitudes** y **resueltas por mí**. Flujo `enviada → en_revision → [pendiente_direccion] → aprobada → completada`, con rechazo comentado y cancelación del solicitante. La beca y el gasto desde 1.000 USD pasan por dirección (`solicitudes.direccion`, solo `super_admin`); el gasto lo revisa contabilidad. Cada paso va en una transacción con su línea en `solicitud_paso` y su aviso, y lleva el estado anterior en el WHERE para que dos revisores a la vez no aprueben dos veces. Probado de punta a punta contra PostgreSQL local (52 comprobaciones) |
+| ✅ | **Solicitudes y aprobaciones** | `/administrativo/solicitudes` | Una bandeja para todo el personal: **por atender** (lo que espera una decisión suya, nunca lo que pidió él), **pedir** (alta de expediente, beca, gasto o rendición de factura con NCF, según su rol), **mis solicitudes** y **resueltas por mí**. Flujo `enviada → en_revision → [pendiente_direccion] → aprobada → completada`, con rechazo comentado y cancelación del solicitante. La beca y el gasto desde 1.000 USD pasan por dirección (`solicitudes.direccion`, solo `super_admin`); el gasto lo revisa contabilidad. Cada paso va en una transacción con su línea en `solicitud_paso` y su aviso, y lleva el estado anterior en el WHERE para que dos revisores a la vez no aprueben dos veces. Probado de punta a punta contra PostgreSQL local (52 comprobaciones) |
 | ✅ | Expedientes | `/expedientes` | Desde la `0030` lo lleva administración entero: `admin` y `super_admin` leen, escriben y borran cualquier ficha. Se acabó el aislamiento por fila de la `0025`. Un expediente con solicitudes no se borra (`ON DELETE RESTRICT`) |
+| 🔄 | **Torre de Control del Colaborador** | `/portal/administrativo`, `/administrativo/tareas` | En especificación: centro operativo diario ("Lo que me toca hoy") con tareas de hoy, vencidas y pendientes, estados de avance (`por_hacer`, `en_progreso`, `en_revision`, `completada`), autoasignación de tareas prioritarias (pagos, trámites) e interfaz contextual ágil tipo Claude |
+| 🔄 | **Inventario Físico con Códigos QR** | `/administrativo/inventario` | En especificación: registro de activos (muebles, televisores, cuadros, herramientas), carga de fotografías, generación/impresión de Códigos QR únicos y lector móvil con cámara |
 
 `/dashboard` se queda como la pantalla de gráficas: es otra pregunta y tiene su
 propia entrada en el menú, debajo del portal.
 
 ---
 
-## Portal 5 — Psicología (retirado)
+## Portal 5 — Agenda de Reuniones Institucionales (Sustituye a Psicología)
 
-Se retiró el 3 de octubre de 2026 con el departamento. `/portal/psicologia`,
-`/psicologia` y `/cita-psicologia` ya no existen, y su código se borró del repo
-(queda en el historial de git, hasta `9ff2068`). El sprint S8 que lo cerraba
-—#423, #428, #433 y #372— está **descartado**, salvo #428 (rastro de lectura del
-expediente), que sigue vivo porque no era clínico.
+El departamento de Psicología se retiró en octubre de 2026. Las antiguas agendas
+de citas se convierten en una **Agenda de Reuniones Institucionales para todo el
+personal**, donde cualquier colaborador o estudiante (tutorías, asesorías, seguimiento)
+puede agendar y coordinar reuniones de trabajo, extinguiendo por completo el enfoque clínico.
 
 ---
 

@@ -259,125 +259,96 @@ Funcionalidades:
 - Formulario para nueva asignación (estudiante + patrocinador + monto).
 - Estadísticas: becados, patrocinadores activos, aporte mensual total.
 
-## MÓDULO 14: CONTABILIDAD
-*Ruta: /contabilidad*
+- Estadísticas: becados, patrocinadores activos, aporte mensual total.
 
-Control de ingresos, egresos y becas otorgadas.
+## MÓDULO 14: CONTABILIDAD Y FINANZAS (EJE NEURÁLGICO)
+*Ruta: /portal/contabilidad, /contabilidad/* · Esquema: contabilidad*
+
+El departamento neurálgico que custodia las finanzas institucionales de la Fundación. Garantiza consistencia matemática absoluta para prevenir contingencias legales y tributarias ante la Dirección General de Impuestos Internos (DGII).
 
 Funcionalidades:
-- Registrar transacciones: concepto, tipo (ingreso/egreso), monto,
-  categoría (beca/donacion/operativo/salario/material/evento/otro),
-  fecha, referencia, notas.
-- Estadísticas: total ingresos, total egresos, balance neto.
-- Filtros por tipo (todos/ingresos/egresos).
-- Tabla con monto coloreado (verde ingresos, rojo egresos).
+- **Gestión Bancaria y Libros Auxiliares:** Cuentas comerciales (Banco Santa Cruz DOP y USD), libro con saldo corrido histórico sobre toda la línea de tiempo, transferencias entre cuentas propias con diferencial cambiario automatizado (tasas oficiales BCRD).
+- **Conciliación Bancaria Inteligente:** Carga de estados de cuenta en CSV y Excel (.xlsx) con adaptadores bancarios nativos, propuesta de emparejamiento por monto, fecha $\pm$ 3 días y referencia, y reporte formal de cuadre entre banco ajustado y libros ajustados.
+- **Recibos y Comprobantes:** Recibos de Ingreso (RI) y Comprobantes de Egreso (CE), contabilización atómica en transacción SQL con asientos contables balanceados (débitos = créditos), contra-asientos automáticos por anulación y recibo imprimible con monto en letras, firmas y código QR.
+- **Proveedores y Cuentas por Pagar:** Registro de proveedores con validación algorítmica de RNC (módulo 11) y Cédula (Luhn), cronograma Gantt interactivo de vencimientos y reporte de antigüedad de saldos (Aging).
+- **OCR Inteligente de Facturas de Proveedores:** Escaneo de comprobantes con IA, extracción de RNC, NCF (B01 y e-CF E31), fechas, subtotal, ITBIS 18% y retenciones con score de confianza, y trazabilidad en `extraccion_ocr`.
+- **Rendición de Facturas de Empleados:** Recepción directa de facturas y comprobantes fiscales remitidos por colaboradores institucionales desde sus flujos de trabajo; Contabilidad valida el NCF y lo imputa al programa correspondiente (Casa de Herramientas, Juan Bosch, Becas Universitarias, etc.) y a la persona responsable.
+- **Cajas Chicas y Operativas:** Apertura y control de cajas asignadas por persona o departamento (ej. `CJ-OP-01` Operaciones, `CJ-DIR-01` Dirección), registro de entradas/salidas y reposición automática desde banco (`reponer_caja`).
+- **Arqueos Interactivos de Caja:** Conteo físico por denominaciones dominicanas (billetes RD$2000-50, monedas RD$25-1 y USD), cálculo en tiempo real de faltante o sobrante y disparo automático de alertas antifraude (`diferencia_caja`) cuando el descuadre supere RD$200.
+- **Exportaciones e Importaciones Excel (.xlsx):** Generación oficial del reporte DGII 606 de compras y retenciones, libro mayor de bancos, estado de cuentas por pagar y plantilla de conciliación, estilizados con la identidad visual de la Fundación.
+- **Auditoría Inmutable:** Registro de cada operación en `contabilidad.bitacora` con encadenamiento de hash criptográfico SHA-256.
 
-## MÓDULO 15: SOLICITUDES Y APROBACIONES
+## MÓDULO 15: SOLICITUDES, APROBACIONES Y RENDICIONES
 *Ruta: /administrativo/solicitudes · Tablas: solicitud, solicitud_paso*
 
-Una sola bandeja con flujo por pasos para los trámites del estudiante
-y las aprobaciones internas. Sustituye al antiguo módulo de psicología
-(retirado en oct 2026 con el departamento).
+Bandeja unificada con flujo de aprobación por pasos para trámites estudiantiles, aprobaciones operativas internas y rendición de facturas con comprobante fiscal.
 
 Tipos de solicitud:
-- Trámites del estudiante (los crea el estudiante, módulo 22):
-  constancia, carta, cita_administracion, permiso, otro. Revisa quien
-  tenga solicitudes.gestionar.
-- alta_expediente: pasar un candidato del embudo a estudiante activo.
-  La crea quien tenga expedientes.postular o expedientes.escribir.
-  Lleva estudiante. Revisa solicitudes.gestionar. Un nivel.
-- beca: asignar o cambiar una beca. La crea patrocinadores.escribir.
-  Lleva estudiante y monto opcional. Revisa solicitudes.gestionar y
-  SIEMPRE requiere segundo nivel de dirección (solicitudes.direccion).
-- gasto: solicitud de gasto o compra. La crea cualquier miembro del
-  personal. Monto obligatorio (USD). Revisa finanzas.escribir. Requiere
-  dirección si el monto es ≥ 1,000 USD.
+- **Trámites del estudiante:** constancia (estudios/beca), carta (recomendación/referencia), reunión con administración, permiso/ausencia, u otro.
+- **Alta de expediente:** pase de candidato del embudo a estudiante activo (expedientes.postular).
+- **Asignación de Beca:** otorgamiento o ajuste de beca (siempre requiere aprobación de dirección).
+- **Solicitud de Gasto y Rendición de Factura:** solicitud de compra o rendición de gasto ejecutado con factura fiscal (NCF); revisado por contabilidad y derivado a dirección si el monto es $\ge$ 1,000 USD. Al aprobarse una rendición, se genera la cuenta por pagar o egreso de caja en Contabilidad vinculada al programa y colaborador.
 
 Flujo de estados:
   enviada → en_revision → [pendiente_direccion] → aprobada → completada
-- Desde enviada, en_revision o pendiente_direccion se puede rechazar
-  (comentario obligatorio).
-- El solicitante puede cancelar mientras esté en enviada o en_revision.
+- Separación estricta de funciones: nadie aprueba sus propias solicitudes o gastos.
+- Trazabilidad paso a paso en `solicitud_paso` con comentarios obligatorios en rechazo.
 
-Reglas de control:
-- Separación de funciones: nadie aprueba su propia solicitud.
-- El segundo nivel se fija al crear (requiere_direccion), para que un
-  cambio de umbral no altere solicitudes en curso.
-- "Aprobada" es la decisión; "completada" es que el módulo dueño ya la
-  ejecutó (la constancia se entregó, el gasto se registró en
-  contabilidad, el expediente pasó a activo). La solicitud no ejecuta
-  efectos por su cuenta.
-- Cada paso queda en solicitud_paso (quién, cuándo, de qué estado a
-  cuál, comentario): línea de tiempo visible al solicitante.
-- Notificaciones en la campana (sin correo): al crear, a los
-  revisores; al pasar a dirección, a quien tenga solicitudes.direccion;
-  en cada cambio, al solicitante. Aprobar, rechazar y completar se
-  registran en audit_log.
-- Folio numérico legible para referirse a cada solicitud.
+## MÓDULO 16: TORRE DE CONTROL DEL COLABORADOR Y GESTIÓN DE TAREAS
+*Ruta: /administrativo/tareas, /administrativo/torre-control*
+
+Centro de operaciones diario para el personal de la Fundación, adaptado a la dinámica real de trabajo en terreno, eventos y oficinas.
 
 Funcionalidades:
-- Pestaña "Por atender" según los permisos de quien mira.
-- Pestaña "Mis solicitudes" con línea de tiempo.
-- Alta de solicitud interna (alta_expediente, beca, gasto).
-- Acciones del flujo con comentario: tomar, enviar a dirección,
-  aprobar, rechazar, completar.
-- El portal administrativo cuenta las solicitudes por atender.
+- **Torre de Control ("Lo que me toca hoy"):**
+  - Panel operativo de inicio para cada empleado: tareas para hoy, tareas vencidas y tareas por hacer.
+  - Estados operativos reales: `por_hacer`, `en_progreso`, `en_revision`, `completada`.
+  - Conteo y métricas en tiempo real de carga de trabajo.
+- **Bitácora y Registro Diario de Actividades:**
+  - Registro ágil de lo realizado durante la jornada laboral para trazabilidad institucional.
+- **Autoasignación de Tareas Prioritarias:**
+  - Los colaboradores pueden autoasignarse tareas inmediatas o prioritarias (ej. efectuar un pago urgente, realizar una compra con comprobante fiscal, diligencia externa o logística en liceo).
+- **Gestor Visual Ágil (Inspiración Claude):**
+  - Interfaz limpia y despejada con panel lateral contextual, asistente para estructuración de tareas y rápida navegación.
+  - Tablero Kanban sincronizado con calendario y notificaciones por correo electrónico al usuario asignado.
 
-## MÓDULO 16: GESTIÓN DE TAREAS
-*Ruta: /administrativo/tareas*
-
-Sistema de gestión de tareas tipo Kanban con notificaciones.
-
-Funcionalidades:
-- Tablero Kanban con 3 columnas: Pendiente / En Progreso / Completada.
-- Crear tareas: título, descripción, prioridad (baja/media/alta/
-  urgente), fecha límite, proyecto, visibilidad (todos/asignados).
-- Asignación múltiple de usuarios mediante checkboxes.
-- Control de visibilidad: admin ve todo; usuarios regulares solo ven
-  tareas públicas o asignadas a su email.
-
-AUTOMATIZACIONES AL CREAR TAREA:
-- Envío automático de correo a cada usuario asignado con los detalles.
-- Creación automática de evento en el calendario para cada asignado
-  (tipo administrativo, con fecha límite como fecha del evento).
-- Actualización de las vistas de calendario y tareas.
-
-- Cambio de estado mediante menú desplegable en cada tarjeta.
-
-## MÓDULO 17: PROYECTOS
+## MÓDULO 17: PROYECTOS INSTITUCIONALES (GOBIERNO POR ROL)
 *Ruta: /administrativo/proyectos*
 
-Gestión y seguimiento de proyectos de la fundación.
+Gestión, seguimiento y asignación de proyectos institucionales (ej. Campañas de Becas, Laboratorios de Cómputo, Memoria Anual, Casa de Herramientas, Infraestructura).
 
 Funcionalidades:
-- Crear proyectos: nombre, descripción, responsable, estado
-  (planificación/en_curso/completado/pausado), fechas inicio/fin,
-  progreso (%).
-- Tarjetas con barra de progreso visual.
-- Badge de estado con color.
+- **Asignación de Proyectos por Rol:**
+  - Todo colaborador institucional (excepto estudiantes) tiene proyectos asignados según su rol y departamento.
+  - Asignación y gobierno granular exclusivo del `super_admin` mediante permisos especiales.
+- **Desglose de Tareas y Calendario:**
+  - Cada proyecto contiene su árbol de tareas asignadas a empleados con fechas de entrega fijadas en el calendario institucional.
+- **Métricas y Avance:**
+  - Porcentaje de avance calculado automáticamente en base a tareas completadas, estado (planificación, en curso, pausado, completado) y fechas límite.
 
-## MÓDULO 18: GESTIÓN DE PERSONAL
+## MÓDULO 18: GESTIÓN DE PERSONAL Y PERMISOS GRANULARES
 *Ruta: /administrativo/personal*
 
-Usuarios internos del sistema y control de roles y permisos.
+Directorio de usuarios internos del sistema, perfiles operativos y matriz de control de acceso.
 
 Funcionalidades:
-- Lista de usuarios registrados con búsqueda.
-- Estadísticas: total usuarios, administradores, usuarios regulares.
-- Tarjeta informativa de roles y permisos del sistema:
-  - Super admin, Admin, Docente, Estudiante, Contabilidad,
-    Habitudes — con descripción y permisos de cada rol.
+- Lista de usuarios institucionales con búsqueda por departamento, nombre y email.
+- Matriz de roles (Super Admin, Admin, Docente, Estudiante, Contabilidad, Habitudes).
+- Control de permisos granulares gobernados por el `super_admin` (asignación de proyectos, presupuestos de caja, aprobaciones de dirección).
 
-## MÓDULO 19: CALENDARIO Y AGENDA
-*Ruta: /calendario*
+## MÓDULO 19: CALENDARIO Y AGENDAS DE REUNIONES INSTITUCIONALES
+*Ruta: /calendario, /calendario/reuniones*
 
-Planificación de eventos, actividades y tareas.
+Sistema unificado de eventos institucionales y agenda de reuniones para todo el personal de la Fundación (sustituye permanentemente el antiguo esquema de citas psicológicas).
 
 Funcionalidades:
-- Vista de calendario mensual con navegación entre meses.
-- Puntos indicadores en cada día: azules para eventos, naranjas para
-  tareas con vencimiento.
-- Panel lateral con detalle del día seleccionado (eventos + tareas).
+- **Agenda de Reuniones del Personal:**
+  - Cualquier colaborador interno puede agendar reuniones de trabajo, coordinación o seguimiento con otros miembros del equipo.
+- **Citas Solicitadas por Estudiantes:**
+  - Los estudiantes pueden agendar reuniones de asesoría, tutoría o seguimiento administrativo con miembros del personal o profesores.
+- **Vista de Calendario y Agenda:**
+  - Calendario mensual con códigos visuales de color (eventos institucionales, reuniones agendadas y tareas con fecha de vencimiento).
+  - Agenda a 30 días de compromisos inmediatos.
 - Crear eventos: título, descripción, tipo (académico/administrativo/
   social/reunión/otro), fecha, hora inicio/fin, ubicación, responsable,
   estado.
@@ -505,42 +476,94 @@ Funcionalidades:
 - Módulos compartidos (Dashboard, Calendario, Inscripción Comida).
 - Flujos de navegación automáticos documentados.
 
+## MÓDULO 28: PROGRAMA GLOBAL 360 Y AULA VIRTUAL (ESTILO MOODLE)
+*Rutas: /portal/estudiante/global-360, /portal/estudiante/aula-virtual, /academico/global-360*
+
+Plataforma educativa para el programa insignia Global 360 de la Fundación.
+
+Funcionalidades:
+- **Selección y Matrícula Cuatrimestral Obligatoria:**
+  - Dos veces por cuatrimestre los estudiantes deben seleccionar y prematricularse en las materias obligatorias de la Fundación.
+  - Asignación de horarios, aulas y profesores designados.
+- **Aula Virtual y Entregas Estilo Moodle:**
+  - Diseñada para facilitar el uso y la curva de aprendizaje tanto a estudiantes como a docentes.
+  - Creación de tareas por parte del docente con: título, descripción/asignación, curso asociado, fecha y hora de vencimiento.
+  - **Restricciones y Controles de Entrega:** el profesor define el límite de espacio permitido (en MB) y las extensiones o tipos de archivo aceptados (ej. `.pdf`, `.docx`, `.xlsx`, `.zip`, imágenes).
+  - **Vista Previa de Estudiante para el Docente:** el profesor puede alternar a la "Vista de Estudiante" para verificar con exactitud cómo se visualiza la tarea, las instrucciones y el área de carga antes o durante la asignación.
+  - Buzón de entregas, calificación docente y espacio de retroalimentación cualitativa.
+
+## MÓDULO 29: PROGRAMA HABITUDES Y HUB COLABORATIVO DOCENTE
+*Rutas: /academias/habitudes, /portal/profesor/habitudes*
+
+Espacio de trabajo y colaboración para el cuerpo docente y facilitadores del programa Habitudes, quienes asisten semanalmente a liceos de la comunidad a impartir clases.
+
+Funcionalidades:
+- **Banco Compartido de Materiales Pedagógicos:**
+  - Repositorio unificado donde los profesores de Habitudes suben, consultan y descargan recursos de apoyo compartidos entre todo el equipo.
+  - Soporte especializado para presentaciones (diapositivas PowerPoint/PDF) e imágenes didácticas, que son los recursos prioritarios utilizados en los liceos.
+- **Registro de Evidencias de Clases en Liceos:**
+  - Módulo móvil para que los facilitadores suban fotografías de las sesiones impartidas, listas de asistencia y reportes breves de avance curricular directamente desde el terreno.
+- **Canal de Coordinación Docente:**
+  - Muro de avisos internos y coordinación entre profesores del programa para sincronizar temas y cronogramas de visitas escolares.
+
+## MÓDULO 30: INVENTARIO INSTITUCIONAL Y ACTIVOS FIJOS CON CÓDIGOS QR
+*Rutas: /administrativo/inventario, /administrativo/inventario/[id], /inventario/scan*
+
+Control y registro integral de todos los activos, bienes físicos y mobiliario de la Fundación (muebles, cuadros, televisores, herramientas, equipos de computación, aires acondicionados).
+
+Funcionalidades:
+- **Registro Detallado del Activo:**
+  - Datos de identificación: código interno, nombre del bien, categoría (mobiliario, audiovisual, cómputo, herramientas, otros), ubicación física (sede principal, aula, oficina, casa de herramientas, etc.), estado de conservación (excelente, bueno, regular, en reparación, de baja) y fecha de adquisición.
+- **Captura y Almacenamiento Fotográfico:**
+  - Subida o captura directa desde la cámara del celular de fotos del artículo para identificación visual inmediata.
+- **Generación Automática de Códigos QR Únicos:**
+  - Cada artículo registrado genera automáticamente un Código QR vectorial único con su identificador institucional.
+  - Módulo de impresión de etiquetas para rotular físicamente cada mueble o equipo.
+- **Optimización Mobile-First y Escaneo In Situ:**
+  - Interfaz 100% responsiva y optimizada para teléfonos móviles.
+  - Lector de QR con la cámara del dispositivo para auditorías rápidas en las instalaciones: el personal escanea la etiqueta pegada al activo e inmediatamente ve su ficha, fotos y responsable asignado.
+
 ## PORTALES POR ROL (Dashboards)
-*───────────────────────────────────────────────────────────────── · PORTAL ESTUDIANTE  (Ruta: /portal/estudiante) · • Banner con promedio, GPA y materias aprobadas. · • Accesos: materias, calificaciones, solicitudes. · • Lista de materias activas. · • Calificaciones por cuatrimestre con letra (A-F) y GPA. · • Condición en la fundación (servicios y reuniones últimos 3 meses). · • Próximos eventos. · PORTAL PROFESOR  (Ruta: /portal/profesor) · • Banner con cursos activos, inscritos totales, notas registradas. · • Accesos: cursos, materias, calificaciones, calendario. · • Lista de cursos activos con modalidad e inscritos. · PORTAL ADMINISTRATIVO  (Ruta: /portal/administrativo) · • Banner con tareas pendientes, proyectos activos, estudiantes, solicitudes por atender. · • 8 accesos: expedientes, patrocinadores, tareas, proyectos, · servicios mensuales, lista de comida, calendario, chat IA. · • Lista de tareas urgentes / alta prioridad. · PORTAL CONTABILIDAD  (Ruta: /portal/contabilidad) · • Banner con ingresos, egresos y balance. · • Accesos: contabilidad, reportes. · • Últimas transacciones registradas. · ENTRADA HABITUDES  (Ruta: /expedientes) · • Postulación de candidatos del embudo de reclutamiento. · PORTAL CURSOS TÉCNICOS  (Ruta: /portal/cursos-tecnicos) · • Selector entre Portal de Estudiantes y Portal de Docentes.*
-
-  COMPONENTES PRINCIPALES
 ─────────────────────────────────────────────────────────────────
-
-LAYOUT:
-- AppLayout: Layout principal con sidebar + topbar + área de contenido.
-- Sidebar: Navegación lateral que cambia según rol del usuario.
-  Incluye menús expandibles y cierre de sesión.
-- TopBar: Barra superior con título de página y acciones.
-
-COMPONENTES DE EXPEDIENTES:
-- ExpedienteDetalle: Modal con vista completa del estudiante
-  (datos personales, académicos, familiares, seguimiento) con
-  cálculos de GPA y gráficos de rendimiento.
-- FormFamiliar: Formulario de datos familiares y condiciones de
-  vivienda (padre, madre, tutor, hermanos, casa, baños, camas).
-- FormSeguimiento: Formulario de seguimiento administrativo
-  (amonestaciones, solicitudes, correo patrocinador, reuniones,
-  salud, alergias).
-
-COMPONENTES COMPARTIDOS:
-- BuscadorEstudiantes: Buscador con dropdown que resalta coincidencias
-  y muestra avatares, badges de estado y biografías.
-- PageHeader: Encabezado estándar con título, descripción, botón de
-  acción y contenido personalizado.
-- EmptyState: Estado vacío con icono, mensaje y acción opcional.
-- StatCard: Tarjeta de estadística con icono, valor y subtítulo.
-
-AUTENTICACIÓN Y ACCESO:
-- Manejo de sesión y estado de autenticación (loading, errores de
-  usuario no registrado o autenticación requerida).
-- Manejo del rol activo del usuario para mostrar/ocultar menús.
-- Protección de rutas que requieren autenticación.
-- Pantalla para usuario autenticado pero no registrado en el sistema.
+- **PORTAL ESTUDIANTE** (Ruta: `/portal/estudiante`):
+  - Banner con promedio, GPA y materias aprobadas.
+  - Accesos: materias, calificaciones, solicitudes, Global 360, aula virtual con tareas, agenda de reuniones.
+  - Lista de materias activas y calificaciones por cuatrimestre.
+  - Condición en la fundación (servicios y reuniones últimos 3 meses).
+- **PORTAL PROFESOR** (Ruta: `/portal/profesor`):
+  - Banner con cursos activos, inscritos totales, notas registradas.
+  - Accesos: cursos, materias, calificaciones, calendario, aula virtual con vista de estudiante, hub Habitudes.
+  - Lista de cursos activos con modalidad e inscritos.
+- **PORTAL ADMINISTRATIVO Y COLABORADORES** (Ruta: `/portal/administrativo`):
+  - **Torre de Control del Colaborador:** "Lo que me toca hoy" (tareas hoy, vencidas, pendientes con estados `por_hacer`, `en_progreso`, `en_revision`, `completada`).
+  - Bitácora diaria y autoasignación de tareas prioritarias (pagos, compras, trámites externos).
+  - Proyectos asignados según rol institucional.
+  - Rendición de facturas y gastos a Contabilidad con NCF.
+  - Agenda de reuniones institucionales y gestión de inventario con QR.
+- **PORTAL CONTABILIDAD** (Ruta: `/portal/contabilidad`):
+  - Banner financiero en tiempo real (ingresos, egresos, saldos bancarios DOP/USD y cajas chicas).
+  - Recepción y validación de facturas remitidas por colaboradores con asignación a programas y personas.
+  - Libros de banco, conciliaciones mensuales, cajas chicas, arqueos con alertas antifraude y exportaciones DGII 606 / CxP a Excel (.xlsx).
+- **PORTAL HABITUDES** (Ruta: `/expedientes`, `/academias/habitudes`):
+  - Banco de diapositivas e imágenes compartidas para liceos.
+  - Subida de evidencias fotográficas de clases en escuelas.
+  - Postulación de candidatos al embudo.
 
 ## FLUJOS AUTOMATIZADOS PRINCIPALES
-*───────────────────────────────────────────────────────────────── · 1. OCR → EXPEDIENTE: · Subir documento → almacenamiento de archivos → la IA extrae datos → · Guarda en perfil del estudiante existente / llena formulario. · 2. TAREA → NOTIFICACIÓN: · Crear tarea con asignados → correo a cada usuario → · Crear evento en Calendario → Refrescar vistas. · 3. INSCRIPCIÓN COMIDA: · Usuario escribe nombre → Validar hora (≤8:30 AM) → · Validar no duplicado → Crear registro → Confirmación. · 4. SERVICIOS MENSUALES: · Toggle en tabla → Si existe registro: update → · Si no existe: create → Refrescar lista. · 5. CHAT IA: · Construir contexto con datos de las entidades → · Enviar a la IA con la pregunta → Renderizar respuesta markdown. · 6. SOLICITUD → APROBACIÓN: · Crear solicitud → notificar a revisores → · En revisión → [dirección] → Aprobada / Rechazada → · El módulo dueño ejecuta → Completada (cada paso en solicitud_paso).*
+─────────────────────────────────────────────────────────────────
+1. **RENDICIÓN DE GASTO EMPLEADO → CONTABILIDAD:**
+   Colaborador sube foto/PDF de factura con NCF $\rightarrow$ OCR extrae datos fiscales $\rightarrow$ Bandeja de Contabilidad $\rightarrow$ Contable valida RNC/NCF, asigna a programa (Casa de Herramientas, Juan Bosch, Universidad) y persona $\rightarrow$ Genera CxP o egreso de caja chica.
+2. **ASIGNACIÓN GRANULAR DE PROYECTOS:**
+   `super_admin` asigna proyectos por rol $\rightarrow$ Se reflejan de inmediato en la Torre de Control y calendario de los colaboradores.
+3. **INVENTARIO Y ETIQUETADO QR:**
+   Alta de mueble/equipo con foto $\rightarrow$ Generación de QR único $\rightarrow$ Impresión de etiqueta física $\rightarrow$ Escaneo móvil in situ para auditoría.
+4. **GLOBAL 360 Y TAREAS (MOODLE):**
+   Docente crea tarea (título, archivo/tamaño permitido) $\rightarrow$ Previsualiza en vista de estudiante $\rightarrow$ Estudiante sube entrega en el aula virtual $\rightarrow$ Docente califica con feedback.
+5. **EVIDENCIAS HABITUDES EN LICEOS:**
+   Docente acude a liceo $\rightarrow$ Captura foto o asistencia en móvil $\rightarrow$ Sube evidencia al hub de Habitudes $\rightarrow$ Disponible para todo el equipo.
+6. **ARQUEO FÍSICO DE CAJA:**
+   Contable cuenta billetes y monedas $\rightarrow$ Sistema calcula descuadre $\rightarrow$ Si diferencia $\ge$ RD$200, dispara alerta antifraude `diferencia_caja`.
+7. **OCR → EXPEDIENTE ADMINISTRATIVO:**
+   Subir documento $\rightarrow$ IA extrae datos $\rightarrow$ Precarga en perfil del estudiante.
+8. **SOLICITUD → APROBACIÓN:**
+   Crear solicitud $\rightarrow$ Notificar revisores $\rightarrow$ Revisión $\rightarrow$ [Dirección] $\rightarrow$ Aprobada/Rechazada $\rightarrow$ Módulo dueño ejecuta.

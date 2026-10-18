@@ -20,6 +20,33 @@ módulo) — esto es solo la cola de pendientes concretos.
       pantallas /contabilidad/proveedores, /contabilidad/cuentas-por-pagar,
       /contabilidad/cuentas-por-pagar/gantt, /contabilidad/facturas/[id], y
       alertas antifraude correspondientes).
+- [ ] **Torre de Control del Colaborador ("Lo que me toca hoy"):** Centro operativo
+      diario para cada empleado con tareas para hoy, tareas vencidas y tareas por hacer;
+      estados de avance reales (`por_hacer`, `en_progreso`, `en_revision`, `completada`),
+      bitácora de actividades registradas en el día y autoasignación de tareas prioritarias
+      (pagos urgentes, compras con comprobante fiscal, diligencias exteriores).
+- [ ] **Gestión de Proyectos Institucionales por Rol (Gobierno Superadmin):**
+      Asignación de proyectos a todo el personal institucional según su rol y departamento,
+      gobernado exclusivamente por `super_admin` con permisos granulares; interfaz
+      y gestor contextual estilo Claude sincronizado con calendario institucional y tareas.
+- [ ] **Rendición de Gastos y Facturas de Empleados hacia Contabilidad:** Flujo
+      integrado para que cualquier colaborador institucional cargue facturas con
+      comprobante fiscal (NCF) $\rightarrow$ Contabilidad recibe, valida ante DGII, e
+      imputa al programa correspondiente (Casa de Herramientas, Juan Bosch, Becas, etc.)
+      y a la persona asignada.
+- [ ] **Global 360 y Aula Virtual (Estilo Moodle):** Selección y matrícula cuatrimestral
+      obligatoria (dos veces por cuatrimestre) de materias con horarios y docentes asignados;
+      módulo de tareas estilo Moodle con restricciones de formato/tamaño (MB), buzón de entregas,
+      calificaciones con feedback y **Vista de Estudiante** para que el docente previsualice la tarea.
+- [ ] **Programa Habitudes — Hub Colaborativo y Evidencias de Liceos:** Repositorio
+      compartido de diapositivas (PowerPoint/PDF) e imágenes didácticas para los profesores
+      que acuden a liceos, y módulo móvil de subida de evidencias fotográficas de clases impartidas.
+- [ ] **Inventario Institucional y Activos Fijos con Códigos QR:** Catálogo de mobiliario,
+      cuadros, televisores, herramientas y equipos; captura/subida de fotografías, generación
+      automática e impresión de etiquetas con Códigos QR únicos, y lector móvil con cámara.
+- [ ] **Agenda de Reuniones Institucionales para Todo el Personal:** Agendamiento de
+      reuniones internas entre colaboradores y citas solicitadas por estudiantes (asesorías,
+      tutorías, seguimiento administrativo), extinguiendo definitivamente las citas clínicas.
 - [x] **Contabilidad, Fase 4:** Cajas y cuadre de caja completados (migración `0039_contabilidad_cajas_y_asignacion.sql`, reposición desde banco con `contabilidad.reponer_caja`, pantallas `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, contador interactivo de arqueos por denominación DOP/USD en `/contabilidad/cajas/[id]/arqueo`, alertas automáticas de descuadre `diferencia_caja`, OCR inteligente de facturas de proveedores con asignación doble a solicitante y programa institucional, e importación/exportación a Excel .xlsx con auditoría).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD
