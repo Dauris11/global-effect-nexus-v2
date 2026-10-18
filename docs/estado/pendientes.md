@@ -48,9 +48,15 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [ ] **Programa Habitudes — Hub Colaborativo y Evidencias de Liceos:** Repositorio
       compartido de diapositivas (PowerPoint/PDF) e imágenes didácticas para los profesores
       que acuden a liceos, y módulo móvil de subida de evidencias fotográficas de clases impartidas.
-- [ ] **Inventario Institucional y Activos Fijos con Códigos QR:** Catálogo de mobiliario,
-      cuadros, televisores, herramientas y equipos; captura/subida de fotografías, generación
-      automática e impresión de etiquetas con Códigos QR únicos, y lector móvil con cámara.
+- [x] **Inventario Institucional y Activos Fijos con Códigos QR (Módulo 30):** Catálogo de mobiliario,
+      herramientas (Casa de Herramientas), tecnología, electrodomésticos y vehículos (migración `0040_inventario_activos_qr.sql`);
+      captura y visualización de fotografías, generación automática e impresión de etiquetas con Códigos QR
+      corporativos de alta resolución, y escáner móvil de cámara web in situ (`/administrativo/inventario/escanear`)
+      con registro de actas de auditoría física y trazabilidad histórica.
+- [x] **Arquitectura Móvil Nativa y Dock de Acceso Rápido:** Manifiesto PWA (`manifest.webmanifest`)
+      en `src/app/manifest.ts` para modo standalone en iOS/Android sin barra de URL, barra inferior táctil
+      con botón central elevado de acceso rápido táctil (`BarraInferior`) y cajón deslizable nativo
+      (`CajonAccionesRapidas`) con atajos a cámara QR, rendición de comprobantes, tareas del día, agenda y Nexus IA por voz.
 - [ ] **Agenda de Reuniones Institucionales para Todo el Personal:** Agendamiento de
       reuniones internas entre colaboradores y citas solicitadas por estudiantes (asesorías,
       tutorías, seguimiento administrativo), extinguiendo definitivamente las citas clínicas.
