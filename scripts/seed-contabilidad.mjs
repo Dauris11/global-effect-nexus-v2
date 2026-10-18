@@ -404,6 +404,24 @@ async function seedPeriodoActual(cliente) {
   console.log(`  ✓ Período ${anio}-${String(mes).padStart(2, "0")} (abierto)`);
 }
 
+async function seedCajas(cliente, usuarioId) {
+  const { rows: usu } = await cliente.query(
+    `SELECT id FROM public.usuario WHERE email = 'contabilidad@globaleffect.org' LIMIT 1`,
+  );
+  const respId = usu[0]?.id ?? usuarioId;
+
+  await cliente.query(
+    `INSERT INTO contabilidad.caja
+       (codigo, nombre, departamento, responsable_id, moneda, fondo_fijo, saldo_actual, umbral_adjunto, creado_por)
+     VALUES
+       ('CJ-OP-01', 'Caja Chica Operaciones La Vega', 'operaciones', $1, 'DOP', 15000.00, 15000.00, 500.00, $2),
+       ('CJ-DIR-01', 'Caja Chica Dirección Ejecutiva', 'direccion', $1, 'DOP', 25000.00, 25000.00, 1000.00, $2)
+     ON CONFLICT (codigo) DO NOTHING`,
+    [respId, usuarioId],
+  );
+  console.log("  ✓ Cajas chicas demo (Operaciones y Dirección)");
+}
+
 async function main() {
   const cliente = await pool.connect();
 
@@ -421,9 +439,11 @@ async function main() {
     await seedCategorias(cliente);
     await seedParametrosNomina(cliente);
     await seedPeriodoActual(cliente);
+    await seedCajas(cliente, usuarioId);
 
     await cliente.query("COMMIT");
     console.log("✅ db:seed:contabilidad completado.");
+
   } catch (err) {
     await cliente.query("ROLLBACK");
     console.error("❌ Error en seed:", err.message);

@@ -29,6 +29,11 @@ import {
   otrosConPermiso,
   type EstadoErrorContable,
 } from "@/server/contabilidad/sesion";
+import {
+  leerFacturaOcr,
+  type DatosFacturaLeidos,
+} from "@/server/contabilidad/facturas/ocr";
+
 
 /**
  * Proveedores y sus facturas (§4.4).
@@ -223,9 +228,12 @@ export async function guardarFactura(
   if (ncf && !ncfValido(ncf)) return { estado: "ncf_invalido" };
   if (!ncf && proveedor.tipo === "juridica") return { estado: "ncf_requerido" };
 
+  const solicitante = idOpcional(datos, "solicitante");
+  const programa = texto(datos, "programa", 60) || null;
+
   const valores = [
     proveedorId, ncf, emision, vencimiento, moneda, tasa, subtotal, itbis, isr, retItbis,
-    concepto, categoria, fondo, idOpcional(datos, "proyecto"),
+    concepto, categoria, fondo, idOpcional(datos, "proyecto"), solicitante, programa,
   ];
   const contexto = await contextoDe(usuario);
 
@@ -237,7 +245,8 @@ export async function guardarFactura(
                 SET proveedor_id = $2, ncf = $3, fecha_emision = $4, fecha_vencimiento = $5,
                     periodo_id = contabilidad.periodo_para($4), moneda = $6, tasa = $7,
                     subtotal = $8, itbis = $9, retencion_isr = $10, retencion_itbis = $11,
-                    concepto = $12, categoria_id = $13, fondo_id = $14, proyecto_id = $15
+                    concepto = $12, categoria_id = $13, fondo_id = $14, proyecto_id = $15,
+                    solicitante_id = $16, programa_codigo = $17
               WHERE id = $1 AND estado = 'borrador' RETURNING id`,
             [id, ...valores],
           )
@@ -245,9 +254,9 @@ export async function guardarFactura(
             `INSERT INTO contabilidad.factura_proveedor
                (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda, tasa,
                 subtotal, itbis, retencion_isr, retencion_itbis, concepto, categoria_id, fondo_id,
-                proyecto_id, creado_por)
+                proyecto_id, solicitante_id, programa_codigo, creado_por)
              VALUES (contabilidad.siguiente_numero('FP'), $1, $2, $3, $4, contabilidad.periodo_para($3),
-                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
              RETURNING id`,
             [...valores, usuario.id],
           );
@@ -378,3 +387,47 @@ export async function adjuntarFactura(
     return { estado: estadoDeError(error) };
   }
 }
+
+export type ResultadoOcrFacturaAction =
+  | { exito: true; datos: DatosFacturaLeidos }
+  | { exito: false; error: string };
+
+export async function procesarFacturaOcrAction(
+  formData: FormData,
+): Promise<ResultadoOcrFacturaAction> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.registrar")) {
+    return { exito: false, error: "No tienes permiso para registrar facturas." };
+  }
+
+  const archivo = formData.get("archivo");
+  if (!(archivo instanceof File)) {
+    return { exito: false, error: "Archivo no recibido o inválido." };
+  }
+
+  try {
+    const res = await leerFacturaOcr(archivo, usuario.id);
+    if (res.estado === "ok") {
+      return { exito: true, datos: res.datos };
+    }
+    if (res.estado === "tipo_no_admitido") {
+      return { exito: false, error: "Formato no admitido. Sube imagen (JPG, PNG, WebP) o PDF." };
+    }
+    if (res.estado === "demasiado_grande") {
+      return { exito: false, error: "El archivo excede el tamaño máximo permitido (5 MB)." };
+    }
+    if (res.estado === "sin_clave") {
+      return { exito: false, error: "Servicio de OCR no configurado (falta clave de IA)." };
+    }
+    if (res.estado === "ilegible") {
+      return {
+        exito: false,
+        error: "No se pudieron extraer datos legibles. Verifica la nitidez del comprobante.",
+      };
+    }
+    return { exito: false, error: "Error al procesar el escaneo OCR." };
+  } catch (err: unknown) {
+    return { exito: false, error: (err as Error).message || "Error al procesar el archivo." };
+  }
+}
+

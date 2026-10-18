@@ -20,8 +20,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       pantallas /contabilidad/proveedores, /contabilidad/cuentas-por-pagar,
       /contabilidad/cuentas-por-pagar/gantt, /contabilidad/facturas/[id], y
       alertas antifraude correspondientes).
-- [ ] **Contabilidad, Fase 4:** Cajas y cuadre de caja (migración 0038, reposición
-      desde banco, pantallas en /contabilidad/cajas y alertas de arqueo).
+- [x] **Contabilidad, Fase 4:** Cajas y cuadre de caja completados (migración `0039_contabilidad_cajas_y_asignacion.sql`, reposición desde banco con `contabilidad.reponer_caja`, pantallas `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, contador interactivo de arqueos por denominación DOP/USD en `/contabilidad/cajas/[id]/arqueo`, alertas automáticas de descuadre `diferencia_caja`, OCR inteligente de facturas de proveedores con asignación doble a solicitante y programa institucional, e importación/exportación a Excel .xlsx con auditoría).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD
       (`contabilidad.tasa_referencia`); puede preferir compra o promedio.

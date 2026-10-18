@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BookOpen, Scale, Search, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Download, Scale, Search, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Monto, SELECT } from "@/components/contabilidad/comun";
@@ -80,12 +80,20 @@ export default async function PaginaLibro({
         titulo={cuenta.nombre}
         subtitulo={`${cuenta.banco} · ${enmascararCuenta(cuenta.numero)} · ${cuenta.moneda}`}
         acciones={
-          <Button asChild variant="secondary">
-            <Link href={`/contabilidad/bancos/${cuenta.id}/conciliacion`}>
-              <Scale className="size-4" />
-              {t("conciliaciones")}
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={`/api/contabilidad/exportar/bancos?cuentaId=${cuenta.id}`} download>
+                <Download className="size-4" />
+                <span>Exportar Excel</span>
+              </a>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/contabilidad/bancos/${cuenta.id}/conciliacion`}>
+                <Scale className="size-4" />
+                {t("conciliaciones")}
+              </Link>
+            </Button>
+          </div>
         }
       />
 

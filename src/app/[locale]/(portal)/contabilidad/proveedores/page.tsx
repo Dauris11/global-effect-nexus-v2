@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { Download } from "lucide-react";
 import { ListaProveedores } from "@/components/contabilidad/proveedores/lista-proveedores";
+import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { requerirPermiso } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
@@ -41,7 +43,16 @@ export default async function PaginaProveedores({
         antetitulo={t("titulo")}
         titulo={t("titulo")}
         subtitulo={t("subtitulo")}
+        acciones={
+          <Button asChild size="sm" variant="outline">
+            <a href="/api/contabilidad/exportar/606" download>
+              <Download className="size-4" />
+              <span>Exportar DGII 606 (Excel)</span>
+            </a>
+          </Button>
+        }
       />
+
 
       <ListaProveedores
         proveedores={lista}

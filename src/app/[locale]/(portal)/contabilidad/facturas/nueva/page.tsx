@@ -29,7 +29,7 @@ export default async function PaginaNuevaFactura({
   const { proveedor } = await searchParams;
   await requerirPermiso("contabilidad.registrar");
 
-  const [t, tf, opciones, listaProveedores] = await Promise.all([
+  const [t, tf, opciones, listaProveedores, solicitantes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.facturaForm" }),
     getTranslations({ locale, namespace: "contab.factura" }),
     opcionesRecibo(),
@@ -37,13 +37,21 @@ export default async function PaginaNuevaFactura({
       id: string;
       nombre: string;
       tipo: "fisica" | "juridica";
+      identificacion: string;
       dias: number;
       categoria_id: string | null;
     }>(
-      `SELECT id, nombre, tipo, condiciones_pago_dias AS dias, categoria_id
+      `SELECT id, nombre, tipo, identificacion, condiciones_pago_dias AS dias, categoria_id
          FROM contabilidad.proveedor
         WHERE estado = 'activo'
         ORDER BY nombre`,
+    ),
+    consultar<{ id: string; nombre: string; email: string; rol: string }>(
+      `SELECT u.id, u.nombre, u.email, r.nombre AS rol
+         FROM public.usuario u
+         JOIN public.rol r ON u.rol_id = r.id
+        WHERE u.activo = TRUE
+        ORDER BY u.nombre ASC`,
     ),
   ]);
 
@@ -61,6 +69,7 @@ export default async function PaginaNuevaFactura({
           categorias={opciones.categorias}
           fondos={opciones.fondos}
           proyectos={opciones.proyectos}
+          solicitantes={solicitantes}
           hoy={claveDia()}
         />
       </div>

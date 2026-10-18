@@ -28,6 +28,7 @@ import {
   UserCog,
   Users,
   Utensils,
+  Wallet,
   Wrench,
 } from "lucide-react";
 
@@ -292,6 +293,12 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "payables",
             href: "/contabilidad/cuentas-por-pagar",
             icono: HandCoins,
+            permiso: "contabilidad.leer",
+          },
+          {
+            etiqueta: "boxes",
+            href: "/contabilidad/cajas",
+            icono: Wallet,
             permiso: "contabilidad.leer",
           },
         ],
@@ -609,6 +616,12 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             etiqueta: "payables",
             href: "/contabilidad/cuentas-por-pagar",
             icono: HandCoins,
+            permiso: "contabilidad.leer",
+          },
+          {
+            etiqueta: "boxes",
+            href: "/contabilidad/cajas",
+            icono: Wallet,
             permiso: "contabilidad.leer",
           },
         ],

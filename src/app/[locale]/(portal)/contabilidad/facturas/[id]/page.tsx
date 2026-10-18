@@ -23,7 +23,9 @@ import { requerirPermiso } from "@/lib/auth";
 import { consultar } from "@/lib/db";
 import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { nombrePrograma } from "@/lib/contabilidad/programas";
 import { facturaPorId } from "@/server/contabilidad/proveedores/consultas";
+
 
 export async function generateMetadata({
   params,
@@ -142,6 +144,16 @@ export default async function PaginaDetalleFactura({
           <Dato etiqueta="Categoría contable">
             {factura.categoria}
           </Dato>
+          {factura.solicitante_nombre && (
+            <Dato etiqueta="Solicitante / Custodio">
+              <span className="font-medium text-tinta">{factura.solicitante_nombre}</span>
+            </Dato>
+          )}
+          {factura.programa_codigo && (
+            <Dato etiqueta="Programa institucional">
+              <span className="font-medium text-marca-700">{nombrePrograma(factura.programa_codigo)}</span>
+            </Dato>
+          )}
           {factura.proyecto && (
             <Dato etiqueta="Proyecto">
               {factura.proyecto}
