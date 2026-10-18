@@ -93,6 +93,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       Jarabacoa, Constanza, Jima Abajo), distritos municipales y sectores.
       - **Uso 1:** Mapa de liceos en La Vega con profesores asignados, tandas y conteo de alumnos de Habitudes.
       - **Uso 2:** Ubicación georreferenciada de la vivienda de cada estudiante activo en su expediente (`perfil_vivienda`).
+- [x] **Seguridad y RLS en Supabase (Linter rls_disabled_in_public):** Activación de Row Level Security (RLS) en todas las tablas de los esquemas `public` y `contabilidad` (migración `0046_habilitar_rls_todas_las_tablas.sql`), bloqueando accesos anónimos indebidos vía PostgREST y resolviendo al 100% las alertas de seguridad del Linter de Supabase sin alterar el acceso del backend vía pool superuser `pg`.
 - [x] **Contabilidad, Fase 4:** Cajas y cuadre de caja completados (migración `0039_contabilidad_cajas_y_asignacion.sql`, reposición desde banco con `contabilidad.reponer_caja`, pantallas `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, contador interactivo de arqueos por denominación DOP/USD en `/contabilidad/cajas/[id]/arqueo`, alertas automáticas de descuadre `diferencia_caja`, OCR inteligente de facturas de proveedores con asignación doble a solicitante y programa institucional, e importación/exportación a Excel .xlsx con auditoría).
 - [ ] **Contabilidad, a validar con el contador:** la tasa de referencia para
       valorar dólares en pesos es la **venta** del BCRD
