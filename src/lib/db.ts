@@ -19,7 +19,7 @@ declare global {
 }
 
 function crearPool(): Pool {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
     throw new Error(
@@ -27,24 +27,28 @@ function crearPool(): Pool {
     );
   }
 
+  // En producción / Vercel Serverless, si apunta al pooler de Supabase en puerto 5432 (session mode),
+  // se conmuta a puerto 6543 (transaction mode) para evitar el error fatal EMAXCONNSESSION (tope de 15 clientes).
+  const esServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === "production");
+  if (esServerless && connectionString.includes("pooler.supabase.com:5432")) {
+    connectionString = connectionString.replace(":5432", ":6543");
+  }
+
   return new Pool({
     connectionString,
     // Supavisor exige TLS pero presenta un certificado que Node no encadena
-    // hasta una CA conocida; en local se acepta sin verificar la cadena.
+    // hasta una CA conocida; en local y serverless se acepta sin verificar la cadena.
     ssl: connectionString.includes("localhost")
       ? undefined
       : { rejectUnauthorized: false },
-    max: 10,
-    idleTimeoutMillis: 30_000,
+    max: esServerless ? 2 : 10,
+    idleTimeoutMillis: esServerless ? 5_000 : 30_000,
     connectionTimeoutMillis: 10_000,
   });
 }
 
 export const pool = globalThis.__poolGlobalEffect ?? crearPool();
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.__poolGlobalEffect = pool;
-}
+globalThis.__poolGlobalEffect = pool;
 
 /**
  * Lanza una consulta parametrizada y devuelve las filas.
