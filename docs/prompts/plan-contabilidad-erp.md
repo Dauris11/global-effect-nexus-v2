@@ -3,8 +3,8 @@
 > **Escrito:** 2026-10-24, sobre la rama `feat/portal-contabilidad`.
 > **Responde a:** el prompt "Módulo de Contabilidad (Global Effect Nexus)" (ASFL,
 > Ley 122-05, sin emisión de e-CF).
-> **Estado:** propuesta. No se migra ni se construye ningún módulo nuevo hasta que
-> se apruebe este plan y se resuelvan las dudas de la sección 4.
+> **Estado:** aprobado el 24 oct 2026 con las decisiones de la sección (d). Fase 1 en
+> curso (migración `0048`).
 > **Relación con `portal-contabilidad.md`:** aquella especificación sigue siendo la
 > norma de arquitectura (esquema `contabilidad`, partida doble por debajo,
 > bitácora con cadena de hash, nada se borra). Este plan la amplía con lo que el
@@ -59,7 +59,7 @@ framework.
 
 | Fase | Contenido | Prompt | Depende de |
 |---|---|---|---|
-| **1 · Fundamentos** | Entidad (RNC, ejercicio fiscal, moneda base, redondeo); tabla de impuestos y retenciones con vigencia; pantalla de Configuración contable (§4.13, pendiente); asientos manuales, recurrentes, de apertura, de ajuste y de reverso; diario, mayor, auxiliares y balanza de comprobación; perfiles de permisos (ver duda 2); `ComprobanteProvider` con `emision_comprobantes_habilitada = false` | 5.1, 5.2, 5.13, 2 | — |
+| **1 · Fundamentos** | Entidad (RNC, ejercicio fiscal, moneda base, redondeo); tabla de impuestos y retenciones con vigencia; pantalla de Configuración contable (§4.13, pendiente); asientos manuales, recurrentes, de apertura, de ajuste y de reverso; diario, mayor, auxiliares y balanza de comprobación; `ComprobanteProvider` con `emision_comprobantes_habilitada = false` | 5.1, 5.2, 5.13, 2 | — |
 | **2 · Ingresos y terceros** | Terceros con RNC o cédula y debida diligencia (Ley 155-17); donaciones en efectivo y en especie; promesas con calendario de cobro; clasificación exento o gravado en cada ingreso; estado de cuenta y antigüedad por donante; órdenes de compra y aprobación por monto; comprobantes de retención | 5.3, 5.4 | 1 |
 | **3 · Impuestos DGII y calculadoras** | TXT de los formatos 606, 607, 608 y 609 con prevalidación y envío en cero; IT-1; IR-3; IR-17; ISFL-01; calendario fiscal parametrizado con alertas; recargos y mora; calculadoras de ITBIS, factura, retenciones, recargos, divisas y préstamos, cada una con "convertir en borrador" | 5.5, 5.11 | 2 |
 | **4 · Fondos y presupuesto** | Centros de costo por programa; fondos restringidos y no restringidos con liberación al ejecutar el gasto; presupuesto anual por programa con ejecución contra presupuesto y alertas; trazabilidad donación → fondo → beca o gasto; rendición de cuentas por donante | 5.10 | 2 |
@@ -87,7 +87,6 @@ en `requerirPermiso` y en las server actions.
 | 1 | `impuesto` | ITBIS general, reducidos, 0 % y exento, por tipo de bien o servicio | `codigo`, `tasa`, `vigente_desde/hasta`; exclusión de rangos solapados por código |
 | 1 | `tipo_retencion` | ISR por honorarios, alquileres y comisiones; retención de ITBIS (NG 02-05) | Igual que `impuesto`; la tasa vigente sale por fecha del documento |
 | 1 | `asiento_recurrente` | Plantilla y periodicidad de asientos que se repiten | FK a `cuenta_contable`; genera borradores, nunca asientos contabilizados |
-| 1 | `perfil_permiso` | Paquetes de permisos (contador, tesorero, aprobador, auditor) que se asignan a un usuario | Se resuelve sobre `usuario_permiso`; no crea roles nuevos |
 | 2 | `tercero` | Donante, proveedor o empleado con RNC o cédula, y debida diligencia | `UNIQUE (tipo_id, identificacion)`; `proveedor` y `patrocinador` lo referencian |
 | 2 | `debida_diligencia` | Verificación de donantes grandes (umbral parametrizado) | FK `tercero`; fecha, resultado y adjunto en la bóveda |
 | 2 | `donacion` | Efectivo o especie, exenta o gravada, con fondo de destino | `clase IN ('efectivo','especie')`, `tratamiento IN ('exento','gravado')`; genera recibo y asiento |
@@ -99,7 +98,7 @@ en `requerirPermiso` y en las server actions.
 | 4 | `centro_costo` | Programa (becas, formación, comedor…) | Sustituye a `programa_cod` (texto) en facturas y recibos |
 | 4 | `fondo` (ampliar) | Restringido o no, donante, fecha de liberación | Se añaden columnas a la tabla que ya existe |
 | 4 | `presupuesto` / `presupuesto_linea` | Presupuesto anual por centro de costo y cuenta | `UNIQUE (ejercicio, centro_costo_id, cuenta_id)` |
-| 5 | `empleado` / `contrato` | Personal en nómina (no es `usuario`: hay quien cobra y no entra al sistema) | FK `tercero`; salario solo visible con `contabilidad.nomina` |
+| 5 | `empleado` / `contrato` | Personal en nómina con cargo y programa; enlaza al `usuario` si tiene cuenta (no todo el que cobra entra al sistema) | FK `tercero`, `centro_costo` y `usuario` opcional; salario solo con `contabilidad.nomina` |
 | 5 | `concepto_nomina`, `nomina`, `nomina_linea` | Devengos, deducciones y cada corrida | La corrida cerrada genera su asiento y el archivo TSS |
 | 5 | `activo_categoria`, `depreciacion` | Vida útil y método; depreciación mensual | Se cuelga del `public.activo` de `0040`, no se duplica |
 | 5 | `articulo`, `inventario_movimiento`, `conteo_fisico` | Consumibles con kardex y costo promedio | El costo promedio se recalcula en la base al entrar mercancía |
@@ -107,28 +106,56 @@ en `requerirPermiso` y en las server actions.
 
 ---
 
-## (d) Dudas que hay que resolver antes de la Fase 1
+## (d) Decisiones (24 oct 2026)
 
-1. **Diseño.** El prompt pide Space Grotesk, IBM Plex Mono y "azul profundo", y
-   la norma del sistema (`docs/09-sistema-visual.md`) es Inter y turquesa
-   `#2096BA`. Propuesta: mantener la marca y usar solo IBM Plex Mono para las
-   cifras de las tablas.
-2. **Roles.** El prompt pide cinco roles (administrador, contador, tesorero,
-   aprobador y auditor). Hoy hay un rol `contabilidad` y excepciones por usuario.
-   Propuesta: perfiles de permisos sobre `usuario_permiso`, sin roles nuevos, para
-   no tocar el menú ni el RBAC del resto del sistema.
-3. **Donantes.** ¿Los donantes son los mismos patrocinadores de becas
-   (`public.patrocinador`)? Propuesta: un `tercero` común al que apuntan
-   patrocinador y proveedor, para que la debida diligencia y el estado de cuenta
-   valgan para los dos.
-4. **Formatos DGII.** Hoy salen en Excel. ¿Se genera también el TXT oficial
-   para subir a la Oficina Virtual (propuesta: sí, con el Excel como vista
-   previa)?
-5. **Normas.** La retención del 15 % desde el 1 de julio de 2026 (Ley 30-26) y la
-   NG 02-05 deben confirmarse con el contador antes de cargar sus parámetros. La
-   especificación anterior decía que la escala del ISR cambia en 2027: hay que
-   saber cuál de las dos vale.
-6. **Nómina.** ¿Cuántos empleados hay y con qué banco se paga? El archivo de pago
-   depende del adaptador del banco.
-7. **Actividades gravadas.** ¿La Fundación tiene hoy alguna actividad gravada
-   (por ejemplo, venta de comida a terceros) o todo ingreso es exento?
+Las dudas de la propuesta se resolvieron así. Lo que aquí contradiga una tabla
+de arriba manda sobre la tabla.
+
+1. **Diseño: los colores y la tipografía de la marca** (`docs/09-sistema-visual.md`):
+   turquesa `#2096BA`, tinta y grises, Inter. No se añaden fuentes; las cifras
+   usan `tabular-nums` para alinearse en las tablas.
+2. **Un solo rol, `contabilidad`.** En la Fundación lo tendrán un par de personas,
+   y lo que hagan queda en la bitácora con cadena de hash. **Se descarta
+   `perfil_permiso`.** La regla "quien registra no aprueba" se queda como está:
+   se salta, con constancia, cuando la cuenta es la única con el permiso.
+3. **Los donantes son los patrocinadores** de `public.patrocinador`. La Fase 2 les
+   añade identificación (RNC o cédula) y debida diligencia a través de `tercero`,
+   que también referencia a proveedores y empleados.
+4. **Formatos DGII en TXT oficial** además del Excel, que queda como vista previa
+   (Fase 3).
+5. **Normas fiscales (decidido aquí):** todo va en `contabilidad.parametro` con
+   vigencia y fuente; nada queda escrito en el código. Lo cargó la `0048`:
+   - ITBIS: 18 % general, 16 % reducido y 0 % exento.
+   - Retención de ISR a personas físicas por honorarios, alquileres y
+     comisiones: 10 % hasta el 30 de junio de 2026 y **15 % desde el 1 de julio
+     de 2026** (Ley 30-26).
+   - Retención de ITBIS: 30 % a personas físicas por servicios (NG 02-05) y
+     100 % en los casos de la NG 08-10.
+   - La Ley 30-26 cambia también la escala del ISR, pero desde 2027, y esa
+     escala ya estaba cargada: las dos cosas son compatibles.
+   - Cada fila lleva en su nota qué hay que validar con el contador. Cambiar una
+     tasa es abrir una vigencia nueva desde Configuración, sin tocar código.
+6. **Empleados en el sistema** (Fase 5):
+   - `empleado` guarda **cargo** y **programa** (centro de costo), y opcionalmente
+     el `usuario` del sistema si la persona tiene cuenta. En ese caso aparece
+     enlazado en su ficha de personal.
+   - Lo que se ve depende de quién mira:
+     - Con `contabilidad.nomina`: todo, salario incluido, y cada apertura del
+       volante queda en la bitácora como lectura (`ver_nomina`).
+     - Administración: nombre, cargo, programa y estado, sin salario.
+     - El propio empleado con cuenta: sus volantes.
+   - Del banco de pago y del número de empleados no hay dato. El modelo no
+     supone ninguno: el banco sale de la cuenta del empleado y del adaptador
+     bancario que ya existe.
+7. **Actividades gravadas: sin respuesta todavía.** Cada ingreso se clasifica
+   `exento` por omisión y puede marcarse `gravado`. Si un día hay ventas
+   gravadas, el sistema ya lo distingue.
+
+**Correcciones que salieron al preparar la Fase 1** (en la `0048`):
+
+- Los parámetros estaban repetidos de 4 a 8 veces por un seed sin restricción.
+  Ahora hay uno por vigencia, con índice único, y la bitácora registró los 36
+  borrados.
+- El 31 de diciembre no tenía parámetro vigente, porque `vigente_hasta` es
+  exclusiva y el seed escribía el 31.
+- Una cuenta del catálogo había quedado sin padre.

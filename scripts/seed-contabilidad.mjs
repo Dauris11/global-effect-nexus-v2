@@ -343,7 +343,7 @@ async function seedParametrosNomina(cliente) {
         ],
       },
       desde: "2026-01-01",
-      hasta: "2026-12-31",
+      hasta: "2027-01-01",
       fuente: "DGII — Escala ISR 2026",
       nota: "Escala anual del ISR personas físicas 2026 en DOP.",
     },
@@ -376,7 +376,7 @@ async function seedParametrosNomina(cliente) {
       `INSERT INTO contabilidad.parametro
          (clave, valor, vigente_desde, vigente_hasta, fuente, nota)
        VALUES ($1, $2::jsonb, $3::date, $4::date, $5, $6)
-       ON CONFLICT DO NOTHING`,
+       ON CONFLICT (clave, vigente_desde) DO NOTHING`,
       [
         p.clave,
         JSON.stringify(p.valor),

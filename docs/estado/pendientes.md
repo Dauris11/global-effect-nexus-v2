@@ -34,8 +34,32 @@ módulo) — esto es solo la cola de pendientes concretos.
       el mes en curso). De paso se arreglaron las exportaciones de 607 y del
       libro de banco, que pedían columnas inexistentes, y la ruta de
       exportación pasó a exigir `contabilidad.leer` en vez de mirar el rol.
-- [ ] **Aprobar el plan del ERP contable** (`docs/prompts/plan-contabilidad-erp.md`)
-      y resolver sus siete dudas antes de la Fase 1.
+- [x] **Plan del ERP contable aprobado** (`docs/prompts/plan-contabilidad-erp.md`,
+      sección d) y **Fase 1 construida** (migraciones `0048` y `0049`).
+      Comprende:
+      - La entidad, y los parámetros de ITBIS y retenciones con vigencia:
+        retención de ISR del 10 % al 15 % desde el 1 de julio de 2026.
+      - `/contabilidad/configuracion` con cuatro pestañas: entidad, nueva
+        vigencia de parámetros, cerrar y reabrir períodos con motivo, y
+        catálogo de cuentas.
+      - `/contabilidad/asientos`: manuales, de ajuste, apertura y cierre,
+        reverso con motivo y plantillas recurrentes.
+      - `/contabilidad/libros`: diario, mayor con saldo corrido y balanza de
+        comprobación, cada uno con su Excel.
+      - El punto de extensión `ComprobanteProvider`, sin emisión.
+      - 15 pruebas nuevas de cuadre en `test:contabilidad`.
+
+      De paso se corrigieron tres problemas del catálogo y los parámetros:
+      - Parámetros repetidos de 4 a 8 veces.
+      - El 31 de diciembre sin parámetro vigente.
+      - Cuatro cuentas sin padre en el catálogo.
+- [ ] **Cuentas de naturaleza contraria:** el signo del saldo sale de `tipo`, así
+      que "Depreciación acumulada" (un `activo`) se ve en negativo en el mayor.
+      Añadir una `naturaleza` a `cuenta_contable` antes de la Fase 5
+      (depreciación).
+- [ ] **Fase 2 del ERP contable:** terceros (patrocinadores con RNC o cédula y
+      debida diligencia), donaciones en efectivo y en especie, promesas, exento
+      o gravado, órdenes de compra y comprobantes de retención.
 - [ ] `patrocinador` no guarda RNC ni cédula: el 607 sale con esa columna vacía
       hasta que llegue `tercero` con debida diligencia (Fase 2 del plan).
 - [ ] **Validar con la Fundación la nota mínima de aprobación de 360** (hoy

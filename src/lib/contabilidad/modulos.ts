@@ -1,12 +1,15 @@
 import {
   BarChart3,
+  BookOpen,
   Boxes,
   FileSpreadsheet,
   HandCoins,
   Inbox,
   Landmark,
+  NotebookPen,
   ReceiptText,
   ScrollText,
+  Settings,
   Users,
   Wallet,
 } from "lucide-react";
@@ -32,6 +35,7 @@ import type { Permiso } from "@/lib/rbac";
  */
 
 export const GRUPOS_CONTABLES = [
+  "general",
   "tesoreria",
   "ingresos",
   "gastos",
@@ -62,6 +66,25 @@ export type ModuloContable = {
 };
 
 export const MODULOS_CONTABLES: readonly ModuloContable[] = [
+  // ── Contabilidad general: los libros que salen de todo lo demás ─────
+  {
+    clave: "asientos",
+    grupo: "general",
+    etiqueta: "journalEntries",
+    href: "/contabilidad/asientos",
+    icono: NotebookPen,
+    permiso: "contabilidad.leer",
+    enAdministracion: true,
+  },
+  {
+    clave: "libros",
+    grupo: "general",
+    etiqueta: "ledgers",
+    href: "/contabilidad/libros",
+    icono: BookOpen,
+    permiso: "contabilidad.leer",
+    enAdministracion: true,
+  },
   // ── Tesorería: dónde está el dinero ─────────────────────────────────
   {
     clave: "bancos",
@@ -155,6 +178,15 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     href: "/reportes",
     icono: BarChart3,
     enAdministracion: false,
+  },
+  {
+    clave: "configuracion",
+    grupo: "departamento",
+    etiqueta: "accountingSettings",
+    href: "/contabilidad/configuracion",
+    icono: Settings,
+    permiso: "contabilidad.leer",
+    enAdministracion: true,
   },
 ];
 

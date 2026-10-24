@@ -9,6 +9,12 @@ import {
   exportarLibroBancoExcel,
   exportarCxpExcel,
 } from "@/server/contabilidad/excel/exportaciones";
+import {
+  exportarBalanzaExcel,
+  exportarDiarioExcel,
+  exportarMayorExcel,
+} from "@/server/contabilidad/excel/libros";
+import { leerFiltroLibros } from "@/server/contabilidad/libros/consultas";
 
 export async function GET(
   request: NextRequest,
@@ -85,6 +91,38 @@ export async function GET(
         "contabilidad.cuenta_por_pagar",
         undefined,
         `Exportación cuentas por pagar y antigüedad`,
+      );
+    } else if (tipo === "diario" || tipo === "mayor" || tipo === "balanza") {
+      // El mismo lector de filtros que la pantalla: lo descargado es
+      // exactamente lo que se estaba viendo.
+      const filtro = await leerFiltroLibros(Object.fromEntries(searchParams));
+      const rango = filtro.periodo ?? `${filtro.desde}_${filtro.hasta}`;
+
+      if (tipo === "mayor") {
+        if (!filtro.cuenta) {
+          return new NextResponse("Falta cuenta", { status: 400 });
+        }
+        const libro = await exportarMayorExcel({ ...filtro, cuenta: filtro.cuenta });
+        if (!libro) {
+          return new NextResponse("Cuenta no encontrada", { status: 404 });
+        }
+        buffer = libro;
+        nombreArchivo = `Libro_Mayor_${rango}.xlsx`;
+      } else if (tipo === "diario") {
+        buffer = await exportarDiarioExcel(filtro);
+        nombreArchivo = `Libro_Diario_${rango}.xlsx`;
+      } else {
+        buffer = await exportarBalanzaExcel(filtro);
+        nombreArchivo = `Balanza_Comprobacion_${rango}.xlsx`;
+      }
+
+      await registrarLectura(
+        contexto,
+        "exportar",
+        // El mayor es de una cuenta: el auditor ve cuál se descargó.
+        tipo === "mayor" ? "contabilidad.cuenta_contable" : "contabilidad.asiento",
+        tipo === "mayor" ? (filtro.cuenta ?? undefined) : undefined,
+        `Exportación ${tipo} de ${filtro.desde} a ${filtro.hasta}`,
       );
     } else {
       return new NextResponse("Tipo de exportación no soportado", { status: 400 });

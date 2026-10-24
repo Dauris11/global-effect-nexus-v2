@@ -18,6 +18,8 @@ type AccionLectura = "exportar" | "ver_nomina" | "leer";
 
 /** Acciones con nombre propio que una escritura puede declarar. */
 type AccionEscritura =
+  | "crear"
+  | "editar"
   | "aprobar"
   | "anular"
   | "pagar"

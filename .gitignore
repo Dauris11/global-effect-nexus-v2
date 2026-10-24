@@ -46,3 +46,4 @@ __pycache__/
 
 # Artefacto incremental de TypeScript
 tsconfig.tsbuildinfo
+.i18n.lock
