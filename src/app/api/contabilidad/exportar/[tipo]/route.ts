@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { obtenerUsuarioActual } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { contextoDe } from "@/server/contabilidad/sesion";
 import { registrarLectura } from "@/server/contabilidad/bitacora";
 import {
@@ -14,7 +15,9 @@ export async function GET(
   { params }: { params: Promise<{ tipo: string }> },
 ) {
   const usuario = await obtenerUsuarioActual();
-  if (!usuario || (usuario.rol !== "contabilidad" && usuario.rol !== "super_admin")) {
+  // El permiso y no el rol: así las excepciones por usuario (`usuario_permiso`)
+  // valen también aquí, igual que en cada pantalla del departamento.
+  if (!usuario || !usuarioTienePermiso(usuario, "contabilidad.leer")) {
     return new NextResponse("No autorizado", { status: 403 });
   }
 

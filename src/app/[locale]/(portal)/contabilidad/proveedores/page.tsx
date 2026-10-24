@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { FileSpreadsheet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { Download } from "lucide-react";
 import { ListaProveedores } from "@/components/contabilidad/proveedores/lista-proveedores";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { proveedores } from "@/server/contabilidad/proveedores/consultas";
@@ -44,11 +45,12 @@ export default async function PaginaProveedores({
         titulo={t("titulo")}
         subtitulo={t("subtitulo")}
         acciones={
+          // El 606 se elige por mes en Impuestos: aquí solo se enlaza.
           <Button asChild size="sm" variant="outline">
-            <a href="/api/contabilidad/exportar/606" download>
-              <Download className="size-4" />
-              <span>Exportar DGII 606 (Excel)</span>
-            </a>
+            <Link href="/contabilidad/impuestos">
+              <FileSpreadsheet className="size-4" />
+              {t("irImpuestos")}
+            </Link>
           </Button>
         }
       />

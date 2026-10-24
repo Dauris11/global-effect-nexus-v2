@@ -110,7 +110,17 @@
     "boxes": "Petty cash",
     "habitudes": "Habitudes",
     "habitudesHub": "Habitudes Hub",
-    "classes360": "360 classes"
+    "classes360": "360 classes",
+    "expenseReports": "Expense reports",
+    "taxes": "DGII taxes",
+    "contabGroups": {
+      "tesoreria": "Treasury",
+      "ingresos": "Income",
+      "gastos": "Expenses",
+      "impuestos": "Taxes",
+      "activos": "Assets",
+      "departamento": "Department"
+    }
   },
   "landing": {
     "enter": "Sign in",
@@ -2425,14 +2435,11 @@
     "inicio": {
       "antetitulo": "Accounting portal",
       "titulo": "Home",
-      "subtitulo": "Account balances, what is left to post and today's exchange rate.",
+      "subtitulo": "What's on your plate today, where the money is and every module in the department.",
       "saldos": "Balance by account",
       "equivalente": "≈ {monto} in pesos",
       "sinTasa": "No rate today to convert to pesos",
       "totalDop": "Total in pesos",
-      "pendientes": "Drafts to post",
-      "pendientesVacio": "No pending drafts",
-      "pendientesTexto": "Everything recorded is already posted.",
       "recientes": "Recent receipts",
       "verTodos": "See all",
       "nuevoRecibo": "New receipt",
@@ -2440,7 +2447,19 @@
       "tasaVacia": "No exchange rate recorded yet.",
       "tasaDe": "Buy {compra} · Sell {venta} · {fuente}, {fecha}",
       "tasaVieja": "The latest rate is from {fecha}. Record today's in Banks.",
-      "proximamente": "Payables, petty cash, budgets and tax deadlines arrive in the next phases."
+      "modulos": "Department modules",
+      "modulosTexto": "Accounting work and the tools it shares with other areas, by type of work.",
+      "paraHoy": {
+        "titulo": "For today",
+        "alDia": "All caught up: nothing is waiting for you.",
+        "cxpVencidas": "{count, plural, =1 {overdue payable} other {overdue payables}}",
+        "cxpSemana": "{count, plural, =1 {payable due this week} other {payables due this week}}",
+        "recibosBorrador": "{count, plural, =1 {draft receipt to post} other {draft receipts to post}}",
+        "facturasBorrador": "{count, plural, =1 {supplier invoice to approve} other {supplier invoices to approve}}",
+        "rendiciones": "{count, plural, =1 {expense report to review} other {expense reports to review}}",
+        "arqueos": "{count, plural, =1 {open cash count} other {open cash counts}}",
+        "conciliaciones": "{count, plural, =1 {open bank reconciliation} other {open bank reconciliations}}"
+      }
     },
     "bancos": {
       "titulo": "Banks",
@@ -2566,7 +2585,6 @@
       "subtitulo": "Income receipts and payment vouchers, in a single search.",
       "nuevo": "New receipt",
       "exportar": "Export CSV",
-      "exportar607": "Export DGII 607 (Excel)",
       "filtros": "Filters",
       "masFiltros": "More filters",
       "aplicar": "Apply",
@@ -2708,7 +2726,8 @@
       "debe": "Owed",
       "alDia": "Up to date",
       "facturas": "{n, plural, =0 {No invoices} one {# invoice} other {# invoices}}",
-      "condiciones": "{dias} days credit"
+      "condiciones": "{dias} days credit",
+      "irImpuestos": "DGII forms"
     },
     "proveedorForm": {
       "tituloNuevo": "New supplier",
@@ -2912,7 +2931,8 @@
       "pagosVacio": "No payments yet.",
       "pago": "PG-{numero} · {fecha} · {cuenta}",
       "comprobante": "Voucher {numero}",
-      "ok": "Saved."
+      "ok": "Saved.",
+      "exportarExcel": "Export to Excel"
     },
     "gantt": {
       "titulo": "Due dates",
@@ -2927,7 +2947,48 @@
       "programada": "Scheduled date",
       "vacio": "No outstanding payables",
       "rango": "From {inicio} to {fin}"
-    }
+    },
+    "modulos": {
+      "bancos": "Accounts, bank books and reconciliation",
+      "cajas": "Petty cash, small expenses and cash counts",
+      "recibos": "Income and expense receipts, donations",
+      "proveedores": "Directory and received invoices",
+      "cxp": "Due dates, payments and ageing",
+      "rendiciones": "Expenses submitted by staff",
+      "impuestos": "Forms 606 and 607 and Excel books",
+      "inventario": "Fixed assets with their QR code",
+      "solicitudes": "Expenses and requests to approve",
+      "reportes": "Finance, operations and academic",
+      "irImpuestos": "DGII forms"
+    },
+    "impuestos": {
+      "antetitulo": "Accounting",
+      "titulo": "Taxes and exports",
+      "subtitulo": "DGII forms by month and the department's books in Excel.",
+      "mes": "Month to file",
+      "cambiarMes": "Show that month",
+      "formatosDgii": "DGII forms",
+      "descargar": "Download {mes}",
+      "f606": {
+        "nombre": "Form 606 · Purchases",
+        "texto": "Approved supplier invoices for the month, with NCF, ITBIS and withholdings.",
+        "origen": "See suppliers"
+      },
+      "f607": {
+        "nombre": "Form 607 · Income",
+        "texto": "Posted income receipts for the month.",
+        "origen": "See receipts"
+      },
+      "nota": "They're filed on the 15th of the following month. The file comes out in Excel so it can be checked before uploading it to the Virtual Office.",
+      "libros": "Books in Excel",
+      "cxp": {
+        "nombre": "Accounts payable",
+        "texto": "Outstanding balances and ageing, as of today."
+      },
+      "libroBanco": "Bank book · {cuenta}",
+      "excel": "Excel"
+    },
+    "exportarExcel": "Export to Excel"
   },
   "widgetIA": {
     "botonFlotante": "Open AI assistant",

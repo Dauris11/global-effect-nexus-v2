@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import { ArrowRight, Info, Landmark, Plus, ReceiptText } from "lucide-react";
+import { ArrowRight, Info, Landmark, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { InsigniaEstadoRecibo, Monto } from "@/components/contabilidad/comun";
+import { Monto } from "@/components/contabilidad/comun";
+import { LanzadorModulos } from "@/components/contabilidad/inicio/lanzador-modulos";
+import { ParaHoy, type PendienteVisible } from "@/components/contabilidad/inicio/para-hoy";
 import { ListaRecibos } from "@/components/contabilidad/recibos/lista-recibos";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import { formatearMonto, numeroDocumento, SERIE_RECIBO, sumarMontos } from "@/lib/contabilidad/formato";
+import { formatearMonto, sumarMontos } from "@/lib/contabilidad/formato";
+import { GRUPOS_CONTABLES, modulosDeGrupo } from "@/lib/contabilidad/modulos";
 import { claveDia, fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
-import { vencenEn } from "@/server/contabilidad/cxp/consultas";
-import {
-  borradoresPendientes,
-  leerFiltroRecibos,
-  recibos,
-} from "@/server/contabilidad/recibos/consultas";
+import { pendientesDelDepartamento } from "@/server/contabilidad/inicio/consultas";
+import { leerFiltroRecibos, recibos } from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
   params,
@@ -32,12 +31,18 @@ export async function generateMetadata({
 }
 
 /**
- * Inicio del portal de contabilidad (§4.1), con saldos por cuenta, la tasa del
- * día, cuentas por pagar por vencer, lo que espera ser contabilizado y lo
- * último registrado.
+ * Inicio del Departamento de Contabilidad (§4.1).
+ *
+ * Se ordena por la pregunta que se hace quien entra: qué me toca hoy. Primero lo
+ * que espera a alguien (borradores, cuentas por pagar vencidas, rendiciones,
+ * arqueos y conciliaciones abiertas), después dónde está el dinero y, al final,
+ * todos los módulos del departamento agrupados —los de `/contabilidad` y las
+ * herramientas que viven en otras áreas—, sacados de `MODULOS_CONTABLES`.
  *
  * La puerta es `contabilidad.leer`, no el rol: `super_admin` entra a mirar
- * (auditoría) y no ve ningún botón que escriba.
+ * (auditoría) y no ve ningún botón que escriba. Cada módulo y cada pendiente se
+ * filtra con el permiso de la persona, no del rol, para que las excepciones de
+ * `usuario_permiso` valgan también aquí.
  */
 export default async function PortalContabilidad({
   params,
@@ -48,16 +53,35 @@ export default async function PortalContabilidad({
   const idioma = locale === "en" ? "en" : "es";
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, tc, tcxp, cuentas, tasa, pendientes, recientes, vencen30] = await Promise.all([
+  const [t, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.inicio" }),
     getTranslations({ locale, namespace: "contab" }),
-    getTranslations({ locale, namespace: "contab.cxp" }),
     cuentasConSaldo(),
     tasaVigente(),
-    borradoresPendientes(),
+    pendientesDelDepartamento(),
     recibos(leerFiltroRecibos({}), 5),
-    vencenEn(30),
   ]);
+
+  const puede = (permiso: Parameters<typeof usuarioTienePermiso>[1]) =>
+    usuarioTienePermiso(usuario, permiso);
+
+  const todos: PendienteVisible[] = [
+    { clave: "cxpVencidas", cuantos: pendientes.cxp_vencidas, href: "/contabilidad/cuentas-por-pagar", urgente: true },
+    { clave: "cxpSemana", cuantos: pendientes.cxp_semana, href: "/contabilidad/cuentas-por-pagar" },
+    { clave: "recibosBorrador", cuantos: pendientes.recibos_borrador, href: "/contabilidad/recibos?estado=borrador" },
+    { clave: "facturasBorrador", cuantos: pendientes.facturas_borrador, href: "/contabilidad/proveedores" },
+    ...(puede("rendicion.revisar")
+      ? [{ clave: "rendiciones" as const, cuantos: pendientes.rendiciones, href: "/administrativo/rendiciones" }]
+      : []),
+    { clave: "arqueos", cuantos: pendientes.arqueos_abiertos, href: "/contabilidad/cajas" },
+    { clave: "conciliaciones", cuantos: pendientes.conciliaciones_abiertas, href: "/contabilidad/bancos" },
+  ];
+  const paraHoy = todos.filter((pendiente) => pendiente.cuantos > 0);
+
+  const grupos = GRUPOS_CONTABLES.map((grupo) => ({
+    grupo,
+    modulos: modulosDeGrupo(grupo).filter((modulo) => !modulo.permiso || puede(modulo.permiso)),
+  })).filter((grupo) => grupo.modulos.length > 0);
 
   const activas = cuentas.filter((c) => c.estado === "activa");
   // El total en pesos solo si TODAS las cuentas tienen equivalente: un
@@ -86,6 +110,11 @@ export default async function PortalContabilidad({
       />
 
       <section className="space-y-4">
+        <h2 className="texto-titulo-seccion">{t("paraHoy.titulo")}</h2>
+        <ParaHoy pendientes={paraHoy} />
+      </section>
+
+      <section className="space-y-4 border-t border-linea pt-8">
         <div className="flex items-end justify-between gap-3">
           <h2 className="texto-titulo-seccion">{t("saldos")}</h2>
           {totalDop && (
@@ -128,71 +157,12 @@ export default async function PortalContabilidad({
         </p>
       </section>
 
-      {/* Cuentas por pagar por vencer */}
       <section className="space-y-4 border-t border-linea pt-8">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="texto-titulo-seccion">{tcxp("titulo")}</h2>
-            <p className="texto-meta">{tcxp("subtitulo")}</p>
-          </div>
-          <Link
-            href="/contabilidad/cuentas-por-pagar"
-            className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-marca-600 hover:underline"
-          >
-            {t("verTodos")}
-            <ArrowRight className="size-4" />
-          </Link>
+        <div>
+          <h2 className="texto-titulo-seccion">{t("modulos")}</h2>
+          <p className="texto-meta">{t("modulosTexto")}</p>
         </div>
-
-        {vencen30.length === 0 ? (
-          <div className="rounded-tarjeta border border-linea bg-background p-6 text-sm text-tinta-2">
-            No hay cuentas por pagar que venzan en los próximos 30 días.
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {vencen30.map((v) => (
-              <Link
-                key={v.moneda}
-                href="/contabilidad/cuentas-por-pagar"
-                className={`${TARJETA.interactiva} block p-5`}
-              >
-                <p className="texto-meta">Vencen en 30 días ({v.moneda})</p>
-                <p className="mt-1 text-2xl font-bold text-tinta">
-                  <Monto valor={v.total} moneda={v.moneda} />
-                </p>
-                <p className="texto-meta mt-1">
-                  {v.cantidad} {v.cantidad === 1 ? "cuenta por pagar" : "cuentas por pagar"}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-4 border-t border-linea pt-8">
-        <h2 className="texto-titulo-seccion">{t("pendientes")}</h2>
-        {pendientes.length === 0 ? (
-          <EstadoVacio icono={ReceiptText} titulo={t("pendientesVacio")} texto={t("pendientesTexto")} />
-        ) : (
-          <ul className={TARJETA.contenido}>
-            {pendientes.map((fila) => (
-              <li key={fila.id} className="border-b border-linea last:border-b-0">
-                <Link href={`/contabilidad/recibos/${fila.id}`} className="flex min-h-11 items-center gap-3 px-4 py-3 hover:bg-muted/50">
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium text-tinta">
-                      {numeroDocumento(SERIE_RECIBO[fila.tipo], fila.numero)} · {fila.concepto}
-                    </span>
-                    <span className="texto-meta block">
-                      {fechaCorta(fila.fecha, idioma)} · {fila.creado_por}
-                    </span>
-                  </span>
-                  <Monto valor={fila.monto} moneda={fila.moneda} className="font-medium" />
-                  <InsigniaEstadoRecibo estado={fila.estado} etiqueta={tc(`estado.${fila.estado}`)} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <LanzadorModulos grupos={grupos} />
       </section>
 
       <section className="space-y-4 border-t border-linea pt-8">
@@ -205,8 +175,6 @@ export default async function PortalContabilidad({
         </div>
         {recientes.length > 0 && <ListaRecibos filas={recientes.slice(0, 5)} idioma={idioma} />}
       </section>
-
-      <p className="texto-meta">{t("proximamente")}</p>
     </div>
   );
 }

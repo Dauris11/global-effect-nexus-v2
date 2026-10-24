@@ -110,7 +110,17 @@
     "boxes": "Cajas y arqueos",
     "habitudes": "Habitudes",
     "habitudesHub": "Hub Habitudes",
-    "classes360": "Clases de 360"
+    "classes360": "Clases de 360",
+    "expenseReports": "Rendiciones de gastos",
+    "taxes": "Impuestos DGII",
+    "contabGroups": {
+      "tesoreria": "Tesorería",
+      "ingresos": "Ingresos",
+      "gastos": "Gastos",
+      "impuestos": "Impuestos",
+      "activos": "Activos",
+      "departamento": "Departamento"
+    }
   },
   "landing": {
     "enter": "Acceder",
@@ -2425,14 +2435,11 @@
     "inicio": {
       "antetitulo": "Portal de contabilidad",
       "titulo": "Inicio",
-      "subtitulo": "Saldos de las cuentas, lo que falta por contabilizar y la tasa del día.",
+      "subtitulo": "Lo que te toca hoy, dónde está el dinero y todos los módulos del departamento.",
       "saldos": "Saldo por cuenta",
       "equivalente": "≈ {monto} en pesos",
       "sinTasa": "Sin tasa del día para convertir a pesos",
       "totalDop": "Total en pesos",
-      "pendientes": "Borradores por contabilizar",
-      "pendientesVacio": "No hay borradores pendientes",
-      "pendientesTexto": "Todo lo registrado ya está contabilizado.",
       "recientes": "Recibos recientes",
       "verTodos": "Ver todos",
       "nuevoRecibo": "Nuevo recibo",
@@ -2440,7 +2447,19 @@
       "tasaVacia": "Todavía no hay ninguna tasa registrada.",
       "tasaDe": "Compra {compra} · Venta {venta} · {fuente}, {fecha}",
       "tasaVieja": "La última tasa es del {fecha}. Registra la de hoy en Bancos.",
-      "proximamente": "Cuentas por pagar, cajas, presupuestos y obligaciones fiscales se agregan en las próximas fases."
+      "modulos": "Módulos del departamento",
+      "modulosTexto": "Lo de contabilidad y las herramientas que comparte con otras áreas, por tipo de trabajo.",
+      "paraHoy": {
+        "titulo": "Para hoy",
+        "alDia": "Todo al día: no hay nada esperando por ti.",
+        "cxpVencidas": "{count, plural, =1 {cuenta por pagar vencida} other {cuentas por pagar vencidas}}",
+        "cxpSemana": "{count, plural, =1 {cuenta por pagar vence esta semana} other {cuentas por pagar vencen esta semana}}",
+        "recibosBorrador": "{count, plural, =1 {recibo en borrador por contabilizar} other {recibos en borrador por contabilizar}}",
+        "facturasBorrador": "{count, plural, =1 {factura de proveedor por aprobar} other {facturas de proveedor por aprobar}}",
+        "rendiciones": "{count, plural, =1 {rendición de gastos por revisar} other {rendiciones de gastos por revisar}}",
+        "arqueos": "{count, plural, =1 {arqueo de caja abierto} other {arqueos de caja abiertos}}",
+        "conciliaciones": "{count, plural, =1 {conciliación bancaria abierta} other {conciliaciones bancarias abiertas}}"
+      }
     },
     "bancos": {
       "titulo": "Bancos",
@@ -2566,7 +2585,6 @@
       "subtitulo": "Recibos de ingreso y comprobantes de egreso, en una sola consulta.",
       "nuevo": "Nuevo recibo",
       "exportar": "Exportar CSV",
-      "exportar607": "Exportar DGII 607 (Excel)",
       "filtros": "Filtros",
       "masFiltros": "Más filtros",
       "aplicar": "Aplicar",
@@ -2708,7 +2726,8 @@
       "debe": "Se le debe",
       "alDia": "Al día",
       "facturas": "{n, plural, =0 {Sin facturas} one {# factura} other {# facturas}}",
-      "condiciones": "{dias} días de crédito"
+      "condiciones": "{dias} días de crédito",
+      "irImpuestos": "Formatos DGII"
     },
     "proveedorForm": {
       "tituloNuevo": "Nuevo proveedor",
@@ -2912,7 +2931,8 @@
       "pagosVacio": "Todavía no tiene pagos.",
       "pago": "PG-{numero} · {fecha} · {cuenta}",
       "comprobante": "Comprobante {numero}",
-      "ok": "Guardado."
+      "ok": "Guardado.",
+      "exportarExcel": "Exportar a Excel"
     },
     "gantt": {
       "titulo": "Vencimientos",
@@ -2927,7 +2947,48 @@
       "programada": "Fecha programada",
       "vacio": "No hay cuentas por pagar abiertas",
       "rango": "Del {inicio} al {fin}"
-    }
+    },
+    "modulos": {
+      "bancos": "Cuentas, libros de banco y conciliación",
+      "cajas": "Cajas chicas, gastos menores y arqueos",
+      "recibos": "Recibos de ingreso y egreso, donaciones",
+      "proveedores": "Directorio y facturas recibidas",
+      "cxp": "Vencimientos, pagos y antigüedad de saldos",
+      "rendiciones": "Gastos que rinden los colaboradores",
+      "impuestos": "Formatos 606 y 607 y libros en Excel",
+      "inventario": "Activos fijos con su código QR",
+      "solicitudes": "Gastos y trámites por aprobar",
+      "reportes": "Finanzas, operaciones y académico",
+      "irImpuestos": "Formatos DGII"
+    },
+    "impuestos": {
+      "antetitulo": "Contabilidad",
+      "titulo": "Impuestos y exportaciones",
+      "subtitulo": "Los formatos de la DGII por mes y los libros del departamento en Excel.",
+      "mes": "Mes a declarar",
+      "cambiarMes": "Ver ese mes",
+      "formatosDgii": "Formatos de la DGII",
+      "descargar": "Descargar {mes}",
+      "f606": {
+        "nombre": "Formato 606 · Compras",
+        "texto": "Facturas de proveedores aprobadas del mes, con su NCF, ITBIS y retenciones.",
+        "origen": "Ver proveedores"
+      },
+      "f607": {
+        "nombre": "Formato 607 · Ingresos",
+        "texto": "Recibos de ingreso contabilizados del mes.",
+        "origen": "Ver recibos"
+      },
+      "nota": "Se presentan el día 15 del mes siguiente. El archivo sale en Excel para revisarlo antes de pasarlo a la Oficina Virtual.",
+      "libros": "Libros en Excel",
+      "cxp": {
+        "nombre": "Cuentas por pagar",
+        "texto": "Saldos pendientes y antigüedad, al día de hoy."
+      },
+      "libroBanco": "Libro de banco · {cuenta}",
+      "excel": "Excel"
+    },
+    "exportarExcel": "Exportar a Excel"
   },
   "widgetIA": {
     "botonFlotante": "Abrir asistente de IA",

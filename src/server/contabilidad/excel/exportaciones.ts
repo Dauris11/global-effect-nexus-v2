@@ -130,7 +130,7 @@ export async function exportarLibroBancoExcel(cuentaId: string): Promise<Buffer>
     numero_cuenta: string;
     moneda: string;
   }>(
-    `SELECT b.nombre AS banco_nombre, c.numero_cuenta, c.moneda
+    `SELECT b.nombre AS banco_nombre, c.numero AS numero_cuenta, c.moneda
        FROM contabilidad.cuenta_bancaria c
        JOIN contabilidad.banco b ON c.banco_id = b.id
       WHERE c.id = $1`,
@@ -157,9 +157,16 @@ export async function exportarLibroBancoExcel(cuentaId: string): Promise<Buffer>
        m.referencia,
        CASE WHEN m.importe < 0 THEN abs(m.importe)::text ELSE '0.00' END AS debito,
        CASE WHEN m.importe > 0 THEN m.importe::text ELSE '0.00' END AS credito,
-       m.saldo_resultante
+       -- El saldo no se guarda: se corre igual que en el libro de la pantalla
+       -- (saldo inicial + Σ importe de lo vigente), para que el Excel y la
+       -- pantalla no puedan dar cifras distintas.
+       (cb.saldo_inicial + sum(m.importe) OVER (
+          ORDER BY m.fecha, m.numero
+          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))::text AS saldo_resultante
      FROM contabilidad.movimiento_bancario m
-     WHERE m.cuenta_bancaria_id = $1
+     JOIN contabilidad.cuenta_bancaria cb ON cb.id = m.cuenta_id
+     WHERE m.cuenta_id = $1
+       AND m.estado = 'vigente'
      ORDER BY m.fecha ASC, m.numero ASC`,
     [cuentaId],
   );
@@ -303,7 +310,9 @@ export async function exportarFormato607Excel(params: {
     `SELECT
        r.numero,
        to_char(r.fecha, 'YYYY-MM-DD') AS fecha,
-       coalesce(p.identificacion, '') AS identificacion,
+       -- patrocinador todavía no guarda RNC ni cédula (llega con la debida
+       -- diligencia de donantes); la columna sale vacía en vez de inventada.
+       ''::text AS identificacion,
        coalesce(r.beneficiario, p.nombre, 'Donante / Tercero') AS beneficiario,
        coalesce(r.monto_dop, r.monto)::text AS monto_dop,
        r.forma_pago,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Download, Plus, ReceiptText } from "lucide-react";
+import { Download, FileSpreadsheet, Plus, ReceiptText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Monto } from "@/components/contabilidad/comun";
@@ -72,11 +72,12 @@ export default async function PaginaRecibos({
         subtitulo={t("subtitulo")}
         acciones={
           <>
+            {/* El 607 se elige por mes en Impuestos: aquí solo se enlaza. */}
             <Button asChild variant="secondary">
-              <a href="/api/contabilidad/exportar/607" download>
-                <Download className="size-4" />
-                {t("exportar607")}
-              </a>
+              <Link href="/contabilidad/impuestos">
+                <FileSpreadsheet className="size-4" />
+                {tc("modulos.irImpuestos")}
+              </Link>
             </Button>
             <Button asChild variant="secondary">
               {/* <a> y no <Link>: es una descarga, no una navegación. */}

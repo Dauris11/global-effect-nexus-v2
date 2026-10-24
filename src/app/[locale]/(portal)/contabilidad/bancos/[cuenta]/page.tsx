@@ -84,7 +84,7 @@ export default async function PaginaLibro({
             <Button asChild variant="outline" size="sm">
               <a href={`/api/contabilidad/exportar/bancos?cuentaId=${cuenta.id}`} download>
                 <Download className="size-4" />
-                <span>Exportar Excel</span>
+                {tc("exportarExcel")}
               </a>
             </Button>
             <Button asChild variant="secondary" size="sm">

@@ -57,7 +57,7 @@ export default async function PaginaCxp({
           <Button asChild size="sm" variant="outline">
             <a href="/api/contabilidad/exportar/cxp" download>
               <Download className="size-4" />
-              <span>Exportar Excel</span>
+              {t("exportarExcel")}
             </a>
           </Button>
         }

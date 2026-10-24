@@ -34,6 +34,12 @@ import {
   Wrench,
 } from "lucide-react";
 
+import {
+  GRUPOS_CONTABLES,
+  MODULOS_CONTABLES,
+  modulosDeGrupo,
+  type ModuloContable,
+} from "@/lib/contabilidad/modulos";
 import type { Permiso, Rol } from "@/lib/rbac";
 import { tienePermiso } from "@/lib/rbac";
 
@@ -267,7 +273,8 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         // `contabilidad.leer` y no `finanzas.leer`: super_admin entra a
         // mirar (y a auditar), pero las acciones de escritura del módulo le
-        // responden que no. `admin` no tiene ninguno de los dos.
+        // responden que no. `admin` no tiene ninguno de los dos. Los módulos
+        // salen del registro del departamento, igual que el menú de contabilidad.
         items: [
           {
             etiqueta: "accounting",
@@ -275,36 +282,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: DollarSign,
             permiso: "contabilidad.leer",
           },
-          {
-            etiqueta: "banks",
-            href: "/contabilidad/bancos",
-            icono: Landmark,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "receipts",
-            href: "/contabilidad/recibos",
-            icono: ReceiptText,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "suppliers",
-            href: "/contabilidad/proveedores",
-            icono: Users,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "payables",
-            href: "/contabilidad/cuentas-por-pagar",
-            icono: HandCoins,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "boxes",
-            href: "/contabilidad/cajas",
-            icono: Wallet,
-            permiso: "contabilidad.leer",
-          },
+          ...MODULOS_CONTABLES.filter((modulo) => modulo.enAdministracion).map(itemDeModulo),
         ],
       },
     ],
@@ -592,10 +570,10 @@ const MENU_HABITUDES: AreaNav[] = [
 
 /**
  * Contabilidad ve UNA sola área (§1.1 de docs/prompts/portal-contabilidad.md):
- * su departamento. El perfil va en el menú del avatar. Solicitudes y
- * Reportes siguen dentro del área porque son trabajo del departamento:
- * contabilidad revisa los gastos que se piden, y los reportes financieros
- * viven en /reportes hasta la Fase 7.
+ * su departamento, con una sección por grupo de trabajo —tesorería, ingresos,
+ * gastos, impuestos, activos y lo del departamento—. Las secciones salen de
+ * `MODULOS_CONTABLES`, así que un módulo nuevo aparece aquí sin tocar el menú.
+ * El perfil va en el menú del avatar.
  */
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
@@ -610,52 +588,24 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             href: "/portal/contabilidad",
             icono: Home,
           },
-          {
-            etiqueta: "banks",
-            href: "/contabilidad/bancos",
-            icono: Landmark,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "receipts",
-            href: "/contabilidad/recibos",
-            icono: ReceiptText,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "suppliers",
-            href: "/contabilidad/proveedores",
-            icono: Users,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "payables",
-            href: "/contabilidad/cuentas-por-pagar",
-            icono: HandCoins,
-            permiso: "contabilidad.leer",
-          },
-          {
-            etiqueta: "boxes",
-            href: "/contabilidad/cajas",
-            icono: Wallet,
-            permiso: "contabilidad.leer",
-          },
         ],
       },
-      {
-        etiqueta: "department",
-        items: [
-          {
-            etiqueta: "requests",
-            href: "/administrativo/solicitudes",
-            icono: Inbox,
-          },
-          { etiqueta: "reports", href: "/reportes", icono: BarChart3 },
-        ],
-      },
+      ...GRUPOS_CONTABLES.map((grupo) => ({
+        etiqueta: `contabGroups.${grupo}`,
+        items: modulosDeGrupo(grupo).map(itemDeModulo),
+      })),
     ],
   },
 ];
+
+function itemDeModulo(modulo: ModuloContable): ItemNav {
+  return {
+    etiqueta: modulo.etiqueta,
+    href: modulo.href,
+    icono: modulo.icono,
+    permiso: modulo.permiso,
+  };
+}
 
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   super_admin: MENU_ADMINISTRACION,

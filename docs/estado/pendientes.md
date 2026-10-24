@@ -24,11 +24,20 @@ módulo) — esto es solo la cola de pendientes concretos.
       ahora para la nota final de 360. Documentación puesta al día en `docs/`,
       `db/README.md`, `README.md` y la regla 9 de `CLAUDE.md`/`AGENTS.md`.
 - [x] **Aplicar la `0047` en la base** (`npm run db:migrate`, 24 oct 2026).
-- [ ] **Exportaciones a Excel de contabilidad rotas** (anterior a la `0047`,
-      salió al validar todo el SQL contra el esquema): en
-      `src/server/contabilidad/excel/exportaciones.ts` tres consultas piden
-      columnas que no existen —`cuenta.numero_cuenta`,
-      `movimiento.saldo_resultante` y `proveedor.identificacion`—.
+- [x] **Portal de contabilidad preparado para módulos nuevos (24 oct 2026).**
+      Los módulos salen de un registro único (`src/lib/contabilidad/modulos.ts`)
+      que genera el menú agrupado, el área de Finanzas de administración y el
+      lanzador del inicio. El inicio abre con "Para hoy" (lo vencido y lo que
+      espera revisión). Rendiciones, inventario, solicitudes y reportes se
+      encuentran desde el departamento sin moverse de su área. Los formatos DGII
+      se reúnen en `/contabilidad/impuestos` con selector de mes (antes siempre
+      el mes en curso). De paso se arreglaron las exportaciones de 607 y del
+      libro de banco, que pedían columnas inexistentes, y la ruta de
+      exportación pasó a exigir `contabilidad.leer` en vez de mirar el rol.
+- [ ] **Aprobar el plan del ERP contable** (`docs/prompts/plan-contabilidad-erp.md`)
+      y resolver sus siete dudas antes de la Fase 1.
+- [ ] `patrocinador` no guarda RNC ni cédula: el 607 sale con esa columna vacía
+      hasta que llegue `tercero` con debida diligencia (Fase 2 del plan).
 - [ ] **Validar con la Fundación la nota mínima de aprobación de 360** (hoy
       70/100). Es la que decide si una inscripción queda aprobada o reprobada, y
       una reprobada obliga a repetir la materia en otro período: es una norma
