@@ -5,26 +5,25 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
+import { NOTA_APROBADA } from "@/lib/notas";
 import { tienePermiso } from "@/lib/rbac";
 
 /**
- * Gestión académica: cursos técnicos, tareas y revisión de entregas.
+ * Gestión de las clases de Global Effect 360: tareas, revisión de entregas y
+ * nota final. Desde la 0047 360 ocupa el lugar de los cursos técnicos.
  *
  * QUIÉN PUEDE. Dos puertas, y las dos valen:
  *
- *   · `academico.escribir` —`admin` y `super_admin`— sobre cualquier curso.
- *   · el rol `docente` sobre SUS cursos, comprobado en el propio WHERE con
- *     `docente_usuario_id`.
+ *   · `academico.escribir` —`admin` y `super_admin`— sobre cualquier clase.
+ *   · el rol `docente` sobre SUS clases, comprobado en el propio WHERE con
+ *     `materia_360.docente_id`.
  *
- * La segunda es la que pedía la especificación: las materias de los cursos
- * técnicos se gestionan desde el portal del profesor. Y no basta con mirar el
- * rol: un docente con el id de un curso ajeno no debe poder editarlo, así que la
- * condición va dentro de la escritura y no en un `if` previo.
+ * No basta con mirar el rol: un docente con el id de una clase ajena no debe
+ * poder tocarla, así que la condición va dentro de la escritura y no en un `if`
+ * previo.
  *
- * Global Effect 360 es distinto y aquí solo aparece para PONER TAREAS. El
- * catálogo —crear una materia, marcarla obligatoria, retirarla— vive en
- * `/academico/prematricula` con `academico.escribir`. Un docente puede poner
- * tarea en su clase de 360; no puede tocar el programa.
+ * El catálogo —crear una materia, retirarla— vive en `/academico/prematricula`
+ * con `academico.escribir`. Un docente trabaja en su clase; no toca el programa.
  */
 
 export type EstadoAcademico = {
@@ -34,157 +33,12 @@ export type EstadoAcademico = {
     | "no_permitido"
     | "no_encontrado"
     | "nombre_vacio"
-    | "tiene_datos"
     | "nota_invalida"
     | "invalido"
     | "error";
 };
 
-const MODALIDADES = ["presencial", "virtual", "mixto"];
-const ESTADOS_CURSO = ["activo", "finalizado", "planificado"];
-
-/** Alta y edición de un curso técnico. Con `id` vacío, es un alta. */
-export async function guardarCurso(
-  _previo: EstadoAcademico,
-  datos: FormData,
-): Promise<EstadoAcademico> {
-  const usuario = await requerirUsuario();
-
-  const puedeTodo = tienePermiso(usuario.rol, "academico.escribir");
-
-  if (!puedeTodo && usuario.rol !== "docente") {
-    return { estado: "no_permitido" };
-  }
-
-  const id = String(datos.get("id") ?? "").trim();
-  const nombre = String(datos.get("nombre") ?? "").trim().slice(0, 160);
-  const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 600);
-  const horario = String(datos.get("horario") ?? "").trim().slice(0, 120);
-  const modalidad = String(datos.get("modalidad") ?? "presencial");
-  const estado = String(datos.get("estado") ?? "activo");
-  const capacidad = Number(datos.get("capacidad") ?? 0);
-  const periodoId = String(datos.get("periodo") ?? "").trim();
-
-  if (!nombre) return { estado: "nombre_vacio" };
-  if (id && !esUuid(id)) return { estado: "no_encontrado" };
-  if (periodoId && !esUuid(periodoId)) return { estado: "invalido" };
-
-  // Desplegables que se pueden manipular en el navegador: se comprueban aquí.
-  const modalidadOk = MODALIDADES.includes(modalidad) ? modalidad : "presencial";
-  const estadoOk = ESTADOS_CURSO.includes(estado) ? estado : "activo";
-  const capacidadOk = Number.isFinite(capacidad) && capacidad >= 0 ? Math.min(capacidad, 500) : 0;
-
-  try {
-    if (id) {
-      /*
-       * `docente_usuario_id = $9` en el WHERE cuando NO tiene el permiso
-       * general: un docente solo edita sus cursos, y si el id es de otro la
-       * escritura no encuentra fila. Se responde "no encontrado" y no "no
-       * permitido": quien prueba ids ajenos no debe distinguir los dos casos.
-       */
-      const editado = await consultarUna<{ id: string }>(
-        `UPDATE curso
-            SET nombre = $2, descripcion = NULLIF($3, ''), horario = NULLIF($4, ''),
-                modalidad = $5, estado = $6, capacidad = $7,
-                periodo_id = coalesce(NULLIF($8, '')::uuid, periodo_id)
-          WHERE id = $1
-            AND ($9::uuid IS NULL OR docente_usuario_id = $9)
-        RETURNING id`,
-        [id, nombre, descripcion, horario, modalidadOk, estadoOk, capacidadOk,
-         periodoId, puedeTodo ? null : usuario.id],
-      );
-
-      if (!editado) return { estado: "no_encontrado" };
-
-      await anotar(usuario.id, "curso.editado", editado.id, { nombre });
-    } else {
-      // Un curso que crea un docente queda a su nombre: si no, lo crearía y
-      // dejaría de verlo en el mismo instante.
-      const creado = await consultarUna<{ id: string }>(
-        `INSERT INTO curso
-                (nombre, descripcion, horario, modalidad, estado, capacidad,
-                 periodo_id, docente, docente_usuario_id)
-         VALUES ($1, NULLIF($2, ''), NULLIF($3, ''), $4, $5, $6,
-                 NULLIF($7, '')::uuid, $8, $9)
-         RETURNING id`,
-        [nombre, descripcion, horario, modalidadOk, estadoOk, capacidadOk,
-         periodoId, usuario.nombre, usuario.id],
-      );
-
-      if (!creado) return { estado: "error" };
-
-      await anotar(usuario.id, "curso.creado", creado.id, { nombre });
-    }
-  } catch (error) {
-    console.error("[academico] no se pudo guardar el curso", error);
-    return { estado: "error" };
-  }
-
-  refrescar();
-
-  return { estado: "ok" };
-}
-
-/**
- * Borra un curso, y solo si está vacío.
- *
- * `calificacion.curso_id` es ON DELETE CASCADE, así que borrar un curso con
- * notas se llevaría por delante el historial académico de sus estudiantes sin
- * avisar. Se comprueba antes y se responde `tiene_datos`: para retirar un curso
- * que ya se dio, está el estado `finalizado`.
- */
-export async function eliminarCurso(
-  _previo: EstadoAcademico,
-  datos: FormData,
-): Promise<EstadoAcademico> {
-  const usuario = await requerirUsuario();
-
-  const puedeTodo = tienePermiso(usuario.rol, "academico.escribir");
-
-  if (!puedeTodo && usuario.rol !== "docente") {
-    return { estado: "no_permitido" };
-  }
-
-  const id = String(datos.get("id") ?? "");
-
-  if (!esUuid(id)) return { estado: "no_encontrado" };
-
-  const ocupado = await consultarUna<{ notas: number; tareas: number }>(
-    `SELECT (SELECT count(*)::int FROM calificacion WHERE curso_id = $1) AS notas,
-            (SELECT count(*)::int FROM asignacion   WHERE curso_id = $1) AS tareas`,
-    [id],
-  );
-
-  if ((ocupado?.notas ?? 0) > 0 || (ocupado?.tareas ?? 0) > 0) {
-    return { estado: "tiene_datos" };
-  }
-
-  const borrado = await consultarUna<{ id: string; nombre: string }>(
-    `DELETE FROM curso
-      WHERE id = $1
-        AND ($2::uuid IS NULL OR docente_usuario_id = $2)
-    RETURNING id, nombre`,
-    [id, puedeTodo ? null : usuario.id],
-  );
-
-  if (!borrado) return { estado: "no_encontrado" };
-
-  await anotar(usuario.id, "curso.eliminado", borrado.id, {
-    nombre: borrado.nombre,
-  });
-
-  refrescar();
-
-  return { estado: "ok" };
-}
-
-/**
- * Publica una tarea o un examen en un curso técnico o en una clase de 360.
- *
- * La unidad llega como `curso:<id>` o `360:<id>`, no como dos campos: el CHECK
- * de la 0028 exige que la tarea cuelgue de EXACTAMENTE una, y un solo campo hace
- * imposible mandar las dos por descuido.
- */
+/** Publica una tarea o un examen en una clase de 360. */
 export async function publicarTarea(
   _previo: EstadoAcademico,
   datos: FormData,
@@ -197,7 +51,7 @@ export async function publicarTarea(
     return { estado: "no_permitido" };
   }
 
-  const unidad = String(datos.get("unidad") ?? "");
+  const materiaId = String(datos.get("materia") ?? "");
   const titulo = String(datos.get("titulo") ?? "").trim().slice(0, 160);
   const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 900);
   const tipo = String(datos.get("tipo") ?? "tarea");
@@ -215,50 +69,29 @@ export async function publicarTarea(
   if (!titulo) return { estado: "nombre_vacio" };
   if (tipo !== "tarea" && tipo !== "examen") return { estado: "invalido" };
 
-  const [clase, idUnidad] = unidad.split(":");
-
-  if (!esUuid(idUnidad ?? "") || (clase !== "curso" && clase !== "360")) {
-    return { estado: "invalido" };
-  }
+  if (!esUuid(materiaId)) return { estado: "invalido" };
 
   try {
     /*
-     * El INSERT lleva la comprobación de que la unidad es de este docente en un
-     * SELECT: si el curso o la clase no son suyos, no hay fila que seleccionar y
-     * no se escribe nada. Con el permiso general, la condición se anula.
+     * El INSERT lleva la comprobación de que la clase es de este docente en un
+     * SELECT: si no es suya, no hay fila que seleccionar y no se escribe nada.
+     * Con el permiso general, la condición se anula.
      */
-    const creada =
-      clase === "curso"
-        ? await consultarUna<{ id: string }>(
-            `INSERT INTO asignacion (
-               titulo, descripcion, tipo, curso_id, fecha_vencimiento, creada_por_id,
-               limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
-             )
-             SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, c.id,
-                    NULLIF($4, '')::timestamptz, $5,
-                    $8, $9, $10, $11, NULLIF($12, '')
-               FROM curso c
-              WHERE c.id = $6
-                AND ($7::uuid IS NULL OR c.docente_usuario_id = $7)
-             RETURNING id`,
-            [titulo, descripcion, tipo, vence, usuario.id, idUnidad,
-             puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
-          )
-        : await consultarUna<{ id: string }>(
-            `INSERT INTO asignacion (
-               titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
-               limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
-             )
-             SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
-                    NULLIF($4, '')::timestamptz, $5,
-                    $8, $9, $10, $11, NULLIF($12, '')
-               FROM materia_360 m
-              WHERE m.id = $6
-                AND ($7::uuid IS NULL OR m.docente_id = $7)
-             RETURNING id`,
-            [titulo, descripcion, tipo, vence, usuario.id, idUnidad,
-             puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
-          );
+    const creada = await consultarUna<{ id: string }>(
+      `INSERT INTO asignacion (
+         titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
+         limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
+       )
+       SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
+              NULLIF($4, '')::timestamptz, $5,
+              $8, $9, $10, $11, NULLIF($12, '')
+         FROM materia_360 m
+        WHERE m.id = $6
+          AND ($7::uuid IS NULL OR m.docente_id = $7)
+       RETURNING id`,
+      [titulo, descripcion, tipo, vence, usuario.id, materiaId,
+       puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
+    );
 
     if (!creada) return { estado: "no_encontrado" };
 
@@ -267,7 +100,7 @@ export async function publicarTarea(
       accion: "tarea.publicada",
       entidad: "asignacion",
       entidadId: creada.id,
-      datos: { titulo, unidad },
+      datos: { titulo, materia_360_id: materiaId },
     });
   } catch (error) {
     console.error("[academico] no se pudo publicar la tarea", error);
@@ -311,7 +144,7 @@ export async function revisarEntrega(
   }
 
   try {
-    // La entrega tiene que ser de una clase de este docente. Las tres vías, en
+    // La entrega tiene que ser de una clase de este docente. Las dos vías, en
     // el WHERE, igual que en la consulta que las lista.
     const revisada = await consultarUna<{ id: string }>(
       `UPDATE entrega_estudiante d
@@ -322,13 +155,11 @@ export async function revisarEntrega(
               revisada_en = now()
          FROM asignacion a
          LEFT JOIN materia     mu ON mu.id = a.materia_id
-         LEFT JOIN curso       cu ON cu.id = a.curso_id
          LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
         WHERE d.id = $1
           AND a.id = d.asignacion_id
           AND ($5::uuid IS NULL
                OR mu.profesor_usuario_id = $5
-               OR cu.docente_usuario_id  = $5
                OR m3.docente_id          = $5)
       RETURNING d.id`,
       [id, valor, comentario, usuario.id, puedeTodo ? null : usuario.id],
@@ -355,24 +186,78 @@ export async function revisarEntrega(
   return { estado: "ok" };
 }
 
-function anotar(
-  usuarioId: string,
-  accion: string,
-  entidadId: string,
-  extra?: Record<string, unknown>,
-) {
-  return registrar({
-    usuarioId,
-    accion,
-    entidad: "curso",
-    entidadId,
-    datos: extra,
-  });
+/**
+ * Nota final de un estudiante en una clase de 360.
+ *
+ * Es lo que cierra la materia: con la nota, la inscripción pasa a `aprobada` o
+ * `reprobada`, y `aprobada` es lo que cuenta como "materia dada" en el avance
+ * del programa. Borrar la nota la devuelve a `cursando`.
+ *
+ * Pide `calificaciones.registrar` —`docente` y `super_admin`— y no
+ * `academico.escribir`: coordinación monta el programa pero no pone notas, y eso
+ * está así en `rbac.ts` a propósito. El docente, además, solo en sus clases.
+ */
+export async function calificarInscripcion360(
+  _previo: EstadoAcademico,
+  datos: FormData,
+): Promise<EstadoAcademico> {
+  const usuario = await requerirUsuario();
+
+  if (!tienePermiso(usuario.rol, "calificaciones.registrar")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "");
+  const nota = String(datos.get("nota") ?? "").trim();
+
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+
+  const valor = nota === "" ? null : Number(nota);
+
+  if (valor !== null && (!Number.isFinite(valor) || valor < 0 || valor > 100)) {
+    return { estado: "nota_invalida" };
+  }
+
+  const estado =
+    valor === null ? "cursando" : valor >= NOTA_APROBADA ? "aprobada" : "reprobada";
+
+  try {
+    // Una inscripción retirada no se califica: el estudiante no terminó la clase.
+    const calificada = await consultarUna<{ id: string }>(
+      `UPDATE inscripcion_360 i
+          SET nota = $2::numeric, estado = $3
+         FROM materia_360 m
+        WHERE i.id = $1
+          AND m.id = i.materia_id
+          AND i.estado <> 'retirada'
+          AND ($4::uuid IS NULL OR m.docente_id = $4)
+      RETURNING i.id`,
+      [id, valor, estado, usuario.rol === "docente" ? usuario.id : null],
+    );
+
+    if (!calificada) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "inscripcion_360.calificada",
+      entidad: "inscripcion_360",
+      entidadId: calificada.id,
+      datos: { nota: valor, estado },
+    });
+  } catch (error) {
+    console.error("[academico] no se pudo calificar la inscripción de 360", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
 }
 
 function refrescar() {
-  revalidatePath("/[locale]/academico/cursos", "page");
+  revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
+  revalidatePath("/[locale]/portal/estudiante/global-360", "page");
   revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
 }
 

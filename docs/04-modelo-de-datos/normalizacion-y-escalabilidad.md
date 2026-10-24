@@ -7,7 +7,7 @@
 ## 1. Enfoque SMART del diseño
 
 - **S — Específico:** esquema relacional normalizado en PostgreSQL que cubre los 27 módulos de la fundación, con expediente estudiantil descompuesto y seguridad RBAC a nivel de datos.
-- **M — Medible:** 37 tablas (tras la migración `0031`), 7 tipos ENUM, PK UUID auto-generadas, 44 claves foráneas con integridad referencial, índices en todas las FK y 20 triggers de auditoría de fecha.
+- **M — Medible:** 35 tablas (tras la migración `0047`), 6 tipos ENUM, PK UUID auto-generadas, 39 claves foráneas con integridad referencial, índices en todas las FK y 20 triggers de auditoría de fecha.
 - **A — Alcanzable:** PostgreSQL nativo con SQL escrito a mano (sin ORM), migraciones `.sql` numeradas y compatibilidad directa con el cliente `pg` (node-postgres) y consultas parametrizadas.
 - **R — Relevante:** resuelve redundancia, inconsistencia de datos y trazabilidad de las aprobaciones (cada paso de una solicitud queda registrado); es la base de la arquitectura Next.js.
 - **T — Temporal:** entregable desde el Sprint 0–1, desplegado y verificado en Supabase.
@@ -30,7 +30,7 @@
   5. `perfil_socioeconomico` (1:1) — historia de vida, motivo de beca, metas.
 
 ### Tercera Forma Normal (3NF) — sin dependencias transitivas
-- Se elimina la duplicación de guardar el *nombre* junto al *id* (p. ej. `estudiante_nombre` + `estudiante_id`, `curso_nombre` + `curso_id`, `patrocinador_nombre` + `patrocinador_id`). Solo se almacena la **FK**; el nombre se obtiene por `JOIN`, evitando anomalías de actualización.
+- Se elimina la duplicación de guardar el *nombre* junto al *id* (p. ej. `estudiante_nombre` + `estudiante_id`, `materia_nombre` + `materia_id`, `patrocinador_nombre` + `patrocinador_id`). Solo se almacena la **FK**; el nombre se obtiene por `JOIN`, evitando anomalías de actualización.
 - **`solicitud`** guarda solo FKs (`solicitante_id`, `estudiante_id`, `responsable_id`); los nombres salen por `JOIN`.
 - **Redundancia controlada:** `solicitud.estado` coincide con el `estado_nuevo` del último `solicitud_paso`. Se guarda igual para que la bandeja filtre por estado con un índice parcial sobre las abiertas (`idx_solicitud_abiertas`) en vez de buscar el último paso de cada solicitud; ambos se escriben en la misma transacción, así que no pueden divergir.
 
@@ -40,7 +40,7 @@
 
 - **Claves foráneas físicas** con políticas explícitas: `ON DELETE CASCADE` para dependencias del estudiante (al borrar un estudiante se limpian sus perfiles, familiares, inscripciones, etc.) y `ON DELETE SET NULL` para referencias opcionales (documentos, patrocinador, usuario).
 - **Restricciones `CHECK`** de dominio: notas 0–100, GPA 0–4, progreso 0–100, montos ≥ 0 (o > 0 en transacciones), edades/cantidades ≥ 0, idioma ∈ {es, en}, coherencia de fechas de período; en `solicitud`, `tipo` y `estado` dentro de su catálogo, `monto > 0`, estudiante obligatorio para `alta_expediente` y `beca`, y monto obligatorio para `gasto`.
-- **Restricciones `UNIQUE`** de negocio: `inscripcion (estudiante, materia, periodo)`, `registro_servicio (estudiante, mes)`, `inscripcion_comida (nombre, fecha)`, emails y cédula.
+- **Restricciones `UNIQUE`** de negocio: `inscripcion (estudiante, materia, periodo)`, `inscripcion_360 (estudiante, periodo, ronda)` como índice parcial que no cuenta las retiradas —una materia de Global Effect 360 por tanda, dos por cuatrimestre—, `registro_servicio (estudiante, mes)`, `inscripcion_comida (nombre, fecha)`, emails y cédula.
 - **Triggers `set_updated_at()`** en todas las tablas con `updated_at`.
 - **`audit_log`** para trazar acciones sensibles con snapshot JSONB `{antes, despues}`.
 
@@ -80,3 +80,4 @@ El esquema fue desplegado y verificado en Supabase (PostgreSQL 17):
 - ✅ Prueba de borrado en cascada: al eliminar un estudiante se eliminan automáticamente su perfil de salud y familiares.
 - ✅ RBAC sembrado en S3: super_admin (17 permisos), admin (9), psicólogo (4), contabilidad (3), docente (3), estudiante (2).
 - ✅ Cambio de alcance (oct 2026): la migración `0030` retira el rol `psicologo` (sus cuentas pasan a `admin`), los permisos `psicologia.*`, las tablas `cita_psicologia`, `nota_psicologica` y `perfil_psicologico` y la columna `estudiante.psicologo_id`; la `0031` crea `solicitud` y `solicitud_paso` y los permisos `solicitudes.gestionar` (admin, super_admin) y `solicitudes.direccion` (super_admin). Roles finales: super_admin, admin, docente, estudiante, contabilidad, habitudes.
+- ✅ Fin de los cursos técnicos (24 oct 2026): la migración `0047` pasa todo estudiante `regular` a `becado` y retira ese valor del enum, borra sin copia `curso`, `calificacion` y el enum `tipo_evaluacion` (como la `0030` con Psicología), quita `asignacion.curso_id` —una tarea cuelga de una materia universitaria o de una de 360, exactamente de una—, abre Global Effect 360 a todos los estudiantes, retira `materia_360.obligatoria` porque todo el catálogo es obligatorio y exige una materia por tanda con un índice único parcial.

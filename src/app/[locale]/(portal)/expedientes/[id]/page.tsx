@@ -19,7 +19,6 @@ import {
   ESTADOS_ESTUDIANTE,
   GENEROS,
   PARENTESCOS,
-  TIPOS_ESTUDIANTE,
   visualDeEstado,
 } from "@/lib/expedientes";
 import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
@@ -147,7 +146,7 @@ export default async function PaginaExpediente({
    * resto del sistema, y hay un motivo concreto: el índice sobre 4.00 sale de
    * `notasDelEstudiante`, que devuelve el gpa GUARDADO cuando existe (historial
    * universitario) y solo lo calcula con la escala de `lib/notas.ts` cuando
-   * falta (curso técnico). Agrupar en SQL obligaría a escribir esa escala de
+   * falta (Global Effect 360). Agrupar en SQL obligaría a escribir esa escala de
    * conversión dentro de la consulta, y entonces habría dos —la 0006 dice que
    * la escala puede cambiar de un año a otro—. Son las notas de UNA persona:
    * unas decenas de filas, no un agregado sobre la tabla entera.
@@ -211,7 +210,6 @@ export default async function PaginaExpediente({
               error: t("rowActions.error"),
               deps: {
                 enrollments: t("rowActions.deps.enrollments"),
-                grades: t("rowActions.deps.grades"),
                 history: t("rowActions.deps.history"),
                 requests: t("rowActions.deps.requests"),
                 service: t("rowActions.deps.service"),
@@ -236,10 +234,6 @@ export default async function PaginaExpediente({
           <Badge className={cn("gap-1", visualEstado.insignia)}>
             <visualEstado.icono className="size-3.5 shrink-0" />
             {t(`status.${expediente.estado}`)}
-          </Badge>
-
-          <Badge variant={expediente.tipo === "becado" ? "default" : "secondary"}>
-            {t(`type.${expediente.tipo}`)}
           </Badge>
         </div>
 
@@ -334,7 +328,6 @@ export default async function PaginaExpediente({
             religion: t("field.religion"),
             photo: t("field.photo"),
             photoHint: t("field.photoHint"),
-            type: t("field.type"),
             status: t("field.status"),
             program: t("field.program"),
             whereStudies: t("field.whereStudies"),
@@ -380,9 +373,6 @@ export default async function PaginaExpediente({
           },
           parentescos: Object.fromEntries(
             PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
-          ),
-          tipos: Object.fromEntries(
-            TIPOS_ESTUDIANTE.map((clave) => [clave, t(`type.${clave}`)]),
           ),
           estados: Object.fromEntries(
             ESTADOS_ESTUDIANTE.map((clave) => [clave, t(`status.${clave}`)]),

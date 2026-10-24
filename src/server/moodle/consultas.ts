@@ -3,11 +3,13 @@ import type {
   AsignacionMoodleDetalle,
   FilaEntregaDocente,
   Materia360Matricula,
-  VentanaMatricula360,
 } from "@/lib/moodle";
 
 /**
- * Consultas para el Aula Virtual estilo Moodle y Matrícula Global 360.
+ * Consultas para el Aula Virtual estilo Moodle y el catálogo de matrícula de
+ * Global Effect 360 (cupos, horario, docente). La ventana de matrícula sale de
+ * `@/server/global360/consultas#ventanaVigente`: una sola fuente para que el
+ * anuncio y la matrícula no lean ventanas distintas.
  */
 
 /**
@@ -31,8 +33,8 @@ export async function asignacionMoodlePorId(
            coalesce(a.puntaje_maximo, 100.00)::float AS puntaje_maximo,
            coalesce(a.permite_entregas_tardias, true) AS permite_entregas_tardias,
            a.instrucciones_entrega,
-           coalesce(m.nombre, c.nombre, m360.nombre, 'Materia') AS materia_nombre,
-           coalesce(m.codigo, c.codigo, m360.codigo) AS materia_codigo,
+           coalesce(m.nombre, m360.nombre, 'Materia') AS materia_nombre,
+           coalesce(m.codigo, m360.codigo) AS materia_codigo,
            doc.nombre AS docente_nombre,
            (a.fecha_vencimiento IS NOT NULL AND a.fecha_vencimiento < now()) AS vencida,
            e.id AS entrega_id,
@@ -49,12 +51,12 @@ export async function asignacionMoodlePorId(
            e.revisada_en::text AS revisada_en
       FROM public.asignacion a
       LEFT JOIN public.materia m ON m.id = a.materia_id
-      LEFT JOIN public.curso c ON c.id = a.curso_id
       LEFT JOIN public.materia_360 m360 ON m360.id = a.materia_360_id
       LEFT JOIN public.usuario doc ON doc.id = a.creada_por_id
       LEFT JOIN public.entrega_estudiante e
         ON e.asignacion_id = a.id
        AND e.estudiante_id = $2
+      LEFT JOIN public.usuario rev ON rev.id = e.revisada_por_id
      WHERE a.id = $1
      LIMIT 1
   `;
@@ -74,8 +76,10 @@ export async function entregasDeAsignacionDocente(
   return consultar<FilaEntregaDocente>(
     `SELECT e.id AS entrega_id,
             est.id AS estudiante_id,
-            u.nombre AS estudiante_nombre,
-            est.matricula AS estudiante_matricula,
+            est.nombre AS estudiante_nombre,
+            -- No hay columna de matrícula: la cédula es lo que identifica al
+            -- estudiante ante el docente.
+            est.cedula AS estudiante_matricula,
             u.email AS estudiante_email,
             e.estado::text AS estado,
             e.archivo_url,
@@ -90,7 +94,9 @@ export async function entregasDeAsignacionDocente(
        FROM public.entrega_estudiante e
        JOIN public.asignacion a ON a.id = e.asignacion_id
        JOIN public.estudiante est ON est.id = e.estudiante_id
-       JOIN public.usuario u ON u.id = est.usuario_id
+       -- LEFT: un estudiante sin cuenta también puede tener una entrega
+       -- subida por administración, y no debe desaparecer de la lista.
+       LEFT JOIN public.usuario u ON u.id = est.usuario_id
       WHERE e.asignacion_id = $1
       ORDER BY e.fecha_entrega DESC NULLS LAST`,
     [asignacionId],
@@ -98,7 +104,11 @@ export async function entregasDeAsignacionDocente(
 }
 
 /**
- * Catálogo de materias de Global 360 para matrícula cuatrimestral con cupos, horarios y docentes.
+ * Catálogo de Global Effect 360 para la matrícula: cupos, horario, docente y lo
+ * que este estudiante ya tiene de cada materia.
+ *
+ * `aprobada` va aparte de la inscripción vigente porque una materia dada no se
+ * vuelve a ofrecer: ya cuenta para el programa.
  */
 export async function catalogoMatricula360(
   estudianteId: string,
@@ -108,11 +118,11 @@ export async function catalogoMatricula360(
            m.nombre,
            m.codigo,
            m.descripcion,
-           m.obligatoria,
            m.creditos,
            m.horas,
-           coalesce(m.horario, 'Por coordinar') AS horario,
-           coalesce(m.aula, 'Aula Virtual') AS aula,
+           -- Sin texto de relleno: lo que falta lo dice la pantalla, traducido.
+           m.horario,
+           m.aula,
            coalesce(m.cupo_maximo, 30)::int AS cupo_maximo,
            (SELECT count(*)::int
               FROM public.inscripcion_360 i
@@ -122,7 +132,12 @@ export async function catalogoMatricula360(
            (i_actual.id IS NOT NULL) AS inscrita,
            i_actual.id AS inscripcion_id,
            i_actual.ronda::int AS ronda_inscrita,
-           i_actual.estado AS estado_inscripcion
+           i_actual.estado AS estado_inscripcion,
+           EXISTS (SELECT 1
+                     FROM public.inscripcion_360 i_dada
+                    WHERE i_dada.materia_id = m.id
+                      AND i_dada.estudiante_id = $1
+                      AND i_dada.estado = 'aprobada') AS aprobada
       FROM public.materia_360 m
       LEFT JOIN public.usuario u ON u.id = m.docente_id
       LEFT JOIN public.inscripcion_360 i_actual
@@ -130,32 +145,8 @@ export async function catalogoMatricula360(
        AND i_actual.estudiante_id = $1
        AND i_actual.estado IN ('prematriculada', 'cursando')
      WHERE m.activa = true
-     ORDER BY m.obligatoria DESC, m.orden ASC, m.nombre ASC
+     ORDER BY m.orden ASC, m.nombre ASC
   `;
 
   return consultar<Materia360Matricula>(query, [estudianteId]);
-}
-
-/**
- * Obtiene la ventana de matrícula cuatrimestral activa para Global 360.
- */
-export async function ventanaMatriculaActiva(): Promise<VentanaMatricula360 | null> {
-  const query = `
-    SELECT v.id,
-           v.periodo_id,
-           p.nombre AS periodo_nombre,
-           v.abre::text AS abre,
-           v.cierra::text AS cierra,
-           v.mensaje,
-           v.activa,
-           coalesce(v.ronda, 1)::int AS ronda,
-           (v.activa AND now() >= v.abre AND now() <= v.cierra) AS abierta
-      FROM public.ventana_prematricula v
-      JOIN public.periodo p ON p.id = v.periodo_id
-     WHERE v.activa = true
-     ORDER BY (now() >= v.abre AND now() <= v.cierra) DESC, v.cierra DESC
-     LIMIT 1
-  `;
-
-  return consultarUna<VentanaMatricula360>(query, []);
 }

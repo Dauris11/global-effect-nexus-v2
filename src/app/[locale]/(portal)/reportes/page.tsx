@@ -45,8 +45,7 @@ import {
 import {
   cifrasAcademicas,
   cifrasDeOperaciones,
-  promedioPorCurso,
-  promedioPorTipo,
+  promedioPorMateria360,
   proyectosParaReporte,
   proyectosPorEstado,
   tareasPorEstado,
@@ -320,7 +319,7 @@ async function Academico({
   locale: string;
   periodoId: string | null;
 }) {
-  const [t, tg, cifras, notas, porTipo, porCurso, periodos] = await Promise.all(
+  const [t, tg, cifras, notas, porMateria, periodos] = await Promise.all(
     [
       getTranslations({ locale, namespace: "reports" }),
       getTranslations({ locale, namespace: "academic" }),
@@ -328,8 +327,7 @@ async function Academico({
       // Los umbrales viajan desde `@/lib/notas` y se cuentan en SQL: la escala
       // tiene un solo sitio, y si aprobar deja de ser 70 el informe se entera.
       resumenDeNotas({ periodoId, umbrales: UMBRAL_BANDA }),
-      promedioPorTipo(periodoId),
-      promedioPorCurso(periodoId),
+      promedioPorMateria360(periodoId),
       periodosSimples(),
     ],
   );
@@ -408,26 +406,19 @@ async function Academico({
           />
         </Panel>
 
-        <Panel titulo={t("academic.byType")} pista={t("academic.byTypeHint")}>
+        {/* Ocupa el sitio del promedio por tipo de evaluación: esa gráfica
+            leía `calificacion`, que se fue con los cursos técnicos, y la nota
+            de 360 es una sola por materia, sin tipos que comparar. */}
+        <Panel titulo={t("academic.bySubject360")} pista={t("academic.bySubject360Hint")}>
           <GraficaBarras
-            datos={porTipo.map((fila) => ({
-              nombre: tg(`gradeType.${fila.clave}` as never),
+            datos={porMateria.map((fila) => ({
+              nombre: fila.clave,
               valor: fila.promedio,
             }))}
             vacio={t("empty")}
           />
         </Panel>
       </div>
-
-      <Panel titulo={t("academic.byCourse")} pista={t("academic.byCourseHint")}>
-        <GraficaBarras
-          datos={porCurso.map((fila) => ({
-            nombre: fila.clave,
-            valor: fila.promedio,
-          }))}
-          vacio={t("empty")}
-        />
-      </Panel>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica
@@ -436,13 +427,13 @@ async function Academico({
           icono={Users}
         />
         <CifraAcademica
-          valor={cifras.becados}
-          etiqueta={t("academic.stats.scholars")}
+          valor={cifras.cursando_360}
+          etiqueta={t("academic.stats.g360Students")}
           icono={GraduationCap}
         />
         <CifraAcademica
-          valor={cifras.cursos}
-          etiqueta={t("academic.stats.courses")}
+          valor={cifras.clases_360}
+          etiqueta={t("academic.stats.g360Subjects")}
           icono={Library}
         />
         <CifraAcademica

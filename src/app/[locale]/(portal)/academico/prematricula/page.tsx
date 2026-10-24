@@ -28,14 +28,13 @@ export async function generateMetadata({
  *
  * Aquí se decide QUÉ materias ofrece el programa y CUÁNDO se pueden elegir. El
  * anuncio de la ventana sale solo: la cabecera de todas las pantallas internas
- * lo muestra al becado universitario en cuanto esta pantalla lo guarda.
+ * lo muestra al estudiante en cuanto esta pantalla lo guarda.
  *
  * Cierra con `academico.escribir` —`admin` y `super_admin`— y no con una lista
  * de roles: quien administre el catálogo académico es quien tenga ese permiso.
  *
- * El número de obligatorias no se fija en código: la pantalla enseña cuántas hay
- * activas para que administración vea si el catálogo cuadra con las cuatro que
- * pide el programa. Así se puede corregir sin migrar nada.
+ * Todo el catálogo activo es obligatorio y se cursa una materia por tanda: por
+ * eso cada ventana se abre para una tanda concreta (1 o 2) de un período.
  */
 export default async function PaginaPrematricula({
   params,
@@ -57,11 +56,11 @@ export default async function PaginaPrematricula({
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
+        <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
           {t("eyebrow")}
         </p>
         <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Sparkles className="size-5 text-[#2096BA]" />
+          <Sparkles className="size-5 text-marca-500" />
           {t("title")}
         </h1>
         <p className="text-muted-foreground mt-2 max-w-2xl text-sm">

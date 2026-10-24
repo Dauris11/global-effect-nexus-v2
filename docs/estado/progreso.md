@@ -1,6 +1,6 @@
 # Progreso — Global Effect Nexus
 
-Estado real de cada pantalla del sistema, a **4 de octubre de 2026**.
+Estado real de cada pantalla del sistema, a **24 de octubre de 2026**.
 
 > **Cambio de alcance (3 oct 2026).** La Fundación cerró el departamento de
 > Psicología y todo lo que hacía pasó a administración. El sistema se describe
@@ -12,6 +12,23 @@ Estado real de cada pantalla del sistema, a **4 de octubre de 2026**.
 > **Solicitudes y aprobaciones**, que sustituye a la cita de psicología. Los
 > eventos, el calendario y todo lo demás siguen igual.
 
+> **Cambio de alcance (24 oct 2026).** La Fundación dejó de impartir cursos
+> técnicos. Queda un solo tipo de estudiante, el becado universitario, y
+> **Global Effect 360** ocupa el lugar de los cursos: es la única formación
+> propia, abierta a todos, y sus clases tienen docente, tareas, entregas y nota
+> final. Todo su catálogo es obligatorio, y el cuatrimestre se parte en dos
+> tandas de dos meses con **una materia por tanda**: dos por cuatrimestre.
+> Elegir no es opcional; quien no ha elegido en una tanda abierta sale como
+> pendiente. La migración `0047` pasó los `regular` a `becado` y quitó el valor
+> del ENUM, borró `curso` y `calificacion` sin copia —como la `0030` con las
+> tablas clínicas— junto con `asignacion.curso_id`, retiró el trigger «solo
+> becados» de 360 y la columna `materia_360.obligatoria`, y sostiene la regla
+> de la tanda con un índice único parcial sobre
+> `inscripcion_360(estudiante_id, periodo_id, ronda)`. `/academico/cursos` pasa
+> a `/academico/clases-360` y `/academico/calificaciones` desaparece;
+> `calificaciones.registrar` se queda, ahora para la nota final de 360.
+> `historial_calificacion` no cambia.
+
 Este documento no sustituye al plan: el cronograma está en
 [`docs/05-plan-de-trabajo.md`](../05-plan-de-trabajo.md) y las 527 subtareas en
 [`docs/fuentes-datos/sprints-clickup.csv`](../fuentes-datos/sprints-clickup.csv),
@@ -19,13 +36,14 @@ que sigue siendo la definición de "hecho". Lo que hay aquí es la otra mitad: q
 está construido de verdad, qué es solo una pantalla que evita un 404 y qué falta
 dentro de lo que ya parece terminado.
 
-Los tres estados:
+Los estados:
 
 | | Significado |
 |---|---|
 | ✅ | **Funcional.** Consulta la base, escribe si le toca, y su pantalla es la definitiva. |
 | 🟡 | **Esqueleto.** La ruta existe y cierra su permiso, pero avisa de que el módulo no está construido. Sirve para que el menú no lleve a ninguna parte. |
 | ⬜ | **Pendiente.** Ni siquiera la ruta. Hoy no queda ninguna así entre las que declara el menú. |
+| ➖ | **Retirado.** El módulo existió y se quitó por un cambio de alcance; la fila se queda para que se sepa adónde fue lo que hacía. |
 
 Para comprobar que esta tabla no ha quedado vieja, las rutas del menú se pueden
 cruzar con las páginas que existen:
@@ -90,13 +108,13 @@ find 'src/app/[locale]' -name page.tsx | wc -l       # total
 
 | Estado | Módulo | Ruta | Sprint | Qué falta |
 |---|---|---|---|---|
-| ✅ | **Dashboard** | `/dashboard` | S5 | Cifras por programa (universitarios, técnicos, cursos), proyectos y tareas abiertas, tres gráficas, seis accesos rápidos, tareas con su dueño y su proyecto o evento, proyectos en marcha y próximos eventos. Lo financiero respeta el permiso: lo que el rol no puede ver, **no se consulta** |
-| ✅ | **Cursos técnicos y clases de 360** | `/academico/cursos` | S6 | Alta, edición y borrado de cursos; estudiantes por curso con su promedio y su cumplimiento de tareas; publicar tarea o examen; y revisar entregas con nota y devolución. El docente ve **solo lo suyo** y administración todo, con la misma condición dentro de cada WHERE |
+| ✅ | **Dashboard** | `/dashboard` | S5 | Cifras de estudiantes y de clases de 360 (desde la `0047` ya no se reparten por programa: solo hay becados), proyectos y tareas abiertas, tres gráficas, seis accesos rápidos, tareas con su dueño y su proyecto o evento, proyectos en marcha y próximos eventos. Lo financiero respeta el permiso: lo que el rol no puede ver, **no se consulta** |
+| ✅ | **Clases de 360** | `/academico/clases-360` | S6 | Antes `/academico/cursos`, con los cursos técnicos; desde la `0047` solo quedan las clases de 360. Inscritos de cada clase con su cumplimiento de tareas; publicar tarea o examen; revisar entregas con nota y devolución; y la **nota final** de cada inscripción, que la deja aprobada o reprobada (mínimo 70/100, pendiente de validar con la Fundación). El docente ve **solo lo suyo** y administración todo, con la misma condición dentro de cada WHERE |
 | ✅ | **Materias** | `/academico/materias` | S6 | Catálogo completo de las materias universitarias: alta, edición y baja, búsqueda por nombre/código/profesor y filtro por período, los dos **en la URL** para que el enlace se comparta y la lista se recorte en SQL. El profesor se elige en un solo campo con tres formas —nadie, usuario del sistema, o externo con el nombre a mano—; el nombre del usuario lo copia el servidor desde `usuario`, no el formulario |
-| ✅ | **Calificaciones** | `/academico/calificaciones` | S6 | Notas por evaluación de los cursos técnicos: registrar, corregir y borrar, con búsqueda y filtro de período en la URL. Distribución por banda y cifras calculadas sobre la tabla entera, no sobre las 500 filas que se pintan. El docente solo toca las de **sus** cursos —resuelto en el SQL fila a fila y comprobado otra vez dentro de cada acción—; coordinación entra y lee pero **no pone notas**, porque `admin` no tiene `calificaciones.registrar` |
+| ➖ | ~~Calificaciones~~ | ~~`/academico/calificaciones`~~ | S6 | **Retirada en la `0047`** con los cursos técnicos y la tabla `calificacion`; la nota de 360 se pone en `/academico/clases-360`. Lo que hacía: notas por evaluación de los cursos técnicos: registrar, corregir y borrar, con búsqueda y filtro de período en la URL. Distribución por banda y cifras calculadas sobre la tabla entera, no sobre las 500 filas que se pintan. El docente solo toca las de **sus** cursos —resuelto en el SQL fila a fila y comprobado otra vez dentro de cada acción—; coordinación entra y lee pero **no pone notas**, porque `admin` no tiene `calificaciones.registrar` |
 | ✅ | **Historial académico** | `/academico/historial` | S6 | Una fila por estudiante con su índice acumulado, cómo cerró y el detalle de sus materias, que se pide solo del que se abre. El índice se lee guardado, **nunca se recalcula** desde la nota (0006: la escala de conversión cambia de un año a otro). **Sin una línea de JavaScript de cliente**: no escribe nada, así que buscar, filtrar y abrir el detalle son un `form method="get"` y dos enlaces |
-| ✅ | **Global Effect 360** | `/academico/prematricula` | S6 | Catálogo del programa (obligatorias y opcionales) y ventanas de prematrícula con fecha y hora. El anuncio sale solo en la cabecera del becado |
-| ✅ | **Períodos** | `/academico/periodos` | S6 | La raíz del módulo: materias, cursos y matrícula cuelgan de aquí. Alta, edición y baja con lo que cuelga de cada uno, y **avisos de incoherencia** entre estado y fechas —un período `activo` que ya terminó sigue recibiendo notas como si fuera el cuatrimestre en curso—, comparados con `CURRENT_DATE` en la base y no con el reloj del navegador |
+| ✅ | **Global Effect 360** | `/academico/prematricula` | S6 | Catálogo del programa —todo obligatorio desde la `0047`— y ventanas de prematrícula con fecha y hora, una por tanda. El anuncio sale en la cabecera de todo estudiante |
+| ✅ | **Períodos** | `/academico/periodos` | S6 | La raíz del módulo: materias, clases de 360 y matrícula cuelgan de aquí. Alta, edición y baja con lo que cuelga de cada uno, y **avisos de incoherencia** entre estado y fechas —un período `activo` que ya terminó sigue recibiendo notas como si fuera el cuatrimestre en curso—, comparados con `CURRENT_DATE` en la base y no con el reloj del navegador |
 | ✅ | **Programas de academias** | `/academias/programas` | S10 | Catálogo de los programas extracurriculares: alta, edición y baja, con filtros de nombre/facilitador, tipo y estado **en la URL**. Borrar exige vaciar el programa primero: `material.academia_id` es ON DELETE CASCADE y el borrado se llevaría sus guías en silencio, así que el diálogo dice cuántas hay y propone marcarlo `inactiva`. Los **participantes se teclean y la pantalla lo dice**: no hay tabla de inscripción a una academia, así que no hay de dónde contarlos |
 | ✅ | **Materiales de academias** | `/academias/materiales` | S10 | Repositorio agrupado por programa, con archivo, enlace o los dos. Los archivos van al bucket **privado** (el mismo de las entregas) y **la descarga no es un enlace pintado, es un botón**: firmar 300 enlaces por visita para los que nadie va a pulsar sale carísimo, y un enlace firmado al pintar sigue valiendo diez minutos después de retirarle el acceso a esa cuenta. Se firma uno, al pulsarlo, comprobando el permiso en ese momento. Borrar un material se lleva también su archivo del almacén |
 | ✅ | **Programa Habitudes & Liceos** | `/habitudes` | S10 | Hub colaborativo de recursos pedagógicos (presentaciones PPTX, guías en PDF, dinámicas en DOCX, infografías), y registro móvil nativo de visitas de campo a liceos de La Vega con captura de evidencias fotográficas vía cámara del smartphone y galería en alta resolución. |
@@ -112,7 +130,7 @@ find 'src/app/[locale]' -name page.tsx | wc -l       # total
 | ✅ | **Reportes** | `/reportes` | S11 | Tres pestañas —operaciones, académico y finanzas— con las gráficas del panel general, reutilizadas tal cual. **El permiso cierra pestañas, no la puerta**: el esqueleto pedía `finanzas.leer`, que `admin` no tiene, así que coordinación no podía ver un informe de su propio trabajo; ahora entra quien tenga cualquiera de los tres permisos de lectura y ve solo sus pestañas. La pestaña va en la URL —un informe se comparte con quien decide— y **solo se consulta la pestaña que se está viendo**. Un proyecto sin tareas no sale en el avance: su avance no es 0%, es que aún no se sabe |
 | ✅ | **Chat IA interno** | `/chat-ia` | S11 | La misma pantalla que el chat del estudiante, con otra acción y otro contexto. El resto del contexto se recorta con los permisos de quien pregunta —las finanzas solo con `finanzas.leer`— llamando a las mismas consultas que alimentan sus pantallas, y **todo son agregados**: ni un nombre, ni un expediente. Sigue bloqueado por la clave de Anthropic (401) |
 | ✅ | **Calendario** | `/calendario` | S9 | Cuatro vistas (mes, semana, día, lista), buscador, filtros por origen y por tipo, arrastrar para mover, y alta y edición de eventos en diálogo. Lo que se ve depende del rol — eventos para todos, tareas solo las propias, y **las citas con administración solo para quien las atiende** (`solicitudes.gestionar`). Lo que se puede MOVER también: un evento pide `operaciones.escribir`; una cita, `solicitudes.gestionar`, y moverla deja un paso en su solicitud y avisa al estudiante; una tarea no se mueve |
-| ✅ | **Línea de tiempo (Gantt)** | `/calendario/gantt` | S9 | Las cuatro familias sobre un mismo eje: períodos y materias, tareas y entregas, proyectos y tareas administrativas, y cursos técnicos con clases de 360. Dos tramos: por período, o **autoajustado a los datos** (sin ninguna ventana inventada). Va aparte del calendario y **sin JavaScript de cliente**. Dice en voz alta lo que el esquema no da: materias y cursos no tienen fechas propias, y `materia_360` no tiene ni fechas ni período — su barra se deduce de las inscripciones |
+| ✅ | **Línea de tiempo (Gantt)** | `/calendario/gantt` | S9 | Las cuatro familias sobre un mismo eje: períodos y materias, tareas y entregas, proyectos y tareas administrativas, y clases de 360. Dos tramos: por período, o **autoajustado a los datos** (sin ninguna ventana inventada). Va aparte del calendario y **sin JavaScript de cliente**. Dice en voz alta lo que el esquema no da: las materias no tienen fechas propias, y `materia_360` no tiene ni fechas ni período — su barra se deduce de las inscripciones |
 | ✅ | **Anuncios del inicio** | `/configuracion/landing` | S10 | Alta, edición, orden, mostrar/ocultar y borrado de las diapositivas del hero, con vista previa y rastro en `audit_log`. Cierra con `landing.administrar` |
 | ✅ | **Configuración** | `/configuracion` | S10 | Los ajustes que llevan a otra pantalla, las cuentas del equipo (se enumeran; gestionarlas es `/administrativo/personal`, y desde aquí se enlaza), y los **siete roles con sus permisos reales**, recorriendo la misma función que decide los accesos —así esta tabla no puede contradecir al sistema—. Los parámetros institucionales **no se pueden editar y la pantalla lo dice**: no existe tabla donde guardarlos, así que un formulario aquí escribiría en el aire |
 | ✅ | **Registro de auditoría** | `/configuracion/auditoria` | S5 | Cierra la deuda más vieja: `audit_log` se escribía desde siete módulos y no había forma de leerlo salvo por SQL. Filtros de acción, entidad, cuenta y fechas en la URL, paginado en dos enlaces, sin JavaScript. Solo `super_admin`. **El historial clínico no se enseña**: las filas del antiguo módulo de psicología, anteriores a la `0030`, salen con su acción, su autor y su hora, sin `datos` ni `entidad_id` —el recorte lo hace el `CASE` del SELECT—. La `0030` borró las tablas por decisión de la Fundación, y un visor que enseñara su rastro sería devolverlas por la puerta de atrás |
@@ -127,9 +145,9 @@ Cerrado. Es el único portal completo de punta a punta.
 | Estado | Módulo | Ruta | Qué falta |
 |---|---|---|---|
 | ✅ | Mi portal | `/portal/estudiante` | — |
-| ✅ | **Mis materias** | `/portal/estudiante/prematricula` | Su matrícula período a período **y la elección de las del próximo**: dentro de la ventana de prematrícula el becado se inscribe y se quita él mismo. Fuera de la ventana vuelve a ser solo lectura. La ventana se comprueba **dentro del INSERT**, no antes con un `if` |
+| ✅ | **Mis materias** | `/portal/estudiante/prematricula` | Su matrícula período a período **y la elección de las del próximo**: dentro de la ventana de prematrícula el estudiante se inscribe y se quita él mismo. Fuera de la ventana vuelve a ser solo lectura. La ventana se comprueba **dentro del INSERT**, no antes con un `if` |
 | ✅ | Calificaciones | `/portal/estudiante/calificaciones` | — |
-| ✅ | **Global Effect 360** | `/portal/estudiante/global-360` | Matrícula cuatrimestral obligatoria en 2 rondas (`MatriculaCuatrimestral360`: Ronda 1 Regular, Ronda 2 Ajustes) con cupos en vivo, aulas, horarios y docentes. Materias dadas y por dar, avance de obligatorias y opcionales. Base con triggers y validaciones de cupo estricto. |
+| ✅ | **Global Effect 360** | `/portal/estudiante/global-360` | Matrícula cuatrimestral obligatoria en **dos tandas de dos meses, una materia por tanda** (`MatriculaCuatrimestral360`) con cupos en vivo, aulas, horarios y docentes. Materias dadas y por dar sobre un catálogo **todo obligatorio**; aviso de pendiente si una tanda abierta no tiene elección. La regla de una por tanda la sostiene un índice único parcial (`0047`), no solo la pantalla. Antes de la `0047` la ronda 2 era de «ajustes» y había opcionales: ya no |
 | ✅ | **Aula virtual (Estilo Moodle)** | `/portal/estudiante/aula-virtual` | Buzón de entregas Moodle (`BuzonTareaMoodle` y `BotonBuzonMoodle`) con límites en MB, formatos permitidos (.pdf, .docx, .zip), advertencia de entrega tardía, rúbricas de evaluación, visualización de feedback docente y calificación. |
 | ✅ | Calendario | `/portal/estudiante/calendario` | — |
 | ✅ | Chat IA | `/portal/estudiante/chat` | Funciona con el contexto académico del propio estudiante. El RAG con embeddings sobre `fragmento_conocimiento` es **S11**. Hoy la clave de Anthropic de `.env.local` es inválida (401), así que responde "no está configurado" |
@@ -141,11 +159,10 @@ Cerrado. Es el único portal completo de punta a punta.
 
 | Estado | Módulo | Ruta | Sprint | Qué falta |
 |---|---|---|---|---|
-| ✅ | **Mi portal** | `/portal/profesor` | S6 | KPIs reales (cursos activos, estudiantes, notas registradas y entregas por revisar) y tres listas separadas —cursos técnicos, materias universitarias a su nombre y clases de 360—, porque son tres programas distintos. **No edita nada**: registrar, publicar tarea y revisar viven en `/academico/*`, que es donde están los formularios con sus comprobaciones |
-| ✅ | **Cursos técnicos y clases de 360** | `/academico/cursos` | S6 | Ve **solo lo suyo**; administración ve todo. Publicación de tareas con configuración Moodle (MB, formatos, rúbricas y entregas tardías), evaluación con retroalimentación y Vista de Estudiante (simulación interactiva). |
+| ✅ | **Mi portal** | `/portal/profesor` | S6 | KPIs reales (clases de 360 activas, estudiantes, notas finales puestas y entregas por revisar) y dos listas separadas —materias universitarias a su nombre y clases de 360—, porque son dos programas distintos (hasta la `0047` eran tres, con los cursos técnicos). **No edita nada**: registrar, publicar tarea y revisar viven en `/academico/*`, que es donde están los formularios con sus comprobaciones |
+| ✅ | **Clases de 360** | `/academico/clases-360` | S6 | Ve **solo lo suyo**; administración ve todo. Publicación de tareas con configuración Moodle (MB, formatos, rúbricas y entregas tardías), evaluación con retroalimentación, nota final de cada inscripción (aprobada/reprobada) con `calificaciones.registrar`, y Vista de Estudiante (simulación interactiva). |
 | ✅ | Materias y períodos | `/academico/materias` · `/academico/periodos` | S6 | Los lee con `academico.leer`; escribirlos pide `academico.escribir`, que el docente no tiene |
-| ✅ | Calificaciones | `/academico/calificaciones` | S6 | Registra las de sus cursos; las ajenas las ve pero no las toca |
-| ✅ | **Calendario** | `/calendario` | S9 | Ya enseña **lo que vence en sus clases**: las tareas y exámenes que publicó, sobre las tres vías que puede dar —materia universitaria, curso técnico y clase de 360—, enlazadas por la clave del docente y nunca por su nombre (la 0019 existe por eso). Antes solo veía actos institucionales y tareas administrativas, así que abría el calendario, no encontraba nada suyo y no volvía |
+| ✅ | **Calendario** | `/calendario` | S9 | Ya enseña **lo que vence en sus clases**: las tareas y exámenes que publicó, sobre las dos vías que puede dar —materia universitaria y clase de 360; el curso técnico se retiró en la `0047`—, enlazadas por la clave del docente y nunca por su nombre (la 0019 existe por eso). Antes solo veía actos institucionales y tareas administrativas, así que abría el calendario, no encontraba nada suyo y no volvía |
 
 ---
 
@@ -275,7 +292,7 @@ ninguno:
 |---|---|---|
 | Estudiante | `estudiante@globaleffect.org` | Expediente con notas de dos cuatrimestres, 6 asignaciones del aula virtual y 3 solicitudes (enviada, en revisión y completada) |
 | Habitudes | `habitudes@globaleffect.org` | Candidatos y alta de expediente por solicitud |
-| Docente | `docente@globaleffect.org` | Un curso propio con 3 notas |
+| Docente | `docente@globaleffect.org` | Una clase de 360 propia con sus inscritos (hasta la `0047`, un curso técnico con 3 notas) |
 | Coordinación | `coordinacion@globaleffect.org` | Portal administrativo, expedientes y la bandeja de solicitudes |
 | Contabilidad | `contabilidad@globaleffect.org` | Portal de contabilidad |
 | Super admin | `admin@globaleffect.org` | Todo, incluido el segundo nivel de aprobación |
@@ -301,9 +318,9 @@ desplegado.
 | `docs/prototipo-base44/prompt-formulario-expediente.md` pide dos campos de texto para nombres y edades de hermanos y hermanas; en el esquema solo existe `hermanos_cantidad` | **Abierto.** O se añaden las columnas, o los hermanos van como filas de `familiar` (que ya admite `hermano` y `hermana` como parentesco) |
 | `src/components/layout/app-shell.tsx` tenía un `setState` dentro de un efecto que ESLint marcaba como error | Resuelto: el cajón móvil se cierra ajustando estado durante el render, no en un efecto |
 | Había seis puertas de acceso (`/login/{portal}`) que no filtraban nada: elegir puerta no concedía rol, y dos de ellas (`administrativo`, `cursos-tecnicos`) apuntaban a portales sin página | Resuelto: una sola puerta, `/login`. Se borraron la ruta y `src/lib/portales.ts` |
-| El portal del estudiante no distinguía universitario (`tipo = 'becado'`, cuelga de `inscripcion` → `materia`) de curso técnico (`regular`, cuelga de `calificacion` → `curso`), y ofrecía a los dos las mismas pantallas | Resuelto en el menú: Mis materias y Aula virtual solo para universitarios |
-| `/portal/estudiante/calificaciones` leía solo `calificacion` → `curso`, que es la vía del curso técnico. Al universitario le salía vacía: sus notas viven en `historial_calificacion` | Resuelto: `notasDelEstudiante` une las dos tablas, y con ella se arreglan de una vez la pantalla, el dashboard y el contexto del chat |
-| La letra y el índice de `historial_calificacion` vienen guardados —la 0006 dice que la escala de conversión puede cambiar de un año a otro— y el portal los recalculaba desde la nota de 0 a 100, así que un 3.70 guardado se mostraba como 4.00 | Resuelto: la consulta devuelve la letra y el índice guardados, y solo los calcula cuando faltan, que es el caso del curso técnico |
+| El portal del estudiante no distinguía universitario (`tipo = 'becado'`, cuelga de `inscripcion` → `materia`) de curso técnico (`regular`, cuelga de `calificacion` → `curso`), y ofrecía a los dos las mismas pantallas | Resuelto en el menú: Mis materias y Aula virtual solo para universitarios. **Superado por la `0047`**: ya no hay `regular`, todos son universitarios |
+| `/portal/estudiante/calificaciones` leía solo `calificacion` → `curso`, que es la vía del curso técnico. Al universitario le salía vacía: sus notas viven en `historial_calificacion` | Resuelto: `notasDelEstudiante` une las dos tablas, y con ella se arreglan de una vez la pantalla, el dashboard y el contexto del chat. **Desde la `0047`** la otra mitad es la nota final de `inscripcion_360`: `calificacion` ya no existe |
+| La letra y el índice de `historial_calificacion` vienen guardados —la 0006 dice que la escala de conversión puede cambiar de un año a otro— y el portal los recalculaba desde la nota de 0 a 100, así que un 3.70 guardado se mostraba como 4.00 | Resuelto: la consulta devuelve la letra y el índice guardados, y solo los calcula cuando faltan, que era el caso del curso técnico (retirado en la `0047`) |
 | El orden del historial no podía salir de `periodo.fecha_inicio`: un cuatrimestre ya cursado no suele tener fila en `periodo`, y sin fecha caía por detrás de otro anterior que sí la tenía | Resuelto: la lista ordena por el nombre del período (`2026-II` antes que `2026-I`), que es la convención que fija la 0006 y que ordena igual a las dos vías |
 | El dashboard del estudiante mostraba `tipo_evaluacion` en crudo (`examen`, `participacion`), sin traducir | Resuelto: usa las claves `gradesPage.type.*`, que ya existían |
 | Todo el sistema mezclaba matices fuera de marca: 311 usos de emerald, ámbar, naranja, rosa, violeta y rojo en 48 archivos, más un color de banner por rol. Cada portal parecía de otra aplicación | Resuelto: barrido completo a azul y negro. Lo que distinguía por matiz ahora distingue por peso (nota A→azul oscuro, F→negro; urgente→negro, baja→gris). `--destructive` es negro: un error no es rojo porque la marca no tiene rojo |

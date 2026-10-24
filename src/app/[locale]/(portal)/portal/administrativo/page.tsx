@@ -99,7 +99,7 @@ export default async function PortalAdministrativo({
   const avisos = [
     { clave: "urgentTasks", cuantos: pendientes.tareas_urgentes, href: "/administrativo/tareas" },
     { clave: "overdueTasks", cuantos: pendientes.tareas_vencidas, href: "/administrativo/tareas" },
-    { clave: "submissions", cuantos: pendientes.entregas_por_revisar, href: "/academico/cursos" },
+    { clave: "submissions", cuantos: pendientes.entregas_por_revisar, href: "/academico/clases-360" },
     { clave: "unsponsored", cuantos: pendientes.becados_sin_patrocinador, href: "/patrocinadores/becas" },
     { clave: "terms", cuantos: pendientes.periodos_incoherentes, href: "/academico/periodos" },
     { clave: "requests", cuantos: porAtender, href: "/administrativo/solicitudes" },
@@ -108,8 +108,7 @@ export default async function PortalAdministrativo({
 
   const figuras = [
     { clave: "students", valor: cifras.estudiantes },
-    { clave: "scholars", valor: cifras.becados },
-    { clave: "courses", valor: cifras.cursos },
+    { clave: "classes360", valor: cifras.clases_360 },
     { clave: "subjects", valor: cifras.materias },
     { clave: "grades", valor: cifras.notas },
     { clave: "projects", valor: cifras.proyectos },

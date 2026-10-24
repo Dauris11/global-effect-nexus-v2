@@ -133,7 +133,7 @@ export async function calendarioDelMes({
       `SELECT 'asignacion' AS origen,
               a.id,
               a.titulo,
-              coalesce(mu.nombre, cu.nombre, m3.nombre) AS detalle,
+              coalesce(mu.nombre, m3.nombre) AS detalle,
               to_char(a.fecha_vencimiento, 'YYYY-MM-DD') AS dia,
               to_char(a.fecha_vencimiento, 'HH24:MI') AS hora,
               a.tipo::text AS estado,
@@ -143,12 +143,10 @@ export async function calendarioDelMes({
               (CASE WHEN a.tipo = 'examen' THEN 'alta' ELSE 'media' END)::text AS prioridad
          FROM asignacion a
          LEFT JOIN materia     mu ON mu.id = a.materia_id
-         LEFT JOIN curso       cu ON cu.id = a.curso_id
          LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
         WHERE a.fecha_vencimiento IS NOT NULL
           AND a.fecha_vencimiento::date BETWEEN $2::date AND $3::date
           AND (mu.profesor_usuario_id = $1
-               OR cu.docente_usuario_id = $1
                OR m3.docente_id = $1)
         ORDER BY a.fecha_vencimiento`,
       [usuarioId, desde, hasta],

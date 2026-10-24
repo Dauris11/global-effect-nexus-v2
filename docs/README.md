@@ -58,11 +58,12 @@ Toda la documentación del proyecto está centralizada en esta carpeta: **un arc
 - ▶️ **S4 — Backend núcleo (en curso):** Supabase Auth + RBAC (`proxy.ts` + `requirePermission`), login, capa `server/` por dominio, Storage y layout del portal. Build y lint en verde.
 - ✅ **S5 — Expedientes y Panel:** CRUD de expedientes por pestañas, detalle con GPA y gráficos, OCR con IA y panel principal armado por permisos.
 - ✅ **S9 — Administrativo y Calendario:** Kanban con automatizaciones (correo + evento espejo), proyectos con avance calculado, personal y calendario mensual.
-- ✅ **S6 — Académico y portales por rol:** materias, cursos, calificaciones, historial, prematrícula y períodos; **Portal Estudiante** y **Portal Profesor**, con el vínculo docente ↔ usuario resuelto por FK en la migración `0019`.
-- ✅ **Portales por rol:** se suman Administrativo, Contabilidad, Cursos Técnicos (selector) y Estudiante CT, sobre un patrón común (`components/portal/`). Cada uno con su **login propio** (`/login/<portal>`).
+- ✅ **S6 — Académico y portales por rol:** materias, cursos, calificaciones, historial, prematrícula y períodos (los cursos técnicos y sus calificaciones se retiraron en la `0047`); **Portal Estudiante** y **Portal Profesor**, con el vínculo docente ↔ usuario resuelto por FK en la migración `0019`.
+- ✅ **Portales por rol:** se suman Administrativo y Contabilidad (los de Cursos Técnicos y Estudiante CT se retiraron después), sobre un patrón común (`components/portal/`). Cada uno con su **login propio** (`/login/<portal>`).
 - ✅ **Contabilidad (módulo 14):** ingresos, egresos y balance.
 - ✅ **Expediente completo en diálogo** de siete pestañas, con el **OCR por IA**. El expediente es de administración (`admin` y `super_admin`).
 - ✅ **Cambio de alcance (oct 2026):** la Fundación eliminó el departamento de Psicología. El sistema pasa a ser un **ERP institucional** con portal del estudiante integrado; la migración `0030` retira el rol `psicologo`, sus permisos y sus tablas.
+- ✅ **Fin de los cursos técnicos (24 oct 2026):** la Fundación dejó de impartirlos. Queda un solo tipo de estudiante, el becado universitario, y **Global Effect 360** ocupa el sitio de los cursos: abierto a todos, con todo el catálogo obligatorio y una materia por tanda (dos por cuatrimestre). La migración `0047` borra `curso` y `calificacion`; `/academico/cursos` pasa a `/academico/clases-360` y `/academico/calificaciones` desaparece.
 - ✅ **Solicitudes y aprobaciones (módulos 15 y 22, migración `0031`):** una bandeja con flujo por pasos para los trámites del estudiante (constancias, cartas, citas con administración, permisos) y las aprobaciones internas (alta de expediente, beca, gasto), con segundo nivel de dirección y línea de tiempo.
 - ✅ **Sistema visual y su norma:** ver [`09-sistema-visual.md`](09-sistema-visual.md).
 - ✅ **Blog público** (migración `0020`): noticias redactadas por administración + actividades ya celebradas, en una sola rejilla.

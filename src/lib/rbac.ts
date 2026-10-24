@@ -169,9 +169,8 @@ export function esRol(valor: unknown): valor is Rol {
  *   · `admin` NO tiene `finanzas.leer`: la contabilidad es de `contabilidad` y
  *     `super_admin`. Tampoco `solicitudes.direccion`: el segundo nivel de
  *     aprobación (becas y gastos grandes) es de dirección.
- *   · `docente` NO tiene `academico.escribir`: registra calificaciones, pero no
- *     crea ni edita materias ni cursos, aunque los .md digan que "gestiona
- *     cursos técnicos".
+ *   · `docente` NO tiene `academico.escribir`: pone tareas y la nota final de
+ *     sus clases de Global Effect 360, pero no crea ni edita el catálogo.
  *
  * El expediente es de administración ENTERO desde la 0030: `admin` y
  * `super_admin` leen, escriben y borran cualquier ficha. El aislamiento por

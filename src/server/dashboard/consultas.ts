@@ -20,8 +20,10 @@ const ABIERTAS = ["pendiente", "en_progreso"];
 
 export type CifrasPanel = {
   universitarios: number;
-  tecnicos: number;
-  cursos: number;
+  /** Estudiantes con una materia de Global Effect 360 en curso ahora. */
+  cursando360: number;
+  /** Materias del catálogo de 360 abiertas. */
+  materias360: number;
   proyectos: number;
   tareas: number;
   patrocinadores: number;
@@ -34,18 +36,18 @@ export type CifrasPanel = {
  * Siete subconsultas en un viaje en vez de siete viajes: son todas `count(*)`
  * sobre tablas distintas y el pooler cobra por ida y vuelta, no por subconsulta.
  *
- * Universitario y técnico se separan porque son dos programas distintos que no
- * comparten ni tablas ni pantallas: el becado cuelga de `inscripcion` → `materia`
- * y el regular de `calificacion` → `curso`. Sumarlos en un solo "estudiantes
- * activos" escondía justo el dato que hace falta para repartir el presupuesto.
+ * Las dos cifras de 360 ocupan el sitio de las del curso técnico, retirado en
+ * la 0047. "Cursando" cuenta personas y no inscripciones: con una materia por
+ * tanda coinciden casi siempre, pero el panel pregunta a cuántos atendemos.
  */
 export async function cifrasPanel(): Promise<CifrasPanel> {
   const fila = await consultarUna<CifrasPanel>(
     `SELECT (SELECT count(*)::int FROM estudiante
               WHERE estado = 'activo' AND tipo = 'becado')          AS universitarios,
-            (SELECT count(*)::int FROM estudiante
-              WHERE estado = 'activo' AND tipo = 'regular')         AS tecnicos,
-            (SELECT count(*)::int FROM curso  WHERE estado = 'activo') AS cursos,
+            (SELECT count(DISTINCT estudiante_id)::int FROM inscripcion_360
+              WHERE estado = 'cursando')                            AS "cursando360",
+            (SELECT count(*)::int FROM materia_360
+              WHERE activa)                                         AS "materias360",
             (SELECT count(*)::int FROM proyecto
               WHERE estado = 'en_curso')                            AS proyectos,
             (SELECT count(*)::int FROM tarea
@@ -63,8 +65,8 @@ export async function cifrasPanel(): Promise<CifrasPanel> {
   return (
     fila ?? {
       universitarios: 0,
-      tecnicos: 0,
-      cursos: 0,
+      cursando360: 0,
+      materias360: 0,
       proyectos: 0,
       tareas: 0,
       patrocinadores: 0,

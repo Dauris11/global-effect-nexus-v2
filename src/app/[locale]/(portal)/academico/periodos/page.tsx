@@ -23,8 +23,8 @@ export async function generateMetadata({
 /**
  * Períodos: los cuatrimestres y semestres de la Fundación.
  *
- * Es la raíz del módulo académico. Una materia, un curso técnico y una
- * inscripción cuelgan todos de un período, así que esta es la primera fila que
+ * Es la raíz del módulo académico. Una materia, una inscripción y las dos tandas
+ * de Global Effect 360 cuelgan todas de un período, así que esta es la primera fila que
  * hay que crear y la última que se puede borrar.
  *
  * DOS PUERTAS DISTINTAS, a propósito:

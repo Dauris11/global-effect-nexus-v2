@@ -29,8 +29,10 @@ import { consultar, consultarUna } from "@/lib/db";
 export type CifrasFundacion = {
   estudiantes: number;
   becados: number;
-  cursos: number;
+  /** Materias del catálogo de Global Effect 360 abiertas. */
+  clases_360: number;
   materias: number;
+  /** Notas finales de 360 ya puestas. */
   notas: number;
   proyectos: number;
   tareas_abiertas: number;
@@ -47,9 +49,11 @@ export async function cifrasDeLaFundacion(): Promise<CifrasFundacion> {
   const fila = await consultarUna<CifrasFundacion>(
     `SELECT (SELECT count(*)::int FROM estudiante WHERE estado = 'activo') AS estudiantes,
             (SELECT count(*)::int FROM estudiante WHERE tipo = 'becado' AND estado = 'activo') AS becados,
-            (SELECT count(*)::int FROM curso WHERE estado = 'activo') AS cursos,
+            (SELECT count(*)::int FROM materia_360 WHERE activa) AS clases_360,
             (SELECT count(*)::int FROM materia WHERE estado = 'activa') AS materias,
-            (SELECT count(*)::int FROM calificacion) AS notas,
+            -- La retirada no cuenta aunque guardara nota: se dio de baja.
+            (SELECT count(*)::int FROM inscripcion_360
+              WHERE nota IS NOT NULL AND estado <> 'retirada') AS notas,
             (SELECT count(*)::int FROM proyecto WHERE estado = 'en_curso') AS proyectos,
             (SELECT count(*)::int FROM tarea
               WHERE estado IN ('pendiente', 'en_progreso')) AS tareas_abiertas,
@@ -66,7 +70,7 @@ export async function cifrasDeLaFundacion(): Promise<CifrasFundacion> {
 
   return (
     fila ?? {
-      estudiantes: 0, becados: 0, cursos: 0, materias: 0, notas: 0,
+      estudiantes: 0, becados: 0, clases_360: 0, materias: 0, notas: 0,
       proyectos: 0, tareas_abiertas: 0, patrocinadores: 0, aporte_mensual: 0,
       comensales_hoy: 0, solicitudes_abiertas: 0, usuarios: 0,
     }

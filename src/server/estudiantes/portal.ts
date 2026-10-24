@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { consultar, consultarUna } from "@/lib/db";
+import type { TipoEstudiante } from "@/lib/expedientes";
 import { esLetra, gpaDe, type Letra, letraDe } from "@/lib/notas";
 
 /**
@@ -14,7 +15,7 @@ import { esLetra, gpaDe, type Letra, letraDe } from "@/lib/notas";
  * utilidad.
  *
  * De la tabla `estudiante` solo se leen aquí los campos que el propio
- * estudiante ya conoce de sí mismo: su nombre, si es becado y si está activo.
+ * estudiante ya conoce de sí mismo: su nombre, su tipo y si está activo.
  * Ninguna consulta de este archivo toca `familiar`, `perfil_vivienda`,
  * `perfil_salud` ni `perfil_socioeconomico`.
  *
@@ -26,7 +27,7 @@ import { esLetra, gpaDe, type Letra, letraDe } from "@/lib/notas";
 export type EstudianteDeSesion = {
   id: string;
   nombre: string;
-  tipo: "regular" | "becado";
+  tipo: TipoEstudiante;
   estado: string;
 };
 
@@ -45,26 +46,14 @@ export type EstudianteDeSesion = {
 export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
   usuarioId: string,
 ): Promise<EstudianteDeSesion | null> {
-  const fila = await consultarUna<{
-    id: string;
-    nombre: string;
-    tipo: string;
-    estado: string;
-  }>(
+  // El ENUM solo admite `becado` desde la 0047, así que el texto que devuelve
+  // la base ya es un `TipoEstudiante` válido.
+  return consultarUna<EstudianteDeSesion>(
     `SELECT e.id, e.nombre, e.tipo::text AS tipo, e.estado::text AS estado
        FROM estudiante e
       WHERE e.usuario_id = $1`,
     [usuarioId],
   );
-
-  if (!fila) return null;
-
-  return {
-    id: fila.id,
-    nombre: fila.nombre,
-    tipo: fila.tipo === "becado" ? "becado" : "regular",
-    estado: fila.estado,
-  };
 });
 
 export type MateriaInscrita = {
@@ -95,17 +84,15 @@ export async function materiasInscritas(
   );
 }
 
+/** De dónde sale la nota: la materia de 360 o el historial universitario. */
+export type OrigenNota = "g360" | "universidad";
+
 export type NotaDelEstudiante = {
   id: string;
   nota: number;
-  /**
-   * Tipo de evaluación en la vía del curso técnico. En la del historial
-   * universitario no existe tal cosa —cada fila es la nota cerrada de una
-   * materia— y se declara `final`, que es la etiqueta que ya describe eso.
-   */
-  tipo_evaluacion: string;
-  /** Curso técnico o materia, según de dónde venga la fila. */
-  curso: string;
+  origen: OrigenNota;
+  /** Materia de Global Effect 360 o materia universitaria, según el origen. */
+  materia: string;
   periodo: string;
   periodo_id: string;
   /** Letra a mostrar: la guardada si viene y es válida, y si no la de la nota. */
@@ -117,31 +104,25 @@ export type NotaDelEstudiante = {
 /**
  * Notas del estudiante, agrupables por período.
  *
- * Lee LAS DOS vías, porque hay dos clases de estudiante y cada una guarda sus
- * notas en otra tabla:
+ * Lee LAS DOS fuentes, porque cada una guarda sus notas en otra tabla:
  *
- *   - Curso técnico → `calificacion` → `curso`, una fila por evaluación.
- *   - Universitario → `historial_calificacion`, una fila por materia cerrada,
+ *   - Global Effect 360 → `inscripcion_360.nota`, la nota final de cada
+ *     materia de la Fundación (una por tanda), ya cerrada como `aprobada` o
+ *     `reprobada`.
+ *   - Universidad → `historial_calificacion`, una fila por materia cerrada,
  *     con la letra y el índice ya escritos.
  *
- * Antes solo leía la primera, y al becado universitario la pantalla de
- * calificaciones le salía vacía aunque tuviera historial completo.
- *
- * Un estudiante normalmente está en una sola vía y la otra devuelve cero filas,
- * así que se unen en vez de elegir por `tipo`: si alguien tiene registros en las
- * dos —un técnico que pasa a becado— las ve todas, y la consulta no depende de
- * que `estudiante.tipo` esté bien puesto.
+ * De 360 solo entran las inscripciones con nota y en estado final: una
+ * `cursando` con nota provisional no es todavía una calificación, y una
+ * `retirada` no tiene nada que calificar.
  *
  * El índice y la letra del historial se respetan tal como están guardados, no se
  * recalculan: la escala de conversión puede cambiar de un año a otro y eso es lo
  * que dice la migración 0006. Solo se completan cuando faltan, que es el caso de
- * la vía del curso técnico, donde la base guarda el número y nada más.
+ * 360, donde la base guarda el número y nada más.
  *
  * `::float8` porque `pg` entrega NUMERIC como texto para no perder precisión, y
  * aquí hace falta un número con el que calcular promedios.
- *
- * No se trae `observaciones`: las escribe el docente como nota interna de la
- * evaluación y no forma parte de lo que el estudiante consulta.
  */
 export async function notasDelEstudiante(
   estudianteId: string,
@@ -149,8 +130,8 @@ export async function notasDelEstudiante(
   const filas = await consultar<{
     id: string;
     nota: number;
-    tipo_evaluacion: string;
-    curso: string;
+    origen: OrigenNota;
+    materia: string;
     periodo: string;
     periodo_id: string;
     letra: string | null;
@@ -165,31 +146,33 @@ export async function notasDelEstudiante(
     // período caía por detrás de un '2025-I' que sí lo tenía. El nombre sigue
     // la convención que fija la 0006 ('2026-I', '2026-II'), es único, y ordena
     // igual a las dos mitades: DESC pone el más reciente primero.
-    `SELECT q.id, q.nota, q.tipo_evaluacion, q.curso, q.periodo, q.periodo_id,
+    `SELECT q.id, q.nota, q.origen, q.materia, q.periodo, q.periodo_id,
             q.letra, q.gpa
        FROM (
-              SELECT c.id::text AS id,
-                     c.nota::float8 AS nota,
-                     c.tipo_evaluacion::text AS tipo_evaluacion,
-                     cu.nombre AS curso,
+              SELECT i.id::text AS id,
+                     i.nota::float8 AS nota,
+                     'g360' AS origen,
+                     m.nombre AS materia,
                      p.nombre AS periodo,
                      p.id::text AS periodo_id,
                      NULL::text AS letra,
                      NULL::float8 AS gpa
-                FROM calificacion c
-                JOIN curso   cu ON cu.id = c.curso_id
-                JOIN periodo p  ON p.id  = c.periodo_id
-               WHERE c.estudiante_id = $1
+                FROM inscripcion_360 i
+                JOIN materia_360 m ON m.id = i.materia_id
+                JOIN periodo     p ON p.id = i.periodo_id
+               WHERE i.estudiante_id = $1
+                 AND i.nota IS NOT NULL
+                 AND i.estado IN ('aprobada', 'reprobada')
 
               UNION ALL
 
               -- periodo_id sale del periodo que se llame igual que el
               -- cuatrimestre, y solo cae al texto si no existe: así una nota de
-              -- las dos vías en el mismo cuatrimestre acaba en un único grupo.
+              -- las dos fuentes en el mismo cuatrimestre acaba en un único grupo.
               SELECT h.id::text AS id,
                      h.nota_numerica::float8 AS nota,
-                     'final' AS tipo_evaluacion,
-                     h.materia AS curso,
+                     'universidad' AS origen,
+                     h.materia AS materia,
                      h.cuatrimestre AS periodo,
                      coalesce(p.id::text, h.cuatrimestre) AS periodo_id,
                      h.nota_letra AS letra,
@@ -198,7 +181,7 @@ export async function notasDelEstudiante(
                 LEFT JOIN periodo p ON p.nombre = h.cuatrimestre
                WHERE h.estudiante_id = $1
             ) q
-      ORDER BY q.periodo DESC, q.curso`,
+      ORDER BY q.periodo DESC, q.materia`,
     [estudianteId],
   );
 

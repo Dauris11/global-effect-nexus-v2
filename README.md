@@ -10,7 +10,7 @@
 >
 > **Estado real de cada pantalla:** [`docs/estado/progreso.md`](docs/estado/progreso.md).
 >
-> **Pantallas terminadas:** landing pública (hero configurable, acceso a los seis portales, eventos y blog), login general y **un login por portal**, los **portales por rol** (estudiante, docente, administrativo, contabilidad y cursos técnicos), Académico, Expedientes con **OCR por IA**, Contabilidad, Administrativo (S9), **Solicitudes y aprobaciones** y Calendario.
+> **Pantallas terminadas:** landing pública (hero configurable, acceso a los seis portales, eventos y blog), login general y **un login por portal**, los **portales por rol** (estudiante, docente, administrativo y contabilidad), Académico, Expedientes con **OCR por IA**, Contabilidad, Administrativo (S9), **Solicitudes y aprobaciones** y Calendario.
 >
 > Build, tipos, lint e i18n en verde.
 
@@ -104,7 +104,7 @@ npm run db:migrate            # crea el esquema (db/migrations/0001..0019)
 npm run db:seed               # roles, permisos, períodos y catálogos
 npm run db:seed:usuarios      # los seis usuarios de prueba de más abajo
 npm run db:seed:operaciones   # 3 proyectos, 10 tareas y 9 eventos de demostración
-npm run db:seed:portales      # expediente del estudiante de prueba y curso del docente
+npm run db:seed:portales      # expediente del estudiante de prueba y clase de 360 del docente
 ```
 
 Los cuatro seeds son **idempotentes**: se pueden repetir sin duplicar nada.
@@ -129,7 +129,7 @@ El sistema es **solo por invitación**: nadie se registra por su cuenta. Un usua
 |---|---|---|
 | `admin@globaleffect.org` | `super_admin` | Todo el sistema |
 | `coordinacion@globaleffect.org` | `admin` | Operación general, expedientes de todos los estudiantes y bandeja de solicitudes |
-| `docente@globaleffect.org` | `docente` | Cursos y registro de calificaciones |
+| `docente@globaleffect.org` | `docente` | Sus clases de Global Effect 360: tareas, entregas y nota final |
 | `estudiante@globaleffect.org` | `estudiante` | Portal estudiantil y sus trámites (solicitudes) |
 | `contabilidad@globaleffect.org` | `contabilidad` | Transacciones, balances y patrocinadores |
 
@@ -227,7 +227,7 @@ Global Effect/
 | `npm run db:seed` | Roles, permisos, períodos y catálogos (`db/seed.sql`) |
 | `npm run db:seed:usuarios` | Crea/actualiza los usuarios de demostración |
 | `npm run db:seed:operaciones` | Proyectos, tareas y eventos de demostración (tablero y calendario) |
-| `npm run db:seed:portales` | Expediente del estudiante de prueba y curso del docente (portales por rol) |
+| `npm run db:seed:portales` | Expediente del estudiante de prueba y clase de 360 del docente (portales por rol) |
 
 ---
 

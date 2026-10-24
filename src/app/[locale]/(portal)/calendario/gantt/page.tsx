@@ -26,7 +26,7 @@ import {
   esIncoherente,
   type Familia,
   familiaAcademico,
-  familiaCursos,
+  familiaClases360,
   familiaOperaciones,
   familiaTareas,
   hoyEnLaBase,
@@ -115,7 +115,7 @@ export default async function PaginaGantt({
   const veOperaciones = tienePermiso(usuario.rol, "operaciones.leer");
 
   const permitidas: Familia[] = [
-    ...(veAcademico ? (["academico", "tareas", "cursos"] as Familia[]) : []),
+    ...(veAcademico ? (["academico", "tareas", "clases360"] as Familia[]) : []),
     ...(veOperaciones ? (["operaciones"] as Familia[]) : []),
   ];
 
@@ -146,21 +146,21 @@ export default async function PaginaGantt({
     if (familia === "tareas") return familiaTareas(desde, hasta);
     if (familia === "operaciones") return familiaOperaciones(desde, hasta);
 
-    return familiaCursos(desde, hasta);
+    return familiaClases360(desde, hasta);
   };
 
-  const [academico, tareas, operaciones, cursos] = await Promise.all([
+  const [academico, tareas, operaciones, clases360] = await Promise.all([
     cargar("academico"),
     cargar("tareas"),
     cargar("operaciones"),
-    cargar("cursos"),
+    cargar("clases360"),
   ]);
 
   const secciones = [
     { familia: "academico" as const, icono: CalendarRange, datos: academico },
     { familia: "tareas" as const, icono: ClipboardList, datos: tareas },
     { familia: "operaciones" as const, icono: GanttChartSquare, datos: operaciones },
-    { familia: "cursos" as const, icono: GraduationCap, datos: cursos },
+    { familia: "clases360" as const, icono: GraduationCap, datos: clases360 },
   ].filter((seccion) => familias.includes(seccion.familia));
 
   const todasLasBarras = secciones.flatMap((seccion) => seccion.datos.barras);
@@ -355,8 +355,8 @@ export default async function PaginaGantt({
                         inicio={inicio}
                         fin={fin}
                         idioma={idioma}
-                        /* Las siete clases posibles están todas en
-                           `gantt.kind`: `periodo`, `materia`, `curso`,
+                        /* Las seis clases posibles están todas en
+                           `gantt.kind`: `periodo`, `materia`,
                            `clase360`, `tarea`, `examen` y `proyecto`. Las
                            produce el SQL como literales, no la base, así que la
                            lista no puede crecer sin tocar este archivo. */

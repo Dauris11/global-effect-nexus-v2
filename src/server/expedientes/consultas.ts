@@ -1,5 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
-import { FAMILIA_FIJA, type EstadoEstudiante, type TipoEstudiante } from "@/lib/expedientes";
+import { FAMILIA_FIJA, type EstadoEstudiante } from "@/lib/expedientes";
 
 /**
  * Lista de expedientes para el módulo del equipo.
@@ -21,7 +21,6 @@ export type FilaExpediente = {
   cedula: string | null;
   email: string | null;
   telefono: string | null;
-  tipo: string;
   estado: string;
   programa: string | null;
   universidad: string | null;
@@ -35,9 +34,9 @@ export type FilaExpediente = {
 };
 
 /**
- * Expedientes con filtro por tipo, estado y búsqueda.
+ * Expedientes con filtro por estado y búsqueda.
  *
- * Los tres filtros van como parámetros anulables dentro del WHERE, no armando
+ * Los dos filtros van como parámetros anulables dentro del WHERE, no armando
  * el SQL a trozos: la consulta es siempre la misma cadena y no hay ninguna rama
  * por la que un valor pueda acabar concatenado.
  *
@@ -52,13 +51,11 @@ export type FilaExpediente = {
  */
 export async function listaExpedientes({
   busqueda = null,
-  tipo = null,
   estado = null,
   porPagina = 20,
   pagina = 1,
 }: {
   busqueda?: string | null;
-  tipo?: TipoEstudiante | null;
   estado?: EstadoEstudiante | null;
   /** Filas por página. */
   porPagina?: number;
@@ -73,7 +70,6 @@ export async function listaExpedientes({
             e.cedula,
             e.email::text AS email,
             e.telefono,
-            e.tipo::text AS tipo,
             e.estado::text AS estado,
             e.programa,
             e.universidad,
@@ -92,11 +88,10 @@ export async function listaExpedientes({
       WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
                               OR e.cedula ILIKE '%' || $1 || '%'
                               OR e.programa ILIKE '%' || $1 || '%')
-        AND ($2::text IS NULL OR e.tipo::text = $2)
-        AND ($3::text IS NULL OR e.estado::text = $3)
+        AND ($2::text IS NULL OR e.estado::text = $2)
       ORDER BY e.nombre
-      LIMIT $4 OFFSET $5`,
-    [busqueda, tipo, estado, porPagina, salto],
+      LIMIT $3 OFFSET $4`,
+    [busqueda, estado, porPagina, salto],
   );
 }
 
@@ -110,11 +105,9 @@ export async function listaExpedientes({
  */
 export async function contarExpedientes({
   busqueda = null,
-  tipo = null,
   estado = null,
 }: {
   busqueda?: string | null;
-  tipo?: TipoEstudiante | null;
   estado?: EstadoEstudiante | null;
 } = {}): Promise<number> {
   const fila = await consultarUna<{ total: number }>(
@@ -123,9 +116,8 @@ export async function contarExpedientes({
       WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
                               OR e.cedula ILIKE '%' || $1 || '%'
                               OR e.programa ILIKE '%' || $1 || '%')
-        AND ($2::text IS NULL OR e.tipo::text = $2)
-        AND ($3::text IS NULL OR e.estado::text = $3)`,
-    [busqueda, tipo, estado],
+        AND ($2::text IS NULL OR e.estado::text = $2)`,
+    [busqueda, estado],
   );
 
   return fila?.total ?? 0;
@@ -133,9 +125,9 @@ export async function contarExpedientes({
 
 export type CifrasExpedientes = {
   total: number;
-  becados: number;
   activos: number;
   en_proceso: number;
+  graduados: number;
 };
 
 /**
@@ -145,19 +137,22 @@ export type CifrasExpedientes = {
  * no está cursando. Es la cifra que dice cuánta gente hay esperando entrar, y no
  * se puede sacar de "total menos activos" porque ahí caerían también los
  * graduados y los suspendidos.
+ *
+ * "Graduados" ocupa el sitio que tenía "Becados": desde la 0047 todo
+ * estudiante es becado, así que esa cifra era el total repetido.
  */
 export async function cifrasExpedientes(): Promise<CifrasExpedientes> {
   const fila = await consultarUna<CifrasExpedientes>(
     `SELECT count(*)::int AS total,
-            count(*) FILTER (WHERE tipo = 'becado')::int AS becados,
             count(*) FILTER (WHERE estado = 'activo')::int AS activos,
             count(*) FILTER (WHERE estado IN ('reclutado', 'postulado',
                                               'academia_liderazgo',
-                                              'standby_tecnico'))::int AS en_proceso
+                                              'standby_tecnico'))::int AS en_proceso,
+            count(*) FILTER (WHERE estado = 'graduado')::int AS graduados
        FROM estudiante`,
   );
 
-  return fila ?? { total: 0, becados: 0, activos: 0, en_proceso: 0 };
+  return fila ?? { total: 0, activos: 0, en_proceso: 0, graduados: 0 };
 }
 
 /** Un bloque fijo de familia, con sus cuatro campos. */
@@ -189,7 +184,6 @@ export type ExpedienteCompleto = {
   sexo_documento: string | null;
   religion: string | null;
   foto_url: string | null;
-  tipo: string;
   estado: string;
   programa: string | null;
   donde_estudia: string | null;
@@ -262,7 +256,6 @@ export async function obtenerExpediente(
             e.sexo_documento,
             e.religion,
             e.foto_url,
-            e.tipo::text AS tipo,
             e.estado::text AS estado,
             e.programa,
             e.donde_estudia,

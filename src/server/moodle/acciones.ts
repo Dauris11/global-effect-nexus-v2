@@ -12,6 +12,13 @@ export type ResultadoMoodle = {
   mensaje?: string;
 };
 
+/*
+ * La matrícula en Global Effect 360 NO vive aquí: está en
+ * `@/server/global360/acciones` (`prematricular`), que es la única vía. Había
+ * una segunda copia en este archivo que aceptaba la tanda del navegador; se
+ * retiró para que la regla de una materia por tanda tenga un solo dueño.
+ */
+
 /**
  * Entrega de tarea por el estudiante con validación Moodle de formato, tamaño y fecha.
  */
@@ -134,7 +141,6 @@ export async function entregarTareaMoodleAction(
     });
 
     revalidatePath("/portal/estudiante/aula-virtual");
-    revalidatePath("/academico/cursos");
     revalidatePath("/portal/profesor");
 
     return {
@@ -195,7 +201,6 @@ export async function calificarEntregaMoodleAction(
       datos: { calificacion, tieneFeedback: !!comentarioProfesor },
     });
 
-    revalidatePath("/academico/cursos");
     revalidatePath("/portal/profesor");
     revalidatePath("/portal/estudiante/aula-virtual");
 
@@ -203,135 +208,5 @@ export async function calificarEntregaMoodleAction(
   } catch (error) {
     console.error("[moodle] Error al calificar entrega:", error);
     return { ok: false, mensaje: "Error al registrar la calificación de la entrega." };
-  }
-}
-
-/**
- * Matrícula en materia de Global 360 con control de cupos y rondas cuatrimestrales.
- */
-export async function matricularMateria360Action(
-  materiaId: string,
-  ronda: number,
-): Promise<ResultadoMoodle> {
-  const usuario = await requerirUsuario();
-  const estudiante = await estudianteDeUsuario(usuario.id);
-
-  if (!estudiante || estudiante.tipo !== "becado") {
-    return {
-      ok: false,
-      mensaje: "Solo los becados universitarios tienen acceso al programa Global Effect 360.",
-    };
-  }
-
-  try {
-    const res = await enTransaccion(async (cliente) => {
-      // 1. Verificar ventana activa
-      const { rows: ventanas } = await cliente.query<{ id: string; periodo_id: string; ronda: number }>(
-        `SELECT id, periodo_id, coalesce(ronda, 1) AS ronda
-           FROM public.ventana_prematricula
-          WHERE activa = true AND now() >= abre AND now() <= cierra
-          LIMIT 1`,
-      );
-
-      if (ventanas.length === 0) {
-        return { ok: false, mensaje: "El período de matrícula cuatrimestral no está abierto en este momento." };
-      }
-
-      const ventana = ventanas[0];
-      const periodoId = ventana.periodo_id;
-
-      // 2. Verificar cupo disponible en la materia
-      const { rows: materias } = await cliente.query<{
-        id: string;
-        nombre: string;
-        cupo_maximo: number;
-        cupo_ocupado: number;
-      }>(
-        `SELECT m.id, m.nombre, coalesce(m.cupo_maximo, 30)::int AS cupo_maximo,
-                (SELECT count(*)::int
-                   FROM public.inscripcion_360 i
-                  WHERE i.materia_id = m.id AND i.estado IN ('prematriculada', 'cursando')) AS cupo_ocupado
-           FROM public.materia_360 m
-          WHERE m.id = $1 AND m.activa = true`,
-        [materiaId],
-      );
-
-      if (materias.length === 0) {
-        return { ok: false, mensaje: "La materia solicitada no está activa en el catálogo." };
-      }
-
-      const materia = materias[0];
-      if (materia.cupo_ocupado >= materia.cupo_maximo) {
-        return {
-          ok: false,
-          mensaje: `No hay cupos disponibles en ${materia.nombre} (${materia.cupo_ocupado}/${materia.cupo_maximo}).`,
-        };
-      }
-
-      // 3. Registrar o reactivar matrícula
-      await cliente.query(
-        `INSERT INTO public.inscripcion_360 (estudiante_id, materia_id, periodo_id, estado, ronda)
-         VALUES ($1, $2, $3, 'prematriculada', $4)
-         ON CONFLICT (estudiante_id, materia_id, periodo_id)
-         DO UPDATE SET estado = 'prematriculada', ronda = EXCLUDED.ronda, updated_at = now()`,
-        [estudiante.id, materiaId, periodoId, ronda || ventana.ronda || 1],
-      );
-
-      return {
-        ok: true,
-        mensaje: `Te has matriculado exitosamente en ${materia.nombre} para la Ronda ${ronda || ventana.ronda || 1}.`,
-      };
-    });
-
-    if (res.ok) {
-      await registrar({
-        usuarioId: usuario.id,
-        accion: "materia_360.matricula",
-        entidad: "materia_360",
-        entidadId: materiaId,
-        datos: { ronda },
-      });
-
-      revalidatePath("/portal/estudiante/global-360");
-      revalidatePath("/academico/prematricula");
-    }
-
-    return res;
-  } catch (error) {
-    console.error("[moodle] Error en matrícula 360:", error);
-    return { ok: false, mensaje: "Error al procesar la matrícula de la asignatura." };
-  }
-}
-
-/**
- * Retiro voluntario de asignatura durante la ventana de matrícula.
- */
-export async function retirarMateria360Action(
-  inscripcionId: string,
-): Promise<ResultadoMoodle> {
-  const usuario = await requerirUsuario();
-  const estudiante = await estudianteDeUsuario(usuario.id);
-
-  if (!estudiante) {
-    return { ok: false, mensaje: "No tienes una ficha de estudiante activa." };
-  }
-
-  try {
-    const eliminada = await consultarUna<{ id: string; materia_id: string }>(
-      `DELETE FROM public.inscripcion_360
-        WHERE id = $1 AND estudiante_id = $2
-        RETURNING id, materia_id`,
-      [inscripcionId, estudiante.id],
-    );
-
-    if (!eliminada) {
-      return { ok: false, mensaje: "La inscripción no existe o ya no puede modificarse." };
-    }
-
-    revalidatePath("/portal/estudiante/global-360");
-    return { ok: true, mensaje: "Materia retirada del período cuatrimestral." };
-  } catch (error) {
-    console.error("[moodle] Error al retirar materia 360:", error);
-    return { ok: false, mensaje: "No se pudo retirar la materia." };
   }
 }

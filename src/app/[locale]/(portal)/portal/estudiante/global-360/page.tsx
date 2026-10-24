@@ -4,7 +4,6 @@ import {
   CircleCheck,
   CircleDashed,
   GraduationCap,
-  Sparkles,
 } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -15,7 +14,7 @@ import {
   TarjetaMateriaG360,
   type MateriaG360,
 } from "@/components/estudiante/g360-tarjeta-materia";
-import { AccionesMateria } from "@/components/global360/acciones-materia";
+import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
 import { Badge } from "@/components/ui/badge";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -29,12 +28,10 @@ import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import {
   avanceEn360,
   catalogoConSituacion,
+  tandasDelEstudiante,
   ventanaVigente,
 } from "@/server/global360/consultas";
-import {
-  catalogoMatricula360,
-  ventanaMatriculaActiva,
-} from "@/server/moodle/consultas";
+import { catalogoMatricula360 } from "@/server/moodle/consultas";
 
 export async function generateMetadata({
   params,
@@ -51,16 +48,13 @@ export async function generateMetadata({
 const REJILLA = "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4";
 
 /**
- * Global Effect 360 en el portal del becado universitario.
+ * Global Effect 360 en el portal del estudiante: el programa obligatorio de la
+ * Fundación, para todos.
  *
- * Dos listas: lo que le falta y lo que ya dio. Y en la primera, el botón de
- * prematricular cuando la ventana está abierta, que es lo que pedía el programa:
- * que el estudiante elija sus materias desde aquí y no por otro canal. Lo que
- * falta va primero porque es donde se actúa; lo dado es consulta.
- *
- * Solo para `tipo = 'becado'`. Al de curso técnico no se le ofrece —el menú ya
- * no le muestra la entrada— y si escribe la URL, se le explica en lugar de
- * mostrarle un programa que no le aplica: sus métricas son otras.
+ * Arriba lo que pide actuar: la ventana, las dos tandas del período (con el
+ * aviso si a la tanda abierta le falta materia) y el catálogo para elegir.
+ * Debajo, consulta: lo que le falta y lo que ya dio. Elegir se hace en UN solo
+ * sitio, el catálogo, para que no haya dos botones que digan cosas distintas.
  *
  * "Dada" es `estado = 'aprobada'`, no "inscrita": una materia reprobada le sigue
  * faltando, y por eso aparece en la lista de pendientes con su propia etiqueta.
@@ -83,24 +77,18 @@ export default async function PaginaGlobal360({
 
   if (!estudiante) return <AvisoSinFicha />;
 
-  if (estudiante.tipo !== "becado") {
-    return (
-      <EncabezadoPagina
-        antetitulo={t("eyebrow")}
-        titulo={t("title")}
-        subtitulo={t("errNotScholar")}
-      />
-    );
-  }
+  const [materias, avance, ventana, catalogoMatricula] = await Promise.all([
+    catalogoConSituacion(estudiante.id),
+    avanceEn360(estudiante.id),
+    ventanaVigente(),
+    catalogoMatricula360(estudiante.id),
+  ]);
 
-  const [materias, avance, ventana, catalogoMatricula, ventanaMatricula] =
-    await Promise.all([
-      catalogoConSituacion(estudiante.id),
-      avanceEn360(estudiante.id),
-      ventanaVigente(),
-      catalogoMatricula360(estudiante.id),
-      ventanaMatriculaActiva(),
-    ]);
+  // Las tandas son del período de la ventana: sin ventana no hay período del
+  // que hablar.
+  const tandas = ventana
+    ? await tandasDelEstudiante(estudiante.id, ventana.periodo_id)
+    : [];
 
   const dadas = materias.filter((m) => m.situacion === "aprobada");
   const porDar = materias.filter((m) => m.situacion !== "aprobada");
@@ -109,7 +97,6 @@ export default async function PaginaGlobal360({
 
   const detalle = (materia: MateriaG360) =>
     [
-      materia.obligatoria ? t("required") : t("optional"),
       materia.creditos > 0 ? t("credits", { n: materia.creditos }) : null,
       materia.periodo,
     ]
@@ -137,7 +124,8 @@ export default async function PaginaGlobal360({
           <CalendarClock className="mt-0.5 size-5 shrink-0" aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="font-semibold">
-              {abierta ? t("windowOpen") : t("windowSoon")} · {ventana.periodo}
+              {abierta ? t("windowOpen") : t("windowSoon")} · {ventana.periodo} ·{" "}
+              {t(ventana.ronda === 1 ? "tanda1" : "tanda2")}
             </p>
             <p className="text-sm">
               {t("windowFrom", {
@@ -152,30 +140,30 @@ export default async function PaginaGlobal360({
         </div>
       )}
 
-      {/* Avance: obligatorias primero, porque son las que no se pueden esquivar. */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* Avance contra el catálogo entero: todo es obligatorio. */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard
           icono={GraduationCap}
-          valor={`${avance.obligatorias_dadas} / ${avance.obligatorias}`}
-          etiqueta={t("progressRequired")}
+          valor={`${avance.dadas} / ${avance.total}`}
+          etiqueta={t("progress")}
           acento
-        />
-        <StatCard
-          icono={Sparkles}
-          valor={`${avance.opcionales_dadas} / ${avance.opcionales}`}
-          etiqueta={t("progressOptional")}
         />
         <StatCard icono={CircleDashed} valor={porDar.length} etiqueta={t("pending")} />
         <StatCard icono={CircleCheck} valor={dadas.length} etiqueta={t("taken")} />
       </div>
 
-      {/* Selector interactivo de matrícula cuatrimestral por rondas */}
-      <MatriculaCuatrimestral360
-        materiasIniciales={catalogoMatricula}
-        ventana={ventanaMatricula}
-      />
+      {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} />}
 
-      <section className="space-y-6">
+      {/* El proveedor solo envuelve lo que lleva botones (cliente). */}
+      <NextIntlClientProvider messages={mensajes}>
+        <MatriculaCuatrimestral360
+          materias={catalogoMatricula}
+          ventana={ventana}
+          tandas={tandas}
+        />
+      </NextIntlClientProvider>
+
+      <section className="space-y-6 border-t border-linea pt-8">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="texto-titulo-seccion">{t("pending")}</h2>
           <Badge variant="neutra">{porDar.length}</Badge>
@@ -184,27 +172,17 @@ export default async function PaginaGlobal360({
         {porDar.length === 0 ? (
           <EstadoVacio icono={CircleCheck} titulo={t("pendingEmpty")} />
         ) : (
-          <NextIntlClientProvider messages={mensajes}>
-            <ul className={REJILLA}>
-              {porDar.map((materia) => (
-                <li key={materia.id}>
-                  <TarjetaMateriaG360
-                    materia={materia}
-                    situacion={t(`situation.${materia.situacion}`)}
-                    detalle={detalle(materia)}
-                    acciones={
-                      abierta ? (
-                        <AccionesMateria
-                          materiaId={materia.id}
-                          prematriculada={materia.situacion === "prematriculada"}
-                        />
-                      ) : null
-                    }
-                  />
-                </li>
-              ))}
-            </ul>
-          </NextIntlClientProvider>
+          <ul className={REJILLA}>
+            {porDar.map((materia) => (
+              <li key={materia.id}>
+                <TarjetaMateriaG360
+                  materia={materia}
+                  situacion={t(`situation.${materia.situacion}`)}
+                  detalle={detalle(materia)}
+                />
+              </li>
+            ))}
+          </ul>
         )}
 
         {!abierta && <p className="texto-meta">{t("windowClosed")}</p>}

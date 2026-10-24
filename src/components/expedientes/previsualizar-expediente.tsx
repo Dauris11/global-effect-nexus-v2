@@ -67,7 +67,6 @@ export function PrevisualizarExpediente({
     gpa: string;
     gpaScale: string;
     noGpa: string;
-    type: string;
     status: string;
     optional: string;
     edit: string;
@@ -92,11 +91,7 @@ export function PrevisualizarExpediente({
   const colorEstado = visual.insignia;
 
   const meta =
-    [
-      fila.cedula,
-      fila.programa,
-      fila.tipo === "becado" ? fila.universidad : null,
-    ]
+    [fila.cedula, fila.programa, fila.universidad]
       .filter(Boolean)
       .join(" · ") || textos.optional;
 
@@ -106,13 +101,6 @@ export function PrevisualizarExpediente({
           `py-0`, y a ese cuerpo la insignia deja de leerse: encoger la única
           señal de color del cuadrado para ganar dos píxeles era el peor sitio
           donde recortar. */}
-      <Badge
-        variant={fila.tipo === "becado" ? "default" : "secondary"}
-        className="px-2 py-0.5 text-[10px]"
-      >
-        {textos.type}
-      </Badge>
-
       {/* El icono va dentro de la insignia del estado, no al lado: es la señal
           que separa `reclutado` de `inactivo` —los dos grises— y la única que
           queda si alguien no distingue el verde del rojo. */}
@@ -239,12 +227,6 @@ export function PrevisualizarExpediente({
               </DialogTitle>
               <DialogDescription asChild>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge
-                    variant={fila.tipo === "becado" ? "default" : "secondary"}
-                    className="text-[10px]"
-                  >
-                    {textos.type}
-                  </Badge>
                   <Badge className={cn("gap-1 text-[10px]", colorEstado)}>
                     <IconoEstado className="size-3 shrink-0" />
                     {textos.status}
@@ -270,9 +252,7 @@ export function PrevisualizarExpediente({
             ancho
           />
           <Campo etiqueta={textos.program} valor={fila.programa} icono={BookOpen} ancho />
-          {fila.tipo === "becado" && (
-            <Campo etiqueta={textos.university} valor={fila.universidad} ancho />
-          )}
+          <Campo etiqueta={textos.university} valor={fila.universidad} ancho />
           <Campo etiqueta={textos.since} valor={fechaIngreso} />
           <Campo
             etiqueta={textos.gpa}

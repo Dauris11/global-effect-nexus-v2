@@ -5,7 +5,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { requerirUsuario } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import { cerrarSesion } from "@/server/auth/acciones";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { ventanaVigente } from "@/server/global360/consultas";
@@ -29,23 +28,20 @@ export default async function LayoutPortal({
   const usuario = await requerirUsuario();
 
   /*
-   * El menú del estudiante depende de qué clase de estudiante es: el
-   * universitario (`becado`) y el de curso técnico (`regular`) no comparten
-   * pantallas porque no comparten tablas. Solo se consulta para ese rol; a los
-   * demás no les afecta y sería una consulta a la base por página sin motivo.
+   * Si el estudiante tiene expediente detrás. Sin él (usuario aún no enlazado)
+   * no hay a quién ofrecerle la prematrícula. Solo se consulta para ese rol; a
+   * los demás no les afecta y sería una consulta a la base por página sin
+   * motivo.
    *
    * `estudianteDeUsuario` está memoizada por petición, así que esto no repite
    * la consulta que la propia pantalla va a hacer después.
    */
-  let tipoEstudiante: TipoEstudiante | null = null;
-
-  if (usuario.rol === "estudiante") {
-    tipoEstudiante = (await estudianteDeUsuario(usuario.id))?.tipo ?? null;
-  }
+  const conExpediente =
+    usuario.rol === "estudiante" && (await estudianteDeUsuario(usuario.id)) !== null;
 
   /*
-   * Aviso de prematrícula en la cabecera. Solo al becado universitario: es el
-   * único que cursa Global Effect 360, y un aviso que no aplica es ruido.
+   * Aviso de prematrícula en la cabecera, a todo estudiante con expediente:
+   * todos cursan Global Effect 360.
    *
    * Se resuelve aquí, en el servidor, y viaja como una cadena ya formada: la
    * cabecera es cliente y así no se le manda ni el diccionario ni la lógica de
@@ -53,7 +49,7 @@ export default async function LayoutPortal({
    */
   let aviso: { texto: string; href: string } | null = null;
 
-  if (tipoEstudiante === "becado") {
+  if (conExpediente) {
     const ventana = await ventanaVigente();
 
     if (ventana) {
@@ -88,7 +84,6 @@ export default async function LayoutPortal({
       // La URL se firma aquí, en el servidor: el armazón es cliente y no tiene
       // por qué saber en qué bucket vive la foto.
       foto={urlDeAvatar(usuario.fotoUrl)}
-      tipoEstudiante={tipoEstudiante}
       aviso={aviso}
       avisos={avisos.map((fila) => ({
         id: fila.id,
@@ -110,7 +105,6 @@ export default async function LayoutPortal({
           rol: usuario.rol,
           idioma: usuario.idioma,
         }}
-        tipoEstudiante={tipoEstudiante}
       />
     </AppShell>
   );

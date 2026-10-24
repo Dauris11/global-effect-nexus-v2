@@ -36,7 +36,6 @@
     "records": "Records",
     "academic": "Subjects",
     "academicModule": "Academic",
-    "academicCourses": "Courses",
     "academies": "Academies",
     "sponsors": "Sponsors",
     "sponsorList": "List",
@@ -59,7 +58,7 @@
     "inventory": "Inventory",
     "scanQr": "Scan QR",
     "quickAction": "Quick",
-    "courses": "Technical courses",
+    "courses": "Classes and subjects",
     "grades": "Grades",
     "history": "History",
     "periods": "Periods",
@@ -110,7 +109,8 @@
     "payables": "Payables",
     "boxes": "Petty cash",
     "habitudes": "Habitudes",
-    "habitudesHub": "Habitudes Hub"
+    "habitudesHub": "Habitudes Hub",
+    "classes360": "360 classes"
   },
   "landing": {
     "enter": "Sign in",
@@ -271,7 +271,6 @@
     "overview": "Overview",
     "greeting": "Hi, {name}",
     "scholarships": "Scholarships",
-    "courses": "Active courses",
     "balance": "Monthly balance",
     "financeTitle": "Income and expenses",
     "financeSubtitle": "Last 6 months",
@@ -289,8 +288,8 @@
     "income": "Income",
     "expenses": "Expenses",
     "university": "Active university students",
-    "technical": "Active technical students",
-    "technicalCourses": "Active technical courses",
+    "g360Students": "Taking Global Effect 360",
+    "g360Subjects": "Open 360 subjects",
     "activeProjects": "Active projects",
     "pendingTasks": "Pending tasks",
     "sponsors": "Sponsors",
@@ -448,12 +447,11 @@
         "academico": "Terms and subjects",
         "tareas": "Assignments and submissions",
         "operaciones": "Projects and tasks",
-        "cursos": "Technical courses and 360"
+        "clases360": "Global Effect 360"
       },
       "kind": {
         "periodo": "Term",
         "materia": "Subject",
-        "curso": "Technical course",
         "clase360": "360 class",
         "tarea": "Assignment",
         "examen": "Exam",
@@ -652,16 +650,14 @@
     "backToList": "Back to records",
     "stats": {
       "total": "Total",
-      "scholarship": "Sponsored",
       "active": "Active",
-      "inProcess": "In process"
+      "inProcess": "In process",
+      "graduated": "Graduates"
     },
     "filters": {
       "search": "Search",
       "searchPlaceholder": "Name, ID or program",
-      "type": "Type",
       "status": "Status",
-      "all": "All",
       "apply": "Apply",
       "clear": "Clear filters"
     },
@@ -676,13 +672,8 @@
     },
     "column": {
       "student": "Student",
-      "type": "Type",
       "status": "Status",
       "gpa": "GPA"
-    },
-    "type": {
-      "becado": "University",
-      "regular": "Technical course"
     },
     "status": {
       "reclutado": "Recruited",
@@ -751,7 +742,6 @@
       "religion": "Religion",
       "photo": "Student photo",
       "photoHint": "JPG, PNG or WEBP, max 2 MB.",
-      "type": "Type",
       "status": "Status",
       "program": "Program or degree",
       "whereStudies": "Where they study",
@@ -871,7 +861,6 @@
       "error": "Couldn't delete it. Try again.",
       "deps": {
         "enrollments": "Enrollments",
-        "grades": "Grades",
         "history": "Academic history",
         "service": "Service and meetings",
         "requests": "Requests"
@@ -926,7 +915,71 @@
         "credits": "Active credits"
       },
       "deleteHint": "This can't be undone. Academic history isn't affected: it stores the subject name as text, not as a reference.",
-      "inUseHint": "It has enrollments attached, and deleting it would take them down with it. Mark it inactive instead: it leaves day-to-day work without losing anything."
+      "inUseHint": "It has enrollments attached, and deleting it would take them down with it. Mark it inactive instead: it leaves day-to-day work without losing anything.",
+      "tasks": "Tasks"
+    },
+    "classes360": {
+      "eyebrow": "Academic",
+      "title": "Global Effect 360 classes",
+      "classes": "Classes",
+      "catalogHint": "The programme catalogue — adding or retiring a subject — is managed in Pre-enrolment.",
+      "empty": "There are no Global Effect 360 classes",
+      "emptyHint": "Classes come from the programme catalogue and are assigned to a teacher in Pre-enrolment.",
+      "forbidden": "You don't have access to 360 classes",
+      "forbiddenHint": "This screen is for teachers and academic coordination.",
+      "students": "Students",
+      "enrolled": "Enrolled",
+      "tasks": "Tasks",
+      "withGrade": "With final grade",
+      "average": "Average",
+      "inactive": "Retired from the programme",
+      "seeStudents": "See students",
+      "hideStudents": "Hide",
+      "noStudents": "Nobody has enrolled in this class yet.",
+      "round": "Round {ronda}",
+      "status": {
+        "prematriculada": "Pre-enrolled",
+        "cursando": "In progress",
+        "aprobada": "Passed",
+        "reprobada": "Failed",
+        "retirada": "Withdrawn"
+      },
+      "taskAverage": "Task avg.",
+      "compliance": "Completion",
+      "finalGrade": "Final grade",
+      "saveGrade": "Save final grade",
+      "gradeSaved": "Grade saved. With 70 or more the subject is passed.",
+      "toReview": "Submissions to review",
+      "reviewEmpty": "Nothing is waiting for review.",
+      "openFile": "Open file",
+      "grade": "Grade",
+      "comment": "Feedback to the student",
+      "review": "Save review",
+      "reviewed": "Reviewed.",
+      "errGrade": "The grade must be between 0 and 100.",
+      "errOwner": "That isn't one of your classes.",
+      "errGeneric": "It couldn't be completed. Try again.",
+      "newTask": "Post task",
+      "taskTitle": "Title",
+      "taskTitleRequired": "The title is required",
+      "taskType": "Type",
+      "taskTypeTask": "Task",
+      "taskTypeExam": "Exam",
+      "taskDue": "Due",
+      "taskDescription": "Description",
+      "taskDueHint": "Empty means no due date. An overdue task can still be submitted: you decide when reviewing.",
+      "taskMaxMb": "File limit (MB)",
+      "taskFormats": "Allowed formats",
+      "taskMaxPoints": "Maximum score",
+      "taskRubric": "Submission instructions and rubric",
+      "taskRubricPlaceholder": "Write the grading criteria, the required report structure or the project guidelines...",
+      "taskAllowLate": "Allow late submissions (they're flagged as late)",
+      "cancel": "Cancel"
+    },
+    "termKind": {
+      "label": "Length",
+      "semester": "Semester",
+      "quarter": "Four-month term"
     },
     "subject": {
       "name": "Name",
@@ -954,155 +1007,12 @@
       "nameRequired": "The name is required",
       "error": "The subject could not be created. Check the data and try again."
     },
-    "courses": {
-      "title": "Technical courses",
-      "description": "Courses at the Technical Careers Institute and their occupancy.",
-      "new": "New course",
-      "count": "{count, plural, =1 {# course} other {# courses}}",
-      "empty": "No courses yet",
-      "emptyHint": "Create the first one with its capacity; enrollment fills the seats.",
-      "searchPlaceholder": "Name or teacher",
-      "stats": {
-        "total": "Total",
-        "active": "Active",
-        "enrolled": "Enrolled",
-        "occupancy": "Occupancy"
-      },
-      "deleteHint": "This can't be undone.",
-      "inUseHint": "It has people enrolled or grades recorded, and deleting it would take those grades down with it. Mark it finished instead.",
-      "edit": "Edit",
-      "save": "Save",
-      "saving": "Saving…",
-      "cancel": "Cancel",
-      "remove": "Delete",
-      "students": "Students",
-      "grades": "Grades",
-      "average": "Average",
-      "tasks": "Tasks",
-      "compliance": "Compliance",
-      "seeStudents": "See students",
-      "hideStudents": "Hide",
-      "noStudents": "Nobody has grades in this course yet.",
-      "newTask": "Publish task",
-      "taskTitle": "Title",
-      "taskType": "Type",
-      "taskDue": "Due",
-      "taskDueHint": "Left empty, no due date. An overdue task can still be submitted: you decide when reviewing.",
-      "taskMaxMb": "File size limit (MB)",
-      "taskFormats": "Allowed formats",
-      "taskMaxPoints": "Max score",
-      "taskRubric": "Submission instructions and rubric",
-      "taskRubricPlaceholder": "Write evaluation criteria, required structure, or project guidelines...",
-      "taskAllowLate": "Allow late submissions (marked with delay notice)",
-      "taskTypeTask": "Assignment",
-      "taskTypeExam": "Exam",
-      "toReview": "Submissions to review",
-      "reviewEmpty": "Nothing waiting for review.",
-      "openFile": "Open file",
-      "grade": "Grade",
-      "comment": "Feedback for the student",
-      "review": "Save review",
-      "reviewed": "Reviewed.",
-      "errGrade": "The grade must be between 0 and 100.",
-      "errOwner": "That is not from one of your classes.",
-      "errGeneric": "Could not complete. Try again.",
-      "my360": "My Global Effect 360 classes",
-      "no360": "You do not teach any Global Effect 360 class.",
-      "admin360Hint": "The programme catalogue is managed in Pre-enrolment.",
-      "enrolled": "Enrolled",
-      "termType": "Length",
-      "semester": "Semester",
-      "quarter": "Quarter"
-    },
-    "course": {
-      "name": "Name",
-      "description": "Description",
-      "teacher": "Teacher",
-      "term": "Term",
-      "status": "Status",
-      "capacity": "Capacity",
-      "schedule": "Schedule",
-      "mode": "Mode",
-      "occupancy": "Occupancy",
-      "enrolledOf": "{enrolled} of {capacity}",
-      "overCapacity": "{over} over capacity"
-    },
-    "courseStatus": {
-      "activo": "Active",
-      "planificado": "Planned",
-      "finalizado": "Finished"
-    },
-    "courseMode": {
-      "presencial": "In person",
-      "virtual": "Online",
-      "mixto": "Hybrid"
-    },
-    "newCourse": {
-      "title": "New technical course",
-      "subtitle": "Created with its capacity and zero enrolled.",
-      "namePlaceholder": "Residential wiring",
-      "scheduleHint": "For example: Sat 8:00–12:00",
-      "enrolledHint": "Enrollment moves the seat count, not this form.",
-      "create": "Create course",
-      "creating": "Creating…",
-      "nameRequired": "The name is required",
-      "error": "The course could not be created. Check the data and try again."
-    },
     "choose": "Choose…",
-    "grades": {
-      "title": "Grades",
-      "description": "Recorded grades, with their color band and the pass rate.",
-      "new": "Record grade",
-      "count": "{count, plural, =1 {# grade} other {# grades}}",
-      "empty": "No grades recorded yet",
-      "emptyHint": "Record the first assessment of the term.",
-      "searchPlaceholder": "Student or course",
-      "distribution": "Distribution by band",
-      "noAverage": "No grades yet",
-      "passRateHint": "{passed} of {total} at 70 or above",
-      "limitHint": "Showing the 500 most recent. Narrow your search to see the rest.",
-      "forbidden": "You don't have access to grades",
-      "forbiddenHint": "Seeing every student's grades requires recording grades, coordinating the academic catalogue or handling records. If you're a student, your grades are in your portal.",
-      "deleteHint": "This can't be undone. The grade leaves the student's record and the course average; only the trail of who deleted it remains.",
-      "stats": {
-        "total": "Grades recorded",
-        "average": "Overall average",
-        "passRate": "Pass rate"
-      }
-    },
-    "grade": {
-      "student": "Student",
-      "course": "Course",
-      "term": "Term",
-      "type": "Assessment",
-      "score": "Score",
-      "band": "Band",
-      "notes": "Notes"
-    },
     "gradeBand": {
       "excelente": "Excellent",
       "buena": "Passing",
       "riesgo": "At risk",
       "critica": "Failing"
-    },
-    "gradeType": {
-      "examen": "Exam",
-      "tarea": "Homework",
-      "proyecto": "Project",
-      "participacion": "Participation",
-      "final": "Final"
-    },
-    "newGrade": {
-      "title": "Record grade",
-      "subtitle": "Student, course, term and score are all required.",
-      "scoreHint": "From 0 to 100. The color confirms the band as you type.",
-      "create": "Record grade",
-      "creating": "Recording…",
-      "fieldsRequired": "The student, course or term is missing.",
-      "scoreInvalid": "The score must be between 0 and 100",
-      "error": "The grade could not be recorded. Check the data and try again.",
-      "noCourses": "No active courses",
-      "noStudents": "No active students"
     },
     "teacherPicker": {
       "unassigned": "Unassigned",
@@ -1139,8 +1049,8 @@
       },
       "counts": {
         "subjects": "Subjects",
-        "courses": "Courses",
-        "enrollments": "Enrollments"
+        "enrollments": "Enrollments",
+        "enrollments360": "360 enrolments"
       },
       "deleteHint": "This can't be undone.",
       "inUseHint": "It has records attached and deleting it would take them down with it. Mark it completed: the term closes and everything stays put."
@@ -1188,7 +1098,8 @@
         "records": "Subjects taken",
         "gpa": "Overall GPA",
         "failed": "Failed"
-      }
+      },
+      "forbiddenHint": "Seeing every student's record requires grading, coordinating the academic catalogue or managing records. If you're a student, your grades are in your portal."
     },
     "enrollment": {
       "title": "Pre-registration",
@@ -1239,20 +1150,15 @@
       "error": "Couldn't delete it. Try again.",
       "deps": {
         "enrollments": "Enrollments",
-        "grades": "Grades",
         "subjects": "Subjects",
-        "courses": "Courses",
         "enrolled": "People enrolled",
-        "tasks": "Assignments and submissions"
+        "tasks": "Assignments and submissions",
+        "enrollments360": "360 enrolments"
       }
     },
     "editSubject": {
       "title": "Edit subject",
       "subtitle": "Changes show up right away in the catalog and in the teacher's portal."
-    },
-    "editCourse": {
-      "title": "Edit course",
-      "subtitle": "Enrollment isn't edited here: that figure is moved by registration."
     },
     "editTerm": {
       "title": "Edit term",
@@ -1267,8 +1173,7 @@
     "noRecord": "You don't have a student record linked yet",
     "noRecordHint": "Your account exists, but it isn't linked to a student record yet. Contact the Foundation's coordination team so they can link it.",
     "type": {
-      "becado": "University",
-      "regular": "Technical course"
+      "becado": "University"
     },
     "gpaLabel": "Grade point average",
     "gpaScale": "/ 4.00",
@@ -1356,7 +1261,6 @@
         "windowClosedHint": "Coordination opens it at the start of each term. Until then, you can only review what you already have.",
         "forTerm": "Term {periodo}",
         "catalogEmpty": "This term has no subjects in the catalogue yet.",
-        "onlyScholar": "University enrolment is for scholarship students only. If you think this is a mistake, talk to coordination.",
         "add": "Enrol me",
         "adding": "Enrolling…",
         "remove": "Remove me",
@@ -1366,7 +1270,6 @@
         "noLimitHint": "There is no credit cap or seat limit here: if your programme has one, check it with coordination.",
         "errClosed": "Pre-enrolment is no longer open.",
         "errRepeated": "You are already enrolled in that subject.",
-        "errNotScholar": "University enrolment is for scholarship students only.",
         "errNoRecord": "Your record isn't linked yet. Talk to coordination.",
         "errLocked": "That subject can no longer be removed from here.",
         "errGeneric": "Couldn't complete. Try again."
@@ -1397,14 +1300,11 @@
       "count": "{count} grades",
       "allTerms": "All",
       "gpaShort": "GPA",
-      "type": {
-        "examen": "Exam",
-        "tarea": "Assignment",
-        "proyecto": "Project",
-        "participacion": "Participation",
-        "final": "Final grade"
+      "origin": {
+        "g360": "Global Effect 360",
+        "universidad": "University"
       },
-      "typeColumn": "Type"
+      "typeColumn": "Program"
     },
     "classroom": {
       "eyebrow": "Virtual classroom",
@@ -1506,68 +1406,44 @@
   "teacherPortal": {
     "eyebrow": "Teacher portal",
     "greeting": "Hi, {name}",
-    "summary": "Your courses, your students and what's left to grade.",
+    "summary": "Your Global Effect 360 classes, your students and what's left to grade.",
     "stats": {
-      "courses": "Active courses",
       "students": "Students",
-      "grades": "Grades recorded",
+      "grades": "Final grades given",
       "toReview": "To review",
-      "subjects": "Subjects in your name"
+      "subjects": "Subjects in your name",
+      "classes360": "360 classes"
     },
     "shortcutsTitle": "Quick links",
     "shortcuts": {
-      "courses": {
-        "label": "Technical courses",
-        "hint": "Catalog and capacity"
-      },
       "subjects": {
         "label": "Subjects",
         "hint": "Catalog by term"
       },
-      "grades": {
-        "label": "Grades",
-        "hint": "Record a grade"
-      },
       "calendar": {
         "label": "Calendar",
         "hint": "Foundation agenda"
+      },
+      "classes360": {
+        "label": "360 classes",
+        "hint": "Tasks, submissions and final grade"
       }
     },
-    "coursesTitle": "My courses",
-    "coursesEmpty": "You have no courses assigned yet",
-    "coursesEmptyHint": "Coordination assigns courses from the catalog. If one is missing, let them know.",
-    "courseStatus": {
-      "activo": "Active",
-      "planificado": "Planned",
-      "finalizado": "Finished"
-    },
-    "courseMode": {
-      "presencial": "In person",
-      "virtual": "Online",
-      "mixto": "Hybrid"
-    },
-    "occupancy": "Occupancy",
-    "mode": "Mode",
     "term": "Term",
     "schedule": "Schedule",
     "gradesCount": "{count, plural, =0 {No grades} =1 {# grade} other {# grades}}",
     "averageShort": "Avg. {value}",
     "noGradesYet": "Not graded",
     "subjectsTitle": "Subjects in my name",
-    "enrolledCount": "{count, plural, =1 {# enrolled} other {# enrolled}}"
+    "enrolledCount": "{count, plural, =1 {# enrolled} other {# enrolled}}",
+    "classesTitle": "My Global Effect 360 classes",
+    "classesEmpty": "You don't have any classes yet",
+    "classesEmptyHint": "Coordination assigns 360 classes to you from Pre-enrolment. If one seems to be missing, let them know."
   },
   "modules": {
-    "academicCourses": {
-      "title": "Technical courses",
-      "desc": "The Institute's technical courses: teacher, term, capacity, schedule and delivery mode."
-    },
     "academicSubjects": {
       "title": "Subjects",
       "desc": "Create, edit and remove subjects by term, with code, credits, room and teacher."
-    },
-    "academicGrades": {
-      "title": "Grades",
-      "desc": "Record and track grades by evaluation, student and term."
     },
     "academicHistory": {
       "title": "Academic history",
@@ -1720,17 +1596,13 @@
   },
   "global360": {
     "name": "Global Effect 360",
-    "eyebrow": "Technical training",
+    "eyebrow": "Foundation programme",
     "title": "Global Effect 360",
-    "description": "The Foundation’s technical subjects. Four are required; the rest are optional.",
-    "progressRequired": "Required",
-    "progressOptional": "Optional",
+    "description": "The Foundation’s compulsory programme. Each term has two two-month blocks, and you take one subject in each.",
     "taken": "Subjects taken",
     "pending": "Subjects to take",
     "takenEmpty": "You have not taken any yet.",
     "pendingEmpty": "You have none left.",
-    "required": "Required",
-    "optional": "Optional",
     "credits": "{n} cr",
     "hours": "{n} h",
     "situation": {
@@ -1744,12 +1616,11 @@
     "windowSoon": "Pre-enrolment",
     "windowFrom": "From {abre} to {cierra}",
     "windowClosed": "Pre-enrolment is closed.",
-    "enrol": "Pre-enrol",
+    "enrol": "Choose",
     "enrolling": "Sending…",
     "withdraw": "Remove",
     "errClosed": "Pre-enrolment is no longer open.",
-    "errRepeated": "You are already pre-enrolled in it.",
-    "errNotScholar": "Global Effect 360 is only for university scholarship students.",
+    "errRepeated": "You have already chosen it this term.",
     "errNoRecord": "Your record is not linked yet. Talk to coordination.",
     "errGeneric": "Could not complete. Try again.",
     "catalogTitle": "Programme catalogue",
@@ -1759,7 +1630,6 @@
     "fieldCode": "Code",
     "fieldCredits": "Credits",
     "fieldHours": "Hours",
-    "fieldRequired": "Required",
     "enrolled": "{n} enrolled",
     "retire": "Remove from programme",
     "restore": "Return to programme",
@@ -1776,7 +1646,30 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "errDates": "The closing time must be after the opening time.",
-    "errName": "The name cannot be empty."
+    "errName": "The name cannot be empty.",
+    "progress": "Programme progress",
+    "allRequired": "Every subject is compulsory.",
+    "tanda1": "Block 1",
+    "tanda2": "Block 2",
+    "tandaPending": "You must choose your subject for block {n}",
+    "tandaRule": "Global Effect 360 is compulsory: one subject per block, two per term.",
+    "tandaChooseNow": "Choose now",
+    "tandasTitle": "Your blocks · {periodo}",
+    "tandaOpenNow": "open now",
+    "tandaEmpty": "Not chosen",
+    "chooseForTanda": "Choose your subject for block {n}",
+    "catalogStudentTitle": "Programme subjects",
+    "scheduleTbd": "Schedule to be arranged",
+    "roomTbd": "Room to be assigned",
+    "capacity": "Seats",
+    "noCapacity": "No seats",
+    "errAlreadyPassed": "You have already passed this subject.",
+    "errTandaTaken": "You already have a subject in this block. Remove it first if you want to change it.",
+    "errNoCapacity": "This subject has no seats left.",
+    "fieldTanda": "Block",
+    "fieldTandaPlaceholder": "Choose the block",
+    "errTanda": "Choose block 1 or 2.",
+    "errOverlap": "Another window for this term is already open on those dates."
   },
   "adminPortal": {
     "eyebrow": "Administration portal",
@@ -1804,8 +1697,6 @@
     "figures": {
       "title": "How the Foundation is doing",
       "students": "Active students",
-      "scholars": "Scholarship students",
-      "courses": "Technical courses",
       "subjects": "Subjects",
       "grades": "Grades recorded",
       "projects": "Projects under way",
@@ -1814,7 +1705,8 @@
       "giving": "Monthly giving",
       "diners": "Diners today",
       "users": "Active accounts",
-      "requests": "Open requests"
+      "requests": "Open requests",
+      "classes360": "Active 360 classes"
     },
     "modules": {
       "title": "Every module",
@@ -2210,16 +2102,14 @@
         "passed": "Passed",
         "failed": "Failed",
         "students": "Active students",
-        "scholars": "Scholarship students",
-        "courses": "Courses",
+        "g360Students": "Taking Global Effect 360",
+        "g360Subjects": "Open 360 subjects",
         "subjects": "Subjects"
       },
       "distribution": "Distribution by band",
       "distributionHint": "The four bands of the grading scale, counted over every grade in the term.",
-      "byType": "Average by assessment type",
-      "byTypeHint": "Where the grade is won and lost: exam, homework, project, participation or final.",
-      "byCourse": "Average by course",
-      "byCourseHint": "The twelve courses with the best average. A course with no grades does not appear: its average is not zero, it does not exist."
+      "bySubject360": "Average by Global Effect 360 subject",
+      "bySubject360Hint": "The twelve 360 subjects with the best average final grade. A subject with no grades does not appear: its average is not zero, it does not exist."
     },
     "finance": {
       "allTimeHint": "All four figures cover everything recorded, with no date filter. For a specific month, the filter lives in Accounting.",
@@ -3259,24 +3149,7 @@
     "presetGoodAnalysis": "Good conceptual analysis. Recommended to expand on conclusions.",
     "presetMissingDiagrams": "Missing explanatory diagrams required in specifications.",
     "presetFixFormatting": "Review formatting and bibliography according to institutional standards.",
-    "saveGradeButton": "Save Grade and Feedback",
-    "enrollSuccess": "Subject successfully enrolled",
-    "enrollError": "Could not enroll subject",
-    "withdrawSuccess": "Subject successfully withdrawn",
-    "withdrawError": "Could not withdraw subject",
-    "periodEnrollmentTitle": "Global Effect 360 Term Enrollment",
-    "round1Badge": "Round 1: Regular Enrollment",
-    "round2Badge": "Round 2: Adjustments & Block 2",
-    "roundDescription": "Subject selection with schedules, classrooms, and real-time capacities.",
-    "round1Button": "Round 1 (Regular)",
-    "round2Button": "Round 2 (Adjustments)",
-    "windowOpenUntil": "Enrollment window open until {date}",
-    "windowClosedNotice": "The enrollment window is currently closed. Check the institutional calendar for upcoming dates.",
-    "mandatoryBadge": "Mandatory",
-    "capacityLabel": "Capacity",
-    "withdrawSubjectButton": "Withdraw Subject",
-    "noCapacityButton": "No Capacity Available",
-    "enrollSubjectButton": "Enroll Subject"
+    "saveGradeButton": "Save Grade and Feedback"
   },
   "habitudes": {
     "pageTitle": "Habitudes Hub & High School Field Visits",

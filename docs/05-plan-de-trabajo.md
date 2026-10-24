@@ -90,8 +90,8 @@ Cada módulo = migración (ya lista) + queries parametrizadas + validación Zod 
 |---|---|---|---|
 | Expedientes | `server/estudiantes/` | lista, expediente completo (perfiles + familiares + GPA), crear | `expedientes.*` |
 | Dashboard | `server/dashboard/` | métricas, próximos eventos, tareas prioritarias | (sesión) |
-| Académico | `server/academico/` | períodos, materias, cursos, inscripción, calificaciones, historial | `academico.*` · `calificaciones.registrar` |
-| Portales | `server/portales/` | lectura recortada a una persona: expediente propio del estudiante y cursos propios del docente | (sesión + propiedad de la fila) |
+| Académico | `server/academico/` | períodos, materias, inscripción, historial, Global Effect 360 (catálogo, tandas, clases y nota final) | `academico.*` · `calificaciones.registrar` |
+| Portales | `server/portales/` | lectura recortada a una persona: expediente propio del estudiante y clases propias del docente (materias y 360) | (sesión + propiedad de la fila) |
 | Patrocinio | `server/patrocinadores/` | patrocinadores + estadísticas, asignación de becas | `patrocinadores.*` |
 | Finanzas | `server/finanzas/` | transacciones, balance, evolución mensual | `finanzas.*` |
 | Solicitudes | `server/solicitudes/` | bandeja por permisos, flujo por pasos, segundo nivel de dirección, línea de tiempo (`solicitud`, `solicitud_paso`) | `solicitudes.gestionar` · `solicitudes.direccion` · `finanzas.escribir` (gastos) |
@@ -160,6 +160,8 @@ Integraciones backend: `lib/anthropic.ts` (chat/traducción/OCR), `lib/email.ts`
 - [x] Tabla inscripcion (matricula)
 - [x] Tabla calificacion
 - [x] Tabla historial_calificacion
+
+> `curso` y `calificacion` se retiraron en la migración `0047` (oct 2026), cuando la Fundación dejó de impartir cursos técnicos; con ellas se fue el valor `regular` de `tipo_estudiante`. La lista de arriba es lo que se construyó en agosto y se deja como historia.
 
 ---
 
@@ -240,6 +242,8 @@ Integraciones backend: `lib/anthropic.ts` (chat/traducción/OCR), `lib/email.ts`
 - [x] **Portal Profesor** — `/portal/profesor`: banner de cursos activos, inscritos, notas y materias; accesos rápidos comprobados contra el permiso real; y sus cursos —también los cerrados, detrás de los activos— con ocupación y lo que falta por calificar.
 
 > **Sobre "de quién es un curso":** el Portal Profesor no podía construirse sobre el esquema tal como estaba. `curso.docente` y `materia.profesor_nombre` son TEXT libres: sirven para imprimir un nombre, no para decidir identidad. Cruzar por texto le habría enseñado a un homónimo los cursos de otro, y a "Juan A. Pérez" ninguno de los suyos. La **migración 0019** añade `curso.docente_usuario_id` y `materia.profesor_usuario_id` (FK a `usuario`, `ON DELETE SET NULL`) con backfill conservador —solo coincidencias exactas y únicas de nombre—, y **conserva** las columnas de texto: no todo docente es usuario del sistema (un tallerista externo nunca inicia sesión) y el nombre de quien dio el curso el año pasado no debe desaparecer al borrarse un usuario. Regla de lectura: la FK dice de quién es, el texto dice qué nombre se muestra.
+>
+> **Cambio de alcance (24 oct 2026).** Lo que este sprint construyó para cursos técnicos ya no existe: la migración `0047` borró `curso` y `calificacion`. `/academico/cursos` pasó a ser **`/academico/clases-360`** —solo clases de Global Effect 360: inscritos, tareas, entregas y la nota final de cada inscripción, que la deja aprobada o reprobada— y `/academico/calificaciones` se retiró; `calificaciones.registrar` sigue y ahora es el permiso para poner esa nota final. El portal del profesor deja de tener tres listas y se queda con dos: materias universitarias y clases de 360. Las decisiones de arriba (el riel, el borrado que cuenta antes, la FK del docente) siguen valiendo para lo que queda.
 >
 > **Sobre el acceso a un portal:** no lo da un permiso, lo da la propiedad de la fila. El Portal Estudiante no lee nada que un permiso pueda nombrar — lee `estudiante.usuario_id = <yo>`. Por eso `NavItem` gana `roles?: string[]`, una lista exacta que **también aplica a `super_admin`**: enseñarle "Mi portal" a quien no tiene expediente solo le ofrece una pantalla que no puede contener nada suyo. Y por eso `HOME_POR_ROL` cambia: el estudiante y el docente aterrizan en su portal, no en el panel general, cuyas cifras (becados, balance del mes) se les recortan hasta dejarlo casi vacío.
 

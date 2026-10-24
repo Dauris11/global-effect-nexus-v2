@@ -167,8 +167,8 @@ export async function instruccionesPara(
     lineas.length === 0 ? "" : `\n${titulo}\n${lineas.map((l) => `- ${l}`).join("\n")}`;
 
   return [
-    "Eres el asistente del Instituto Técnico de la Fundación Global Effect.",
-    "Acompañas a un estudiante con sus estudios: le explicas su situación académica, le ayudas a organizarse y le aclaras dudas de las materias en las que está inscrito.",
+    "Eres el asistente académico de la Fundación Global Effect.",
+    "Acompañas a un becado universitario con sus estudios y con Global Effect 360: le explicas su situación académica, le ayudas a organizarse y le aclaras dudas de las materias en las que está inscrito.",
     "",
     "Reglas que no puedes romper:",
     "- Solo sabes lo que aparece abajo. Si te preguntan algo que no está ahí, dilo y remite a coordinación en vez de suponer.",
@@ -178,7 +178,7 @@ export async function instruccionesPara(
     "- No opinas sobre el trabajo de sus docentes.",
     `- Respondes en ${idioma === "en" ? "inglés" : "español"}, breve y en tono cercano. Si la respuesta cabe en dos frases, no escribas cinco.`,
     "",
-    `Estudiante: ${estudiante.nombre} (${estudiante.tipo}, estado ${estudiante.estado}).`,
+    `Estudiante: ${estudiante.nombre} (becado universitario, estado ${estudiante.estado}).`,
     `Índice académico: ${indice === null ? "sin historial" : indice.toFixed(2)} sobre 4.00. Promedio: ${media === null ? "sin historial" : media.toFixed(1)} sobre 100 (se aprueba con ${NOTA_APROBADA}).`,
     lista(
       "Materias inscritas:",
@@ -199,7 +199,7 @@ export async function instruccionesPara(
       "Calificaciones registradas:",
       notas.map(
         (nota) =>
-          `${nota.curso} (${nota.periodo}, ${nota.tipo_evaluacion}): ${nota.nota.toFixed(1)} — ${nota.letra}`,
+          `${nota.materia} (${nota.periodo}, ${nota.origen === "g360" ? "Global Effect 360" : "universidad"}): ${nota.nota.toFixed(1)} — ${nota.letra}`,
       ),
     ),
     lista(

@@ -9,7 +9,6 @@ import { enTransaccion, consultarUna } from "@/lib/db";
 import { requerirUsuario } from "@/lib/auth";
 import {
   esEstadoEstudiante,
-  esTipoEstudiante,
   FAMILIA_FIJA,
   GENEROS,
 } from "@/lib/expedientes";
@@ -72,11 +71,10 @@ export async function actualizarExpediente(
 
   // Los desplegables se vuelven a comprobar aquí: un `select` del navegador
   // se puede manipular.
-  const tipo = String(datos.get("tipo") ?? "regular");
   const estado = String(datos.get("estado") ?? "activo");
   const genero = texto("genero");
 
-  if (!esTipoEstudiante(tipo) || !esEstadoEstudiante(estado)) {
+  if (!esEstadoEstudiante(estado)) {
     return { estado: "invalido" };
   }
   if (genero && !(GENEROS as readonly string[]).includes(genero)) {
@@ -117,22 +115,21 @@ export async function actualizarExpediente(
                 genero = $9::genero,
                 sexo_documento = $10,
                 religion = $11,
-                tipo = $12::tipo_estudiante,
-                estado = $13::estado_estudiante,
-                programa = $14,
-                donde_estudia = $15,
-                universidad = $16,
-                fecha_ingreso = $17::date,
-                centro_educativo = $18,
-                director_centro = $19,
-                facilitador_habitudes = $20,
-                breve_historia_habitudes = $21,
-                amonestaciones = $22,
-                solicitudes_pendientes = $23,
-                envio_correo_patrocinador = coalesce($24, envio_correo_patrocinador),
-                asistio_reunion_mensual = coalesce($25, asistio_reunion_mensual),
-                notas_adicionales = $26,
-                foto_url = coalesce($27, foto_url)
+                estado = $12::estado_estudiante,
+                programa = $13,
+                donde_estudia = $14,
+                universidad = $15,
+                fecha_ingreso = $16::date,
+                centro_educativo = $17,
+                director_centro = $18,
+                facilitador_habitudes = $19,
+                breve_historia_habitudes = $20,
+                amonestaciones = $21,
+                solicitudes_pendientes = $22,
+                envio_correo_patrocinador = coalesce($23, envio_correo_patrocinador),
+                asistio_reunion_mensual = coalesce($24, asistio_reunion_mensual),
+                notas_adicionales = $25,
+                foto_url = coalesce($26, foto_url)
           WHERE id = $1
           RETURNING id`,
         [
@@ -147,7 +144,6 @@ export async function actualizarExpediente(
           genero,
           texto("sexo_documento"),
           texto("religion"),
-          tipo,
           estado,
           texto("programa"),
           texto("donde_estudia"),
@@ -358,11 +354,10 @@ export async function crearExpediente(
   // nombre es obligatorio, el resto se completa con el tiempo".
   if (!nombre) return { estado: "invalido" };
 
-  const tipo = String(datos.get("tipo") ?? "regular");
   const estado = String(datos.get("estado") ?? "activo");
   const genero = texto("genero");
 
-  if (!esTipoEstudiante(tipo) || !esEstadoEstudiante(estado)) {
+  if (!esEstadoEstudiante(estado)) {
     return { estado: "invalido" };
   }
   if (genero && !(GENEROS as readonly string[]).includes(genero)) {
@@ -380,7 +375,7 @@ export async function crearExpediente(
       const fila = await cliente.query<{ id: string }>(
         `INSERT INTO estudiante (
            nombre, cedula, email, telefono, fecha_nacimiento, lugar_nacimiento,
-           nacionalidad, genero, sexo_documento, religion, tipo, estado,
+           nacionalidad, genero, sexo_documento, religion, estado,
            programa, donde_estudia, universidad, fecha_ingreso,
            centro_educativo, director_centro, facilitador_habitudes,
            breve_historia_habitudes, amonestaciones, solicitudes_pendientes,
@@ -388,17 +383,20 @@ export async function crearExpediente(
            notas_adicionales
          ) VALUES (
            $1, $2, $3, $4, $5::date, $6, $7, $8::genero, $9, $10,
-           $11::tipo_estudiante, $12::estado_estudiante, $13, $14, $15,
-           $16::date, $17, $18, $19, $20, $21, $22,
-           coalesce($23, 'pendiente'), coalesce($24, 'no'), $25
+           $11::estado_estudiante, $12, $13, $14,
+           $15::date, $16, $17, $18, $19, $20, $21,
+           coalesce($22, 'pendiente'), coalesce($23, 'no'), $24
          )
          RETURNING id`,
         // Los dos `coalesce` de la sentencia repiten los DEFAULT de la 0005
         // ('pendiente' y 'no'). Un DEFAULT solo se aplica si la columna NO
-        // aparece en el INSERT, y aquí aparecen las veinticinco: sin el
+        // aparece en el INSERT, y aquí aparecen las veinticuatro: sin el
         // `coalesce`, un formulario que no toque esos dos desplegables
         // guardaría NULL y la ficha enseñaría un hueco donde la base prometía
         // un valor.
+        //
+        // `tipo` no va: desde la 0047 su único valor es `becado` y lo pone el
+        // DEFAULT de la columna.
         [
           nombre,
           texto("cedula"),
@@ -410,7 +408,6 @@ export async function crearExpediente(
           genero,
           texto("sexo_documento"),
           texto("religion"),
-          tipo,
           estado,
           texto("programa"),
           texto("donde_estudia"),
@@ -538,9 +535,9 @@ export async function crearExpediente(
     accion: "expediente.creado",
     entidad: "estudiante",
     entidadId: creado.id,
-    // El nombre, el tipo y el estado. Nada del contenido: la historia de vida y
-    // la situación familiar no se copian al registro de auditoría.
-    datos: { nombre, tipo, estado },
+    // El nombre y el estado. Nada del contenido: la historia de vida y la
+    // situación familiar no se copian al registro de auditoría.
+    datos: { nombre, estado },
   });
 
   revalidatePath("/[locale]/expedientes", "page");
@@ -551,10 +548,9 @@ export async function crearExpediente(
   redirigir(`/expedientes/${creado.id}`, await getLocale());
 }
 
-/** Las cinco categorías que se avisan cuando el expediente tiene historial. */
+/** Las cuatro categorías que se avisan cuando el expediente tiene historial. */
 const DEP_CLAVES = [
   "enrollments",
-  "grades",
   "history",
   "requests",
   "service",
@@ -614,7 +610,6 @@ export async function eliminarExpediente(
     `SELECT
        (SELECT count(*) FROM inscripcion WHERE estudiante_id = $1)
          + (SELECT count(*) FROM inscripcion_360 WHERE estudiante_id = $1) AS enrollments,
-       (SELECT count(*) FROM calificacion WHERE estudiante_id = $1) AS grades,
        (SELECT count(*) FROM historial_calificacion WHERE estudiante_id = $1) AS history,
        (SELECT count(*) FROM solicitud WHERE estudiante_id = $1) AS requests,
        (SELECT count(*) FROM registro_servicio WHERE estudiante_id = $1) AS service`,

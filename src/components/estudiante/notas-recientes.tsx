@@ -58,9 +58,9 @@ export async function NotasRecientes({
                 <LetraNota letra={nota.letra} />
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{nota.curso}</p>
+                  <p className="truncate font-medium">{nota.materia}</p>
                   <p className="text-sm text-tinta-2">
-                    {t(`gradesPage.type.${nota.tipo_evaluacion}`)}
+                    {t(`gradesPage.origin.${nota.origen}`)}
                   </p>
                 </div>
 

@@ -1,7 +1,7 @@
 import { consultar, consultarUna } from "@/lib/db";
 
 /**
- * Gestión académica: los cursos técnicos y las clases de Global Effect 360.
+ * Gestión académica: las clases de Global Effect 360 y las materias del docente.
  *
  * Quién ve qué se decide con un solo parámetro, `docenteId`:
  *
@@ -13,162 +13,47 @@ import { consultar, consultarUna } from "@/lib/db";
  * decidirlo mirando el rol, y así no hay forma de acabar viéndolo todo por
  * haberse dejado un argumento.
  *
- * Los cursos técnicos y las clases de 360 son DOS programas distintos y no se
- * mezclan en una lista: el catálogo de 360 lo administran admin y super admin, y
- * el profesor solo ve sus clases para ponerles tareas.
+ * Desde la 0047 no hay cursos técnicos: 360 es la única formación propia de la
+ * Fundación y ocupa su lugar. El catálogo lo siguen administrando admin y super
+ * admin; el profesor ve sus clases, les pone tareas y cierra la nota final.
  */
-
-export type CursoGestionado = {
-  id: string;
-  nombre: string;
-  descripcion: string | null;
-  docente: string | null;
-  estado: string;
-  modalidad: string;
-  horario: string | null;
-  capacidad: number;
-  periodo: string | null;
-  /** Semestre o cuatrimestre, del período (migración 0028). */
-  periodo_tipo: string | null;
-  /** Estudiantes con al menos una calificación en el curso. */
-  estudiantes: number;
-  /** Notas registradas y promedio, para saber si el curso está al día. */
-  notas: number;
-  promedio: number | null;
-  /** Tareas y exámenes publicados en el curso. */
-  tareas: number;
-};
-
-/**
- * Cursos técnicos, con su carga y su avance.
- *
- * `estudiantes` sale de `calificacion` y no de `curso.inscritos`: esa columna es
- * un contador que se pone a mano y se queda desfasado. Quien tiene una nota en
- * el curso está en el curso.
- */
-export async function cursosGestionados(
-  docenteId: string | null,
-): Promise<CursoGestionado[]> {
-  return consultar<CursoGestionado>(
-    `SELECT c.id,
-            c.nombre,
-            c.descripcion,
-            c.docente,
-            c.estado,
-            c.modalidad,
-            c.horario,
-            coalesce(c.capacidad, 0) AS capacidad,
-            p.nombre AS periodo,
-            p.tipo   AS periodo_tipo,
-            (SELECT count(DISTINCT k.estudiante_id)::int
-               FROM calificacion k WHERE k.curso_id = c.id) AS estudiantes,
-            (SELECT count(*)::int
-               FROM calificacion k WHERE k.curso_id = c.id) AS notas,
-            (SELECT round(avg(k.nota), 2)::float8
-               FROM calificacion k WHERE k.curso_id = c.id) AS promedio,
-            (SELECT count(*)::int
-               FROM asignacion a
-              WHERE a.curso_id = c.id
-                AND a.tipo IN ('tarea', 'examen')) AS tareas
-       FROM curso c
-       LEFT JOIN periodo p ON p.id = c.periodo_id
-      WHERE ($1::uuid IS NULL OR c.docente_usuario_id = $1)
-      ORDER BY c.estado, p.fecha_inicio DESC NULLS LAST, c.nombre`,
-    [docenteId],
-  );
-}
-
-export type EstudianteEnCurso = {
-  estudiante_id: string;
-  nombre: string;
-  /** Promedio de sus notas en ESTE curso. */
-  promedio: number | null;
-  notas: number;
-  /** Tareas del curso que ya entregó, y cuántas hay. */
-  entregadas: number;
-  tareas: number;
-  /** Cuántas tiene calificadas por el profesor. */
-  calificadas: number;
-};
-
-/**
- * Los estudiantes de un curso, con su nota y si cumplieron con las tareas.
- *
- * Es lo que el profesor pidió ver en una sola pantalla: quién está, cómo va y si
- * entregó. `entregadas` cuenta lo que llegó —entregado, tarde o calificado—
- * porque "cumplió" no es lo mismo que "sacó buena nota".
- */
-export async function estudiantesDeCurso(
-  cursoId: string,
-): Promise<EstudianteEnCurso[]> {
-  return consultar<EstudianteEnCurso>(
-    `WITH del_curso AS (
-       SELECT DISTINCT k.estudiante_id
-         FROM calificacion k
-        WHERE k.curso_id = $1
-     ),
-     tareas AS (
-       SELECT count(*)::int AS total
-         FROM asignacion a
-        WHERE a.curso_id = $1
-          AND a.tipo IN ('tarea', 'examen')
-     )
-     SELECT e.id AS estudiante_id,
-            e.nombre,
-            (SELECT round(avg(k.nota), 2)::float8
-               FROM calificacion k
-              WHERE k.curso_id = $1 AND k.estudiante_id = e.id) AS promedio,
-            (SELECT count(*)::int
-               FROM calificacion k
-              WHERE k.curso_id = $1 AND k.estudiante_id = e.id) AS notas,
-            (SELECT count(*)::int
-               FROM entrega_estudiante d
-               JOIN asignacion a ON a.id = d.asignacion_id
-              WHERE a.curso_id = $1
-                AND d.estudiante_id = e.id
-                AND d.estado IN ('entregado', 'tarde', 'calificado')) AS entregadas,
-            (SELECT total FROM tareas) AS tareas,
-            (SELECT count(*)::int
-               FROM entrega_estudiante d
-               JOIN asignacion a ON a.id = d.asignacion_id
-              WHERE a.curso_id = $1
-                AND d.estudiante_id = e.id
-                AND d.estado = 'calificado') AS calificadas
-       FROM del_curso dc
-       JOIN estudiante e ON e.id = dc.estudiante_id
-      ORDER BY e.nombre`,
-    [cursoId],
-  );
-}
 
 export type Clase360 = {
   id: string;
   nombre: string;
   codigo: string | null;
-  obligatoria: boolean;
   creditos: number;
   activa: boolean;
-  /** Becados con la materia prematriculada o cursando. */
+  horario: string | null;
+  aula: string | null;
+  /** Estudiantes con la materia prematriculada o cursando. */
   inscritos: number;
   tareas: number;
+  /** Inscritos con la nota final ya puesta, para saber si la clase está al día. */
+  con_nota: number;
+  promedio: number | null;
 };
 
 /**
  * Clases de Global Effect 360 de un docente.
  *
- * Solo LEER y poner tareas: el catálogo —crear una materia, marcarla como
- * obligatoria, retirarla— lo administran admin y super admin en
- * `/academico/prematricula`. Esa separación es de la especificación y la sostiene
- * el permiso: el docente no tiene `academico.escribir`.
+ * El docente pone tareas y la nota final, pero no toca el catálogo —crear una
+ * materia o retirarla—: eso lo administran admin y super admin en
+ * `/academico/prematricula`. La separación la sostiene el permiso: el docente no
+ * tiene `academico.escribir`.
+ *
+ * La nota y el promedio se cuentan sobre las inscripciones no retiradas: quien se
+ * dio de baja no está en la clase, y su `NULL` bajaría el "al día" sin motivo.
  */
 export async function clases360(docenteId: string | null): Promise<Clase360[]> {
   return consultar<Clase360>(
     `SELECT m.id,
             m.nombre,
             m.codigo,
-            m.obligatoria,
             m.creditos,
             m.activa,
+            m.horario,
+            m.aula,
             (SELECT count(*)::int
                FROM inscripcion_360 i
               WHERE i.materia_id = m.id
@@ -176,34 +61,56 @@ export async function clases360(docenteId: string | null): Promise<Clase360[]> {
             (SELECT count(*)::int
                FROM asignacion a
               WHERE a.materia_360_id = m.id
-                AND a.tipo IN ('tarea', 'examen')) AS tareas
+                AND a.tipo IN ('tarea', 'examen')) AS tareas,
+            (SELECT count(*)::int
+               FROM inscripcion_360 i
+              WHERE i.materia_id = m.id
+                AND i.estado <> 'retirada'
+                AND i.nota IS NOT NULL) AS con_nota,
+            (SELECT round(avg(i.nota), 2)::float8
+               FROM inscripcion_360 i
+              WHERE i.materia_id = m.id
+                AND i.estado <> 'retirada') AS promedio
        FROM materia_360 m
       WHERE ($1::uuid IS NULL OR m.docente_id = $1)
-      ORDER BY m.activa DESC, m.obligatoria DESC, m.orden, m.nombre`,
+      ORDER BY m.activa DESC, m.orden, m.nombre`,
     [docenteId],
   );
 }
 
 export type InscritoEn360 = {
+  /** Id de la inscripción: es lo que se califica, no el estudiante. */
+  id: string;
   estudiante_id: string;
   nombre: string;
   estado: string;
   periodo: string | null;
+  ronda: number;
   nota: number | null;
+  /** Promedio de sus entregas calificadas: la base para poner la nota final. */
+  promedio_tareas: number | null;
   entregadas: number;
   tareas: number;
 };
 
-/** Los becados inscritos en una clase de 360, con su avance. */
+/** Los inscritos en una clase de 360, con su avance y su nota. */
 export async function inscritosDeClase360(
   materiaId: string,
 ): Promise<InscritoEn360[]> {
   return consultar<InscritoEn360>(
-    `SELECT e.id AS estudiante_id,
+    `SELECT i.id,
+            e.id AS estudiante_id,
             e.nombre,
             i.estado,
             p.nombre AS periodo,
+            i.ronda,
             i.nota::float8 AS nota,
+            (SELECT round(avg(d.calificacion), 2)::float8
+               FROM entrega_estudiante d
+               JOIN asignacion a ON a.id = d.asignacion_id
+              WHERE a.materia_360_id = $1
+                AND d.estudiante_id = e.id
+                AND d.calificacion IS NOT NULL) AS promedio_tareas,
             (SELECT count(*)::int
                FROM entrega_estudiante d
                JOIN asignacion a ON a.id = d.asignacion_id
@@ -218,7 +125,7 @@ export async function inscritosDeClase360(
        JOIN estudiante e ON e.id = i.estudiante_id
        LEFT JOIN periodo p ON p.id = i.periodo_id
       WHERE i.materia_id = $1
-      ORDER BY e.nombre`,
+      ORDER BY p.fecha_inicio DESC NULLS LAST, i.ronda, e.nombre`,
     [materiaId],
   );
 }
@@ -288,9 +195,9 @@ export type EntregaPorRevisar = {
 /**
  * Entregas que esperan revisión, de las clases de este docente.
  *
- * `coalesce` de los tres nombres posibles: la tarea cuelga de una materia
- * universitaria, de un curso técnico o de una materia de 360, y la pantalla
- * necesita decir de cuál sin preguntar tres veces.
+ * `coalesce` de los dos nombres posibles: la tarea cuelga de una materia
+ * universitaria o de una materia de 360, y la pantalla necesita decir de cuál
+ * sin preguntar dos veces.
  */
 export async function entregasPorRevisar(
   docenteId: string | null,
@@ -299,7 +206,7 @@ export async function entregasPorRevisar(
   return consultar<EntregaPorRevisar>(
     `SELECT d.id,
             a.titulo AS asignacion,
-            coalesce(mu.nombre, cu.nombre, m3.nombre, '—') AS unidad,
+            coalesce(mu.nombre, m3.nombre, '—') AS unidad,
             e.nombre AS estudiante,
             d.estado,
             d.fecha_entrega,
@@ -310,12 +217,10 @@ export async function entregasPorRevisar(
        JOIN asignacion  a  ON a.id = d.asignacion_id
        JOIN estudiante  e  ON e.id = d.estudiante_id
        LEFT JOIN materia     mu ON mu.id = a.materia_id
-       LEFT JOIN curso       cu ON cu.id = a.curso_id
        LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
       WHERE d.estado IN ('entregado', 'tarde')
         AND ($1::uuid IS NULL
              OR mu.profesor_usuario_id = $1
-             OR cu.docente_usuario_id  = $1
              OR m3.docente_id          = $1)
       ORDER BY d.fecha_entrega DESC NULLS LAST
       LIMIT $2`,
@@ -324,7 +229,6 @@ export async function entregasPorRevisar(
 }
 
 export type CifrasDocente = {
-  cursos: number;
   clases_360: number;
   estudiantes: number;
   por_revisar: number;
@@ -335,29 +239,25 @@ export async function cifrasDocente(
   docenteId: string | null,
 ): Promise<CifrasDocente> {
   const fila = await consultarUna<CifrasDocente>(
-    `SELECT (SELECT count(*)::int FROM curso c
-              WHERE c.estado = 'activo'
-                AND ($1::uuid IS NULL OR c.docente_usuario_id = $1)) AS cursos,
-            (SELECT count(*)::int FROM materia_360 m
+    `SELECT (SELECT count(*)::int FROM materia_360 m
               WHERE m.activa
                 AND ($1::uuid IS NULL OR m.docente_id = $1)) AS clases_360,
-            (SELECT count(DISTINCT k.estudiante_id)::int
-               FROM calificacion k
-               JOIN curso c ON c.id = k.curso_id
-              WHERE ($1::uuid IS NULL OR c.docente_usuario_id = $1)) AS estudiantes,
+            (SELECT count(DISTINCT i.estudiante_id)::int
+               FROM inscripcion_360 i
+               JOIN materia_360 m ON m.id = i.materia_id
+              WHERE i.estado IN ('prematriculada', 'cursando')
+                AND ($1::uuid IS NULL OR m.docente_id = $1)) AS estudiantes,
             (SELECT count(*)::int
                FROM entrega_estudiante d
                JOIN asignacion a ON a.id = d.asignacion_id
                LEFT JOIN materia     mu ON mu.id = a.materia_id
-               LEFT JOIN curso       cu ON cu.id = a.curso_id
-               LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
+                       LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
               WHERE d.estado IN ('entregado', 'tarde')
                 AND ($1::uuid IS NULL
                      OR mu.profesor_usuario_id = $1
-                     OR cu.docente_usuario_id  = $1
-                     OR m3.docente_id          = $1)) AS por_revisar`,
+                             OR m3.docente_id          = $1)) AS por_revisar`,
     [docenteId],
   );
 
-  return fila ?? { cursos: 0, clases_360: 0, estudiantes: 0, por_revisar: 0 };
+  return fila ?? { clases_360: 0, estudiantes: 0, por_revisar: 0 };
 }

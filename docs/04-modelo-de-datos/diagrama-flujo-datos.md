@@ -25,7 +25,7 @@ flowchart TB
 
   ADMIN -->|expedientes, tareas, patrocinadores| SISTEMA
   SISTEMA -->|reportes, notificaciones| ADMIN
-  DOCENTE -->|calificaciones, cursos| SISTEMA
+  DOCENTE -->|tareas, notas finales de 360| SISTEMA
   SISTEMA -->|listas de clase, notas| DOCENTE
   ESTUDIANTE -->|trámites, consultas| SISTEMA
   SISTEMA -->|notas, materias, estado de solicitudes, respuestas IA| ESTUDIANTE
@@ -71,7 +71,7 @@ flowchart LR
   %% Almacenes de datos
   D1[(usuario / rol / permiso)]
   D2[(estudiante + perfiles + familiar)]
-  D3[(periodo / materia / curso / calificacion)]
+  D3[(periodo / materia / inscripcion / materia_360 / inscripcion_360 / historial_calificacion)]
   D4[(patrocinador / asignacion_beca)]
   D5[(solicitud / solicitud_paso)]
   D6[(proyecto / tarea / evento / registro_servicio)]
@@ -187,7 +187,7 @@ La solicitud no ejecuta efectos por su cuenta: el módulo dueño (contabilidad, 
 flowchart LR
   U([Usuario]) -->|pregunta| P[Asistente IA]
   P -->|búsqueda semántica| FRAG[(fragmento_conocimiento · pgvector)]
-  P -.lee.-> DATOS[(estudiantes / cursos / finanzas ...)]
+  P -.lee.-> DATOS[(estudiantes / materias / finanzas ...)]
   P -->|prompt + contexto| IA{{Modelo de IA}}
   IA -->|respuesta| P
   P --> MSG[(conversacion_ia / mensaje_ia)]
@@ -202,12 +202,14 @@ flowchart LR
 |---|---|---|
 | 1. Autenticación / acceso | `usuario`, `rol`, `permiso`, `rol_permiso` | — (login) / `usuarios.administrar` |
 | 2. Expedientes | `estudiante`, `perfil_*`, `familiar`, `documento` | `expedientes.leer` / `.escribir` / `.eliminar` (administración) · `expedientes.postular` (habitudes) |
-| 3. Académico | `periodo`, `materia`, `curso`, `inscripcion`, `calificacion`, `historial_calificacion` | `academico.*`, `calificaciones.registrar` |
+| 3. Académico | `periodo`, `materia`, `inscripcion`, `historial_calificacion`, `materia_360`, `ventana_prematricula`, `inscripcion_360`, `asignacion`, `entrega_estudiante` | `academico.*`, `calificaciones.registrar` |
 | 4. Patrocinio y becas | `patrocinador`, `asignacion_beca` | `patrocinadores.*` |
 | 5. Solicitudes y aprobaciones | `solicitud`, `solicitud_paso`, `notificacion`, `audit_log` | `solicitudes.gestionar` · `solicitudes.direccion` · `finanzas.escribir` (gastos) · el estudiante, sobre las suyas |
 | 6. Operaciones | `proyecto`, `tarea`, `tarea_asignado`, `evento`, `registro_servicio`, `notificacion` | `operaciones.*` |
 | 7. Finanzas | `transaccion` | `finanzas.leer` / `.escribir` |
 | 8. Bienestar (comida) | `inscripcion_comida` | — (público) |
 | 9. Asistentes de IA | `conversacion_ia`, `mensaje_ia`, `extraccion_ocr`, `fragmento_conocimiento` | `ia.usar` / `ia.administrar` |
+
+> Desde la migración `0047` (24 oct 2026) el proceso 3 ya no tiene cursos técnicos: `curso` y `calificacion` se borraron. El docente da clases de Global Effect 360 —publica tareas, revisa entregas y pone la nota final de cada `inscripcion_360` con `calificaciones.registrar`—, y el estudiante elige una materia de 360 en cada una de las dos tandas del cuatrimestre.
 
 > El proceso **1** es transversal: todo acceso a los procesos 2–7 y 9 pasa antes por autenticación y verificación de permisos (RBAC).

@@ -1,7 +1,8 @@
 /**
  * Escala de calificaciones.
  *
- * Las notas se guardan de 0 a 100 (`calificacion.nota` es NUMERIC(5,2)) y se
+ * Las notas se guardan de 0 a 100 (`inscripcion_360.nota` y
+ * `historial_calificacion.nota_numerica` son NUMERIC(5,2)) y se
  * muestran además como letra e índice sobre 4.00, que es lo que pide el portal
  * estudiantil y lo que la beca usa como referencia.
  *
@@ -84,10 +85,10 @@ export function aprobada(nota: number): boolean {
 /**
  * Promedio simple de un grupo de notas.
  *
- * Simple y no ponderado por créditos a propósito: `calificacion` apunta a
- * `curso_id`, no a `materia_id`, y es la materia la que tiene los créditos. Sin
- * ese enlace no se puede ponderar de verdad, y un promedio ponderado a medias
- * sería un número peor que el simple, no mejor.
+ * Simple y no ponderado por créditos a propósito: `historial_calificacion`
+ * guarda la materia como texto, sin créditos, y en `materia_360` valen 0 por
+ * omisión. Mezclar filas con peso y filas sin él daría un promedio ponderado a
+ * medias, que es un número peor que el simple, no mejor.
  */
 export function promedio(notas: readonly number[]): number | null {
   if (notas.length === 0) return null;
@@ -127,7 +128,7 @@ export function consejoDeIndice(
  *
  * Una letra es para el expediente: dice exactamente qué sacó alguien en una
  * evaluación. Una banda es para leer una lista de doscientas notas de un
- * vistazo, que es lo que hace falta en `/academico/calificaciones`: ahí la
+ * vistazo, que es lo que hace falta en los reportes y en las clases de 360: ahí la
  * pregunta no es "¿sacó B o C?" sino "¿va bien, aprueba raspando, o está
  * reprobando?", y cinco tramos en una distribución de barras se leen peor que
  * cuatro.

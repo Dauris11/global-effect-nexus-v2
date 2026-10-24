@@ -49,10 +49,9 @@ export async function generateMetadata({
 /**
  * Historial académico: una fila por estudiante, con su índice acumulado.
  *
- * Es el expediente del becado universitario, la otra mitad de
- * `/academico/calificaciones`: allí están las notas por evaluación de los cursos
- * técnicos; aquí, las materias de la carrera ya CERRADAS, con su índice sobre
- * 4.00 guardado cuatrimestre a cuatrimestre.
+ * Es el expediente del becado universitario: las materias de la carrera ya
+ * CERRADAS, con su índice sobre 4.00 guardado cuatrimestre a cuatrimestre. Las
+ * notas de Global Effect 360 son la otra mitad y viven en `/academico/clases-360`.
  *
  * NO HAY NI UNA LÍNEA DE JAVASCRIPT DE CLIENTE, y es lo que corresponde: esta
  * pantalla no escribe nada. El historial lo cierra el proceso académico, no un
@@ -62,7 +61,7 @@ export async function generateMetadata({
  * JavaScript, el enlace se comparte ("mándame el historial de Fulana") y no
  * viaja ni un kilobyte de componente.
  *
- * La puerta es la misma que en calificaciones y por el mismo motivo:
+ * Entran quien pone notas, coordinación y quien lleva expedientes.
  * `academico.leer` no vale, porque el rol `estudiante` también lo tiene y le
  * abriría el historial de todos los demás.
  */
@@ -90,7 +89,7 @@ export default async function PaginaAcademicoHistorial({
       <div className="mx-auto max-w-2xl py-12 text-center">
         <p className="text-sm font-semibold">{t("forbidden")}</p>
         <p className="text-muted-foreground mx-auto mt-1.5 max-w-md text-xs leading-relaxed">
-          {t("grades.forbiddenHint")}
+          {t("history.forbiddenHint")}
         </p>
       </div>
     );

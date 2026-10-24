@@ -11,7 +11,7 @@
 INSERT INTO rol (id, nombre, descripcion) VALUES
   ('441d3b24-9b2f-4b08-8f8e-a9b09db4d952', 'super_admin',  'Acceso absoluto a configuración, auditoría y todos los datos del sistema.'),
   ('0398bbdf-807d-411a-85d7-b8478d1fb52c', 'admin',        'Administración general operativa de la fundación y sus módulos.'),
-  ('c34ab7f3-ef5a-471a-85b3-3a5f8b5490a1', 'docente',      'Portal docente: gestiona cursos técnicos y registra calificaciones.'),
+  ('c34ab7f3-ef5a-471a-85b3-3a5f8b5490a1', 'docente',      'Portal docente: da clases de Global Effect 360, pone tareas y la nota final.'),
   ('d1ba6b9d-5a8b-49ef-871d-55cfb14798ef', 'estudiante',   'Portal estudiantil: revisa notas y materias, y pide trámites a administración.'),
   ('f7e8a9b0-c1d2-43e4-85f6-7b89c0d1e2f3', 'contabilidad', 'Gestión contable, transacciones, aportes y reportes financieros.')
 ON CONFLICT (nombre) DO UPDATE SET descripcion = EXCLUDED.descripcion;
@@ -25,9 +25,9 @@ INSERT INTO permiso (id, codigo, descripcion) VALUES
   ('e1a1b1c1-2222-2222-3333-444455556666', 'expedientes.escribir',    'Crear y modificar expedientes estudiantiles.'),
   ('e1a1b1c1-3333-2222-3333-444455556666', 'expedientes.eliminar',    'Eliminar expedientes estudiantiles del sistema.'),
   -- Académico
-  ('a2a2b2c2-1111-2222-3333-444455556666', 'academico.leer',          'Visualizar materias, cursos y períodos académicos.'),
-  ('a2a2b2c2-2222-2222-3333-444455556666', 'academico.escribir',      'Crear y modificar materias y cursos técnicos.'),
-  ('a2a2b2c2-3333-2222-3333-444455556666', 'calificaciones.registrar','Registrar notas de cursos académicos.'),
+  ('a2a2b2c2-1111-2222-3333-444455556666', 'academico.leer',          'Visualizar materias, clases de 360 y períodos académicos.'),
+  ('a2a2b2c2-2222-2222-3333-444455556666', 'academico.escribir',      'Crear y modificar materias, períodos y el catálogo de 360.'),
+  ('a2a2b2c2-3333-2222-3333-444455556666', 'calificaciones.registrar','Poner la nota final de las clases de Global Effect 360.'),
   -- Patrocinadores y becas
   ('f3f3b3c3-1111-2222-3333-444455556666', 'patrocinadores.leer',     'Visualizar patrocinadores y aportes.'),
   ('f3f3b3c3-2222-2222-3333-444455556666', 'patrocinadores.escribir', 'Crear y modificar patrocinadores y asignaciones de becas.'),
@@ -100,16 +100,11 @@ INSERT INTO periodo (id, nombre, fecha_inicio, fecha_fin, estado) VALUES
 ON CONFLICT (nombre) DO UPDATE SET estado = EXCLUDED.estado;
 
 -- ================================================================
--- 6. MATERIAS Y CURSOS DE PRUEBA
+-- 6. MATERIAS DE PRUEBA
 -- ================================================================
 INSERT INTO materia (id, nombre, codigo, descripcion, periodo_id, creditos, profesor_nombre, estado, horario, aula) VALUES
   ('550e8400-e29b-41d4-a716-446655440001', 'Introducción al Liderazgo', 'LID-101', 'Fundamentos de liderazgo y programa Habitudes.', 'e3b0c442-98fc-1c14-9afb-f389a94dec93', 3, 'Roberto Gómez', 'activa', 'Lunes 09:00 - 11:30', 'Aula A-1'),
   ('550e8400-e29b-41d4-a716-446655440002', 'Inglés como Segundo Idioma (Básico)', 'ENG-101', 'Desarrollo de lectura y habla.', 'e3b0c442-98fc-1c14-9afb-f389a94dec93', 4, 'Sarah Jenkins', 'activa', 'Martes y Jueves 14:00 - 16:00', 'Lab 2')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO curso (id, nombre, descripcion, docente, periodo_id, estado, capacidad, inscritos, horario, modalidad) VALUES
-  ('550e8400-e29b-41d4-a716-446655440003', 'Técnico en Contabilidad y Finanzas', 'Contabilidad básica y análisis financiero.', 'Ana Santana', 'e3b0c442-98fc-1c14-9afb-f389a94dec93', 'activo', 25, 0, 'Sábados 08:00 - 13:00', 'presencial'),
-  ('550e8400-e29b-41d4-a716-446655440004', 'Técnico en Computación y Soporte', 'Instalación de software, hardware y redes básicas.', 'Carlos Reyes', 'e3b0c442-98fc-1c14-9afb-f389a94dec93', 'activo', 20, 0, 'Miércoles 18:00 - 21:00', 'mixto')
 ON CONFLICT DO NOTHING;
 
 -- ================================================================

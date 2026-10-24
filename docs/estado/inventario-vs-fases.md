@@ -21,6 +21,16 @@ inventario que no dice qué está construido se lee como una promesa.
 > `0031_solicitudes_y_aprobaciones.sql`). Las filas de psicología quedan marcadas
 > como descartadas en §5 y §6.
 
+> **Cambio de alcance (24 oct 2026).** La Fundación dejó de impartir cursos
+> técnicos. La migración `0047_fin_de_cursos_tecnicos.sql` borra `curso` y
+> `calificacion` (sin copia, como la `0030` con Psicología) y retira el
+> estudiante `regular`: todo estudiante es becado universitario. Global Effect
+> 360 ocupa el sitio de los cursos —docente, tareas, entregas y nota final—,
+> abierto a todos y con el catálogo entero obligatorio: dos tandas de dos meses
+> por cuatrimestre y **una** materia por tanda. `/academico/cursos` pasa a ser
+> `/academico/clases-360` y `/academico/calificaciones` se retira. Las filas
+> de cursos técnicos quedan marcadas en §3, §4, §5 y §6.
+
 Fuente del estado: [`docs/estado/progreso.md`](progreso.md) (estado por módulo) y
 [`docs/estado/pendientes.md`](pendientes.md) (cola de tareas). Si hay discrepancia entre este
 archivo y el código, manda el código:
@@ -61,7 +71,8 @@ Dos cosas más que el inventario promete y el sistema **no tiene**:
   este proyecto no tiene ninguna infraestructura de correo. Lo que hay es la
   tabla `notificacion`.
 - **Rutas del prototipo que no existen**: `/portal/cursos-tecnicos` (selector),
-  `/portal/estudiante-ct` y `/chat-ia-estudiantil`. Ver §6.
+  `/portal/estudiante-ct` y `/chat-ia-estudiantil`. Ver §6. Las dos primeras
+  ya no tendrían a quién servir: los cursos técnicos se cerraron en oct 2026.
 
 ---
 
@@ -83,11 +94,11 @@ Dos cosas más que el inventario promete y el sistema **no tiene**:
 | Estado | Módulo del inventario | Ruta real | Sprint | Qué hay / qué falta |
 |---|---|---|---|---|
 | ✅ | 1.1 Dashboard (KPIs, accesos, 2 gráficas, eventos, tareas) | `/dashboard` | S5 | Cifras por programa, **tres** gráficas, seis accesos, tareas con su dueño, proyectos y eventos. Lo financiero respeta el permiso: lo que el rol no puede ver **no se consulta**. |
-| ✅ | 1.2.1 Cursos | `/academico/cursos` | S6 | Además del CRUD del inventario: estudiantes por curso con promedio, publicar tarea o examen, y revisar entregas con nota. Cubre también las clases de 360. |
+| ✅ | 1.2.1 Cursos → Clases de 360 | `/academico/clases-360` | S6 · oct 2026 | Era `/academico/cursos`. Los cursos técnicos se retiraron en la `0047`; queda la parte de 360: inscritos por clase, publicar tarea o examen, revisar entregas con nota y devolución, y la **nota final** de cada inscripción, que la deja aprobada o reprobada. |
 | ✅ | 1.2.2 Materias | `/academico/materias` | S6 | CRUD, búsqueda y filtro de período **en la URL** (el enlace se comparte y la lista se recorta en SQL). El profesor se elige en un campo con tres formas: nadie, usuario del sistema, o externo a mano. |
-| ✅ | 1.2.3 Calificaciones | `/academico/calificaciones` | S6 | Registrar, corregir y borrar. **Las bandas de nota no son de colores** (el inventario pedía emerald/yellow/red): son peso de azul a negro, `src/lib/notas.ts`. El docente solo toca las de sus cursos; coordinación lee pero no califica. |
+| ➖ | 1.2.3 Calificaciones | ~~`/academico/calificaciones`~~ | S6 | **Retirada en la `0047` (oct 2026).** Eran las notas por evaluación de los cursos técnicos, y su tabla `calificacion` se borró con ellos. La nota final de 360 se pone en `/academico/clases-360` con el mismo permiso, `calificaciones.registrar`; las notas universitarias siguen en `historial_calificacion`. Las bandas por peso de azul a negro (`src/lib/notas.ts`) siguen en uso. |
 | ✅ | 1.2.4 Historial académico | `/academico/historial` | S6 | Una fila por estudiante con su índice **leído, nunca recalculado** (la escala de conversión cambia de un año a otro, migración 0006). Sin una línea de JavaScript de cliente. |
-| ✅ | 1.2.5 Prematrícula | `/academico/prematricula` | S6 | Es el catálogo de **Global Effect 360** más las ventanas de prematrícula con fecha y hora. |
+| ✅ | 1.2.5 Prematrícula | `/academico/prematricula` | S6 | Es el catálogo de **Global Effect 360** —todo obligatorio desde la `0047`— más las ventanas de prematrícula con fecha y hora, una por tanda. |
 | ✅ | 1.2.6 Períodos | `/academico/periodos` | S6 | La raíz del módulo. Con **avisos de incoherencia** entre estado y fechas, comparados con `CURRENT_DATE` en la base y no con el reloj del navegador. |
 | ✅ | (nuevo, no estaba en el inventario) Línea de tiempo | `/calendario/gantt` | S9 | Las cuatro familias sobre un mismo eje. Sin JavaScript de cliente. |
 
@@ -144,10 +155,10 @@ el inventario**: el prototipo daba cuatro entradas, hoy hay ocho.
 
 | Estado | Módulo del inventario | Ruta real | Nota |
 |---|---|---|---|
-| ✅ | 2.1 / P1 Mi portal | `/portal/estudiante` | Distingue universitario (`becado`) de curso técnico (`regular`): el prototipo ofrecía a los dos las mismas pantallas. |
+| ✅ | 2.1 / P1 Mi portal | `/portal/estudiante` | Hasta oct 2026 distinguía universitario (`becado`) de curso técnico (`regular`). Desde la `0047` hay un solo tipo de estudiante, el becado, y la distinción desaparece. |
 | ✅ | 2.2 Mis materias | `/portal/estudiante/prematricula` | Su matrícula período a período **y la elección de las del próximo**. La ventana se comprueba **dentro del INSERT**, no antes con un `if`. |
-| ✅ | 2.3 Calificaciones | `/portal/estudiante/calificaciones` | Une `calificacion`→`curso` (técnico) con `historial_calificacion` (universitario); antes al universitario le salía vacía. |
-| ✅ | (nuevo) Global Effect 360 | `/portal/estudiante/global-360` | Avance de obligatorias y opcionales. Solo becados: lo impone un trigger. |
+| ✅ | 2.3 Calificaciones | `/portal/estudiante/calificaciones` | Lee `historial_calificacion` (universitario) y la nota final de sus inscripciones de 360. La vía `calificacion`→`curso` del curso técnico se retiró en la `0047`. |
+| ✅ | (nuevo) Global Effect 360 | `/portal/estudiante/global-360` | Todo el catálogo es obligatorio y abierto a todo estudiante (la `0047` quitó la columna `obligatoria` y el trigger de «solo becados»). Una materia por tanda, dos por cuatrimestre; una tanda abierta sin elección sale como pendiente. |
 | ✅ | (nuevo) Aula virtual | `/portal/estudiante/aula-virtual` | Entrega de PDF al bucket privado; sin enlace firmado no se descarga. |
 | ✅ | (nuevo) Calendario propio | `/portal/estudiante/calendario` | |
 | ✅ | 10.2 Chat IA estudiantil | `/portal/estudiante/chat` | El inventario lo pone en `/chat-ia-estudiantil`; vive dentro del portal. El RAG con embeddings sobre `fragmento_conocimiento` es S11. Hoy responde «no está configurado» por el 401. |
@@ -161,9 +172,9 @@ el inventario**: el prototipo daba cuatro entradas, hoy hay ocho.
 
 | Estado | Módulo del inventario | Ruta real | Sprint | Nota |
 |---|---|---|---|---|
-| ✅ | 3.1 Mi portal | `/portal/profesor` | S6 | KPIs reales y **tres** listas separadas —cursos técnicos, materias universitarias y clases de 360—, porque son tres programas distintos. **No edita nada**: los formularios viven en `/academico/*`, que es donde están las comprobaciones. |
-| ✅ | 3.2–3.4 Materias, calificaciones, cursos | `/academico/*` | S6 | Ve solo lo suyo; lo ajeno lo lee pero no lo toca. Escribir el catálogo pide `academico.escribir`, que el docente no tiene. |
-| ✅ | 3.5 Calendario | `/calendario` | S9 | Ya enseña **lo que vence en sus clases** —tareas y exámenes que publicó, sobre las tres vías que puede dar—, enlazadas por la clave del docente y nunca por su nombre (la 0019 existe por eso). |
+| ✅ | 3.1 Mi portal | `/portal/profesor` | S6 | KPIs reales y **dos** listas separadas —materias universitarias y clases de 360—, porque son dos programas distintos (la tercera, cursos técnicos, se fue con la `0047`). **No edita nada**: los formularios viven en `/academico/*`, que es donde están las comprobaciones. |
+| ✅ | 3.2–3.4 Materias y clases de 360 | `/academico/materias` · `/academico/clases-360` | S6 · oct 2026 | Ve solo lo suyo; lo ajeno lo lee pero no lo toca. La nota final de 360 pide `calificaciones.registrar`. Escribir el catálogo pide `academico.escribir`, que el docente no tiene. |
+| ✅ | 3.5 Calendario | `/calendario` | S9 | Ya enseña **lo que vence en sus clases** —tareas y exámenes que publicó, sobre las dos vías que puede dar, materia universitaria y clase de 360—, enlazadas por la clave del docente y nunca por su nombre (la 0019 existe por eso). |
 
 ### Portal 4 — Administrativo (rol `admin`)
 
@@ -198,8 +209,8 @@ ficha (`expediente.consultado`, #428) no dependía de psicología y se queda.
 
 | Módulo del inventario | Decisión |
 |---|---|
-| ➖ CT.1 Portal selector de cursos técnicos (`/portal/cursos-tecnicos`) | **Descartado.** Era una pantalla para elegir rol, y elegir no concede rol: el rol lo da la cuenta. Con las seis puertas `/login/{portal}` se borró la misma idea. |
-| ➖ CT.2 Portal Estudiante CT (`/portal/estudiante-ct`) | **Descartado como ruta aparte.** Un portal de estudiante que solo cambia el origen de las notas no es otro portal: `/portal/estudiante` distingue los dos programas por dentro. |
+| ➖ CT.1 Portal selector de cursos técnicos (`/portal/cursos-tecnicos`) | **Descartado.** Era una pantalla para elegir rol, y elegir no concede rol: el rol lo da la cuenta. Con las seis puertas `/login/{portal}` se borró la misma idea. Desde oct 2026 tampoco hay cursos técnicos (migración `0047`). |
+| ➖ CT.2 Portal Estudiante CT (`/portal/estudiante-ct`) | **Descartado.** Primero como ruta aparte (un portal que solo cambia el origen de las notas no es otro portal) y, desde la `0047` (oct 2026), del todo: ya no existe el estudiante de curso técnico. |
 | ➖ Portal administrativo como panel duplicado | **Reinterpretado**, ver §5. |
 | ➖ Envío de correo (tareas, solicitudes) | **No aplica.** No hay infraestructura de correo. Su equivalente es `notificacion`. |
 | ➖ Emojis por tipo (🎯💡📘 academias, 📄🎥📊🔗 materiales, 🎓 becados) | **Sustituidos** por iconos de `lucide-react`, que es la única familia permitida. |
@@ -217,10 +228,10 @@ de esas entidades estaban haciendo demasiado:
 | Entidad del inventario | En la base |
 |---|---|
 | `Estudiante` | `estudiante` + `perfil_vivienda` + `perfil_salud` + `perfil_socioeconomico` + `familiar` + `seguimiento` — las **seis pestañas** de la ficha. |
-| `Calificacion` | `calificacion` (curso técnico) **y** `historial_calificacion` (universitario, con letra e índice **guardados**). Son dos vías distintas y confundirlas dejaba pantallas vacías. |
+| `Calificacion` | `historial_calificacion` (universitario, con letra e índice **guardados**) y `inscripcion_360.nota` (nota final de 360). La tabla `calificacion` del curso técnico se borró en la `0047`. |
 | `Patrocinador` | `patrocinador` + `asignacion_beca` (monto, fechas y estado propios, con histórico). |
 | `Tarea` | `tarea` + `tarea_asignado` + `notificacion`. |
-| `Materia` | `materia` (universitaria), `curso` (técnico) y `materia_360` (programa 360) — tres cosas, no una. |
+| `Materia` | `materia` (universitaria) y `materia_360` (programa 360) — dos cosas, no una. Hubo una tercera, `curso` (técnico), retirada en la `0047`. |
 | — | Más `periodo`, `inscripcion`, `inscripcion_360`, `rol`, `permiso`, `rol_permiso`, `usuario`, `audit_log`, `landing_slide`, `fragmento_conocimiento`, `solicitud`/`solicitud_paso`, `asignacion`/`entrega` del aula virtual, y el resto. |
 
 ---

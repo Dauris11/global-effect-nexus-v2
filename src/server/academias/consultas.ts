@@ -8,7 +8,7 @@ import { consultar, consultarUna } from "@/lib/db";
  *
  * UNA ADVERTENCIA SOBRE `participantes`, porque se lee como si fuera una
  * cuenta y no lo es. En proyectos el avance se CUENTA desde las tareas, y en
- * cursos los inscritos se cuentan desde la matrícula; aquí no hay de dónde
+ * Global Effect 360 los inscritos se cuentan desde la matrícula; aquí no hay de dónde
  * contar: **no existe tabla de inscripción a una academia**. La columna es un
  * número que teclea quien lleva el programa, y la pantalla lo dice en voz alta
  * en vez de disfrazarlo de dato calculado. Si algún día importa saber QUIÉN

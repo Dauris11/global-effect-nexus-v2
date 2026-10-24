@@ -1,6 +1,6 @@
 # Diagrama Entidad-Relación — Global Effect Nexus
 
-> Base de datos: **PostgreSQL 17 (Supabase)**. Este ERD refleja el núcleo del esquema desplegado por las migraciones `db/migrations/0001`–`0012`, con el cambio de alcance de octubre de 2026 ya aplicado: la `0030` retira las tablas de psicología (la Fundación eliminó el departamento) y la `0031` añade `solicitud` y `solicitud_paso` (35 tablas del núcleo, 7 enums, pgvector para IA). Las tablas que llegaron en `0015`–`0029` (landing, noticia, aula virtual, etc.) se documentan en sus migraciones.
+> Base de datos: **PostgreSQL 17 (Supabase)**. Este ERD refleja el núcleo del esquema desplegado por las migraciones `db/migrations/0001`–`0012`, con el cambio de alcance de octubre de 2026 ya aplicado: la `0030` retira las tablas de psicología (la Fundación eliminó el departamento) y la `0031` añade `solicitud` y `solicitud_paso`. El 24 de octubre la `0047` retira los cursos técnicos: se van `curso`, `calificacion` y el enum `tipo_evaluacion`, y `tipo_estudiante` se queda con un solo valor, `becado` (33 tablas del núcleo, 6 enums, pgvector para IA). Las tablas que llegaron en `0015`–`0029` (landing, noticia, aula virtual, etc.) se documentan en sus migraciones; entre ellas están las de Global Effect 360 (`materia_360`, `ventana_prematricula`, `inscripcion_360`), que desde la `0047` ocupan el lugar de los cursos técnicos.
 > Los diagramas están en sintaxis **Mermaid** (se renderizan en GitHub, VS Code, Obsidian o [mermaid.live](https://mermaid.live)).
 
 ## Convenciones
@@ -37,7 +37,6 @@ erDiagram
   ESTUDIANTE              ||--o| PERFIL_SOCIOECONOMICO  : "contexto de"
   ESTUDIANTE              ||--o{ ASIGNACION_BECA        : recibe
   ESTUDIANTE              ||--o{ INSCRIPCION            : matricula
-  ESTUDIANTE              ||--o{ CALIFICACION           : obtiene
   ESTUDIANTE              ||--o{ HISTORIAL_CALIFICACION : acumula
   ESTUDIANTE              ||--o{ SOLICITUD              : "objeto de"
   ESTUDIANTE              ||--o{ REGISTRO_SERVICIO      : reporta
@@ -48,11 +47,8 @@ erDiagram
   DOCUMENTO               ||--o{ EXTRACCION_OCR         : origen
 
   PERIODO                 ||--o{ MATERIA               : enmarca
-  PERIODO                 ||--o{ CURSO                 : enmarca
   PERIODO                 ||--o{ INSCRIPCION           : programa
-  PERIODO                 ||--o{ CALIFICACION           : registra
   MATERIA                 ||--o{ INSCRIPCION           : incluye
-  CURSO                   ||--o{ CALIFICACION           : evalua
 
   ACADEMIA                ||--o{ MATERIAL              : contiene
 
@@ -131,7 +127,7 @@ erDiagram
     citext email
     date fecha_nacimiento
     genero genero "enum"
-    tipo_estudiante tipo "becado|regular"
+    tipo_estudiante tipo "becado (unico valor desde 0047)"
     estado_estudiante estado "pipeline: reclutado..graduado"
     text programa
     text universidad
@@ -204,13 +200,9 @@ erDiagram
 ```mermaid
 erDiagram
   PERIODO ||--o{ MATERIA : enmarca
-  PERIODO ||--o{ CURSO : enmarca
   PERIODO ||--o{ INSCRIPCION : programa
-  PERIODO ||--o{ CALIFICACION : registra
   ESTUDIANTE ||--o{ INSCRIPCION : matricula
   MATERIA ||--o{ INSCRIPCION : incluye
-  ESTUDIANTE ||--o{ CALIFICACION : obtiene
-  CURSO ||--o{ CALIFICACION : evalua
   ESTUDIANTE ||--o{ HISTORIAL_CALIFICACION : acumula
 
   PERIODO {
@@ -230,31 +222,12 @@ erDiagram
     uuid profesor_usuario_id FK
     text estado
   }
-  CURSO {
-    uuid id PK
-    text nombre
-    text docente
-    uuid docente_usuario_id FK
-    uuid periodo_id FK
-    int capacidad
-    int inscritos
-    text modalidad "presencial|virtual|mixto"
-    text estado
-  }
   INSCRIPCION {
     uuid id PK
     uuid estudiante_id FK
     uuid materia_id FK
     uuid periodo_id FK
     text estado
-  }
-  CALIFICACION {
-    uuid id PK
-    uuid estudiante_id FK
-    uuid curso_id FK
-    uuid periodo_id FK
-    numeric nota "0-100"
-    tipo_evaluacion tipo_evaluacion "enum"
   }
   HISTORIAL_CALIFICACION {
     uuid id PK
@@ -269,6 +242,8 @@ erDiagram
 ```
 
 > `INSCRIPCION` impone `UNIQUE (estudiante_id, materia_id, periodo_id)` para evitar matrículas duplicadas.
+>
+> Hasta la `0047` este dominio tenía además `CURSO` (cursos técnicos) y `CALIFICACION` (notas por evaluación de esos cursos, con el enum `tipo_evaluacion`). La Fundación dejó de impartir cursos técnicos y las dos tablas se borraron sin copia, igual que la `0030` hizo con Psicología. Las notas universitarias siguen en `HISTORIAL_CALIFICACION`; la de Global Effect 360 es la `nota` final de cada `inscripcion_360`, que pone el docente con `calificaciones.registrar` y decide si queda `aprobada` o `reprobada`.
 
 ---
 
@@ -480,7 +455,7 @@ erDiagram
   }
   FRAGMENTO_CONOCIMIENTO {
     uuid id PK
-    text fuente_tipo "estudiante|curso|evento..."
+    text fuente_tipo "estudiante|evento..."
     uuid fuente_id "referencia lógica"
     text contenido
     jsonb metadata
@@ -500,7 +475,7 @@ erDiagram
 | Transversal | `documento`, `notificacion`, `audit_log` |
 | Patrocinio | `patrocinador` |
 | Estudiantes | `estudiante`, `familiar`, `perfil_vivienda`, `perfil_salud`, `perfil_socioeconomico`, `asignacion_beca` |
-| Académico | `periodo`, `materia`, `curso`, `inscripcion`, `calificacion`, `historial_calificacion` |
+| Académico | `periodo`, `materia`, `inscripcion`, `historial_calificacion` |
 | Academias | `academia`, `material` |
 | Solicitudes | `solicitud`, `solicitud_paso` |
 | Operaciones | `proyecto`, `tarea`, `tarea_asignado`, `evento`, `registro_servicio` |
@@ -508,7 +483,7 @@ erDiagram
 | Finanzas | `transaccion` |
 | Inteligencia Artificial | `conversacion_ia`, `mensaje_ia`, `extraccion_ocr`, `fragmento_conocimiento` |
 
-**Total: 35 tablas del núcleo · 7 enums · pgvector (HNSW) para IA.**
+**Total: 33 tablas del núcleo · 6 enums · pgvector (HNSW) para IA.**
 
 ---
 
@@ -546,23 +521,19 @@ Cada fila describe una relación real implementada por una clave foránea: tabla
 | 24 | `estudiante` | tiene contexto | `perfil_socioeconomico` | `estudiante_id` (PK) | **1:1** | CASCADE |
 | 25 | `estudiante` | recibe | `asignacion_beca` | `estudiante_id` | 1:N | CASCADE |
 | 26 | `estudiante` | se matricula en | `inscripcion` | `estudiante_id` | 1:N | CASCADE |
-| 27 | `estudiante` | obtiene | `calificacion` | `estudiante_id` | 1:N | CASCADE |
-| 28 | `estudiante` | acumula | `historial_calificacion` | `estudiante_id` | 1:N | CASCADE |
-| 29 | `estudiante` | reporta | `registro_servicio` | `estudiante_id` | 1:N | CASCADE |
-| 30 | `estudiante` | es destino de | `extraccion_ocr` | `estudiante_id` | 1:N | SET NULL |
-| 31 | `estudiante` | es objeto de | `solicitud` | `estudiante_id` | 1:N | RESTRICT |
-| 32 | `periodo` | enmarca | `materia` | `periodo_id` | 1:N | SET NULL |
-| 33 | `periodo` | enmarca | `curso` | `periodo_id` | 1:N | SET NULL |
-| 34 | `periodo` | programa | `inscripcion` | `periodo_id` | 1:N | CASCADE |
-| 35 | `periodo` | registra | `calificacion` | `periodo_id` | 1:N | CASCADE |
-| 36 | `materia` | incluye | `inscripcion` | `materia_id` | 1:N | CASCADE |
-| 37 | `curso` | evalúa | `calificacion` | `curso_id` | 1:N | CASCADE |
-| 38 | `academia` | contiene | `material` | `academia_id` | 1:N | CASCADE |
-| 39 | `solicitud` | tiene historial | `solicitud_paso` | `solicitud_id` | 1:N | CASCADE |
-| 40 | `proyecto` | agrupa | `tarea` | `proyecto_id` | 1:N | SET NULL |
-| 41 | `tarea` | agenda | `evento` | `tarea_id` | 1:0..N | SET NULL |
-| 42 | `tarea` | asigna | `tarea_asignado` | `tarea_id` | 1:N | CASCADE |
-| 43 | `conversacion_ia` | contiene | `mensaje_ia` | `conversacion_id` | 1:N | CASCADE |
+| 27 | `estudiante` | acumula | `historial_calificacion` | `estudiante_id` | 1:N | CASCADE |
+| 28 | `estudiante` | reporta | `registro_servicio` | `estudiante_id` | 1:N | CASCADE |
+| 29 | `estudiante` | es destino de | `extraccion_ocr` | `estudiante_id` | 1:N | SET NULL |
+| 30 | `estudiante` | es objeto de | `solicitud` | `estudiante_id` | 1:N | RESTRICT |
+| 31 | `periodo` | enmarca | `materia` | `periodo_id` | 1:N | SET NULL |
+| 32 | `periodo` | programa | `inscripcion` | `periodo_id` | 1:N | CASCADE |
+| 33 | `materia` | incluye | `inscripcion` | `materia_id` | 1:N | CASCADE |
+| 34 | `academia` | contiene | `material` | `academia_id` | 1:N | CASCADE |
+| 35 | `solicitud` | tiene historial | `solicitud_paso` | `solicitud_id` | 1:N | CASCADE |
+| 36 | `proyecto` | agrupa | `tarea` | `proyecto_id` | 1:N | SET NULL |
+| 37 | `tarea` | agenda | `evento` | `tarea_id` | 1:0..N | SET NULL |
+| 38 | `tarea` | asigna | `tarea_asignado` | `tarea_id` | 1:N | CASCADE |
+| 39 | `conversacion_ia` | contiene | `mensaje_ia` | `conversacion_id` | 1:N | CASCADE |
 
 **Restricciones de unicidad que refuerzan las relaciones:**
 - `inscripcion (estudiante_id, materia_id, periodo_id)` — evita matrícula duplicada.
@@ -577,7 +548,7 @@ Cada fila describe una relación real implementada por una clave foránea: tabla
 
 **Tablas sin FK entrantes/salientes de negocio:** `transaccion`, `inscripcion_comida` (independientes por diseño).
 
-> Verificación: las 43 relaciones anteriores existen físicamente en la base (`information_schema`), y toda columna terminada en `_id` tiene su FK, salvo las dos referencias polimórficas señaladas.
+> Verificación: las 39 relaciones anteriores existen físicamente en la base (`information_schema`), y toda columna terminada en `_id` tiene su FK, salvo las dos referencias polimórficas señaladas.
 
 ---
 
@@ -585,7 +556,7 @@ Cada fila describe una relación real implementada por una clave foránea: tabla
 
 El diseño está preparado para crecer sin romper lo existente:
 
-- **Columna `metadata JSONB`** (default `'{}'`) en las entidades principales — `estudiante`, `usuario`, `patrocinador`, `periodo`, `materia`, `curso`, `academia`, `material`, `proyecto`, `tarea`, `evento`, `transaccion` (+ `fragmento_conocimiento`). Permite guardar campos nuevos sin alterar el esquema; si un dato madura, se promueve a columna propia. Indexable por demanda con GIN.
+- **Columna `metadata JSONB`** (default `'{}'`) en las entidades principales — `estudiante`, `usuario`, `patrocinador`, `periodo`, `materia`, `academia`, `material`, `proyecto`, `tarea`, `evento`, `transaccion` (+ `fragmento_conocimiento`). Permite guardar campos nuevos sin alterar el esquema; si un dato madura, se promueve a columna propia. Indexable por demanda con GIN.
 - **Estados como `TEXT`** (con valores documentados) en vez de ENUM rígido donde se prevé evolución (`estado`, `categoria`, `modalidad`, `prioridad`, `visibilidad`…): añadir un valor nuevo no requiere `ALTER TYPE`.
 - **Migraciones `.sql` numeradas**: cada cambio futuro es una nueva migración (`0032_…`), versionada y reproducible.
 - **UUID** como PK: permite generación distribuida e integraciones/sincronización futuras.

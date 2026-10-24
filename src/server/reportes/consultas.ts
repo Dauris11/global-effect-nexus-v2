@@ -11,8 +11,8 @@ import { consultar, consultarUna } from "@/lib/db";
  *      sobre las 500 filas que caben en una lista es el promedio de esas 500,
  *      no el de la Fundación.
  *
- *   2. **Nada se rellena con ceros inventados.** Si un curso no tiene notas,
- *      no sale en la gráfica de promedios por curso. Una barra a cero se lee
+ *   2. **Nada se rellena con ceros inventados.** Si una materia de 360 no
+ *      tiene notas, no sale en la gráfica de promedios por materia. Una barra a cero se lee
  *      como "sacaron cero", que es lo contrario de "todavía no hay notas".
  *
  *   3. **Lo que ya existía no se vuelve a escribir.** Las cifras académicas
@@ -124,52 +124,31 @@ export type PromedioAgrupado = {
 };
 
 /**
- * Promedio por tipo de evaluación.
+ * Promedio por materia de Global Effect 360, de las que tienen alguna nota.
  *
- * `clave` es el valor crudo de `calificacion.tipo_evaluacion` —`examen`,
- * `participacion`— y la vista lo traduce con las claves `gradesPage.type.*`,
- * que ya existen. No se traduce en SQL: un `CASE` con los textos en español
- * dentro de la consulta sería la versión inglesa del sitio enseñando
- * "participación".
- */
-export async function promedioPorTipo(
-  periodoId?: string | null,
-): Promise<PromedioAgrupado[]> {
-  return consultar<PromedioAgrupado>(
-    `SELECT k.tipo_evaluacion AS clave,
-            round(avg(k.nota), 1)::float8 AS promedio,
-            count(*)::int AS notas
-       FROM calificacion k
-      WHERE ($1::uuid IS NULL OR k.periodo_id = $1)
-      GROUP BY k.tipo_evaluacion
-      ORDER BY promedio DESC`,
-    [periodoId ?? null],
-  );
-}
-
-/**
- * Promedio por curso, de los que tienen alguna nota.
+ * Mismo universo que `resumenDeNotas()`: la nota final de cada inscripción,
+ * sin las retiradas. El JOIN deja fuera la materia sin ninguna nota, y está
+ * bien así —ver la regla 2 de la cabecera: una barra a cero diría que
+ * sacaron cero—.
  *
- * `HAVING count(*) > 0` es implícito en el JOIN, y está bien así: un curso sin
- * ninguna nota no aparece. Ver la regla 2 de la cabecera —una barra a cero
- * diría que sacaron cero—.
- *
- * Topado a 12 cursos: por encima de eso las barras horizontales dejan de
+ * Topado a 12 materias: por encima de eso las barras horizontales dejan de
  * caber en pantalla y el informe se convierte en una lista larga que ya está
- * en `/academico/calificaciones`.
+ * en `/academico/clases-360`.
  */
-export async function promedioPorCurso(
+export async function promedioPorMateria360(
   periodoId?: string | null,
   limite = 12,
 ): Promise<PromedioAgrupado[]> {
   return consultar<PromedioAgrupado>(
-    `SELECT c.nombre AS clave,
-            round(avg(k.nota), 1)::float8 AS promedio,
+    `SELECT m.nombre AS clave,
+            round(avg(i.nota), 1)::float8 AS promedio,
             count(*)::int AS notas
-       FROM calificacion k
-       JOIN curso c ON c.id = k.curso_id
-      WHERE ($1::uuid IS NULL OR k.periodo_id = $1)
-      GROUP BY c.id, c.nombre
+       FROM inscripcion_360 i
+       JOIN materia_360 m ON m.id = i.materia_id
+      WHERE i.nota IS NOT NULL
+        AND i.estado <> 'retirada'
+        AND ($1::uuid IS NULL OR i.periodo_id = $1)
+      GROUP BY m.id, m.nombre
       ORDER BY promedio DESC
       LIMIT $2`,
     [periodoId ?? null, limite],
@@ -178,20 +157,27 @@ export async function promedioPorCurso(
 
 export type CifrasAcademicas = {
   estudiantes: number;
-  cursos: number;
+  /** Estudiantes con una materia de 360 en curso ahora. */
+  cursando_360: number;
+  /** Materias del catálogo de 360 abiertas. */
+  clases_360: number;
   materias: number;
-  becados: number;
 };
 
-/** El contexto del informe académico: sobre cuánta gente se está hablando. */
+/**
+ * El contexto del informe académico: sobre cuánta gente se está hablando.
+ *
+ * Ya no hay cifra de becados: desde la 0047 todo estudiante lo es y repetía
+ * la de estudiantes activos.
+ */
 export async function cifrasAcademicas(): Promise<CifrasAcademicas> {
   const fila = await consultarUna<CifrasAcademicas>(
     `SELECT (SELECT count(*)::int FROM estudiante WHERE estado = 'activo') AS estudiantes,
-            (SELECT count(*)::int FROM curso) AS cursos,
-            (SELECT count(*)::int FROM materia) AS materias,
-            (SELECT count(*)::int FROM estudiante
-              WHERE tipo = 'becado' AND estado = 'activo') AS becados`,
+            (SELECT count(DISTINCT estudiante_id)::int FROM inscripcion_360
+              WHERE estado = 'cursando') AS cursando_360,
+            (SELECT count(*)::int FROM materia_360 WHERE activa) AS clases_360,
+            (SELECT count(*)::int FROM materia) AS materias`,
   );
 
-  return fila ?? { estudiantes: 0, cursos: 0, materias: 0, becados: 0 };
+  return fila ?? { estudiantes: 0, cursando_360: 0, clases_360: 0, materias: 0 };
 }

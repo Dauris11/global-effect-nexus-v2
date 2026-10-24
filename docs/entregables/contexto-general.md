@@ -51,7 +51,7 @@ Cada una de estas ramas genera un volumen crítico de información distribuida: 
 El sistema unifica estas operaciones a través de **seis portales web especializados por rol**:
 1. **Portal Administrativo (Dirección y Superadmin):** Gobierno del sistema, auditoría general, asignación de proyectos por rol y configuración global.
 2. **Portal del Estudiante:** Autoconsulta de expediente, seguimiento de beca, solicitud de trámites académicos y acceso al aula virtual Global 360.
-3. **Portal Docente:** Gestión de asignaturas, calificaciones, registro de asistencia y aula virtual interactiva con vista de estudiante.
+3. **Portal Docente:** Gestión de asignaturas, clases de Global 360 con su nota final, registro de asistencia y aula virtual interactiva con vista de estudiante.
 4. **Portal de Contabilidad:** Centro de control fiscal exclusivo para contables y auditores, con soporte de Comprobantes Fiscales (NCF), reportes 606/607 de la DGII, conciliación bancaria, cajas chicas con arqueo físico y bitácora con hash SHA-256.
 5. **Portal Habitudes Hub:** Espacio colaborativo para docentes en liceos, con repositorio de presentaciones y carga móvil de evidencias fotográficas de clases.
 6. **Portal de Rendición y Torre de Control del Empleado ("Lo que me toca hoy"):** Panel de productividad individual con tareas prioritarias del día, bitácora de trabajo y formulario de rendición de gastos con extracción asistida por OCR.
@@ -66,7 +66,7 @@ La Fundación Global Effect ha experimentado un incremento exponencial en su mat
 2. **Pérdida de Trazabilidad en Activos Físicos:** La fundación posee un inventario valioso de mobiliario, equipos tecnológicos de cómputo, plantas eléctricas y herramientas industriales en la Casa de Herramientas. Al no contar con una codificación física unívoca ni etiquetas matriciales (códigos QR), los activos sufrían extravíos, deterioros no reportados y falta de asignación de custodios responsables.
 3. **Descontrol en la Rendición de Gastos de Empleados:** El personal que ejecuta compras diarias para talleres o mandados comunitarios reportaba comprobantes en papel físico de manera tardía, provocando descuadres en los fondos de caja chica y retrasos en la liquidación de anticipos.
 4. **Dispersión en el Acompañamiento Académico y Extinción del Área Psicológica:** Tras el cierre formal del departamento de Psicología de la fundación en octubre de 2026, los expedientes de los estudiantes quedaron bajo custodia administrativa. La coordinación de citas requería transformarse urgentemente en una agenda de reuniones y mentoría institucional abierta a todo el personal, eliminando la duplicidad de registros confidenciales.
-5. **Aislamiento en la Docencia en Liceos y Talleres Virtuales:** Los facilitadores del programa Habitudes en centros educativos públicos carecían de un repositorio común para sincronizar sus presentaciones multimedia y subir evidencias fotográficas en tiempo real desde sus teléfonos móviles. Asimismo, las jornadas formativas semestrales (Global 360) carecían de un aula virtual tipo Moodle con control riguroso de fechas de entrega y límites de archivos por peso y formato.
+5. **Aislamiento en la Docencia en Liceos y Talleres Virtuales:** Los facilitadores del programa Habitudes en centros educativos públicos carecían de un repositorio común para sincronizar sus presentaciones multimedia y subir evidencias fotográficas en tiempo real desde sus teléfonos móviles. Asimismo, las jornadas formativas cuatrimestrales (Global 360) carecían de un aula virtual tipo Moodle con control riguroso de fechas de entrega y límites de archivos por peso y formato.
 
 **Pregunta de Investigación:**  
 *¿De qué manera el diseño e implementación de un sistema web integral ERP inteligente (Global Effect Nexus), sustentado en Next.js, PostgreSQL y autenticación RBAC granular, optimiza el cumplimiento fiscal ante la DGII, asegura la trazabilidad patrimonial de activos mediante códigos QR, agiliza la rendición de cuentas operativa y unifica el seguimiento académico de los beneficiarios de la Fundación Global Effect?*
@@ -192,7 +192,7 @@ El plan de adopción y comunicación de la plataforma articula mecanismos intern
 3. **E3 (Contabilidad Integral y Cumplimiento DGII):** Desarrollar el módulo contable con catálogo formal de cuentas, validación estricta de Números de Comprobante Fiscal (NCF tipos B01, B02, B14, B15, E31), generación de los reportes fiscales normativos **Formato 606 y Formato 607**, libros de banco y control de caja chica con desglose físico por denominación y alerta de descuadre $\ge$ RD$200.
 4. **E4 (Inventario Físico con Códigos QR):** Desarrollar el módulo de control patrimonial para registro de activos (mobiliario, computadoras, herramientas industriales), generación e impresión de etiquetas QR de alta resolución con branding institucional, y lector móvil integrado con la cámara del dispositivo para auditorías en sitio.
 5. **E5 (Torre de Control del Empleado y Rendición de Gastos):** Construir el panel diario de productividad ("Lo que me toca hoy") con estados de tareas (`por_hacer`, `en_progreso`, `en_revision`, `completada`), asignación de proyectos por rol por parte del superadministrador, y formulario de rendición de gastos con extracción de datos de facturas mediante OCR.
-6. **E6 (Aula Virtual Global 360 y Hub Habitudes):** Desarrollar el entorno de aprendizaje virtual semestral estilo Moodle con control de entregas por extensiones y peso (MB), vista dual "Ver como estudiante" para docentes, y repositorio multimedia colaborativo con subida de evidencias fotográficas para liceos.
+6. **E6 (Aula Virtual Global 360 y Hub Habitudes):** Desarrollar el entorno de aprendizaje virtual cuatrimestral estilo Moodle con control de entregas por extensiones y peso (MB), vista dual "Ver como estudiante" para docentes, y repositorio multimedia colaborativo con subida de evidencias fotográficas para liceos.
 7. **E7 (Expedientes y Agenda Institucional):** Implementar la gestión administrativa de expedientes estudiantiles y la agenda unificada de reuniones para todo el personal y alumnos, reemplazando el antiguo esquema de citas psicológicas.
 8. **E8 (Auditoría Inmutable y Separación de Funciones):** Implementar la bitácora transaccional (`audit_log`) con hash SHA-256 encadenado y flujo de solicitudes y aprobaciones con separación de funciones (nadie aprueba su propia solicitud; segundo nivel obligatorio de dirección).
 
@@ -289,11 +289,13 @@ erDiagram
     estudiante ||--o{ asignacion_beca : recibe
 
     %% DOMINIO ACADÉMICO Y MOODLE GLOBAL 360
-    periodo ||--o{ curso : apertura
-    materia ||--o{ curso : compone
-    curso ||--o{ inscripcion : matricula
+    periodo ||--o{ materia : oferta
+    materia ||--o{ inscripcion : matricula
     estudiante ||--o{ inscripcion : participa
-    curso ||--o{ tarea_academica : asigna
+    materia_360 ||--o{ inscripcion_360 : una_por_tanda
+    estudiante ||--o{ inscripcion_360 : elige
+    materia ||--o{ tarea_academica : asigna
+    materia_360 ||--o{ tarea_academica : asigna
     tarea_academica ||--o{ entrega_tarea : recibe
     estudiante ||--o{ entrega_tarea : entrega
 
@@ -353,7 +355,7 @@ flowchart TD
     subgraph Almacenes de Datos
         D1[(usuario, rol, rol_permiso)]
         D2[(estudiante, perfiles, familiar)]
-        D3[(periodo, materia, curso, tarea_academica)]
+        D3[(periodo, materia, materia_360, inscripcion_360, tarea_academica)]
         D4[(contabilidad.*: factura_cxp, arqueo_caja, poliza)]
         D5[(inventario_activo, inventario_historial)]
         D6[(proyecto, tarea, rendicion_gasto)]

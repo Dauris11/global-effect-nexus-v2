@@ -21,11 +21,9 @@ import type { Locale } from "@/i18n/routing";
 import { requerirPermiso } from "@/lib/auth";
 import {
   esEstadoEstudiante,
-  esTipoEstudiante,
   ESTADOS_ESTUDIANTE,
   GENEROS,
   PARENTESCOS,
-  TIPOS_ESTUDIANTE,
   visualDeEstado,
   ASISTIO_REUNION,
   BANO,
@@ -89,7 +87,6 @@ export default async function PaginaExpedientes({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
     q?: string;
-    tipo?: string;
     estado?: string;
     vista?: string;
     pagina?: string;
@@ -98,7 +95,6 @@ export default async function PaginaExpedientes({
   const { locale } = await params;
   const {
     q,
-    tipo: tipoPedido,
     estado: estadoPedido,
     vista: vistaPedida,
     pagina: paginaPedida,
@@ -111,7 +107,6 @@ export default async function PaginaExpedientes({
 
   // Un valor desconocido en la URL se ignora: llega de un enlace que puede
   // haberse quedado viejo, no de un error que haya que anunciar.
-  const tipo = esTipoEstudiante(tipoPedido) ? tipoPedido : null;
   const estado = esEstadoEstudiante(estadoPedido) ? estadoPedido : null;
   const busqueda = q?.trim() ? q.trim() : null;
   const vista: Vista = vistaPedida === "lista" ? "lista" : "tarjetas";
@@ -122,8 +117,8 @@ export default async function PaginaExpedientes({
 
   const [cifras, filas, total] = await Promise.all([
     cifrasExpedientes(),
-    listaExpedientes({ busqueda, tipo, estado, pagina, porPagina: POR_PAGINA }),
-    contarExpedientes({ busqueda, tipo, estado }),
+    listaExpedientes({ busqueda, estado, pagina, porPagina: POR_PAGINA }),
+    contarExpedientes({ busqueda, estado }),
   ]);
 
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -177,7 +172,6 @@ export default async function PaginaExpedientes({
               gender: t("field.gender"),
               sexDocument: t("field.sexDocument"),
               religion: t("field.religion"),
-              type: t("field.type"),
               status: t("field.status"),
               program: t("field.program"),
               whereStudies: t("field.whereStudies"),
@@ -224,9 +218,6 @@ export default async function PaginaExpedientes({
             parentescos: Object.fromEntries(
               PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
             ),
-            tipos: Object.fromEntries(
-              TIPOS_ESTUDIANTE.map((clave) => [clave, t(`type.${clave}`)]),
-            ),
             estados: Object.fromEntries(
               ESTADOS_ESTUDIANTE.map((clave) => [clave, t(`status.${clave}`)]),
             ),
@@ -267,11 +258,6 @@ export default async function PaginaExpedientes({
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Cifra valor={cifras.total} etiqueta={t("stats.total")} />
         <Cifra
-          valor={cifras.becados}
-          etiqueta={t("stats.scholarship")}
-          color="text-[#187a99]"
-        />
-        <Cifra
           valor={cifras.activos}
           etiqueta={t("stats.active")}
           color="text-[#187a99]"
@@ -281,33 +267,22 @@ export default async function PaginaExpedientes({
           etiqueta={t("stats.inProcess")}
           color="text-[#187a99]"
         />
+        <Cifra
+          valor={cifras.graduados}
+          etiqueta={t("stats.graduated")}
+          color="text-[#187a99]"
+        />
       </div>
 
-      {/* Filtros. El de tipo va en píldoras porque son dos valores; el de estado
-          en desplegable, porque son ocho y ocho píldoras no caben. */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <Pildora
-            href={enlace({ vista })}
-            activa={!tipo && !estado && !busqueda}
-            texto={t("filters.all")}
-          />
-          {TIPOS_ESTUDIANTE.map((valor) => (
-            <Pildora
-              key={valor}
-              href={enlace({ tipo: valor, estado, busqueda, vista })}
-              activa={tipo === valor}
-              texto={t(`type.${valor}`)}
-            />
-          ))}
-        </div>
-
+      {/* El estado va en desplegable porque son ocho y ocho píldoras no caben.
+          Las píldoras de tipo se fueron con la 0047: con un solo tipo de
+          estudiante, filtrar por él no deja fuera a nadie. */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
         <form
           action={rutaBusqueda}
           method="get"
           className="flex flex-wrap items-center gap-2"
         >
-          {tipo && <input type="hidden" name="tipo" value={tipo} />}
           {vista !== "tarjetas" && (
             <input type="hidden" name="vista" value={vista} />
           )}
@@ -339,7 +314,7 @@ export default async function PaginaExpedientes({
             {t("filters.apply")}
           </Button>
 
-          {(busqueda || tipo || estado) && (
+          {(busqueda || estado) && (
             <Link
               href={enlace({ vista })}
               className="text-muted-foreground hover:text-foreground text-xs font-medium underline-offset-2 hover:underline"
@@ -358,10 +333,10 @@ export default async function PaginaExpedientes({
                 <Users className="size-6" />
               </span>
               <p className="mt-3 text-sm font-semibold">
-                {busqueda || tipo || estado ? t("noMatches") : t("empty")}
+                {busqueda || estado ? t("noMatches") : t("empty")}
               </p>
               <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-                {busqueda || tipo || estado
+                {busqueda || estado
                   ? t("noMatchesHint")
                   : t("emptyHint")}
               </p>
@@ -381,13 +356,13 @@ export default async function PaginaExpedientes({
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1 rounded-full border p-0.5">
                 <VistaBoton
-                  href={enlace({ tipo, estado, busqueda, vista: "tarjetas", pagina })}
+                  href={enlace({ estado, busqueda, vista: "tarjetas", pagina })}
                   activa={vista === "tarjetas"}
                   icono={LayoutGrid}
                   texto={t("views.cards")}
                 />
                 <VistaBoton
-                  href={enlace({ tipo, estado, busqueda, vista: "lista", pagina })}
+                  href={enlace({ estado, busqueda, vista: "lista", pagina })}
                   activa={vista === "lista"}
                   icono={List}
                   texto={t("views.list")}
@@ -397,7 +372,7 @@ export default async function PaginaExpedientes({
               {totalPaginas > 1 && (
                 <div className="flex items-center gap-2">
                   <PaginaBoton
-                    href={enlace({ tipo, estado, busqueda, vista, pagina: pagina - 1 })}
+                    href={enlace({ estado, busqueda, vista, pagina: pagina - 1 })}
                     deshabilitado={pagina <= 1}
                     icono={ChevronLeft}
                     etiqueta={t("pagination.previous")}
@@ -406,7 +381,7 @@ export default async function PaginaExpedientes({
                     {t("pagination.page", { current: pagina, total: totalPaginas })}
                   </span>
                   <PaginaBoton
-                    href={enlace({ tipo, estado, busqueda, vista, pagina: pagina + 1 })}
+                    href={enlace({ estado, busqueda, vista, pagina: pagina + 1 })}
                     deshabilitado={pagina >= totalPaginas}
                     icono={ChevronRight}
                     etiqueta={t("pagination.next")}
@@ -463,13 +438,11 @@ export default async function PaginaExpedientes({
  * paginación son los únicos que sí la pasan.
  */
 function enlace({
-  tipo,
   estado,
   busqueda,
   vista,
   pagina,
 }: {
-  tipo?: string | null;
   estado?: string | null;
   busqueda?: string | null;
   vista?: Vista | null;
@@ -477,7 +450,6 @@ function enlace({
 }): string {
   const parametros = new URLSearchParams();
 
-  if (tipo) parametros.set("tipo", tipo);
   if (estado) parametros.set("estado", estado);
   if (busqueda) parametros.set("q", busqueda);
   if (vista && vista !== "tarjetas") parametros.set("vista", vista);
@@ -504,31 +476,6 @@ function Cifra({
         <p className="text-muted-foreground mt-1 text-xs">{etiqueta}</p>
       </CardContent>
     </Card>
-  );
-}
-
-function Pildora({
-  href,
-  activa,
-  texto,
-}: {
-  href: string;
-  activa: boolean;
-  texto: string;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={activa ? "true" : undefined}
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        activa
-          ? "bg-primary text-primary-foreground border-transparent"
-          : "text-muted-foreground hover:bg-muted",
-      )}
-    >
-      {texto}
-    </Link>
   );
 }
 
@@ -648,7 +595,7 @@ function FilaContenido({
 }
 
 /**
- * La tarjeta cuadrada: foto, nombre, tipo y estado (con su color), centrados.
+ * La tarjeta cuadrada: foto, nombre y estado (con su color), centrados.
  * El estado manda el color de su badge y el de la franja superior —dos sitios
  * con la misma señal, para que se distinga de un vistazo sin tener que leer
  * el texto—. El pie, fuera del disparador de la previsualización, deja el
@@ -732,7 +679,6 @@ function textosPrevisualizar(
     gpa: t("detail.gpa"),
     gpaScale: t("detail.gpaScale"),
     noGpa: t("noGpa"),
-    type: t(`type.${fila.tipo}`),
     status: t(`status.${fila.estado}`),
     optional: t("field.optional"),
     edit: t("rowActions.edit"),

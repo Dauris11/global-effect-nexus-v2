@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { ElegirMaterias } from "@/components/estudiante/elegir-materias";
 import { PeriodoInscripciones } from "@/components/estudiante/prematricula-periodo";
+import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { StatCard } from "@/components/ui/stat-card";
@@ -19,7 +20,10 @@ import {
   materiasOfertadas,
 } from "@/server/estudiantes/academico";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
-import { ventanaVigente } from "@/server/global360/consultas";
+import {
+  tandasDelEstudiante,
+  ventanaVigente,
+} from "@/server/global360/consultas";
 
 export async function generateMetadata({
   params,
@@ -52,6 +56,11 @@ export async function generateMetadata({
  * El bloque de elección se dibuja solo si hay ventana vigente —abierta o
  * anunciada—; si no hay ninguna, no se enseña ni el aviso: no hay nada que
  * decir y una tarjeta que anuncia que no hay nada ocupa sitio.
+ *
+ * Con la ventana, también las dos tandas de Global Effect 360: es obligatorio
+ * y se elige en la misma prematrícula, así que quien venga a matricular la
+ * carrera tiene que enterarse aquí si le falta la materia de la tanda. Aquí
+ * solo se avisa y se enlaza; elegir se hace en la página de 360.
  */
 export default async function PaginaMisMaterias({
   params,
@@ -75,15 +84,16 @@ export default async function PaginaMisMaterias({
 
   // El catálogo solo se pide si hay ventana: sin ella no hay nada que elegir y
   // sería una consulta por visita para no dibujar nada.
-  const [oferta, mensajes] = ventana
+  const [oferta, mensajes, tandas] = ventana
     ? await Promise.all([
         materiasOfertadas({
           periodoId: ventana.periodo_id,
           estudianteId: estudiante.id,
         }),
         mensajesCliente(["studentPortal"]),
+        tandasDelEstudiante(estudiante.id, ventana.periodo_id),
       ])
-    : [[], null];
+    : [[], null, []];
 
   const activas = inscripciones.filter((fila) => fila.estado === "activa");
   const cerradas = inscripciones.filter(
@@ -137,13 +147,14 @@ export default async function PaginaMisMaterias({
         />
       </div>
 
+      {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} enlazar />}
+
       {ventana && mensajes && (
         <NextIntlClientProvider messages={mensajes}>
           <ElegirMaterias
             materias={oferta}
             periodo={ventana.periodo}
             abierta={ventana.abierta}
-            esBecado={estudiante.tipo === "becado"}
           />
         </NextIntlClientProvider>
       )}

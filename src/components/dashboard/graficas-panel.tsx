@@ -55,7 +55,7 @@ export function GraficasPanel({
 
   const porPrograma = [
     { nombre: t("university"), valor: cifras.universitarios, color: AZUL_OSCURO },
-    { nombre: t("technical"), valor: cifras.tecnicos, color: AZUL },
+    { nombre: t("g360Students"), valor: cifras.cursando360, color: AZUL },
     { nombre: t("pipeline"), valor: cifras.reclutamiento, color: NEUTRO },
   ];
 

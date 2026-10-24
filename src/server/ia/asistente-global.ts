@@ -59,7 +59,7 @@ const REGLAMENTO_FUNDACION = `
 REGLAMENTO INSTITUCIONAL Y POLÍTICA DE BECAS (FUNDACIÓN GLOBAL EFFECT - LA VEGA, RD):
 1. REQUISITOS DE PERMANENCIA EN LA BECA:
    - Becados Universitarios: Mantener un índice académico (GPA) igual o superior a 3.00 sobre 4.00 (promedio >= 80/100).
-   - Estudiantes de Cursos Técnicos: Calificación mínima aprobatoria de 70 puntos por módulo.
+   - Global Effect 360: Calificación mínima aprobatoria de 70 puntos en cada materia.
    - Asistencia a Clases y Talleres: Mínimo 80% de asistencia obligatoria. Las faltas injustificadas ponen en riesgo la beca.
    - Servicio Comunitario Mensual: 8 horas mensuales obligatorias en proyectos aprobados por la Fundación.
    - Reuniones Mensuales Generales: Asistencia obligatoria el primer fin de semana de cada mes.
@@ -77,6 +77,7 @@ REGLAMENTO INSTITUCIONAL Y POLÍTICA DE BECAS (FUNDACIÓN GLOBAL EFFECT - LA VEG
 
 5. GLOBAL EFFECT 360:
    - Programa integral de formación en liderazgo, carácter, habilidades técnicas y valores que acompaña los estudios universitarios.
+   - Lo cursan todos los becados. Todas sus materias son obligatorias: una por tanda, dos tandas por cuatrimestre.
 `;
 
 /**
@@ -164,19 +165,6 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
   // Académico & Docente
   {
     identificadores: [
-      "calificaciones",
-      "calificar",
-      "notas",
-      "registrar notas",
-      "evaluaciones",
-    ],
-    etiqueta: "Registro de Calificaciones",
-    descripcion: "Planilla de notas de estudiantes por materia y período académico.",
-    ruta: "/academico/calificaciones",
-    rolesPermitidos: ["docente", "admin", "super_admin"],
-  },
-  {
-    identificadores: [
       "materias",
       "mis materias",
       "asignaturas",
@@ -187,14 +175,20 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     rolesPermitidos: ["docente", "admin", "super_admin"],
   },
   {
+    // Las notas finales de 360 se ponen aquí, así que "calificaciones" y
+    // "notas" llevan a esta pantalla desde que se retiró la planilla de los
+    // cursos técnicos.
     identificadores: [
-      "cursos",
-      "cursos tecnicos",
-      "mis cursos",
+      "clases 360",
+      "global effect 360",
+      "calificaciones",
+      "calificar",
+      "notas",
+      "registrar notas",
     ],
-    etiqueta: "Cursos Técnicos",
-    descripcion: "Cursos impartidos por el Instituto Técnico de la Fundación.",
-    ruta: "/academico/cursos",
+    etiqueta: "Clases de Global Effect 360",
+    descripcion: "Materias de Global Effect 360: docentes, inscritos, tareas y nota final.",
+    ruta: "/academico/clases-360",
     rolesPermitidos: ["docente", "admin", "super_admin"],
   },
   {
@@ -204,7 +198,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
       "mi portal docente",
     ],
     etiqueta: "Portal Docente",
-    descripcion: "Panel de control del profesor con cursos activos y pendientes.",
+    descripcion: "Panel de control del profesor con sus clases activas y pendientes.",
     ruta: "/portal/profesor",
     rolesPermitidos: ["docente"],
   },
@@ -267,7 +261,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
       "fichas",
     ],
     etiqueta: "Expedientes de Estudiantes",
-    descripcion: "Fichas de postulantes, becados universitarios y estudiantes de cursos técnicos.",
+    descripcion: "Fichas de postulantes y becados universitarios.",
     ruta: "/expedientes",
     rolesPermitidos: ["admin", "super_admin", "habitudes"],
   },

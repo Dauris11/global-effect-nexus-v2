@@ -38,7 +38,7 @@ import type { PeriodoGestionado } from "@/server/academico/consultas";
  * Los períodos de la Fundación: crear un cuatrimestre, abrirlo y cerrarlo.
  *
  * Es la primera pantalla del módulo académico en el orden real de uso. Sin una
- * fila aquí no hay dónde colgar una materia, un curso ni una matrícula, y por
+ * fila aquí no hay dónde colgar una materia ni una matrícula, y por
  * eso el estado vacío no dice "no hay nada" sino qué se desbloquea al crear el
  * primero.
  *
@@ -203,7 +203,7 @@ function FilaPeriodo({
         <p className="text-muted-foreground truncate text-xs">
           {fechaCorta(periodo.fecha_inicio, idioma)} —{" "}
           {fechaCorta(periodo.fecha_fin, idioma)} ·{" "}
-          {t(periodo.tipo === "semestre" ? "courses.semester" : "courses.quarter")}
+          {t(periodo.tipo === "semestre" ? "termKind.semester" : "termKind.quarter")}
         </p>
 
         {/* Lo que cuelga: es la cifra que decide si el período se puede borrar
@@ -215,7 +215,7 @@ function FilaPeriodo({
           </span>
           <span className="inline-flex items-center gap-1">
             <GraduationCap className="size-3" />
-            {t("terms.counts.courses")}: <b>{periodo.cursos}</b>
+            {t("terms.counts.enrollments360")}: <b>{periodo.inscripciones_360}</b>
           </span>
           <span className="inline-flex items-center gap-1">
             <Users className="size-3" />
@@ -307,15 +307,15 @@ function FormularioPeriodo({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor={`p-tipo-${clave}`}>{t("courses.termType")}</Label>
+          <Label htmlFor={`p-tipo-${clave}`}>{t("termKind.label")}</Label>
           <select
             id={`p-tipo-${clave}`}
             name="tipo"
             defaultValue={periodo?.tipo ?? "cuatrimestre"}
             className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
-            <option value="cuatrimestre">{t("courses.quarter")}</option>
-            <option value="semestre">{t("courses.semester")}</option>
+            <option value="cuatrimestre">{t("termKind.quarter")}</option>
+            <option value="semestre">{t("termKind.semester")}</option>
           </select>
         </div>
 

@@ -47,7 +47,7 @@ Cada usuario ve un menú lateral diferente según su rol:
   admin          → Administración: expedientes, académico, operaciones,
                    patrocinadores, revisión de solicitudes
   estudiante     → Portal estudiantil: materias, notas, solicitudes
-  docente        → Portal docente: cursos, calificaciones
+  docente        → Portal docente: clases de Global 360, tareas y nota final
   contabilidad   → Transacciones, reportes financieros, gastos
   habitudes      → Postulación de candidatos al expediente
 
@@ -66,10 +66,10 @@ Funcionalidades:
   título, subtítulo, texto, imagen, botón (CTA), orden y activo/oculto.
   Si no hay diapositivas, muestra una por defecto traducida. *(Implementado)*
 - Barra de estadísticas: estudiantes activos, materias, patrocinadores.
-- Selector de portales: 6 tarjetas con accesos directos:
+- Selector de portales: tarjetas con accesos directos (la de Cursos
+  Técnicos se retiró con el programa, migración `0047`):
   - Administración Global
   - Contabilidad y Finanzas
-  - Cursos Técnicos
   - Portal Administrativo
   - Portal del Estudiante
   - Portal del Profesor
@@ -85,13 +85,14 @@ Panel de control para administradores con métricas en tiempo real.
 Funcionalidades:
 - Banner con resumen: estudiantes activos, becados, patrocinadores.
 - Tarjetas de estadísticas (StatCard):
-  - Estudiantes activos / becados
-  - Cursos activos
+  - Estudiantes activos
+  - Clases de Global 360 en marcha
   - Tareas pendientes
   - Balance del mes
 - Accesos rápidos a Expedientes, Patrocinadores, Solicitudes, Chat IA.
 - Gráfico de barras: flujo financiero mensual (ingresos vs egresos).
-- Gráfico circular: distribución becados vs regulares.
+- Gráfico circular: estudiantes por estado (desde la `0047` todos son
+  becados universitarios, así que ya no se reparte por tipo).
 - Lista de próximos eventos programados.
 - Lista de tareas prioritarias no completadas.
 
@@ -105,9 +106,10 @@ y seguimiento), normalizado en tablas relacionadas.
 Funcionalidades:
 - CRUD completo: crear, ver, editar y eliminar expedientes.
 - Tarjetas con foto, estado (activo/inactivo/graduado/suspendido),
-  tipo (becado universitario / curso técnico) y badges.
+  carrera universitaria y badges. Hay un solo tipo de estudiante, el
+  becado universitario: el `regular` de curso técnico se retiró en la `0047`.
 - Buscador inteligente con dropdown en tiempo real (BuscadorEstudiantes).
-- Filtros por pestañas: Todos / Becados Universitarios / Cursos Técnicos.
+- Filtros por estado y por carrera.
 
 OCR CON INTELIGENCIA ARTIFICIAL:
 - Permite subir imagen o PDF del expediente físico del estudiante.
@@ -153,33 +155,34 @@ Funcionalidades:
   aula, estado (activa/inactiva), descripción.
 - Búsqueda en tiempo real por nombre, código o profesor.
 
-## MÓDULO 5: CURSOS TÉCNICOS
-*Ruta: /academico/cursos*
+## MÓDULO 5: CLASES DE GLOBAL EFFECT 360
+*Ruta: /academico/clases-360*
 
-Gestión de cursos del Instituto de Carreras Técnicas.
-
-Funcionalidades:
-- Crear cursos con: nombre, descripción, docente, período, estado
-  (activo/finalizado/planificado), capacidad máxima, inscritos,
-  horario, modalidad (presencial/virtual/mixto).
-- Tarjetas con indicador de cupo (inscritos/capacidad).
-- Búsqueda por nombre o docente.
-
-## MÓDULO 6: CALIFICACIONES
-*Ruta: /academico/calificaciones*
-
-Registro y seguimiento de notas de estudiantes.
+Hasta octubre de 2026 este módulo era el de Cursos Técnicos
+(`/academico/cursos`). La Fundación dejó de impartirlos y Global Effect
+360 ocupa su lugar: es la formación propia que queda, y sus clases
+tienen lo que tenían los cursos —docente, tareas, entregas y nota final—.
 
 Funcionalidades:
-- Registrar calificaciones: estudiante, curso, nota (0-100), tipo de
-  evaluación (examen/tarea/proyecto/participación/final), período,
-  observaciones.
-- Tabla con código de color según nota:
-  - Verde: ≥90 (excelente)
-  - Azul: 70-89 (aprobado)
-  - Amarillo: 60-69 (marginal)
-  - Rojo: <60 (reprobado)
-- Búsqueda por estudiante o curso.
+- Clases de 360 por período y tanda, con su docente, horario, aula y
+  cupo. El docente ve solo las suyas; administración las ve todas.
+- Inscritos de cada clase con su cumplimiento de tareas.
+- Publicar tarea o examen y revisar entregas con nota y devolución
+  (ver Módulo 28).
+- **Nota final de cada inscripción** (0–100): la pone el docente con
+  `calificaciones.registrar` y decide el estado, aprobada o reprobada
+  (hoy con 70 como mínimo). Una reprobada sigue faltándole al
+  estudiante y la repite en otro período.
+
+## MÓDULO 6: CALIFICACIONES (retirado)
+*Ruta retirada: /academico/calificaciones*
+
+Registraba notas por evaluación (examen, tarea, proyecto…) de los
+cursos técnicos sobre la tabla `calificacion`. Se retiró con ellos en la
+migración `0047`: la tabla se borró sin copia y la pantalla desaparece.
+La nota de 360 se pone en `/academico/clases-360` y las notas
+universitarias siguen en el Historial (Módulo 7). Se conserva el número
+del módulo para no descolocar las referencias de los demás documentos.
 
 ## MÓDULO 7: HISTORIAL ACADÉMICO
 *Ruta: /academico/historial*
@@ -190,7 +193,7 @@ Funcionalidades:
 - Estadísticas: total evaluaciones, promedio general, aprobados.
 - Agrupación por estudiante con promedio individual.
 - Filtro por período académico.
-- Búsqueda por estudiante o curso.
+- Búsqueda por estudiante o materia.
 - Badge de promedio con color (verde ≥70, rojo <70).
 
 ## MÓDULO 8: PREMATRÍCULA
@@ -199,7 +202,9 @@ Funcionalidades:
 Gestión de inscripciones y asignación de materias por período.
 
 Funcionalidades:
-- Inscribir estudiantes en cursos seleccionando de dropdowns.
+- Catálogo de Global Effect 360 (todas sus materias son obligatorias) y
+  ventanas de prematrícula por tanda: dos por cuatrimestre.
+- Inscribir estudiantes en materias seleccionando de dropdowns.
 - Estadísticas: total inscritos, pendientes (nota=0), activos (nota>0).
 - Lista de todas las inscripciones registradas con su estado.
 
@@ -210,7 +215,7 @@ Gestión de períodos académicos institucionales.
 
 Funcionalidades:
 - Crear períodos con: nombre (ej: 2026-I), fechas de inicio/fin,
-  estado (planificado/activo/completado), cantidad de cursos.
+  estado (planificado/activo/completado), cantidad de materias.
 - Tarjetas con badge de estado y color.
 - Estadísticas: activos, completados, planificados.
 
@@ -364,7 +369,7 @@ Asistente con inteligencia artificial para consultas institucionales.
 Funcionalidades:
 - Chat interactivo con historial de mensajes (markdown renderizado).
 - La IA recibe contexto en tiempo real de la base de datos:
-  estudiantes, cursos, academias, patrocinadores, eventos, tareas,
+  estudiantes, materias y clases de 360, academias, patrocinadores, eventos, tareas,
   finanzas (ingresos, egresos, balance).
 - Prompts rápidos sugeridos (botones de acceso directo).
 - Respuestas en español, claras y concisas.
@@ -408,8 +413,7 @@ Dashboard analítico con gráficos interactivos (Recharts).
 - KPIs: total registros, promedio general, aprobados, reprobados.
 - Gráfico de barras: distribución de calificaciones en rangos
     (90-100, 80-89, 70-79, 60-69, <60).
-- Gráfico de barras: promedio por tipo de evaluación.
-- Gráfico de barras horizontales: promedio por curso.
+- Gráfico de barras horizontales: promedio por materia de 360.
 
   CONTABILIDAD:
 - KPIs: ingresos, egresos, balance neto, total transacciones.
@@ -468,29 +472,33 @@ Funcionalidades:
 Visualización jerárquica de toda la estructura de navegación.
 
 Funcionalidades:
-- 4 portales principales con sub-módulos navegables:
+- Portales principales con sub-módulos navegables:
   - Portal Estudiante
   - Portal Profesor
   - Portal Administrativo
-  - Portal Cursos Técnicos
+  - Portal Contabilidad
 - Módulos compartidos (Dashboard, Calendario, Inscripción Comida).
 - Flujos de navegación automáticos documentados.
 
 ## MÓDULO 28: PROGRAMA GLOBAL 360 Y AULA VIRTUAL (ESTILO MOODLE)
-*Rutas: /portal/estudiante/global-360, /portal/estudiante/aula-virtual, /academico/global-360*
+*Rutas: /portal/estudiante/global-360, /portal/estudiante/aula-virtual, /academico/clases-360, /academico/prematricula*
 
 Plataforma educativa para el programa insignia Global 360 de la Fundación.
 
 Funcionalidades:
 - **Selección y Matrícula Cuatrimestral Obligatoria:**
-  - Dos veces por cuatrimestre los estudiantes deben seleccionar y prematricularse en las materias obligatorias de la Fundación.
+  - Abierto a todos los estudiantes: desde la `0047` solo hay becados universitarios, y el antiguo «solo becados» dejó de distinguir a nadie.
+  - Todo el catálogo es obligatorio; no hay materias opcionales.
+  - El cuatrimestre tiene **dos tandas de dos meses**. En cada una el estudiante elige **exactamente una** materia: dos por cuatrimestre. Elegir es obligatorio, y quien no lo ha hecho en una tanda abierta aparece como pendiente.
+  - Lo sostiene la base, no solo la pantalla: un índice único parcial sobre `inscripcion_360(estudiante_id, periodo_id, ronda)` que no cuenta las retiradas, para que dos clics a la vez no dejen dos materias en la misma tanda. Retirarse libera la tanda.
   - Asignación de horarios, aulas y profesores designados.
 - **Aula Virtual y Entregas Estilo Moodle:**
   - Diseñada para facilitar el uso y la curva de aprendizaje tanto a estudiantes como a docentes.
-  - Creación de tareas por parte del docente con: título, descripción/asignación, curso asociado, fecha y hora de vencimiento.
+  - Creación de tareas por parte del docente con: título, descripción/asignación, materia asociada (universitaria o de 360), fecha y hora de vencimiento.
   - **Restricciones y Controles de Entrega:** el profesor define el límite de espacio permitido (en MB) y las extensiones o tipos de archivo aceptados (ej. `.pdf`, `.docx`, `.xlsx`, `.zip`, imágenes).
   - **Vista Previa de Estudiante para el Docente:** el profesor puede alternar a la "Vista de Estudiante" para verificar con exactitud cómo se visualiza la tarea, las instrucciones y el área de carga antes o durante la asignación.
   - Buzón de entregas, calificación docente y espacio de retroalimentación cualitativa.
+  - Al cierre de la tanda el docente pone la nota final de la inscripción, que la deja aprobada o reprobada.
 
 ## MÓDULO 29: PROGRAMA HABITUDES Y HUB COLABORATIVO DOCENTE
 *Rutas: /academias/habitudes, /portal/profesor/habitudes*
@@ -527,13 +535,13 @@ Funcionalidades:
 ─────────────────────────────────────────────────────────────────
 - **PORTAL ESTUDIANTE** (Ruta: `/portal/estudiante`):
   - Banner con promedio, GPA y materias aprobadas.
-  - Accesos: materias, calificaciones, solicitudes, Global 360, aula virtual con tareas, agenda de reuniones.
+  - Accesos: materias, calificaciones, solicitudes, Global 360 (con aviso si tiene una tanda abierta sin elegir), aula virtual con tareas, agenda de reuniones.
   - Lista de materias activas y calificaciones por cuatrimestre.
   - Condición en la fundación (servicios y reuniones últimos 3 meses).
 - **PORTAL PROFESOR** (Ruta: `/portal/profesor`):
-  - Banner con cursos activos, inscritos totales, notas registradas.
-  - Accesos: cursos, materias, calificaciones, calendario, aula virtual con vista de estudiante, hub Habitudes.
-  - Lista de cursos activos con modalidad e inscritos.
+  - Banner con clases de 360 activas, inscritos totales, notas finales puestas y entregas por revisar.
+  - Accesos: clases de 360, materias, calendario, aula virtual con vista de estudiante, hub Habitudes.
+  - Lista de sus clases de 360 con tanda, horario e inscritos, y de sus materias universitarias.
 - **PORTAL ADMINISTRATIVO Y COLABORADORES** (Ruta: `/portal/administrativo`):
   - **Torre de Control del Colaborador:** "Lo que me toca hoy" (tareas hoy, vencidas, pendientes con estados `por_hacer`, `en_progreso`, `en_revision`, `completada`).
   - Bitácora diaria y autoasignación de tareas prioritarias (pagos, compras, trámites externos).
@@ -558,7 +566,7 @@ Funcionalidades:
 3. **INVENTARIO Y ETIQUETADO QR:**
    Alta de mueble/equipo con foto $\rightarrow$ Generación de QR único $\rightarrow$ Impresión de etiqueta física $\rightarrow$ Escaneo móvil in situ para auditoría.
 4. **GLOBAL 360 Y TAREAS (MOODLE):**
-   Docente crea tarea (título, archivo/tamaño permitido) $\rightarrow$ Previsualiza en vista de estudiante $\rightarrow$ Estudiante sube entrega en el aula virtual $\rightarrow$ Docente califica con feedback.
+   Docente crea tarea (título, archivo/tamaño permitido) $\rightarrow$ Previsualiza en vista de estudiante $\rightarrow$ Estudiante sube entrega en el aula virtual $\rightarrow$ Docente califica con feedback $\rightarrow$ Nota final de la inscripción: aprobada o reprobada.
 5. **EVIDENCIAS HABITUDES EN LICEOS:**
    Docente acude a liceo $\rightarrow$ Captura foto o asistencia en móvil $\rightarrow$ Sube evidencia al hub de Habitudes $\rightarrow$ Disponible para todo el equipo.
 6. **ARQUEO FÍSICO DE CAJA:**

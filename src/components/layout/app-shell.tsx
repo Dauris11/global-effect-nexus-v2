@@ -7,7 +7,6 @@ import type { AvisoVisible } from "@/components/layout/campana";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/topbar";
 import { usePathname } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import type { Rol } from "@/lib/rbac";
 
 /**
@@ -28,7 +27,6 @@ export function AppShell({
   rol,
   nombre,
   foto,
-  tipoEstudiante,
   aviso,
   avisos,
   sinLeer,
@@ -39,8 +37,6 @@ export function AppShell({
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
-  /** Solo para el rol `estudiante`: decide qué módulos ofrece su menú. */
-  tipoEstudiante: TipoEstudiante | null;
   /** Aviso de la cabecera, ya traducido. `null` cuando no hay nada que anunciar. */
   aviso: { texto: string; href: string } | null;
   /** Últimos avisos de la cuenta, para la campana de la cabecera. */
@@ -74,7 +70,6 @@ export function AppShell({
         rol={rol}
         nombre={nombre}
         foto={foto}
-        tipoEstudiante={tipoEstudiante}
         contraida={contraida}
         onContraer={() => setContraida((valor) => !valor)}
         abiertaEnMovil={abiertaEnMovil}
@@ -87,7 +82,6 @@ export function AppShell({
           rol={rol}
           nombre={nombre}
           foto={foto}
-          tipoEstudiante={tipoEstudiante}
           aviso={aviso}
           avisos={avisos}
           sinLeer={sinLeer}
@@ -104,7 +98,6 @@ export function AppShell({
 
       <BarraInferior
         rol={rol}
-        tipoEstudiante={tipoEstudiante}
         menuAbierto={abiertaEnMovil}
         onAbrirMenu={() => setAbiertaEnMovil(true)}
       />

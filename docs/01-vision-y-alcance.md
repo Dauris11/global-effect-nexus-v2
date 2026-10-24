@@ -1,6 +1,6 @@
 # Visión y Alcance — Global Effect Nexus
 
-> Documento de visión del proyecto: propósito, alcance funcional, roles y estado. Última actualización: 2026-10-18 (Ampliación de directrices institucionales).
+> Documento de visión del proyecto: propósito, alcance funcional, roles y estado. Última actualización: 2026-10-24 (fin de los cursos técnicos).
 
 ## 1. Visión general
 
@@ -11,7 +11,7 @@
 > 2. **Contabilidad como Eje Neurálgico:** Es el departamento más crítico de la institución. Administra las cuentas sin discrepancias ni contradicciones numéricas, con estricto apego a las normativas tributarias de la DGII (reportes 606, 607, NCF B01/E31, retenciones, cajas chicas, conciliación bancaria y auditoría inmutable SHA-256).
 > 3. **Rendición de Gastos y Facturación Interna:** Los empleados que realicen compras o gastos institucionales con comprobante fiscal pueden cargar su factura desde su plataforma de trabajo; esta llega directamente a Contabilidad para validación, imputación a un programa/centro de costos (ej. Casa de Herramientas, Programa Juan Bosch, Becas Universitarias) y asignación a la persona responsable.
 > 4. **Torre de Control del Colaborador y Proyectos por Rol:** Todo el personal (excepto estudiantes) tiene asignados proyectos acordes a su rol, configurados por el `super_admin` con permisos granulares. Cada empleado cuenta con una "Torre de Control" diaria con sus tareas para hoy, vencidas, pendientes y sus estados reales (`por_hacer`, `en_progreso`, `en_revision`, `completada`), con autoasignación de prioridades (pagos, trámites externos) y una experiencia ágil y contextual tipo Claude.
-> 5. **Global 360 y Aula Virtual (Estilo Moodle):** Dos veces por cuatrimestre los estudiantes realizan su selección y matrícula obligatoria de materias con horarios y profesores asignados. Incluye aula virtual estilo Moodle con entrega de tareas, especificaciones de archivos/tamaño y vista previa del estudiante para el docente.
+> 5. **Global 360 y Aula Virtual (Estilo Moodle):** La Fundación dejó de impartir cursos técnicos (24 oct 2026, migración `0047`): solo hay un tipo de estudiante, el becado universitario, y Global Effect 360 es la única formación propia, abierta a todos. Todo su catálogo es obligatorio. El cuatrimestre tiene dos tandas de dos meses y en cada una el estudiante elige **una** materia con su horario y su profesor —dos por cuatrimestre—; elegir no es opcional, y quien no lo ha hecho en una tanda abierta aparece como pendiente. El docente de cada clase publica tareas, revisa entregas y pone la nota final, que decide si la materia queda aprobada o reprobada. Incluye aula virtual estilo Moodle con entrega de tareas, especificaciones de archivos/tamaño y vista previa del estudiante para el docente.
 > 6. **Habitudes Colaborativo para Docentes en Liceos:** Espacio colaborativo para que los profesores que asisten a los liceos compartan diapositivas, imágenes y guías pedagógicas, registren evidencias de clases impartidas y mantengan comunicación activa.
 > 7. **Inventario Físico de Activos con Códigos QR:** Registro de todo el mobiliario y equipo de la Fundación (muebles, cuadros, televisores, herramientas) con fotografía, generación e impresión de códigos QR únicos y escaneo ágil optimizado para dispositivos móviles.
 
@@ -46,7 +46,7 @@ Cada usuario ve un menú lateral distinto según su rol. Los usuarios se **invit
 |---|---|
 | `super_admin` | Dirección General: acceso absoluto, configuración, auditoría contable inmutable, asignación granular de proyectos por rol y segundo nivel de aprobaciones |
 | `admin` | Coordinación y Administración General: gestión operativa de expedientes administrativos, personal, solicitudes, agenda institucional e inventario |
-| `docente` | Portal Docente: gestión de materias, cursos técnicos, materias de Global 360, tareas estilo Moodle con vista de estudiante y calificaciones |
+| `docente` | Portal Docente: sus materias universitarias y sus clases de Global 360, tareas estilo Moodle con vista de estudiante, revisión de entregas y nota final de cada inscripción |
 | `estudiante` | Portal Estudiantil: materias, notas, matrícula Global 360, aula virtual con entrega de tareas, agenda de reuniones con personal y solicitudes de trámites |
 | `contabilidad` | Departamento Contable y Financiero: gestión de bancos, conciliación, facturas de proveedores con OCR, cajas chicas/operativas, arqueos, rendición de gastos internos de empleados y reportes tributarios DGII (606/607) |
 | `habitudes` | Facilitadores de Habitudes: clases en liceos, repositorio compartido de diapositivas/imágenes, registro de evidencias de labor docente y postulación de candidatos |
@@ -67,9 +67,9 @@ Cada usuario ve un menú lateral distinto según su rol. Los usuarios se **invit
 - **Inventario Físico y Activos Fijos:** catálogo de mobiliario y activos (muebles, televisores, cuadros, herramientas), carga de fotografías, generación e impresión de etiquetas con Códigos QR únicos y lectura móvil responsive.
 - **Agenda de Reuniones Institucionales:** programación de reuniones para todo el personal interno y citas solicitadas por estudiantes (asesorías, seguimiento, tutorías).
 - **Expedientes Administrativos:** ficha integral del estudiante (datos personales, familiares, socioeconómicos y académicos) con OCR de documentos físicos.
-- **Global 360 y Aula Virtual (Estilo Moodle):** selección y matrícula cuatrimestral de materias obligatorias, asignación de horarios y docentes, entrega de tareas con control de formato/tamaño y vista previa de alumno para profesores.
+- **Global 360 y Aula Virtual (Estilo Moodle):** matrícula cuatrimestral obligatoria de una materia por tanda (dos por cuatrimestre), todas del catálogo obligatorio, asignación de horarios y docentes, entrega de tareas con control de formato/tamaño y vista previa de alumno para profesores.
 - **Habitudes Colaborativo:** banco compartido de recursos pedagógicos (diapositivas, imágenes) para facilitadores en liceos y registro fotográfico/reportes de evidencias de clases impartidas.
-- **Académico y Cursos Técnicos:** Materias, Cursos, Calificaciones, Historial, Prematrícula, Períodos.
+- **Académico:** Materias universitarias, Clases de Global 360, Historial, Prematrícula, Períodos. (Los cursos técnicos y su registro de calificaciones por evaluación se retiraron en la migración `0047`.)
 - **Patrocinio y Becas:** Donantes, compromisos mensuales y asignación de becas universitarias.
 - **Solicitudes y Aprobaciones:** trámites estudiantiles y flujo administrativo por pasos.
 - **Calendario Institucional:** eventos institucionales, agenda combinada y vencimientos de tareas.
@@ -79,7 +79,7 @@ Cada usuario ve un menú lateral distinto según su rol. Los usuarios se **invit
 **Portales por rol:**
 1. Portal de Administración (`/dashboard` + `/portal/administrativo`)
 2. Portal del Estudiante (`/portal/estudiante` + Global 360 + Aula Virtual)
-3. Portal del Profesor (`/portal/profesor` + Cursos Técnicos + Global 360 Docente)
+3. Portal del Profesor (`/portal/profesor` + Clases de Global 360 + Materias)
 4. Portal de Contabilidad (`/portal/contabilidad` + Bancos + Cajas + Proveedores + DGII)
 5. Portal de Habitudes (`/expedientes` + Banco de Materiales + Evidencias de Liceos)
 
@@ -87,7 +87,7 @@ Cada usuario ve un menú lateral distinto según su rol. Los usuarios se **invit
 1. **Gasto Empleado → Contabilidad:** el empleado sube factura fiscal $\rightarrow$ OCR extrae RNC/NCF/montos $\rightarrow$ llega a Contabilidad $\rightarrow$ el contable valida e imputa al programa institucional y responsable $\rightarrow$ genera cuenta por pagar o egreso de caja chica.
 2. **Asignación de Proyectos por Rol:** `super_admin` define permisos granulares $\rightarrow$ los proyectos se despliegan automáticamente en la Torre de Control de los colaboradores asignados.
 3. **Inventario → Etiqueta QR:** registro de activo con foto $\rightarrow$ generación automática de código QR único $\rightarrow$ impresión de etiqueta física $\rightarrow$ escaneo móvil para inspección o inventario físico.
-4. **Matrícula y Tareas Global 360 (Moodle):** selección de materias $\rightarrow$ horarios y cursos asignados $\rightarrow$ profesor publica tarea con restricciones de tipo/tamaño de archivo $\rightarrow$ estudiante sube entrega $\rightarrow$ profesor califica con retroalimentación.
+4. **Matrícula y Tareas Global 360 (Moodle):** elección de una materia por tanda $\rightarrow$ horario, aula y docente asignados $\rightarrow$ profesor publica tarea con restricciones de tipo/tamaño de archivo $\rightarrow$ estudiante sube entrega $\rightarrow$ profesor califica con retroalimentación $\rightarrow$ nota final de la inscripción (aprobada o reprobada).
 5. **Evidencias Habitudes:** profesor imparte clase en liceo $\rightarrow$ sube fotos y reporte de evidencia desde el móvil $\rightarrow$ queda registrado en la bitácora del programa.
 6. **Arqueo de Caja:** conteo físico por denominación (billetes/monedas) $\rightarrow$ cálculo automático de sobrante/faltante $\rightarrow$ si diferencia $\ge$ RD$200, genera alerta antifraude `diferencia_caja`.
 7. **OCR → Expediente:** subir documento $\rightarrow$ IA extrae datos socioeducativos $\rightarrow$ precarga en ficha administrativa.

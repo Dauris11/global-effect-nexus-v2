@@ -7,6 +7,44 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 ## Abiertos
 
+- [x] **Fin de los cursos técnicos (24 oct 2026, migración `0047`).** La
+      Fundación dejó de impartirlos y Global Effect 360 ocupa su lugar: docente,
+      tareas, entregas y nota final. Todo `regular` pasa a `becado` y el valor
+      sale del ENUM, porque un solo tipo de estudiante no necesita distinguirse;
+      `curso`, `calificacion` y `tipo_evaluacion` se borran sin copia, como la
+      `0030` con Psicología, y las tareas de curso se van con
+      `asignacion.curso_id` (una tarea cuelga ahora de una materia universitaria
+      o de una de 360, exactamente de una). 360 se abre a todos —el trigger
+      `solo_becado_en_360` ya no protegía nada—, todo su catálogo es obligatorio
+      (`materia_360.obligatoria` se retira) y cada cuatrimestre tiene dos tandas
+      de dos meses con **una materia por tanda**, sostenida por un índice único
+      parcial sobre `inscripcion_360(estudiante_id, periodo_id, ronda)` que no
+      cuenta las retiradas. `/academico/cursos` pasa a `/academico/clases-360`
+      y `/academico/calificaciones` desaparece; `calificaciones.registrar` sirve
+      ahora para la nota final de 360. Documentación puesta al día en `docs/`,
+      `db/README.md`, `README.md` y la regla 9 de `CLAUDE.md`/`AGENTS.md`.
+- [x] **Aplicar la `0047` en la base** (`npm run db:migrate`, 24 oct 2026).
+- [ ] **Exportaciones a Excel de contabilidad rotas** (anterior a la `0047`,
+      salió al validar todo el SQL contra el esquema): en
+      `src/server/contabilidad/excel/exportaciones.ts` tres consultas piden
+      columnas que no existen —`cuenta.numero_cuenta`,
+      `movimiento.saldo_resultante` y `proveedor.identificacion`—.
+- [ ] **Validar con la Fundación la nota mínima de aprobación de 360** (hoy
+      70/100). Es la que decide si una inscripción queda aprobada o reprobada, y
+      una reprobada obliga a repetir la materia en otro período: es una norma
+      académica, no un detalle de pantalla.
+- [ ] Los dos `.drawio` de `docs/04-modelo-de-datos/` ya no tienen `curso` ni
+      `calificacion` (0047), pero **siguen dibujando Psicología**:
+      `cita_psicologia`, `nota_psicologica`, `perfil_psicologico`, el actor
+      Psicólogo y su proceso. Nadie los limpió tras la `0030`; hay que hacerlo a
+      mano en draw.io, que es más seguro que editar el XML.
+- [ ] Confirmar si el estado `standby_tecnico` de `estado_estudiante` sigue
+      teniendo sentido sin cursos técnicos. La `0047` no lo toca y el nombre
+      invita a pensar que era del programa técnico.
+- [ ] Cuadrar los recuentos de tablas, enums y claves foráneas: cada documento
+      de `docs/04-modelo-de-datos/`, `db/README.md` y
+      `docs/estado/inventario-vs-fases.md` cuenta sobre una base distinta y
+      ninguno llega a la `0047`. Se restó lo que quitó la `0047` sin recontar.
 - [x] **Documentación de Entregables de Grado (UCATECI Entregas 1 a 6):** Actualización
       maestra de [`docs/entregables/contexto-general.md`](../entregables/contexto-general.md) y
       [`docs/06-plan-de-entregas.md`](../06-plan-de-entregas.md) para cubrir los 30 módulos funcionales,
@@ -46,7 +84,8 @@ módulo) — esto es solo la cola de pendientes concretos.
       imputación a programas sociales (Casa de Herramientas, Becas, etc.) y bandeja de aprobación
       y rechazo con validación fiscal ante DGII para Contabilidad (`rendicion.revisar`).
 - [x] **Global 360 y Aula Virtual (Estilo Moodle):** Selección y matrícula cuatrimestral
-      obligatoria en 2 rondas por cuatrimestre (Ronda 1: Regular, Ronda 2: Ajustes y Bloque 2)
+      obligatoria en 2 rondas por cuatrimestre (Ronda 1: Regular, Ronda 2: Ajustes y Bloque 2;
+      **superado por la `0047`**: ahora son dos tandas de dos meses, una materia en cada una, todo obligatorio)
       con horarios, aulas/Zoom, cupo máximo y docentes asignados (`MatriculaCuatrimestral360` en `/portal/estudiante/global-360`);
       módulo de tareas estilo Moodle con restricciones estrictas de formato (`.pdf`, `.docx`, `.zip`),
       límite en MB (`limite_mb`), rúbricas (`instrucciones_entrega`), buzón de entregas estudiantil con notas (`BuzonTareaMoodle` y `BotonBuzonMoodle`),
@@ -213,8 +252,9 @@ módulo) — esto es solo la cola de pendientes concretos.
       datos del seed: hay que poner los períodos reales de la Fundación desde
       `/academico/periodos`, no arreglarlo en código.
 - [ ] `admin` (coordinación) **no tiene `calificaciones.registrar`** en
-      `rbac.ts`, así que entra a `/academico/calificaciones` y lee, pero no
-      puede poner ni corregir una nota. Se implementó respetando la base, que
+      `rbac.ts`, así que entra a `/academico/clases-360` y lee, pero no
+      puede poner ni corregir la nota final de una inscripción (antes pasaba
+      lo mismo en `/academico/calificaciones`, retirada en la `0047`). Se implementó respetando la base, que
       es la norma del proyecto. Si coordinación tiene que poder calificar, es
       un cambio en la tabla `rol_permiso` **y** en `rbac.ts`, no en la
       pantalla.
@@ -225,11 +265,14 @@ módulo) — esto es solo la cola de pendientes concretos.
       enseña el total de créditos elegidos y dice en voz alta que no hay tope.
       Si lo hay, hacen falta las dos cosas: la columna (o la constante) y la
       comprobación dentro del INSERT.
-- [ ] `inscripcion` **no tiene el trigger** que sí protege a `inscripcion_360`
+- [x] ~~`inscripcion` **no tiene el trigger** que sí protege a `inscripcion_360`
       ("solo becados"). La regla vive únicamente en
       `src/server/estudiantes/acciones-matricula.ts`, así que un script que
       escriba directo en la tabla se la salta. Si importa que la base la
-      sostenga, es una migración de tres líneas copiando `solo_becado_en_360`.
+      sostenga, es una migración de tres líneas copiando `solo_becado_en_360`.~~
+      **Superado por la `0047`:** todo estudiante es becado, así que la regla
+      ya no deja fuera a nadie; la propia `0047` borró `solo_becado_en_360`.
+      Si `acciones-matricula.ts` aún comprueba el tipo, sobra.
 - [ ] **Seis filas tienen la fecha de fin ANTES que la de inicio**, y la línea
       de tiempo las señala: tres asignaciones `[demo]` publicadas el 10 de
       agosto con vencimiento el 25 de julio, el 1 y el 6 de agosto; y tres
@@ -242,9 +285,12 @@ módulo) — esto es solo la cola de pendientes concretos.
       tiempo se deduce de los períodos donde tiene inscritos, que es la única
       pista real, y una clase sin inscritos no se puede situar en el tiempo y
       no aparece. Si el programa 360 tiene calendario propio, le falta la
-      columna.
-- [ ] Ni `materia` ni `curso` tienen fechas propias: heredan las del período,
-      así que en el Gantt todas sus barras miden lo mismo. Está dicho en
+      columna. Desde la `0047` cada inscripción lleva su tanda (1 o 2, dos
+      meses cada una), que ya sitúa la barra en la mitad del período que le
+      toca; lo que sigue sin existir es la fecha exacta del corte entre tandas.
+- [ ] `materia` no tiene fechas propias: hereda las del período, así que en
+      el Gantt todas sus barras miden lo mismo (`curso` tenía el mismo
+      problema y se fue con la `0047`). Está dicho en
       pantalla, pero si una materia puede empezar más tarde que su
       cuatrimestre, hace falta la columna.
 
@@ -744,7 +790,8 @@ módulo) — esto es solo la cola de pendientes concretos.
       · **Tres listas separadas** —cursos técnicos, materias universitarias y
         clases de Global Effect 360— y no una sola: son tres programas
         distintos, y juntarlos obligaría a leer una etiqueta en cada fila para
-        saber de qué se habla.
+        saber de qué se habla. (Desde la `0047` son dos: los cursos técnicos
+        se retiraron y las clases de 360 se gestionan en `/academico/clases-360`.)
       · El bloque de entregas por revisar solo se dibuja **cuando hay alguna**:
         es lo único de la pantalla con alguien esperando al otro lado, y con
         cero el KPI ya lo dice.
@@ -784,7 +831,7 @@ módulo) — esto es solo la cola de pendientes concretos.
         detalle se puede compartir, y no viaja ningún componente al navegador.
         El detalle se consulta solo del estudiante que se abre.
 
-- [x] **Calificaciones** (`/academico/calificaciones`): registro, corrección y
+- [x] **Calificaciones** (`/academico/calificaciones`, retirada en la `0047`): registro, corrección y
       borrado de las notas por evaluación de los cursos técnicos, con búsqueda
       por estudiante o curso y filtro de período, otra vez en la URL.
       Tres decisiones que valen la pena anotar:

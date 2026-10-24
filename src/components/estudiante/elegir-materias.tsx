@@ -19,7 +19,6 @@ import { visualDeInscripcion } from "@/components/estudiante/prematricula-estado
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
-import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   type EstadoMatricula,
@@ -51,14 +50,12 @@ export function ElegirMaterias({
   materias,
   periodo,
   abierta,
-  esBecado,
 }: {
   materias: readonly MateriaOfertada[];
   /** Nombre del período de la ventana, para decir de cuál se habla. */
   periodo: string;
   /** Si la ventana está abierta AHORA. Lo calcula la base, no el navegador. */
   abierta: boolean;
-  esBecado: boolean;
 }) {
   const t = useTranslations("studentPortal");
 
@@ -93,15 +90,6 @@ export function ElegirMaterias({
         </p>
       </div>
 
-      {!esBecado && (
-        <p className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {t("subjectsPage.enrol.onlyScholar")}
-          </span>
-        </p>
-      )}
-
       {materias.length === 0 ? (
         <EstadoVacio icono={BookOpen} titulo={t("subjectsPage.enrol.catalogEmpty")} />
       ) : (
@@ -111,7 +99,7 @@ export function ElegirMaterias({
               <TarjetaOferta
                 key={materia.id}
                 materia={materia}
-                puedeElegir={abierta && esBecado}
+                puedeElegir={abierta}
               />
             ))}
           </ul>
@@ -283,13 +271,11 @@ function BotonMatricula({ id, elegida }: { id: string; elegida: boolean }) {
             ? t("subjectsPage.enrol.errClosed")
             : estado.estado === "repetida"
               ? t("subjectsPage.enrol.errRepeated")
-              : estado.estado === "no_becado"
-                ? t("subjectsPage.enrol.errNotScholar")
-                : estado.estado === "sin_ficha"
-                  ? t("subjectsPage.enrol.errNoRecord")
-                  : estado.estado === "bloqueada"
-                    ? t("subjectsPage.enrol.errLocked")
-                    : t("subjectsPage.enrol.errGeneric")}
+              : estado.estado === "sin_ficha"
+                ? t("subjectsPage.enrol.errNoRecord")
+                : estado.estado === "bloqueada"
+                  ? t("subjectsPage.enrol.errLocked")
+                  : t("subjectsPage.enrol.errGeneric")}
         </p>
       )}
     </form>

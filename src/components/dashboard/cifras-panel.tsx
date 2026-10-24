@@ -6,8 +6,8 @@ import {
   ListTodo,
   TrendingDown,
   TrendingUp,
+  Sparkles,
   UserRoundSearch,
-  Wrench,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -45,11 +45,15 @@ export function CifrasPanel({
           valor={cifras.universitarios}
           etiqueta={t("university")}
         />
-        <StatCard icono={Wrench} valor={cifras.tecnicos} etiqueta={t("technical")} />
+        <StatCard
+          icono={Sparkles}
+          valor={cifras.cursando360}
+          etiqueta={t("g360Students")}
+        />
         <StatCard
           icono={BookOpen}
-          valor={cifras.cursos}
-          etiqueta={t("technicalCourses")}
+          valor={cifras.materias360}
+          etiqueta={t("g360Subjects")}
           className="col-span-2 md:col-span-1"
         />
       </div>

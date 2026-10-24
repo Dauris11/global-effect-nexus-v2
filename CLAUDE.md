@@ -40,6 +40,8 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
    compartidos van en `src/lib/`.
 7. **Avance:** solo en `docs/estado/`. No crear más `.md` en la raíz.
 8. Psicología ya no existe (migración `0030`, oct 2026): no reintroducirla.
+9. Los cursos técnicos ya no existen (migración `0047`, oct 2026): no
+   reintroducirlos. Solo hay becados y Global Effect 360.
 
 ## Qué leer según la tarea
 

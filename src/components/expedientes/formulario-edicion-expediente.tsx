@@ -78,7 +78,6 @@ export function FormularioEdicionExpediente({
 
   const [editando, setEditando] = useState(editarInicial);
   const [seccion, setSeccion] = useState<string>(SECCIONES[0]);
-  const [tipo, setTipo] = useState<string>(expediente.tipo);
   const [previa, setPrevia] = useState<string | null>(null);
 
   const indice = SECCIONES.indexOf(seccion as (typeof SECCIONES)[number]);
@@ -234,8 +233,6 @@ export function FormularioEdicionExpediente({
         textos={textos}
         seccion={seccion}
         onSeccionChange={setSeccion}
-        tipo={tipo}
-        onTipoChange={setTipo}
         valores={expediente}
         soloLectura={soloLectura}
       />

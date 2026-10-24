@@ -74,10 +74,10 @@ export async function TablaNotas({ periodo }: { periodo: PeriodoConNotas }) {
               className="h-14 border-b border-linea transition-colors last:border-b-0 hover:bg-muted/50"
             >
               <td className="truncate pr-4 font-medium text-tinta">
-                {nota.curso}
+                {nota.materia}
               </td>
               <td className="pr-4 text-tinta-2">
-                {t(`gradesPage.type.${nota.tipo_evaluacion}`)}
+                {t(`gradesPage.origin.${nota.origen}`)}
               </td>
               <td className="pr-4">
                 <LetraNota letra={nota.letra} pequena />
@@ -107,9 +107,9 @@ export async function TablaNotas({ periodo }: { periodo: PeriodoConNotas }) {
             <LetraNota letra={nota.letra} />
 
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 font-semibold">{nota.curso}</p>
+              <p className="line-clamp-2 font-semibold">{nota.materia}</p>
               <p className="text-sm text-tinta-2">
-                {t(`gradesPage.type.${nota.tipo_evaluacion}`)}
+                {t(`gradesPage.origin.${nota.origen}`)}
               </p>
             </div>
 

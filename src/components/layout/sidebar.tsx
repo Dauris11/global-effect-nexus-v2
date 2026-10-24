@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 import { Link, usePathname } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import { esRutaActiva, itemsDeArea, menuDe, type ItemNav } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -48,7 +47,6 @@ export function Sidebar({
   rol,
   nombre,
   foto,
-  tipoEstudiante,
   contraida,
   onContraer,
   abiertaEnMovil,
@@ -60,8 +58,6 @@ export function Sidebar({
   nombre: string;
   /** URL pública de su foto de perfil, o `null` para dibujar el icono. */
   foto: string | null;
-  /** Solo para el rol `estudiante`: decide qué módulos ofrece su menú. */
-  tipoEstudiante: TipoEstudiante | null;
   contraida: boolean;
   onContraer: () => void;
   abiertaEnMovil: boolean;
@@ -72,7 +68,7 @@ export function Sidebar({
   const tComun = useTranslations("common");
   const tAuth = useTranslations("auth");
   const ruta = usePathname();
-  const areas = menuDe(rol, tipoEstudiante);
+  const areas = menuDe(rol);
 
   /*
    * Solo UNA entrada activa: la más específica. Con un simple "empieza por",

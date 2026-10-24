@@ -6,7 +6,7 @@ import { consultar, consultarUna } from "@/lib/db";
  * El calendario responde "¿qué pasa el martes?". Esto responde otra pregunta
  * distinta y que hoy no se puede contestar en ninguna pantalla: "¿qué se
  * solapa con qué?". Un cuatrimestre, las tareas que vencen dentro, los
- * proyectos que corren en paralelo y los cursos que se dan a la vez.
+ * proyectos que corren en paralelo y las clases de 360 que se dan a la vez.
  *
  * ────────────────────────────────────────────────────────────────────────────
  * LO QUE EL ESQUEMA DA Y LO QUE NO. Esto condiciona todo lo demás y conviene
@@ -14,7 +14,7 @@ import { consultar, consultarUna } from "@/lib/db";
  *
  *   · `periodo` tiene fechas propias. Es la única fila que de verdad las tiene
  *     para lo académico.
- *   · `materia` y `curso` NO tienen fechas: heredan las de su período. Sus
+ *   · `materia` NO tiene fechas: hereda las de su período. Sus
  *     barras miden lo mismo que el cuatrimestre entero. No es un fallo del
  *     dibujo, es lo que la base sabe — y por eso van agrupadas bajo su período
  *     en vez de fingir que cada una tiene su propio calendario.
@@ -39,7 +39,7 @@ export const FAMILIAS = [
   "academico",
   "tareas",
   "operaciones",
-  "cursos",
+  "clases360",
 ] as const;
 
 export type Familia = (typeof FAMILIAS)[number];
@@ -171,7 +171,7 @@ export async function familiaTareas(
     `SELECT a.id::text AS id,
             a.tipo::text AS clase,
             a.titulo,
-            coalesce(mu.nombre, cu.nombre, m3.nombre) AS grupo,
+            coalesce(mu.nombre, m3.nombre) AS grupo,
             a.fecha_publicacion::date::text AS inicio,
             a.fecha_vencimiento::date::text AS fin,
             a.tipo::text AS estado,
@@ -181,7 +181,6 @@ export async function familiaTareas(
               WHERE d.asignacion_id = a.id) AS detalle
        FROM asignacion a
        LEFT JOIN materia     mu ON mu.id = a.materia_id
-       LEFT JOIN curso       cu ON cu.id = a.curso_id
        LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
       WHERE a.tipo IN ('tarea', 'examen')
         AND a.fecha_vencimiento IS NOT NULL
@@ -256,57 +255,41 @@ export async function familiaOperaciones(
 }
 
 /**
- * Familia 4 — cursos técnicos y clases de Global Effect 360.
+ * Familia 4 — clases de Global Effect 360.
  *
- * El curso hereda las fechas de su período, como la materia. La clase de 360 no
- * tiene ni eso: `materia_360` no guarda fechas ni período, así que su barra se
+ * `materia_360` no guarda fechas ni período, así que la barra de cada clase se
  * DEDUCE de los períodos donde tiene inscritos —del primero que empieza al
  * último que acaba—. Es la única pista real que hay, y por eso una clase sin
  * inscritos no aparece: no es que no exista, es que no hay forma de situarla en
  * el tiempo. Va contada en `sinFechas`.
  */
-export async function familiaCursos(
+export async function familiaClases360(
   desde: string,
   hasta: string,
 ): Promise<Familia_Resultado> {
   const barras = await consultar<Barra>(
-    `SELECT c.id::text AS id,
-            'curso' AS clase,
-            c.nombre AS titulo,
-            p.nombre AS grupo,
-            p.fecha_inicio::text AS inicio,
-            p.fecha_fin::text    AS fin,
-            c.estado,
-            c.modalidad AS detalle
-       FROM curso c
-       JOIN periodo p ON p.id = c.periodo_id
-      WHERE p.fecha_fin >= $1::date AND p.fecha_inicio <= $2::date
-
-      UNION ALL
-
-     SELECT m.id::text,
-            'clase360',
-            m.nombre,
-            NULL::text,
-            min(p.fecha_inicio)::text,
-            max(p.fecha_fin)::text,
-            CASE WHEN m.activa THEN 'activo' ELSE 'inactiva' END,
-            count(DISTINCT i.estudiante_id)::text
+    `SELECT m.id::text AS id,
+            'clase360' AS clase,
+            m.nombre AS titulo,
+            NULL::text AS grupo,
+            min(p.fecha_inicio)::text AS inicio,
+            max(p.fecha_fin)::text AS fin,
+            CASE WHEN m.activa THEN 'activo' ELSE 'inactiva' END AS estado,
+            count(DISTINCT i.estudiante_id)::text AS detalle
        FROM materia_360 m
        JOIN inscripcion_360 i ON i.materia_id = m.id
        JOIN periodo p ON p.id = i.periodo_id
       GROUP BY m.id, m.nombre, m.activa
      HAVING max(p.fecha_fin) >= $1::date AND min(p.fecha_inicio) <= $2::date
-
-      ORDER BY 4 NULLS LAST, 3`,
+      ORDER BY min(p.fecha_inicio), m.nombre`,
     [desde, hasta],
   );
 
   const sinSituar = await consultarUna<{ n: number }>(
-    `SELECT (SELECT count(*)::int FROM curso WHERE periodo_id IS NULL)
-          + (SELECT count(*)::int FROM materia_360 m
-              WHERE NOT EXISTS (SELECT 1 FROM inscripcion_360 i
-                                 WHERE i.materia_id = m.id)) AS n`,
+    `SELECT count(*)::int AS n
+       FROM materia_360 m
+      WHERE NOT EXISTS (SELECT 1 FROM inscripcion_360 i
+                         WHERE i.materia_id = m.id)`,
   );
 
   return { barras, sinFechas: sinSituar?.n ?? 0 };

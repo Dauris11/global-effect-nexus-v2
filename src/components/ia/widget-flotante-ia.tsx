@@ -19,7 +19,6 @@ import {
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import {
@@ -65,7 +64,6 @@ export function WidgetFlotanteIA({
     rol: Rol;
     idioma: "es" | "en";
   };
-  tipoEstudiante?: TipoEstudiante | null;
 }) {
   const t = useTranslations("widgetIA");
   const router = useRouter();

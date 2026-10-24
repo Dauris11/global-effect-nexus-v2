@@ -1,13 +1,13 @@
 import { consultar, consultarUna } from "@/lib/db";
 
 /**
- * Global Effect 360: el programa de materias técnicas de los becados
- * universitarios.
+ * Global Effect 360: la formación propia de la Fundación, para todos sus
+ * estudiantes.
  *
- * Cuatro materias del catálogo son obligatorias y el resto opcionales. El número
- * no está escrito en ningún sitio: se cuenta desde `materia_360.obligatoria`,
- * para que administración pueda corregir el catálogo sin que haya que tocar
- * código ni migrar nada.
+ * Todo el catálogo activo es obligatorio (migración 0047): no hay columna que lo
+ * distinga porque una que siempre vale lo mismo invita a desmarcarla. El
+ * cuatrimestre tiene dos tandas de dos meses y en cada una se cursa UNA materia,
+ * así que el avance se mide contra el catálogo entero y la elección, por tanda.
  */
 
 export type MateriaProgramada = {
@@ -15,7 +15,6 @@ export type MateriaProgramada = {
   nombre: string;
   codigo: string | null;
   descripcion: string | null;
-  obligatoria: boolean;
   creditos: number;
   horas: number | null;
   /**
@@ -50,7 +49,6 @@ export async function catalogoConSituacion(
             m.nombre,
             m.codigo,
             m.descripcion,
-            m.obligatoria,
             m.creditos,
             m.horas,
             coalesce(i.estado, 'pendiente') AS situacion,
@@ -76,27 +74,26 @@ export async function catalogoConSituacion(
             ) i ON i.materia_id = m.id
        LEFT JOIN periodo p ON p.id = i.periodo_id
       WHERE m.activa
-      ORDER BY m.obligatoria DESC, m.orden, m.nombre`,
+      ORDER BY m.orden, m.nombre`,
     [estudianteId],
   );
 }
 
 export type AvanceEn360 = {
-  obligatorias: number;
-  obligatorias_dadas: number;
-  opcionales: number;
-  opcionales_dadas: number;
+  total: number;
+  dadas: number;
 };
 
-/** Cuánto lleva del programa, separando obligatorias de opcionales. */
+/**
+ * Cuánto lleva del programa: aprobadas sobre el catálogo activo. Como todo es
+ * obligatorio, no hay otra cuenta que separar.
+ */
 export async function avanceEn360(
   estudianteId: string,
 ): Promise<AvanceEn360> {
   const fila = await consultarUna<AvanceEn360>(
-    `SELECT count(*) FILTER (WHERE m.obligatoria)::int AS obligatorias,
-            count(*) FILTER (WHERE m.obligatoria AND d.dada)::int AS obligatorias_dadas,
-            count(*) FILTER (WHERE NOT m.obligatoria)::int AS opcionales,
-            count(*) FILTER (WHERE NOT m.obligatoria AND d.dada)::int AS opcionales_dadas
+    `SELECT count(*)::int AS total,
+            count(*) FILTER (WHERE d.dada)::int AS dadas
        FROM materia_360 m
        LEFT JOIN LATERAL (
               SELECT TRUE AS dada
@@ -110,14 +107,7 @@ export async function avanceEn360(
     [estudianteId],
   );
 
-  return (
-    fila ?? {
-      obligatorias: 0,
-      obligatorias_dadas: 0,
-      opcionales: 0,
-      opcionales_dadas: 0,
-    }
-  );
+  return fila ?? { total: 0, dadas: 0 };
 }
 
 export type Ventana = {
@@ -127,6 +117,8 @@ export type Ventana = {
   abre: string;
   cierra: string;
   mensaje: string | null;
+  /** Tanda que abre: 1 (primeros dos meses) o 2 (últimos dos). */
+  ronda: 1 | 2;
   /** Calculado por la base, no por el proceso: `now()` con zona. */
   abierta: boolean;
 };
@@ -150,6 +142,7 @@ export async function ventanaVigente(): Promise<Ventana | null> {
             v.abre::text  AS abre,
             v.cierra::text AS cierra,
             v.mensaje,
+            v.ronda,
             (now() >= v.abre AND now() < v.cierra) AS abierta
        FROM ventana_prematricula v
        JOIN periodo p ON p.id = v.periodo_id
@@ -169,7 +162,8 @@ export async function ventanas(): Promise<Ventana[]> {
             v.abre::text  AS abre,
             v.cierra::text AS cierra,
             v.mensaje,
-            (now() >= v.abre AND now() < v.cierra) AS abierta
+            v.ronda,
+            (v.activa AND now() >= v.abre AND now() < v.cierra) AS abierta
        FROM ventana_prematricula v
        JOIN periodo p ON p.id = v.periodo_id
       ORDER BY v.abre DESC`,
@@ -180,26 +174,25 @@ export type MateriaCatalogo = {
   id: string;
   nombre: string;
   codigo: string | null;
-  obligatoria: boolean;
   creditos: number;
   horas: number | null;
   activa: boolean;
   orden: number;
-  /** Cuántos becados la llevan prematriculada o cursando ahora. */
+  /** Cuántos estudiantes la llevan prematriculada o cursando ahora. */
   inscritos: number;
 };
 
 /** El catálogo tal cual, para administrarlo. */
 export async function catalogo(): Promise<MateriaCatalogo[]> {
   return consultar<MateriaCatalogo>(
-    `SELECT m.id, m.nombre, m.codigo, m.obligatoria, m.creditos, m.horas,
+    `SELECT m.id, m.nombre, m.codigo, m.creditos, m.horas,
             m.activa, m.orden,
             (SELECT count(*)::int
                FROM inscripcion_360 i
               WHERE i.materia_id = m.id
                 AND i.estado IN ('prematriculada', 'cursando')) AS inscritos
        FROM materia_360 m
-      ORDER BY m.activa DESC, m.obligatoria DESC, m.orden, m.nombre`,
+      ORDER BY m.activa DESC, m.orden, m.nombre`,
   );
 }
 
@@ -211,5 +204,36 @@ export async function periodosDisponibles(): Promise<
     `SELECT id, nombre FROM periodo
       WHERE estado <> 'completado'
       ORDER BY fecha_inicio DESC`,
+  );
+}
+
+export type TandaDelEstudiante = {
+  ronda: 1 | 2;
+  materia_id: string;
+  materia: string;
+  codigo: string | null;
+  estado: string;
+};
+
+/**
+ * Lo que el estudiante eligió en cada tanda de un período.
+ *
+ * Como mucho una fila por tanda: lo garantiza `uq_inscripcion_360_una_por_tanda`.
+ * La `retirada` no cuenta porque retirarse libera la tanda, y la pantalla tiene
+ * que enseñarla libre para que vuelva a elegir.
+ */
+export async function tandasDelEstudiante(
+  estudianteId: string,
+  periodoId: string,
+): Promise<TandaDelEstudiante[]> {
+  return consultar<TandaDelEstudiante>(
+    `SELECT i.ronda, i.materia_id, m.nombre AS materia, m.codigo, i.estado
+       FROM inscripcion_360 i
+       JOIN materia_360 m ON m.id = i.materia_id
+      WHERE i.estudiante_id = $1
+        AND i.periodo_id = $2
+        AND i.estado <> 'retirada'
+      ORDER BY i.ronda`,
+    [estudianteId, periodoId],
   );
 }

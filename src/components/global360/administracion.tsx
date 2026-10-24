@@ -37,6 +37,10 @@ import type { MateriaCatalogo, Ventana } from "@/server/global360/consultas";
  *
  * Una materia no se borra nunca, se retira: las inscripciones pasadas apuntan a
  * ella, y con `ON DELETE RESTRICT` la base tampoco lo permitiría.
+ *
+ * Todo el catálogo activo es obligatorio (0047), así que no hay casilla que lo
+ * marque: el estudiante cursa una materia por tanda y cada ventana abre una de
+ * las dos tandas del período.
  */
 export function Administracion360({
   materias,
@@ -50,8 +54,6 @@ export function Administracion360({
   const t = useTranslations("global360");
   const [editando, setEditando] = useState<string | null>(null);
   const [nuevaVentana, setNuevaVentana] = useState(false);
-
-  const obligatorias = materias.filter((m) => m.activa && m.obligatoria).length;
 
   return (
     <div className="space-y-6">
@@ -91,7 +93,10 @@ export function Administracion360({
                   className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-lg p-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{ventana.periodo}</p>
+                    <p className="text-sm font-medium">
+                      {ventana.periodo} ·{" "}
+                      {t(ventana.ronda === 1 ? "tanda1" : "tanda2")}
+                    </p>
                     <p className="text-muted-foreground text-xs">
                       {ventana.abre.slice(0, 16).replace("T", " ")} →{" "}
                       {ventana.cierra.slice(0, 16).replace("T", " ")}
@@ -104,7 +109,7 @@ export function Administracion360({
                   </div>
 
                   {ventana.abierta && (
-                    <Badge className="bg-[#0a6a8a] text-[10px] text-white">
+                    <Badge className="bg-marca-700 text-white">
                       {t("openNow")}
                     </Badge>
                   )}
@@ -131,11 +136,6 @@ export function Administracion360({
             <CardTitle>
               <GraduationCap className="size-4" />
               {t("catalogTitle")}
-              {/* Cuántas obligatorias hay activas: el programa pide cuatro, y
-                  este número es lo que permite ver si el catálogo cuadra. */}
-              <Badge className="ml-1 bg-[#2096BA]/15 text-[10px] text-[#187a99]">
-                {obligatorias} · {t("required")}
-              </Badge>
             </CardTitle>
 
             {editando !== "nueva" && (
@@ -145,6 +145,8 @@ export function Administracion360({
               </Button>
             )}
           </div>
+
+          <p className="texto-meta">{t("allRequired")}</p>
 
           {editando === "nueva" && (
             <FormularioMateria alTerminar={() => setEditando(null)} />
@@ -169,12 +171,17 @@ export function Administracion360({
                         {materia.nombre}
                       </p>
                       <p className="text-muted-foreground truncate text-xs">
-                        {materia.codigo ? `${materia.codigo} · ` : ""}
-                        {materia.obligatoria ? t("required") : t("optional")}
-                        {materia.creditos > 0 &&
-                          ` · ${t("credits", { n: materia.creditos })}`}
-                        {materia.inscritos > 0 &&
-                          ` · ${t("enrolled", { n: materia.inscritos })}`}
+                        {[
+                          materia.codigo,
+                          materia.creditos > 0
+                            ? t("credits", { n: materia.creditos })
+                            : null,
+                          materia.inscritos > 0
+                            ? t("enrolled", { n: materia.inscritos })
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     </div>
 
@@ -285,16 +292,6 @@ function FormularioMateria({
           />
         </div>
 
-        <label className="flex items-center gap-2 self-end pb-2 text-sm">
-          <input
-            type="checkbox"
-            name="obligatoria"
-            value="1"
-            defaultChecked={materia?.obligatoria}
-            className="size-4 accent-[#2096BA]"
-          />
-          {t("fieldRequired")}
-        </label>
       </div>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
@@ -316,7 +313,7 @@ function FormularioMateria({
   );
 }
 
-/** Abrir una ventana: período, apertura, cierre y una nota opcional. */
+/** Abrir una ventana: período, tanda, apertura, cierre y una nota opcional. */
 function FormularioVentana({
   periodos,
   alTerminar,
@@ -336,7 +333,7 @@ function FormularioVentana({
 
   return (
     <form action={enviar} className="space-y-3 border-t pt-3">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="v-periodo">{t("fieldPeriod")}</Label>
           <select
@@ -350,6 +347,26 @@ function FormularioVentana({
                 {periodo.nombre}
               </option>
             ))}
+          </select>
+        </div>
+
+        {/* Sin valor por defecto a propósito: abrir la tanda equivocada manda a
+            todo el período a elegir en el hueco que no es. */}
+        <div className="space-y-1.5">
+          <Label htmlFor="v-ronda">{t("fieldTanda")}</Label>
+          <select
+            id="v-ronda"
+            name="ronda"
+            required
+            defaultValue=""
+            aria-invalid={estado.estado === "ronda_invalida" || undefined}
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+          >
+            <option value="" disabled>
+              {t("fieldTandaPlaceholder")}
+            </option>
+            <option value="1">{t("tanda1")}</option>
+            <option value="2">{t("tanda2")}</option>
           </select>
         </div>
 
@@ -379,7 +396,13 @@ function FormularioVentana({
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "fechas_invalidas" ? t("errDates") : t("errGeneric")}
+          {estado.estado === "fechas_invalidas"
+            ? t("errDates")
+            : estado.estado === "ronda_invalida"
+              ? t("errTanda")
+              : estado.estado === "ventana_solapada"
+                ? t("errOverlap")
+                : t("errGeneric")}
         </p>
       )}
 

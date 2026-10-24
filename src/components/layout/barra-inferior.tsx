@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 
 import { CajonAccionesRapidas } from "@/components/layout/cajon-acciones-rapidas";
 import { Link, usePathname } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import { esRutaActiva, pestanasMoviles, type PestanaMovil } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -21,19 +20,17 @@ import { cn } from "@/lib/utils";
  */
 export function BarraInferior({
   rol,
-  tipoEstudiante,
   menuAbierto,
   onAbrirMenu,
 }: {
   rol: Rol;
-  tipoEstudiante: TipoEstudiante | null;
   menuAbierto: boolean;
   onAbrirMenu: () => void;
 }) {
   const [accionesRapidasAbiertas, setAccionesRapidasAbiertas] = useState(false);
   const t = useTranslations("nav");
   const ruta = usePathname();
-  const pestanas = pestanasMoviles(rol, tipoEstudiante);
+  const pestanas = pestanasMoviles(rol);
 
   const activa = pestanas
     .filter((p) => p.tipo === "enlace" && esRutaActiva(ruta, p.href))

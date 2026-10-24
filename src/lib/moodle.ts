@@ -1,6 +1,7 @@
 /**
- * Tipos y constantes compartidas para el Aula Virtual estilo Moodle
- * y la Matrícula Cuatrimestral en 2 Rondas de Global Effect 360.
+ * Tipos y constantes compartidas para el Aula Virtual estilo Moodle y el
+ * catálogo de matrícula de Global Effect 360 (una materia por tanda, dos tandas
+ * por cuatrimestre).
  *
  * Sigue la regla del proyecto: cero dependencias de Node.js o pg en src/lib.
  */
@@ -64,7 +65,7 @@ export interface FilaEntregaDocente {
   estudiante_id: string;
   estudiante_nombre: string;
   estudiante_matricula: string | null;
-  estudiante_email: string;
+  estudiante_email: string | null;
   estado: EstadoEntregaMoodle;
   archivo_url: string | null;
   archivo_nombre: string | null;
@@ -82,7 +83,6 @@ export interface Materia360Matricula {
   nombre: string;
   codigo: string | null;
   descripcion: string | null;
-  obligatoria: boolean;
   creditos: number;
   horas: number | null;
   horario: string | null;
@@ -94,16 +94,6 @@ export interface Materia360Matricula {
   inscripcion_id: string | null;
   ronda_inscrita: number | null;
   estado_inscripcion: string | null;
-}
-
-export interface VentanaMatricula360 {
-  id: string;
-  periodo_id: string;
-  periodo_nombre: string;
-  abre: string;
-  cierra: string;
-  mensaje: string | null;
-  activa: boolean;
-  ronda: number; // 1 = Regular, 2 = Ajustes
-  abierta: boolean;
+  /** Ya la aprobó en algún período: no se le vuelve a ofrecer. */
+  aprobada: boolean;
 }

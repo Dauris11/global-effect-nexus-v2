@@ -1,7 +1,7 @@
 ================================================================
   MÓDULOS POR PORTAL — FUNCIONES DE CADA UNO
   Documento descriptivo del sistema Global Effect Nexus
-  Fecha: 2026-08-08 · Actualizado: 2026-10-03 (ERP institucional)
+  Fecha: 2026-08-08 · Actualizado: 2026-10-24 (fin de los cursos técnicos)
 ================================================================
 
 ══════════════════════════════════════════════════════════════════
@@ -28,14 +28,23 @@ del ERP, garantizando estricta consistencia contable y tributaria ante
 la DGII (reportes 606/607, NCF B01/E31, retenciones, cajas chicas,
 arqueos físicos y recepción de facturas rendidas por empleados).
 
+El 24 de octubre de 2026 la Fundación dejó también de impartir **cursos
+técnicos** (migración `0047`). Hay un solo tipo de estudiante, el becado
+universitario, y **Global Effect 360** ocupa el sitio de los cursos: es la
+única formación propia, abierta a todos, con todo su catálogo
+obligatorio. Sus clases tienen docente, tareas, entregas y nota final, y
+se gestionan en `/academico/clases-360`. El portal de Cursos Técnicos,
+el del estudiante CT y `/academico/calificaciones` desaparecen.
+
 Se incorporan al alcance:
   • **Torre de Control del Colaborador ("Lo que me toca hoy"):** panel
     diario con tareas de hoy, vencidas, pendientes y estados reales,
     autoasignación de tareas prioritarias e interfaz ágil tipo Claude.
   • **Proyectos por Rol:** asignación de proyectos gobernada por el
     `super_admin` con permisos granulares para todo el personal.
-  • **Global 360 y Aula Virtual (Moodle-like):** matrícula semestral,
-    horarios, profesores asignados, gestión de tareas con vista de
+  • **Global 360 y Aula Virtual (Moodle-like):** matrícula cuatrimestral
+    obligatoria de una materia por tanda (dos tandas de dos meses: dos
+    materias por cuatrimestre), horarios, profesores asignados, gestión de tareas con vista de
     estudiante para el docente y control de extensiones/peso de archivo.
   • **Habitudes Colaborativo:** hub compartido de diapositivas e imágenes
     para liceos y registro fotográfico de evidencias docentes.
@@ -47,8 +56,8 @@ Roles disponibles (6):
                        asignación de proyectos, auditoría contable inmutable)
   • admin            — Coordinación Operativa (expedientes administrativos,
                        personal, inventario QR, solicitudes y proyectos)
-  • docente          — Docente (cursos técnicos, materias Global 360, aula
-                       virtual Moodle con vista de alumno y calificaciones)
+  • docente          — Docente (clases de Global 360 y materias, aula
+                       virtual Moodle con vista de alumno y nota final)
   • estudiante       — Estudiante (materias, notas, matrícula Global 360,
                        aula virtual, agenda de reuniones y solicitudes)
   • contabilidad     — Contabilidad y Finanzas (libros de banco, cajas chicas,
@@ -67,26 +76,28 @@ Banner: from-slate-700 to-slate-900 · icono Shield
   Función: Vista general de toda la fundación.
   • Hero banner con KPIs: estudiantes activos, becados,
     patrocinadores.
-  • 4 StatCards: Estudiantes Activos · Cursos Activos · Tareas
+  • 4 StatCards: Estudiantes Activos · Clases de 360 · Tareas
     Pendientes · Balance del Mes.
   • Quick Access: Expedientes, Patrocinadores, Solicitudes,
     Chat IA.
   • Gráficos: BarChart de flujo financiero (ingresos vs
-    egresos por mes) + PieChart de tipos de estudiantes.
+    egresos por mes) + PieChart de estudiantes por estado.
   • Próximos Eventos (4) + Tareas Prioritarias (4).
 
 ──────────────────────────────────────────────────────────────
 1.2 ACADÉMICO (grupo desplegable)
 ──────────────────────────────────────────────────────────────
-  1.2.1 Cursos (/academico/cursos)
-    Función: Gestión de cursos técnicos del Instituto.
-    • Grid de tarjetas con: nombre, descripción, inscritos/
-      capacidad, horario, docente, estado (activo/finalizado/
-      planificado).
-    • Modal "Nuevo Curso": nombre, descripción, docente,
-      período, capacidad, modalidad (presencial/virtual/mixto),
-      horario.
-    • Búsqueda por nombre o docente.
+  1.2.1 Clases de 360 (/academico/clases-360)
+    Función: Las clases de Global Effect 360, que ocupan el lugar
+    de los antiguos cursos técnicos (ruta vieja: /academico/cursos).
+    • Clases por período y tanda con docente, horario, aula,
+      inscritos/cupo.
+    • Inscritos de cada clase, tareas publicadas y entregas por
+      revisar.
+    • Nota final de cada inscripción (0–100), que la deja
+      aprobada o reprobada. La pone el docente con
+      calificaciones.registrar; administración la ve.
+    • El docente solo ve sus clases.
 
   1.2.2 Materias (/academico/materias)
     Función: CRUD completo de materias por cuatrimestre.
@@ -97,14 +108,10 @@ Banner: from-slate-700 to-slate-900 · icono Shield
     • Modal crear/editar: nombre, código, cuatrimestre,
       créditos, aula, profesor, horario, estado, descripción.
 
-  1.2.3 Calificaciones (/academico/calificaciones)
-    Función: Registro y seguimiento de notas.
-    • Tabla: estudiante, curso, tipo evaluación (examen/tarea/
-      proyecto/participación/final), nota (color por rango:
-      ≥90 emerald, ≥70 primary, ≥60 yellow, <60 red), período.
-    • Modal "Registrar Calificación": estudiante, curso, nota,
-      tipo, período.
-    • Búsqueda por estudiante o curso.
+  1.2.3 Calificaciones (retirada en la 0047)
+    Eran las notas por evaluación de los cursos técnicos, sobre
+    la tabla calificacion. Se fueron con el programa: la nota de
+    360 se pone en 1.2.1 y la universitaria vive en 1.2.4.
 
   1.2.4 Historial Académico (/academico/historial)
     Función: Registro histórico de calificaciones agrupado por
@@ -118,14 +125,17 @@ Banner: from-slate-700 to-slate-900 · icono Shield
   1.2.5 Prematrícula (/academico/prematricula)
     Función: Gestión de inscripciones y asignación de materias.
     • 3 KPIs: Total Inscritos · Pendientes · Activas.
-    • Lista de inscripciones con estudiante, curso y período.
-    • Modal: seleccionar estudiante, curso y período.
+    • Catálogo de Global Effect 360 (todo obligatorio) y
+      ventanas de prematrícula, una por tanda.
+    • Lista de inscripciones con estudiante, materia, período
+      y tanda.
+    • Modal: seleccionar estudiante, materia y período.
 
   1.2.6 Períodos (/academico/periodos)
     Función: Gestión de períodos/cuatrimestres académicos.
     • 3 KPIs: Activos · Completados · Planificados.
     • Grid de tarjetas con nombre del período, fechas inicio/fin,
-      cursos asignados, estado.
+      materias asignadas, estado.
     • Modal: nombre, fechas, estado.
 
 ──────────────────────────────────────────────────────────────
@@ -154,7 +164,7 @@ Banner: from-slate-700 to-slate-900 · icono Shield
   super_admin leen, escriben y eliminan sobre todos los
   estudiantes; habitudes solo postula candidatos.
   • Buscador de estudiantes.
-  • Tabs: Todos / Becados / Cursos Técnicos.
+  • Filtros por estado y carrera (todos son becados desde la 0047).
   • Grid de tarjetas: foto/inicial, nombre, cédula, email,
     ciudad, programa, badges de estado y tipo, botones
     editar/eliminar.
@@ -332,9 +342,14 @@ Banner: from-blue-500 to-blue-700 · icono GraduationCap
 ──────────────────────────────────────────────────────────────
 2.2 GLOBAL 360 Y PREMATRÍCULA (/portal/estudiante/global-360)
 ──────────────────────────────────────────────────────────────
-  Función: Selección y matrícula obligatoria dos veces por cuatrimestre.
-  • Catálogo de materias obligatorias institucionales.
-  • Selección de horarios y asignaturas con profesor designado.
+  Función: Matrícula obligatoria de una materia por tanda: el
+  cuatrimestre tiene dos tandas de dos meses, así que son dos
+  materias por cuatrimestre.
+  • Catálogo de Global Effect 360: todas sus materias son
+    obligatorias, no hay opcionales.
+  • En cada tanda abierta elige exactamente una, con su horario
+    y profesor. Si no ha elegido, el portal lo marca pendiente.
+  • Materias dadas (aprobadas) y las que le faltan.
 
 ──────────────────────────────────────────────────────────────
 2.3 AULA VIRTUAL (ESTILO MOODLE) (/portal/estudiante/aula-virtual)
@@ -346,9 +361,10 @@ Banner: from-blue-500 to-blue-700 · icono GraduationCap
   • Estado de entrega, calificación recibida y retroalimentación.
 
 ──────────────────────────────────────────────────────────────
-2.4 MIS MATERIAS Y CALIFICACIONES (/academico/materias, /academico/calificaciones)
+2.4 MIS MATERIAS Y CALIFICACIONES (/portal/estudiante/prematricula, /portal/estudiante/calificaciones)
 ──────────────────────────────────────────────────────────────
-  Función: Consulta de materias y notas (lectura).
+  Función: Consulta de materias y notas (lectura): las universitarias
+  de historial_calificacion y las notas finales de 360.
 
 ──────────────────────────────────────────────────────────────
 2.5 SOLICITUDES Y AGENDA DE REUNIONES (/portal/estudiante/solicitudes)
@@ -365,13 +381,14 @@ Banner: from-amber-500 to-amber-700 · icono BookOpen
 ──────────────────────────────────────────────────────────────
 3.1 MI PORTAL (/portal/profesor)
 ──────────────────────────────────────────────────────────────
-  Función: Dashboard docente con cursos, materias y alumnos.
+  Función: Dashboard docente con sus clases de 360, materias y alumnos.
 
 ──────────────────────────────────────────────────────────────
 3.2 AULA VIRTUAL MOODLE-LIKE (/portal/profesor/aula-virtual)
 ──────────────────────────────────────────────────────────────
-  Función: Gestión y revisión de tareas de cursos y Global 360.
-  • Creación de asignaciones: título, instrucciones, curso, fecha límite.
+  Función: Gestión y revisión de tareas de materias y Global 360.
+  • Creación de asignaciones: título, instrucciones, materia
+    (universitaria o de 360, exactamente una), fecha límite.
   • Configuración de entrega: límite de tamaño (MB) y formatos permitidos.
   • **Vista de Estudiante:** previsualización exacta de cómo ve el
     alumno la tarea antes de publicarla.
@@ -385,9 +402,11 @@ Banner: from-amber-500 to-amber-700 · icono BookOpen
   • Carga móvil de evidencias fotográficas de clases impartidas en liceos.
 
 ──────────────────────────────────────────────────────────────
-3.4 CALIFICACIONES Y CURSOS (/academico/calificaciones, /academico/cursos)
+3.4 CLASES DE 360 (/academico/clases-360)
 ──────────────────────────────────────────────────────────────
-  Función: Calificación de estudiantes y gestión de cursos asignados.
+  Función: Sus clases de Global Effect 360: inscritos, tareas,
+  entregas y nota final de cada inscripción (aprobada o
+  reprobada).
 
 ══════════════════════════════════════════════════════════════════
   PORTAL 4 — ADMINISTRATIVO Y COLABORADORES
@@ -481,23 +500,6 @@ Banner: from-teal-500 to-teal-700 · icono Users
   Función: Postulación de candidatos reclutados en los liceos.
 
 ══════════════════════════════════════════════════════════════════
-  PORTAL ADICIONAL — CURSOS TÉCNICOS
-══════════════════════════════════════════════════════════════════
-
-──────────────────────────────────────────────────────────────
-CT.1 PORTAL CURSOS TÉCNICOS (/portal/cursos-tecnicos)
-──────────────────────────────────────────────────────────────
-  Función: Página de selección de sub-portal para cursos técnicos.
-
-──────────────────────────────────────────────────────────────
-CT.2 PORTAL ESTUDIANTE CT (/portal/estudiante-ct)
-──────────────────────────────────────────────────────────────
-  Función: Dashboard académico del estudiante de curso técnico.
-  • Cálculo de GPA 4.0, promedio %, alertas de rendimiento.
-  • Historial de calificaciones categorizado por cuatrimestre.
-  • Lista de cursos activos con detalle.
-
-══════════════════════════════════════════════════════════════════
   MÓDULOS COMPARTIDOS / PÚBLICOS
 ══════════════════════════════════════════════════════════════════
 
@@ -521,7 +523,7 @@ INSCRIPCIÓN COMIDA (/comida) — pública, sin login
   CHAT IA ESTUDIANTIL (/chat-ia-estudiantil)
 ══════════════════════════════════════════════════════════════════
   Función: Asistente IA para estudiantes.
-  • Chat con contexto de estudiantes, cursos, materias y vida académica.
+  • Chat con contexto de estudiantes, materias, Global 360 y vida académica.
   • Consultas sobre becas, prematrícula, normativas y trámites.
 
 ══════════════════════════════════════════════════════════════════
@@ -529,9 +531,10 @@ INSCRIPCIÓN COMIDA (/comida) — pública, sin login
 ══════════════════════════════════════════════════════════════════
 
   Estudiante        → Expedientes Administrativos
-  Materia           → Materias, Global 360
-  Curso             → Cursos Técnicos, Global 360
-  Calificacion      → Calificaciones, Historial, Prematrícula
+  Materia           → Materias
+  Materia360        → Clases de 360, Global 360, Prematrícula
+  Inscripcion360    → Global 360 (una por tanda), nota final
+  HistorialCalif.   → Historial, Calificaciones del estudiante
   Tarea             → Torre de Control, Tareas, Moodle, Calendario
   Proyecto          → Proyectos por Rol, Reportes
   ActivoInventario  → Inventario Físico con Códigos QR
@@ -553,7 +556,7 @@ INSCRIPCIÓN COMIDA (/comida) — pública, sin login
   RESUMEN TOTAL
 ══════════════════════════════════════════════════════════════════
 
-  6 portales por rol + 1 portal selector de cursos técnicos
+  6 portales por rol (el selector de cursos técnicos se retiró)
   30 módulos funcionales estructurados
   Consistencia contable estricta bajo normativa DGII
   Torre de Control del Colaborador y Proyectos por Rol (super_admin)

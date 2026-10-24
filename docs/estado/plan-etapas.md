@@ -4,6 +4,8 @@ Este plan desglosa la totalidad del proyecto **Global Effect Nexus**, el **ERP i
 
 > **Cambio de alcance (oct 2026)**: el departamento de Psicología se eliminó. Su portal, su módulo y su rol desaparecen (migración `0030_fin_de_psicologia.sql`), el expediente pasa a ser de administración (`admin` / `super_admin`), y la cita de psicología del estudiante la sustituye el módulo **Solicitudes y aprobaciones** (migración `0031_solicitudes_y_aprobaciones.sql`, Sprint 8).
 
+> **Cambio de alcance (24 oct 2026)**: la Fundación dejó de impartir cursos técnicos. La migración `0047_fin_de_cursos_tecnicos.sql` borra `curso` y `calificacion` y retira el estudiante `regular`: todo estudiante es becado universitario. Global Effect 360 ocupa el lugar de los cursos —docente, tareas, entregas y nota final—, está abierto a todos, su catálogo entero es obligatorio y cada cuatrimestre tiene dos tandas de dos meses con **una** materia por tanda. `/academico/cursos` pasa a ser `/academico/clases-360` y `/academico/calificaciones` desaparece. Los sprints de abajo se escribieron antes y conservan su redacción donde cuentan historia.
+
 ---
 
 ## 1. Arquitectura y Reglas Críticas del Proyecto
@@ -41,12 +43,12 @@ Antes de iniciar cualquier sprint, Claude/el agente debe respetar rigurosamente 
 
 | Portal | Rol Principal | Dashboard / Ruta Base | Módulos Asignados |
 |---|---|---|---|
-| **Portal 1: Administrador** | `admin` | `/dashboard` | Cursos, Materias, Calificaciones, Historial, Prematrícula (GE 360), Períodos, Academias, Expedientes, Patrocinadores, Becas, Tareas, Proyectos, Personal, Servicios Mensuales, Comida, Contabilidad, Solicitudes y aprobaciones, Reportes, Chat IA, Calendario, Configuración |
+| **Portal 1: Administrador** | `admin` | `/dashboard` | Clases de 360, Materias, Historial, Prematrícula (GE 360), Períodos, Academias, Expedientes, Patrocinadores, Becas, Tareas, Proyectos, Personal, Servicios Mensuales, Comida, Contabilidad, Solicitudes y aprobaciones, Reportes, Chat IA, Calendario, Configuración |
 | **Portal 2: Estudiante** | `estudiante` | `/portal/estudiante` | Mi Portal, Mis Materias, Calificaciones, Global Effect 360, Aula Virtual (entrega PDF), Calendario, Chat IA Estudiantil, Solicitudes (trámites: constancia, carta, cita con administración, permiso) |
-| **Portal 3: Profesor** | `profesor` | `/portal/profesor` | Mi Portal (dashboard docente), Mis Cursos (`/academico/cursos`), Materias (`/academico/materias`), Calificaciones (`/academico/calificaciones`), Calendario |
+| **Portal 3: Profesor** | `profesor` | `/portal/profesor` | Mi Portal (dashboard docente), Mis clases de 360 (`/academico/clases-360`, con la nota final de cada inscripción), Materias (`/academico/materias`), Calendario |
 | **Portal 4: Administrativo** | `administrativo` | `/portal/administrativo` | Mi Portal (incluye solicitudes por atender), Expedientes, Patrocinadores, Servicios Mensuales, Lista de Comida, Tareas, Proyectos, Solicitudes y aprobaciones (`/administrativo/solicitudes`), Calendario, Chat IA |
 | **Portal 5: Contabilidad** | `contabilidad` | `/portal/contabilidad` | Mi Portal (resumen financiero), Contabilidad (ingresos/egresos), Reportes financieros |
-| **Público & Compartidos** | Público / Todos | `/` (Landing), `/login`, `/comida` | Inscripción Comida sin cuenta, Selector Cursos Técnicos (`/portal/cursos-tecnicos`) |
+| **Público & Compartidos** | Público / Todos | `/` (Landing), `/login`, `/comida` | Inscripción Comida sin cuenta |
 
 ---
 
@@ -70,11 +72,11 @@ graph TD
 ### SPRINT 1: Portal Docente y Módulos Académicos Core ✅ (COMPLETADO AL 100%)
 
 > **Estado**: **100% Funcional**. Cerrado con éxito.
-> - `/academico/periodos`: CRUD con coherencia de fechas y recuento de cursos/materias vinculados.
+> - `/academico/periodos`: CRUD con coherencia de fechas y recuento de materias vinculadas.
 > - `/academico/materias`: Catálogo completo, asignación de docentes y filtros en URL.
-> - `/academico/calificaciones`: Registro, edición y desglose por bandas con escala `src/lib/notas.ts`.
+> - `/academico/calificaciones`: Registro, edición y desglose por bandas con escala `src/lib/notas.ts` (retirado en la 0047, oct 2026: eran las notas por evaluación de los cursos técnicos; la nota final de 360 se pone en `/academico/clases-360`).
 > - `/academico/historial`: Historial consolidado con índice real guardado, 100% SSR.
-> - `/portal/profesor`: Dashboard conectado con `cifrasDocente()`, cursos gestionados, materias asignadas, clases de 360 y entregas pendientes.
+> - `/portal/profesor`: Dashboard conectado con `cifrasDocente()`, materias asignadas, clases de 360 y entregas pendientes (la lista de cursos técnicos se retiró en la 0047).
 
 ---
 
@@ -246,7 +248,7 @@ Hola Claude, vamos a ejecutar el SPRINT 6 de Global Effect Nexus: "Reportes Anal
 Sigue rigurosamente las reglas del proyecto:
 1. En `/reportes`: Construye los reportes analíticos con Recharts en tres pestañas:
    - Operaciones y Proyectos: distribución por estado y % de avance medio.
-   - Académico: promedios por curso, distribución de notas según rampa de notas.
+   - Académico: promedios por materia y por clase de 360, distribución de notas según rampa de notas.
    - Contabilidad: barras de ingresos vs egresos por mes y desglose por categorías.
    - IMPORTANTE: Todos los gráficos deben usar los colores de `GRAFICA` y `SERIE` definidos en `src/lib/paleta.ts` (tonos de #2096BA y #171A1D). No uses colores por defecto de Recharts.
 2. En `/sitemap`: Diseña un mapa del sitio elegante y moderno que muestre los 5 portales, sus rutas, descripciones y estado de acceso según el rol del usuario conectado.

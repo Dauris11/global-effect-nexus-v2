@@ -30,11 +30,12 @@ import { estudianteDeUsuario } from "@/server/estudiantes/portal";
  *    de la ventana, mientras que `materia.periodo_id` sí existe. Así que el
  *    JOIN va por `v.periodo_id = m.periodo_id`, y una ventana abierta para el
  *    cuatrimestre que viene no deja matricularse en materias del anterior.
+ *    La tanda de la ventana no importa aquí: la carrera se matricula por
+ *    período, y la regla de una materia por tanda es solo de 360.
  *
- * Es el mismo molde que `@/server/global360/acciones`, y a propósito: son dos
- * programas distintos con la misma mecánica de prematrícula, y si una
- * comprobara la ventana de otra manera, tarde o temprano una de las dos la
- * comprobaría mal.
+ * Comparte molde con `@/server/global360/acciones` a propósito: son dos
+ * programas con la misma ventana de prematrícula, y si uno la comprobara de
+ * otra manera, tarde o temprano uno de los dos la comprobaría mal.
  *
  * NO HAY TOPE DE CRÉDITOS NI DE CUPOS, y no es un olvido: `materia` no tiene
  * columna de capacidad y no existe ningún máximo de créditos escrito en la base
@@ -48,7 +49,6 @@ export type EstadoMatricula = {
     | "inicial"
     | "ok"
     | "cerrada"
-    | "no_becado"
     | "sin_ficha"
     | "repetida"
     | "bloqueada"
@@ -64,15 +64,9 @@ export async function inscribirseEnMateria(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
+  // Sin filtro por tipo: desde la 0047 todo estudiante es becado, y una
+  // comprobación que nunca falla solo esconde dónde está la regla de verdad.
   if (!estudiante) return { estado: "sin_ficha" };
-
-  /*
-   * `inscripcion` no tiene el trigger que sí protege a `inscripcion_360`, así
-   * que la regla —la matrícula universitaria es del becado— se sostiene aquí.
-   * Queda anotado como deuda: mientras viva solo en este archivo, un script que
-   * escriba en la tabla se la salta.
-   */
-  if (estudiante.tipo !== "becado") return { estado: "no_becado" };
 
   const materiaId = String(datos.get("materia") ?? "");
 

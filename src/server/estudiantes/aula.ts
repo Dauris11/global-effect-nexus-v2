@@ -56,7 +56,9 @@ export type AsignacionDelEstudiante = {
 /**
  * Asignaciones de las materias en las que el estudiante está inscrito ahora.
  *
- * Incluye materias del instituto, materias universitarias y Global 360.
+ * Una tarea cuelga de una materia universitaria o de una de Global Effect
+ * 360, exactamente de una (CHECK `asignacion_una_sola_unidad`, 0047): no hay
+ * tareas sueltas que repartir a todo el mundo.
  */
 export async function asignacionesDelEstudiante(
   estudianteId: string,
@@ -69,8 +71,8 @@ export async function asignacionesDelEstudiante(
             a.archivo_url,
             a.fecha_publicacion,
             a.fecha_vencimiento,
-            coalesce(m.nombre, c.nombre, m360.nombre, 'Asignatura') AS materia,
-            coalesce(m.codigo, c.codigo, m360.codigo) AS materia_codigo,
+            coalesce(m.nombre, m360.nombre, 'Asignatura') AS materia,
+            coalesce(m.codigo, m360.codigo) AS materia_codigo,
             doc.nombre AS docente_nombre,
             coalesce(e.estado::text, 'pendiente') AS estado_entrega,
             e.fecha_entrega,
@@ -91,7 +93,6 @@ export async function asignacionesDelEstudiante(
             e.comentario_estudiante AS entrega_comentario_estudiante
        FROM asignacion a
        LEFT JOIN materia m ON m.id = a.materia_id
-       LEFT JOIN curso c ON c.id = a.curso_id
        LEFT JOIN materia_360 m360 ON m360.id = a.materia_360_id
        LEFT JOIN usuario doc ON doc.id = a.creada_por_id
        LEFT JOIN entrega_estudiante e
@@ -107,8 +108,6 @@ export async function asignacionesDelEstudiante(
           SELECT i360.materia_id FROM inscripcion_360 i360
            WHERE i360.estudiante_id = $1 AND i360.estado IN ('cursando', 'prematriculada')
         )
-        OR
-        (a.materia_id IS NULL AND a.curso_id IS NULL AND a.materia_360_id IS NULL)
       )
       ORDER BY a.fecha_vencimiento ASC NULLS LAST, a.fecha_publicacion DESC`,
     [estudianteId],

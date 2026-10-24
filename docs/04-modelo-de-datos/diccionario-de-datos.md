@@ -1,8 +1,8 @@
 # Diccionario de Datos — Global Effect Nexus
 
-> **Fuente:** generado desde la base de datos en vivo (PostgreSQL 17 · Supabase). Refleja el estado desplegado por las migraciones `db/migrations/0001`–`0013`, con el cambio de alcance de octubre de 2026 aplicado: la `0030` retira las tablas de psicología y la `0031` añade el dominio de solicitudes y aprobaciones.
+> **Fuente:** generado desde la base de datos en vivo (PostgreSQL 17 · Supabase). Refleja el estado desplegado por las migraciones `db/migrations/0001`–`0013`, con el cambio de alcance de octubre de 2026 aplicado: la `0030` retira las tablas de psicología y la `0031` añade el dominio de solicitudes y aprobaciones. La `0047` (24 oct 2026) retira los cursos técnicos: borra `curso`, `calificacion` y el enum `tipo_evaluacion`, y deja `tipo_estudiante` con un solo valor, `becado`.
 
-Cubre **35 tablas**, **331 columnas**, **7 tipos ENUM** y **4 extensiones** de PostgreSQL. Cada tabla lista sus columnas (tipo, nulabilidad, default, claves), sus restricciones CHECK y sus índices.
+Cubre **33 tablas**, **308 columnas**, **6 tipos ENUM** y **4 extensiones** de PostgreSQL. Cada tabla lista sus columnas (tipo, nulabilidad, default, claves), sus restricciones CHECK y sus índices.
 
 **Convenciones:** PK = clave primaria · FK = clave foránea · UK = único (columna). «Nulo = No» significa `NOT NULL`.
 
@@ -250,9 +250,9 @@ Tabla núcleo del expediente estudiantil (datos personales e institucionales).
 | `sexo_documento` | text | Sí | — | Sexo biológico registrado en el documento oficial. |
 | `religion` | text | Sí | — | Afiliación religiosa. |
 | `foto_id` | uuid | Sí | FK | Foto de perfil (referencia a documento). |
-| `tipo` | tipo_estudiante | No | — | Tipo de estudiante (becado | regular). |
+| `tipo` | tipo_estudiante | No | — | Tipo de estudiante. Desde la `0047` solo existe `becado`: el valor `regular` era el alumno de curso técnico y se retiró con ellos. |
 | `estado` | estado_estudiante | No | — | Estado en el pipeline y situación escolar. |
-| `programa` | text | Sí | — | Carrera o curso técnico que estudia. |
+| `programa` | text | Sí | — | Carrera universitaria del becado. |
 | `donde_estudia` | text | Sí | — | Institución donde estudia. |
 | `universidad` | text | Sí | — | Universidad física (para becados). |
 | `fecha_ingreso` | date | Sí | — | Fecha de ingreso a la fundación. |
@@ -489,43 +489,6 @@ Materias académicas (becados universitarios).
 
 ---
 
-### `curso`
-Cursos técnicos.
-
-- **Clave primaria:** `id`
-
-| Columna | Tipo | Nulo | Claves | Descripción |
-| :-- | :-- | :--: | :-- | :-- |
-| `id` | uuid | No | PK | Identificador único del registro. |
-| `nombre` | text | No | — | Nombre. |
-| `descripcion` | text | Sí | — | Descripción. |
-| `docente` | text | Sí | — | Nombre visible del docente; puede ser alguien externo al sistema. |
-| `docente_usuario_id` | uuid | Sí | FK | El docente como usuario del sistema, si lo es. Decide qué cursos son suyos en el Portal Profesor. |
-| `periodo_id` | uuid | Sí | FK | Referencia a periodo. |
-| `estado` | text | No | — | Estado del registro. |
-| `capacidad` | integer | Sí | — | Cupo máximo. |
-| `inscritos` | integer | Sí | — | Número de inscritos. |
-| `horario` | text | Sí | — | Horario. |
-| `modalidad` | text | No | — | Modalidad (presencial, virtual, mixto). |
-| `created_at` | timestamp with time zone | No | — | Fecha de creación del registro. |
-| `updated_at` | timestamp with time zone | No | — | Fecha de última modificación (trigger automático). |
-| `metadata` | jsonb | No | — | Datos adicionales para extensibilidad futura (JSONB). |
-
-**Claves foráneas:**
-- `periodo_id` → `periodo(id)` · ON DELETE SET NULL
-- `docente_usuario_id` → `usuario(id)` · ON DELETE SET NULL
-
-**Restricciones CHECK / UNIQUE:**
-- CHECK ((inscritos >= 0))
-- CHECK ((capacidad >= 0))
-
-**Índices:**
-- `curso_pkey`: btree (id)
-- `idx_curso_docente_usuario`: btree (docente_usuario_id)
-- `idx_curso_periodo`: btree (periodo_id)
-
----
-
 ### `inscripcion`
 Matrícula: relación estudiante ↔ materia ↔ período.
 
@@ -553,37 +516,7 @@ Matrícula: relación estudiante ↔ materia ↔ período.
 
 ---
 
-### `calificacion`
-Calificaciones detalladas por evaluación (cursos técnicos).
-
-- **Clave primaria:** `id`
-
-| Columna | Tipo | Nulo | Claves | Descripción |
-| :-- | :-- | :--: | :-- | :-- |
-| `id` | uuid | No | PK | Identificador único del registro. |
-| `estudiante_id` | uuid | No | FK | Referencia a estudiante. |
-| `curso_id` | uuid | No | FK | Referencia a curso. |
-| `periodo_id` | uuid | No | FK | Referencia a periodo. |
-| `nota` | numeric(5,2) | No | — | Calificación numérica (0 a 100). |
-| `tipo_evaluacion` | tipo_evaluacion | No | — | Rubro evaluado (enum tipo_evaluacion). |
-| `observaciones` | text | Sí | — | Observaciones del docente. |
-| `created_at` | timestamp with time zone | No | — | Fecha de creación del registro. |
-| `updated_at` | timestamp with time zone | No | — | Fecha de última modificación (trigger automático). |
-
-**Claves foráneas:**
-- `curso_id` → `curso(id)` · ON DELETE CASCADE
-- `estudiante_id` → `estudiante(id)` · ON DELETE CASCADE
-- `periodo_id` → `periodo(id)` · ON DELETE CASCADE
-
-**Restricciones CHECK / UNIQUE:**
-- CHECK (((nota >= 0.00) AND (nota <= 100.00)))
-
-**Índices:**
-- `calificacion_pkey`: btree (id)
-- `idx_calificacion_curso`: btree (curso_id)
-- `idx_calificacion_estudiante`: btree (estudiante_id)
-
----
+> Hasta la `0047` este dominio incluía `curso` (cursos técnicos) y `calificacion` (notas por evaluación de esos cursos). La Fundación dejó de impartir cursos técnicos en octubre de 2026 y las dos tablas se borraron sin copia, como la `0030` hizo con Psicología. Las tareas (`asignacion`) cuelgan ahora de una materia universitaria o de una materia de Global Effect 360, exactamente de una (CHECK `asignacion_una_sola_unidad`), y la nota final de 360 es `inscripcion_360.nota`. Las tablas de Global Effect 360 (`materia_360`, `ventana_prematricula`, `inscripcion_360`, migraciones `0027`, `0028`, `0042` y `0047`) y las del aula virtual (`asignacion`, `entrega_estudiante`, `0023`) no están en este volcado; sus reglas vigentes son: todo el catálogo es obligatorio (la columna `obligatoria` se retiró), 360 está abierto a todos los estudiantes (el trigger `solo_becado_en_360` se retiró), `ronda` es obligatoria (1 o 2, las dos tandas de dos meses del cuatrimestre) y el índice único parcial `uq_inscripcion_360_una_por_tanda (estudiante_id, periodo_id, ronda) WHERE estado <> 'retirada'` impone una materia por tanda: dos por cuatrimestre.
 
 ### `historial_calificacion`
 Historial académico consolidado (GPA por materia/cuatrimestre).
@@ -1044,7 +977,7 @@ Base de conocimiento vectorizada (embeddings) para búsqueda semántica / RAG.
 | Columna | Tipo | Nulo | Claves | Descripción |
 | :-- | :-- | :--: | :-- | :-- |
 | `id` | uuid | No | PK | Identificador único del registro. |
-| `fuente_tipo` | text | No | — | Entidad de origen del fragmento (estudiante, curso...). |
+| `fuente_tipo` | text | No | — | Entidad de origen del fragmento (estudiante, evento...). |
 | `fuente_id` | uuid | Sí | — | ID del registro de origen (referencia lógica). |
 | `contenido` | text | No | — | Fragmento de texto indexado. |
 | `metadata` | jsonb | Sí | — | Datos auxiliares para filtrar/citar (JSONB). |
@@ -1066,8 +999,7 @@ Base de conocimiento vectorizada (embeddings) para búsqueda semántica / RAG.
 | `estado_estudiante` | `reclutado`, `postulado`, `academia_liderazgo`, `standby_tecnico`, `activo`, `inactivo`, `graduado`, `suspendido` |
 | `genero` | `masculino`, `femenino`, `otro` |
 | `parentesco` | `padre`, `madre`, `tutor`, `madrastra`, `padrastro`, `hermano`, `hermana`, `otro` |
-| `tipo_estudiante` | `becado`, `regular` |
-| `tipo_evaluacion` | `examen`, `tarea`, `proyecto`, `participacion`, `final` |
+| `tipo_estudiante` | `becado` (único valor desde la `0047`) |
 | `tipo_patrocinador` | `empresa`, `persona`, `iglesia`, `ong`, `otro` |
 | `tipo_transaccion` | `ingreso`, `egreso` |
 

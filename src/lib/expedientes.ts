@@ -24,7 +24,13 @@ import {
   UserPlus,
 } from "lucide-react";
 
-export const TIPOS_ESTUDIANTE = ["regular", "becado"] as const;
+/**
+ * Un solo valor desde la 0047: el `regular` era el alumno de curso técnico y
+ * los cursos ya no existen. Se mantiene como lista, y no como una constante
+ * suelta, para que `TipoEstudiante` siga siendo el mismo tipo que el ENUM de la
+ * base y el menú pueda seguir filtrando por él.
+ */
+export const TIPOS_ESTUDIANTE = ["becado"] as const;
 
 /** Los cuatro primeros son el embudo de entrada; los otros cuatro, la vida académica. */
 export const ESTADOS_ESTUDIANTE = [
@@ -86,13 +92,6 @@ export const ASISTIO_REUNION = ["si", "no", "justificado"] as const;
 
 export type TipoEstudiante = (typeof TIPOS_ESTUDIANTE)[number];
 export type EstadoEstudiante = (typeof ESTADOS_ESTUDIANTE)[number];
-
-export function esTipoEstudiante(valor: unknown): valor is TipoEstudiante {
-  return (
-    typeof valor === "string" &&
-    (TIPOS_ESTUDIANTE as readonly string[]).includes(valor)
-  );
-}
 
 export function esEstadoEstudiante(valor: unknown): valor is EstadoEstudiante {
   return (

@@ -34,7 +34,6 @@ import {
   ESTADOS_ESTUDIANTE,
   FAMILIA_FIJA,
   GENEROS,
-  TIPOS_ESTUDIANTE,
 } from "@/lib/expedientes";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
@@ -101,7 +100,6 @@ export type TextosFormulario = {
   campos: Record<string, string>;
   familia: Record<string, string>;
   parentescos: Record<string, string>;
-  tipos: Record<string, string>;
   estados: Record<string, string>;
   generos: Record<string, string>;
   casa: Record<string, string>;
@@ -121,7 +119,6 @@ export type TextosFormulario = {
 
 export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
   const [seccion, setSeccion] = useState<string>(SECCIONES[0]);
-  const [tipo, setTipo] = useState<string>("regular");
 
   /**
    * Lo que leyó el documento, para precargar los campos.
@@ -189,8 +186,6 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
             textos={textos}
             seccion={seccion}
             onSeccionChange={setSeccion}
-            tipo={tipo}
-            onTipoChange={setTipo}
             valores={leido ?? undefined}
           />
 
@@ -385,8 +380,6 @@ export function CamposExpediente({
   textos,
   seccion,
   onSeccionChange,
-  tipo,
-  onTipoChange,
   valores,
   soloLectura = false,
   campoFoto,
@@ -394,13 +387,10 @@ export function CamposExpediente({
   textos: TextosFormulario;
   seccion: string;
   onSeccionChange: (seccion: string) => void;
-  tipo: string;
-  onTipoChange: (tipo: string) => void;
   valores?: ValoresExpediente;
   soloLectura?: boolean;
   campoFoto?: React.ReactNode;
 }) {
-  const becado = tipo === "becado";
   const familiares = valores?.familiares;
 
   const [latitud, setLatitud] = useState<number | null>(valores?.latitud ?? null);
@@ -504,14 +494,6 @@ export function CamposExpediente({
         <TabsContent value="academic" className="mt-4">
           <Rejilla>
             <Selector
-              nombre="tipo"
-              etiqueta={textos.campos.type}
-              valor={tipo}
-              onChange={onTipoChange}
-              opciones={TIPOS_ESTUDIANTE.map((v) => ({ valor: v, texto: textos.tipos[v] }))}
-              disabled={soloLectura}
-            />
-            <Selector
               nombre="estado"
               etiqueta={textos.campos.status}
               predeterminado={valores?.estado ?? "activo"}
@@ -531,17 +513,12 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
 
-            {/* Los tres campos de becado solo existen si lo es. Ocultarlos
-                en vez de deshabilitarlos: en un expediente de curso técnico
-                la universidad no está vacía, es que no aplica. */}
-            {becado && (
-              <Campo
-                nombre="universidad"
-                etiqueta={textos.campos.university}
-                valorPredeterminado={valores?.universidad}
-                soloLectura={soloLectura}
-              />
-            )}
+            <Campo
+              nombre="universidad"
+              etiqueta={textos.campos.university}
+              valorPredeterminado={valores?.universidad}
+              soloLectura={soloLectura}
+            />
 
             <Campo
               nombre="fecha_ingreso"
@@ -807,16 +784,14 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
 
-            {becado && (
-              <Area
-                nombre="motivo_beca"
-                etiqueta={textos.campos.scholarshipReason}
-                filas={3}
-                ancho
-                valorPredeterminado={valores?.motivo_beca}
-                soloLectura={soloLectura}
-              />
-            )}
+            <Area
+              nombre="motivo_beca"
+              etiqueta={textos.campos.scholarshipReason}
+              filas={3}
+              ancho
+              valorPredeterminado={valores?.motivo_beca}
+              soloLectura={soloLectura}
+            />
 
             <Area
               nombre="metas_academicas"
@@ -962,8 +937,6 @@ function Selector({
   opciones,
   vacio,
   predeterminado,
-  valor,
-  onChange,
   disabled = false,
 }: {
   nombre: string;
@@ -972,9 +945,6 @@ function Selector({
   /** Texto de la opción en blanco. Sin él, el campo es obligatorio de hecho. */
   vacio?: string;
   predeterminado?: string;
-  /** Solo para el tipo de estudiante, del que dependen otros campos. */
-  valor?: string;
-  onChange?: (valor: string) => void;
   disabled?: boolean;
 }) {
   return (
@@ -985,9 +955,7 @@ function Selector({
       <select
         id={nombre}
         name={nombre}
-        value={valor}
-        defaultValue={valor === undefined ? (predeterminado ?? "") : undefined}
-        onChange={onChange ? (evento) => onChange(evento.target.value) : undefined}
+        defaultValue={predeterminado ?? ""}
         disabled={disabled}
         className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-60"
       >

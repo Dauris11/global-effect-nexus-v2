@@ -31,8 +31,8 @@ import { estudianteDeUsuario } from "@/server/estudiantes/portal";
  *   permitiría entregar en nombre de otro.
  *
  * - La tarea tiene que ser de una unidad en la que el estudiante esté. Se
- *   comprueba en el propio SELECT, contra las tres vías posibles: su matrícula
- *   universitaria, su curso técnico o su inscripción de 360. Sin eso, con el id
+ *   comprueba en el propio SELECT, contra las dos vías posibles: su matrícula
+ *   universitaria o su inscripción de 360. Sin eso, con el id
  *   de una tarea ajena se podría entregar en una clase en la que no está.
  *
  * - Una tarea vencida SÍ admite entrega, y a propósito: lo que decide si cuenta
@@ -75,7 +75,7 @@ export async function entregarTarea(
   if (archivo.size > MAXIMO_ENTREGA) return { estado: "muy_grande" };
 
   /*
-   * ¿Es una tarea de una clase de este estudiante? Las tres vías, en un solo
+   * ¿Es una tarea de una clase de este estudiante? Las dos vías, en un solo
    * SELECT. Si no encaja en ninguna, se responde lo mismo que si la tarea no
    * existiera: quien prueba ids ajenos no debe distinguir un caso del otro.
    */
@@ -89,10 +89,6 @@ export async function entregarTarea(
                    WHERE i.materia_id = a.materia_id
                      AND i.estudiante_id = $2
                      AND i.estado = 'activa')
-          -- Curso técnico en el que tiene calificaciones
-          OR EXISTS (SELECT 1 FROM calificacion c
-                      WHERE c.curso_id = a.curso_id
-                        AND c.estudiante_id = $2)
           -- Materia de Global Effect 360 que lleva
           OR EXISTS (SELECT 1 FROM inscripcion_360 t
                       WHERE t.materia_id = a.materia_360_id

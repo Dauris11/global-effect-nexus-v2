@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
  * Una materia de Global Effect 360, como tarjeta de anuncio.
  *
  * Sale de la página para que la página quede por debajo de 300 líneas, y
- * porque es la pieza que se repite en las dos listas (dadas y por dar).
+ * porque es la pieza que se repite en las dos listas (dadas y por dar). Todas
+ * son obligatorias, así que la tarjeta no lo repite: lo dice la cabecera.
  *
  * La materia no tiene foto, así que el hueco de la foto (`aspect-[4/3]`
  * `rounded-card` `bg-muted`) lleva un icono grande en círculo. Se mantiene el
@@ -46,7 +47,6 @@ export type MateriaG360 = {
   id: string;
   nombre: string;
   codigo: string | null;
-  obligatoria: boolean;
   creditos: number;
   situacion: string;
   periodo: string | null;
@@ -61,7 +61,7 @@ export function TarjetaMateriaG360({
   materia: MateriaG360;
   /** La situación ya traducida. */
   situacion: string;
-  /** "Obligatoria · 3 cr · 2026-I", ya traducido. */
+  /** "3 cr · 2026-I", ya traducido. */
   detalle: string;
   acciones?: React.ReactNode;
 }) {
@@ -71,14 +71,9 @@ export function TarjetaMateriaG360({
   return (
     <article className="flex h-full flex-col">
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-card bg-muted">
-        {/* La obligatoria lleva el icono en el azul de la marca: es la que no
-            se puede esquivar. La opcional, en gris. */}
-        <span
-          className={cn(
-            "flex size-16 items-center justify-center rounded-full bg-background shadow-card",
-            materia.obligatoria ? "text-marca-600" : "text-tinta-2",
-          )}
-        >
+        {/* El icono va en gris: todas son obligatorias, así que el azul ya no
+            distingue nada y lo que importa es la situación de la insignia. */}
+        <span className="flex size-16 items-center justify-center rounded-full bg-background text-tinta-2 shadow-card">
           <GraduationCap className="size-7" aria-hidden />
         </span>
 

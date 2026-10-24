@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Link, useRouter } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import { itemsDeArea, menuDe } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -26,19 +25,17 @@ export function BuscadorComandos({
   abierto,
   onCambiar,
   rol,
-  tipoEstudiante,
 }: {
   abierto: boolean;
   onCambiar: (abierto: boolean) => void;
   rol: Rol;
-  tipoEstudiante: TipoEstudiante | null;
 }) {
   const t = useTranslations("nav");
   const router = useRouter();
   const [termino, setTermino] = useState("");
   const [elegido, setElegido] = useState(0);
 
-  const todos = menuDe(rol, tipoEstudiante).flatMap((area) =>
+  const todos = menuDe(rol).flatMap((area) =>
     itemsDeArea(area).map((item) => ({ ...item, area: area.etiqueta })),
   );
   const buscado = normalizar(termino);

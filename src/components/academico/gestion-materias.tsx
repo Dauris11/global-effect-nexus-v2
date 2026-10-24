@@ -45,10 +45,10 @@ const SELECT =
  * El catálogo de materias universitarias: qué se ofrece, en qué período y quién
  * lo imparte.
  *
- * Son las materias de la CARRERA del becado. Los cursos técnicos viven en
- * `/academico/cursos` y las clases del programa en Prematrícula: tres programas
- * distintos que esta pantalla no mezcla, porque quien administra uno no
- * necesariamente administra los otros.
+ * Son las materias de la CARRERA del becado. Las de Global Effect 360 tienen su
+ * catálogo en Prematrícula y sus clases en `/academico/clases-360`: dos
+ * programas distintos que esta pantalla no mezcla, porque quien administra uno
+ * no necesariamente administra el otro.
  *
  * El filtro y la búsqueda no están aquí: los lleva la URL desde la página de
  * servidor. Así el enlace se puede compartir y recargar sin perder lo que se
@@ -257,7 +257,7 @@ function FilaMateria({
             {t("terms.counts.enrollments")}: <b>{materia.inscritos}</b>
           </span>
           <span className="inline-flex items-center gap-1">
-            {t("courses.tasks")}: <b>{materia.tareas}</b>
+            {t("subjects.tasks")}: <b>{materia.tareas}</b>
           </span>
         </p>
       </div>
@@ -389,8 +389,8 @@ function FormularioMateria({
                 {periodo.nombre} ·{" "}
                 {t(
                   periodo.tipo === "semestre"
-                    ? "courses.semester"
-                    : "courses.quarter",
+                    ? "termKind.semester"
+                    : "termKind.quarter",
                 )}
               </option>
             ))}

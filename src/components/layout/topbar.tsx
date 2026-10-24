@@ -26,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname } from "@/i18n/navigation";
-import type { TipoEstudiante } from "@/lib/expedientes";
 import { menuDe } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -51,7 +50,6 @@ export function TopBar({
   rol,
   nombre,
   foto,
-  tipoEstudiante,
   aviso,
   avisos,
   sinLeer,
@@ -61,8 +59,6 @@ export function TopBar({
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
-  /** Para el buscador: el menú del estudiante depende de su tipo. */
-  tipoEstudiante: TipoEstudiante | null;
   /**
    * Aviso puntual, ya traducido en el servidor: hoy, la ventana de prematrícula
    * de Global Effect 360. Va en la cabecera y no en una sección porque tiene
@@ -113,7 +109,7 @@ export function TopBar({
 
   // "Configuración" solo para quien la tiene en su menú: ofrecer una puerta que
   // el servidor va a cerrar no sirve de nada.
-  const tieneConfiguracion = menuDe(rol, tipoEstudiante).some((area) =>
+  const tieneConfiguracion = menuDe(rol).some((area) =>
     area.secciones.some((seccion) =>
       seccion.items.some((item) => item.href === "/configuracion"),
     ),
@@ -248,7 +244,6 @@ export function TopBar({
         abierto={buscando}
         onCambiar={setBuscando}
         rol={rol}
-        tipoEstudiante={tipoEstudiante}
       />
     </header>
   );

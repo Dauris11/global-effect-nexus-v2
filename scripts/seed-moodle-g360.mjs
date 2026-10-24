@@ -81,7 +81,7 @@ async function seed() {
       [periodoId],
     );
 
-    // 4. Asignaciones Estilo Moodle para Cursos y Materias
+    // 4. Asignaciones estilo Moodle para las materias
     const materiaRes = await client.query(`SELECT id FROM public.materia LIMIT 1`);
     const materiaId = materiaRes.rows[0]?.id;
 

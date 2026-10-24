@@ -8,23 +8,15 @@ import { consultarUna } from "@/lib/db";
 import { tienePermiso } from "@/lib/rbac";
 
 /**
- * Alta, edición y baja del módulo académico: períodos, materias y
- * calificaciones.
+ * Alta, edición y baja del catálogo académico: períodos y materias.
  *
- * QUIÉN PUEDE, y son DOS puertas distintas que no se solapan:
- *
- *   · El catálogo —períodos y materias— pide `academico.escribir`: `admin` y
- *     `super_admin`.
- *   · Las notas piden `calificaciones.registrar`: `docente` y `super_admin`.
- *
- * No es un descuido que no coincidan, es el mapa de `rbac.ts` tal cual:
- * `admin` abre cuatrimestres y monta el catálogo pero **no pone notas**, y el
- * docente pone notas pero **no toca el catálogo**. Coordinación lee las
- * calificaciones; ponerlas es de quien da la clase.
+ * Las notas no están aquí: la única que pone la Fundación es la final de 360, y
+ * vive en `@/server/profesor/acciones` con `calificaciones.registrar`, porque
+ * `admin` monta el catálogo pero **no pone notas** y el docente pone notas pero
+ * **no toca el catálogo**.
  *
  * EL CATÁLOGO. Una sola puerta: `academico.escribir`, que hoy tienen `admin` y
- * `super_admin`. A diferencia de los cursos técnicos —donde el docente gestiona
- * los SUYOS—, aquí no hay dueño: un período es de la institución, y una materia
+ * `super_admin`. Aquí no hay dueño: un período es de la institución, y una materia
  * de la carrera la abre coordinación. El docente tiene `academico.leer` y ve el
  * catálogo; no lo toca.
  *
@@ -148,11 +140,11 @@ export async function guardarPeriodo(
 /**
  * Borra un período, y solo si no cuelga nada de él.
  *
- * `inscripcion.periodo_id` es ON DELETE CASCADE: borrar un cuatrimestre con
- * matrícula se llevaría por delante las inscripciones de todos sus estudiantes
- * sin avisar. Las materias y los cursos solo perderían la referencia
- * (SET NULL), pero quedarían huérfanos de calendario, que tampoco es un estado
- * en el que dejar el catálogo.
+ * `inscripcion.periodo_id` e `inscripcion_360.periodo_id` son ON DELETE
+ * CASCADE: borrar un cuatrimestre con matrícula se llevaría por delante las
+ * inscripciones —y las notas de 360— de todos sus estudiantes sin avisar. Las
+ * materias solo perderían la referencia (SET NULL), pero quedarían huérfanas de
+ * calendario, que tampoco es un estado en el que dejar el catálogo.
  */
 export async function eliminarPeriodo(
   _previo: EstadoCatalogo,
@@ -170,11 +162,11 @@ export async function eliminarPeriodo(
 
   const ocupado = await consultarUna<{
     subjects: number;
-    courses: number;
+    enrollments360: number;
     enrollments: number;
   }>(
     `SELECT (SELECT count(*)::int FROM materia     WHERE periodo_id = $1) AS subjects,
-            (SELECT count(*)::int FROM curso       WHERE periodo_id = $1) AS courses,
+            (SELECT count(*)::int FROM inscripcion_360 WHERE periodo_id = $1) AS enrollments360,
             (SELECT count(*)::int FROM inscripcion WHERE periodo_id = $1) AS enrollments`,
     [id],
   );
@@ -371,172 +363,6 @@ export async function eliminarMateria(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Calificaciones
-// ────────────────────────────────────────────────────────────────────────────
-
-const TIPOS_EVALUACION = [
-  "examen",
-  "tarea",
-  "proyecto",
-  "participacion",
-  "final",
-];
-
-/**
- * Registra o corrige una nota de un curso técnico.
- *
- * LA FRONTERA VA EN EL `WHERE`, no en un `if` previo. Un docente solo pone nota
- * en SUS cursos, y la comprobación viaja dentro de la escritura: el INSERT
- * selecciona de `curso` con la condición puesta, así que con el id de un curso
- * ajeno no hay fila que seleccionar y no se escribe nada. Comprobarlo antes con
- * una consulta suelta dejaría una rendija entre la comprobación y la escritura.
- *
- * Se responde `no_encontrado` y no `no_permitido` cuando el curso es de otro:
- * quien prueba ids ajenos no debe poder distinguir "ese curso no existe" de
- * "ese curso existe y no es tuyo".
- */
-export async function guardarCalificacion(
-  _previo: EstadoCatalogo,
-  datos: FormData,
-): Promise<EstadoCatalogo> {
-  const usuario = await requerirUsuario();
-
-  if (!tienePermiso(usuario.rol, "calificaciones.registrar")) {
-    return { estado: "no_permitido" };
-  }
-
-  // `super_admin` tiene el permiso y ningún curso propio, así que sin esto no
-  // podría registrar ni una nota: `null` desactiva la condición de propiedad.
-  const soloSuyos = usuario.rol === "docente" ? usuario.id : null;
-
-  const id = String(datos.get("id") ?? "").trim();
-  const estudianteId = String(datos.get("estudiante") ?? "").trim();
-  const cursoId = String(datos.get("curso") ?? "").trim();
-  const periodoId = String(datos.get("periodo") ?? "").trim();
-  const tipo = String(datos.get("tipo") ?? "examen");
-  const observaciones = String(datos.get("observaciones") ?? "")
-    .trim()
-    .slice(0, 600);
-  const nota = Number(String(datos.get("nota") ?? "").trim());
-
-  if (id && !esUuid(id)) return { estado: "no_encontrado" };
-
-  if (!esUuid(estudianteId) || !esUuid(cursoId) || !esUuid(periodoId)) {
-    return { estado: "faltan_campos" };
-  }
-
-  // El CHECK de la tabla es 0.00–100.00 y rechazaría la escritura con un error
-  // de base. Se comprueba antes para poder decir qué pasa con la nota.
-  if (!Number.isFinite(nota) || nota < 0 || nota > 100) {
-    return { estado: "nota_invalida" };
-  }
-
-  const tipoOk = TIPOS_EVALUACION.includes(tipo) ? tipo : "examen";
-
-  try {
-    if (id) {
-      const editada = await consultarUna<{ id: string }>(
-        `UPDATE calificacion k
-            SET estudiante_id = $2, curso_id = $3, periodo_id = $4,
-                nota = $5, tipo_evaluacion = $6::tipo_evaluacion,
-                observaciones = NULLIF($7, '')
-           FROM curso c
-          WHERE k.id = $1
-            AND c.id = $3
-            AND ($8::uuid IS NULL OR c.docente_usuario_id = $8)
-        RETURNING k.id`,
-        [id, estudianteId, cursoId, periodoId, nota, tipoOk, observaciones, soloSuyos],
-      );
-
-      if (!editada) return { estado: "no_encontrado" };
-
-      await anotar(usuario.id, "calificacion", "calificacion.editada", editada.id, {
-        nota,
-        tipo: tipoOk,
-      });
-    } else {
-      const creada = await consultarUna<{ id: string }>(
-        `INSERT INTO calificacion
-                (estudiante_id, curso_id, periodo_id, nota, tipo_evaluacion, observaciones)
-         SELECT $1, c.id, $3, $4, $5::tipo_evaluacion, NULLIF($6, '')
-           FROM curso c
-          WHERE c.id = $2
-            AND ($7::uuid IS NULL OR c.docente_usuario_id = $7)
-         RETURNING id`,
-        [estudianteId, cursoId, periodoId, nota, tipoOk, observaciones, soloSuyos],
-      );
-
-      if (!creada) return { estado: "no_encontrado" };
-
-      await anotar(usuario.id, "calificacion", "calificacion.registrada", creada.id, {
-        nota,
-        tipo: tipoOk,
-      });
-    }
-  } catch (error) {
-    console.error("[academico] no se pudo guardar la calificación", error);
-    return { estado: "error" };
-  }
-
-  refrescar();
-
-  return { estado: "ok" };
-}
-
-/**
- * Borra una nota.
- *
- * Sin comprobación de dependencias, y no por olvido: de una calificación no
- * cuelga nada. Lo que sí queda es el rastro —quién la borró, de quién era y qué
- * decía— porque una nota que desaparece de un expediente es exactamente la
- * clase de cambio que después alguien tiene que poder reconstruir.
- *
- * La nota borrada va al `audit_log`; las observaciones no. Son una devolución a
- * una persona, igual que el comentario de una entrega, y copiarlas a una
- * segunda tabla multiplica desde dónde se pueden filtrar.
- */
-export async function eliminarCalificacion(
-  _previo: EstadoCatalogo,
-  datos: FormData,
-): Promise<EstadoCatalogo> {
-  const usuario = await requerirUsuario();
-
-  if (!tienePermiso(usuario.rol, "calificaciones.registrar")) {
-    return { estado: "no_permitido" };
-  }
-
-  const soloSuyos = usuario.rol === "docente" ? usuario.id : null;
-  const id = String(datos.get("id") ?? "");
-
-  if (!esUuid(id)) return { estado: "no_encontrado" };
-
-  const borrada = await consultarUna<{
-    id: string;
-    nota: number;
-    estudiante_id: string;
-  }>(
-    `DELETE FROM calificacion k
-      USING curso c
-      WHERE k.id = $1
-        AND c.id = k.curso_id
-        AND ($2::uuid IS NULL OR c.docente_usuario_id = $2)
-    RETURNING k.id, k.nota::float8 AS nota, k.estudiante_id`,
-    [id, soloSuyos],
-  );
-
-  if (!borrada) return { estado: "no_encontrado" };
-
-  await anotar(usuario.id, "calificacion", "calificacion.eliminada", borrada.id, {
-    nota: borrada.nota,
-    estudiante_id: borrada.estudiante_id,
-  });
-
-  refrescar();
-
-  return { estado: "ok" };
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // Ayudantes
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -569,20 +395,17 @@ function anotar(
 /**
  * Las pantallas que cambian al tocar el catálogo.
  *
- * Son más de las dos obvias: los cursos técnicos y la prematrícula ofrecen el
- * período en un desplegable, y el portal del estudiante lista sus materias con
+ * Son más de las dos obvias: la prematrícula ofrece el período en un
+ * desplegable, y el portal del estudiante lista sus materias con
  * el nombre y el horario que se acaban de editar. Dejarlas fuera haría que un
  * cambio tardara en verse sin ninguna razón visible.
  */
 function refrescar() {
   revalidatePath("/[locale]/academico/periodos", "page");
   revalidatePath("/[locale]/academico/materias", "page");
-  revalidatePath("/[locale]/academico/cursos", "page");
+  revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/academico/prematricula", "page");
-  revalidatePath("/[locale]/academico/calificaciones", "page");
   revalidatePath("/[locale]/portal/estudiante/prematricula", "page");
-  // Una nota cambia lo que ve el estudiante y lo que le queda al profesor.
-  revalidatePath("/[locale]/portal/estudiante/calificaciones", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
 }
 

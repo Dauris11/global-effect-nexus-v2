@@ -36,7 +36,6 @@
     "records": "Expedientes",
     "academic": "Materias",
     "academicModule": "Académico",
-    "academicCourses": "Cursos",
     "academies": "Academias",
     "sponsors": "Patrocinadores",
     "sponsorList": "Lista",
@@ -59,7 +58,7 @@
     "inventory": "Inventario",
     "scanQr": "Escanear QR",
     "quickAction": "Rápido",
-    "courses": "Cursos técnicos",
+    "courses": "Clases y materias",
     "grades": "Calificaciones",
     "history": "Historial",
     "periods": "Períodos",
@@ -110,7 +109,8 @@
     "payables": "Cuentas por pagar",
     "boxes": "Cajas y arqueos",
     "habitudes": "Habitudes",
-    "habitudesHub": "Hub Habitudes"
+    "habitudesHub": "Hub Habitudes",
+    "classes360": "Clases de 360"
   },
   "landing": {
     "enter": "Acceder",
@@ -271,7 +271,6 @@
     "overview": "Panel general",
     "greeting": "Hola, {name}",
     "scholarships": "Becados",
-    "courses": "Cursos activos",
     "balance": "Balance del mes",
     "financeTitle": "Ingresos y egresos",
     "financeSubtitle": "Últimos 6 meses",
@@ -289,8 +288,8 @@
     "income": "Ingresos",
     "expenses": "Egresos",
     "university": "Universitarios activos",
-    "technical": "Técnicos activos",
-    "technicalCourses": "Cursos técnicos activos",
+    "g360Students": "Cursando Global Effect 360",
+    "g360Subjects": "Materias de 360 abiertas",
     "activeProjects": "Proyectos activos",
     "pendingTasks": "Tareas pendientes",
     "sponsors": "Patrocinadores",
@@ -448,12 +447,11 @@
         "academico": "Períodos y materias",
         "tareas": "Tareas y entregas",
         "operaciones": "Proyectos y tareas",
-        "cursos": "Cursos técnicos y 360"
+        "clases360": "Global Effect 360"
       },
       "kind": {
         "periodo": "Período",
         "materia": "Materia",
-        "curso": "Curso técnico",
         "clase360": "Clase de 360",
         "tarea": "Tarea",
         "examen": "Examen",
@@ -652,16 +650,14 @@
     "backToList": "Volver a expedientes",
     "stats": {
       "total": "Total",
-      "scholarship": "Becados",
       "active": "Activos",
-      "inProcess": "En proceso"
+      "inProcess": "En proceso",
+      "graduated": "Graduados"
     },
     "filters": {
       "search": "Buscar",
       "searchPlaceholder": "Nombre, cédula o programa",
-      "type": "Tipo",
       "status": "Estado",
-      "all": "Todos",
       "apply": "Aplicar",
       "clear": "Quitar filtros"
     },
@@ -676,13 +672,8 @@
     },
     "column": {
       "student": "Estudiante",
-      "type": "Tipo",
       "status": "Estado",
       "gpa": "GPA"
-    },
-    "type": {
-      "becado": "Universitario",
-      "regular": "Curso técnico"
     },
     "status": {
       "reclutado": "Reclutado",
@@ -751,7 +742,6 @@
       "religion": "Religión",
       "photo": "Foto del estudiante",
       "photoHint": "JPG, PNG o WEBP, máximo 2 MB.",
-      "type": "Tipo",
       "status": "Estado",
       "program": "Programa o carrera",
       "whereStudies": "Dónde estudia",
@@ -871,7 +861,6 @@
       "error": "No se pudo eliminar. Inténtalo de nuevo.",
       "deps": {
         "enrollments": "Inscripciones",
-        "grades": "Calificaciones",
         "history": "Historial académico",
         "service": "Servicio y reuniones",
         "requests": "Solicitudes"
@@ -926,7 +915,71 @@
         "credits": "Créditos activos"
       },
       "deleteHint": "Esta acción no se puede deshacer. El historial académico no se toca: guarda el nombre de la materia como texto, no como referencia.",
-      "inUseHint": "Tiene matrícula asociada, y borrarla se llevaría por delante esas inscripciones. Márcala como inactiva: desaparece del trabajo diario sin perder nada."
+      "inUseHint": "Tiene matrícula asociada, y borrarla se llevaría por delante esas inscripciones. Márcala como inactiva: desaparece del trabajo diario sin perder nada.",
+      "tasks": "Tareas"
+    },
+    "classes360": {
+      "eyebrow": "Académico",
+      "title": "Clases de Global Effect 360",
+      "classes": "Clases",
+      "catalogHint": "El catálogo del programa —crear o retirar una materia— se administra en Prematrícula.",
+      "empty": "No hay clases de Global Effect 360",
+      "emptyHint": "Las clases salen del catálogo del programa y se asignan a un docente desde Prematrícula.",
+      "forbidden": "No tienes acceso a las clases de 360",
+      "forbiddenHint": "Esta pantalla es para docentes y para coordinación académica.",
+      "students": "Estudiantes",
+      "enrolled": "Inscritos",
+      "tasks": "Tareas",
+      "withGrade": "Con nota final",
+      "average": "Promedio",
+      "inactive": "Retirada del programa",
+      "seeStudents": "Ver estudiantes",
+      "hideStudents": "Ocultar",
+      "noStudents": "Nadie se ha inscrito en esta clase todavía.",
+      "round": "Tanda {ronda}",
+      "status": {
+        "prematriculada": "Prematriculada",
+        "cursando": "Cursando",
+        "aprobada": "Aprobada",
+        "reprobada": "Reprobada",
+        "retirada": "Retirada"
+      },
+      "taskAverage": "Prom. tareas",
+      "compliance": "Cumplimiento",
+      "finalGrade": "Nota final",
+      "saveGrade": "Guardar nota final",
+      "gradeSaved": "Nota guardada. Con 70 o más la materia queda aprobada.",
+      "toReview": "Entregas por revisar",
+      "reviewEmpty": "No hay nada esperando revisión.",
+      "openFile": "Abrir archivo",
+      "grade": "Nota",
+      "comment": "Devolución al estudiante",
+      "review": "Guardar revisión",
+      "reviewed": "Revisada.",
+      "errGrade": "La nota tiene que estar entre 0 y 100.",
+      "errOwner": "Eso no es de una de tus clases.",
+      "errGeneric": "No se pudo completar. Inténtalo otra vez.",
+      "newTask": "Publicar tarea",
+      "taskTitle": "Título",
+      "taskTitleRequired": "El título es obligatorio",
+      "taskType": "Tipo",
+      "taskTypeTask": "Tarea",
+      "taskTypeExam": "Examen",
+      "taskDue": "Vence",
+      "taskDescription": "Descripción",
+      "taskDueHint": "Vacío, no vence. Una tarea vencida se puede seguir entregando: lo decides tú al revisar.",
+      "taskMaxMb": "Límite de archivo (MB)",
+      "taskFormats": "Formatos permitidos",
+      "taskMaxPoints": "Puntaje máximo",
+      "taskRubric": "Instrucciones de entrega y rúbrica",
+      "taskRubricPlaceholder": "Escribe los criterios de evaluación, estructura requerida del informe o pautas del proyecto...",
+      "taskAllowLate": "Permitir entregas tardías (quedan marcadas con aviso de retraso)",
+      "cancel": "Cancelar"
+    },
+    "termKind": {
+      "label": "Duración",
+      "semester": "Semestre",
+      "quarter": "Cuatrimestre"
     },
     "subject": {
       "name": "Nombre",
@@ -954,155 +1007,12 @@
       "nameRequired": "El nombre es obligatorio",
       "error": "No se pudo crear la materia. Revisa los datos e inténtalo de nuevo."
     },
-    "courses": {
-      "title": "Cursos técnicos",
-      "description": "Cursos del Instituto de Carreras Técnicas y su ocupación.",
-      "new": "Nuevo curso",
-      "count": "{count, plural, =1 {# curso} other {# cursos}}",
-      "empty": "Todavía no hay cursos",
-      "emptyHint": "Crea el primero con su capacidad; los inscritos los pone la matrícula.",
-      "searchPlaceholder": "Nombre o docente",
-      "stats": {
-        "total": "Total",
-        "active": "Activos",
-        "enrolled": "Inscritos",
-        "occupancy": "Ocupación"
-      },
-      "deleteHint": "Esta acción no se puede deshacer.",
-      "inUseHint": "Tiene gente inscrita o notas registradas, y borrarlo se llevaría por delante esas calificaciones. Márcalo como finalizado en vez de eliminarlo.",
-      "edit": "Editar",
-      "save": "Guardar",
-      "saving": "Guardando…",
-      "cancel": "Cancelar",
-      "remove": "Eliminar",
-      "students": "Estudiantes",
-      "grades": "Notas",
-      "average": "Promedio",
-      "tasks": "Tareas",
-      "compliance": "Cumplimiento",
-      "seeStudents": "Ver estudiantes",
-      "hideStudents": "Ocultar",
-      "noStudents": "Nadie tiene notas en este curso todavía.",
-      "newTask": "Publicar tarea",
-      "taskTitle": "Título",
-      "taskType": "Tipo",
-      "taskDue": "Vence",
-      "taskDueHint": "Vacío, no vence. Una tarea vencida se puede seguir entregando: lo decides tú al revisar.",
-      "taskMaxMb": "Límite de archivo (MB)",
-      "taskFormats": "Formatos permitidos",
-      "taskMaxPoints": "Puntaje máximo",
-      "taskRubric": "Instrucciones de entrega y rúbrica",
-      "taskRubricPlaceholder": "Escribe los criterios de evaluación, estructura requerida del informe o pautas del proyecto...",
-      "taskAllowLate": "Permitir entregas tardías (quedan marcadas con aviso de retraso)",
-      "taskTypeTask": "Tarea",
-      "taskTypeExam": "Examen",
-      "toReview": "Entregas por revisar",
-      "reviewEmpty": "No hay nada esperando revisión.",
-      "openFile": "Abrir archivo",
-      "grade": "Nota",
-      "comment": "Devolución al estudiante",
-      "review": "Guardar revisión",
-      "reviewed": "Revisada.",
-      "errGrade": "La nota tiene que estar entre 0 y 100.",
-      "errOwner": "Eso no es de una de tus clases.",
-      "errGeneric": "No se pudo completar. Inténtalo otra vez.",
-      "my360": "Mis clases de Global Effect 360",
-      "no360": "No das ninguna clase de Global Effect 360.",
-      "admin360Hint": "El catálogo del programa se administra en Prematrícula.",
-      "enrolled": "Inscritos",
-      "termType": "Duración",
-      "semester": "Semestre",
-      "quarter": "Cuatrimestre"
-    },
-    "course": {
-      "name": "Nombre",
-      "description": "Descripción",
-      "teacher": "Docente",
-      "term": "Período",
-      "status": "Estado",
-      "capacity": "Capacidad",
-      "schedule": "Horario",
-      "mode": "Modalidad",
-      "occupancy": "Ocupación",
-      "enrolledOf": "{enrolled} de {capacity}",
-      "overCapacity": "{over} por encima de la capacidad"
-    },
-    "courseStatus": {
-      "activo": "Activo",
-      "planificado": "Planificado",
-      "finalizado": "Finalizado"
-    },
-    "courseMode": {
-      "presencial": "Presencial",
-      "virtual": "Virtual",
-      "mixto": "Mixto"
-    },
-    "newCourse": {
-      "title": "Nuevo curso técnico",
-      "subtitle": "Se crea con su capacidad y en cero inscritos.",
-      "namePlaceholder": "Electricidad residencial",
-      "scheduleHint": "Por ejemplo: Sáb 8:00–12:00",
-      "enrolledHint": "Los inscritos los mueve la matrícula, no este formulario.",
-      "create": "Crear curso",
-      "creating": "Creando…",
-      "nameRequired": "El nombre es obligatorio",
-      "error": "No se pudo crear el curso. Revisa los datos e inténtalo de nuevo."
-    },
     "choose": "Elegir…",
-    "grades": {
-      "title": "Calificaciones",
-      "description": "Notas registradas, con su banda de color y la tasa de aprobación.",
-      "new": "Registrar nota",
-      "count": "{count, plural, =1 {# nota} other {# notas}}",
-      "empty": "Todavía no hay notas registradas",
-      "emptyHint": "Registra la primera evaluación del período.",
-      "searchPlaceholder": "Estudiante o curso",
-      "distribution": "Distribución por banda",
-      "noAverage": "Sin notas todavía",
-      "passRateHint": "{passed} de {total} en 70 o más",
-      "limitHint": "Se muestran las 500 más recientes. Afina la búsqueda para ver el resto.",
-      "forbidden": "No tienes acceso a las calificaciones",
-      "forbiddenHint": "Ver las notas de todos los estudiantes exige registrar calificaciones, coordinar el catálogo académico o llevar expedientes. Si eres estudiante, tus notas están en tu portal.",
-      "deleteHint": "Esta acción no se puede deshacer. La nota sale del expediente del estudiante y del promedio del curso; solo queda el rastro de quién la borró.",
-      "stats": {
-        "total": "Notas registradas",
-        "average": "Promedio general",
-        "passRate": "Aprobación"
-      }
-    },
-    "grade": {
-      "student": "Estudiante",
-      "course": "Curso",
-      "term": "Período",
-      "type": "Evaluación",
-      "score": "Nota",
-      "band": "Banda",
-      "notes": "Observaciones"
-    },
     "gradeBand": {
       "excelente": "Excelente",
       "buena": "Aprobada",
       "riesgo": "En riesgo",
       "critica": "Reprobada"
-    },
-    "gradeType": {
-      "examen": "Examen",
-      "tarea": "Tarea",
-      "proyecto": "Proyecto",
-      "participacion": "Participación",
-      "final": "Final"
-    },
-    "newGrade": {
-      "title": "Registrar calificación",
-      "subtitle": "Estudiante, curso, período y nota son obligatorios.",
-      "scoreHint": "De 0 a 100. El color confirma la banda mientras escribes.",
-      "create": "Registrar nota",
-      "creating": "Registrando…",
-      "fieldsRequired": "Falta el estudiante, el curso o el período.",
-      "scoreInvalid": "La nota debe estar entre 0 y 100",
-      "error": "No se pudo registrar la nota. Revisa los datos e inténtalo de nuevo.",
-      "noCourses": "No hay cursos activos",
-      "noStudents": "No hay estudiantes activos"
     },
     "teacherPicker": {
       "unassigned": "Sin asignar",
@@ -1139,8 +1049,8 @@
       },
       "counts": {
         "subjects": "Materias",
-        "courses": "Cursos",
-        "enrollments": "Inscripciones"
+        "enrollments": "Inscripciones",
+        "enrollments360": "Inscripciones de 360"
       },
       "deleteHint": "Esta acción no se puede deshacer.",
       "inUseHint": "Tiene registros colgando y borrarlo se los llevaría por delante. Márcalo como completado: el cuatrimestre se cierra y todo queda donde está."
@@ -1188,7 +1098,8 @@
         "records": "Materias cursadas",
         "gpa": "Índice general",
         "failed": "Reprobadas"
-      }
+      },
+      "forbiddenHint": "Ver el historial de todos los estudiantes exige poner notas, coordinar el catálogo académico o llevar expedientes. Si eres estudiante, tus notas están en tu portal."
     },
     "enrollment": {
       "title": "Prematrícula",
@@ -1239,20 +1150,15 @@
       "error": "No se pudo eliminar. Inténtalo de nuevo.",
       "deps": {
         "enrollments": "Inscripciones",
-        "grades": "Calificaciones",
         "subjects": "Materias",
-        "courses": "Cursos",
         "enrolled": "Personas inscritas",
-        "tasks": "Tareas y entregas"
+        "tasks": "Tareas y entregas",
+        "enrollments360": "Inscripciones de 360"
       }
     },
     "editSubject": {
       "title": "Editar materia",
       "subtitle": "Los cambios se ven de inmediato en el catálogo y en el portal de quien la imparte."
-    },
-    "editCourse": {
-      "title": "Editar curso",
-      "subtitle": "Los inscritos no se editan aquí: esa cifra la mueve la matrícula."
     },
     "editTerm": {
       "title": "Editar período",
@@ -1267,8 +1173,7 @@
     "noRecord": "Todavía no tienes expediente enlazado",
     "noRecordHint": "Tu usuario existe, pero aún no está asociado a un expediente de estudiante. Escríbele a la coordinación de la Fundación para que lo enlace.",
     "type": {
-      "becado": "Universitario",
-      "regular": "Curso técnico"
+      "becado": "Universitario"
     },
     "gpaLabel": "Índice académico",
     "gpaScale": "/ 4.00",
@@ -1356,7 +1261,6 @@
         "windowClosedHint": "Coordinación la abre al inicio de cada período. Hasta entonces, aquí solo puedes consultar lo que ya tienes.",
         "forTerm": "Período {periodo}",
         "catalogEmpty": "Este período todavía no tiene materias en el catálogo.",
-        "onlyScholar": "La matrícula universitaria es solo para becados. Si crees que hay un error, habla con coordinación.",
         "add": "Inscribirme",
         "adding": "Inscribiendo…",
         "remove": "Quitarme",
@@ -1366,7 +1270,6 @@
         "noLimitHint": "No hay tope de créditos ni de cupos: si tu programa tiene alguno, revísalo con coordinación.",
         "errClosed": "La prematrícula ya no está abierta.",
         "errRepeated": "Ya estás inscrito en esa materia.",
-        "errNotScholar": "La matrícula universitaria es solo para becados.",
         "errNoRecord": "Tu ficha todavía no está enlazada. Habla con coordinación.",
         "errLocked": "Esa materia ya no se puede quitar desde aquí.",
         "errGeneric": "No se pudo completar. Inténtalo otra vez."
@@ -1397,14 +1300,11 @@
       "count": "{count} notas",
       "allTerms": "Todos",
       "gpaShort": "Índice",
-      "type": {
-        "examen": "Examen",
-        "tarea": "Tarea",
-        "proyecto": "Proyecto",
-        "participacion": "Participación",
-        "final": "Nota final"
+      "origin": {
+        "g360": "Global Effect 360",
+        "universidad": "Universidad"
       },
-      "typeColumn": "Tipo"
+      "typeColumn": "Programa"
     },
     "classroom": {
       "eyebrow": "Aula virtual",
@@ -1506,68 +1406,44 @@
   "teacherPortal": {
     "eyebrow": "Portal docente",
     "greeting": "Hola, {name}",
-    "summary": "Tus cursos, tus inscritos y lo que falta por calificar.",
+    "summary": "Tus clases de Global Effect 360, tus inscritos y lo que falta por calificar.",
     "stats": {
-      "courses": "Cursos activos",
       "students": "Estudiantes",
-      "grades": "Notas registradas",
+      "grades": "Notas finales puestas",
       "toReview": "Por revisar",
-      "subjects": "Materias a tu nombre"
+      "subjects": "Materias a tu nombre",
+      "classes360": "Clases de 360"
     },
     "shortcutsTitle": "Accesos rápidos",
     "shortcuts": {
-      "courses": {
-        "label": "Cursos técnicos",
-        "hint": "Catálogo y cupos"
-      },
       "subjects": {
         "label": "Materias",
         "hint": "Catálogo por cuatrimestre"
       },
-      "grades": {
-        "label": "Calificaciones",
-        "hint": "Registrar una nota"
-      },
       "calendar": {
         "label": "Calendario",
         "hint": "Agenda de la Fundación"
+      },
+      "classes360": {
+        "label": "Clases de 360",
+        "hint": "Tareas, entregas y nota final"
       }
     },
-    "coursesTitle": "Mis cursos",
-    "coursesEmpty": "Todavía no tienes cursos asignados",
-    "coursesEmptyHint": "La coordinación te asigna los cursos desde el catálogo. Si crees que falta alguno, avísale.",
-    "courseStatus": {
-      "activo": "Activo",
-      "planificado": "Planificado",
-      "finalizado": "Finalizado"
-    },
-    "courseMode": {
-      "presencial": "Presencial",
-      "virtual": "Virtual",
-      "mixto": "Mixto"
-    },
-    "occupancy": "Ocupación",
-    "mode": "Modalidad",
     "term": "Período",
     "schedule": "Horario",
     "gradesCount": "{count, plural, =0 {Sin notas} =1 {# nota} other {# notas}}",
     "averageShort": "Prom. {value}",
     "noGradesYet": "Sin calificar",
     "subjectsTitle": "Materias a mi nombre",
-    "enrolledCount": "{count, plural, =1 {# inscrito} other {# inscritos}}"
+    "enrolledCount": "{count, plural, =1 {# inscrito} other {# inscritos}}",
+    "classesTitle": "Mis clases de Global Effect 360",
+    "classesEmpty": "Todavía no tienes clases asignadas",
+    "classesEmptyHint": "La coordinación te asigna las clases de 360 desde Prematrícula. Si crees que falta alguna, avísale."
   },
   "modules": {
-    "academicCourses": {
-      "title": "Cursos técnicos",
-      "desc": "Gestión de los cursos técnicos del Instituto: docente, período, capacidad, horario y modalidad."
-    },
     "academicSubjects": {
       "title": "Materias",
       "desc": "Alta, edición y baja de materias por cuatrimestre, con código, créditos, aula y profesor."
-    },
-    "academicGrades": {
-      "title": "Calificaciones",
-      "desc": "Registro y seguimiento de notas por evaluación, estudiante y período."
     },
     "academicHistory": {
       "title": "Historial académico",
@@ -1720,17 +1596,13 @@
   },
   "global360": {
     "name": "Global Effect 360",
-    "eyebrow": "Formación técnica",
+    "eyebrow": "Formación de la Fundación",
     "title": "Global Effect 360",
-    "description": "Materias técnicas de la Fundación. Cuatro son obligatorias; el resto, opcionales.",
-    "progressRequired": "Obligatorias",
-    "progressOptional": "Opcionales",
+    "description": "El programa obligatorio de la Fundación. Cada cuatrimestre tiene dos tandas de dos meses y en cada una cursas una materia.",
     "taken": "Materias dadas",
     "pending": "Materias por dar",
     "takenEmpty": "Todavía no has dado ninguna.",
     "pendingEmpty": "No te falta ninguna.",
-    "required": "Obligatoria",
-    "optional": "Opcional",
     "credits": "{n} cr",
     "hours": "{n} h",
     "situation": {
@@ -1744,12 +1616,11 @@
     "windowSoon": "Prematrícula",
     "windowFrom": "Del {abre} al {cierra}",
     "windowClosed": "La prematrícula está cerrada.",
-    "enrol": "Prematricular",
+    "enrol": "Elegir",
     "enrolling": "Enviando…",
     "withdraw": "Quitar",
     "errClosed": "La prematrícula ya no está abierta.",
-    "errRepeated": "Ya la tienes prematriculada.",
-    "errNotScholar": "Global Effect 360 es solo para becados universitarios.",
+    "errRepeated": "Ya la tienes elegida en este período.",
     "errNoRecord": "Tu ficha todavía no está enlazada. Habla con coordinación.",
     "errGeneric": "No se pudo completar. Inténtalo otra vez.",
     "catalogTitle": "Catálogo del programa",
@@ -1759,7 +1630,6 @@
     "fieldCode": "Código",
     "fieldCredits": "Créditos",
     "fieldHours": "Horas",
-    "fieldRequired": "Obligatoria",
     "enrolled": "{n} inscritos",
     "retire": "Retirar del programa",
     "restore": "Devolver al programa",
@@ -1776,7 +1646,30 @@
     "saving": "Guardando…",
     "cancel": "Cancelar",
     "errDates": "La hora de cierre tiene que ser posterior a la de apertura.",
-    "errName": "El nombre no puede quedar vacío."
+    "errName": "El nombre no puede quedar vacío.",
+    "progress": "Avance del programa",
+    "allRequired": "Todas las materias son obligatorias.",
+    "tanda1": "Tanda 1",
+    "tanda2": "Tanda 2",
+    "tandaPending": "Debes elegir tu materia de la tanda {n}",
+    "tandaRule": "Global Effect 360 es obligatorio: una materia por tanda, dos por cuatrimestre.",
+    "tandaChooseNow": "Elegir ahora",
+    "tandasTitle": "Tus tandas · {periodo}",
+    "tandaOpenNow": "abierta ahora",
+    "tandaEmpty": "Sin elegir",
+    "chooseForTanda": "Elige tu materia de la tanda {n}",
+    "catalogStudentTitle": "Materias del programa",
+    "scheduleTbd": "Horario por coordinar",
+    "roomTbd": "Aula por asignar",
+    "capacity": "Cupo",
+    "noCapacity": "Sin cupo",
+    "errAlreadyPassed": "Ya aprobaste esta materia.",
+    "errTandaTaken": "Ya tienes una materia en esta tanda. Quítala primero si quieres cambiarla.",
+    "errNoCapacity": "Esta materia ya no tiene cupo.",
+    "fieldTanda": "Tanda",
+    "fieldTandaPlaceholder": "Elige la tanda",
+    "errTanda": "Elige la tanda 1 o la 2.",
+    "errOverlap": "Ya hay otra ventana de este período abierta en esas fechas."
   },
   "adminPortal": {
     "eyebrow": "Portal administrativo",
@@ -1804,8 +1697,6 @@
     "figures": {
       "title": "Cómo va la Fundación",
       "students": "Estudiantes activos",
-      "scholars": "Becados",
-      "courses": "Cursos técnicos",
       "subjects": "Materias",
       "grades": "Notas registradas",
       "projects": "Proyectos en curso",
@@ -1814,7 +1705,8 @@
       "giving": "Aporte mensual",
       "diners": "Comensales hoy",
       "users": "Cuentas activas",
-      "requests": "Solicitudes en curso"
+      "requests": "Solicitudes en curso",
+      "classes360": "Clases de 360 activas"
     },
     "modules": {
       "title": "Todos los módulos",
@@ -2210,16 +2102,14 @@
         "passed": "Aprobadas",
         "failed": "Reprobadas",
         "students": "Estudiantes activos",
-        "scholars": "Becados",
-        "courses": "Cursos",
+        "g360Students": "Cursando Global Effect 360",
+        "g360Subjects": "Materias de 360 abiertas",
         "subjects": "Materias"
       },
       "distribution": "Distribución por banda",
       "distributionHint": "Las cuatro bandas de la escala de notas, contadas sobre todas las calificaciones del período.",
-      "byType": "Promedio por tipo de evaluación",
-      "byTypeHint": "Dónde se gana y se pierde la nota: examen, tarea, proyecto, participación o final.",
-      "byCourse": "Promedio por curso",
-      "byCourseHint": "Los doce cursos con mejor promedio. Un curso sin notas no aparece: su promedio no es cero, no existe."
+      "bySubject360": "Promedio por materia de Global Effect 360",
+      "bySubject360Hint": "Las doce materias de 360 con mejor nota final media. Una materia sin notas no aparece: su promedio no es cero, no existe."
     },
     "finance": {
       "allTimeHint": "Las cuatro cifras son de todo lo registrado, sin filtro de fecha. Para un mes concreto, el filtro está en Contabilidad.",
@@ -3259,24 +3149,7 @@
     "presetGoodAnalysis": "Buen análisis conceptual. Se recomienda profundizar en las conclusiones.",
     "presetMissingDiagrams": "Faltan diagramas explicativos requeridos en las especificaciones.",
     "presetFixFormatting": "Revisar formato y bibliografía según norma institucional.",
-    "saveGradeButton": "Guardar Calificación y Feedback",
-    "enrollSuccess": "Asignatura matriculada exitosamente",
-    "enrollError": "No se pudo matricular la asignatura",
-    "withdrawSuccess": "Asignatura retirada exitosamente",
-    "withdrawError": "No se pudo retirar la asignatura",
-    "periodEnrollmentTitle": "Matrícula Cuatrimestral Global Effect 360",
-    "round1Badge": "Ronda 1: Matrícula Regular",
-    "round2Badge": "Ronda 2: Ajustes y Bloque 2",
-    "roundDescription": "Selección de asignaturas con horarios, aulas y cupos en tiempo real.",
-    "round1Button": "Ronda 1 (Regular)",
-    "round2Button": "Ronda 2 (Ajustes)",
-    "windowOpenUntil": "Ventana abierta hasta el {date}",
-    "windowClosedNotice": "La ventana de matrícula está cerrada en este momento. Consulta las fechas en el calendario institucional.",
-    "mandatoryBadge": "Obligatoria",
-    "capacityLabel": "Cupo",
-    "withdrawSubjectButton": "Retirar Asignatura",
-    "noCapacityButton": "Sin Cupo Disponible",
-    "enrollSubjectButton": "Matricular Asignatura"
+    "saveGradeButton": "Guardar Calificación y Feedback"
   },
   "habitudes": {
     "pageTitle": "Hub Colaborativo Habitudes & Liceos",

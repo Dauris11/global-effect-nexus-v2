@@ -20,15 +20,12 @@
  *     y el caso de la tarea vencida sin entregar, que es el único que pinta la
  *     tarjeta en rojo. También alimentan los vencimientos del calendario.
  *
- * Del lado del docente, la migración 0019 ya enlazó la materia "Introducción al
- * Liderazgo" con su usuario, pero ninguno de los dos cursos técnicos del
- * sembrado original es suyo —uno lo da un tallerista externo y el otro la
- * contabilidad— así que su lista de cursos saldría vacía. En vez de
- * reasignarle un curso ajeno, que sería falsear el dato, el script **añade uno
- * propio** con su matrícula y sus notas.
+ * Del lado del docente ya no se siembra nada aquí: el curso técnico de
+ * demostración que tenía se fue con la 0047, y sus clases de Global Effect 360
+ * salen del catálogo de 360 (`seed-moodle-g360.mjs`).
  *
- * Idempotente: borra y rehace solo lo suyo —el expediente que él mismo creó y
- * el curso marcado con `metadata->>'demo' = 'true'`—. No toca datos reales.
+ * Idempotente: borra y rehace solo lo suyo —el expediente que él mismo creó—.
+ * No toca datos reales.
  *
  * Uso: npm run db:seed:portales
  */
@@ -38,7 +35,6 @@ import pg from "pg";
 config({ path: ".env.local" });
 
 const EMAIL_ESTUDIANTE = "estudiante@globaleffect.org";
-const EMAIL_DOCENTE = "docente@globaleffect.org";
 const EMAIL_COORDINACION = "coordinacion@globaleffect.org";
 
 /**
@@ -82,13 +78,6 @@ const SOLICITUDES = [
   },
 ];
 
-/** Notas del curso de demostración: una excelente, una buena y una en riesgo. */
-const NOTAS_CURSO = [
-  [95, "examen", "Excelente dominio del direccionamiento IP."],
-  [82, "proyecto", "Proyecto funcional; falta documentar la topología."],
-  [64, "tarea", "Entrega incompleta; repasar subredes."],
-];
-
 /** Mes relativo a hoy, en formato YYYY-MM (el que usa `registro_servicio`). */
 function mesAtras(n) {
   const d = new Date();
@@ -120,7 +109,7 @@ const HISTORIAL = [
  * Asignaciones del aula virtual (migración 0023).
  *
  * `asignacion` no tiene columna `metadata`, así que estas filas no se pueden
- * marcar como demo igual que el curso del docente. El criterio de borrado es el
+ * marcar como demo con un campo. El criterio de borrado es el
  * prefijo `[demo]` del título: se rehace solo lo que este script escribió, y
  * sigue funcionando si mañana se cambian los textos de aquí.
  *
@@ -413,58 +402,6 @@ try {
       solicitudes++;
     }
 
-    // ------------------------------------------------------------------
-    // Portal Profesor: un curso propio del docente de demostración.
-    // ------------------------------------------------------------------
-    const { rows: docentes } = await db.query(
-      `SELECT id, nombre FROM usuario WHERE email = $1`,
-      [EMAIL_DOCENTE],
-    );
-
-    let notasCurso = 0;
-    if (docentes.length > 0) {
-      const docente = docentes[0];
-
-      // `calificacion` cae en cascada al borrar el curso (FK ON DELETE CASCADE),
-      // así que basta con borrar el curso de demostración.
-      await db.query(`DELETE FROM curso WHERE metadata->>'demo' = 'true'`);
-
-      const { rows: periodos } = await db.query(
-        `SELECT id FROM periodo WHERE estado = 'activo' ORDER BY fecha_inicio DESC LIMIT 1`,
-      );
-      const periodoId = periodos[0]?.id ?? null;
-
-      const { rows: cursos } = await db.query(
-        `INSERT INTO curso (nombre, descripcion, docente, docente_usuario_id, periodo_id,
-                            estado, capacidad, inscritos, horario, modalidad, metadata)
-         VALUES ($1, $2, $3, $4, $5, 'activo', 18, 12, $6, 'presencial',
-                 '{"demo":"true"}'::jsonb)
-         RETURNING id`,
-        [
-          "Técnico en Redes y Ciberseguridad",
-          "Fundamentos de redes, cableado estructurado y buenas prácticas de seguridad.",
-          docente.nombre,
-          docente.id,
-          periodoId,
-          "Sábados 8:00–12:00",
-        ],
-      );
-      const cursoId = cursos[0].id;
-
-      // Las notas necesitan período: `calificacion.periodo_id` es NOT NULL.
-      if (periodoId) {
-        for (const [nota, tipo, observaciones] of NOTAS_CURSO) {
-          await db.query(
-            `INSERT INTO calificacion (estudiante_id, curso_id, periodo_id, nota,
-                                       tipo_evaluacion, observaciones)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
-            [estudianteId, cursoId, periodoId, nota, tipo, observaciones],
-          );
-          notasCurso++;
-        }
-      }
-    }
-
     await db.query("COMMIT");
     console.log(
       `✓ expediente de ${usuario.nombre}: ${HISTORIAL.length} notas de historial, ` +
@@ -478,11 +415,6 @@ try {
     console.log(
       `✓ solicitudes: ${solicitudes} trámites del estudiante` +
         (coordinacionId ? "" : ` — sin usuario ${EMAIL_COORDINACION}, quedan todas en "enviada"`),
-    );
-    console.log(
-      docentes.length > 0
-        ? `✓ curso de demostración para ${docentes[0].nombre} con ${notasCurso} notas`
-        : `= sin usuario ${EMAIL_DOCENTE}: no se sembró el Portal Profesor`,
     );
   }
 } catch (e) {

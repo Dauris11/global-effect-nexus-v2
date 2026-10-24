@@ -3,9 +3,9 @@ import { consultar, consultarUna } from "@/lib/db";
 /**
  * El módulo académico: períodos, materias universitarias y calificaciones.
  *
- * Los dos primeros son la columna vertebral. Todo lo demás cuelga de ahí: los
- * cursos técnicos apuntan a un período, la matrícula apunta a una materia y a
- * un período, y el historial se agrupa por cuatrimestre. Sin filas en esas dos
+ * Los dos primeros son la columna vertebral. Todo lo demás cuelga de ahí: la
+ * matrícula apunta a una materia y a un período, la de 360 a un período y a una
+ * tanda, y el historial se agrupa por cuatrimestre. Sin filas en esas dos
  * tablas no hay nada que calificar, seleccionar ni historiar.
  *
  * Las calificaciones van al final del archivo, con su propia cabecera.
@@ -15,9 +15,9 @@ import { consultar, consultarUna } from "@/lib/db";
  * OFRECE la Fundación?" y no filtra por nadie. Mezclarlos obligaría a arrastrar
  * un `docenteId` por consultas a las que no les significa nada.
  *
- * Las materias de aquí son las de la carrera universitaria del becado. Los
- * cursos técnicos viven en `curso` y las clases del programa en `materia_360`:
- * son tres cosas distintas y ninguna consulta las junta.
+ * Las materias de aquí son las de la carrera universitaria del becado. Las
+ * clases de Global Effect 360 viven en `materia_360`: son dos cosas distintas y
+ * ninguna consulta las junta.
  */
 
 /** Tope de filas del catálogo. Coincide con `academic.limitHint`. */
@@ -44,7 +44,8 @@ export type PeriodoGestionado = {
   ya_termino: boolean;
   /** Lo que cuelga del período, para saber si se puede borrar y qué se perdería. */
   materias: number;
-  cursos: number;
+  /** Inscripciones de 360 del período, de las dos tandas. */
+  inscripciones_360: number;
   inscripciones: number;
 };
 
@@ -71,7 +72,7 @@ export async function periodosGestionados(): Promise<PeriodoGestionado[]> {
             (CURRENT_DATE >= p.fecha_inicio) AS ya_empezo,
             (CURRENT_DATE >  p.fecha_fin)    AS ya_termino,
             (SELECT count(*)::int FROM materia     m WHERE m.periodo_id = p.id) AS materias,
-            (SELECT count(*)::int FROM curso       c WHERE c.periodo_id = p.id) AS cursos,
+            (SELECT count(*)::int FROM inscripcion_360 c WHERE c.periodo_id = p.id) AS inscripciones_360,
             (SELECT count(*)::int FROM inscripcion i WHERE i.periodo_id = p.id) AS inscripciones
        FROM periodo p
       ORDER BY p.fecha_inicio DESC`,
@@ -196,85 +197,15 @@ export function recortarAlTope<T>(filas: readonly T[]): T[] {
 
 /**
  * ────────────────────────────────────────────────────────────────────────────
- * CALIFICACIONES
+ * NOTAS DE GLOBAL EFFECT 360
  *
- * `calificacion` cuelga de `curso`, no de `materia`: son las notas por
- * evaluación de los CURSOS TÉCNICOS. Las del becado universitario viven en
+ * Desde la 0047 la única nota que pone la Fundación es la final de cada
+ * inscripción de 360 (`inscripcion_360.nota`), que la pone el docente en
+ * `/academico/clases-360`. Las del becado universitario viven en
  * `historial_calificacion`, ya consolidadas por cuatrimestre, y son la materia
- * de `/academico/historial`. Que las dos cosas se llamen "notas" no las
- * convierte en la misma tabla, y juntarlas en una consulta daría una lista
- * donde media docena de columnas estarían siempre vacías.
+ * de `/academico/historial`.
  * ────────────────────────────────────────────────────────────────────────────
  */
-
-/** Tope de la lista de notas. Coincide con `academic.grades.limitHint`. */
-const TOPE_NOTAS = 500;
-
-export type NotaRegistrada = {
-  id: string;
-  nota: number;
-  tipo_evaluacion: string;
-  observaciones: string | null;
-  estudiante_id: string;
-  estudiante: string;
-  curso_id: string;
-  curso: string;
-  periodo_id: string;
-  periodo: string;
-  /** Si quien mira puede editarla y borrarla: se resuelve en el SQL, no en la vista. */
-  editable: boolean;
-  created_at: Date;
-};
-
-/**
- * Las notas registradas, con filtro de período y búsqueda por estudiante o
- * curso.
- *
- * `docenteId` funciona igual que en el resto del módulo: un id limita a lo
- * suyo, `null` lo abre todo. Pero aquí hay una diferencia importante — el
- * docente SÍ ve las notas de cursos ajenos si alguien le da la URL de un
- * período, porque el filtro de `docenteId` no va en el WHERE sino en
- * `editable`. Es deliberado: una nota es del estudiante, no del profesor, y
- * coordinación y el equipo académico necesitan leer el conjunto. Lo que el
- * docente no puede es TOCAR lo que no es suyo, y de eso se encarga el WHERE de
- * las acciones, no esta consulta.
- */
-export async function notasRegistradas({
-  periodoId,
-  busqueda,
-  docenteId,
-}: {
-  periodoId?: string | null;
-  busqueda?: string | null;
-  /** Id del docente para calcular `editable`, o `null` si puede con todas. */
-  docenteId?: string | null;
-}): Promise<NotaRegistrada[]> {
-  return consultar<NotaRegistrada>(
-    `SELECT k.id,
-            k.nota::float8 AS nota,
-            k.tipo_evaluacion::text AS tipo_evaluacion,
-            k.observaciones,
-            e.id   AS estudiante_id,
-            e.nombre AS estudiante,
-            c.id   AS curso_id,
-            c.nombre AS curso,
-            p.id   AS periodo_id,
-            p.nombre AS periodo,
-            ($3::uuid IS NULL OR c.docente_usuario_id = $3) AS editable,
-            k.created_at
-       FROM calificacion k
-       JOIN estudiante e ON e.id = k.estudiante_id
-       JOIN curso      c ON c.id = k.curso_id
-       JOIN periodo    p ON p.id = k.periodo_id
-      WHERE ($1::uuid IS NULL OR k.periodo_id = $1)
-        AND ($2::text IS NULL
-             OR e.nombre ILIKE '%' || $2 || '%'
-             OR c.nombre ILIKE '%' || $2 || '%')
-      ORDER BY k.created_at DESC
-      LIMIT $4`,
-    [periodoId ?? null, busqueda?.trim() || null, docenteId ?? null, TOPE_NOTAS + 1],
-  );
-}
 
 export type ResumenNotas = {
   total: number;
@@ -287,13 +218,10 @@ export type ResumenNotas = {
 };
 
 /**
- * Las cifras de cabecera y la distribución por banda.
+ * Las cifras de rendimiento de 360 y su distribución por banda.
  *
- * Es una consulta APARTE de la lista, y no un recuento de las filas que se
- * pintan, porque la lista está topada en 500: con más notas que eso, un
- * promedio calculado sobre lo visible sería el promedio de las 500 más
- * recientes disfrazado de promedio general. Los mismos filtros, la tabla
- * entera.
+ * Solo cuentan las inscripciones con nota y no retiradas: una sin nota es una
+ * clase que sigue en marcha, y meterla como cero hundiría el promedio.
  *
  * Los umbrales llegan como parámetros desde `UMBRAL_BANDA` (`@/lib/notas`) en
  * vez de escribirse aquí: la escala tiene un solo sitio, y si aprobar deja de
@@ -310,19 +238,21 @@ export async function resumenDeNotas({
 }): Promise<ResumenNotas> {
   const fila = await consultarUna<ResumenNotas>(
     `SELECT count(*)::int AS total,
-            round(avg(k.nota), 2)::float8 AS promedio,
-            count(*) FILTER (WHERE k.nota >= $4)::int AS aprobadas,
-            count(*) FILTER (WHERE k.nota >= $3)::int AS excelente,
-            count(*) FILTER (WHERE k.nota >= $4 AND k.nota < $3)::int AS buena,
-            count(*) FILTER (WHERE k.nota >= $5 AND k.nota < $4)::int AS riesgo,
-            count(*) FILTER (WHERE k.nota <  $5)::int AS critica
-       FROM calificacion k
-       JOIN estudiante e ON e.id = k.estudiante_id
-       JOIN curso      c ON c.id = k.curso_id
-      WHERE ($1::uuid IS NULL OR k.periodo_id = $1)
+            round(avg(i.nota), 2)::float8 AS promedio,
+            count(*) FILTER (WHERE i.nota >= $4)::int AS aprobadas,
+            count(*) FILTER (WHERE i.nota >= $3)::int AS excelente,
+            count(*) FILTER (WHERE i.nota >= $4 AND i.nota < $3)::int AS buena,
+            count(*) FILTER (WHERE i.nota >= $5 AND i.nota < $4)::int AS riesgo,
+            count(*) FILTER (WHERE i.nota <  $5)::int AS critica
+       FROM inscripcion_360 i
+       JOIN estudiante  e ON e.id = i.estudiante_id
+       JOIN materia_360 m ON m.id = i.materia_id
+      WHERE i.nota IS NOT NULL
+        AND i.estado <> 'retirada'
+        AND ($1::uuid IS NULL OR i.periodo_id = $1)
         AND ($2::text IS NULL
              OR e.nombre ILIKE '%' || $2 || '%'
-             OR c.nombre ILIKE '%' || $2 || '%')`,
+             OR m.nombre ILIKE '%' || $2 || '%')`,
     [
       periodoId ?? null,
       busqueda?.trim() || null,
@@ -345,55 +275,6 @@ export async function resumenDeNotas({
   );
 }
 
-export type OpcionSimple = { id: string; nombre: string };
-
-/**
- * Los cursos donde se puede registrar una nota.
- *
- * Solo los activos: registrar en un curso finalizado es casi siempre un error
- * de dedo en el desplegable, y el que de verdad lo necesite tiene el estado del
- * curso a un clic en `/academico/cursos`.
- */
-export async function cursosParaNota(
-  docenteId: string | null,
-): Promise<OpcionSimple[]> {
-  return consultar<OpcionSimple>(
-    `SELECT id, nombre
-       FROM curso
-      WHERE estado = 'activo'
-        AND ($1::uuid IS NULL OR docente_usuario_id = $1)
-      ORDER BY nombre`,
-    [docenteId],
-  );
-}
-
-/**
- * Los estudiantes a los que se puede poner nota.
- *
- * Todos los activos, y no solo los que ya tienen alguna nota en el curso: la
- * primera nota de alguien tiene que poder ponerse, y una lista construida desde
- * `calificacion` dejaría fuera precisamente a quien todavía no tiene ninguna.
- */
-export async function estudiantesParaNota(): Promise<OpcionSimple[]> {
-  return consultar<OpcionSimple>(
-    `SELECT id, nombre
-       FROM estudiante
-      WHERE estado = 'activo'
-      ORDER BY nombre
-      LIMIT 500`,
-  );
-}
-
-/** Si la lista de notas llegó al tope. */
-export function hayMasNotasQueElTope(filas: readonly unknown[]): boolean {
-  return filas.length > TOPE_NOTAS;
-}
-
-/** Recorta la lista de notas al tope, dejando fuera la fila sonda. */
-export function recortarNotas<T>(filas: readonly T[]): T[] {
-  return filas.slice(0, TOPE_NOTAS);
-}
-
 /**
  * ────────────────────────────────────────────────────────────────────────────
  * HISTORIAL ACADÉMICO
@@ -408,8 +289,8 @@ export function recortarNotas<T>(filas: readonly T[]): T[] {
  * materia del catálogo no toca el historial de nadie, y por eso aquí no hay
  * ningún JOIN con `materia`.
  *
- * Es la otra mitad de las calificaciones: aquellas son del curso técnico y por
- * evaluación; estas son de la carrera y por cuatrimestre cerrado.
+ * Es la otra mitad de las calificaciones: aquellas son de 360 y por
+ * inscripción; estas son de la carrera y por cuatrimestre cerrado.
  * ────────────────────────────────────────────────────────────────────────────
  */
 

@@ -34,7 +34,6 @@ import {
   Wrench,
 } from "lucide-react";
 
-import type { TipoEstudiante } from "@/lib/expedientes";
 import type { Permiso, Rol } from "@/lib/rbac";
 import { tienePermiso } from "@/lib/rbac";
 
@@ -71,19 +70,6 @@ export type ItemNav = {
   icono: React.ComponentType<{ className?: string }>;
   /** Si se indica, la entrada solo se dibuja cuando el rol tiene el permiso. */
   permiso?: Permiso;
-  /**
-   * Si se indica, la entrada solo se dibuja para esos tipos de estudiante.
-   *
-   * Hay dos clases de estudiante y no comparten pantallas, porque no comparten
-   * tablas: el universitario (`estudiante.tipo = 'becado'`) cuelga de
-   * `inscripcion` → `materia`, y el de curso técnico (`regular`) de
-   * `calificacion` → `curso`. Una pantalla construida sobre `inscripcion` sale
-   * siempre vacía para el segundo, así que no se le ofrece.
-   *
-   * Solo tiene sentido dentro del menú del rol `estudiante`; en los demás se
-   * ignora.
-   */
-  tipos?: readonly TipoEstudiante[];
 };
 
 export type SeccionNav = {
@@ -131,12 +117,11 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         etiqueta: "courses",
         items: [
           {
-            etiqueta: "academicCourses",
-            href: "/academico/cursos",
-            icono: BookOpen,
+            etiqueta: "classes360",
+            href: "/academico/clases-360",
+            icono: Sparkles,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
-          { etiqueta: "grades", href: "/academico/calificaciones", icono: Star },
           { etiqueta: "history", href: "/academico/historial", icono: BarChart3 },
           {
             etiqueta: "preenrollment",
@@ -412,13 +397,10 @@ const MENU_ESTUDIANTE: AreaNav[] = [
     secciones: [
       {
         items: [
-          // Matrícula universitaria: vive en `inscripcion` → `materia`, que un
-          // estudiante de curso técnico no tiene.
           {
             etiqueta: "mySubjects",
             href: "/portal/estudiante/prematricula",
             icono: Library,
-            tipos: ["becado"],
           },
           // Las asignaciones cuelgan de la misma matrícula, así que van con
           // ella.
@@ -426,21 +408,16 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "virtualClassroom",
             href: "/portal/estudiante/aula-virtual",
             icono: MonitorPlay,
-            tipos: ["becado"],
           },
-          // Global Effect 360: las materias técnicas de la Fundación. Solo el
-          // becado universitario las cursa; el de curso técnico lleva sus
-          // propias métricas, y la base lo impone con un trigger (0027).
+          // Global Effect 360: las materias de la Fundación. Desde la 0047 son
+          // para todos, todas obligatorias, una por tanda.
           {
             etiqueta: "global360",
             href: "/portal/estudiante/global-360",
             icono: Sparkles,
-            tipos: ["becado"],
           },
-          // Sin `tipos` a propósito, y ahora sí para las dos clases: la
-          // pantalla lee las dos vías —`calificacion` → `curso` para el curso
-          // técnico y `historial_calificacion` para el universitario—, y ahí
-          // está el índice académico, que es lo que decide la beca.
+          // Ahí está el índice académico, que es lo que decide la beca, y las
+          // notas finales de 360.
           {
             etiqueta: "grades",
             href: "/portal/estudiante/calificaciones",
@@ -523,17 +500,11 @@ const MENU_DOCENTE: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "academicCourses",
-            href: "/academico/cursos",
-            icono: BookOpen,
+            etiqueta: "classes360",
+            href: "/academico/clases-360",
+            icono: Sparkles,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
-          {
-            etiqueta: "grades",
-            href: "/academico/calificaciones",
-            icono: Star,
-            permiso: "calificaciones.registrar",
-          },
           {
             etiqueta: "habitudesHub",
             href: "/habitudes",
@@ -697,21 +668,11 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
 };
 
 /**
- * Menú del rol, ya sin las entradas que su permiso no admite ni las que no son
- * de su clase de estudiante. Las secciones que se quedan sin ninguna entrada
+ * Menú del rol, ya sin las entradas que su permiso no admite. Las secciones que se quedan sin ninguna entrada
  * desaparecen, y las áreas que se quedan sin ninguna sección tampoco llegan al
  * raíl: un icono que abre un panel vacío es peor que no tener el icono.
- *
- * `tipoEstudiante` es `null` cuando el usuario todavía no está enlazado a una
- * ficha de `estudiante`. En ese caso no se filtra nada: la cuenta existe, la
- * ficha aún no, y cada pantalla ya sabe explicarlo con `AvisoSinFicha`.
- * Esconderle medio menú a quien acaba de ser dado de alta solo lo dejaría sin
- * saber qué hay.
  */
-export function menuDe(
-  rol: Rol,
-  tipoEstudiante: TipoEstudiante | null = null,
-): AreaNav[] {
+export function menuDe(rol: Rol): AreaNav[] {
   return MENU_POR_ROL[rol]
     .map((area) => ({
       ...area,
@@ -719,11 +680,7 @@ export function menuDe(
         .map((seccion) => ({
           ...seccion,
           items: seccion.items.filter(
-            (item) =>
-              (!item.permiso || tienePermiso(rol, item.permiso)) &&
-              (!item.tipos ||
-                !tipoEstudiante ||
-                item.tipos.includes(tipoEstudiante)),
+            (item) => !item.permiso || tienePermiso(rol, item.permiso),
           ),
         }))
         .filter((seccion) => seccion.items.length > 0),
@@ -747,12 +704,8 @@ export function esRutaActiva(ruta: string, href: string): boolean {
  * longitud, `/academico/materias` casaría con cualquier entrada que empiece
  * por `/academico`.
  */
-export function areaDeRuta(
-  rol: Rol,
-  ruta: string,
-  tipoEstudiante: TipoEstudiante | null = null,
-): AreaNav | null {
-  const candidatos = menuDe(rol, tipoEstudiante)
+export function areaDeRuta(rol: Rol, ruta: string): AreaNav | null {
+  const candidatos = menuDe(rol)
     .flatMap((area) =>
       itemsDeArea(area)
         .filter((item) => esRutaActiva(ruta, item.href))
@@ -767,12 +720,8 @@ export function areaDeRuta(
  * Clave de traducción del título de la página actual, buscando la ruta más
  * específica que case.
  */
-export function tituloDeRuta(
-  rol: Rol,
-  ruta: string,
-  tipoEstudiante: TipoEstudiante | null = null,
-): string | null {
-  const candidatos = menuDe(rol, tipoEstudiante)
+export function tituloDeRuta(rol: Rol, ruta: string): string | null {
+  const candidatos = menuDe(rol)
     .flatMap(itemsDeArea)
     .filter((item) => esRutaActiva(ruta, item.href))
     .sort((a, b) => b.href.length - a.href.length);
@@ -809,8 +758,7 @@ const PRIORIDAD_MOVIL = [
   "/calendario",
   "/expedientes",
   "/administrativo/tareas",
-  "/academico/calificaciones",
-  "/academico/cursos",
+  "/academico/clases-360",
   "/contabilidad/recibos",
   "/contabilidad/bancos",
 ];
@@ -834,14 +782,10 @@ const ETIQUETA_CORTA: Record<string, string> = {
  * El plan pedía "Perfil" como quinta, y se cambió por "Más" a conciencia: sin
  * ella, Calificaciones, Global Effect 360 y el chat no tendrían entrada en el
  * teléfono. El perfil sigue a un toque, en el menú del avatar de la barra de
- * arriba. El aula solo la tiene el becado; al de curso técnico le sale
- * Calificaciones en su lugar, que es lo suyo.
+ * arriba.
  */
-export function pestanasMoviles(
-  rol: Rol,
-  tipoEstudiante: TipoEstudiante | null = null,
-): PestanaMovil[] {
-  const items = menuDe(rol, tipoEstudiante).flatMap(itemsDeArea);
+export function pestanasMoviles(rol: Rol): PestanaMovil[] {
+  const items = menuDe(rol).flatMap(itemsDeArea);
   // Un objeto y no un `Map`: en este archivo `Map` es el icono de lucide.
   const porHref: Record<string, ItemNav> = Object.fromEntries(
     items.map((item) => [item.href, item]),
@@ -858,9 +802,7 @@ export function pestanasMoviles(
   if (rol === "estudiante") {
     const deseadas = [
       "/portal/estudiante",
-      porHref["/portal/estudiante/aula-virtual"]
-        ? "/portal/estudiante/aula-virtual"
-        : "/portal/estudiante/calificaciones",
+      "/portal/estudiante/aula-virtual",
       "/portal/estudiante/calendario",
       "/portal/estudiante/solicitudes",
     ];
