@@ -161,7 +161,7 @@ function Fila({
               "flex size-9 shrink-0 items-center justify-center rounded-lg",
               anuncio.activo
                 ? "bg-[#2096BA]/10 text-[#187a99]"
-                : "bg-slate-100 text-slate-500",
+                : "bg-muted text-muted-foreground",
             )}
           >
             <Sparkles className="size-4" />
@@ -181,7 +181,7 @@ function Fila({
               "text-[10px]",
               anuncio.activo
                 ? "bg-[#2096BA]/15 text-[#0a6a8a]"
-                : "bg-slate-100 text-slate-600",
+                : "bg-muted text-tinta-2",
             )}
           >
             {anuncio.activo ? t("active") : t("inactive")}

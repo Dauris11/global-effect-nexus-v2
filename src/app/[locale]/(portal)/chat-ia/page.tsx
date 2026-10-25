@@ -96,9 +96,9 @@ export default async function PaginaChatIA({
         </p>
       </div>
 
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <Lock className="mt-0.5 size-4 shrink-0 text-slate-500" />
-        <p className="text-xs text-slate-600">{t("privacy")}</p>
+      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
+        <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <p className="text-xs text-tinta-2">{t("privacy")}</p>
       </div>
 
       <Card>

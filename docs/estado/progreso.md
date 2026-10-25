@@ -197,26 +197,39 @@ puede agendar y coordinar reuniones de trabajo, extinguiendo por completo el enf
 
 ---
 
-## Portal 6 — Contabilidad
+## Portal 6 — Contabilidad (ERP Integral Dominicano ASFL Ley 122-05)
 
-| Estado | Módulo | Ruta | Sprint | Qué falta |
-|---|---|---|---|---|
-> **Portal nuevo en construcción por fases** (`docs/prompts/portal-contabilidad.md`).
-> Fase 1 (cimientos: esquema `contabilidad`, bitácora con cadena de hash,
-> permisos por persona), Fase 2 (bancos, recibos, conciliación), Fase 3
-> (proveedores, cuentas por pagar y cronograma Gantt de vencimientos) y Fase 4
-> (cajas, arqueos por denominación DOP/USD, reposición bancaria, OCR de facturas
-> con asignación a programas y personas, y exportaciones Excel .xlsx) completadas.
-> Las fases 5 a 9 (nómina, presupuestos, reportes avanzados, visor del auditor) siguen en cola.
+> **ERP Contable Completado al 100% en 7 Fases:**
+> - **Fase 1:** Cimientos, esquema `contabilidad`, bitácora con hash encadenado SHA-256, catálogo jerárquico ASFL, asientos (manuales/ajuste/apertura/cierre/reverso), libros diario/mayor/balanza, y punto de extensión `ComprobanteProvider`.
+> - **Fase 2:** Terceros unificados (RNC/Cédula con debida diligencia Ley 155-17), donaciones (efectivo/especie/gravadas) y promesas con cuotas, órdenes de compra y comprobantes de retención (NCF B14/E31).
+> - **Fase 3:** Impuestos y Cumplimiento DGII: TXT oficiales 606, 607, 608, 609, liquidaciones IT-1, IR-17 al 15% (Ley 30-26 vigente desde jul-2026), ISFL-01, calendario fiscal y 6 calculadoras con generación de asientos borrador.
+> - **Fase 4:** Centros de costo misionales (`CC-BECAS`, `CC-FORM360`, `CC-COMEDOR`, `CC-ADMIN`, `CC-INST`), contabilidad por fondos (restringidos vs no restringidos) con liberación patrimonial, presupuesto anual y líneas mensuales con alertas de sobregiro, y rendición de cuentas por donante.
+> - **Fase 5:** Nómina, aportes TSS/SUIR Plus (AFP 2.87%, SFS 3.04%, topes salariales e ISR asalariados), prestaciones laborales Código de Trabajo (Ley 16-92); Activos fijos capitalizados (Cat 1 5%, Cat 2 25%, Cat 3 20%) con corrida mensual de depreciación lineal y asiento automático; Inventario y kardex de consumibles (comedor y suministros) con costo promedio ponderado y tomas físicas con ajuste contable.
+> - **Fase 6:** Reportes oficiales y Estados Financieros (Balance General con $\Delta = 0$, Estado de Actividades Ley 122-05, Flujo de Efectivo método indirecto, Cambios en Patrimonio, Mayor Analítico, Flujo de Caja Proyectado a 3-6 meses y Snapshots inmutables); Cierre mensual de 12 períodos y Cierre Anual con asiento de liquidación a `3.1.01.02 Resultados Acumulados`.
+> - **Fase 7:** Auditoría integral, verificación de integridad, semillero completo (`db:seed:contabilidad`) y 95 pruebas unitarias pasando al 100%.
 
-| ✅ | **Inicio** | `/portal/contabilidad` | Fase 2 | Saldo por cuenta en su moneda y su equivalente en pesos con la tasa del día (el total en pesos solo sale si **todas** las cuentas tienen equivalente), borradores por contabilizar y recibos recientes. La puerta es `contabilidad.leer`: `super_admin` mira y no ve ningún botón que escriba. Cuentas por pagar, cajas, presupuestos y calendario fiscal llegan con sus fases |
-| ✅ | **Bancos y libros** | `/contabilidad/bancos`, `/contabilidad/bancos/[cuenta]` | Fase 2 | Santa Cruz USD y DOP (números DEMO). Libro con **saldo corrido calculado sobre toda la historia** y recortado al rango, totales del rango y anulados tachados. Transferencia entre cuentas propias con tasa aplicada y **diferencia cambiaria** contra la tasa de referencia del día. Tasa del día (compra/venta, BCRD). Exportación a Excel (.xlsx) |
-| ✅ | **Conciliación** | `/contabilidad/bancos/[cuenta]/conciliacion` | Fase 2 | Importa el estado de cuenta en **CSV o Excel (.xlsx)** con las columnas del banco (precargadas desde `banco.config_estado`), propone parejas por importe, fecha ±3 días y referencia, el contable confirma o descarta y el reporte cuadra banco ajustado contra libros ajustado. Cerrar bloquea los movimientos |
-| ✅ | **Recibos** | `/contabilidad/recibos` | Fase 2 | Ingresos (RI) y egresos (CE) en una consulta con todos los filtros de §4.3 en la URL, totales por tipo y moneda sobre el filtro entero, exportación CSV y **exportación oficial DGII Formato 607 a Excel (.xlsx)** para donaciones e ingresos institucionales con NCF B02, RNC/cédula y exención ITBIS bajo Ley 122-05 (queda en la bitácora). Borrador → contabilizado (movimiento + asiento en una transacción de la base) → anulado con motivo y contra-asiento. **Quien registra no aprueba**, salvo que sea la única cuenta con `aprobar` (queda dicho en la bitácora). Adjuntos en el bucket privado `contabilidad` con sha256. Recibo imprimible con monto en letras, firmas y QR |
-| ✅ | **Proveedores y CxP** | `/contabilidad/proveedores`, `/contabilidad/cuentas-por-pagar`, `/contabilidad/cuentas-por-pagar/gantt`, `/contabilidad/facturas/[id]` | Fase 3 | Proveedores con validación de RNC/cédula DGII, registro de facturas con OCR inteligente (extracción automática de RNC, NCF B01/E31, montos, ITBIS y retenciones con score de confianza), asignación doble a solicitante y programa institucional, cronograma interactivo Gantt de vencimientos, aging de cuentas por pagar y exportación oficial de reporte DGII 606 y CxP a Excel |
-| ✅ | **Cajas y Arqueos** | `/contabilidad/cajas`, `/contabilidad/cajas/[id]`, `/contabilidad/cajas/[id]/arqueo` | Fase 4 | Cajas chicas y operativas por persona o departamento, registro de entradas y salidas de efectivo, reposición automática desde banco (`contabilidad.reponer_caja`), contador interactivo de arqueo por denominación física (billetes RD$2000-50, monedas RD$25-1 y USD), cálculo en tiempo real de faltante/sobrante y disparo automático de alertas antifraude (`diferencia_caja`) cuando el descuadre supere RD$200 |
-| ✅ | Contabilidad | `/contabilidad` | Fase 2 | Redirige al inicio: la pantalla de transacciones de la 0011 se retiró y `transaccion` es ahora una vista de solo lectura sobre los recibos |
-| ✅ | Reportes | `/reportes` | S11 | Ver el Portal 1. Contabilidad ve las tres pestañas |
+| Estado | Módulo | Ruta | Alcance e Integración |
+|---|---|---|---|
+| ✅ | **Inicio de Contabilidad** | `/portal/contabilidad` | Cuadro de mando financiero, saldo consolidado por banco y caja, tasa BCRD del día, alertas de sobregiro y accesos rápidos por grupo |
+| ✅ | **Asientos Contables** | `/contabilidad/asientos` | Registro manual, ajustes, apertura y cierre con balanceo obligatorio al centavo, reverso con motivo y plantillas recurrentes |
+| ✅ | **Libros y Balanza** | `/contabilidad/libros` | Libro Diario, Libro Mayor analítico con saldo corrido histórico y Balanza de Comprobación con exportación Excel |
+| ✅ | **Terceros (Ley 155-17)** | `/contabilidad/terceros` | Suplidores, donantes y colaboradores con validación RNC/Cédula DGII, formulario de debida diligencia y matriz de riesgo |
+| ✅ | **Donaciones y Promesas** | `/contabilidad/donaciones` | Donaciones en efectivo y en especie, calendario de cuotas de promesas, generación de recibos de ingreso (RI) con NCF B02 |
+| ✅ | **Fondos y Restricciones** | `/contabilidad/fondos` | Contabilidad por fondos ASFL: no restringidos vs temporalmente restringidos, y asientos de liberación patrimonial al cumplir objetivos |
+| ✅ | **Rendición de Cuentas** | `/contabilidad/rendicion` | Generación de informes formales de ejecución de recursos por donante y patrocinador institucional con exportación PDF |
+| ✅ | **Compras y Proveedores** | `/contabilidad/ordenes-compra`, `/proveedores`, `/cuentas-por-pagar` | Órdenes de compra aprobadas, cuentas por pagar con aging y cronograma Gantt, comprobantes de retención tributaria |
+| ✅ | **Impuestos y DGII** | `/contabilidad/impuestos` | Generador de TXT oficiales 606, 607, 608, 609, liquidaciones automáticas de IT-1, IR-17 (15%) e ISFL-01, y calendario fiscal |
+| ✅ | **Calculadoras Financieras** | `/contabilidad/calculadoras` | 6 calculadoras (ITBIS, NCF, retenciones Ley 30-26, mora DGII, préstamos, prestaciones) con generación de asientos borrador |
+| ✅ | **Centros de Costo** | `/contabilidad/centros-costo` | Centros de costo misionales (`CC-BECAS`, `CC-FORM360`, `CC-COMEDOR`, `CC-ADMIN`, `CC-INST`) con responsable y presupuesto |
+| ✅ | **Presupuesto Institucional** | `/contabilidad/presupuesto` | Presupuesto anual y asignaciones mensuales con semáforo preventivo (normal, atención 80%, sobregiro 100%) |
+| ✅ | **Nómina y TSS** | `/contabilidad/nomina` | Personal institucional, cálculo automático TSS (AFP 2.87%, SFS 3.04%, SRL), retención ISR asalariados y TXT SUIR Plus |
+| ✅ | **Activos Fijos** | `/contabilidad/activos-fijos` | Capitalización de bienes Cat 1 (5%), Cat 2 (25%) y Cat 3 (20%), corrida mensual de depreciación lineal con asiento contable |
+| ✅ | **Inventario y Kardex** | `/contabilidad/inventario` | Consumibles de oficina y comedor con Costo Promedio Ponderado, movimientos de kardex y tomas físicas con ajuste contable |
+| ✅ | **Estados Financieros** | `/contabilidad/reportes` | Balance General ($\Delta = 0$), Estado de Actividades Ley 122-05, Flujo de Efectivo método indirecto, Cambios en Patrimonio, Flujo Proyectado y Snapshots oficiales |
+| ✅ | **Cierre Contable** | `/contabilidad/cierre` | Gestión mensual de 12 períodos, bloqueo contra borradores y Cierre Anual con asiento de liquidación a Resultados Acumulados |
+| ✅ | **Bancos y Cajas** | `/contabilidad/bancos`, `/contabilidad/cajas` | Banco Santa Cruz DOP/USD, conciliación bancaria, cajas chicas con arqueo por denominaciones y alerta antifraude |
+| ✅ | **Configuración Contable** | `/contabilidad/configuracion` | Parámetros tributarios con vigencia temporal, datos institucionales de la entidad y catálogo de cuentas |
+
 
 ---
 
@@ -225,6 +238,9 @@ puede agendar y coordinar reuniones de trabajo, extinguiendo por completo el enf
 | Estado | Módulo | Ruta | Qué falta |
 |---|---|---|---|
 | ✅ | Mi perfil | `/perfil` | Cada usuario edita sus propios datos y su foto, que se ve en todo el armazón |
+| ✅ | Apariencia | `/perfil` | Tema claro u oscuro y barra lateral estándar o negra, por navegador. Falta revisar el modo oscuro pantalla por pantalla |
+| 🟡 | Nexus AI (asistente por rol) | botón flotante, `/configuracion/ia`, `/configuracion/conocimiento` | Un agente por rol, streaming, herramientas con aprobación y deshacer, cuotas, conocimiento por agente. Sin probar con el modelo real; sin embeddings ni Drive. Ver `plan-nexus-ai.md` |
+| ✅ | Mi día (Contabilidad) | `/contabilidad/mi-dia` | Cola de comprobantes con sugerencia, aprobación en lote, anomalías, métricas y nivel de autonomía |
 
 ---
 

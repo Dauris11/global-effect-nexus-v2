@@ -216,7 +216,7 @@ export default async function PaginaGantt({
               id="periodo"
               name="periodo"
               defaultValue={ventana?.periodo_id ?? ""}
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
             >
               {periodos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -237,7 +237,7 @@ export default async function PaginaGantt({
               id="tramo"
               name="tramo"
               defaultValue={todo ? "todo" : "periodo"}
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
             >
               <option value="periodo">{t("gantt.spanTerm")}</option>
               <option value="todo">{t("gantt.spanAll")}</option>

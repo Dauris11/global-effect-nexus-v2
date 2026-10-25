@@ -5,7 +5,9 @@ import {
   AlertCircle,
   ArrowUpRight,
   Bot,
+  Check,
   HelpCircle,
+  Loader2,
   Lock,
   Mic,
   MicOff,
@@ -18,17 +20,43 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { MedidorConsumo, type ConsumoVisible } from "@/components/ia/medidor-consumo";
+import { TarjetaAccionIA, type TarjetaAccion } from "@/components/ia/tarjeta-accion";
 import { useRouter } from "@/i18n/navigation";
+import { leerFlujo } from "@/lib/ia-eventos";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import {
   enviarMensajeWidget,
   limpiarHistorialWidget,
   obtenerHistorialWidget,
+  sugerirNavegacion,
   type AccionSugerida,
   type MensajeWidget,
   type ModoAgente,
 } from "@/server/ia/asistente-global";
+import { miConsumoIA } from "@/server/ia/aprobaciones";
+
+/** Un paso de herramienta que el agente dio mientras respondía. */
+type PasoVisible = {
+  id: string;
+  herramienta: string;
+  estado: "ejecutando" | "ok" | "error";
+  resumen: string;
+};
+
+type MensajeLocal = MensajeWidget & {
+  pasos?: PasoVisible[];
+  tarjetas?: TarjetaAccion[];
+};
+
+/** Error del servidor → clave de `widgetIA`. Lo que no esté, es genérico. */
+const ERRORES: Record<string, string> = {
+  cuota: "errorCuota",
+  limite: "errorLimite",
+  inactivo: "errorInactivo",
+  mensajeLargo: "errorLargo",
+};
 
 // Definición de tipos para Web Speech API
 interface SpeechRecognitionEventLike extends Event {
@@ -72,7 +100,9 @@ export function WidgetFlotanteIA({
 
   const [abierto, setAbierto] = useState(false);
   const [modo, setModo] = useState<ModoAgente>("consultas");
-  const [mensajes, setMensajes] = useState<MensajeWidget[]>([]);
+  const [mensajes, setMensajes] = useState<MensajeLocal[]>([]);
+  const [enVivo, setEnVivo] = useState<MensajeLocal | null>(null);
+  const [consumo, setConsumo] = useState<ConsumoVisible | null>(null);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [textoEntrada, setTextoEntrada] = useState("");
@@ -101,6 +131,8 @@ export function WidgetFlotanteIA({
   const toggleAbierto = () => {
     setAbierto((prev) => {
       const nuevo = !prev;
+      if (nuevo) void miConsumoIA().then(setConsumo).catch(() => {});
+
       if (nuevo && !historialCargadoRef.current) {
         historialCargadoRef.current = true;
         setCargandoHistorial(true);
@@ -128,6 +160,7 @@ export function WidgetFlotanteIA({
   useEffect(() => {
     const handleAbrir = () => {
       setAbierto(true);
+      void miConsumoIA().then(setConsumo).catch(() => {});
       if (!historialCargadoRef.current) {
         historialCargadoRef.current = true;
         setCargandoHistorial(true);
@@ -238,20 +271,85 @@ export function WidgetFlotanteIA({
     setEnviando(true);
 
     try {
-      const res = await enviarMensajeWidget({
-        contenido: contenidoAEnviar,
-        modo,
-      });
+      // Una orden de navegación se resuelve al instante, sin modelo.
+      if (modo === "acciones" && (await sugerirNavegacion(contenidoAEnviar))) {
+        const res = await enviarMensajeWidget({ contenido: contenidoAEnviar, modo });
 
-      if (!res.ok || !res.mensaje) {
-        setErrorAlerta(t("errorGenerico"));
+        if (res.ok && res.mensaje) setMensajes((prev) => [...prev, res.mensaje!]);
+
         return;
       }
 
-      setMensajes((prev) => [...prev, res.mensaje!]);
+      const respuesta = await fetch("/api/ia/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contenido: contenidoAEnviar }),
+      });
+
+      if (!respuesta.ok) {
+        const { error } = (await respuesta.json().catch(() => ({ error: "fallo" }))) as {
+          error?: string;
+        };
+
+        // Sin clave de IA (desarrollo local) se usan las respuestas de respaldo.
+        if (error === "sin_clave") {
+          const res = await enviarMensajeWidget({ contenido: contenidoAEnviar, modo });
+
+          if (res.ok && res.mensaje) setMensajes((prev) => [...prev, res.mensaje!]);
+          else setErrorAlerta(t("errorGenerico"));
+
+          return;
+        }
+
+        setErrorAlerta(t(ERRORES[error ?? ""] ?? "errorGenerico"));
+
+        return;
+      }
+
+      let texto = "";
+      const pasos: PasoVisible[] = [];
+      const tarjetas: TarjetaAccion[] = [];
+      const pintar = () => setEnVivo({ id: "vivo", rol: "assistant", contenido: texto, hora: "", pasos: [...pasos], tarjetas: [...tarjetas] });
+
+      pintar();
+
+      await leerFlujo(respuesta, (evento) => {
+        if (evento.t === "delta") {
+          texto += evento.texto;
+        } else if (evento.t === "paso") {
+          const i = pasos.findIndex((p) => p.id === evento.id);
+          const paso = { id: evento.id, herramienta: evento.herramienta, estado: evento.estado, resumen: evento.resumen };
+
+          if (i >= 0) pasos[i] = paso;
+          else pasos.push(paso);
+        } else if (evento.t === "aprobacion") {
+          tarjetas.push({ accionId: evento.accionId, resumen: evento.resumen });
+        } else if (evento.t === "consumo") {
+          setConsumo({ usados: evento.usados, tope: evento.tope, aviso: evento.aviso });
+        } else if (evento.t === "error") {
+          setErrorAlerta(t("errorGenerico"));
+        }
+
+        pintar();
+      });
+
+      if (texto.trim() || tarjetas.length > 0 || pasos.length > 0) {
+        setMensajes((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            rol: "assistant",
+            contenido: texto.trim(),
+            hora: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            pasos,
+            tarjetas,
+          },
+        ]);
+      }
     } catch {
       setErrorAlerta(t("errorGenerico"));
     } finally {
+      setEnVivo(null);
       setEnviando(false);
     }
   };
@@ -280,15 +378,25 @@ export function WidgetFlotanteIA({
     if (usuario.rol === "contabilidad") {
       return modo === "acciones"
         ? [
+            t("sugerencias.contabilidadMiDia"),
             t("sugerencias.contabilidadCxp"),
-            t("sugerencias.contabilidadProveedores"),
             t("sugerencias.contabilidadBancos"),
           ]
         : [
+            t("sugerencias.contabilidadPendientes"),
+            t("sugerencias.contabilidadSenales"),
+            t("sugerencias.contabilidadGasto"),
             t("sugerencias.contabilidadRetenciones"),
-            t("sugerencias.contabilidadCxp"),
-            t("sugerencias.contabilidadBancos"),
           ];
+    }
+
+    // Personal operativo y Habitudes: lo que el asistente puede hacer por ellos.
+    if (usuario.rol === "colaborador" || usuario.rol === "habitudes" || usuario.rol === "dir_habitudes") {
+      return [
+        t("sugerencias.generalTareas"),
+        t("sugerencias.generalAgenda"),
+        t("sugerencias.generalCrearTarea"),
+      ];
     }
 
     if (usuario.rol === "docente") {
@@ -306,15 +414,15 @@ export function WidgetFlotanteIA({
     // Admin / Super Admin
     return modo === "acciones"
       ? [
+          t("sugerencias.generalCrearTarea"),
           t("sugerencias.adminDashboard"),
           t("sugerencias.adminTareas"),
-          t("sugerencias.adminProyectos"),
           t("sugerencias.adminAuditoria"),
         ]
       : [
-          t("sugerencias.adminDashboard"),
+          t("sugerencias.generalTareas"),
+          t("sugerencias.generalAgenda"),
           t("sugerencias.adminProyectos"),
-          t("sugerencias.adminTareas"),
         ];
   };
 
@@ -329,6 +437,7 @@ export function WidgetFlotanteIA({
     super_admin: t("rolSuperAdmin"),
     habitudes: t("rolHabitudes"),
     dir_habitudes: t("rolDirHabitudes"),
+    colaborador: t("rolColaborador"),
   }[usuario.rol];
 
   return (
@@ -409,6 +518,8 @@ export function WidgetFlotanteIA({
               </button>
             </div>
           </div>
+
+          {consumo && <MedidorConsumo consumo={consumo} />}
 
           {/* Selector de Modo: Consultas vs Acciones */}
           <div className="border-b border-linea bg-background px-3 py-2">
@@ -536,9 +647,13 @@ export function WidgetFlotanteIA({
                           : "bg-muted/70 text-tinta border border-linea",
                       )}
                     >
-                      <p className="break-words whitespace-pre-wrap text-[13.5px] leading-relaxed">
-                        {m.contenido}
-                      </p>
+                      {m.contenido && (
+                        <p className="break-words whitespace-pre-wrap text-[13.5px] leading-relaxed">
+                          {m.contenido}
+                        </p>
+                      )}
+
+                      <PasosYTarjetas pasos={m.pasos} tarjetas={m.tarjetas} />
 
                       {/* Tarjeta interactiva de acción ejecutable */}
                       {m.accion && (
@@ -576,15 +691,25 @@ export function WidgetFlotanteIA({
               })
             )}
 
-            {/* Indicador de pensamiento */}
+            {/* Respuesta en curso: el texto aparece a medida que se escribe. */}
             {enviando && (
               <div className="flex gap-2.5">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600">
                   <Bot className="size-3.5" />
                 </span>
-                <div className="flex items-center gap-1.5 rounded-2xl border border-linea bg-muted/60 px-3.5 py-2 text-xs text-tinta-2">
-                  <span className="size-1.5 animate-ping rounded-full bg-marca-600" />
-                  <span>{t("pensando")}</span>
+                <div className="max-w-[82%] rounded-2xl border border-linea bg-muted/60 px-3.5 py-2.5 text-xs text-tinta-2">
+                  {enVivo?.contenido ? (
+                    <p className="break-words whitespace-pre-wrap text-[13.5px] leading-relaxed text-tinta">
+                      {enVivo.contenido}
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <span className="size-1.5 animate-ping rounded-full bg-marca-600" />
+                      <span>{t("pensando")}</span>
+                    </div>
+                  )}
+
+                  <PasosYTarjetas pasos={enVivo?.pasos} tarjetas={enVivo?.tarjetas} />
                 </div>
               </div>
             )}
@@ -698,6 +823,40 @@ export function WidgetFlotanteIA({
           </form>
         </div>
       )}
+    </>
+  );
+}
+
+/** Lo que hizo el agente (pasos) y lo que propone (tarjetas de aprobación). */
+function PasosYTarjetas({
+  pasos,
+  tarjetas,
+}: {
+  pasos?: PasoVisible[];
+  tarjetas?: TarjetaAccion[];
+}) {
+  return (
+    <>
+      {pasos && pasos.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {pasos.map((paso) => (
+            <li key={paso.id} className="text-tinta-2 flex items-center gap-1.5 text-[11px]">
+              {paso.estado === "ejecutando" ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : paso.estado === "ok" ? (
+                <Check className="text-marca-600 size-3" />
+              ) : (
+                <AlertCircle className="size-3" />
+              )}
+              <span className="truncate">{paso.resumen}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tarjetas?.map((tarjeta) => (
+        <TarjetaAccionIA key={tarjeta.accionId} {...tarjeta} />
+      ))}
     </>
   );
 }

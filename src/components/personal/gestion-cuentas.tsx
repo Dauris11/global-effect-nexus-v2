@@ -136,7 +136,7 @@ function Fila({
             "text-[10px]",
             persona.activo
               ? "bg-[#2096BA]/15 text-[#187a99]"
-              : "bg-slate-100 text-slate-500",
+              : "bg-muted text-muted-foreground",
           )}
         >
           {persona.activo ? t("status.active") : t("status.inactive")}
@@ -157,7 +157,7 @@ function Fila({
               onChange={(evento) => evento.currentTarget.form?.requestSubmit()}
               disabled={cambiando}
               aria-label={t("changeRole")}
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 rounded-md border bg-white px-2 text-xs shadow-xs outline-none focus-visible:ring-[3px]"
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 rounded-md border bg-card px-2 text-xs shadow-xs outline-none focus-visible:ring-[3px]"
             >
               {roles.map((rol) => (
                 <option key={rol} value={rol}>
@@ -255,7 +255,7 @@ function FormularioAlta({
             id="cuenta-rol"
             name="rol"
             required
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           >
             {roles.map((rol) => (
               <option key={rol} value={rol}>
@@ -317,7 +317,7 @@ function Contrasena({
       <p className="text-sm font-semibold">{t("passwordTitle")}</p>
 
       <div className="flex flex-wrap items-center gap-2">
-        <code className="rounded-lg bg-white px-3 py-2 font-mono text-sm font-semibold tracking-wider">
+        <code className="rounded-lg bg-card px-3 py-2 font-mono text-sm font-semibold tracking-wider">
           {valor}
         </code>
 
@@ -392,7 +392,7 @@ function BotonCuenta({
       </Button>
 
       {muestraContrasena && estado.contrasena && (
-        <code className="mt-1 block rounded bg-white px-2 py-1 font-mono text-[11px] font-semibold">
+        <code className="mt-1 block rounded bg-card px-2 py-1 font-mono text-[11px] font-semibold">
           {estado.contrasena}
         </code>
       )}

@@ -77,7 +77,7 @@ export function MatrizProyectosRoles({
   };
 
   return (
-    <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+    <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-5 text-marca-500" />

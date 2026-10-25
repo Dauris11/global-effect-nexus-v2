@@ -266,22 +266,31 @@ Funcionalidades:
 
 - Estadísticas: becados, patrocinadores activos, aporte mensual total.
 
-## MÓDULO 14: CONTABILIDAD Y FINANZAS (EJE NEURÁLGICO)
+## MÓDULO 14: DEPARTAMENTO DE CONTABILIDAD (ERP DOMINICANO ASFL LEY 122-05)
 *Ruta: /portal/contabilidad, /contabilidad/* · Esquema: contabilidad*
 
-El departamento neurálgico que custodia las finanzas institucionales de la Fundación. Garantiza consistencia matemática absoluta para prevenir contingencias legales y tributarias ante la Dirección General de Impuestos Internos (DGII).
+El departamento neurálgico que custodia las finanzas institucionales de la Fundación. Opera como un ERP contable integral e independiente conforme al marco legal de la República Dominicana (Ley 122-05 de ASFL, Código Tributario y DGII, Ley 155-17 contra lavado de activos, Ley 30-26, TSS y Código de Trabajo Ley 16-92).
 
-Funcionalidades:
-- **Gestión Bancaria y Libros Auxiliares:** Cuentas comerciales (Banco Santa Cruz DOP y USD), libro con saldo corrido histórico sobre toda la línea de tiempo, transferencias entre cuentas propias con diferencial cambiario automatizado (tasas oficiales BCRD).
-- **Conciliación Bancaria Inteligente:** Carga de estados de cuenta en CSV y Excel (.xlsx) con adaptadores bancarios nativos, propuesta de emparejamiento por monto, fecha $\pm$ 3 días y referencia, y reporte formal de cuadre entre banco ajustado y libros ajustados.
-- **Recibos y Comprobantes:** Recibos de Ingreso (RI) y Comprobantes de Egreso (CE), contabilización atómica en transacción SQL con asientos contables balanceados (débitos = créditos), contra-asientos automáticos por anulación y recibo imprimible con monto en letras, firmas y código QR.
-- **Proveedores y Cuentas por Pagar:** Registro de proveedores con validación algorítmica de RNC (módulo 11) y Cédula (Luhn), cronograma Gantt interactivo de vencimientos y reporte de antigüedad de saldos (Aging).
-- **OCR Inteligente de Facturas de Proveedores:** Escaneo de comprobantes con IA, extracción de RNC, NCF (B01 y e-CF E31), fechas, subtotal, ITBIS 18% y retenciones con score de confianza, y trazabilidad en `extraccion_ocr`.
-- **Rendición de Facturas de Empleados:** Recepción directa de facturas y comprobantes fiscales remitidos por colaboradores institucionales desde sus flujos de trabajo; Contabilidad valida el NCF y lo imputa al programa correspondiente (Casa de Herramientas, Juan Bosch, Becas Universitarias, etc.) y a la persona responsable.
-- **Cajas Chicas y Operativas:** Apertura y control de cajas asignadas por persona o departamento (ej. `CJ-OP-01` Operaciones, `CJ-DIR-01` Dirección), registro de entradas/salidas y reposición automática desde banco (`reponer_caja`).
-- **Arqueos Interactivos de Caja:** Conteo físico por denominaciones dominicanas (billetes RD$2000-50, monedas RD$25-1 y USD), cálculo en tiempo real de faltante o sobrante y disparo automático de alertas antifraude (`diferencia_caja`) cuando el descuadre supere RD$200.
-- **Exportaciones e Importaciones Excel (.xlsx):** Generación oficial del reporte DGII 606 de compras y retenciones, libro mayor de bancos, estado de cuentas por pagar y plantilla de conciliación, estilizados con la identidad visual de la Fundación.
-- **Auditoría Inmutable:** Registro de cada operación en `contabilidad.bitacora` con encadenamiento de hash criptográfico SHA-256.
+Subsistemas y funcionalidades integradas:
+- **Cimientos y Asientos:** Asientos manuales, de ajuste, de apertura y cierre con balanceo obligatorio al centavo ($\sum \text{Debe} = \sum \text{Haber}$), reverso justificado, plantillas recurrentes y punto de extensión `ComprobanteProvider`.
+- **Libros y Balanza:** Libro Diario, Libro Mayor con saldo corrido histórico y Balanza de Comprobación con exportación a Excel (.xlsx).
+- **Gestión Bancaria y Conciliación:** Banco Santa Cruz DOP y USD, libro con saldo corrido histórico sobre toda la línea de tiempo, transferencias entre cuentas propias con diferencial cambiario automatizado (tasas oficiales BCRD), y conciliación bancaria con propuesta automática de emparejamiento.
+- **Cajas Chicas y Arqueos:** Cajas por departamento (`CJ-OP-01` Operaciones, `CJ-DIR-01` Dirección), reposición bancaria y arqueo interactivo por denominaciones dominicanas con alertas antifraude automáticas ante descuadres $\ge$ RD$200.
+- **Terceros y Debida Diligencia (Ley 155-17):** Registro unificado de donantes, proveedores y colaboradores con validación de RNC/cédula, matriz de riesgo de lavado de activos y formulario de debida diligencia.
+- **Donaciones y Promesas:** Donaciones en efectivo y especie (evaluadas a valor razonable), cronograma de cuotas de promesas por cobrar y emisión de recibos de ingreso (RI) con NCF B02.
+- **Contabilidad por Fondos ASFL:** Fondos no restringidos vs temporalmente restringidos (Becas, Comedor), con registro de liberaciones y reclasificación patrimonial al cumplir fines misionales.
+- **Rendición de Cuentas por Donante:** Informes oficiales de ejecución financiera filtrados por patrocinador institucional con exportación a PDF.
+- **Compras, Proveedores y CxP:** Órdenes de compra aprobadas, cuentas por pagar con aging y cronograma Gantt, OCR de facturas y emisión de comprobantes de retención tributaria.
+- **Impuestos y Formatos DGII:** Generador de archivos TXT oficiales 606, 607, 608 y 609, liquidaciones automáticas de IT-1, IR-17 (tasa 15 % Ley 30-26 vigente desde julio 2026) e ISFL-01, y calendario fiscal.
+- **Calculadoras Financieras:** 6 herramientas interactivas (ITBIS, NCF, retenciones Ley 30-26, mora DGII Arts. 251/252, amortización de préstamos y prestaciones laborales Ley 16-92) con generación de asientos contables borrador.
+- **Centros de Costo Misionales:** Centros de costo (`CC-BECAS`, `CC-FORM360`, `CC-COMEDOR`, `CC-ADMIN`, `CC-INST`) con responsable y presupuesto.
+- **Presupuesto Institucional:** Formulación anual y asignaciones mensuales con control de sobregiro y semáforo preventivo (normal, atención $\ge$ 80 %, sobregiro > 100 %).
+- **Nómina y TSS (SUIR Plus):** Planilla institucional, cálculo automático de retenciones TSS (AFP 2.87 %, SFS 3.04 %, SRL 1.10 %) e ISR asalariados, y exportación TXT SUIR Plus.
+- **Activos Fijos:** Capitalización en Categoría 1 (5 %), Categoría 2 (25 %) y Categoría 3 (20 %), y corrida mensual automática de depreciación lineal en línea recta con asiento contable.
+- **Inventario y Kardex:** Consumibles de oficina y comedor comunitario bajo método Costo Promedio Ponderado, registro de entradas/salidas y tomas físicas con ajuste contable.
+- **Estados Financieros Oficiales:** Balance General ($\Delta = 0$), Estado de Actividades Ley 122-05, Estado de Flujos de Efectivo (método indirecto), Estado de Cambios en Patrimonio, Mayor Analítico, Flujo de Caja Proyectado a 3-6 meses y Snapshots inmutables.
+- **Cierre Contable:** Gestión mensual de 12 períodos y Cierre Anual con asiento de liquidación saldando cuentas 4 y 5 contra `3.1.01.02 Resultados Acumulados`.
+- **Auditoría Criptográfica Inmutable:** Trazabilidad encadenada SHA-256 en `contabilidad.bitacora`.
 
 ## MÓDULO 15: SOLICITUDES, APROBACIONES Y RENDICIONES
 *Ruta: /administrativo/solicitudes · Tablas: solicitud, solicitud_paso*

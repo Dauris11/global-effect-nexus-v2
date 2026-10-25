@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
 import type { CategoriaActivo, EstadoActivo } from "@/lib/inventario";
@@ -80,6 +81,14 @@ export async function crearActivoAction(datos: DatosCrearActivo) {
       ) VALUES ($1, $2, 'creacion', $3, $4, $5, 'Alta inicial de activo en el sistema')`,
       [nuevoId, usuario.id, datos.ubicacion.trim(), datos.responsableId || null, datos.estado ?? "operativo"]
     );
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "activo.creado",
+      entidad: "inventario_activo",
+      entidadId: nuevoId,
+      datos: { codigo, nombre: datos.nombre.trim() },
+    });
 
     revalidatePath("/administrativo/inventario");
     return { ok: true, id: nuevoId, codigo };
@@ -225,11 +234,27 @@ export async function registrarAuditoriaQrAction(codigoOId: string, notas?: stri
  * Elimina o da de baja un activo.
  */
 export async function eliminarActivoAction(id: string) {
-  await requerirPermiso("inventario.eliminar");
+  const usuario = await requerirPermiso("inventario.eliminar");
+
+  // Se anota qué activo era ANTES de borrarlo: después solo queda un id.
+  const activo = await consultarUna<{ codigo: string; nombre: string }>(
+    "SELECT codigo, nombre FROM public.inventario_activo WHERE id = $1",
+    [id],
+  );
 
   await enTransaccion(async (cliente) => {
     await cliente.query("DELETE FROM public.inventario_activo WHERE id = $1", [id]);
   });
+
+  if (activo) {
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "activo.eliminado",
+      entidad: "inventario_activo",
+      entidadId: id,
+      datos: { codigo: activo.codigo, nombre: activo.nombre },
+    });
+  }
 
   revalidatePath("/administrativo/inventario");
   return { ok: true };

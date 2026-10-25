@@ -170,7 +170,7 @@ export default async function PaginaAcademicoHistorial({
             id="cuatrimestre"
             name="cuatrimestre"
             defaultValue={periodo ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             <option value="">{t("allTerms")}</option>
             {cuatrimestres.map((nombre) => (
@@ -337,7 +337,7 @@ function FilaEstudiante({
             </Badge>
           )}
           {fila.prueba > 0 && (
-            <Badge className="bg-slate-200 text-[10px] text-slate-700">
+            <Badge className="bg-slate-200 text-[10px] text-tinta-2">
               {t("history.onProbation", { count: fila.prueba })}
             </Badge>
           )}
@@ -419,7 +419,7 @@ function Detalle({
 
           <span className="min-w-0 flex-1 truncate">{materia.materia}</span>
 
-          <Badge className="bg-slate-100 text-[10px] text-slate-600">
+          <Badge className="bg-muted text-[10px] text-tinta-2">
             {t(`history.recordStatus.${materia.estado}` as never)}
           </Badge>
 
@@ -432,7 +432,7 @@ function Detalle({
               "flex size-6 shrink-0 items-center justify-center rounded border text-[10px] font-bold",
               esLetra(materia.nota_letra)
                 ? colorDeLetra(materia.nota_letra)
-                : "border-slate-200 bg-slate-50 text-slate-500",
+                : "border-linea bg-muted text-muted-foreground",
             )}
           >
             {materia.nota_letra}

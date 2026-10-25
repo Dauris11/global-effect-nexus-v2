@@ -32,7 +32,7 @@ import {
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
 const SELECT =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -177,9 +177,9 @@ export default async function PaginaAuditoria({
 
       {/* El aviso sobre el historial clínico va en la pantalla, no solo en el
           código: quien audita tiene que saber qué NO está viendo. */}
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <Lock className="mt-0.5 size-4 shrink-0 text-slate-500" />
-        <p className="text-xs text-slate-600">{t("clinicalNotice")}</p>
+      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
+        <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <p className="text-xs text-tinta-2">{t("clinicalNotice")}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -304,6 +304,13 @@ export async function actualizarExpediente(
     return { estado: "error" };
   }
 
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "expediente.editado",
+    entidad: "estudiante",
+    entidadId: id,
+  });
+
   revalidatePath("/[locale]/expedientes", "page");
   revalidatePath("/[locale]/expedientes/[id]", "page");
 

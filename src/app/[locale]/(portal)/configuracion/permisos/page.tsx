@@ -35,7 +35,7 @@ export default async function PaginaPermisosUsuarios({
         <div>
           <Link
             href="/configuracion"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#2096BA] transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-[#2096BA] transition-colors mb-2"
           >
             <ArrowLeft className="size-3.5" />
             Volver a Configuración
@@ -45,17 +45,17 @@ export default async function PaginaPermisosUsuarios({
               <KeyRound className="size-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl font-bold tracking-tight text-tinta dark:text-slate-100">
                 Gobernanza de Permisos Individuales
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Ajuste fino de permisos por usuario mediante excepciones de base de datos (`usuario_permiso`).
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 max-w-sm">
+        <div className="flex items-center gap-2 text-xs bg-muted dark:bg-slate-800 text-tinta-2 dark:text-slate-300 px-3 py-2 rounded-xl border border-linea dark:border-slate-700 max-w-sm">
           <ShieldAlert className="size-4 shrink-0 text-[#2096BA]" />
           <span>
             Las excepciones ganan sobre el rol base del usuario y quedan registradas en la bitácora de auditoría.

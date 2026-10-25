@@ -143,7 +143,7 @@ export function RegistroVisitaLiceo({
   };
 
   return (
-    <Card className="border-linea-fuerte bg-white shadow-xs">
+    <Card className="border-linea-fuerte bg-card shadow-xs">
       <CardHeader className="border-b border-linea pb-4">
         <CardTitle className="flex items-center gap-2 text-base font-bold text-tinta">
           <Camera className="size-5 text-marca-600" />
@@ -166,7 +166,7 @@ export function RegistroVisitaLiceo({
                 id="liceo_id"
                 value={liceoId}
                 onChange={(e) => setLiceoId(e.target.value)}
-                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-md border bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-md border bg-card px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
               >
                 {liceos.map((lic) => (
                   <option key={lic.id} value={lic.id}>
@@ -215,7 +215,7 @@ export function RegistroVisitaLiceo({
               <select
                 value={tanda}
                 onChange={(e) => setTanda(e.target.value)}
-                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-md border bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-md border bg-card px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
               >
                 <option value="matutina">{t("shiftMorning")}</option>
                 <option value="vespertina">{t("shiftAfternoon")}</option>

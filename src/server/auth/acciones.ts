@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 
 import { redirigir } from "@/i18n/navigation";
+import { registrar } from "@/lib/auditoria";
 import { obtenerUsuarioActual } from "@/lib/auth";
 import { PORTAL_POR_ROL } from "@/lib/rbac";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -41,7 +42,18 @@ export async function iniciarSesion(
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) return { error: "invalidCredentials" };
+  if (error) {
+    // Sin cuenta no hay autor: queda el correo intentado, recortado. Sirve para
+    // ver quién prueba claves, y solo lo ve quien audita.
+    await registrar({
+      usuarioId: null,
+      accion: "sesion.fallida",
+      entidad: "sesion",
+      datos: { email: email.slice(0, 80).toLowerCase() },
+    });
+
+    return { error: "invalidCredentials" };
+  }
 
   const usuario = await obtenerUsuarioActual();
 
@@ -49,6 +61,13 @@ export async function iniciarSesion(
     await supabase.auth.signOut();
     return { error: "notRegistered" };
   }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "sesion.iniciada",
+    entidad: "sesion",
+    datos: { rol: usuario.rol },
+  });
 
   // El portal de destino lo decide el rol, no la puerta por la que se entró.
   revalidatePath("/", "layout");
@@ -65,6 +84,12 @@ export async function iniciarSesion(
 export async function cerrarSesion() {
   const locale = await getLocale();
   const supabase = await crearClienteServidor();
+  const usuario = await obtenerUsuarioActual();
+
+  // Antes de cerrar: después ya no se sabe quién era.
+  if (usuario) {
+    await registrar({ usuarioId: usuario.id, accion: "sesion.cerrada", entidad: "sesion" });
+  }
 
   await supabase.auth.signOut();
 

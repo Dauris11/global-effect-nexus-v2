@@ -67,7 +67,7 @@ export function TarjetaSolicitud({
       : t(`step.error.${estado.estado}` as never);
 
   return (
-    <li className="rounded-xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
+    <li className="rounded-xl border border-linea/80 bg-card shadow-xs transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
       <button
         type="button"
         onClick={() => setAbierta((valor) => !valor)}
@@ -135,9 +135,9 @@ export function TarjetaSolicitud({
       </button>
 
       {abierta && (
-        <div className="space-y-4 border-t border-slate-100 px-4 pt-3 pb-4 dark:border-slate-800">
+        <div className="space-y-4 border-t border-linea px-4 pt-3 pb-4 dark:border-slate-800">
           {solicitud.detalle && (
-            <p className="text-sm whitespace-pre-line text-slate-700 dark:text-slate-300">
+            <p className="text-sm whitespace-pre-line text-tinta-2 dark:text-slate-300">
               {solicitud.detalle}
             </p>
           )}
@@ -157,14 +157,14 @@ export function TarjetaSolicitud({
           )}
 
           {/* Línea de tiempo: cada paso con quién, cuándo y por qué. */}
-          <ol className="relative space-y-3 border-l border-slate-200 pl-4 dark:border-slate-800">
+          <ol className="relative space-y-3 border-l border-linea pl-4 dark:border-slate-800">
             {solicitud.pasos.map((paso) => {
               const visual = visualDeSolicitud(paso.estado_nuevo);
               const IconoPaso = visual.icono;
 
               return (
                 <li key={paso.id} className="relative">
-                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-white text-[#187a99] dark:bg-slate-950">
+                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-card text-[#187a99] dark:bg-slate-950">
                     <IconoPaso className="size-3.5" />
                   </span>
                   <p className="text-xs font-semibold">

@@ -23,7 +23,8 @@ export async function registrar({
   entidadId,
   datos,
 }: {
-  usuarioId: string;
+  /** `null` cuando no hay cuenta: un intento de acceso fallido no tiene autor. */
+  usuarioId: string | null;
   /** Verbo en pasado y en minúsculas: `cita.completada`, `nota.creada`. */
   accion: string;
   /** Tabla afectada, tal como se llama en la base. */

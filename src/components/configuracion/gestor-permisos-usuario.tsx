@@ -101,9 +101,9 @@ export function GestorPermisosUsuario({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Columna Izquierda: Directorio de Usuarios */}
       <div className="lg:col-span-4 space-y-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs">
+        <div className="bg-card dark:bg-slate-900 rounded-2xl border border-linea dark:border-slate-800 p-4 shadow-xs">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-sm flex items-center gap-2 text-slate-800 dark:text-slate-200">
+            <h3 className="font-semibold text-sm flex items-center gap-2 text-tinta dark:text-slate-200">
               <Users className="size-4 text-[#2096BA]" />
               Usuarios del Sistema ({usuariosFiltrados.length})
             </h3>
@@ -115,7 +115,7 @@ export function GestorPermisosUsuario({
               value={busquedaUsuario}
               onChange={(e) => setBusquedaUsuario(e.target.value)}
               placeholder="Buscar por nombre, email o rol..."
-              className="pl-8 text-xs h-9 rounded-xl border-slate-200 dark:border-slate-800"
+              className="pl-8 text-xs h-9 rounded-xl border-linea dark:border-slate-800"
             />
           </div>
 
@@ -132,16 +132,16 @@ export function GestorPermisosUsuario({
                   className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between border cursor-pointer ${
                     esSeleccionado
                       ? "bg-[#2096BA]/10 border-[#2096BA]/40 shadow-xs"
-                      : "bg-slate-50/60 dark:bg-slate-800/40 border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                      : "bg-muted/60 dark:bg-slate-800/40 border-transparent hover:border-linea dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="min-w-0 pr-2">
-                    <p className="font-medium text-xs text-slate-900 dark:text-slate-100 truncate">
+                    <p className="font-medium text-xs text-tinta dark:text-slate-100 truncate">
                       {u.nombre}
                     </p>
-                    <p className="text-[11px] text-slate-500 truncate">{u.email}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[10px] font-mono bg-slate-200/60 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">
+                      <span className="text-[10px] font-mono bg-slate-200/60 dark:bg-slate-700 px-1.5 py-0.5 rounded text-tinta-2 dark:text-slate-300">
                         {u.rol}
                       </span>
                       {tieneExcepciones && (
@@ -161,19 +161,19 @@ export function GestorPermisosUsuario({
       {/* Columna Derecha: Matriz de Permisos del Usuario Seleccionado */}
       <div className="lg:col-span-8 space-y-4">
         {usuarioActual ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-5">
+          <div className="bg-card dark:bg-slate-900 rounded-2xl border border-linea dark:border-slate-800 p-5 shadow-xs space-y-5">
             {/* Cabecera del Usuario */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-linea dark:border-slate-800">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-base font-bold text-tinta dark:text-slate-100">
                     {usuarioActual.nombre}
                   </h2>
                   <Badge variant="outline" className="text-xs">
                     Rol base: {usuarioActual.rol}
                   </Badge>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">{usuarioActual.email}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{usuarioActual.email}</p>
               </div>
 
               {/* Input de Motivo para Auditoría */}
@@ -183,7 +183,7 @@ export function GestorPermisosUsuario({
                   value={motivoInput}
                   onChange={(e) => setMotivoInput(e.target.value)}
                   placeholder="Motivo de la excepción (auditoría)..."
-                  className="h-8 w-full sm:w-64 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs outline-none focus:border-[#2096BA]"
+                  className="h-8 w-full sm:w-64 px-3 rounded-lg border border-linea dark:border-slate-700 bg-muted dark:bg-slate-950 text-xs outline-none focus:border-[#2096BA]"
                 />
               </div>
             </div>
@@ -216,7 +216,7 @@ export function GestorPermisosUsuario({
                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                     filtroModulo === mod
                       ? "bg-[#2096BA] text-white shadow-xs"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                      : "bg-muted dark:bg-slate-800 text-tinta-2 dark:text-slate-400 hover:bg-slate-200"
                   }`}
                 >
                   {mod === "todos" ? "Todos los Módulos" : mod}
@@ -239,15 +239,15 @@ export function GestorPermisosUsuario({
                         ? excepcion.concedido
                           ? "bg-[#1E9E6A]/5 border-[#1E9E6A]/30"
                           : "bg-[#B4342B]/5 border-[#B4342B]/30"
-                        : "bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800"
+                        : "bg-muted/60 dark:bg-slate-800/40 border-linea/80 dark:border-slate-800"
                     }`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <span className="font-mono text-xs font-bold text-tinta dark:text-slate-200">
                           {perm.codigo}
                         </span>
-                        <span className="text-[10px] text-slate-500 bg-slate-200/70 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-muted-foreground bg-slate-200/70 dark:bg-slate-700 px-1.5 py-0.5 rounded">
                           {perm.modulo}
                         </span>
 
@@ -262,20 +262,20 @@ export function GestorPermisosUsuario({
                             </span>
                           )
                         ) : tienePorRol ? (
-                          <span className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <Check className="size-3 text-slate-500" /> Heredado del Rol
+                          <span className="text-[10px] text-tinta-2 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Check className="size-3 text-muted-foreground" /> Heredado del Rol
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800/40 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] text-slate-400 bg-muted dark:bg-slate-800/40 px-2 py-0.5 rounded-full">
                             No concedido
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                      <p className="text-xs text-tinta-2 dark:text-slate-400 mt-1">
                         {perm.descripcion}
                       </p>
                       {excepcion?.motivo && (
-                        <p className="text-[10px] text-slate-500 italic mt-0.5">
+                        <p className="text-[10px] text-muted-foreground italic mt-0.5">
                           Motivo: {excepcion.motivo}
                         </p>
                       )}
@@ -314,7 +314,7 @@ export function GestorPermisosUsuario({
                           disabled={isPending}
                           onClick={() => cambiarPermiso(perm.codigo, null)}
                           title="Eliminar excepción y volver a lo que determine su rol"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-linea dark:border-slate-700 text-tinta-2 dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
                           <RotateCcw className="size-3.5" />
                           Restablecer
@@ -327,7 +327,7 @@ export function GestorPermisosUsuario({
             </div>
           </div>
         ) : (
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
+          <div className="bg-muted dark:bg-slate-900 rounded-2xl border border-linea dark:border-slate-800 p-12 text-center text-muted-foreground">
             Selecciona un usuario a la izquierda para gestionar sus excepciones de permisos.
           </div>
         )}

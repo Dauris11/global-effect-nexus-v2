@@ -28,7 +28,7 @@ import {
 import type { BecadoConPatrocinio } from "@/server/patrocinadores/consultas";
 
 const SELECT =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
 type PatrocinadorOpcion = {
   id: string;
@@ -179,7 +179,7 @@ function Fila({
               </p>
             </>
           ) : (
-            <Badge className="bg-slate-100 text-[10px] text-slate-600">
+            <Badge className="bg-muted text-[10px] text-tinta-2">
               {t("grants.none")}
             </Badge>
           )}

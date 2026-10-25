@@ -63,7 +63,7 @@ export function GaleriaEvidencias({
             "rounded-full px-3 py-1.5 text-xs font-semibold transition-all active:scale-95",
             liceoFiltro === "todos"
               ? "bg-marca-600 text-white"
-              : "border border-linea-fuerte bg-white text-tinta-2 hover:bg-muted/60",
+              : "border border-linea-fuerte bg-card text-tinta-2 hover:bg-muted/60",
           )}
         >
           {t("catAll")} ({visitas.length})
@@ -79,7 +79,7 @@ export function GaleriaEvidencias({
                 "rounded-full px-3 py-1.5 text-xs font-semibold transition-all active:scale-95",
                 liceoFiltro === lic.id
                   ? "bg-marca-600 text-white"
-                  : "border border-linea-fuerte bg-white text-tinta-2 hover:bg-muted/60",
+                  : "border border-linea-fuerte bg-card text-tinta-2 hover:bg-muted/60",
               )}
             >
               {lic.nombre} ({cuenta})
@@ -102,7 +102,7 @@ export function GaleriaEvidencias({
           {visitasFiltradas.map((visita) => (
             <Card
               key={visita.id}
-              className="border-linea-fuerte bg-white p-5 shadow-xs transition-shadow hover:shadow-md"
+              className="border-linea-fuerte bg-card p-5 shadow-xs transition-shadow hover:shadow-md"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">

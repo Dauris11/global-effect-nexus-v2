@@ -5,6 +5,7 @@ import { Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { CajonAccionesRapidas } from "@/components/layout/cajon-acciones-rapidas";
+import { useOcultos } from "@/components/layout/visibilidad";
 import { Link, usePathname } from "@/i18n/navigation";
 import { esRutaActiva, pestanasMoviles, type PestanaMovil } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
@@ -30,7 +31,8 @@ export function BarraInferior({
   const [accionesRapidasAbiertas, setAccionesRapidasAbiertas] = useState(false);
   const t = useTranslations("nav");
   const ruta = usePathname();
-  const pestanas = pestanasMoviles(rol);
+  const ocultos = useOcultos();
+  const pestanas = pestanasMoviles(rol, ocultos);
 
   const activa = pestanas
     .filter((p) => p.tipo === "enlace" && esRutaActiva(ruta, p.href))

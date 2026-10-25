@@ -36,7 +36,7 @@ import type {
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
 const SELECT =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
 /**
  * Tablero de tareas: tres columnas y arrastrar para mover.
@@ -294,7 +294,7 @@ function Tarjeta({
         {/* Solo se marca «todo el equipo»: es la excepción. `asignados` es lo
             normal y ponerle insignia a cada tarjeta sería ruido. */}
         {tarea.visibilidad === "todos" && (
-          <Badge className="bg-slate-100 text-[10px] text-slate-600">
+          <Badge className="bg-muted text-[10px] text-tinta-2">
             {t("visibility.todos")}
           </Badge>
         )}

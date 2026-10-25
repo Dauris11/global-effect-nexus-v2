@@ -187,7 +187,7 @@ export function HubRecursos({
               "inline-flex min-h-[38px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all active:scale-95",
               categoriaFiltro === cat.id
                 ? "bg-marca-600 text-white shadow-xs"
-                : "border border-linea-fuerte bg-white text-tinta-2 hover:bg-muted/60",
+                : "border border-linea-fuerte bg-card text-tinta-2 hover:bg-muted/60",
             )}
           >
             {cat.etiqueta}
@@ -213,7 +213,7 @@ export function HubRecursos({
             return (
               <Card
                 key={rec.id}
-                className="flex flex-col justify-between border-linea-fuerte bg-white p-5 shadow-xs transition-shadow hover:shadow-md"
+                className="flex flex-col justify-between border-linea-fuerte bg-card p-5 shadow-xs transition-shadow hover:shadow-md"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -287,7 +287,7 @@ export function HubRecursos({
                   id="categoria"
                   name="categoria"
                   defaultValue="diapositiva"
-                  className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                  className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-card px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
                 >
                   <option value="diapositiva">{t("catSlides")}</option>
                   <option value="guia_facilitador">{t("catGuides")}</option>

@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import {
   ArrowRight,
   Info,
+  Activity,
+  BookOpen,
+  Cpu,
+  Eye,
   KeyRound,
   Megaphone,
   ScrollText,
@@ -18,6 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import { menuDe, itemsDeArea } from "@/lib/nav";
+import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import { CUADRO, TARJETA } from "@/lib/paleta";
 import {
   PERMISOS,
@@ -71,11 +76,14 @@ export default async function PaginaConfiguracion({
 
   const usuario = await requerirRol(["admin", "super_admin"]);
 
-  const [t, tAnuncios, tAudit, tRoles, cuentas, cifras] = await Promise.all([
+  const [t, tAnuncios, tAudit, tRoles, tIA, tActividad, tVis, cuentas, cifras] = await Promise.all([
     getTranslations({ locale, namespace: "settings" }),
     getTranslations({ locale, namespace: "announcements" }),
     getTranslations({ locale, namespace: "audit" }),
     getTranslations({ locale, namespace: "roles" }),
+    getTranslations({ locale, namespace: "iaAdmin" }),
+    getTranslations({ locale, namespace: "actividad" }),
+    getTranslations({ locale, namespace: "visibilidad" }),
     cuentasDelSistema(),
     cifrasDelSistema(),
   ]);
@@ -88,6 +96,24 @@ export default async function PaginaConfiguracion({
       titulo: tAnuncios("title"),
       descripcion: tAnuncios("desc"),
       soloMaestro: false,
+    },
+    {
+      // Qué ve cada rol: solo el administrador maestro.
+      permiso: "usuarios.administrar" as const,
+      href: "/configuracion/visibilidad",
+      icono: Eye,
+      titulo: tVis("title"),
+      descripcion: tVis("subtitle"),
+      soloMaestro: true,
+    },
+    {
+      // Quién hizo qué y a qué hora, con gráficas: solo del administrador maestro.
+      permiso: "usuarios.administrar" as const,
+      href: "/configuracion/actividad",
+      icono: Activity,
+      titulo: tActividad("title"),
+      descripcion: tActividad("subtitle"),
+      soloMaestro: true,
     },
     {
       // El visor de auditoría es solo del administrador maestro: enseña lo que
@@ -108,6 +134,22 @@ export default async function PaginaConfiguracion({
       soloMaestro: true,
     },
     {
+      permiso: "ia.administrar" as const,
+      href: "/configuracion/ia",
+      icono: Cpu,
+      titulo: tIA("title"),
+      descripcion: tIA("subtitle"),
+      soloMaestro: false,
+    },
+    {
+      permiso: "ia.administrar" as const,
+      href: "/configuracion/conocimiento",
+      icono: BookOpen,
+      titulo: tIA("knowledge.title"),
+      descripcion: tIA("knowledge.subtitle"),
+      soloMaestro: false,
+    },
+    {
       permiso: "usuarios.administrar" as const,
       href: "/administrativo/personal",
       icono: UserCog,
@@ -123,7 +165,7 @@ export default async function PaginaConfiguracion({
 
   // Los módulos que ofrece el menú de esta cuenta. Sale de `menuDe`, igual que
   // el mapa del sitio: una cifra de "módulos" escrita a mano se queda vieja.
-  const modulos = menuDe(usuario.rol).flatMap(itemsDeArea).length;
+  const modulos = menuDe(usuario.rol, new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu)).flatMap(itemsDeArea).length;
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -239,7 +281,7 @@ export default async function PaginaConfiguracion({
                           "text-[10px]",
                           cuenta.activo
                             ? "bg-[#2096BA]/15 text-[#187a99]"
-                            : "bg-slate-100 text-slate-600",
+                            : "bg-muted text-tinta-2",
                         )}
                       >
                         {cuenta.activo
@@ -277,9 +319,9 @@ export default async function PaginaConfiguracion({
       </Card>
 
       {/* Lo que falta, dicho aquí y no en un cartel de "en construcción". */}
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <Info className="mt-0.5 size-4 shrink-0 text-slate-500" />
-        <p className="text-xs text-slate-600">{t("parametersNotice")}</p>
+      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
+        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <p className="text-xs text-tinta-2">{t("parametersNotice")}</p>
       </div>
     </div>
   );

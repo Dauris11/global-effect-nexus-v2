@@ -698,13 +698,13 @@ export function CamposExpediente({
             <input type="hidden" name="longitud" value={longitud != null ? String(longitud) : ""} />
             <input type="hidden" name="municipio" value={municipio} />
 
-            <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-linea dark:border-slate-800">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <span className="text-xs font-bold text-tinta dark:text-slate-200 flex items-center gap-1.5">
                   <MapPin className="size-3.5 text-[#2096BA]" />
                   Ubicación de Vivienda en la Provincia de La Vega
                 </span>
-                <span className="text-[11px] text-slate-500 italic">
+                <span className="text-[11px] text-muted-foreground italic">
                   {soloLectura
                     ? "Coordenadas fijadas en La Vega"
                     : "Haz clic o arrastra el pin para georreferenciar el hogar del estudiante"}

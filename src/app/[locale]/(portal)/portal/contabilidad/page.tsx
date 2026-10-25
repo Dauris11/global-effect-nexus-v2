@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Info, Landmark, Plus } from "lucide-react";
+import { ArrowRight, Info, Landmark, Plus, Sun } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Monto } from "@/components/contabilidad/comun";
@@ -11,6 +11,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
+import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import { formatearMonto, sumarMontos } from "@/lib/contabilidad/formato";
 import { GRUPOS_CONTABLES, modulosDeGrupo } from "@/lib/contabilidad/modulos";
 import { claveDia, fechaCorta } from "@/lib/fechas";
@@ -53,8 +54,9 @@ export default async function PortalContabilidad({
   const idioma = locale === "en" ? "en" : "es";
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
+  const [t, tMiDia, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.inicio" }),
+    getTranslations({ locale, namespace: "miDia" }),
     getTranslations({ locale, namespace: "contab" }),
     cuentasConSaldo(),
     tasaVigente(),
@@ -62,6 +64,7 @@ export default async function PortalContabilidad({
     recibos(leerFiltroRecibos({}), 5),
   ]);
 
+  const fueraDelMenu = new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu);
   const puede = (permiso: Parameters<typeof usuarioTienePermiso>[1]) =>
     usuarioTienePermiso(usuario, permiso);
 
@@ -80,7 +83,9 @@ export default async function PortalContabilidad({
 
   const grupos = GRUPOS_CONTABLES.map((grupo) => ({
     grupo,
-    modulos: modulosDeGrupo(grupo).filter((modulo) => !modulo.permiso || puede(modulo.permiso)),
+    modulos: modulosDeGrupo(grupo).filter(
+      (modulo) => (!modulo.permiso || puede(modulo.permiso)) && !fueraDelMenu.has(modulo.href),
+    ),
   })).filter((grupo) => grupo.modulos.length > 0);
 
   const activas = cuentas.filter((c) => c.estado === "activa");
@@ -98,14 +103,23 @@ export default async function PortalContabilidad({
         titulo={t("titulo")}
         subtitulo={t("subtitulo")}
         acciones={
-          usuarioTienePermiso(usuario, "contabilidad.registrar") ? (
-            <Button asChild>
-              <Link href="/contabilidad/recibos/nuevo">
-                <Plus className="size-4" />
-                {t("nuevoRecibo")}
+          <>
+            {/* La cola de decisiones de hoy es lo primero que se busca aquí. */}
+            <Button asChild variant="outline">
+              <Link href="/contabilidad/mi-dia">
+                <Sun className="size-4" />
+                {tMiDia("title")}
               </Link>
             </Button>
-          ) : null
+            {usuarioTienePermiso(usuario, "contabilidad.registrar") && (
+              <Button asChild>
+                <Link href="/contabilidad/recibos/nuevo">
+                  <Plus className="size-4" />
+                  {t("nuevoRecibo")}
+                </Link>
+              </Button>
+            )}
+          </>
         }
       />
 

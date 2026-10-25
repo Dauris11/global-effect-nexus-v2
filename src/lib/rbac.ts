@@ -28,6 +28,8 @@ export const ROLES = [
   "habitudes",
   // Director de Habitudes (DH): supervisión pedagógica, monitoreo de profesores y liceos en La Vega
   "dir_habitudes",
+  // Personal operativo y de apoyo esencial (choferes, mantenimiento, cocina, auxiliares)
+  "colaborador",
 ] as const;
 
 export type Rol = (typeof ROLES)[number];
@@ -109,6 +111,7 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   contabilidad: "/portal/contabilidad",
   habitudes: "/habitudes",
   dir_habitudes: "/habitudes",
+  colaborador: "/portal/colaborador",
 };
 
 /** El único acento del sistema: azul de la marca al azul más oscuro. */
@@ -143,6 +146,7 @@ export const ESTILO_POR_ROL: Record<
   contabilidad: MARCA,
   habitudes: MARCA,
   dir_habitudes: MARCA,
+  colaborador: MARCA,
 };
 
 
@@ -288,6 +292,12 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "ia.usar",
     "reuniones.agendar",
     "reuniones.leer",
+  ],
+  colaborador: [
+    "ia.usar",
+    "rendicion.enviar",
+    "reuniones.leer",
+    "solicitudes.gestionar",
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.

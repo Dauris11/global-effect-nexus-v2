@@ -1,0 +1,204 @@
+================================================================================
+GLOBAL EFFECT NEXUS — SISTEMA ERP INSTITUCIONAL (LA VEGA, REPÚBLICA DOMINICANA)
+PORTALES DEL SISTEMA POR ROL Y FUNCIONES DETALLADAS
+Fecha de actualización: 24 de octubre de 2026
+Entidad: Fundación Global Effect (ASFL Ley 122-05)
+================================================================================
+
+El sistema Global Effect Nexus organiza sus accesos, pantallas y permisos en 6
+portales especializados según el rol asignado a cada usuario, más herramientas
+transversales compartidas. El control de acceso está gobernado por RBAC estricto
+(Role-Based Access Control) a nivel de servidor, rutas y base de datos.
+
+--------------------------------------------------------------------------------
+1. PORTAL DE DIRECCIÓN GENERAL / SUPERADMIN
+--------------------------------------------------------------------------------
+• Rol: super_admin
+• Ruta principal: /portal/super-admin (o /dashboard)
+• Usuarios asignados: Dirección Ejecutiva, Presidencia y Consejo de Directores.
+
+FUNCIÓN PRINCIPAL:
+Gobierno institucional superior, supervisión transversal de todos los programas
+sociales, aprobación final de desembolsos mayores (>= USD 1,000 o RD$ 50,000),
+gobernanza centralizada de proyectos por rol y fiscalización mediante bitácora
+criptográfica inmutable.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Matriz de Gobernanza de Proyectos: Asigna de forma exclusiva y en tiempo real
+  los programas misionales a los roles institucionales (/administrativo/proyectos/roles).
+- Aprobaciones de Dirección: Bandeja de autorización de becas universitarias,
+  adquisición de activos de capital y gastos extraordinarios.
+- Auditoría Criptográfica Inmutable: Acceso al visor de bitácora (/configuracion/auditoria)
+  con verificación de cadena de hash SHA-256 para detectar cualquier alteración.
+- Asistente de IA Ejecutivo: Consultas de alto nivel sobre rendimiento académico,
+  ejecución presupuestaria, alertas de sobregiro y métricas de impacto social.
+- Gestión de Usuarios y Permisos: Creación, invitación, revocación y asignación
+  granular de roles y permisos del personal.
+
+--------------------------------------------------------------------------------
+2. PORTAL DE COORDINACIÓN OPERATIVA / ADMINISTRACIÓN
+--------------------------------------------------------------------------------
+• Rol: admin
+• Ruta principal: /portal/admin (o /dashboard)
+• Usuarios asignados: Coordinadores de Operaciones, Recursos Humanos y Trabajo Social.
+
+FUNCIÓN PRINCIPAL:
+Gestión cotidiana del ciclo de vida del becado, administración del personal,
+control de solicitudes internas, inventario físico con códigos QR móviles y
+coordinación de eventos y reuniones institucionales.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Expedientes Estudiantiles: Registro y seguimiento biopsicosocial completo de
+  los jóvenes becados universitarios (/estudiantes/[id]).
+- Gestión de Patrocinadores: Catálogo de donantes y patrocinadores institucionales,
+  asignación a becados y seguimiento de compromisos (/patrocinadores).
+- Inventario Físico de Activos (QR Móvil): Catálogo de bienes muebles y equipos,
+  generación e impresión de etiquetas QR y escaneo móvil (/administrativo/inventario).
+- Bandeja de Solicitudes y Aprobaciones: Gestión de peticiones de compra,
+  viáticos, permisos de colaboradores y trámites de estudiantes (/administrativo/solicitudes).
+- Agenda Institucional de Reuniones: Programación de reuniones de trabajo,
+  tutorías y levantamiento de minutas con compromisos (/administrativo/agenda).
+- Torre de Control del Colaborador: Tablero diario "Lo que me toca hoy" con
+  tareas prioritarias, vencidas y registro de bitácora diaria de horas trabajadas.
+
+--------------------------------------------------------------------------------
+3. PORTAL DEL ESTUDIANTE (BECADO UNIVERSITARIO)
+--------------------------------------------------------------------------------
+• Rol: estudiante
+• Ruta principal: /portal/estudiante
+• Usuarios asignados: Jóvenes becados activos en universidades locales (UCATECI, etc.).
+
+FUNCIÓN PRINCIPAL:
+Autogestión de la vida académica del becado, acceso al aula virtual del programa
+formativo Global Effect 360, seguimiento de calificaciones universitarias,
+prematrícula, solicitudes institucionales y control del servicio de comedor.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Resumen Académico: Visualización del índice acumulado, estatus de beca,
+  materias aprobadas y créditos completados.
+- Aula Virtual Global Effect 360: Acceso al programa formativo obligatorio propio
+  de la Fundación (2 tandas por cuatrimestre), descarga de materiales, entrega
+  de tareas con control de formato/peso y retroalimentación docente.
+- Historial y Materias Universitarias: Registro de materias del semestre en
+  curso y visualización del historial oficial de calificaciones.
+- Prematrícula Cuatrimestral: Solicitud formal de asignaturas para el próximo
+  período para la cobertura y pago directo de matrícula por la Fundación.
+- Solicitudes Estudiantiles: Solicitud de cartas de recomendación, estipendios
+  de transporte, tutorías académicas o justificación de inasistencias.
+- Comedor y Nutrición: Inscripción semanal y control de asistencia al almuerzo
+  diario provisto por el Comedor Comunitario de la Fundación.
+- Asistente de IA Estudiantil: Tutor virtual restringido exclusivamente a dudas
+  sobre el reglamento de becas, fechas de entrega y vida académica.
+
+--------------------------------------------------------------------------------
+4. PORTAL DOCENTE (FORMACIÓN GLOBAL EFFECT 360)
+--------------------------------------------------------------------------------
+• Rol: docente
+• Ruta principal: /portal/docente
+• Usuarios asignados: Profesores e instructores de Global Effect 360 y facilitadores.
+
+FUNCIÓN PRINCIPAL:
+Gestión académica del aula virtual de Global Effect 360 (liderazgo, habilidades
+blandas, tecnología y desarrollo humano), asignación y corrección de tareas,
+toma de asistencia diaria y asentamiento de la calificación final oficial.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Mis Clases 360: Panel de asignaturas asignadas por tanda y cuatrimestre,
+  con listado oficial de estudiantes inscritos (/academico/clases-360).
+- Gestión de Tareas y Recursos: Publicación de tareas con fecha límite, criterios
+  de entrega, guías de estudio y material didáctico interactivo.
+- Calificador de Entregas: Revisión de documentos enviados por los becados,
+  retroalimentación cualitativa y calificación cuantitativa.
+- Vista de Alumno: Modo interactivo que permite al docente previsualizar el aula
+  exactamente como la ve el estudiante para verificar la claridad de la clase.
+- Asistencia y Registro Final: Toma de lista por sesión y registro de la nota
+  final de la materia (aprobada con mínimo 70/100).
+
+--------------------------------------------------------------------------------
+5. PORTAL DE CONTABILIDAD Y FINANZAS (ERP INTEGRAL LEY 122-05)
+--------------------------------------------------------------------------------
+• Rol: contabilidad
+• Ruta principal: /portal/contabilidad
+• Usuarios asignados: Contador General, Analistas Contables y Auxiliares de Finanzas.
+
+FUNCIÓN PRINCIPAL:
+Administración neurálgica del ERP contable dominicano para Asociaciones Sin Fines
+de Lucro (Ley 122-05, DGII, Ley 155-17, Ley 30-26, TSS y Código de Trabajo Ley 16-92).
+Custodia la consistencia matemática absoluta (balanceo estricto de partida doble
+Débito = Crédito), el cumplimiento fiscal dominicano y la rendición de fondos.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Cuadro de Mando Financiero: Balances en tiempo real de cuentas bancarias
+  (Santa Cruz DOP y USD), tasa BCRD del día, alertas de sobregiro presupuestario.
+- Asientos Contables: Asientos manuales, de apertura, de ajuste, de cierre y
+  reversos justificados con comprobación matemática diferida al commit.
+- Libros Contables: Libro Diario, Libro Mayor analítico con saldo corrido y
+  Balanza de Comprobación con exportaciones completas a Excel (.xlsx).
+- Tesorería y Conciliación: Cuentas bancarias en DOP/USD, transferencias entre
+  cuentas con cálculo automático de diferencial cambiario y conciliación asistida.
+- Cajas Chicas y Arqueos Antifraude: Cajas chicas operativas con arqueo interactivo
+  por denominaciones dominicanas y alertas antifraude ante descuadres >= RD$ 200.
+- Terceros y Debida Diligencia (Ley 155-17): Validación de RNC/Cédula, matriz
+  de riesgo contra lavado de activos y expedientes de debida diligencia de donantes.
+- Donaciones y Promesas: Registro de donaciones en efectivo y en especie (evaluadas
+  a valor razonable), calendario de promesas y emisión de recibos de ingreso (NCF B02).
+- Contabilidad por Fondos ASFL: Separación de fondos No Restringidos vs Temporalmente
+  Restringidos (Becas, Comedor) y asientos de liberación y reclasificación patrimonial.
+- Rendición de Cuentas por Donante: Generación de informes de ejecución financiera
+  para patrocinadores internacionales y nacionales con exportación a PDF.
+- Compras, Proveedores y CxP: Registro de facturas con OCR inteligente, órdenes
+  de compra, cuentas por pagar con aging y emisión de comprobantes de retención (NCF B14/E31).
+- Impuestos y Formatos DGII: Generación de archivos TXT oficiales 606 (compras),
+  607 (ingresos), 608 (anulados), 609 (pagos exterior), liquidaciones IT-1,
+  IR-17 (con tasa del 15% Ley 30-26) e ISFL-01, y calendario fiscal institucional.
+- Calculadoras Financieras y Fiscales: 6 calculadoras con generación de asientos
+  borrador (ITBIS, NCF, retenciones, recargos y mora DGII, préstamos y prestaciones).
+- Nómina y TSS (SUIR Plus): Planilla de personal, cálculo automático de aportes TSS
+  (AFP 2.87%, SFS 3.04%, SRL), retención ISR asalariados y TXT para el SUIR Plus.
+- Activos Fijos y Depreciación: Capitalización en Cat 1 (5%), Cat 2 (25%) y
+  Cat 3 (20%), y corrida mensual de depreciación lineal con asiento contable.
+- Inventario y Kardex de Consumibles: Control de suministros y alimentos del comedor
+  bajo Costo Promedio Ponderado, movimientos de kardex y tomas físicas con ajuste contable.
+- Estados Financieros Oficiales: Balance General (con delta = 0 verificado), Estado de
+  Actividades Ley 122-05, Flujo de Efectivo (método indirecto), Cambios en Patrimonio,
+  Mayor Analítico, Flujo de Caja Proyectado a 3-6 meses y Snapshots inmutables.
+- Cierre Contable: Tablero interactivo de 12 meses con bloqueo contra borradores y
+  Cierre Anual con asiento de liquidación a la cuenta 3.1.01.02 Resultados Acumulados.
+
+--------------------------------------------------------------------------------
+6. PORTAL DE HABITUDES (LIDERAZGO Y CAPTACIÓN EN LICEOS)
+--------------------------------------------------------------------------------
+• Rol: habitudes
+• Ruta principal: /portal/habitudes
+• Usuarios asignados: Facilitadores de Habitudes y Promotores de Expansión Juvenil.
+
+FUNCIÓN PRINCIPAL:
+Gestión del programa formativo de liderazgo Habitudes impartido en liceos y
+escuelas públicas de La Vega, captación temprana de estudiantes destacados para
+el programa de becas universitarias y gestión colaborativa de material docente.
+
+MÓDULOS Y FUNCIONES ESPECÍFICAS:
+- Hub Colaborativo Docente: Repositorio centralizado de diapositivas, dinámicas
+  de grupo, guías de valores y recursos pedagógicos para las clases en liceos.
+- Evidencias en Terreno: Registro fotográfico geolocalizado de talleres impartidos,
+  reportes de asistencia estudiantil y métricas de impacto por centro educativo.
+- Embudo de Postulaciones (Embudo de Becas): Identificación y postulación formal
+  de jóvenes bachilleres con excelencia académica y vocación de servicio para
+  ingresar al programa de becas universitarias de la Fundación.
+- Mapa de Liceos de La Vega: Visualización geográfica de centros educativos aliados
+  e historial de visitas institucionales.
+
+--------------------------------------------------------------------------------
+7. HERRAMIENTAS Y MÓDULOS TRANSVERSALES (COMPARTIDOS)
+--------------------------------------------------------------------------------
+Disponibles para todos los usuarios autenticados según sus permisos funcionales:
+- Torre de Control del Colaborador: Visualización personalizada de "Lo que me toca hoy"
+  para organizar la jornada laboral, tareas pendientes y bitácora diaria.
+- Bandeja de Solicitudes y Aprobaciones: Canal institucional para radicar o autorizar
+  peticiones administrativas, gastos y justificaciones.
+- Agenda Institucional de Reuniones: Herramienta transversal para convocar y participar
+  en reuniones presenciales o virtuales con levantamiento de minutas y acuerdos.
+- Asistente de Inteligencia Artificial (Nexus AI): Widget flotante disponible en todas
+  las pantallas para responder dudas del sistema, navegar y procesar datos.
+- Mi Perfil: Gestión individual de datos personales, credenciales y fotografía.
+================================================================================

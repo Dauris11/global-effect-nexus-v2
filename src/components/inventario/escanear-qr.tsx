@@ -291,7 +291,7 @@ export function EscanearQrActivo() {
 
       {/* Activo Encontrado */}
       {activoEncontrado && (
-        <div className="mx-auto w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border-2 border-marca-500 bg-white p-5 shadow-md">
+        <div className="mx-auto w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border-2 border-marca-500 bg-card p-5 shadow-md">
           <div className="flex items-start justify-between gap-3 border-b border-linea pb-3">
             <div>
               <span className="inline-flex items-center rounded-md bg-marca-50 px-2 py-0.5 text-xs font-bold text-marca-700 uppercase">

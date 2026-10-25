@@ -29,7 +29,7 @@ interface FormularioRendicionGastoProps {
 }
 
 const SELECT_CLASS =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-card px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
 
 export function FormularioRendicionGasto({
   programas,
@@ -133,7 +133,7 @@ export function FormularioRendicionGasto({
   };
 
   return (
-    <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+    <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-bold text-tinta">
           <Receipt className="size-5 text-marca-500" />
@@ -179,7 +179,7 @@ export function FormularioRendicionGasto({
               htmlFor="archivo-factura"
               className="flex flex-col items-center justify-center cursor-pointer space-y-2 py-3 active:scale-95 transition-all"
             >
-              <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-xs text-marca-500">
+              <div className="flex size-12 items-center justify-center rounded-full bg-card shadow-xs text-marca-500">
                 {escaneandoOcr ? (
                   <Loader2 className="size-6 animate-spin" />
                 ) : (

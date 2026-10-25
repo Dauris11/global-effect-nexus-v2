@@ -103,7 +103,7 @@ export function EvaluadorEntregasMoodle({
     <div className="space-y-4">
       {/* Listado de Entregas */}
       {entregas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-white py-12 text-center shadow-xs">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-card py-12 text-center shadow-xs">
           <FileText className="size-10 text-marca-500/60" />
           <h3 className="mt-3 text-base font-semibold text-tinta">
             {t("noSubmissionsTitle")}
@@ -117,7 +117,7 @@ export function EvaluadorEntregasMoodle({
           {entregas.map((entrega) => (
             <div
               key={entrega.entrega_id}
-              className="flex flex-col justify-between gap-3 rounded-xl border border-linea-fuerte bg-white p-4 shadow-xs transition-all hover:border-marca-500/40 sm:flex-row sm:items-center"
+              className="flex flex-col justify-between gap-3 rounded-xl border border-linea-fuerte bg-card p-4 shadow-xs transition-all hover:border-marca-500/40 sm:flex-row sm:items-center"
             >
               <div className="space-y-1.5 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -206,7 +206,7 @@ export function EvaluadorEntregasMoodle({
                   className={cn(
                     "min-h-[40px] active:scale-95",
                     entrega.estado === "calificado"
-                      ? "border border-linea-fuerte bg-white text-tinta hover:bg-muted"
+                      ? "border border-linea-fuerte bg-card text-tinta hover:bg-muted"
                       : "bg-marca-500 text-white hover:bg-marca-600",
                   )}
                 >
@@ -298,7 +298,7 @@ export function EvaluadorEntregasMoodle({
                         key={idx}
                         type="button"
                         onClick={() => aplicarPlantillaFeedback(preset)}
-                        className="rounded border border-linea-fuerte/70 bg-white px-2 py-0.5 text-[11px] text-tinta/70 hover:bg-muted active:scale-95"
+                        className="rounded border border-linea-fuerte/70 bg-card px-2 py-0.5 text-[11px] text-tinta/70 hover:bg-muted active:scale-95"
                       >
                         + {preset}
                       </button>

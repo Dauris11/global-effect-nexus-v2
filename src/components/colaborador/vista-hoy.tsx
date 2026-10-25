@@ -53,7 +53,7 @@ interface VistaHoyProps {
 }
 
 const SELECT_CLASS =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-10 w-full rounded-md border bg-card px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
 
 export function VistaHoy({
   tareasIniciales,
@@ -127,7 +127,7 @@ export function VistaHoy({
     <div className="space-y-6">
       {/* 1. Métrica Cards Táctiles */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-white p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("pendingTasks")}
@@ -140,7 +140,7 @@ export function VistaHoy({
           <p className="mt-1 text-[11px] text-tinta/50">{t("prioritized")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-white p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("inProgress")}
@@ -153,7 +153,7 @@ export function VistaHoy({
           <p className="mt-1 text-[11px] text-tinta/50">{t("activeToday")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-white p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("hoursToday")}
@@ -166,7 +166,7 @@ export function VistaHoy({
           <p className="mt-1 text-[11px] text-tinta/50">{t("loggedActivities")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-white p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("expensesWaiting")}
@@ -194,7 +194,7 @@ export function VistaHoy({
             {proyectosAsignados.map((p) => (
               <span
                 key={p.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-marca-500/30 bg-white px-2.5 py-1 text-xs font-medium text-tinta shadow-2xs"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-marca-500/30 bg-card px-2.5 py-1 text-xs font-medium text-tinta shadow-2xs"
               >
                 <span className="size-1.5 rounded-full bg-marca-500" />
                 {p.nombre}
@@ -223,7 +223,7 @@ export function VistaHoy({
                 "inline-flex min-h-[38px] items-center rounded-lg px-3 text-xs font-medium transition-all active:scale-95",
                 filtro === item.id
                   ? "bg-marca-500 text-white shadow-xs"
-                  : "bg-white text-tinta/70 hover:bg-muted hover:text-tinta border border-linea-fuerte/40",
+                  : "bg-card text-tinta/70 hover:bg-muted hover:text-tinta border border-linea-fuerte/40",
               )}
             >
               {item.label}
@@ -345,7 +345,7 @@ export function VistaHoy({
               <Button
                 variant="outline"
                 size="sm"
-                className="min-h-[42px] border-linea-fuerte bg-white active:scale-95"
+                className="min-h-[42px] border-linea-fuerte bg-card active:scale-95"
               >
                 <Clock className="mr-1.5 size-4 text-marca-500" />
                 {t("logActivity")}
@@ -439,7 +439,7 @@ export function VistaHoy({
       {/* 4. Lista Táctil de Tareas de Hoy */}
       <div className="space-y-3">
         {tareasFiltradas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-white py-12 text-center shadow-xs">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-card py-12 text-center shadow-xs">
             <CheckCircle2 className="size-10 text-marca-500/60" />
             <h3 className="mt-3 text-base font-semibold text-tinta">
               {t("noTasksTitle")}
@@ -455,7 +455,7 @@ export function VistaHoy({
               <div
                 key={tarea.id}
                 className={cn(
-                  "relative flex flex-col justify-between gap-3 rounded-xl border bg-white p-4 shadow-xs transition-all sm:flex-row sm:items-center",
+                  "relative flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 shadow-xs transition-all sm:flex-row sm:items-center",
                   tarea.estado === "completada"
                     ? "border-linea-fuerte/40 opacity-75"
                     : "border-linea-fuerte hover:border-marca-500/40",
@@ -568,7 +568,7 @@ export function VistaHoy({
 
       {/* 5. Resumen de Bitácora del Día */}
       {bitacoraInicial.length > 0 && (
-        <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+        <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base font-semibold text-tinta">
               <Clock className="size-4 text-marca-500" />
@@ -589,7 +589,7 @@ export function VistaHoy({
                     </p>
                   )}
                 </div>
-                <span className="rounded-md bg-white px-2 py-1 font-semibold text-marca-600 shadow-2xs">
+                <span className="rounded-md bg-card px-2 py-1 font-semibold text-marca-600 shadow-2xs">
                   {entry.minutos_dedicados} min
                 </span>
               </div>

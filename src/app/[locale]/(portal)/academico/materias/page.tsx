@@ -117,7 +117,7 @@ export default async function PaginaAcademicoMaterias({
             id="periodo"
             name="periodo"
             defaultValue={periodoId ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             <option value="">{t("allTerms")}</option>
             {periodos.map((p) => (

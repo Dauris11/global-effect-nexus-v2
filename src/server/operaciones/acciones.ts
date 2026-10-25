@@ -228,6 +228,65 @@ export async function moverTarea(
   return { estado: "ok" };
 }
 
+/**
+ * Cambia la fecha límite de una tarea y la de su evento de calendario.
+ *
+ * Es la acción de "reprogramar": la fecha de la tarea y la del evento tienen
+ * que moverse juntas o el calendario y el Gantt dirían cosas distintas. Se
+ * puede dejar la fecha vacía para quitarla; el evento se conserva con su día.
+ */
+export async function reprogramarTarea(
+  _previo: EstadoOperaciones,
+  datos: FormData,
+): Promise<EstadoOperaciones> {
+  const usuario = await requerirUsuario();
+
+  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "");
+  const fecha = String(datos.get("fecha") ?? "").trim();
+
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { estado: "invalido" };
+
+  try {
+    const movida = await enTransaccion(async (cliente) => {
+      const { rows } = await cliente.query<{ id: string }>(
+        `UPDATE tarea SET fecha_limite = $2::date WHERE id = $1 RETURNING id`,
+        [id, fecha],
+      );
+
+      if (rows.length === 0) return null;
+
+      await cliente.query(`UPDATE evento SET fecha = $2::date WHERE tarea_id = $1`, [
+        id,
+        fecha,
+      ]);
+
+      return rows[0];
+    });
+
+    if (!movida) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "tarea.reprogramada",
+      entidad: "tarea",
+      entidadId: movida.id,
+      datos: { fecha },
+    });
+  } catch (error) {
+    console.error("[operaciones] no se pudo reprogramar la tarea", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
+}
+
 /** Alta y edición de un proyecto. Con `id` vacío, es un alta. */
 export async function guardarProyecto(
   _previo: EstadoOperaciones,

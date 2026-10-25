@@ -65,6 +65,43 @@ export async function GET(
         undefined,
         `Exportación reporte DGII 607 de ${anio}-${mes}`,
       );
+    } else if (tipo === "606-txt" || tipo === "607-txt" || tipo === "608-txt" || tipo === "609-txt") {
+      const hoy = new Date();
+      const anio = parseInt(searchParams.get("anio") ?? String(hoy.getFullYear()), 10);
+      const mes = parseInt(searchParams.get("mes") ?? String(hoy.getMonth() + 1), 10);
+      const enCero = searchParams.get("enCero") === "1" || searchParams.get("enCero") === "true";
+
+      const { generarTxt606, generarTxt607, generarTxt608, generarTxt609 } = await import(
+        "@/server/contabilidad/dgii/formatos-txt"
+      );
+
+      let resultado;
+      if (tipo === "606-txt") {
+        resultado = await generarTxt606(anio, mes, enCero);
+      } else if (tipo === "607-txt") {
+        resultado = await generarTxt607(anio, mes, enCero);
+      } else if (tipo === "608-txt") {
+        resultado = await generarTxt608(anio, mes, enCero);
+      } else {
+        resultado = await generarTxt609(anio, mes, enCero);
+      }
+
+      const nombreTxt = `${tipo.replace("-txt", "")}_${anio}${String(mes).padStart(2, "0")}.txt`;
+
+      await registrarLectura(
+        contexto,
+        "exportar",
+        "contabilidad.declaracion",
+        undefined,
+        `Exportación TXT DGII ${tipo} de ${anio}-${mes} (en cero: ${resultado.esEnvioEnCero})`
+      );
+
+      return new NextResponse(resultado.contenido, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${nombreTxt}"`,
+        },
+      });
     } else if (tipo === "bancos") {
       const cuentaId = searchParams.get("cuentaId");
       if (!cuentaId) {

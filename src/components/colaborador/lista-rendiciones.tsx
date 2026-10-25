@@ -141,7 +141,7 @@ export function ListaRendiciones({
               "inline-flex min-h-[38px] items-center rounded-lg px-3 text-xs font-medium transition-all active:scale-95",
               filtro === item.id
                 ? "bg-marca-500 text-white shadow-xs"
-                : "border border-linea-fuerte/40 bg-white text-tinta/70 hover:bg-muted hover:text-tinta",
+                : "border border-linea-fuerte/40 bg-card text-tinta/70 hover:bg-muted hover:text-tinta",
             )}
           >
             {item.label}
@@ -151,7 +151,7 @@ export function ListaRendiciones({
 
       {/* Lista de Rendiciones */}
       {filtradas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-white py-12 text-center shadow-xs">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-card py-12 text-center shadow-xs">
           <Receipt className="size-10 text-marca-500/60" />
           <h3 className="mt-3 text-base font-semibold text-tinta">
             {t("noVouchersTitle")}
@@ -163,7 +163,7 @@ export function ListaRendiciones({
           {filtradas.map((r) => (
             <div
               key={r.id}
-              className="flex flex-col justify-between gap-3 rounded-xl border border-linea-fuerte bg-white p-4 shadow-xs transition-all hover:border-marca-500/40 sm:flex-row sm:items-center"
+              className="flex flex-col justify-between gap-3 rounded-xl border border-linea-fuerte bg-card p-4 shadow-xs transition-all hover:border-marca-500/40 sm:flex-row sm:items-center"
             >
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">

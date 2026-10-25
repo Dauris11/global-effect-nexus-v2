@@ -104,6 +104,49 @@ export async function guardarEvento(
   return { estado: "ok" };
 }
 
+/**
+ * Cancela un evento o lo vuelve a programar.
+ *
+ * Cancelar no borra: el evento queda con estado `cancelado`, que el calendario
+ * ya excluye, y se puede revertir. Es lo que el asistente usa para "tachar un
+ * evento", porque borrar no tiene vuelta atrás.
+ */
+export async function cambiarEstadoEvento(
+  _previo: EstadoCalendario,
+  datos: FormData,
+): Promise<EstadoCalendario> {
+  const usuario = await requerirUsuario();
+
+  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "");
+  const estado = String(datos.get("estado") ?? "");
+
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+  if (estado !== "cancelado" && estado !== "programado") return { estado: "invalido" };
+
+  try {
+    const cambiado = await consultarUna<{ id: string }>(
+      `UPDATE evento SET estado = $2 WHERE id = $1 AND tarea_id IS NULL RETURNING id`,
+      [id, estado],
+    );
+
+    // Un evento ligado a una tarea sigue el estado de la tarea: se cambia desde ella.
+    if (!cambiado) return { estado: "no_encontrado" };
+
+    await anotar(usuario.id, `evento.${estado}`, cambiado.id);
+  } catch (error) {
+    console.error("[calendario] no se pudo cambiar el estado del evento", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
+}
+
 /** Borra un evento institucional. Las citas no se borran desde aquí. */
 export async function eliminarEvento(
   _previo: EstadoCalendario,

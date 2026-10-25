@@ -120,6 +120,13 @@ export async function crearTramite(
     return { estado: "error" };
   }
 
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "solicitud.creada",
+    entidad: "solicitud",
+    datos: { tipo },
+  });
+
   refrescar();
   return { estado: "ok" };
 }
@@ -182,6 +189,13 @@ export async function crearSolicitudInterna(
     console.error("[solicitudes] no se pudo registrar la solicitud", error);
     return { estado: "error" };
   }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "solicitud.creada",
+    entidad: "solicitud",
+    datos: { tipo: tipoValido },
+  });
 
   refrescar();
   return { estado: "ok" };

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import Image from "next/image";
 
+import { useOcultos } from "@/components/layout/visibilidad";
 import { Link, usePathname } from "@/i18n/navigation";
 import { esRutaActiva, itemsDeArea, menuDe, type ItemNav } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
@@ -68,7 +69,8 @@ export function Sidebar({
   const tComun = useTranslations("common");
   const tAuth = useTranslations("auth");
   const ruta = usePathname();
-  const areas = menuDe(rol);
+  const ocultos = useOcultos();
+  const areas = menuDe(rol, ocultos);
 
   /*
    * Solo UNA entrada activa: la más específica. Con un simple "empieza por",
@@ -130,6 +132,7 @@ export function Sidebar({
 
       <nav
         aria-label={tComun("appName")}
+        data-barra-lateral
         className={cn(
           /*
            * Dos comportamientos que NO se pisan, y ahí estaba el fallo.
@@ -183,7 +186,7 @@ export function Sidebar({
                 width={720}
                 height={157}
                 priority
-                className="h-8 w-auto dark:invert"
+                className="logo-barra h-8 w-auto"
               />
             ) : (
               <Image

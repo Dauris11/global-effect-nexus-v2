@@ -55,7 +55,7 @@ export function FormularioPerfil({
   return (
     <form action={enviar} className="space-y-6">
       {/* Selector e inspección de Avatar */}
-      <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center gap-5 transition-all">
+      <div className="p-4 rounded-2xl bg-muted/80 dark:bg-slate-900/40 border border-linea/80 dark:border-slate-800 flex flex-wrap items-center gap-5 transition-all">
         <label
           htmlFor="perfil-foto"
           className="group relative cursor-pointer focus-within:outline-none"
@@ -96,7 +96,7 @@ export function FormularioPerfil({
             name="foto"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            className="cursor-pointer text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#2096BA]/10 file:text-[#187a99] hover:file:bg-[#2096BA]/20 border-slate-200 dark:border-slate-800"
+            className="cursor-pointer text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#2096BA]/10 file:text-[#187a99] hover:file:bg-[#2096BA]/20 border-linea dark:border-slate-800"
             onChange={(evento) => {
               const archivo = evento.target.files?.[0];
               setPrevia(archivo ? URL.createObjectURL(archivo) : null);
@@ -109,7 +109,7 @@ export function FormularioPerfil({
       {/* Nombre e Idioma */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="perfil-nombre" className="flex items-center gap-1.5 font-medium text-xs text-slate-700 dark:text-slate-300">
+          <Label htmlFor="perfil-nombre" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
             <User className="size-3.5 text-[#2096BA]" />
             {t("fieldName")}
           </Label>
@@ -120,12 +120,12 @@ export function FormularioPerfil({
             required
             maxLength={120}
             aria-invalid={estado.estado === "nombre_vacio" || undefined}
-            className="h-10 rounded-xl border-slate-200 focus-visible:ring-[#2096BA]/30 dark:border-slate-800"
+            className="h-10 rounded-xl border-linea focus-visible:ring-[#2096BA]/30 dark:border-slate-800"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="perfil-idioma" className="flex items-center gap-1.5 font-medium text-xs text-slate-700 dark:text-slate-300">
+          <Label htmlFor="perfil-idioma" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
             <Globe className="size-3.5 text-[#2096BA]" />
             {t("fieldLanguage")}
           </Label>
@@ -134,7 +134,7 @@ export function FormularioPerfil({
               id="perfil-idioma"
               name="idioma"
               defaultValue={idioma}
-              className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 pr-8 text-sm shadow-xs outline-none focus-visible:border-[#2096BA] focus-visible:ring-[3px] focus-visible:ring-[#2096BA]/20 transition-all appearance-none cursor-pointer"
+              className="h-10 w-full rounded-xl border border-linea dark:border-slate-800 bg-card dark:bg-slate-950 px-3 pr-8 text-sm shadow-xs outline-none focus-visible:border-[#2096BA] focus-visible:ring-[3px] focus-visible:ring-[#2096BA]/20 transition-all appearance-none cursor-pointer"
             >
               <option value="es">🇪🇸 {t("language.es")}</option>
               <option value="en">🇺🇸 {t("language.en")}</option>
@@ -149,11 +149,11 @@ export function FormularioPerfil({
       {/* Bio / Presentación */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="perfil-bio" className="flex items-center gap-1.5 font-medium text-xs text-slate-700 dark:text-slate-300">
+          <Label htmlFor="perfil-bio" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
             <FileText className="size-3.5 text-[#2096BA]" />
             {t("fieldBio")}
           </Label>
-          <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
+          <span className="text-[11px] font-mono text-slate-400 dark:text-muted-foreground">
             {texto.length} / {MAXIMO_DESCRIPCION}
           </span>
         </div>
@@ -166,11 +166,11 @@ export function FormularioPerfil({
           maxLength={MAXIMO_DESCRIPCION}
           rows={3}
           aria-invalid={estado.estado === "descripcion_larga" || undefined}
-          className="rounded-xl border-slate-200 dark:border-slate-800 focus-visible:ring-[#2096BA]/30 resize-none text-sm"
+          className="rounded-xl border-linea dark:border-slate-800 focus-visible:ring-[#2096BA]/30 resize-none text-sm"
         />
 
         {/* Barra de progreso de caracteres */}
-        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-muted dark:bg-slate-800 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-300 rounded-full ${
               texto.length > MAXIMO_DESCRIPCION * 0.9 ? "bg-[#0a6a8a]" : "bg-[#2096BA]"

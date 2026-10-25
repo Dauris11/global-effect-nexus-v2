@@ -153,7 +153,7 @@ export default async function PaginaPatrocinadores({
             id="tipo"
             name="tipo"
             defaultValue={tipoOk ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             <option value="">{t("allTypes")}</option>
             {TIPOS.map((valor) => (
@@ -175,7 +175,7 @@ export default async function PaginaPatrocinadores({
             id="estado"
             name="estado"
             defaultValue={estadoOk ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             <option value="">{t("allStates")}</option>
             {ESTADOS.map((valor) => (

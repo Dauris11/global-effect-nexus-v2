@@ -5,6 +5,7 @@ import { useState } from "react";
 import { BarraInferior } from "@/components/layout/barra-inferior";
 import type { AvisoVisible } from "@/components/layout/campana";
 import { Sidebar } from "@/components/layout/sidebar";
+import { ProveedorVisibilidad } from "@/components/layout/visibilidad";
 import { TopBar } from "@/components/layout/topbar";
 import { usePathname } from "@/i18n/navigation";
 import type { Rol } from "@/lib/rbac";
@@ -30,6 +31,7 @@ export function AppShell({
   aviso,
   avisos,
   sinLeer,
+  ocultos,
   cerrarSesion,
   children,
 }: {
@@ -42,6 +44,8 @@ export function AppShell({
   /** Últimos avisos de la cuenta, para la campana de la cabecera. */
   avisos: readonly AvisoVisible[];
   sinLeer: number;
+  /** Rutas que el administrador maestro ocultó para este rol. */
+  ocultos: readonly string[];
   /** Server Action; cierra la sesión de Supabase y redirige al login. */
   cerrarSesion: () => Promise<void>;
   children: React.ReactNode;
@@ -62,45 +66,47 @@ export function AppShell({
   }
 
   return (
-    // Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
-    // él una tabla ancha o un titular largo estiran la columna y empujan la
-    // barra fuera de la pantalla en vez de desbordar dentro de su propio hueco.
-    <div className="bg-background flex min-h-dvh">
-      <Sidebar
-        rol={rol}
-        nombre={nombre}
-        foto={foto}
-        contraida={contraida}
-        onContraer={() => setContraida((valor) => !valor)}
-        abiertaEnMovil={abiertaEnMovil}
-        onCerrarMovil={() => setAbiertaEnMovil(false)}
-        onCerrarSesion={() => void cerrarSesion()}
-      />
-
-      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <TopBar
+    <ProveedorVisibilidad ocultos={ocultos}>
+      {/* Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
+        él una tabla ancha o un titular largo estiran la columna y empujan la
+        barra fuera de la pantalla en vez de desbordar dentro de su propio hueco. */}
+      <div className="bg-background flex min-h-dvh">
+        <Sidebar
           rol={rol}
           nombre={nombre}
           foto={foto}
-          aviso={aviso}
-          avisos={avisos}
-          sinLeer={sinLeer}
+          contraida={contraida}
+          onContraer={() => setContraida((valor) => !valor)}
+          abiertaEnMovil={abiertaEnMovil}
+          onCerrarMovil={() => setAbiertaEnMovil(false)}
           onCerrarSesion={() => void cerrarSesion()}
         />
 
-        {/* Contenedor de 1280 px con 16 / 24 / 32 de margen (docs/09 §2.7).
+        <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+          <TopBar
+            rol={rol}
+            nombre={nombre}
+            foto={foto}
+            aviso={aviso}
+            avisos={avisos}
+            sinLeer={sinLeer}
+            onCerrarSesion={() => void cerrarSesion()}
+          />
+
+          {/* Contenedor de 1280 px con 16 / 24 / 32 de margen (docs/09 §2.7).
             Abajo, en el móvil, el alto de la barra inferior más el área
             segura: sin él, la barra tapa el último botón de cada página. */}
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
-          {children}
-        </main>
-      </div>
+          <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
+            {children}
+          </main>
+        </div>
 
-      <BarraInferior
-        rol={rol}
-        menuAbierto={abiertaEnMovil}
-        onAbrirMenu={() => setAbiertaEnMovil(true)}
-      />
-    </div>
+        <BarraInferior
+          rol={rol}
+          menuAbierto={abiertaEnMovil}
+          onAbrirMenu={() => setAbiertaEnMovil(true)}
+        />
+      </div>
+    </ProveedorVisibilidad>
   );
 }

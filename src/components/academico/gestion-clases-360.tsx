@@ -34,7 +34,7 @@ import type {
 } from "@/server/profesor/consultas";
 
 const SELECTOR =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 rounded-control h-9 w-full border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 rounded-control h-9 w-full border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
 
 /**
  * Las clases de Global Effect 360, del profesor o de todo el programa.

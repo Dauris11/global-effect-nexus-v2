@@ -107,7 +107,7 @@ export function FormularioEdicionExpediente({
 
       {/* Foto: mismo patrón que el perfil propio (formulario-perfil.tsx), con
           el bucket `avatares` y una vista previa antes de guardar. */}
-      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 transition-colors dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-linea/80 bg-muted/80 p-4 transition-colors dark:border-slate-800 dark:bg-slate-900/40">
         <label
           htmlFor="expediente-foto"
           className={cn(

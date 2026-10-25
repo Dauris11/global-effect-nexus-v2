@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useOcultos } from "@/components/layout/visibilidad";
 import { menuDe } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -109,7 +110,8 @@ export function TopBar({
 
   // "Configuración" solo para quien la tiene en su menú: ofrecer una puerta que
   // el servidor va a cerrar no sirve de nada.
-  const tieneConfiguracion = menuDe(rol).some((area) =>
+  const ocultos = useOcultos();
+  const tieneConfiguracion = menuDe(rol, ocultos).some((area) =>
     area.secciones.some((seccion) =>
       seccion.items.some((item) => item.href === "/configuracion"),
     ),

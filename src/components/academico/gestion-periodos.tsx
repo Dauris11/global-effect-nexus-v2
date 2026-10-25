@@ -239,8 +239,8 @@ function FilaPeriodo({
           periodo.estado === "activo"
             ? "bg-[#2096BA]/15 text-[#187a99]"
             : periodo.estado === "completado"
-              ? "bg-slate-200 text-slate-700"
-              : "bg-slate-100 text-slate-600",
+              ? "bg-slate-200 text-tinta-2"
+              : "bg-muted text-tinta-2",
         )}
       >
         {t(`termStatus.${periodo.estado}` as never)}
@@ -312,7 +312,7 @@ function FormularioPeriodo({
             id={`p-tipo-${clave}`}
             name="tipo"
             defaultValue={periodo?.tipo ?? "cuatrimestre"}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             <option value="cuatrimestre">{t("termKind.quarter")}</option>
             <option value="semestre">{t("termKind.semester")}</option>
@@ -347,7 +347,7 @@ function FormularioPeriodo({
             id={`p-estado-${clave}`}
             name="estado"
             defaultValue={periodo?.estado ?? "planificado"}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             {(["planificado", "activo", "completado"] as const).map((valor) => (
               <option key={valor} value={valor}>

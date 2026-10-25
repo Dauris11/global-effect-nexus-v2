@@ -17,7 +17,7 @@ import { enTransaccionComo, type ContextoTransaccion } from "@/lib/db";
 type AccionLectura = "exportar" | "ver_nomina" | "leer";
 
 /** Acciones con nombre propio que una escritura puede declarar. */
-type AccionEscritura =
+export type AccionEscritura =
   | "crear"
   | "editar"
   | "aprobar"
@@ -25,7 +25,43 @@ type AccionEscritura =
   | "pagar"
   | "conciliar"
   | "cerrar_periodo"
-  | "reabrir_periodo";
+  | "reabrir_periodo"
+  | "registrar_donacion"
+  | "crear_promesa_donacion"
+  | "crear_tercero"
+  | "registrar_debida_diligencia"
+  | "crear_orden_compra"
+  | "aprobar_orden_compra"
+  | "rechazar_orden_compra"
+  | "emitir_comprobante_retencion"
+  | "anular_comprobante_retencion"
+  | "guardar_declaracion_dgii"
+  | "marcar_declaracion_presentada"
+  | "convertir_calculo_en_asiento"
+  | "crear_centro_costo"
+  | "actualizar_centro_costo"
+  | "crear_fondo"
+  | "liberar_fondo_restringido"
+  | "crear_presupuesto"
+  | "guardar_lineas_presupuesto"
+  | "aprobar_presupuesto"
+  | "crear_empleado"
+  | "actualizar_empleado"
+  | "crear_nomina"
+  | "aprobar_nomina"
+  | "pagar_nomina"
+  | "anular_nomina"
+  | "crear_activo_fijo"
+  | "ejecutar_depreciacion_mensual"
+  | "dar_baja_activo_fijo"
+  | "crear_articulo"
+  | "registrar_movimiento_inventario"
+  | "crear_conteo_fisico"
+  | "aplicar_conteo_fisico"
+  | "cerrar_periodo_mensual"
+  | "reabrir_periodo_mensual"
+  | "ejecutar_cierre_anual"
+  | "guardar_snapshot_financiero";
 
 /**
  * Registra una lectura sensible en `contabilidad.bitacora`.

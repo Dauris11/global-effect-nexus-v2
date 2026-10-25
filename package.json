@@ -24,7 +24,7 @@
     "db:seed:inventario": "node scripts/seed-inventario.mjs",
     "db:seed:reuniones": "node scripts/seed-reuniones.mjs",
     "db:probar:contabilidad": "node scripts/probar-contabilidad.mjs",
-    "test:contabilidad": "node --test scripts/probar-numeros-a-letras.mjs scripts/probar-adaptadores.mjs scripts/probar-identificacion.mjs scripts/probar-asientos.mjs"
+    "test:contabilidad": "node --test scripts/probar-numeros-a-letras.mjs scripts/probar-adaptadores.mjs scripts/probar-identificacion.mjs scripts/probar-asientos.mjs scripts/probar-fase2-fase3.mjs scripts/probar-fase4.mjs scripts/probar-fase5.mjs scripts/probar-fase6.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

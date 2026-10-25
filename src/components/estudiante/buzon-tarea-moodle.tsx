@@ -139,7 +139,7 @@ export function BuzonTareaMoodle({
   return (
     <div className="space-y-6">
       {/* 1. Cabecera de la Tarea Moodle */}
-      <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+      <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
         <CardHeader className="pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function BuzonTareaMoodle({
                 <Info className="size-3.5 text-marca-500" />
                 {t("deliveryInstructions")}
               </h4>
-              <div className="rounded-xl border border-linea-fuerte/40 bg-white p-3.5 text-xs text-tinta/80 whitespace-pre-line">
+              <div className="rounded-xl border border-linea-fuerte/40 bg-card p-3.5 text-xs text-tinta/80 whitespace-pre-line">
                 {asignacion.instrucciones_entrega}
               </div>
             </div>
@@ -224,7 +224,7 @@ export function BuzonTareaMoodle({
                   {formatos.map((fmt) => (
                     <span
                       key={fmt}
-                      className="rounded bg-white px-1.5 py-0.5 font-mono text-[11px] font-semibold text-marca-600 shadow-2xs"
+                      className="rounded bg-card px-1.5 py-0.5 font-mono text-[11px] font-semibold text-marca-600 shadow-2xs"
                     >
                       .{fmt}
                     </span>
@@ -238,7 +238,7 @@ export function BuzonTareaMoodle({
 
       {/* 2. Feedback del Docente si ya fue calificada */}
       {asignacion.entrega_estado === "calificado" && (
-        <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+        <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export function BuzonTareaMoodle({
       )}
 
       {/* 3. Buzón de Entregas Moodle */}
-      <Card className="rounded-2xl border-linea-fuerte bg-white shadow-xs">
+      <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base font-bold text-tinta">
@@ -341,7 +341,7 @@ export function BuzonTareaMoodle({
                   htmlFor="archivo-moodle"
                   className="flex flex-col items-center justify-center cursor-pointer space-y-2 active:scale-95 transition-all"
                 >
-                  <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-xs text-marca-500">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-card shadow-xs text-marca-500">
                     <Upload className="size-6" />
                   </div>
                   <div>
@@ -426,7 +426,7 @@ export function BuzonTareaMoodle({
                       href={asignacion.entrega_archivo_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-linea-fuerte bg-white px-3 text-xs font-semibold text-tinta hover:bg-muted active:scale-95"
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-semibold text-tinta hover:bg-muted active:scale-95"
                     >
                       <Download className="size-3.5" />
                       {t("downloadFile")}
@@ -447,7 +447,7 @@ export function BuzonTareaMoodle({
               </div>
 
               {asignacion.entrega_comentario_estudiante && (
-                <div className="rounded-xl border border-linea-fuerte/40 bg-white p-3 text-xs text-tinta/70">
+                <div className="rounded-xl border border-linea-fuerte/40 bg-card p-3 text-xs text-tinta/70">
                   <span className="font-semibold text-tinta">
                     {t("yourNotes")}:
                   </span>{" "}

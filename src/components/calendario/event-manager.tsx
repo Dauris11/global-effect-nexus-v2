@@ -1435,7 +1435,7 @@ function FormularioEvento({
             id="ev-tipo"
             name="tipo"
             defaultValue={entrada?.detalle ?? "otro"}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           >
             {TIPOS_EVENTO.map((tipo) => (
               <option key={tipo} value={tipo}>

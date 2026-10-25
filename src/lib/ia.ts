@@ -71,11 +71,29 @@ export type EstadoChat = {
     | "error";
 };
 
+/** Tokens de una llamada. `cache` son los leídos de la caché de prompt. */
+export type UsoIA = {
+  modelo: string;
+  entrada: number;
+  salida: number;
+  cache: number;
+  latenciaMs: number;
+};
+
+/** Ajustes por llamada; lo que no se da, sale de las constantes de arriba. */
+export type OpcionesIA = { modelo?: string; maximoTokens?: number };
+
 /** Mensajes que se le pasan al modelo, ya en su formato. */
 export type TurnoIA = { rol: "user" | "assistant"; contenido: string };
 
 export type RespuestaIA =
-  | { estado: "ok"; texto: string; tokens: number }
+  | {
+      estado: "ok";
+      texto: string;
+      tokens: number;
+      /** Lo que cuenta el medidor: la API lo devuelve en cada respuesta. */
+      uso: UsoIA;
+    }
   | { estado: "sin_clave" }
   | { estado: "rechazada" }
   | { estado: "fallo" };
@@ -103,6 +121,7 @@ function obtenerCliente(): Anthropic | null {
 export async function conversar(
   sistema: string,
   turnos: readonly TurnoIA[],
+  opciones: OpcionesIA = {},
 ): Promise<RespuestaIA> {
   const anthropic = obtenerCliente();
 
@@ -110,10 +129,13 @@ export async function conversar(
   // desarrollo con `.env.local` a medio llenar.
   if (!anthropic) return { estado: "sin_clave" };
 
+  const modelo = opciones.modelo ?? MODELO;
+  const inicio = Date.now();
+
   try {
     const respuesta = await anthropic.messages.create({
-      model: MODELO,
-      max_tokens: MAXIMO_TOKENS,
+      model: modelo,
+      max_tokens: opciones.maximoTokens ?? MAXIMO_TOKENS,
       system: sistema,
       messages: turnos.map((turno) => ({
         role: turno.rol,
@@ -153,6 +175,13 @@ export async function conversar(
       estado: "ok",
       texto,
       tokens: respuesta.usage.output_tokens,
+      uso: {
+        modelo,
+        entrada: respuesta.usage.input_tokens,
+        salida: respuesta.usage.output_tokens,
+        cache: respuesta.usage.cache_read_input_tokens ?? 0,
+        latenciaMs: Date.now() - inicio,
+      },
     };
   } catch (error) {
     // Se registra en el servidor y al estudiante se le da un mensaje corto: el

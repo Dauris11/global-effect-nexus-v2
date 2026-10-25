@@ -5,7 +5,62 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
-## Abiertos
+- [x] **Nexus AI, fases 1–5 y parte de la 6–7 (24 oct 2026).** Migraciones
+      `0057`–`0059` aplicadas. Agente por rol, medidor y cuotas, chat con
+      streaming (`/api/ia/chat`), herramientas con aprobación y deshacer,
+      conocimiento por agente, «Mi día» de Contabilidad y apariencia
+      (tema claro/oscuro y barra lateral negra, en Mi perfil). Detalle y lo que
+      falta en [`plan-nexus-ai.md`](plan-nexus-ai.md); revisión del trabajo
+      del otro agente en [`revision-portales-y-contabilidad.md`](revision-portales-y-contabilidad.md).
+- [x] **Actividad del equipo, visibilidad por rol y modo oscuro (25 oct 2026).**
+      `/configuracion/actividad` (quién hizo qué y a qué hora, con 4 gráficas,
+      «quién está activo», línea de tiempo unificada de las 4 fuentes de rastro y
+      descarga en CSV), `/configuracion/visibilidad` (el administrador maestro
+      oculta o bloquea módulos y el botón del asistente por rol; migración `0060`),
+      inicio y cierre de sesión y otras acciones que no dejaban rastro ahora lo
+      dejan, y ~700 colores fijos del portal pasaron a tokens para que el modo
+      oscuro se lea. `next build` pasa por primera vez desde que se añadieron los
+      portales (se corrigieron los 6 errores de tipos del portal del colaborador y
+      del panel de comprobantes).
+- [ ] **Rastro que sigue faltando** (revisión del 25 oct): el chat interno, la
+      validación de comprobantes recibidos y la orden de compra no dejan rastro
+      propio ni exigen permiso (ver `revision-portales-y-contabilidad.md`).
+- [ ] **Probar en pantalla, con sesión:** visibilidad (ocultar y bloquear un
+      módulo para un rol y entrar con esa cuenta), actividad, «Mi día» y el
+      asistente.
+- [ ] **Probar Nexus AI en pantalla con una clave real** (`ANTHROPIC_API_KEY`):
+      hasta ahora solo se probó el bucle con un proveedor falso y el flujo de
+      streaming contra un servidor de Anthropic simulado. Verificar el
+      identificador de modelo (`ANTHROPIC_MODEL`) y, si se quiere Haiku para
+      estudiante y colaborador, fijarlo en `/configuracion/ia`.
+- [ ] **Cargar precios y cuotas** en `/configuracion/ia`: sin precios el costo no
+      se calcula y sin cuota no hay tope.
+- [ ] **Cargar las normas fiscales** del agente de Contabilidad en
+      `/configuracion/conocimiento` (Ley 122-05, 32-23, 30-26, 155-17, Código
+      Tributario, DGII). No se sembraron: no se transcriben leyes de memoria.
+- [ ] **Embeddings y Drive** para la base de conocimiento (decisión de
+      proveedor y app OAuth Internal).
+- [ ] **Modo oscuro**: revisar pantalla por pantalla; hay `bg-white`,
+      `bg-slate-*` y colores fijos que no se adaptan.
+- [ ] **Corregir lo crítico de la revisión del otro agente** (chat sin control de
+      acceso, comprobantes sin permiso): ver `revision-portales-y-contabilidad.md`.
+      `next build` hoy falla solo por sus errores de tipos en
+      `portal/colaborador/page.tsx` y `panel-revision-comprobante.tsx`.
+- [x] **Portales por Rol como Software Completo — Fases 1 y 2 (24 oct 2026):**
+      - **Migración `0055_servicios_compartidos_base.sql`:**
+        - Introducción formal del rol `colaborador` para personal operativo (choferes, mantenimiento, cocina, auxiliares) con permisos mínimos (`rendicion.enviar`, `solicitudes.gestionar`, `ia.usar`).
+        - Tabla `public.departamento` con departamentos institucionales (`direccion`, `administracion`, `contabilidad`, `operaciones`, `academico`, `habitudes`) y relación `departamento_colaborador`.
+        - Tabla `public.usuario_push_subscription` para notificaciones Web Push PWA (VAPID) y `public.correo_cola` para envíos transaccionales asíncronos.
+      - **Migración `0056_chat_interno_y_comprobantes.sql`:**
+        - Tablas de mensajería: `public.chat_canal` (directo, grupo, departamento, hilo_caso), `public.chat_participante` y `public.chat_mensaje` (soporte para tarjetas de comprobantes de gasto y adjuntos).
+        - Tabla `contabilidad.comprobante_recibido` con folio correlativo, enlace a mensajes de chat, hash SHA-256 inmutable, clasificación presupuestaria (centro de costo, fondo, proyecto, caja) y flujo de validación en tiempo real.
+      - **Servicios y UI del Servidor:**
+        - `src/server/compartidos/notificaciones.ts`: registro de suscripciones push y encolado de correos.
+        - `src/server/chat/{consultas,acciones}.ts`: envío de mensajes, apertura de canales directos y acción `reportarGastoDesdeChat` con notificación automática a contabilidad.
+        - `src/server/contabilidad/comprobantes/{recibidos-consultas,recibidos-acciones}.ts`: bandeja contable y validación/rechazo de comprobantes de campo con feedback al hilo de chat.
+        - Portal del Colaborador en `/portal/colaborador` (`src/app/[locale]/(portal)/portal/colaborador/page.tsx`).
+        - Bandeja de Comprobantes Recibidos en `/contabilidad/comprobantes-recibidos` (`src/components/contabilidad/comprobantes/panel-revision-comprobante.tsx`).
+      - **Calidad:** 3,916 claves simétricas validadas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), 95 pruebas pasando (`npm run test:contabilidad`) y migraciones aplicadas limpiamente.
 
 - [x] **Fin de los cursos técnicos (24 oct 2026, migración `0047`).** La
       Fundación dejó de impartirlos y Global Effect 360 ocupa su lugar: docente,
@@ -57,11 +112,83 @@ módulo) — esto es solo la cola de pendientes concretos.
       que "Depreciación acumulada" (un `activo`) se ve en negativo en el mayor.
       Añadir una `naturaleza` a `cuenta_contable` antes de la Fase 5
       (depreciación).
-- [ ] **Fase 2 del ERP contable:** terceros (patrocinadores con RNC o cédula y
-      debida diligencia), donaciones en efectivo y en especie, promesas, exento
-      o gravado, órdenes de compra y comprobantes de retención.
-- [ ] `patrocinador` no guarda RNC ni cédula: el 607 sale con esa columna vacía
-      hasta que llegue `tercero` con debida diligencia (Fase 2 del plan).
+- [x] **Fase 2 del ERP contable (24 oct 2026, migración `0050`):**
+      - Tabla unificada `contabilidad.tercero` con validación de RNC (módulo 11 DGII) y Cédula (Luhn) dominicanos.
+      - Debida diligencia de prevención de lavado de activos (Ley 155-17) con origen de fondos, verificación PEP, listas y dictamen de cumplimiento.
+      - Donaciones en efectivo y en especie con asiento automático de partida doble y tratamiento fiscal (exento Ley 122-05 vs gravado).
+      - Promesas de donación con calendario de cuotas y seguimiento de avance de cobros.
+      - Órdenes de compra con flujo de aprobación por perfil (`contabilidad.aprobar`).
+      - Comprobantes de retención tributaria automáticos por factura de proveedor con anulación justificada.
+- [x] `patrocinador` integrado a `contabilidad.tercero` con RNC, cédula y debida diligencia para formatos 607 y donaciones.
+- [x] **Fase 3 del ERP contable (24 oct 2026, migración `0051`):**
+      - Formatos oficiales DGII 606, 607, 608 y 609 en archivos TXT reglamentarios, con prevalidación de RNC/NCF y soporte para envíos en cero (`/api/contabilidad/exportar/[tipo]`).
+      - Liquidaciones y anexos fiscales para IT-1 (ITBIS y retenciones con exención Ley 122-05), IR-17 (retenciones de servicios y honorarios al 15% bajo Ley 30-26) e ISFL-01 anual.
+      - Calendario fiscal institucional con cálculo automático de días restantes, estado de vencimiento y registro de autorizaciones DGII con hash SHA-256.
+      - Recargos y mora según Arts. 251 y 252 del Código Tributario Dominicano (10% primer mes o fracción + 4% mensual progresivo + 1.10% interés indemnizatorio mensual).
+      - Suite de 6 calculadoras dominicanas en `/contabilidad/calculadoras` (Factura con retenciones, ITBIS directo/inverso, Retenciones físicas/jurídicas, Recargos y mora DGII, Amortización francesa de préstamos y Salarios TSS/ISR asalariados) con conversión a borrador de asiento contable en 1 clic.
+      - 81 pruebas unitarias pasando al 100% (`npm run test:contabilidad`), cero arcoíris (`npm run audit:ui`), simetría bilingüe (`npm run i18n:check`) y compilación TypeScript limpia.
+- [x] **Fase 4 del ERP contable (24 oct 2026, migración `0052`):**
+      - Tabla `contabilidad.centro_costo` con centros de costo por programa misional (becas, formación 360, comedor, administrativo, institucional).
+      - Ampliación de `contabilidad.fondo` con contabilidad por fondos ASFL (restringidos temporales y permanentes vs no restringidos) y trazabilidad de donantes.
+      - Tabla `contabilidad.fondo_liberacion` para el circuito de liberación de fondos restringidos al ejecutar gastos convenidos, con asiento automático de reclasificación patrimonial.
+      - Tablas `contabilidad.presupuesto` y `contabilidad.presupuesto_linea` con planificación anual por centro de costo y cuenta.
+      - Matriz de ejecución presupuestaria con cálculo de desviaciones, porcentajes y alertas automáticas de sobregiro (> 100%) y preventivas (≥ 80%).
+      - Módulo de Rendición de Cuentas por Donante con trazabilidad Donación → Fondo → Gastos/Becas ejecutadas.
+      - Nuevas pantallas en `/contabilidad/centros-costo`, `/contabilidad/fondos`, `/contabilidad/presupuesto` y `/contabilidad/rendicion`.
+      - 85 pruebas unitarias pasando al 100% (`npm run test:contabilidad`), sin arcoíris (`npm run audit:ui`), i18n simétrico (`npm run i18n:check`) y TypeScript limpio.
+- [x] **Fase 5 del ERP contable: Nómina, Activos Fijos e Inventario (24 oct 2026, migración `0053`):**
+      - **Nómina y Seguridad Social Dominicana:**
+        - Tabla `contabilidad.empleado` con vinculación a `tercero` (cédula/RNC), `centro_costo` (programa misional de imputación) y `usuario` opcional. Confidencialidad estricta con permiso `contabilidad.nomina` y auditoría en bitácora (`ver_nomina`).
+        - Tablas `contabilidad.nomina` y `contabilidad.nomina_linea` para corridas mensuales, quincenales y regalía pascual. Cálculo automático de TSS (AFP 2.87%, SFS 3.04%, aportes patronales AFP 7.10%, SFS 7.09%, SRL 1.10%, INFOTEP 1.00%) con topes legales y retención de ISR de asalariados según escala de DGII.
+        - Generación y descarga directa del archivo plano oficial en texto (TXT) de autodeterminación para TSS SUIR Plus.
+        - Circuito de aprobación y pago con generación de asientos contables automáticos (Gasto sueldos / cargas patronales a Sueldos por pagar / TSS / ISR, y desembolso bancario).
+        - Calculadora interactiva de prestaciones laborales dominicanas conforme al Código de Trabajo (Ley 16-92): Preaviso (Art. 76), Cesantía (Art. 80), Vacaciones (Art. 177) y Regalía Pascual (Art. 219) con factor diario 23.83.
+      - **Activos Fijos y Depreciación:**
+        - Cuentas contables creadas (`1.2.02` Mobiliario, `1.2.03` Vehículos, `1.2.04` Edificaciones, `1.2.09` Depreciación Acumulada, `5.2.01.09` Gasto Depreciación).
+        - Tabla `contabilidad.activo_categoria` sembrada con categorías NIIF / DGII: Cat 1 (Edificaciones 5% / 20 años), Cat 2 (Equipos cómputo, vehículos 25% / 4 años), Cat 3 (Mobiliario, equipos oficina 20% / 5 años).
+        - Tabla `contabilidad.activo_fijo` con costo de adquisición, valor residual, depreciación acumulada, valor neto en libros y enlace opcional a `public.inventario_activo` (QR físico).
+        - Tablas `contabilidad.depreciacion_mensual` y `contabilidad.depreciacion_linea`: ejecución de corrida mensual de depreciación lineal con asiento contable automático.
+      - **Inventario y Kardex (Comedor y Suministros):**
+        - Cuentas creadas (`1.1.04.01` Alimentos y Comedor, `1.1.04.02` Suministros y Didáctico, `5.2.01.07` Consumo Comedor, `5.2.01.08` Consumo Suministros).
+        - Tabla `contabilidad.articulo` para consumibles con stock actual, stock mínimo, costo promedio ponderado y valor total.
+        - Tabla `contabilidad.inventario_movimiento` (kardex) para entradas por compra/donación y salidas de consumo con recálculo automático de costo promedio y asiento contable de gasto.
+        - Tablas `contabilidad.conteo_fisico` y `contabilidad.conteo_fisico_linea` para tomas físicas periódicas con cálculo de faltante/sobrante y asiento contable de ajuste.
+      - Nuevas páginas en `/contabilidad/nomina`, `/contabilidad/activos-fijos` y `/contabilidad/inventario`.
+      - 89 pruebas unitarias pasando al 100% (`npm run test:contabilidad`), 0 errores de TypeScript (`tsc --noEmit`), 0 arcoíris y 0 hex sueltos (`audit:ui`), y 3,768 claves simétricas (`i18n:check`).
+- [x] **Fase 6 del ERP contable — Reportes, Estados Financieros y Cierre (24 oct 2026, migración `0054`):**
+      - **Migración `0054_contabilidad_fase6_estados_financieros_cierre.sql`:**
+        - Tabla `contabilidad.cierre_anual`: ejercicio fiscal, fecha_cierre, asiento_cierre_id, total_ingresos, total_gastos, superavit_deficit, cerrado_por, cerrado_en, notas.
+        - Tabla `contabilidad.snapshot_financiero`: congelación inmutable de estados financieros para auditoría externa y DGII (`balance_general`, `estado_actividades`, `flujo_efectivo`, `cambios_patrimonio`, `ejecucion_presupuestaria`).
+        - Fortalecimiento de la función `contabilidad.cerrar_periodo(p_periodo)` con verificación estricta contra borradores de recibos, facturas de compras, nóminas y tomas físicas de inventario.
+        - Auditoría encadenada automática y RLS activo.
+      - **Estados Financieros Oficiales ASFL (Ley 122-05 / NIIF para PYMES):**
+        1. **Balance General (Situación Financiera):** Activo Corriente y No Corriente, Pasivo Corriente, Patrimonio Social y Superávit/Déficit del período en curso, con verificación matemática de cuadre $\Delta = \text{Activo} - (\text{Pasivo} + \text{Patrimonio}) = 0$.
+        2. **Estado de Actividades (Resultados ASFL):** Ingresos vs Gastos, clasificados por fondos con y sin restricciones de donantes, y determinación del cambio neto en los fondos.
+        3. **Estado de Flujos de Efectivo (Método Indirecto):** Flujos operativos (superávit + ajustes no monetarios por depreciación + cambios en capital de trabajo), flujos de inversión (adquisición de activos fijos), flujos de financiamiento y conciliación exacta de saldo inicial a saldo final de efectivo.
+        4. **Estado de Cambios en el Patrimonio / Fondos:** Variación de fondos no restringidos, temporalmente restringidos y resultados acumulados con liberaciones de restricciones.
+        5. **Mayor General Analítico Filtrable:** Filtros por cuenta, centro de costo, fondo y rango de fechas con saldo anterior, movimientos cronológicos y saldo acumulado progresivo.
+        6. **Flujo de Caja Proyectado (3 a 6 meses):** Análisis de liquidez futura mes a mes con entradas por donaciones recurrentes y promesas por cobrar, y salidas por nómina estimada, compras comprometidas aprobadas y gastos operativos fijos.
+      - **Cierre Contable Mensual y Anual:**
+        - Cuadrícula interactiva de los 12 meses con detección de borradores y botones de Cerrar Mes y Reabrir Mes (con justificación auditada de al menos 10 caracteres).
+        - Asistente de Cierre Anual con verificación de meses cerrados, cálculo de cuentas de resultados y generación del asiento automático de ajuste saldando ingresos (debe) y gastos (haber) contra `3.1.01.02 Resultados Acumulados`.
+      - **Rutas del Portal y UI:**
+        - `/contabilidad/reportes` (`src/components/contabilidad/reportes/vista-reportes.tsx`).
+        - `/contabilidad/cierre` (`src/components/contabilidad/cierre/vista-cierre.tsx`).
+        - Registro en `src/lib/contabilidad/modulos.ts` (`financialStatements` y `accountingClosing`).
+      - **Calidad y Verificación:**
+        - 95 pruebas unitarias pasando al 100% (`npm run test:contabilidad`), 0 errores de TypeScript (`tsc --noEmit`), 0 colores fuera de marca y 0 hex sueltos (`audit:ui`), y 3,903 claves simétricas (`i18n:check`).
+- [x] **Fase 7 del ERP contable — Auditoría Integral, Semillero y Documentación Final (24 oct 2026):**
+      - **Semillero Completo e Idempotente (`npm run db:seed:contabilidad`):**
+        - Población automática de datos dominicanos íntegros: catálogo ASFL de 4 niveles, secuencias (`RI`, `CE`, `PG`, `CH`, `AR`, `AS`, `NM`, `FP`, `OC`, `CR`, `CF`, `AF`, `DP`, `PR`), terceros (Induveca S.A. donante, Claro Dominicana suplidor, Lic. Juan Pérez empleado), fondos restringidos misionales (`FND-BECAS`, `FND-COMEDOR`), plantilla de empleados (`EMP-001`, `EMP-002`, `EMP-003`) con salarios y centros de costo, activos fijos capitalizados (cómputo y mobiliario), inventario consumible con costo promedio ponderado y los 12 períodos del ejercicio 2026.
+      - **Documentación de Referencia y Arquitectura:**
+        - Creación de [`docs/referencia/departamento-contabilidad.md`](../referencia/departamento-contabilidad.md) con el marco legal dominicano (Ley 122-05, DGII, Ley 155-17, Ley 30-26, TSS, Código de Trabajo Ley 16-92), estructura jerárquica del catálogo, subsistemas integrados y guías operativas.
+        - Actualización del catálogo de módulos en [`docs/03-modulos-funcionales.md`](../03-modulos-funcionales.md) (Módulo 14: Departamento de Contabilidad).
+        - Actualización del cuadro maestro de avance en [`docs/estado/progreso.md`](progreso.md) (Portal 6).
+      - **Auditoría de Calidad y Criterios de Aceptación:**
+        - 95 pruebas unitarias pasando al 100 % (`npm run test:contabilidad`).
+        - 0 errores de tipos en TypeScript (`tsc --noEmit`).
+        - 0 incidencias en auditoría visual de marca (`npm run audit:ui`).
+        - 3,903 claves simétricas validadas en español e inglés (`npm run i18n:check`).
 - [ ] **Validar con la Fundación la nota mínima de aprobación de 360** (hoy
       70/100). Es la que decide si una inscripción queda aprobada o reprobada, y
       una reprobada obliga a repetir la materia en otro período: es una norma

@@ -119,20 +119,20 @@ export function PanelDirectorHabitudes({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="text-base font-bold text-tinta dark:text-slate-100">
                 Dirección Pedagógica y Supervisión de Habitudes (DH)
               </h2>
               <span className="text-[10px] font-bold uppercase bg-[#0a6a8a] text-white px-2 py-0.5 rounded-full">
                 Rol Oficial DH
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-tinta-2 dark:text-slate-400 mt-0.5">
               Monitoreo en tiempo real de facilitadores, evidencias fotográficas y red de liceos exclusiva de la provincia de La Vega.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white/80 dark:bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 text-xs font-medium text-tinta-2 dark:text-slate-300 bg-white/80 dark:bg-slate-950/80 px-3 py-1.5 rounded-xl border border-linea dark:border-slate-800">
           <MapPin className="size-3.5 text-[#2096BA]" />
           <span>Provincia La Vega: 4 Municipios &bull; {liceos.length} Liceos Activos</span>
         </div>
@@ -142,15 +142,15 @@ export function PanelDirectorHabitudes({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-tinta dark:text-slate-100 flex items-center gap-2">
               <Building2 className="size-4 text-[#2096BA]" />
               Red Geoespacial de Liceos — Provincia de La Vega
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Mapa oficial interactivo restringido exclusivamente al territorio de La Vega (Concepción de La Vega, Jarabacoa, Constanza y Jima Abajo).
             </p>
           </div>
-          <span className="text-xs text-slate-500 font-mono">
+          <span className="text-xs text-muted-foreground font-mono">
             {liceosParaMapa.length} centros geolocalizados
           </span>
         </div>
@@ -167,11 +167,11 @@ export function PanelDirectorHabitudes({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-tinta dark:text-slate-100 flex items-center gap-2">
               <Users className="size-4 text-[#2096BA]" />
               Monitoreo de Profesores y Despliegue en Liceos
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Supervisión de cada facilitador: liceos asignados, tandas, evidencias fotográficas subidas y alcance de impacto.
             </p>
           </div>
@@ -182,27 +182,27 @@ export function PanelDirectorHabitudes({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {profesores.map((prof) => (
-            <Card key={prof.id} className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+            <Card key={prof.id} className="rounded-2xl border-linea dark:border-slate-800 shadow-xs overflow-hidden">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="size-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-[#187a99] dark:text-[#5FB8D4] flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="size-9 rounded-xl bg-muted dark:bg-slate-800 text-[#187a99] dark:text-[#5FB8D4] flex items-center justify-center font-bold text-xs shrink-0">
                       {prof.nombre.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                      <h4 className="font-bold text-xs text-tinta dark:text-slate-100">
                         {prof.nombre}
                       </h4>
-                      <p className="text-[11px] text-slate-500">{prof.email}</p>
+                      <p className="text-[11px] text-muted-foreground">{prof.email}</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
+                  <span className="text-[10px] font-mono bg-muted dark:bg-slate-800 px-2 py-0.5 rounded text-tinta-2 dark:text-slate-400">
                     {prof.rol}
                   </span>
                 </div>
 
                 {/* Liceos donde da clase */}
-                <div className="space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80 text-xs">
+                <div className="space-y-1 bg-muted dark:bg-slate-900/60 p-2.5 rounded-xl border border-linea dark:border-slate-800/80 text-xs">
                   <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                     Liceos Asignados ({prof.liceosAsignados.length}):
                   </span>
@@ -210,10 +210,10 @@ export function PanelDirectorHabitudes({
                     <ul className="space-y-1 mt-1">
                       {prof.liceosAsignados.map((lic, idx) => (
                         <li key={idx} className="flex items-center justify-between text-[11px]">
-                          <span className="font-medium text-slate-800 dark:text-slate-200 truncate pr-2">
+                          <span className="font-medium text-tinta dark:text-slate-200 truncate pr-2">
                             {lic.liceoNombre}
                           </span>
-                          <span className="text-[10px] text-slate-500 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700 shrink-0">
+                          <span className="text-[10px] text-muted-foreground bg-card dark:bg-slate-800 px-1.5 py-0.5 rounded border border-linea/60 dark:border-slate-700 shrink-0">
                             {lic.tanda}
                           </span>
                         </li>
@@ -225,15 +225,15 @@ export function PanelDirectorHabitudes({
                 </div>
 
                 {/* Métricas de Evidencias */}
-                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-center">
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-linea dark:border-slate-800 text-center">
                   <div>
-                    <span className="text-[10px] text-slate-500">Evidencias Fotos</span>
+                    <span className="text-[10px] text-muted-foreground">Evidencias Fotos</span>
                     <p className="font-bold text-xs text-[#0a6a8a] dark:text-[#5FB8D4]">
                       {prof.totalEvidencias} visitas
                     </p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500">Estudiantes</span>
+                    <span className="text-[10px] text-muted-foreground">Estudiantes</span>
                     <p className="font-bold text-xs text-[#2096BA]">
                       {prof.estudiantesImpactados} impacto
                     </p>
@@ -246,26 +246,26 @@ export function PanelDirectorHabitudes({
       </div>
 
       {/* 3. CENTRO DE ASIGNACIONES (PROFESORES Y ESTUDIANTES A LICEOS) */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-card dark:bg-slate-900 p-6 rounded-2xl border border-linea dark:border-slate-800 shadow-xs space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-linea dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-tinta dark:text-slate-100 flex items-center gap-2">
               <UserPlus className="size-4 text-[#2096BA]" />
               Gestión de Asignaciones a Liceos de La Vega
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Asigna profesores para impartir talleres en centros educativos o inscribe estudiantes en sus respectivos liceos.
             </p>
           </div>
 
-          <div className="flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 text-xs">
+          <div className="flex rounded-xl bg-muted dark:bg-slate-800 p-1 text-xs">
             <button
               type="button"
               onClick={() => setTabAccion("profesor")}
               className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
                 tabAccion === "profesor"
-                  ? "bg-white dark:bg-slate-950 text-[#0a6a8a] dark:text-[#5FB8D4] shadow-xs"
-                  : "text-slate-600 dark:text-slate-400"
+                  ? "bg-card dark:bg-slate-950 text-[#0a6a8a] dark:text-[#5FB8D4] shadow-xs"
+                  : "text-tinta-2 dark:text-slate-400"
               }`}
             >
               Asignar Profesor a Liceo
@@ -275,8 +275,8 @@ export function PanelDirectorHabitudes({
               onClick={() => setTabAccion("estudiante")}
               className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
                 tabAccion === "estudiante"
-                  ? "bg-white dark:bg-slate-950 text-[#0a6a8a] dark:text-[#5FB8D4] shadow-xs"
-                  : "text-slate-600 dark:text-slate-400"
+                  ? "bg-card dark:bg-slate-950 text-[#0a6a8a] dark:text-[#5FB8D4] shadow-xs"
+                  : "text-tinta-2 dark:text-slate-400"
               }`}
             >
               Vincular Estudiante a Liceo
@@ -301,13 +301,13 @@ export function PanelDirectorHabitudes({
         {tabAccion === "profesor" && (
           <form onSubmit={handleAsignarProfesor} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Profesor / Facilitador
               </label>
               <select
                 value={profesorId}
                 onChange={(e) => setProfesorId(e.target.value)}
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               >
                 {docentesDisponibles.map((doc) => (
                   <option key={doc.id} value={doc.id}>
@@ -318,13 +318,13 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Liceo de La Vega
               </label>
               <select
                 value={liceoId}
                 onChange={(e) => setLiceoId(e.target.value)}
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               >
                 {liceos.map((lic) => (
                   <option key={lic.id} value={lic.id}>
@@ -335,13 +335,13 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Tanda de Clases
               </label>
               <select
                 value={tanda}
                 onChange={(e) => setTanda(e.target.value)}
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               >
                 <option value="matutina">Tanda Matutina</option>
                 <option value="vespertina">Tanda Vespertina</option>
@@ -366,13 +366,13 @@ export function PanelDirectorHabitudes({
         {tabAccion === "estudiante" && (
           <form onSubmit={handleAsignarEstudiante} className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Estudiante Activo
               </label>
               <select
                 value={estudianteId}
                 onChange={(e) => setEstudianteId(e.target.value)}
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               >
                 {estudiantesDisponibles.map((est) => (
                   <option key={est.id} value={est.id}>
@@ -383,13 +383,13 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Liceo Destino
               </label>
               <select
                 value={liceoId}
                 onChange={(e) => setLiceoId(e.target.value)}
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               >
                 {liceos.map((lic) => (
                   <option key={lic.id} value={lic.id}>
@@ -400,7 +400,7 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-tinta-2 dark:text-slate-300 mb-1">
                 Grado
               </label>
               <input
@@ -408,7 +408,7 @@ export function PanelDirectorHabitudes({
                 value={grado}
                 onChange={(e) => setGrado(e.target.value)}
                 placeholder="Ej. 5to Secundaria"
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
+                className="w-full h-9 rounded-xl border border-linea dark:border-slate-700 bg-card dark:bg-slate-950 px-3 text-xs outline-none focus:border-[#2096BA]"
               />
             </div>
 

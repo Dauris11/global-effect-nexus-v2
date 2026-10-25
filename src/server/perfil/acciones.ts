@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
 import { subirAvatar } from "@/lib/supabase/almacen";
@@ -84,6 +85,14 @@ export async function guardarPerfil(
     console.error("[perfil] no se pudo guardar", error);
     return { estado: "error" };
   }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "perfil.editado",
+    entidad: "usuario",
+    entidadId: usuario.id,
+    datos: { foto: rutaFoto !== null },
+  });
 
   // El nombre y la foto salen en la barra lateral de todas las pantallas, así
   // que se refresca el armazón entero y no solo esta ruta.

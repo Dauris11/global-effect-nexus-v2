@@ -106,7 +106,7 @@ export default async function PaginaServiciosMensuales({
             id="mes"
             name="mes"
             defaultValue={elegido}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
           >
             {meses.map((valor) => (
               <option key={valor} value={valor}>

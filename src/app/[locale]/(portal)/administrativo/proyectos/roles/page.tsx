@@ -56,7 +56,7 @@ export default async function PaginaProyectosRoles({
 
         <Link
           href="/administrativo/proyectos"
-          className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-white px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+          className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
         >
           {t("backToProjects")}
         </Link>

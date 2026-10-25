@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 
 import { requerirUsuario } from "@/lib/auth";
 import {
-  conversar,
   MAXIMO_CARACTERES_PREGUNTA,
   type EstadoChat,
 } from "@/lib/ia";
 import { tienePermiso } from "@/lib/rbac";
+import { conversarComo } from "@/server/ia/agente";
 import {
   asegurarConversacionInterna,
   conversacionInterna,
@@ -67,11 +67,14 @@ export async function preguntarAlAsistenteInterno(
   // `@/server/ia/interno`, regla 1.
   const instrucciones = await instruccionesInternas(usuario, usuario.idioma);
 
-  const respuesta = await conversar(instrucciones, [
+  const respuesta = await conversarComo(usuario, instrucciones, [
     ...turnosInternos(historial),
     { rol: "user", contenido: pregunta },
   ]);
 
+  if (respuesta.estado === "cuota" || respuesta.estado === "limite") {
+    return { estado: "limite" };
+  }
   if (respuesta.estado === "sin_clave") return { estado: "sin_clave" };
   if (respuesta.estado === "rechazada") return { estado: "rechazada" };
   if (respuesta.estado === "fallo") return { estado: "error" };

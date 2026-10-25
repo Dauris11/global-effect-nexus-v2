@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Info, Mail, ShieldCheck, User, UserCheck } from "lucide-react";
+import { Info, Mail, Palette, ShieldCheck, User, UserCheck } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { SelectorApariencia } from "@/components/apariencia/selector-apariencia";
 import { FormularioPerfil } from "@/components/perfil/formulario-perfil";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -98,9 +99,9 @@ export default async function PaginaPerfil({
       <div className="grid gap-6 md:grid-cols-3">
         {/* Formulario de Edición de Perfil (Ocupa 2 columnas en pantallas medianas+) */}
         <div className="md:col-span-2">
-          <Card className="border-slate-200/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30 pb-4">
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
+          <Card className="border-linea/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-linea dark:border-slate-800/60 bg-muted/50 dark:bg-slate-900/30 pb-4">
+              <CardTitle className="text-base font-bold flex items-center gap-2 text-tinta dark:text-slate-100">
                 <User className="size-4 text-[#2096BA]" />
                 {t("title")}
               </CardTitle>
@@ -121,9 +122,24 @@ export default async function PaginaPerfil({
 
         {/* Tarjeta de Información del Sistema y Credenciales (Ocupa 1 columna) */}
         <div className="md:col-span-1 space-y-6">
-          <Card className="border-slate-200/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30 pb-4">
-              <CardTitle className="text-xs font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <Card className="rounded-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Palette className="text-marca-500 size-4" />
+                {t("appearance.title")}
+              </CardTitle>
+              <p className="texto-meta">{t("appearance.description")}</p>
+            </CardHeader>
+            <CardContent>
+              <NextIntlClientProvider messages={mensajes}>
+                <SelectorApariencia />
+              </NextIntlClientProvider>
+            </CardContent>
+          </Card>
+
+          <Card className="border-linea/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-linea dark:border-slate-800/60 bg-muted/50 dark:bg-slate-900/30 pb-4">
+              <CardTitle className="text-xs font-bold tracking-wider uppercase text-muted-foreground dark:text-slate-400 flex items-center gap-2">
                 <ShieldCheck className="size-4 text-[#2096BA]" />
                 {t("readOnly")}
               </CardTitle>
@@ -131,28 +147,28 @@ export default async function PaginaPerfil({
             <CardContent className="pt-5 space-y-5">
               {/* Correo */}
               <div className="space-y-1">
-                <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <dt className="text-xs font-medium text-muted-foreground dark:text-slate-400 flex items-center gap-1.5">
                   <Mail className="size-3.5 text-[#2096BA]" />
                   {t("emailLabel")}
                 </dt>
-                <dd className="text-sm font-mono font-medium text-slate-800 dark:text-slate-200 break-all bg-slate-100/70 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                <dd className="text-sm font-mono font-medium text-tinta dark:text-slate-200 break-all bg-muted/70 dark:bg-slate-900 p-2.5 rounded-xl border border-linea/60 dark:border-slate-800">
                   {usuario.email}
                 </dd>
               </div>
 
               {/* Rol */}
               <div className="space-y-1">
-                <dt className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <dt className="text-xs font-medium text-muted-foreground dark:text-slate-400 flex items-center gap-1.5">
                   <ShieldCheck className="size-3.5 text-[#2096BA]" />
                   {t("roleLabel")}
                 </dt>
-                <dd className="text-sm font-semibold text-slate-900 dark:text-slate-100 bg-slate-100/70 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                <dd className="text-sm font-semibold text-tinta dark:text-slate-100 bg-muted/70 dark:bg-slate-900 p-2.5 rounded-xl border border-linea/60 dark:border-slate-800">
                   {rolTraducido}
                 </dd>
               </div>
 
               {/* Nota informativa */}
-              <div className="p-3 rounded-xl bg-[#2096BA]/10 border border-[#2096BA]/20 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2.5">
+              <div className="p-3 rounded-xl bg-[#2096BA]/10 border border-[#2096BA]/20 text-xs text-tinta-2 dark:text-slate-300 flex items-start gap-2.5">
                 <Info className="size-4 text-[#2096BA] shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{t("roleHint")}</span>
               </div>

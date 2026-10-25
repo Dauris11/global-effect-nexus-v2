@@ -340,7 +340,7 @@ function FormularioVentana({
             id="v-periodo"
             name="periodo"
             required
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           >
             {periodos.map((periodo) => (
               <option key={periodo.id} value={periodo.id}>
@@ -360,7 +360,7 @@ function FormularioVentana({
             required
             defaultValue=""
             aria-invalid={estado.estado === "ronda_invalida" || undefined}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           >
             <option value="" disabled>
               {t("fieldTandaPlaceholder")}

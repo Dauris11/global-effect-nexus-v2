@@ -67,7 +67,7 @@ export default async function PaginaLoQueMeTocaHoy({
         <div className="flex items-center gap-2">
           <Link
             href="/administrativo/tareas"
-            className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-white px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+            className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
           >
             {t("viewGeneralBoard")}
           </Link>

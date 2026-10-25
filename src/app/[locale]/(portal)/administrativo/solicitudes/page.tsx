@@ -102,7 +102,7 @@ export default async function PaginaSolicitudes({
         )}
 
         {tipos.length > 0 && (
-          <Card className="rounded-xl border-slate-200/80 shadow-xs dark:border-slate-800">
+          <Card className="rounded-xl border-linea/80 shadow-xs dark:border-slate-800">
             <CardContent className="space-y-4 pt-5">
               <CardTitle>
                 <Send className="size-4" />
@@ -167,7 +167,7 @@ function Bloque({
       </h2>
 
       {solicitudes.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm dark:border-slate-800">
+        <p className="text-muted-foreground rounded-xl border border-dashed border-linea px-4 py-6 text-center text-sm dark:border-slate-800">
           {vacio}
         </p>
       ) : (

@@ -422,6 +422,188 @@ async function seedCajas(cliente, usuarioId) {
   console.log("  ✓ Cajas chicas demo (Operaciones y Dirección)");
 }
 
+async function seedTerceros(cliente, usuarioId) {
+  const terceros = [
+    {
+      tipoPersona: "juridica",
+      tipoId: "rnc",
+      identificacion: "101001577",
+      nombre: "Induveca S.A.",
+      comercial: "Induveca",
+      esDonante: true,
+      esProveedor: false,
+    },
+    {
+      tipoPersona: "juridica",
+      tipoId: "rnc",
+      identificacion: "101001471",
+      nombre: "Compañía Dominicana de Teléfonos S.A.",
+      comercial: "Claro Dominicana",
+      esDonante: false,
+      esProveedor: true,
+    },
+    {
+      tipoPersona: "fisica",
+      tipoId: "cedula",
+      identificacion: "04700000018",
+      nombre: "Lic. Juan Carlos Pérez",
+      comercial: "Juan Pérez",
+      esDonante: false,
+      esProveedor: false,
+      esEmpleado: true,
+    },
+  ];
+
+  for (const t of terceros) {
+    await cliente.query(
+      `INSERT INTO contabilidad.tercero
+         (tipo_persona, tipo_id, identificacion, nombre_razon_social, nombre_comercial, es_donante, es_proveedor, es_empleado, creado_por)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (tipo_id, identificacion) DO UPDATE SET
+         nombre_razon_social = EXCLUDED.nombre_razon_social,
+         es_donante = EXCLUDED.es_donante,
+         es_proveedor = EXCLUDED.es_proveedor`,
+      [
+        t.tipoPersona,
+        t.tipoId,
+        t.identificacion,
+        t.nombre,
+        t.comercial,
+        t.esDonante,
+        t.esProveedor,
+        t.esEmpleado ?? false,
+        usuarioId,
+      ],
+    );
+  }
+  console.log("  ✓ Terceros demo (Donante, Proveedor, Empleado)");
+}
+
+async function seedFondosAvanzados(cliente) {
+  const fondos = [
+    {
+      codigo: "FND-BECAS",
+      nombre: "Fondo de Becas Universitarias",
+      tipoRestriccion: "temporalmente_restringido",
+      proposito: "Cobertura de matrículas y estipendios para estudiantes de grado",
+      montoOriginal: 750000,
+    },
+    {
+      codigo: "FND-COMEDOR",
+      nombre: "Fondo de Nutrición y Comedor Comunitario",
+      tipoRestriccion: "temporalmente_restringido",
+      proposito: "Insumos alimenticios para el almuerzo diario de becados",
+      montoOriginal: 400000,
+    },
+  ];
+
+  for (const f of fondos) {
+    await cliente.query(
+      `INSERT INTO contabilidad.fondo
+         (codigo, nombre, tipo_restriccion, proposito_restringido, monto_restringido_original)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (codigo) DO UPDATE SET
+         nombre = EXCLUDED.nombre,
+         tipo_restriccion = EXCLUDED.tipo_restriccion`,
+      [f.codigo, f.nombre, f.tipoRestriccion, f.proposito, f.montoOriginal],
+    );
+  }
+  console.log("  ✓ Fondos restringidos institucionales");
+}
+
+async function seedEmpleados(cliente, usuarioId) {
+  const { rows: ccRows } = await cliente.query(
+    `SELECT id, codigo FROM contabilidad.centro_costo`,
+  );
+  const mapaCC = new Map(ccRows.map((r) => [r.codigo, r.id]));
+  const ccAdmin = mapaCC.get("CC-ADMIN");
+
+  // Obtener el tercero empleado que sembramos
+  const { rows: tRows } = await cliente.query(
+    `SELECT id FROM contabilidad.tercero WHERE identificacion = '04700000018' LIMIT 1`,
+  );
+  const terceroEmpleadoId = tRows[0]?.id;
+
+  if (terceroEmpleadoId && ccAdmin) {
+    await cliente.query(
+      `INSERT INTO contabilidad.empleado
+         (tercero_id, centro_costo_id, codigo_empleado, cargo, departamento, fecha_ingreso, salario_base)
+       VALUES ($1, $2, 'EMP-001', 'Contador General', 'Contabilidad', '2024-01-15', 65000)
+       ON CONFLICT (codigo_empleado) DO UPDATE SET
+         salario_base = EXCLUDED.salario_base,
+         cargo = EXCLUDED.cargo`,
+      [terceroEmpleadoId, ccAdmin],
+    );
+    console.log("  ✓ Plantilla de empleados institucionales");
+  }
+}
+
+async function seedActivosFijos(cliente, usuarioId) {
+  const { rows: catRows } = await cliente.query(`SELECT id, codigo FROM contabilidad.activo_categoria`);
+  const mapaCat = new Map(catRows.map((r) => [r.codigo, r.id]));
+
+  const { rows: ccRows } = await cliente.query(`SELECT id, codigo FROM contabilidad.centro_costo`);
+  const mapaCC = new Map(ccRows.map((r) => [r.codigo, r.id]));
+
+  const cat2 = mapaCat.get("CAT-2");
+  const cat3 = mapaCat.get("CAT-3");
+  const ccAdmin = mapaCC.get("CC-ADMIN");
+  const ccForm = mapaCC.get("CC-FORM360");
+
+  if (cat2 && cat3 && ccAdmin && ccForm) {
+    await cliente.query(
+      `INSERT INTO contabilidad.activo_fijo
+         (codigo, nombre, categoria_id, centro_costo_id, fecha_adquisicion, costo_adquisicion, valor_residual, valor_en_libros)
+       VALUES
+         ('AF-LAB-001', 'Lote de 10 Computadoras de Laboratorio', $1, $2, '2025-01-10', 350000, 35000, 350000),
+         ('AF-MOB-001', 'Mobiliario de Aulas y Sillas Ergonómicas', $3, $4, '2025-02-15', 180000, 18000, 180000)
+       ON CONFLICT (codigo) DO NOTHING`,
+      [cat2, ccForm, cat3, ccAdmin],
+    );
+    console.log("  ✓ Activos fijos capitalizados (Computación y Mobiliario)");
+  }
+}
+
+async function seedArticulosConsumibles(cliente) {
+  const { rows: ctaInv } = await cliente.query(`SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.1.04.01'`);
+  const { rows: ctaGas } = await cliente.query(`SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '5.2.01.07'`);
+
+  if (ctaInv[0] && ctaGas[0]) {
+    const articulos = [
+      { codigo: "ART-ALM-001", nombre: "Arroz Selecto Grano Largo", categoria: "alimentos_comedor", unidad: "kilo", stock: 150, costo: 42.50 },
+      { codigo: "ART-ALM-002", nombre: "Habichuelas Rojas", categoria: "alimentos_comedor", unidad: "kilo", stock: 80, costo: 65.00 },
+      { codigo: "ART-DID-001", nombre: "Cuadernos Universitarios de Líneas", categoria: "material_didactico", unidad: "unidad", stock: 200, costo: 85.00 },
+    ];
+
+    for (const a of articulos) {
+      await cliente.query(
+        `INSERT INTO contabilidad.articulo
+           (codigo, nombre, categoria, unidad_medida, stock_actual, stock_minimo, costo_promedio, valor_total, cuenta_inventario_id, cuenta_gasto_id)
+         VALUES ($1, $2, $3, $4, $5, 20, $6, $7, $8, $9)
+         ON CONFLICT (codigo) DO UPDATE SET
+           stock_actual = EXCLUDED.stock_actual,
+           costo_promedio = EXCLUDED.costo_promedio,
+           valor_total = EXCLUDED.valor_total`,
+        [a.codigo, a.nombre, a.categoria, a.unidad, a.stock, a.costo, a.stock * a.costo, ctaInv[0].id, ctaGas[0].id],
+      );
+    }
+    console.log("  ✓ Artículos de inventario consumibles y comedor");
+  }
+}
+
+async function seedPeriodosAnioCompleto(cliente) {
+  const anio = 2026;
+  for (let m = 1; m <= 12; m++) {
+    await cliente.query(
+      `INSERT INTO contabilidad.periodo_contable (anio, mes, estado)
+       VALUES ($1, $2, 'abierto')
+       ON CONFLICT (anio, mes) DO NOTHING`,
+      [anio, m],
+    );
+  }
+  console.log(`  ✓ 12 Períodos del ejercicio ${anio}`);
+}
+
 async function main() {
   const cliente = await pool.connect();
 
@@ -434,15 +616,22 @@ async function main() {
     console.log("Sembrando contabilidad…");
     await seedSecuencias(cliente);
     await seedFondo(cliente);
-    // El catálogo primero: las categorías se enlazan a sus cuentas.
     await seedCatalogoCuentas(cliente);
     await seedCategorias(cliente);
     await seedParametrosNomina(cliente);
     await seedPeriodoActual(cliente);
     await seedCajas(cliente, usuarioId);
 
+    // Nuevas entidades integrales para el ERP
+    await seedTerceros(cliente, usuarioId);
+    await seedFondosAvanzados(cliente);
+    await seedEmpleados(cliente, usuarioId);
+    await seedActivosFijos(cliente, usuarioId);
+    await seedArticulosConsumibles(cliente);
+    await seedPeriodosAnioCompleto(cliente);
+
     await cliente.query("COMMIT");
-    console.log("✅ db:seed:contabilidad completado.");
+    console.log("✅ db:seed:contabilidad completado con éxito.");
 
   } catch (err) {
     await cliente.query("ROLLBACK");

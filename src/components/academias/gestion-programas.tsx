@@ -45,7 +45,7 @@ import type { AcademiaFila } from "@/server/academias/consultas";
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
 const SELECT =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-white px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
+  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
 /**
  * Icono por tipo de programa.
@@ -198,7 +198,7 @@ function Ficha({
               ? "bg-[#2096BA]/15 text-[#187a99]"
               : fila.estado === "planificada"
                 ? "bg-[#2096BA]/10 text-[#2096BA]"
-                : "bg-slate-100 text-slate-600",
+                : "bg-muted text-tinta-2",
           )}
         >
           {t(`state.${fila.estado}` as never)}

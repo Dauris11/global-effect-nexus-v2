@@ -41,7 +41,7 @@ import {
   type ModuloContable,
 } from "@/lib/contabilidad/modulos";
 import type { Permiso, Rol } from "@/lib/rbac";
-import { tienePermiso } from "@/lib/rbac";
+import { PORTAL_POR_ROL, tienePermiso } from "@/lib/rbac";
 
 /**
  * Menús de la barra lateral, uno por rol (sección 3 del inventario).
@@ -607,6 +607,42 @@ function itemDeModulo(modulo: ModuloContable): ItemNav {
   };
 }
 
+/**
+ * Menú del personal operativo (colaborador: choferes, mantenimiento, etc.).
+ * Diseñado específicamente para uso móvil / PWA con accesos directos:
+ * "Mi Día" (tareas de hoy), rendición de comprobantes con foto y solicitudes.
+ */
+const MENU_COLABORADOR: AreaNav[] = [
+  {
+    clave: "colaborador",
+    etiqueta: "operations",
+    icono: Wrench,
+    secciones: [
+      {
+        items: [
+          {
+            etiqueta: "myDay",
+            href: "/administrativo/tareas/hoy",
+            icono: ListTodo,
+          },
+          {
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: ReceiptText,
+            permiso: "rendicion.enviar",
+          },
+          {
+            etiqueta: "requests",
+            href: "/administrativo/solicitudes",
+            icono: Inbox,
+            permiso: "solicitudes.gestionar",
+          },
+        ],
+      },
+    ],
+  },
+];
+
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   super_admin: MENU_ADMINISTRACION,
   admin: MENU_ADMINISTRACION,
@@ -615,6 +651,7 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   contabilidad: MENU_CONTABILIDAD,
   habitudes: MENU_HABITUDES,
   dir_habitudes: MENU_HABITUDES,
+  colaborador: MENU_COLABORADOR,
 };
 
 /**
@@ -622,7 +659,7 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
  * desaparecen, y las áreas que se quedan sin ninguna sección tampoco llegan al
  * raíl: un icono que abre un panel vacío es peor que no tener el icono.
  */
-export function menuDe(rol: Rol): AreaNav[] {
+export function menuDe(rol: Rol, ocultos?: ReadonlySet<string>): AreaNav[] {
   return MENU_POR_ROL[rol]
     .map((area) => ({
       ...area,
@@ -630,13 +667,30 @@ export function menuDe(rol: Rol): AreaNav[] {
         .map((seccion) => ({
           ...seccion,
           items: seccion.items.filter(
-            (item) => !item.permiso || tienePermiso(rol, item.permiso),
+            (item) =>
+              (!item.permiso || tienePermiso(rol, item.permiso)) &&
+              // Lo que el administrador maestro ocultó para este rol (ver
+              // `/configuracion/visibilidad`). El permiso sigue mandando: ocultar
+              // no da acceso a nada, solo quita la entrada.
+              !ocultos?.has(item.href),
           ),
         }))
         .filter((seccion) => seccion.items.length > 0),
     }))
     .filter((area) => area.secciones.length > 0);
 }
+
+/**
+ * Entradas que nadie puede ocultar ni bloquear a un rol: su portal de inicio y su
+ * perfil. Sin ellas, una pantalla de visibilidad mal puesta lo dejaría sin sitio
+ * al que ir ni forma de cambiar su foto o salir.
+ */
+export function rutasProtegidas(rol: Rol): string[] {
+  return ["/perfil", PORTAL_POR_ROL[rol]];
+}
+
+/** Función transversal que también se puede ocultar por rol: el botón del asistente. */
+export const FUNCION_ASISTENTE = "funcion:asistente_ia";
 
 /** Todos los enlaces de un área, sin sus secciones. */
 export function itemsDeArea(area: AreaNav): ItemNav[] {
@@ -734,8 +788,8 @@ const ETIQUETA_CORTA: Record<string, string> = {
  * teléfono. El perfil sigue a un toque, en el menú del avatar de la barra de
  * arriba.
  */
-export function pestanasMoviles(rol: Rol): PestanaMovil[] {
-  const items = menuDe(rol).flatMap(itemsDeArea);
+export function pestanasMoviles(rol: Rol, ocultos?: ReadonlySet<string>): PestanaMovil[] {
+  const items = menuDe(rol, ocultos).flatMap(itemsDeArea);
   // Un objeto y no un `Map`: en este archivo `Map` es el icono de lucide.
   const porHref: Record<string, ItemNav> = Object.fromEntries(
     items.map((item) => [item.href, item]),

@@ -139,6 +139,34 @@
   --shadow-elevada: 0 6px 20px rgb(0 0 0 / 0.45);
 }
 
+/*
+ * BARRA LATERAL NEGRA (preferencia de apariencia, `data-barra` en <html>).
+ *
+ * Se redefinen las variables SOLO dentro de la barra: sus textos usan
+ * `text-tinta-2`, `bg-muted`, etc., y con la página en claro esos tokens son
+ * oscuros sobre fondo oscuro. Al acotarlos a `[data-barra-lateral]` el resto de
+ * la página no se entera. El logo es negro: se invierte sobre fondo oscuro, que
+ * es lo que ya hacía `dark:invert` y ahora vale para los dos casos.
+ */
+html[data-barra="negra"] [data-barra-lateral] {
+  --sidebar: #0b0d0f;
+  --sidebar-foreground: #f4f6f8;
+  --sidebar-accent: #1f2326;
+  --sidebar-accent-foreground: #f4f6f8;
+  --sidebar-border: #2a2f35;
+  --tinta: #f4f6f8;
+  --tinta-2: #a3abb4;
+  --tinta-3: #7d8690;
+  --linea: #2a2f35;
+  --muted: #1a1e21;
+  --ring: #f4f6f8;
+}
+
+html[data-barra="negra"] [data-barra-lateral] .logo-barra,
+.dark [data-barra-lateral] .logo-barra {
+  filter: invert(1);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -18,6 +18,7 @@ import { requerirRol } from "@/lib/auth";
 import { cuantasPorAtender } from "@/server/solicitudes/consultas";
 import { fechaConHora } from "@/lib/fechas";
 import { menuDe } from "@/lib/nav";
+import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import { CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
@@ -120,7 +121,7 @@ export default async function PortalAdministrativo({
     { clave: "users", valor: cifras.usuarios },
   ];
 
-  const areas = menuDe(usuario.rol);
+  const areas = menuDe(usuario.rol, new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu));
 
   return (
     <div className="space-y-6">

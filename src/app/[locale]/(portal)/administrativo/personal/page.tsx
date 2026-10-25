@@ -94,7 +94,7 @@ export default async function PaginaPersonal({
                 key={fila.rol}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium",
-                  fila.total === 0 ? "bg-slate-100 text-slate-500" : CUADRO.marca,
+                  fila.total === 0 ? "bg-muted text-muted-foreground" : CUADRO.marca,
                 )}
               >
                 {tRoles(fila.rol)}

@@ -6,12 +6,13 @@ import { requerirUsuario } from "@/lib/auth";
 import { consultar, consultarUna } from "@/lib/db";
 import { fechaConHora } from "@/lib/fechas";
 import {
-  conversar,
   MAXIMO_CARACTERES_PREGUNTA,
   type TurnoIA,
 } from "@/lib/ia";
 import { tienePermiso, type Rol } from "@/lib/rbac";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import { conversarComo } from "@/server/ia/agente";
+import { REGLAMENTO_FUNDACION } from "@/server/ia/reglamento";
 import {
   asegurarConversacion,
   conversacionDelEstudiante,
@@ -52,35 +53,6 @@ export type RespuestaEnvioWidget = {
 };
 
 /**
- * Reglas normativas y académicas institucionales de la Fundación Global Effect
- * para enriquecer la base de conocimiento del estudiante y del personal.
- */
-const REGLAMENTO_FUNDACION = `
-REGLAMENTO INSTITUCIONAL Y POLÍTICA DE BECAS (FUNDACIÓN GLOBAL EFFECT - LA VEGA, RD):
-1. REQUISITOS DE PERMANENCIA EN LA BECA:
-   - Becados Universitarios: Mantener un índice académico (GPA) igual o superior a 3.00 sobre 4.00 (promedio >= 80/100).
-   - Global Effect 360: Calificación mínima aprobatoria de 70 puntos en cada materia.
-   - Asistencia a Clases y Talleres: Mínimo 80% de asistencia obligatoria. Las faltas injustificadas ponen en riesgo la beca.
-   - Servicio Comunitario Mensual: 8 horas mensuales obligatorias en proyectos aprobados por la Fundación.
-   - Reuniones Mensuales Generales: Asistencia obligatoria el primer fin de semana de cada mes.
-
-2. ASIGNATURAS REPROBADAS Y OBSERVACIÓN:
-   - Si un estudiante reprueba una materia o su índice cae por debajo de 3.00, entra automáticamente en «Observación Académica».
-   - Debe cumplir un plan de tutorías y acompañamiento con el equipo académico. Dos cuatrimestres consecutivos en observación requieren revisión por el Comité de Becas.
-
-3. TRÁMITES Y SOLICITUDES:
-   - Para constancias de estudio, cartas de recomendación laboral/universitaria, permisos de ausencia justificadas o citas con Dirección/Coordinación, el estudiante debe realizarlas desde «Mis solicitudes» (/portal/estudiante/solicitudes).
-   - No se tramitan solicitudes por mensajería informal.
-
-4. ALIMENTACIÓN Y SERVICIOS EN EL CAMPUS:
-   - El almuerzo en la Fundación requiere inscripción previa en «Inscripción de comida» (/inscripcion-comida).
-
-5. GLOBAL EFFECT 360:
-   - Programa integral de formación en liderazgo, carácter, habilidades técnicas y valores que acompaña los estudios universitarios.
-   - Lo cursan todos los becados. Todas sus materias son obligatorias: una por tanda, dos tandas por cuatrimestre.
-`;
-
-/**
  * Catálogo de rutas permitidas para ejecución de acciones por rol.
  */
 type DefinicionAccion = {
@@ -94,6 +66,27 @@ type DefinicionAccion = {
 
 const CATALOGO_ACCIONES: DefinicionAccion[] = [
   // Contabilidad
+  {
+    identificadores: ["mi dia", "cola de hoy", "pendientes de hoy"],
+    etiqueta: "Mi día",
+    descripcion: "Tu cola de decisiones de hoy: comprobantes por revisar, vencimientos y señales.",
+    ruta: "/contabilidad/mi-dia",
+    rolesPermitidos: ["contabilidad", "admin", "super_admin"],
+  },
+  {
+    identificadores: ["actividad del equipo", "quien hizo que", "resguardo de actividades"],
+    etiqueta: "Actividad del equipo",
+    descripcion: "Quién hizo qué y a qué hora, con gráficas y línea de tiempo.",
+    ruta: "/configuracion/actividad",
+    rolesPermitidos: ["super_admin"],
+  },
+  {
+    identificadores: ["visibilidad", "que ve cada rol", "ocultar modulos"],
+    etiqueta: "Qué ve cada rol",
+    descripcion: "Oculta o bloquea módulos para los demás roles.",
+    ruta: "/configuracion/visibilidad",
+    rolesPermitidos: ["super_admin"],
+  },
   {
     identificadores: [
       "cuentas por pagar",
@@ -371,6 +364,13 @@ function interpretarAccion(
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
+  // Solo es navegación si EMPIEZA como una orden de ir a un sitio. Sin este
+  // filtro, «crea una tarea para revisar el inventario» llevaba a Inventario en
+  // vez de llegar al asistente, que sí puede crearla.
+  if (!/^(ir|ve|vamos|llevame|llevarme|abre|abrir|muestrame|mostrar|ver|navega|quiero ir|go to|open|show|take me)\b/.test(normalizado)) {
+    return null;
+  }
+
   // Recorrer las acciones que el rol tiene permitido ver
   for (const item of CATALOGO_ACCIONES) {
     if (!item.rolesPermitidos.includes(rol)) continue;
@@ -509,7 +509,10 @@ export async function enviarMensajeWidget({
       { rol: "user", contenido: texto },
     ];
 
-    const res = await conversar(instruccionesCompletas, turnos);
+    const res = await conversarComo(usuario, instruccionesCompletas, turnos);
+
+    if (res.estado === "cuota") return { ok: false, error: "cuota" };
+    if (res.estado === "limite") return { ok: false, error: "limite" };
 
     if (res.estado === "ok") {
       respuestaTexto = res.texto;
@@ -549,7 +552,10 @@ export async function enviarMensajeWidget({
       { rol: "user", contenido: texto },
     ];
 
-    const res = await conversar(instruccionesCompletas, turnos);
+    const res = await conversarComo(usuario, instruccionesCompletas, turnos);
+
+    if (res.estado === "cuota") return { ok: false, error: "cuota" };
+    if (res.estado === "limite") return { ok: false, error: "limite" };
 
     if (res.estado === "ok") {
       respuestaTexto = res.texto;
@@ -588,6 +594,19 @@ export async function enviarMensajeWidget({
     },
     accion: accionDetectada,
   };
+}
+
+/**
+ * Detecta si lo escrito es una orden de navegación («abre la tesorería»). No usa
+ * el modelo: es una coincidencia de palabras, así que responde al instante y
+ * funciona aunque no haya clave de IA.
+ */
+export async function sugerirNavegacion(
+  comando: string,
+): Promise<AccionSugerida | null> {
+  const usuario = await requerirUsuario();
+
+  return interpretarAccion(comando.slice(0, MAXIMO_CARACTERES_PREGUNTA), usuario.rol);
 }
 
 /**
