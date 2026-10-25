@@ -7,6 +7,7 @@ import {
   Globe2,
   LogOut,
   Menu,
+  Palette,
   Search,
   Settings,
   User,
@@ -206,6 +207,20 @@ export function TopBar({
                 {t("profile")}
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/perfil">
+                <Palette />
+                {t("appearance")}
+              </Link>
+            </DropdownMenuItem>
+            {rol === "contabilidad" && (
+              <DropdownMenuItem asChild>
+                <Link href="/contabilidad/configuracion">
+                  <Settings />
+                  {t("accountingSettings")}
+                </Link>
+              </DropdownMenuItem>
+            )}
             {tieneConfiguracion && (
               <DropdownMenuItem asChild>
                 <Link href="/configuracion">

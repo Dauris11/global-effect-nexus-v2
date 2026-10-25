@@ -277,9 +277,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         // salen del registro del departamento, igual que el menú de contabilidad.
         items: [
           {
-            etiqueta: "accounting",
+            etiqueta: "accountingHome",
             href: "/portal/contabilidad",
-            icono: DollarSign,
+            icono: Home,
             permiso: "contabilidad.leer",
           },
           ...MODULOS_CONTABLES.filter((modulo) => modulo.enAdministracion).map(itemDeModulo),
@@ -569,17 +569,15 @@ const MENU_HABITUDES: AreaNav[] = [
 ];
 
 /**
- * Contabilidad ve UNA sola área (§1.1 de docs/prompts/portal-contabilidad.md):
- * su departamento, con una sección por grupo de trabajo —tesorería, ingresos,
- * gastos, impuestos, activos y lo del departamento—. Las secciones salen de
- * `MODULOS_CONTABLES`, así que un módulo nuevo aparece aquí sin tocar el menú.
- * El perfil va en el menú del avatar.
+ * Menú de Contabilidad: estructurado en áreas funcionales por ciclo contable
+ * más las herramientas operativas institucionales (Calendario, Reuniones, Chat IA).
+ * Cada área se dibuja con su icono y encabezado en la barra lateral.
  */
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
-    clave: "contabilidad",
-    etiqueta: "accounting",
-    icono: DollarSign,
+    clave: "contab_general",
+    etiqueta: "contabGroups.general",
+    icono: BookOpen,
     secciones: [
       {
         items: [
@@ -588,12 +586,74 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             href: "/portal/contabilidad",
             icono: Home,
           },
+          ...modulosDeGrupo("general").map(itemDeModulo),
         ],
       },
-      ...GRUPOS_CONTABLES.map((grupo) => ({
-        etiqueta: `contabGroups.${grupo}`,
-        items: modulosDeGrupo(grupo).map(itemDeModulo),
-      })),
+    ],
+  },
+  {
+    clave: "contab_tesoreria",
+    etiqueta: "contabGroups.tesoreria",
+    icono: Landmark,
+    secciones: [
+      {
+        items: modulosDeGrupo("tesoreria").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_ingresos",
+    etiqueta: "contabGroups.ingresos",
+    icono: HandCoins,
+    secciones: [
+      {
+        items: modulosDeGrupo("ingresos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_gastos",
+    etiqueta: "contabGroups.gastos",
+    icono: ReceiptText,
+    secciones: [
+      {
+        items: modulosDeGrupo("gastos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_impuestos",
+    etiqueta: "contabGroups.impuestos",
+    icono: DollarSign,
+    secciones: [
+      {
+        items: modulosDeGrupo("impuestos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_activos",
+    etiqueta: "contabGroups.activos",
+    icono: Package,
+    secciones: [
+      {
+        items: modulosDeGrupo("activos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_gestion",
+    etiqueta: "tools",
+    icono: Sparkles,
+    secciones: [
+      {
+        items: [
+          ...modulosDeGrupo("departamento").map(itemDeModulo),
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
+          { etiqueta: "chatIaAdmin", href: "/chat-ia", icono: Bot, permiso: "ia.usar" },
+        ],
+      },
     ],
   },
 ];

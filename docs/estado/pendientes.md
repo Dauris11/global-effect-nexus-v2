@@ -5,6 +5,12 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Alineación de Navegación Contable y Vinculación de Programas a Comprobantes (25 oct 2026):**
+      - **Navegación Contable (`src/lib/nav.ts`):** `MENU_CONTABILIDAD` reestructurado en 7 áreas funcionales por ciclo contable (Contabilidad General, Tesorería, Ingresos, Gastos, Impuestos, Activos, Gestión/Herramientas), dotándolo de acceso a Calendario, Reuniones y Chat IA. En `MENU_ADMINISTRACION`, el acceso directo a Contabilidad se nombró `Inicio` para eliminar redundancias.
+      - **Vinculación de Programas a Comprobantes:** en `src/components/contabilidad/comprobantes/panel-revision-comprobante.tsx` y `comprobantes-recibidos/page.tsx`, se integró el catálogo de proyectos activos (`programasParaRendicion`) permitiendo ver y asociar cada comprobante/factura/foto escaneada a un programa misional de la Fundación (Beca Universitaria, Global Effect 360, Comedor, etc.).
+      - **Acceso Universal a Apariencia y Modos (`topbar.tsx`):** se expuso en el dropdown del avatar el acceso a `Apariencia y tema` (`/perfil`) para todos los roles, y acceso directo a `Configuración contable` para el rol contable.
+      - **Auditoría Documentada:** reporte exhaustivo en `recuento_modulos_roles_y_contabilidad.txt`.
+      - **Calidad:** 4,359 claves simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` pasando al 100%.
 - [x] **Proyectos Avanzados, Fases y Cronograma Gantt (25 oct 2026, migración `0062`):**
       - **Migración `0062_proyectos_avanzados_fases_gantt.sql`:**
         - Tabla `public.proyecto_fase` (fases ordenadas cronológicamente con color de marca).

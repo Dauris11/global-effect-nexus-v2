@@ -1,0 +1,318 @@
+================================================================================
+GLOBAL EFFECT NEXUS — AUDITORÍA Y RECUENTO DE MÓDULOS, ROLES Y CONTABILIDAD
+Fecha: 25 de octubre de 2026
+Fundación Global Effect (La Vega, República Dominicana — ASFL Ley 122-05)
+================================================================================
+
+Este documento detalla:
+1. Lista oficial de los 8 roles del sistema.
+2. Diagnóstico de por qué los módulos de contabilidad no se reflejaban igual para el rol contable que para el super_admin.
+3. Recuento exhaustivo de módulos por rol y portal.
+4. Situación de la configuración de perfil y modos (claro/oscuro/visibilidad).
+5. Estado real de Asientos Contables, Libros y Almacenamiento de facturas/fotos vinculadas a programas.
+
+================================================================================
+1. LISTA OFICIAL DE ROLES DEL SISTEMA (8 ROLES)
+================================================================================
+
+1. super_admin (Super Administrador / Dirección General)
+   - Portal: /portal/administrativo (o /dashboard)
+   - Acceso transversal de lectura y auditoría a todos los módulos.
+   - Gobernanza de proyectos, aprobación de desembolsos mayores, bitácora SHA-256.
+
+2. admin (Coordinación Administrativa / Operativa)
+   - Portal: /portal/administrativo (o /dashboard)
+   - Gestión académica, expedientes de becados, personal, inventario físico con QR,
+     solicitudes y tareas.
+
+3. contabilidad (Departamento de Contabilidad y Finanzas)
+   - Portal: /portal/contabilidad
+   - Operaciones fiscales ASFL (Ley 122-05, DGII 606/607/608), asientos, libros,
+     bancos, cajas, donaciones, CxP, órdenes de compra, nómina TSS y retenciones.
+
+4. docente (Facilitador / Profesor Global Effect 360)
+   - Portal: /portal/profesor
+   - Control de clases formativas 360, asignación de tareas, calificaciones y recursos.
+
+5. estudiante (Becado Universitario)
+   - Portal: /portal/estudiante
+   - Resumen académico, aula virtual 360, notas universitarias, prematrícula cuatrimestral,
+     solicitudes y comedor.
+
+6. habitudes (Formador / Facilitador Habitudes)
+   - Portal: /habitudes
+   - Currículo de liderazgo para jóvenes, expedientes postulados y evidencias formativas.
+
+7. dir_habitudes (Director de Programa Habitudes)
+   - Portal: /habitudes
+   - Supervisión integral de Habitudes, auditoría de evidencias y reportes formativos.
+
+8. colaborador (Personal Operativo / Choferes / Mantenimiento)
+   - Portal: /portal/colaborador
+   - Tablero móvil "Mi Día", rendición de gastos con fotos de comprobantes y solicitudes.
+
+================================================================================
+2. ¿POR QUÉ LOS CAMBIOS DE CONTABILIDAD NO SE REFLEJABAN PARA EL ROL CONTABILIDAD?
+================================================================================
+
+DIAGNÓSTICO TÉCNICO:
+1. En 'src/lib/nav.ts', el menú para super_admin (MENU_ADMINISTRACION) tiene el área
+   "Finanzas" dividida con todos los 25 módulos contables visibles uno a uno.
+2. Sin embargo, para el rol 'contabilidad' (MENU_CONTABILIDAD), se definió una única
+   área llamada "Contabilidad" que en la barra lateral ('sidebar.tsx') aplana todo en
+   un solo bloque desordenado de 27 enlaces continuos, sin separaciones claras.
+3. Además, el rol 'contabilidad' fue aislado y NO tiene en su menú las herramientas
+   institucionales que sí ve super_admin:
+   - Calendario institucional (/calendario)
+   - Reuniones y minutas (/reuniones)
+   - Asistente de Chat IA (/chat-ia)
+   - Reportes generales (/reportes)
+   - Tareas y proyectos relacionados (/administrativo/tareas)
+4. En la barra superior ('topbar.tsx'), la opción de "Configuración" del avatar solo se
+   muestra a quienes tienen /configuracion en su menú (admin y super_admin). Para
+   'contabilidad' el enlace está oculto, impidiéndole acceder a parámetros o ajustes.
+
+================================================================================
+3. RECUENTO DE MÓDULOS POR ROL Y PORTAL
+================================================================================
+
+--------------------------------------------------------------------------------
+A. ROL: super_admin (Portal: /portal/administrativo | /dashboard)
+--------------------------------------------------------------------------------
+[Área: Panel]
+- Portal administrativo               /portal/administrativo
+- Panel de indicadores                /dashboard
+
+[Área: Académico]
+- Clases de formación 360             /academico/clases-360
+- Materias universitarias             /academico/materias
+- Historial académico                 /academico/historial
+- Prematrícula cuatrimestral          /academico/prematricula
+- Períodos académicos                 /academico/periodos
+- Programas de formación              /academias/programas
+- Materiales pedagógicos              /academias/materiales
+- Hub Habitudes                       /habitudes
+
+[Área: Patrocinadores]
+- Directorio de donantes              /patrocinadores
+- Asignación de becas                 /patrocinadores/becas
+
+[Área: Operaciones]
+- Tablero de tareas                   /administrativo/tareas
+- Mi Día (tareas prioritarias)        /administrativo/tareas/hoy
+- Proyectos institucionales           /administrativo/proyectos
+- Cronograma Gantt interactivo        /calendario/gantt
+- Personal institucional              /administrativo/personal
+- Rendiciones de gastos               /administrativo/rendiciones
+- Comedor (registro diario)           /administrativo/comida
+- Lista de comensales                 /administrativo/comida/lista
+- Servicios comunitarios              /administrativo/servicios
+- Solicitudes institucionales         /administrativo/solicitudes
+- Inventario con código QR            /administrativo/inventario
+- Matriz de asignación de proyectos   /administrativo/asignacion-proyectos
+
+[Área: Finanzas / Contabilidad]
+- Inicio Portal Contabilidad          /portal/contabilidad
+- Asientos contables                  /contabilidad/asientos
+- Libros contables (Diario/Mayor)     /contabilidad/libros
+- Centros de costo                    /contabilidad/centros-costo
+- Presupuesto institucional           /contabilidad/presupuesto
+- Reportes financieros                /contabilidad/reportes
+- Cierre contable de período          /contabilidad/cierre
+- Bancos y conciliaciones             /contabilidad/bancos
+- Cajas chicas y arqueos              /contabilidad/cajas
+- Donaciones recibidas                /contabilidad/donaciones
+- Fondos y asignaciones               /contabilidad/fondos
+- Recibos de ingreso                  /contabilidad/recibos
+- Rendición de cuentas general        /contabilidad/rendicion
+- Órdenes de compra                   /contabilidad/ordenes-compra
+- Proveedores                         /contabilidad/proveedores
+- Cuentas por pagar (CxP)             /contabilidad/cuentas-por-pagar
+- Comprobantes de retención           /contabilidad/retenciones
+- Bandeja de comprobantes recibidos   /contabilidad/comprobantes-recibidos
+- Nómina y TSS                        /contabilidad/nomina
+- Terceros (Ley 155-17)               /contabilidad/terceros
+- Impuestos DGII (606, 607, etc.)     /contabilidad/impuestos
+- Calculadoras fiscales               /contabilidad/calculadoras
+- Activos fijos y depreciación        /contabilidad/activos-fijos
+- Inventario de consumibles           /contabilidad/inventario
+- Configuración contable              /contabilidad/configuracion
+
+[Área: Herramientas]
+- Calendario institucional            /calendario
+- Reuniones y minutas                 /reuniones
+- Línea de tiempo Gantt               /calendario/gantt
+- Asistente Nexus AI                  /chat-ia
+- Reportes institucionales            /reportes
+- Mapa del sitio                      /sitemap
+
+[Área: Configuración]
+- Configuración general               /configuracion
+- Visibilidad de módulos por rol      /configuracion/visibilidad
+- Permisos granulares                 /configuracion/permisos
+- Auditoría SHA-256                   /configuracion/auditoria
+- Monitor de actividad del sistema    /configuracion/actividad
+- Landing page pública                /configuracion/landing
+- Parámetros institucionales          /configuracion/parametros
+- IA y Base de conocimiento           /configuracion/ia | /configuracion/conocimiento
+
+--------------------------------------------------------------------------------
+B. ROL: contabilidad (Portal: /portal/contabilidad)
+--------------------------------------------------------------------------------
+[Actualmente en menú]:
+- Inicio de Contabilidad              /portal/contabilidad
+- Mi Día contable                     /contabilidad/mi-dia
+- Asientos contables                  /contabilidad/asientos
+- Libros contables                    /contabilidad/libros
+- Centros de costo                    /contabilidad/centros-costo
+- Presupuesto                         /contabilidad/presupuesto
+- Reportes financieros                /contabilidad/reportes
+- Cierre contable                     /contabilidad/cierre
+- Bancos                              /contabilidad/bancos
+- Cajas y arqueos                     /contabilidad/cajas
+- Donaciones                          /contabilidad/donaciones
+- Fondos                              /contabilidad/fondos
+- Recibos                             /contabilidad/recibos
+- Rendición de cuentas                /contabilidad/rendicion
+- Órdenes de compra                   /contabilidad/ordenes-compra
+- Proveedores                         /contabilidad/proveedores
+- Cuentas por pagar                   /contabilidad/cuentas-por-pagar
+- Retenciones                         /contabilidad/retenciones
+- Comprobantes recibidos              /contabilidad/comprobantes-recibidos
+- Rendiciones de gastos               /administrativo/rendiciones
+- Nómina y TSS                        /contabilidad/nomina
+- Terceros (Ley 155)                  /contabilidad/terceros
+- Impuestos DGII                      /contabilidad/impuestos
+- Calculadoras fiscales               /contabilidad/calculadoras
+- Activos fijos                       /contabilidad/activos-fijos
+- Inventario de consumibles           /contabilidad/inventario
+- Inventario general                  /administrativo/inventario
+- Solicitudes departamentales         /administrativo/solicitudes
+- Reportes generales                  /reportes
+- Configuración contable              /contabilidad/configuracion
+
+[Módulos que le FALTAN en la barra lateral para estar al mismo nivel]:
+- Calendario institucional (/calendario)
+- Reuniones y actas (/reuniones)
+- Chat Nexus AI contable (/chat-ia)
+- Acceso a Perfil/Apariencia en la barra superior (/perfil)
+- Agrupación por secciones en la barra lateral (General, Tesorería, Ingresos, Gastos, Impuestos, Activos, Departamento) en lugar de una lista plana.
+
+--------------------------------------------------------------------------------
+C. ROL: admin (Portal: /portal/administrativo | /dashboard)
+--------------------------------------------------------------------------------
+- Panel administrativo y Dashboard    /portal/administrativo | /dashboard
+- Académico completo (360, materias, historial, prematrícula, períodos)
+- Patrocinadores y becas
+- Operaciones (tareas, proyectos, personal, comida, servicios, inventario QR)
+- Herramientas (calendario, reuniones, chat IA, reportes)
+- Configuración institucional (parámetros, landing, personal)
+* Nota: admin NO tiene acceso a contabilidad/finanzas por separación de funciones.
+
+--------------------------------------------------------------------------------
+D. ROL: docente (Portal: /portal/profesor)
+--------------------------------------------------------------------------------
+- Mi Portal Docente                   /portal/profesor
+- Mis materias y grupos               /academico/materias
+- Clases Global Effect 360            /academico/clases-360
+- Calendario académico                /calendario
+- Reuniones docentes                  /reuniones
+- Asistente de IA Docente             /chat-ia
+- Perfil y Apariencia                 /perfil
+
+--------------------------------------------------------------------------------
+E. ROL: estudiante (Portal: /portal/estudiante)
+--------------------------------------------------------------------------------
+- Mi Portal del Estudiante            /portal/estudiante
+- Mis materias universitarias         /portal/estudiante/materias
+- Aula formativa 360                  /portal/estudiante/clases-360
+- Calificaciones e historial          /portal/estudiante/calificaciones
+- Solicitudes estudiantiles           /portal/estudiante/solicitudes
+- Comedor universitario               /portal/estudiante (sección almuerzo)
+- Calendario institucional            /calendario
+- Asistente de IA Estudiantil         /chat-ia
+- Perfil y Apariencia                 /perfil
+
+--------------------------------------------------------------------------------
+F. ROL: habitudes & dir_habitudes (Portal: /habitudes)
+--------------------------------------------------------------------------------
+- Hub Habitudes                       /habitudes
+- Programas formativos                /academias/programas
+- Materiales pedagógicos              /academias/materiales
+- Expedientes postulados              /expedientes
+- Calendario y reuniones              /calendario | /reuniones
+- Asistente Nexus AI                  /chat-ia
+- Perfil y Apariencia                 /perfil
+
+--------------------------------------------------------------------------------
+G. ROL: colaborador (Portal: /portal/colaborador)
+--------------------------------------------------------------------------------
+- Mi Día (tareas asignadas hoy)       /administrativo/tareas/hoy
+- Rendición de comprobantes con foto  /administrativo/rendiciones
+- Solicitudes de permisos y viáticos  /administrativo/solicitudes
+- Perfil y Apariencia                 /perfil
+
+================================================================================
+4. CONFIGURACIÓN DEL PERFIL DE USUARIO Y MODOS (CLARO/OSCURO Y VISIBILIDAD)
+================================================================================
+
+1. Modo de color (Claro, Oscuro, Automático/Sistema):
+   - Actualmente vive en la ruta '/perfil' bajo el componente <SelectorApariencia />.
+   - Todo usuario autenticado puede entrar a '/perfil' haciendo clic en su avatar.
+   - Sin embargo, en la barra superior ('topbar.tsx'), el botón con ícono de tuerca
+     "Configuración" solo se despliega si el usuario tiene permiso a '/configuracion'
+     (admin y super_admin).
+   - SOLUCIÓN: En el menú desplegable del avatar (topbar), se debe asegurar que TODOS
+     los usuarios vean "Mi Perfil" y un acceso rápido a "Tema / Apariencia (Modo claro/oscuro)",
+     y para roles operativos que puedan ver sus preferencias directas.
+
+2. Configuración de módulos visibles por usuario:
+   - La pantalla '/configuracion/visibilidad' gobierna qué módulos puede ver u ocultar
+     cada rol institucional. Está restringida a 'super_admin' para evitar que un usuario
+     rompa su propia barra de navegación institucional.
+
+================================================================================
+5. ESTADO DE ASIENTOS CONTABLES, LIBROS Y ALMACENAMIENTO DE FACTURAS/FOTOS
+================================================================================
+
+1. ¿Faltan los asientos contables?
+   - NO faltan en código ni en base de datos.
+   - Están implementados en: '/contabilidad/asientos'.
+   - Soporta: partida doble estricta (débito = crédito), asientos manuales,
+     asientos automáticos generados por recibos y facturas, y cierre de período.
+   - Lo que ocurría era que desde el menú no se visualizaban claramente para el usuario
+     con rol 'contabilidad'.
+
+2. ¿Faltan los libros contables?
+   - NO faltan en código ni en base de datos.
+   - Están implementados en: '/contabilidad/libros'.
+   - Incluye:
+     a) Libro Diario: asientos cronológicos con cuentas y montos.
+     b) Libro Mayor: saldos iniciales, movimientos acumulados y balance por cuenta.
+     c) Balanza de Comprobación: reporte de sumas y saldos.
+     d) Exportación a Excel (.xlsx) oficial con bitácora de auditoría.
+
+3. Almacenamiento de fotos de facturas y vinculación a programas:
+   - Actualmente existen tres puntos donde se suben comprobantes con foto/archivo:
+     a) Bandeja de comprobantes recibidos: '/contabilidad/comprobantes-recibidos' (con OCR).
+     b) Recibos de caja y banco: '/contabilidad/recibos/nuevo' (adjuntos contables).
+     c) Rendiciones de gastos: '/administrativo/rendiciones' (subida de tickets y facturas).
+   - OPORTUNIDAD DE MEJORA SOLICITADA POR EL USUARIO:
+     Los comprobantes se asocian hoy a cuentas y centros de costo. Se debe habilitar
+     un selector directo de "Programa / Proyecto de la Fundación" (ej. Beca Universitaria,
+     Global Effect 360, Comedor, Habitudes, Infraestructura) en la subida de comprobantes
+     y en la bandeja de comprobantes recibidos, de manera que Contabilidad pueda filtrar
+     y consultar:
+     "Todas las facturas y fotos pertenecientes al Programa X".
+
+================================================================================
+6. PASOS RECOMENDADOS PARA APLICAR LAS CORRECCIONES
+================================================================================
+1. Actualizar 'src/lib/nav.ts' para que MENU_CONTABILIDAD tenga la misma riqueza de
+   navegación y estructura de secciones que Finanzas en super_admin, más las herramientas
+   institucionales (Calendario, Reuniones, Chat IA).
+2. Asegurar que el selector de Modo Claro/Oscuro sea accesible directamente desde el
+   menú de usuario en la barra superior (topbar) para cualquier rol.
+3. Incorporar la vinculación de "Proyecto / Programa" en la carga y visualización de
+   comprobantes y facturas de contabilidad.
+================================================================================
