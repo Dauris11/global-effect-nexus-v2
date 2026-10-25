@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import {
-  ArrowRight,
-  Info,
   Activity,
+  ArrowRight,
   BookOpen,
   Cpu,
   Eye,
+  Palette,
+  SlidersHorizontal,
   KeyRound,
   Megaphone,
   ScrollText,
@@ -28,6 +29,7 @@ import {
   PERMISOS,
   ROLES,
   tienePermiso,
+  type Permiso,
   type Rol,
 } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -76,7 +78,7 @@ export default async function PaginaConfiguracion({
 
   const usuario = await requerirRol(["admin", "super_admin"]);
 
-  const [t, tAnuncios, tAudit, tRoles, tIA, tActividad, tVis, cuentas, cifras] = await Promise.all([
+  const [t, tAnuncios, tAudit, tRoles, tIA, tActividad, tVis, tPar, cuentas, cifras] = await Promise.all([
     getTranslations({ locale, namespace: "settings" }),
     getTranslations({ locale, namespace: "announcements" }),
     getTranslations({ locale, namespace: "audit" }),
@@ -84,84 +86,142 @@ export default async function PaginaConfiguracion({
     getTranslations({ locale, namespace: "iaAdmin" }),
     getTranslations({ locale, namespace: "actividad" }),
     getTranslations({ locale, namespace: "visibilidad" }),
+    getTranslations({ locale, namespace: "parametros" }),
     cuentasDelSistema(),
     cifrasDelSistema(),
   ]);
 
-  const ajustes = [
+  type Ajuste = {
+    permiso: Permiso;
+    href: string;
+    icono: typeof Settings;
+    titulo: string;
+    descripcion: string;
+    soloMaestro?: boolean;
+    /** Lo ven también quienes tienen este rol aunque no el permiso. */
+    roles?: readonly Rol[];
+  };
+
+  // Las configuraciones, agrupadas por lo que resuelven y no por quién las programó.
+  const todosLosAjustes: { clave: string; ajustes: Ajuste[] }[] = [
     {
-      permiso: "landing.administrar" as const,
-      href: "/configuracion/landing",
-      icono: Megaphone,
-      titulo: tAnuncios("title"),
-      descripcion: tAnuncios("desc"),
-      soloMaestro: false,
+      clave: "access",
+      ajustes: [
+        {
+          permiso: "usuarios.administrar",
+          href: "/administrativo/personal",
+          icono: UserCog,
+          titulo: t("staff.title"),
+          descripcion: t("staff.desc"),
+        },
+        {
+          permiso: "usuarios.administrar",
+          href: "/configuracion/permisos",
+          icono: KeyRound,
+          titulo: t("permissions.title"),
+          descripcion: t("permissions.desc"),
+          soloMaestro: true,
+        },
+        {
+          // Qué ve cada rol: solo el administrador maestro.
+          permiso: "usuarios.administrar",
+          href: "/configuracion/visibilidad",
+          icono: Eye,
+          titulo: tVis("title"),
+          descripcion: tVis("subtitle"),
+          soloMaestro: true,
+        },
+      ],
     },
     {
-      // Qué ve cada rol: solo el administrador maestro.
-      permiso: "usuarios.administrar" as const,
-      href: "/configuracion/visibilidad",
-      icono: Eye,
-      titulo: tVis("title"),
-      descripcion: tVis("subtitle"),
-      soloMaestro: true,
+      clave: "institution",
+      ajustes: [
+        {
+          // Horario del comedor, mínimos de la beca, correo de contacto.
+          permiso: "usuarios.administrar",
+          href: "/configuracion/parametros",
+          icono: SlidersHorizontal,
+          titulo: tPar("title"),
+          descripcion: tPar("subtitle"),
+        },
+        {
+          permiso: "landing.administrar",
+          href: "/configuracion/landing",
+          icono: Megaphone,
+          titulo: tAnuncios("title"),
+          descripcion: tAnuncios("desc"),
+        },
+      ],
     },
     {
-      // Quién hizo qué y a qué hora, con gráficas: solo del administrador maestro.
-      permiso: "usuarios.administrar" as const,
-      href: "/configuracion/actividad",
-      icono: Activity,
-      titulo: tActividad("title"),
-      descripcion: tActividad("subtitle"),
-      soloMaestro: true,
+      clave: "assistant",
+      ajustes: [
+        {
+          permiso: "ia.administrar",
+          href: "/configuracion/ia",
+          icono: Cpu,
+          titulo: tIA("title"),
+          descripcion: tIA("subtitle"),
+        },
+        {
+          permiso: "ia.administrar",
+          href: "/configuracion/conocimiento",
+          icono: BookOpen,
+          titulo: tIA("knowledge.title"),
+          descripcion: tIA("knowledge.subtitle"),
+        },
+      ],
     },
     {
-      // El visor de auditoría es solo del administrador maestro: enseña lo que
-      // ha hecho cada cuenta, y eso incluye a quien coordina.
-      permiso: "usuarios.administrar" as const,
-      href: "/configuracion/auditoria",
-      icono: ScrollText,
-      titulo: tAudit("title"),
-      descripcion: tAudit("description"),
-      soloMaestro: true,
+      clave: "security",
+      ajustes: [
+        {
+          // Quién hizo qué y a qué hora, con gráficas.
+          permiso: "usuarios.administrar",
+          href: "/configuracion/actividad",
+          icono: Activity,
+          titulo: tActividad("title"),
+          descripcion: tActividad("subtitle"),
+          soloMaestro: true,
+        },
+        {
+          // El visor de auditoría es solo del administrador maestro: enseña lo
+          // que ha hecho cada cuenta, y eso incluye a quien coordina.
+          permiso: "usuarios.administrar",
+          href: "/configuracion/auditoria",
+          icono: ScrollText,
+          titulo: tAudit("title"),
+          descripcion: tAudit("description"),
+          soloMaestro: true,
+        },
+      ],
     },
     {
-      permiso: "usuarios.administrar" as const,
-      href: "/configuracion/permisos",
-      icono: KeyRound,
-      titulo: "Permisos y Excepciones RBAC",
-      descripcion: "Ajusta y conmuta permisos individuales por usuario del sistema (usuario_permiso).",
-      soloMaestro: true,
+      clave: "account",
+      ajustes: [
+        {
+          // Tema claro u oscuro y barra lateral: lo elige cada persona en su perfil.
+          permiso: "usuarios.administrar",
+          href: "/perfil",
+          icono: Palette,
+          titulo: t("appearance.title"),
+          descripcion: t("appearance.desc"),
+          roles: ROLES,
+        },
+      ],
     },
-    {
-      permiso: "ia.administrar" as const,
-      href: "/configuracion/ia",
-      icono: Cpu,
-      titulo: tIA("title"),
-      descripcion: tIA("subtitle"),
-      soloMaestro: false,
-    },
-    {
-      permiso: "ia.administrar" as const,
-      href: "/configuracion/conocimiento",
-      icono: BookOpen,
-      titulo: tIA("knowledge.title"),
-      descripcion: tIA("knowledge.subtitle"),
-      soloMaestro: false,
-    },
-    {
-      permiso: "usuarios.administrar" as const,
-      href: "/administrativo/personal",
-      icono: UserCog,
-      titulo: t("staff.title"),
-      descripcion: t("staff.desc"),
-      soloMaestro: false,
-    },
-  ].filter(
-    (ajuste) =>
-      tienePermiso(usuario.rol, ajuste.permiso) &&
-      (!ajuste.soloMaestro || usuario.rol === "super_admin"),
-  );
+  ];
+
+  const gruposDeAjustes = todosLosAjustes
+    .map((grupo) => ({
+      ...grupo,
+      ajustes: grupo.ajustes.filter(
+        (ajuste) =>
+          (ajuste.roles?.includes(usuario.rol) || tienePermiso(usuario.rol, ajuste.permiso)) &&
+          (!ajuste.soloMaestro || usuario.rol === "super_admin"),
+      ),
+    }))
+    .filter((grupo) => grupo.ajustes.length > 0);
 
   // Los módulos que ofrece el menú de esta cuenta. Sale de `menuDe`, igual que
   // el mapa del sitio: una cifra de "módulos" escrita a mano se queda vieja.
@@ -206,30 +266,39 @@ export default async function PaginaConfiguracion({
         />
       </div>
 
-      {/* Ajustes que llevan a otra pantalla. */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ajustes.map((ajuste) => (
-          <Link key={ajuste.href} href={ajuste.href} className="group">
-            <Card className={cn("h-full", TARJETA.interactiva)}>
-              <CardContent className="pt-5">
-                <span className={TARJETA.icono}>
-                  <ajuste.icono className="size-5" />
-                </span>
+      {/* Ajustes que llevan a otra pantalla, por lo que resuelven. */}
+      {gruposDeAjustes.map((grupo) => (
+        <section key={grupo.clave} className="space-y-3">
+          <div>
+            <p className="texto-titulo-tarjeta">{t(`groups.${grupo.clave}.title`)}</p>
+            <p className="texto-meta">{t(`groups.${grupo.clave}.hint`)}</p>
+          </div>
 
-                <p className="mt-3 text-sm font-semibold">{ajuste.titulo}</p>
-                <p className="text-muted-foreground mt-1 line-clamp-3 text-xs">
-                  {ajuste.descripcion}
-                </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {grupo.ajustes.map((ajuste) => (
+              <Link key={ajuste.href} href={ajuste.href} className="group">
+                <Card className={cn("h-full", TARJETA.interactiva)}>
+                  <CardContent className="pt-5">
+                    <span className={TARJETA.icono}>
+                      <ajuste.icono className="size-5" />
+                    </span>
 
-                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#2096BA]">
-                  {t("open")}
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                </span>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+                    <p className="mt-3 text-sm font-semibold">{ajuste.titulo}</p>
+                    <p className="text-muted-foreground mt-1 line-clamp-3 text-xs">
+                      {ajuste.descripcion}
+                    </p>
+
+                    <span className="text-marca-700 mt-3 inline-flex items-center gap-1.5 text-xs font-semibold">
+                      {t("open")}
+                      <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ))}
 
       {/* Cuentas del sistema. */}
       <Card className={TARJETA.contenido}>
@@ -317,12 +386,6 @@ export default async function PaginaConfiguracion({
           </div>
         </CardContent>
       </Card>
-
-      {/* Lo que falta, dicho aquí y no en un cartel de "en construcción". */}
-      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
-        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <p className="text-xs text-tinta-2">{t("parametersNotice")}</p>
-      </div>
     </div>
   );
 }

@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { aMinutos, horaLegible } from "@/lib/parametros";
+import { parametros } from "@/server/parametros/consultas";
+
 import { EstadoComedor } from "@/components/landing/estado-comedor";
 import { CabeceraSeccion, CONTENEDOR } from "@/components/landing/piezas";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +32,11 @@ import { cn } from "@/lib/utils";
  */
 export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) {
   const t = await getTranslations("landing");
+  const p = await parametros();
+  const horas = {
+    apertura: horaLegible(p["comedor.apertura"]),
+    cierre: horaLegible(p["comedor.cierre"]),
+  };
 
   const puertas = [
     { clave: "portal", icono: LogIn, href: "/login" },
@@ -83,12 +91,14 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
 
                 {puerta.clave === "meals" && (
                   <EstadoComedor
+                    aperturaMin={aMinutos(p["comedor.apertura"])}
+                    cierreMin={aMinutos(p["comedor.cierre"])}
                     textos={{
                       abierto: t("panelMealsOpen"),
                       cerrado: t("panelMealsClosed"),
-                      ventana: t("panelMealsWindow"),
+                      ventana: t("panelMealsWindow", horas),
                       quedan: t.raw("panelMealsLeft") as string,
-                      proximaApertura: t("panelMealsNext"),
+                      proximaApertura: t("panelMealsNext", horas),
                       inscritos:
                         inscritosHoy > 0
                           ? `${inscritosHoy} ${t("accessMealsSignups", { n: inscritosHoy })}`

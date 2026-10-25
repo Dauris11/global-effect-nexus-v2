@@ -353,11 +353,16 @@ módulo) — esto es solo la cola de pendientes concretos.
       confianza y campos leídos) con `documento_id` en NULL. Guardar documentos
       de identidad de menores es una decisión de política de datos, no un
       detalle técnico; el bucket privado está listo el día que se decida.
-- [ ] Los parámetros institucionales no se pueden editar desde
-      `/configuracion` porque **no existe tabla donde guardarlos**, y la
-      pantalla lo dice. Lo que hoy son parámetros vive donde se usa (la hora de
-      corte del comedor sale del mismo SQL que la lista de cocina). Si se
-      quieren centralizar, es una migración.
+- [x] **Parámetros institucionales (25 oct 2026, migración `0061`).**
+      `/configuracion/parametros` para `admin` y `super_admin`. Lo que estaba
+      escrito en el código pasa a ser editable: horario del comedor (la
+      portada, la página de comida, la acción de inscripción y la lista de
+      cocina leen el mismo valor), índice, asistencia, horas de servicio y nota
+      de 360 (el asistente los repite a estudiantes y personal, y por eso el
+      reglamento dejó de ser un texto fijo), plazo de revisión de normas y
+      correo de contacto. Solo se guarda lo que se aparta del valor normal.
+      Los parámetros fiscales siguen en `/contabilidad/configuracion`, con su
+      vigencia y su fuente legal. La Configuración quedó agrupada por tema.
 
 - [ ] El componente `EnConstruccion` (`src/components/layout/en-construccion.tsx`)
       se quedó **sin un solo uso** al construirse los siete esqueletos, y sus

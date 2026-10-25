@@ -138,7 +138,7 @@ async function sobreDocumento(
   revalidatePath(REFRESCAR, "page");
 }
 
-/** «Revisé la norma hoy»: reinicia el aviso de los 90 días. */
+/** «Revisé la norma hoy»: reinicia el aviso de «sin verificar». */
 export async function marcarVerificado(datos: FormData): Promise<void> {
   await sobreDocumento(
     datos,

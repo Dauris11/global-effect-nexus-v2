@@ -6,6 +6,8 @@ import { FormularioComida } from "@/components/comida/formulario-comida";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { fechaLarga } from "@/lib/fechas";
+import { horaLegible } from "@/lib/parametros";
+import { parametros } from "@/server/parametros/consultas";
 import { estadoComedor } from "@/server/comida/consultas";
 
 export async function generateMetadata({
@@ -15,8 +17,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "comida" });
+  const p = await parametros();
 
-  return { title: t("title"), description: t("subtitle") };
+  return {
+    title: t("title"),
+    description: t("subtitle", { cierre: horaLegible(p["comedor.cierre"]) }),
+  };
 }
 
 export default async function PaginaComida({
@@ -30,6 +36,11 @@ export default async function PaginaComida({
   const tAuth = await getTranslations({ locale, namespace: "auth" });
 
   const { abierto, inscritos } = await estadoComedor();
+  const p = await parametros();
+  const horas = {
+    apertura: horaLegible(p["comedor.apertura"]),
+    cierre: horaLegible(p["comedor.cierre"]),
+  };
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 px-4 py-10">
@@ -59,11 +70,11 @@ export default async function PaginaComida({
               </span>
             </div>
 
-            <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+            <p className="text-muted-foreground text-sm">{t("subtitle", horas)}</p>
 
             <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
               <Clock className="size-3.5 shrink-0" />
-              {tLanding("panelMealsWindow")}
+              {tLanding("panelMealsWindow", horas)}
             </p>
 
             <FormularioComida
@@ -73,7 +84,7 @@ export default async function PaginaComida({
                 enviar: t("submit"),
                 ok: t("success"),
                 duplicado: t("duplicate"),
-                fueraDeHora: t("outOfTime"),
+                fueraDeHora: t("outOfTime", horas),
                 invalido: t("invalid"),
                 cerrado: t("closed"),
               }}

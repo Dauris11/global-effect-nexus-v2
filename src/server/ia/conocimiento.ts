@@ -1,5 +1,5 @@
 import { consultar } from "@/lib/db";
-import { DIAS_SIN_VERIFICAR } from "@/lib/ia-conocimiento";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Base de conocimiento por agente.
@@ -20,7 +20,7 @@ export type FragmentoEncontrado = {
   version: string | null;
   contenido: string;
   verificadoEl: string | null;
-  /** Sin revisión humana en más de 90 días (o nunca revisada). */
+  /** Sin revisión humana dentro del plazo (parámetro) o nunca revisada. */
   sinVerificar: boolean;
 };
 
@@ -32,6 +32,8 @@ export async function buscarConocimiento(
   const texto = consulta.trim().slice(0, 300);
 
   if (!texto) return [];
+
+  const dias = Number((await parametros())["asistente.dias_sin_verificar"]);
 
   const rows = await consultar<{
     id: string;
@@ -54,7 +56,7 @@ export async function buscarConocimiento(
         AND (f.contenido_tsv @@ q OR word_similarity($2, f.contenido) > 0.45)
       ORDER BY ts_rank(f.contenido_tsv, q) + word_similarity($2, f.contenido) DESC
       LIMIT $3`,
-    [agente, texto, Math.min(Math.max(limite, 1), 10), DIAS_SIN_VERIFICAR],
+    [agente, texto, Math.min(Math.max(limite, 1), 10), dias],
   );
 
   return rows.map((fila) => ({

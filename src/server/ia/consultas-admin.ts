@@ -1,5 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
-import { DIAS_SIN_VERIFICAR } from "@/lib/ia-conocimiento";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Lecturas del tablero de Nexus AI. Solo metadatos de uso y de acciones: el
@@ -240,6 +240,7 @@ export type DocumentoConocimiento = {
 export async function documentosDeConocimiento(
   agentesVisibles: readonly string[] | null,
 ): Promise<DocumentoConocimiento[]> {
+  const dias = Number((await parametros())["asistente.dias_sin_verificar"]);
   const filas = await consultar<{
     documento_id: string;
     titulo: string | null;
@@ -261,7 +262,7 @@ export async function documentosDeConocimiento(
       WHERE fuente_id IS NOT NULL
         AND ($1::text[] IS NULL OR agentes && $1::text[])
       GROUP BY fuente_id ORDER BY max(created_at) DESC`,
-    [agentesVisibles ? [...agentesVisibles] : null, DIAS_SIN_VERIFICAR],
+    [agentesVisibles ? [...agentesVisibles] : null, dias],
   );
 
   return filas.map((f) => ({

@@ -1,6 +1,8 @@
 import { ArrowRight, FileText, LineChart, Mail, Route } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { parametros } from "@/server/parametros/consultas";
+
 import {
   CabeceraSeccion,
   CONTENEDOR,
@@ -22,6 +24,7 @@ import { Link } from "@/i18n/navigation";
  */
 export async function SeccionPatrocinadores() {
   const t = await getTranslations("landing");
+  const correo = (await parametros())["contacto.correo"];
 
   const garantias = [
     { clave: "traceability", icono: Route },
@@ -64,9 +67,9 @@ export async function SeccionPatrocinadores() {
             La dirección es la misma que el pie, así que sale de la misma clave.
           */}
           <Button asChild size="lg" variant="secondary">
-            <a href={`mailto:${t("footerEmail")}`}>
+            <a href={`mailto:${correo}`}>
               <Mail />
-              {t("footerEmail")}
+              {correo}
             </a>
           </Button>
         </div>

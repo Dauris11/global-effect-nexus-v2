@@ -188,7 +188,7 @@
     "faq_q1_title": "¿Quiénes pueden acceder al portal Nexus?",
     "faq_q1_desc": "El portal está dirigido exclusivamente a estudiantes activos matriculados en la Fundación, empleados, personal docente y administrativo. El sistema opera solo por invitación directa del equipo de coordinación.",
     "faq_q2_title": "¿Cómo se realiza la inscripción diaria del almuerzo?",
-    "faq_q2_desc": "Los estudiantes y empleados activos pueden registrarse cada día entre 6:00 AM y 8:30 AM desde la página de comida o su portal institucional para coordinar el servicio de almuerzo sin desperdicios.",
+    "faq_q2_desc": "Los estudiantes y empleados activos pueden registrarse cada día entre las {apertura} y las {cierre} desde la página de comida o su portal institucional para coordinar el servicio de almuerzo sin desperdicios.",
     "faq_q3_title": "¿Cómo acceden los estudiantes activos a sus calificaciones y trámites?",
     "faq_q3_desc": "Cada estudiante activo ingresa con su cuenta institucional asignada. Desde allí consulta sus notas por período y su avance académico, y pide a administración constancias, cartas, permisos o una cita.",
     "faq_q4_title": "¿Cómo gestiona el personal administrativo y docente sus funciones?",
@@ -207,9 +207,9 @@
     "menuClose": "Cerrar menú",
     "panelMealsOpen": "Abierto",
     "panelMealsClosed": "Cerrado",
-    "panelMealsWindow": "Se inscribe de 6:00 a 8:30 AM",
+    "panelMealsWindow": "Se inscribe de {apertura} a {cierre}",
     "panelMealsLeft": "Quedan {n} min para inscribirse",
-    "panelMealsNext": "Vuelve a abrir mañana a las 6:00 AM",
+    "panelMealsNext": "Vuelve a abrir mañana a las {apertura}",
     "eventsFilterLabel": "Filtrar eventos por tipo",
     "eventsToday": "Hoy",
     "eventsTomorrow": "Mañana",
@@ -248,8 +248,17 @@
     "role_contabilidad": "Contabilidad",
     "role_habitudes": "Habitudes",
     "access_portal_desc": "Estudiantes, docentes y personal entran aquí con su cuenta.",
+    "access_portal_f1": "Acceso seguro con credenciales de la Fundación",
+    "access_portal_f2": "Espacio de trabajo adaptado a tu rol institucional",
+    "access_portal_f3": "Notificaciones y seguimiento en tiempo real",
     "access_meals_desc": "Apúntate al almuerzo del día antes de la hora de corte.",
+    "access_meals_f1": "Registro diario con confirmación instantánea",
+    "access_meals_f2": "Menú del día y conteo transparente",
+    "access_meals_f3": "Gestión directa para cocina y logística",
     "access_requests_desc": "Pide una constancia, una carta o una cita con administración.",
+    "access_requests_f1": "Trámites estudiantiles y solicitudes internas",
+    "access_requests_f2": "Línea de tiempo de aprobación paso a paso",
+    "access_requests_f3": "Historial y descarga de documentos emitidos",
     "footerContact": "Contacto",
     "heroCarousel": "Imágenes de la Fundación",
     "menuSections": "Secciones",
@@ -261,13 +270,13 @@
   },
   "comida": {
     "title": "Inscripción de comida",
-    "subtitle": "Regístrate para el almuerzo de hoy. La inscripción cierra a las 8:30 AM.",
+    "subtitle": "Regístrate para el almuerzo de hoy. La inscripción cierra a las {cierre}.",
     "namePlaceholder": "Escribe tu nombre completo",
     "submit": "Inscribirme",
     "enrolledToday": "Inscritos hoy",
     "success": "¡Inscripción confirmada!",
     "duplicate": "Ya estás inscrito hoy.",
-    "outOfTime": "La inscripción cerró (después de las 8:30 AM).",
+    "outOfTime": "La inscripción cerró (después de las {cierre}).",
     "invalid": "Escribe un nombre válido.",
     "multiSubtitle": "Inscríbete para varios días de la semana de una vez.",
     "chooseDays": "Elige los días",
@@ -2239,6 +2248,36 @@
     "eyebrow": "Configuración",
     "title": "Configuración",
     "description": "Los ajustes de la plataforma, las cuentas que existen y lo que puede hacer cada rol.",
+    "groups": {
+      "access": {
+        "title": "Cuentas y acceso",
+        "hint": "Quién entra, qué puede hacer y qué ve cada rol."
+      },
+      "institution": {
+        "title": "La institución",
+        "hint": "Los datos y reglas de la Fundación, y lo que ve el público."
+      },
+      "assistant": {
+        "title": "Asistente de IA",
+        "hint": "Uso, cuotas, agentes y lo que cada uno sabe."
+      },
+      "security": {
+        "title": "Seguridad y registro",
+        "hint": "Quién hizo qué y a qué hora."
+      },
+      "account": {
+        "title": "Mi cuenta",
+        "hint": "Cómo ves el portal."
+      }
+    },
+    "permissions": {
+      "title": "Permisos y excepciones",
+      "desc": "Ajusta los permisos de cada persona por encima o por debajo de los de su rol."
+    },
+    "appearance": {
+      "title": "Apariencia",
+      "desc": "Tema claro u oscuro y barra lateral estándar o negra. Se elige en Mi perfil y vale para este navegador."
+    },
     "open": "Abrir",
     "stats": {
       "activeAccounts": "Cuentas activas",
@@ -2263,8 +2302,7 @@
     },
     "rolesTitle": "Roles y permisos",
     "rolesHint": "Sale de la misma función que decide los accesos, así que no puede contradecir al sistema. Su origen son las tablas «rol» y «rol_permiso»: si aquí sobra o falta un permiso, lo que hay que cambiar es la base.",
-    "noPermissions": "Sin permisos asignados.",
-    "parametersNotice": "Los parámetros institucionales todavía no se pueden editar desde aquí, y no es un olvido: no existe ninguna tabla donde guardarlos, así que un formulario en esta pantalla escribiría en el aire. Lo que hoy son parámetros vive donde se usa —la hora de corte del comedor sale del mismo SQL que la lista de cocina, y los períodos académicos se administran en su módulo—. Cuando haga falta centralizarlos, es una migración."
+    "noPermissions": "Sin permisos asignados."
   },
   "roles": {
     "super_admin": "Administración total",
@@ -4326,7 +4364,7 @@
         "versionShort": "versión {v}",
         "fragments": "{n} fragmentos",
         "disabled": "Desactivado",
-        "stale": "Sin verificar hace más de 90 días",
+        "stale": "Sin verificar hace más de {dias} días",
         "verifiedShort": "Verificado {fecha}",
         "markVerified": "Marcar como verificado hoy",
         "disable": "Desactivar",
@@ -4610,6 +4648,82 @@
     "save": "Guardar para {rol}",
     "saved": "Guardado: {ocultas} ocultas y {bloqueadas} bloqueadas. Se aplica en la próxima pantalla que abra cada persona.",
     "failed": "No se pudo guardar. Revisa e inténtalo otra vez."
+  },
+  "parametros": {
+    "eyebrow": "Configuración",
+    "title": "Parámetros institucionales",
+    "subtitle": "Lo que antes estaba escrito en el código y ahora se cambia aquí: el horario del comedor, los mínimos de la beca y el correo de contacto.",
+    "back": "Volver a configuración",
+    "groups": {
+      "comedor": {
+        "title": "Comedor",
+        "hint": "Cuándo se puede apuntar la gente al almuerzo. Se ve en la portada, en la página de comida y en la lista de cocina."
+      },
+      "becas": {
+        "title": "Reglas de la beca",
+        "hint": "Es lo que el asistente le responde a estudiantes y personal cuando preguntan por la beca."
+      },
+      "asistente": {
+        "title": "Asistente de IA",
+        "hint": "Cómo trata el asistente la normativa que consulta."
+      },
+      "contacto": {
+        "title": "Contacto público",
+        "hint": "Datos que ve cualquiera que visite la portada."
+      }
+    },
+    "items": {
+      "comedor_apertura": {
+        "label": "Abre la inscripción",
+        "hint": "Desde esta hora se puede apuntar al almuerzo."
+      },
+      "comedor_cierre": {
+        "label": "Cierra la inscripción",
+        "hint": "Pasada esta hora no entra nadie más: es la que decide cuánta comida se cocina."
+      },
+      "becas_indice_minimo": {
+        "label": "Índice académico mínimo",
+        "hint": "Sobre 4.00. Por debajo, el estudiante entra en observación académica."
+      },
+      "becas_asistencia_minima": {
+        "label": "Asistencia mínima (%)",
+        "hint": "A clases y talleres. Las faltas injustificadas ponen en riesgo la beca."
+      },
+      "becas_horas_servicio_mes": {
+        "label": "Horas de servicio comunitario al mes",
+        "hint": "En proyectos aprobados por la Fundación."
+      },
+      "becas_nota_minima_360": {
+        "label": "Nota aprobatoria en Global Effect 360",
+        "hint": "Mínimo para aprobar cada materia del programa."
+      },
+      "asistente_dias_sin_verificar": {
+        "label": "Días antes de pedir revisar una norma",
+        "hint": "Pasado este plazo, el asistente avisa de que la norma no se ha revisado."
+      },
+      "contacto_correo": {
+        "label": "Correo de contacto",
+        "hint": "Sale en el pie de la portada y en la sección de patrocinadores."
+      }
+    },
+    "normal": "Normal: {valor}",
+    "restore": "Volver al normal",
+    "save": "Guardar parámetros",
+    "saved": "Guardado: {n} cambios. Ya se aplican.",
+    "noChanges": "No cambió nada.",
+    "checkFields": "Revisa los campos marcados.",
+    "failed": "No se pudo guardar. Inténtalo otra vez.",
+    "errors": {
+      "hora": "Escribe una hora válida.",
+      "numero": "Escribe un número.",
+      "rango": "Fuera del rango permitido ({min} a {max}).",
+      "correo": "Escribe un correo válido.",
+      "orden": "La inscripción tiene que cerrar después de abrir."
+    },
+    "lastChange": "Último cambio: {quien}, {cuando}.",
+    "unknownPerson": "cuenta eliminada",
+    "fiscalNote": "Los parámetros fiscales (ITBIS, retenciones, tasas de TSS) tienen vigencia y fuente legal, y se editan aparte:",
+    "fiscalLink": "Configuración contable"
   },
   "widgetIA": {
     "botonFlotante": "Abrir asistente de IA",

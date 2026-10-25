@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Estado del comedor para hoy.
@@ -13,11 +14,14 @@ export async function estadoComedor(): Promise<{
   abierto: boolean;
   inscritos: number;
 }> {
+  // El horario sale de los parámetros institucionales (`/configuracion/parametros`).
+  const p = await parametros();
   const fila = await consultarUna<{ abierto: boolean; inscritos: number }>(
-    `SELECT CURRENT_TIME >= TIME '06:00' AND CURRENT_TIME < TIME '08:30' AS abierto,
+    `SELECT CURRENT_TIME >= $1::time AND CURRENT_TIME < $2::time AS abierto,
             (SELECT count(*)::int
                FROM inscripcion_comida
               WHERE fecha = CURRENT_DATE) AS inscritos`,
+    [p["comedor.apertura"], p["comedor.cierre"]],
   );
 
   return fila ?? { abierto: false, inscritos: 0 };
@@ -30,11 +34,11 @@ export async function estadoComedor(): Promise<{
  * La otra cara de `/comida`: aquella es la puerta pública donde la gente se
  * apunta; esta es la lista con la que cocina el comedor.
  *
- * La hora de corte (08:30) NO se repite aquí. Sale de la misma comparación en
- * SQL que ya usan `estadoComedor` y la acción de inscripción: si mañana el
- * comedor cierra a las 9:00, el cambio tiene que ser en un sitio y no en tres,
- * y desde luego no en un `if` de JavaScript que compare contra la hora del
- * navegador.
+ * La hora de corte NO se repite aquí: sale del parámetro `comedor.cierre`, el
+ * mismo que usan `estadoComedor` y la acción de inscripción. Si mañana el comedor
+ * cierra a las 9:00, el cambio se hace en `/configuracion/parametros` y vale en
+ * los tres sitios a la vez, y desde luego no en un `if` de JavaScript que
+ * compare contra la hora del navegador.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -58,16 +62,18 @@ export async function comensalesDelDia(
   /** `YYYY-MM-DD`, o `null` para hoy SEGÚN LA BASE. */
   fecha: string | null,
 ): Promise<ComensalDelDia[]> {
+  const p = await parametros();
+
   return consultar<ComensalDelDia>(
     `SELECT id,
             nombre,
             hora_inscripcion,
             confirmado,
-            (hora_inscripcion::time < TIME '08:30') AS a_tiempo
+            (hora_inscripcion::time < $2::time) AS a_tiempo
        FROM inscripcion_comida
       WHERE fecha = coalesce($1::date, CURRENT_DATE)
       ORDER BY hora_inscripcion, nombre`,
-    [fecha],
+    [fecha, p["comedor.cierre"]],
   );
 }
 
@@ -92,16 +98,17 @@ export type ResumenComedor = {
 export async function resumenDelComedor(
   fecha: string | null,
 ): Promise<ResumenComedor> {
+  const p = await parametros();
   const fila = await consultarUna<ResumenComedor>(
     `SELECT count(*)::int AS total,
-            count(*) FILTER (WHERE hora_inscripcion::time <  TIME '08:30')::int AS a_tiempo,
-            count(*) FILTER (WHERE hora_inscripcion::time >= TIME '08:30')::int AS tarde,
-            (SELECT CURRENT_TIME >= TIME '06:00' AND CURRENT_TIME < TIME '08:30'
+            count(*) FILTER (WHERE hora_inscripcion::time <  $3::time)::int AS a_tiempo,
+            count(*) FILTER (WHERE hora_inscripcion::time >= $3::time)::int AS tarde,
+            (SELECT CURRENT_TIME >= $2::time AND CURRENT_TIME < $3::time
                     AND coalesce($1::date, CURRENT_DATE) = CURRENT_DATE) AS abierto,
             (SELECT CURRENT_DATE::text) AS hoy
        FROM inscripcion_comida
       WHERE fecha = coalesce($1::date, CURRENT_DATE)`,
-    [fecha],
+    [fecha, p["comedor.apertura"], p["comedor.cierre"]],
   );
 
   return fila ?? { total: 0, a_tiempo: 0, tarde: 0, abierto: false, hoy: "" };

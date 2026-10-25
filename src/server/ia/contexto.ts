@@ -17,7 +17,7 @@ import {
   mensajesInternos,
   turnosInternos,
 } from "@/server/ia/interno";
-import { REGLAMENTO_FUNDACION } from "@/server/ia/reglamento";
+import { reglamentoActual } from "@/server/ia/reglamento";
 
 /**
  * Lo que necesita un turno de chat: instrucciones, historial y dónde guardar.
@@ -45,6 +45,8 @@ export async function prepararTurno(
   usuario: UsuarioSesion,
   texto: string,
 ): Promise<TurnoPreparado | { error: "sin_expediente" }> {
+  const reglas = await reglamentoActual();
+
   if (usuario.rol === "estudiante") {
     const estudiante = await estudianteDeUsuario(usuario.id);
 
@@ -55,7 +57,7 @@ export async function prepararTurno(
     const base = await instruccionesPara(estudiante, usuario.idioma);
 
     return {
-      sistema: `${REGLAS_AGENTE}\n\n${base}\n\n${REGLAMENTO_FUNDACION}`,
+      sistema: `${REGLAS_AGENTE}\n\n${base}\n\n${reglas}`,
       turnos: [...turnosDe(historial), { rol: "user", contenido: texto }],
       conversacionId: previa,
       async guardar(respuesta, tokens) {
@@ -76,7 +78,7 @@ export async function prepararTurno(
   const base = await instruccionesInternas(usuario, usuario.idioma);
 
   return {
-    sistema: `${REGLAS_AGENTE}\n\n${base}\n\n${REGLAMENTO_FUNDACION}`,
+    sistema: `${REGLAS_AGENTE}\n\n${base}\n\n${reglas}`,
     turnos: [...turnosInternos(historial), { rol: "user", contenido: texto }],
     conversacionId: previa,
     async guardar(respuesta, tokens) {

@@ -468,12 +468,15 @@ Funcionalidades:
 ## MÓDULO 26: CONFIGURACIÓN
 *Ruta: /configuracion*
 
-Administración de usuarios y roles del sistema.
+Centro de ajustes del sistema, agrupado por tema.
 
 Funcionalidades:
-- Tabla de usuarios del sistema (nombre, email, rol).
-- Información del sistema: versión y módulos.
-- Roles disponibles con descripciones.
+- **Cuentas y acceso:** personal, permisos y excepciones por persona, y qué ve cada rol (`/configuracion/visibilidad`, solo `super_admin`).
+- **La institución:** parámetros institucionales (`/configuracion/parametros`: horario del comedor, mínimos de la beca, plazo de revisión de normas, correo de contacto) y anuncios de la portada.
+- **Asistente de IA:** uso, cuotas, precios y agentes (`/configuracion/ia`) y la base de conocimiento por agente (`/configuracion/conocimiento`).
+- **Seguridad y registro:** actividad del equipo con gráficas y descarga en CSV (`/configuracion/actividad`) y registro de auditoría detallado.
+- **Mi cuenta:** apariencia (tema claro u oscuro y barra lateral), en Mi perfil.
+- Tabla de cuentas del sistema y los roles con los permisos que tienen de verdad.
 
 ## MÓDULO 27: MAPA DE NAVEGACIÓN (SITEMAP)
 *Ruta: /sitemap*

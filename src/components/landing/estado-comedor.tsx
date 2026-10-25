@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * Estado del comedor dentro de la tarjeta de inscripción: abierto o cerrado, y
  * cuánto queda.
  *
- * La ventana es de 6:00 a 8:30 y depende de la hora de QUIEN MIRA, no del
+ * La ventana (parámetros `comedor.apertura` y `comedor.cierre`) depende de la hora de QUIEN MIRA, no del
  * servidor. Calcularlo al renderizar daría dos resultados distintos y React
  * avisaría de discordancia al hidratar, así que arranca sin hora y se rellena
  * tras montar. Mientras tanto muestra el horario, que es cierto a cualquier hora.
@@ -22,12 +22,14 @@ import { cn } from "@/lib/utils";
  * matiz, dice cuál importa ahora.
  */
 
-const APERTURA_MIN = 6 * 60; // 06:00
-const CIERRE_MIN = 8 * 60 + 30; // 08:30
-
 export function EstadoComedor({
+  aperturaMin: APERTURA_MIN,
+  cierreMin: CIERRE_MIN,
   textos,
 }: {
+  /** Minutos desde medianoche. Salen de los parámetros institucionales. */
+  aperturaMin: number;
+  cierreMin: number;
   textos: {
     abierto: string;
     cerrado: string;

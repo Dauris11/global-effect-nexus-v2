@@ -188,7 +188,7 @@
     "faq_q1_title": "Who can access the Nexus portal?",
     "faq_q1_desc": "The portal is strictly intended for active enrolled students, employees, teachers, and administrative staff. Access is provided solely via direct invitation from coordination.",
     "faq_q2_title": "How does daily lunch registration work?",
-    "faq_q2_desc": "Active students and staff can sign up daily between 6:00 AM and 8:30 AM via the meals page or portal to organize lunch prep without food waste.",
+    "faq_q2_desc": "Active students and staff can sign up daily between {apertura} and {cierre} via the meals page or portal to organize lunch prep without food waste.",
     "faq_q3_title": "How do active students access their grades and paperwork?",
     "faq_q3_desc": "Active students sign in with their assigned institutional account to view grades and academic progress by term, and to request certificates, letters, leave or an appointment from administration.",
     "faq_q4_title": "How do administrative staff and teachers manage their duties?",
@@ -207,9 +207,9 @@
     "menuClose": "Close menu",
     "panelMealsOpen": "Open",
     "panelMealsClosed": "Closed",
-    "panelMealsWindow": "Sign-up runs from 6:00 to 8:30 AM",
+    "panelMealsWindow": "Sign-up runs from {apertura} to {cierre}",
     "panelMealsLeft": "{n} min left to sign up",
-    "panelMealsNext": "Opens again tomorrow at 6:00 AM",
+    "panelMealsNext": "Opens again tomorrow at {apertura}",
     "eventsFilterLabel": "Filter events by type",
     "eventsToday": "Today",
     "eventsTomorrow": "Tomorrow",
@@ -248,8 +248,17 @@
     "role_contabilidad": "Accounting",
     "role_habitudes": "Habitudes",
     "access_portal_desc": "Students, teachers and staff sign in here with their account.",
+    "access_portal_f1": "Secure access with Foundation credentials",
+    "access_portal_f2": "Workspace tailored to your institutional role",
+    "access_portal_f3": "Real-time notifications and tracking",
     "access_meals_desc": "Sign up for today's lunch before the cut-off time.",
+    "access_meals_f1": "Daily sign-up with instant confirmation",
+    "access_meals_f2": "Daily menu and transparent headcount",
+    "access_meals_f3": "Direct operations for kitchen and logistics",
     "access_requests_desc": "Request a certificate, a letter or a meeting with administration.",
+    "access_requests_f1": "Student requests and internal approvals",
+    "access_requests_f2": "Step-by-step approval timeline",
+    "access_requests_f3": "History and download of issued documents",
     "footerContact": "Contact",
     "heroCarousel": "Images of the Foundation",
     "menuSections": "Sections",
@@ -261,13 +270,13 @@
   },
   "comida": {
     "title": "Meal sign-up",
-    "subtitle": "Sign up for today's lunch. Registration closes at 8:30 AM.",
+    "subtitle": "Sign up for today's lunch. Registration closes at {cierre}.",
     "namePlaceholder": "Enter your full name",
     "submit": "Sign up",
     "enrolledToday": "Enrolled today",
     "success": "Sign-up confirmed!",
     "duplicate": "You are already signed up today.",
-    "outOfTime": "Registration closed (after 8:30 AM).",
+    "outOfTime": "Registration closed (after {cierre}).",
     "invalid": "Enter a valid name.",
     "multiSubtitle": "Sign up for several days of the week at once.",
     "chooseDays": "Choose the days",
@@ -2239,6 +2248,36 @@
     "eyebrow": "Settings",
     "title": "Settings",
     "description": "The platform's settings, the accounts that exist, and what each role can do.",
+    "groups": {
+      "access": {
+        "title": "Accounts and access",
+        "hint": "Who gets in, what they can do and what each role sees."
+      },
+      "institution": {
+        "title": "The institution",
+        "hint": "The Foundation's data and rules, and what the public sees."
+      },
+      "assistant": {
+        "title": "AI assistant",
+        "hint": "Usage, quotas, agents and what each one knows."
+      },
+      "security": {
+        "title": "Security and records",
+        "hint": "Who did what and when."
+      },
+      "account": {
+        "title": "My account",
+        "hint": "How you see the portal."
+      }
+    },
+    "permissions": {
+      "title": "Permissions and exceptions",
+      "desc": "Adjust each person's permissions above or below those of their role."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "desc": "Light or dark theme and standard or black sidebar. Chosen in My profile and applies to this browser."
+    },
     "open": "Open",
     "stats": {
       "activeAccounts": "Active accounts",
@@ -2263,8 +2302,7 @@
     },
     "rolesTitle": "Roles and permissions",
     "rolesHint": "It comes from the same function that decides access, so it cannot contradict the system. Its source is the “rol” and “rol_permiso” tables: if a permission is missing or extra here, the database is what to change.",
-    "noPermissions": "No permissions assigned.",
-    "parametersNotice": "Institutional parameters cannot be edited here yet, and that is not an oversight: no table exists to store them, so a form on this screen would write into thin air. What are parameters today live where they are used —the lunch cut-off time comes from the same SQL as the kitchen list, and academic terms are managed in their own module—. Centralising them is a migration, for when it is needed."
+    "noPermissions": "No permissions assigned."
   },
   "roles": {
     "super_admin": "Full administration",
@@ -4326,7 +4364,7 @@
         "versionShort": "version {v}",
         "fragments": "{n} fragments",
         "disabled": "Disabled",
-        "stale": "Not verified in over 90 days",
+        "stale": "Not verified in over {dias} days",
         "verifiedShort": "Verified {fecha}",
         "markVerified": "Mark as verified today",
         "disable": "Disable",
@@ -4610,6 +4648,82 @@
     "save": "Save for {rol}",
     "saved": "Saved: {ocultas} hidden and {bloqueadas} blocked. Applies on the next screen each person opens.",
     "failed": "Could not save. Check and try again."
+  },
+  "parametros": {
+    "eyebrow": "Settings",
+    "title": "Institutional parameters",
+    "subtitle": "What used to be written in the code and is now changed here: meal hours, scholarship minimums and the contact email.",
+    "back": "Back to settings",
+    "groups": {
+      "comedor": {
+        "title": "Meals",
+        "hint": "When people can sign up for lunch. It shows on the home page, the meals page and the kitchen list."
+      },
+      "becas": {
+        "title": "Scholarship rules",
+        "hint": "This is what the assistant tells students and staff when they ask about the scholarship."
+      },
+      "asistente": {
+        "title": "AI assistant",
+        "hint": "How the assistant treats the rules it consults."
+      },
+      "contacto": {
+        "title": "Public contact",
+        "hint": "Details anyone visiting the home page sees."
+      }
+    },
+    "items": {
+      "comedor_apertura": {
+        "label": "Sign-up opens",
+        "hint": "From this time people can sign up for lunch."
+      },
+      "comedor_cierre": {
+        "label": "Sign-up closes",
+        "hint": "After this time nobody else gets in: it decides how much food is cooked."
+      },
+      "becas_indice_minimo": {
+        "label": "Minimum academic index",
+        "hint": "Out of 4.00. Below it, the student goes into academic observation."
+      },
+      "becas_asistencia_minima": {
+        "label": "Minimum attendance (%)",
+        "hint": "To classes and workshops. Unexcused absences put the scholarship at risk."
+      },
+      "becas_horas_servicio_mes": {
+        "label": "Community service hours per month",
+        "hint": "On projects approved by the Foundation."
+      },
+      "becas_nota_minima_360": {
+        "label": "Passing grade in Global Effect 360",
+        "hint": "Minimum to pass each subject of the program."
+      },
+      "asistente_dias_sin_verificar": {
+        "label": "Days before asking for a rule to be reviewed",
+        "hint": "After this period, the assistant warns that the rule has not been reviewed."
+      },
+      "contacto_correo": {
+        "label": "Contact email",
+        "hint": "It shows in the home page footer and in the sponsors section."
+      }
+    },
+    "normal": "Default: {valor}",
+    "restore": "Back to default",
+    "save": "Save parameters",
+    "saved": "Saved: {n} changes. They apply now.",
+    "noChanges": "Nothing changed.",
+    "checkFields": "Check the marked fields.",
+    "failed": "Could not save. Try again.",
+    "errors": {
+      "hora": "Enter a valid time.",
+      "numero": "Enter a number.",
+      "rango": "Outside the allowed range ({min} to {max}).",
+      "correo": "Enter a valid email.",
+      "orden": "Sign-up must close after it opens."
+    },
+    "lastChange": "Last change: {quien}, {cuando}.",
+    "unknownPerson": "deleted account",
+    "fiscalNote": "Tax parameters (VAT, withholdings, social security rates) have effective dates and a legal source, and are edited separately:",
+    "fiscalLink": "Accounting settings"
   },
   "widgetIA": {
     "botonFlotante": "Open AI assistant",

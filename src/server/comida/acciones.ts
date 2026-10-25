@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { consultarUna } from "@/lib/db";
+import { aMinutos } from "@/lib/parametros";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Inscripción al almuerzo del día.
@@ -17,9 +19,6 @@ import { consultarUna } from "@/lib/db";
 export type EstadoComida = {
   estado: "inicial" | "ok" | "duplicado" | "fuera_de_hora" | "invalido";
 };
-
-const CIERRE_MINUTOS = 8 * 60 + 30; // 08:30
-const APERTURA_MINUTOS = 6 * 60; // 06:00
 
 export async function inscribirseAComida(
   _previo: EstadoComida,
@@ -45,7 +44,13 @@ export async function inscribirseAComida(
 
   const minutos = ahora?.minutos ?? 0;
 
-  if (minutos < APERTURA_MINUTOS || minutos >= CIERRE_MINUTOS) {
+  // El horario es un parámetro institucional: lo cambia coordinación, no el código.
+  const p = await parametros();
+
+  if (
+    minutos < aMinutos(p["comedor.apertura"]) ||
+    minutos >= aMinutos(p["comedor.cierre"])
+  ) {
     return { estado: "fuera_de_hora" };
   }
 

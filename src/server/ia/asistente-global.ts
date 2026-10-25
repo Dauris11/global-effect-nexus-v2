@@ -12,7 +12,7 @@ import {
 import { tienePermiso, type Rol } from "@/lib/rbac";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { conversarComo } from "@/server/ia/agente";
-import { REGLAMENTO_FUNDACION } from "@/server/ia/reglamento";
+import { reglamentoActual } from "@/server/ia/reglamento";
 import {
   asegurarConversacion,
   conversacionDelEstudiante,
@@ -499,7 +499,7 @@ export async function enviarMensajeWidget({
       estudiante,
       usuario.idioma,
     );
-    const instruccionesCompletas = `${instruccionesBase}\n\n${REGLAMENTO_FUNDACION}`;
+    const instruccionesCompletas = `${instruccionesBase}\n\n${await reglamentoActual()}`;
 
     const turnos: TurnoIA[] = [
       ...historial.map((h) => ({
@@ -542,7 +542,7 @@ export async function enviarMensajeWidget({
       usuario,
       usuario.idioma,
     );
-    const instruccionesCompletas = `${instruccionesBase}\n\n${REGLAMENTO_FUNDACION}\n\nModo actual del asistente: ${modoEfectivo}. Si el usuario pide una acción que no puedes ejecutar directamente, indícale en qué menú o pantalla se realiza.`;
+    const instruccionesCompletas = `${instruccionesBase}\n\n${await reglamentoActual()}\n\nModo actual del asistente: ${modoEfectivo}. Si el usuario pide una acción que no puedes ejecutar directamente, indícale en qué menú o pantalla se realiza.`;
 
     const turnos: TurnoIA[] = [
       ...historial.map((h) => ({

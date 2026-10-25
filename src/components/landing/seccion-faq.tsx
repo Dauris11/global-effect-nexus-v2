@@ -1,6 +1,9 @@
 import { ChevronDown } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { horaLegible } from "@/lib/parametros";
+import { parametros } from "@/server/parametros/consultas";
+
 import {
   CabeceraSeccion,
   CONTENEDOR,
@@ -17,6 +20,9 @@ import {
  */
 export async function SeccionFaq() {
   const t = await getTranslations("landing");
+  const p = await parametros();
+  // El horario del comedor sale en alguna respuesta: se pasa a todas, y las que no lo usan lo ignoran.
+  const horas = { apertura: horaLegible(p["comedor.apertura"]), cierre: horaLegible(p["comedor.cierre"]) };
 
   const preguntas = ["q1", "q2", "q3", "q4"];
 
@@ -34,7 +40,7 @@ export async function SeccionFaq() {
               </summary>
 
               <p className="pb-5 leading-relaxed text-tinta-2">
-                {t(`faq_${pregunta}_desc`)}
+                {t(`faq_${pregunta}_desc`, horas)}
               </p>
             </details>
           ))}

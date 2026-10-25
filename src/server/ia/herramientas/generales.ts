@@ -72,7 +72,7 @@ export const buscarConocimientoHerramienta: Herramienta = {
         (f, n) =>
           `[${n + 1}] ${f.titulo ?? "Sin título"} — fuente: ${f.fuente ?? "no indicada"}` +
           `${f.version ? `, versión ${f.version}` : ""}` +
-          `${f.sinVerificar ? " — AVISO: sin verificar hace más de 90 días, adviértelo" : ""}\n${f.contenido}`,
+          `${f.sinVerificar ? " — AVISO: lleva más tiempo del permitido sin que nadie la revise, adviértelo" : ""}\n${f.contenido}`,
       )
       .join("\n\n");
 

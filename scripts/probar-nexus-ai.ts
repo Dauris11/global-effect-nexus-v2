@@ -223,7 +223,7 @@ await consultar(`DELETE FROM ai_uso WHERE id = $1`, [uso!.id]);
 // ── 6. Base de conocimiento por agente ────────────────────────────────────────
 const deConta = await buscarConocimiento("agente_contabilidad", "retención de ISR por servicios");
 prueba("el agente de contabilidad recupera su norma", deConta.some((f) => f.titulo === marca));
-prueba("avisa que la norma lleva más de 90 días sin verificar", deConta.find((f) => f.titulo === marca)?.sinVerificar === true);
+prueba("avisa que la norma lleva más del plazo sin verificar", deConta.find((f) => f.titulo === marca)?.sinVerificar === true);
 const deEstudiante = await buscarConocimiento("agente_estudiante", "retención de ISR por servicios");
 prueba("el agente del estudiante NO la recupera", !deEstudiante.some((f) => f.titulo === marca));
 await borrarFrag();

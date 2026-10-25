@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Mail, MapPin } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { parametros } from "@/server/parametros/consultas";
+
 import { CONTENEDOR } from "@/components/landing/piezas";
 import { Link } from "@/i18n/navigation";
 
@@ -16,6 +18,7 @@ import { Link } from "@/i18n/navigation";
 export async function Footer({ secciones }: { secciones: readonly { ancla: string; texto: string }[] }) {
   const t = await getTranslations("landing");
   const tComun = await getTranslations("common");
+  const correo = (await parametros())["contacto.correo"];
   const anio = new Date().getFullYear();
 
   return (
@@ -70,9 +73,9 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
               {t("footerAddress")}
             </li>
             <li>
-              <a href={`mailto:${t("footerEmail")}`} className={`${CLASE_ENLACE} gap-2`}>
+              <a href={`mailto:${correo}`} className={`${CLASE_ENLACE} gap-2`}>
                 <Mail className="size-4 shrink-0" />
-                {t("footerEmail")}
+                {correo}
               </a>
             </li>
           </Columna>

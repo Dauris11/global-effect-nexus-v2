@@ -62,8 +62,10 @@ function partirLargo(parrafo: string): string[] {
   );
 }
 
-/** Días desde los que una norma se considera sin revisar (prompt de IA, §3). */
-export const DIAS_SIN_VERIFICAR = 90;
+/*
+ * El plazo de «norma sin revisar» (90 días por defecto) es el parámetro
+ * `asistente.dias_sin_verificar`: se cambia en `/configuracion/parametros`.
+ */
 
 /** Los siete agentes (ver `ia-agentes.ts`). Aquí por no importar el RBAC en el cliente. */
 export const AGENTES_CLAVES = [

@@ -21,6 +21,7 @@ import {
   marcarVerificado,
 } from "@/server/ia/acciones-conocimiento";
 import { documentosDeConocimiento } from "@/server/ia/consultas-admin";
+import { parametros } from "@/server/parametros/consultas";
 
 export async function generateMetadata({
   params,
@@ -61,6 +62,7 @@ export default async function PaginaConocimiento({
     mensajesCliente(["iaAdmin"]),
   ]);
 
+  const dias = Number((await parametros())["asistente.dias_sin_verificar"]);
   const nombreAgente = (clave: string) => t(`agentNames.${clave}`);
   const agentesDisponibles = (visibles ?? AGENTES_CLAVES).map((clave) => ({
     clave,
@@ -113,7 +115,7 @@ export default async function PaginaConocimiento({
                     {doc.sinVerificar ? (
                       <Badge variant="solida" className="gap-1">
                         <TriangleAlert className="size-3" />
-                        {t("knowledge.stale")}
+                        {t("knowledge.stale", { dias })}
                       </Badge>
                     ) : (
                       <Badge variant="marca">
