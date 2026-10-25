@@ -3019,6 +3019,9 @@
     },
     "modulos": {
       "mi-dia": "Your decision queue for today: receipts, due dates and signals",
+      "reportes-financieros": "Financial statements, trial balance and reports by program",
+      "cierre-contable": "Period and year-end closing, with a checklist",
+      "comprobantes-recibidos": "Invoices and photos arriving from chat, to review and classify",
       "bancos": "Accounts, bank books and reconciliation",
       "cajas": "Petty cash, small expenses and cash counts",
       "recibos": "Income and expense receipts, donations",

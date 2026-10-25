@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requerirUsuario } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
 import { notificarUsuario } from "@/server/compartidos/notificaciones";
 
@@ -23,7 +23,9 @@ export async function validarComprobanteRecibido(datos: {
   cajaId?: string;
   observaciones?: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const usuario = await requerirUsuario();
+  // Validar o rechazar un comprobante es contabilizar: exige el permiso, no solo sesión.
+  // Sin esto, cualquier cuenta —un estudiante incluido— podía cambiar montos y NCF.
+  const usuario = await requerirPermiso("contabilidad.registrar");
 
   return enTransaccion(async (cliente) => {
     const { rows: compRows } = await cliente.query(

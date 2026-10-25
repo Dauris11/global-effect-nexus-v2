@@ -3019,6 +3019,9 @@
     },
     "modulos": {
       "mi-dia": "Tu cola de decisiones de hoy: comprobantes, vencimientos y señales",
+      "reportes-financieros": "Estados financieros, balanza y reportes por programa",
+      "cierre-contable": "Cierre de periodos y del año, con lista de verificación",
+      "comprobantes-recibidos": "Facturas y fotos que llegan del chat, por revisar y clasificar",
       "bancos": "Cuentas, libros de banco y conciliación",
       "cajas": "Cajas chicas, gastos menores y arqueos",
       "recibos": "Recibos de ingreso y egreso, donaciones",
