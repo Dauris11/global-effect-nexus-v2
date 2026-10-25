@@ -5,6 +5,19 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Proyectos Avanzados, Fases y Cronograma Gantt (25 oct 2026, migración `0062`):**
+      - **Migración `0062_proyectos_avanzados_fases_gantt.sql`:**
+        - Tabla `public.proyecto_fase` (fases ordenadas cronológicamente con color de marca).
+        - Tabla `public.proyecto_hito` (hitos/milestones institucionales con indicador de alcanzado).
+        - Extensión de `public.tarea` con `fase_id`, `tarea_padre_id` (subtareas jerárquicas), `fecha_inicio`, `progreso` (0-100%), `horas_estimadas`, `horas_reales` y bandera `es_hito`.
+        - Tabla `public.tarea_dependencia` para dependencias lógicas (FS Fin-Inicio, SS Inicio-Inicio) y días de desfase sin autodependencias cíclicas.
+      - **Capa Servidor:**
+        - `src/server/operaciones/gantt-consultas.ts`: consulta optimizada `proyectoParaGantt` con cálculo de fechas, asignados y mapa de dependencias.
+        - `src/server/operaciones/gantt-acciones.ts`: `actualizarFechasTareaGantt` (reprogramación interactiva), `agregarDependenciaTarea`, `eliminarDependenciaTarea` y `crearFaseProyecto`.
+      - **Componentes y UI:**
+        - `src/components/operaciones/visualizador-gantt.tsx`: visualizador SVG/HTML con selector de escala (Días / Semanas), timeline con barras proporcionales al avance, progreso visual interno y panel modal de detalle.
+        - Nueva ruta: `/administrativo/proyectos/[id]` (`src/app/[locale]/(portal)/administrativo/proyectos/[id]/page.tsx`) con navegación directa desde la tarjeta de proyectos.
+      - **Calidad:** 4,355 claves simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`) y 95 pruebas pasando (`npm run test:contabilidad`).
 - [x] **Nexus AI, fases 1–5 y parte de la 6–7 (24 oct 2026).** Migraciones
       `0057`–`0059` aplicadas. Agente por rol, medidor y cuotas, chat con
       streaming (`/api/ia/chat`), herramientas con aprobación y deshacer,

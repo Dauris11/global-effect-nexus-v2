@@ -1,0 +1,80 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ArrowLeft, CalendarDays, FolderKanban, Layers, ListTodo } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
+import { requerirPermiso } from "@/lib/auth";
+import { tienePermiso } from "@/lib/rbac";
+import { VisualizadorGantt } from "@/components/operaciones/visualizador-gantt";
+import { proyectoParaGantt } from "@/server/operaciones/gantt-consultas";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const proyecto = await proyectoParaGantt(id);
+  if (!proyecto) return { title: "Proyecto no encontrado" };
+
+  return { title: `Gantt: ${proyecto.nombre} · Global Effect Nexus` };
+}
+
+export default async function PaginaDetalleProyectoGantt({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const usuario = await requerirPermiso("operaciones.leer");
+  const puedeEditar = tienePermiso(usuario.rol, "operaciones.escribir");
+
+  const proyecto = await proyectoParaGantt(id);
+  if (!proyecto) notFound();
+
+  return (
+    <div className="space-y-6">
+      {/* Barra superior con navegación */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/administrativo/proyectos"
+              className="inline-flex items-center text-xs font-semibold text-marca-600 hover:underline"
+            >
+              <ArrowLeft className="size-3.5 mr-1" />
+              Volver a Proyectos
+            </Link>
+            <span className="text-linea">/</span>
+            <span className="texto-meta text-xs uppercase tracking-wider font-semibold">
+              Cronograma Gantt
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl flex items-center gap-2.5">
+            <FolderKanban className="size-6 text-marca-500" />
+            {proyecto.nombre}
+          </h1>
+          {proyecto.descripcion && (
+            <p className="texto-meta max-w-3xl text-sm">{proyecto.descripcion}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="neutra" className="capitalize text-xs">
+            {proyecto.estado.replace("_", " ")}
+          </Badge>
+          {proyecto.responsable && (
+            <Badge variant="marca" className="text-xs">
+              Líder: {proyecto.responsable}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Visualizador interactivo de Gantt */}
+      <VisualizadorGantt proyecto={proyecto} puedeEditar={puedeEditar} />
+    </div>
+  );
+}

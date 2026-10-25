@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
 import { ALERTA_RIESGO, ANIMACION, clasesDeEstado, CUADRO, VACIO } from "@/lib/paleta";
@@ -174,19 +175,30 @@ function Tarjeta({
           {t(`projectStatus.${proyecto.estado}` as never)}
         </Badge>
 
-        {puedeEscribir && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={alEditar}
-            title={t("editProject.edit")}
-            aria-label={t("editProject.edit")}
-            className="size-8 shrink-0"
+        <div className="flex items-center gap-1 shrink-0">
+          <Link
+            href={`/administrativo/proyectos/${proyecto.id}`}
+            className="inline-flex size-8 items-center justify-center rounded-md border border-linea text-tinta-2 transition-colors hover:border-marca-500 hover:text-marca-600 hover:bg-muted"
+            title="Ver Cronograma Gantt"
+            aria-label="Ver Cronograma Gantt"
           >
-            <Pencil className="size-3.5" />
-          </Button>
-        )}
+            <CalendarDays className="size-3.5" />
+          </Link>
+
+          {puedeEscribir && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={alEditar}
+              title={t("editProject.edit")}
+              aria-label={t("editProject.edit")}
+              className="size-8"
+            >
+              <Pencil className="size-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-xs">
