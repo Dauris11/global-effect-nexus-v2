@@ -71,7 +71,7 @@ export async function listarComprobantesRetencion(opciones?: {
       cr.tasa_isr_retenido::float AS "tasaIsrRetenido",
       cr.concepto,
       cr.estado,
-      u.nombre_completo AS "emitidoPorNombre",
+      u.nombre AS "emitidoPorNombre",
       cr.creado_en AS "creadoEn"
     FROM contabilidad.comprobante_retencion cr
     JOIN contabilidad.proveedor pr ON pr.id = cr.proveedor_id
@@ -110,7 +110,7 @@ export async function obtenerComprobanteRetencion(id: string): Promise<Comproban
       cr.tasa_isr_retenido::float AS "tasaIsrRetenido",
       cr.concepto,
       cr.estado,
-      u.nombre_completo AS "emitidoPorNombre",
+      u.nombre AS "emitidoPorNombre",
       cr.creado_en AS "creadoEn"
     FROM contabilidad.comprobante_retencion cr
     JOIN contabilidad.proveedor pr ON pr.id = cr.proveedor_id

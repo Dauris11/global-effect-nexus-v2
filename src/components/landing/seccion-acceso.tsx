@@ -51,34 +51,34 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
   ] as const;
 
   return (
-    <section id="acceso" className="scroll-mt-36 py-12 md:scroll-mt-24 md:py-16">
+    <section id="acceso" className="scroll-mt-36 py-16 md:scroll-mt-24 md:py-24">
       <div className={CONTENEDOR}>
         <CabeceraSeccion titulo={t("accessTitle")} />
 
-        <ul className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
+        <ul className="revelar-hijos mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
           {puertas.map((puerta) => (
             <li key={puerta.clave}>
               <Link
                 href={puerta.href}
-                className="group flex h-full flex-col justify-between rounded-card border border-linea bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="group flex h-full flex-col justify-between rounded-card border border-linea bg-card p-6 shadow-card transition-[translate,box-shadow,border-color,scale] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.99] md:p-7"
               >
                 <div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600 transition-colors group-hover:bg-marca-500 group-hover:text-white">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-muted text-tinta transition-colors duration-200 group-hover:bg-marca-500 group-hover:text-white">
                       <puerta.icono className="size-6" />
                     </span>
                     <Badge variant="neutra">{t(`access_${puerta.clave}_tag`)}</Badge>
                   </div>
 
-                  <h3 className="texto-titulo-tarjeta mt-5 text-lg text-tinta transition-colors group-hover:text-marca-600">
+                  <h3 className="mt-6 text-xl font-semibold tracking-[-0.015em] text-tinta">
                     {t(`access_${puerta.clave}_title`)}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-tinta-2">
+                  <p className="mt-2 leading-relaxed text-tinta-2">
                     {t(`access_${puerta.clave}_desc`)}
                   </p>
 
                   {puerta.clave === "meals" && (
-                    <div className="mt-4">
+                    <div>
                       <EstadoComedor
                         aperturaMin={aMinutos(p["comedor.apertura"])}
                         cierreMin={aMinutos(p["comedor.cierre"])}
@@ -98,10 +98,14 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
                   )}
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-linea/60 pt-4">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca-600 transition-colors group-hover:text-marca-700">
+                <div className="mt-8 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-marca-600 transition-colors group-hover:text-marca-700">
                     {t("enter")}
-                    <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+                  </span>
+                  {/* La flecha en un círculo que se llena al pasar: el gesto
+                      dice "esto se pulsa" sin pintar la tarjeta entera. */}
+                  <span className="flex size-10 items-center justify-center rounded-full border border-linea text-tinta transition-[background-color,border-color,color] duration-200 group-hover:border-marca-500 group-hover:bg-marca-500 group-hover:text-white">
+                    <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </span>
                 </div>
               </Link>
@@ -111,7 +115,7 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
 
         {/* Accesos por rol: todos llevan al mismo inicio de sesión, pero
             nombrar el rol le dice a cada uno "esto también es para ti". */}
-        <div className="mt-8 flex flex-col gap-4 border-t border-linea pt-6 md:flex-row md:items-center md:justify-between">
+        <div className="revelar mt-10 flex flex-col gap-4 border-t border-linea pt-8 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-semibold text-tinta">{t("accessRolesTitle")}</p>
           </div>

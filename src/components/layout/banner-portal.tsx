@@ -46,7 +46,7 @@ export function BannerPortal({
   /** @deprecated El saludo no lleva icono. */
   icono: React.ComponentType<{ className?: string }>;
   titulo: string;
-  subtitulo: string;
+  subtitulo?: string;
   insignia?: string;
   kpis: readonly KpiPortal[];
 }) {

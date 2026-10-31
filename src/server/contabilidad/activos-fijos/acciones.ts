@@ -120,15 +120,6 @@ export async function ejecutarDepreciacionMensual(
     const ctaGastoDeprec = activos[0].cuenta_gasto_depreciacion_id;
     const ctaAcumDeprec = activos[0].cuenta_depreciacion_acumulada_id;
 
-    // Generar número de asiento
-    const numSeq = await cliente.query<{ siguiente: number }>(
-      `UPDATE contabilidad.secuencia
-          SET siguiente = siguiente + 1
-        WHERE clave = 'asiento'
-        RETURNING siguiente`,
-    );
-    const numeroAsiento = `AS-${anio}-${String(numSeq.rows[0].siguiente).padStart(5, "0")}`;
-
     let totalDepreciado = 0;
     type LineaDeprec = {
       activoId: string;
@@ -172,38 +163,30 @@ export async function ejecutarDepreciacionMensual(
 
     totalDepreciado = Math.round(totalDepreciado * 100) / 100;
 
-    // Crear Asiento Contable
+    // `crear_asiento` asigna número y período; armar la cabecera a
+    // mano duplicaba esa lógica con columnas que la tabla no tiene.
     const { rows: asRows } = await cliente.query<{ id: string }>(
-      `INSERT INTO contabilidad.asiento
-         (numero, fecha, concepto, tipo, estado, anio, mes, creado_por)
-       VALUES ($1, $2::date, $3, 'ajuste', 'publicado', $4, $5, $6)
-       RETURNING id`,
+      `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', NULL, NULL, $3::jsonb) AS id`,
       [
-        numeroAsiento,
         fechaAsiento,
         `Depreciación mensual de activos fijos ${mes}/${anio}`,
-        anio,
-        mes,
-        usuario.id,
+        JSON.stringify([
+          {
+            cuenta_id: ctaGastoDeprec,
+            debe: totalDepreciado,
+            haber: 0,
+            descripcion: `Gasto depreciación activos período ${mes}/${anio}`,
+          },
+          {
+            cuenta_id: ctaAcumDeprec,
+            debe: 0,
+            haber: totalDepreciado,
+            descripcion: `Depreciación acumulada activos período ${mes}/${anio}`,
+          },
+        ]),
       ],
     );
     const asientoId = asRows[0].id;
-
-    // Débito Gasto Depreciación
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, 1, $2, $3, 0, $4)`,
-      [asientoId, ctaGastoDeprec, totalDepreciado, `Gasto depreciación activos período ${mes}/${anio}`],
-    );
-
-    // Crédito Depreciación Acumulada
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, 2, $2, 0, $3, $4)`,
-      [asientoId, ctaAcumDeprec, totalDepreciado, `Depreciación acumulada activos período ${mes}/${anio}`],
-    );
 
     // Insertar cabecera corrida
     const { rows: depRows } = await cliente.query<{ id: string }>(

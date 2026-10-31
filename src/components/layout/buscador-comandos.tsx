@@ -65,7 +65,15 @@ export function BuscadorComandos({
 
   return (
     <Dialog open={abierto} onOpenChange={cerrar}>
-      <DialogContent className="gap-0 p-0 md:max-w-xl md:pt-0" mostrarCerrar={false}>
+      {/*
+        Sin animación en escritorio: es la paleta de ⌘K y se abre decenas de
+        veces al día desde el teclado. Cualquier entrada, por corta que sea, se
+        siente como esperar. En móvil se abre con el dedo y sí sube.
+      */}
+      <DialogContent
+        className="gap-0 p-0 md:max-w-xl md:pt-0 md:data-[state=open]:animate-none md:data-[state=closed]:animate-none"
+        mostrarCerrar={false}
+      >
         <DialogTitle className="sr-only">{t("commandOpen")}</DialogTitle>
 
         <div className="flex items-center gap-3 border-b border-linea px-5">

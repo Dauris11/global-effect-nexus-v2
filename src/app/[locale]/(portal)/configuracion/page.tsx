@@ -1,25 +1,11 @@
 import type { Metadata } from "next";
-import {
-  Activity,
-  ArrowRight,
-  BookOpen,
-  Cpu,
-  Eye,
-  Palette,
-  SlidersHorizontal,
-  KeyRound,
-  Megaphone,
-  ScrollText,
-  Settings,
-  ShieldCheck,
-  UserCog,
-  Users,
-} from "lucide-react";
+import { KeyRound, ScrollText, Settings, ShieldCheck, UserCog, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import { menuDe, itemsDeArea } from "@/lib/nav";
@@ -29,7 +15,6 @@ import {
   PERMISOS,
   ROLES,
   tienePermiso,
-  type Permiso,
   type Rol,
 } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -78,150 +63,12 @@ export default async function PaginaConfiguracion({
 
   const usuario = await requerirRol(["admin", "super_admin"]);
 
-  const [t, tAnuncios, tAudit, tRoles, tIA, tActividad, tVis, tPar, cuentas, cifras] = await Promise.all([
+  const [t, tRoles, cuentas, cifras] = await Promise.all([
     getTranslations({ locale, namespace: "settings" }),
-    getTranslations({ locale, namespace: "announcements" }),
-    getTranslations({ locale, namespace: "audit" }),
     getTranslations({ locale, namespace: "roles" }),
-    getTranslations({ locale, namespace: "iaAdmin" }),
-    getTranslations({ locale, namespace: "actividad" }),
-    getTranslations({ locale, namespace: "visibilidad" }),
-    getTranslations({ locale, namespace: "parametros" }),
     cuentasDelSistema(),
     cifrasDelSistema(),
   ]);
-
-  type Ajuste = {
-    permiso: Permiso;
-    href: string;
-    icono: typeof Settings;
-    titulo: string;
-    descripcion: string;
-    soloMaestro?: boolean;
-    /** Lo ven también quienes tienen este rol aunque no el permiso. */
-    roles?: readonly Rol[];
-  };
-
-  // Las configuraciones, agrupadas por lo que resuelven y no por quién las programó.
-  const todosLosAjustes: { clave: string; ajustes: Ajuste[] }[] = [
-    {
-      clave: "access",
-      ajustes: [
-        {
-          permiso: "usuarios.administrar",
-          href: "/administrativo/personal",
-          icono: UserCog,
-          titulo: t("staff.title"),
-          descripcion: t("staff.desc"),
-        },
-        {
-          permiso: "usuarios.administrar",
-          href: "/configuracion/permisos",
-          icono: KeyRound,
-          titulo: t("permissions.title"),
-          descripcion: t("permissions.desc"),
-          soloMaestro: true,
-        },
-        {
-          // Qué ve cada rol: solo el administrador maestro.
-          permiso: "usuarios.administrar",
-          href: "/configuracion/visibilidad",
-          icono: Eye,
-          titulo: tVis("title"),
-          descripcion: tVis("subtitle"),
-          soloMaestro: true,
-        },
-      ],
-    },
-    {
-      clave: "institution",
-      ajustes: [
-        {
-          // Horario del comedor, mínimos de la beca, correo de contacto.
-          permiso: "usuarios.administrar",
-          href: "/configuracion/parametros",
-          icono: SlidersHorizontal,
-          titulo: tPar("title"),
-          descripcion: tPar("subtitle"),
-        },
-        {
-          permiso: "landing.administrar",
-          href: "/configuracion/landing",
-          icono: Megaphone,
-          titulo: tAnuncios("title"),
-          descripcion: tAnuncios("desc"),
-        },
-      ],
-    },
-    {
-      clave: "assistant",
-      ajustes: [
-        {
-          permiso: "ia.administrar",
-          href: "/configuracion/ia",
-          icono: Cpu,
-          titulo: tIA("title"),
-          descripcion: tIA("subtitle"),
-        },
-        {
-          permiso: "ia.administrar",
-          href: "/configuracion/conocimiento",
-          icono: BookOpen,
-          titulo: tIA("knowledge.title"),
-          descripcion: tIA("knowledge.subtitle"),
-        },
-      ],
-    },
-    {
-      clave: "security",
-      ajustes: [
-        {
-          // Quién hizo qué y a qué hora, con gráficas.
-          permiso: "usuarios.administrar",
-          href: "/configuracion/actividad",
-          icono: Activity,
-          titulo: tActividad("title"),
-          descripcion: tActividad("subtitle"),
-          soloMaestro: true,
-        },
-        {
-          // El visor de auditoría es solo del administrador maestro: enseña lo
-          // que ha hecho cada cuenta, y eso incluye a quien coordina.
-          permiso: "usuarios.administrar",
-          href: "/configuracion/auditoria",
-          icono: ScrollText,
-          titulo: tAudit("title"),
-          descripcion: tAudit("description"),
-          soloMaestro: true,
-        },
-      ],
-    },
-    {
-      clave: "account",
-      ajustes: [
-        {
-          // Tema claro u oscuro y barra lateral: lo elige cada persona en su perfil.
-          permiso: "usuarios.administrar",
-          href: "/perfil",
-          icono: Palette,
-          titulo: t("appearance.title"),
-          descripcion: t("appearance.desc"),
-          roles: ROLES,
-        },
-      ],
-    },
-  ];
-
-  const gruposDeAjustes = todosLosAjustes
-    .map((grupo) => ({
-      ...grupo,
-      ajustes: grupo.ajustes.filter(
-        (ajuste) =>
-          (ajuste.roles?.includes(usuario.rol) || tienePermiso(usuario.rol, ajuste.permiso)) &&
-          (!ajuste.soloMaestro || usuario.rol === "super_admin"),
-      ),
-    }))
-    .filter((grupo) => grupo.ajustes.length > 0);
 
   // Los módulos que ofrece el menú de esta cuenta. Sale de `menuDe`, igual que
   // el mapa del sitio: una cifra de "módulos" escrita a mano se queda vieja.
@@ -229,18 +76,7 @@ export default async function PaginaConfiguracion({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Settings className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
-      </div>
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica
@@ -266,54 +102,17 @@ export default async function PaginaConfiguracion({
         />
       </div>
 
-      {/* Ajustes que llevan a otra pantalla, por lo que resuelven. */}
-      {gruposDeAjustes.map((grupo) => (
-        <section key={grupo.clave} className="space-y-3">
-          <div>
-            <p className="texto-titulo-tarjeta">{t(`groups.${grupo.clave}.title`)}</p>
-            <p className="texto-meta">{t(`groups.${grupo.clave}.hint`)}</p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {grupo.ajustes.map((ajuste) => (
-              <Link key={ajuste.href} href={ajuste.href} className="group">
-                <Card className={cn("h-full", TARJETA.interactiva)}>
-                  <CardContent className="pt-5">
-                    <span className={TARJETA.icono}>
-                      <ajuste.icono className="size-5" />
-                    </span>
-
-                    <p className="mt-3 text-sm font-semibold">{ajuste.titulo}</p>
-                    <p className="text-muted-foreground mt-1 line-clamp-3 text-xs">
-                      {ajuste.descripcion}
-                    </p>
-
-                    <span className="text-marca-700 mt-3 inline-flex items-center gap-1.5 text-xs font-semibold">
-                      {t("open")}
-                      <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
-
       {/* Cuentas del sistema. */}
       <Card className={TARJETA.contenido}>
         <CardContent className="space-y-3 pt-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-sm font-semibold">{t("accounts.title")}</p>
-              <p className="text-muted-foreground text-xs">
-                {t("accounts.hint")}
-              </p>
             </div>
 
             <Link
               href="/administrativo/personal"
-              className="shrink-0 text-xs font-medium text-[#187a99] hover:underline"
+              className="text-marca-700 shrink-0 text-xs font-medium hover:underline"
             >
               {t("accounts.manage")}
             </Link>
@@ -349,7 +148,7 @@ export default async function PaginaConfiguracion({
                         className={cn(
                           "text-[10px]",
                           cuenta.activo
-                            ? "bg-[#2096BA]/15 text-[#187a99]"
+                            ? "bg-marca-50 text-marca-700"
                             : "bg-muted text-tinta-2",
                         )}
                       >
@@ -371,7 +170,6 @@ export default async function PaginaConfiguracion({
         <CardContent className="space-y-3 pt-5">
           <div>
             <p className="text-sm font-semibold">{t("rolesTitle")}</p>
-            <p className="text-muted-foreground text-xs">{t("rolesHint")}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">

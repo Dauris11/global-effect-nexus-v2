@@ -48,7 +48,6 @@ export default async function PortalColaboradorPage() {
         icono={Sparkles}
         insignia={t("eyebrow")}
         titulo={t("greeting", { nombre: usuario.nombre })}
-        subtitulo={t("subtitle")}
         kpis={[]}
       />
 

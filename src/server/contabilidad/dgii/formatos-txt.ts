@@ -63,7 +63,7 @@ export async function generarTxt606(anio: number, mes: number, forzarEnCero = fa
     FROM contabilidad.factura_proveedor fp
     JOIN contabilidad.proveedor pr ON pr.id = fp.proveedor_id
     JOIN contabilidad.periodo_contable pc ON pc.id = fp.periodo_id
-    WHERE pc.codigo = $1 AND fp.estado = 'aprobada'
+    WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND fp.estado = 'aprobada'
     ORDER BY fp.fecha_emision ASC, fp.numero ASC
   `;
 
@@ -181,7 +181,7 @@ export async function generarTxt607(anio: number, mes: number, forzarEnCero = fa
     FROM contabilidad.donacion d
     JOIN contabilidad.tercero t ON t.id = d.tercero_id
     JOIN contabilidad.periodo_contable pc ON pc.id = d.periodo_id
-    WHERE pc.codigo = $1 AND d.estado = 'confirmada'
+    WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND d.estado = 'confirmada'
     ORDER BY d.fecha ASC, d.numero ASC
   `;
 

@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { UbicacionVisita } from "@/components/habitudes/ubicacion-visita";
 import type { HabitudesLiceo, HabitudesVisitaEvidencia } from "@/lib/habitudes";
 import { cn } from "@/lib/utils";
 import { registrarVisitaLiceoAction } from "@/server/habitudes/acciones";
@@ -47,6 +48,8 @@ export function RegistroVisitaLiceo({
   const [errorValidacion, setErrorValidacion] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const liceoSeleccionado = liceos.find((l) => l.id === liceoId);
 
   const presetsTemas = [
     t("presetTopicThermostat"),
@@ -175,6 +178,9 @@ export function RegistroVisitaLiceo({
                 ))}
               </select>
             </div>
+            {liceoSeleccionado && (
+              <UbicacionVisita key={liceoSeleccionado.id} liceo={liceoSeleccionado} />
+            )}
           </div>
 
           {/* 2. Tema Impartido y Sugerencias Rápidas */}

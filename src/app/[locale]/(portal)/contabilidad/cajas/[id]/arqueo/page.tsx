@@ -3,22 +3,23 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { ContadorArqueo } from "@/components/contabilidad/cajas/contador-arqueo";
 import { Button } from "@/components/ui/button";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
+import { esUuid } from "@/lib/contabilidad/formato";
 import { claveDia } from "@/lib/fechas";
 import { obtenerCaja } from "@/server/contabilidad/cajas/consultas";
-import { ContadorArqueo } from "@/components/contabilidad/cajas/contador-arqueo";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const caja = await obtenerCaja(id);
-  return { title: caja ? `Arqueo físico · ${caja.nombre}` : "Arqueo de caja" };
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "contab.cajas" });
+  return { title: t("nuevoArqueo") };
 }
 
 export default async function PaginaRealizarArqueo({
@@ -27,7 +28,8 @@ export default async function PaginaRealizarArqueo({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { id, locale } = await params;
-  await requerirPermiso("contabilidad.registrar");
+  const usuario = await requerirPermiso("contabilidad.registrar");
+  if (!esUuid(id)) notFound();
 
   const [t, caja] = await Promise.all([
     getTranslations({ locale, namespace: "contab.cajas" }),
@@ -36,25 +38,21 @@ export default async function PaginaRealizarArqueo({
   if (!caja) notFound();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href={`/contabilidad/cajas/${caja.id}`}>
             <ArrowLeft className="size-4" />
-            <span>{t("volverCajas")}</span>
+            {caja.nombre}
           </Link>
         </Button>
-
         <EncabezadoPagina
           antetitulo={`${t("cuadreArqueo")} · ${caja.codigo}`}
-          titulo={`${t("nuevoArqueo")} · ${caja.nombre}`}
-          subtitulo={t("subtitulo")}
+          titulo={t("nuevoArqueo")}
+          subtitulo={caja.arqueosPorAprobar > 0 ? t("errores.arqueo_pendiente") : t("ecuacion")}
         />
       </div>
-
-      <div className="rounded-tarjeta border border-linea bg-background p-6 shadow-sm">
-        <ContadorArqueo caja={caja} hoy={claveDia()} />
-      </div>
+      <ContadorArqueo caja={caja} hoy={claveDia()} contador={usuario.nombre} />
     </div>
   );
 }

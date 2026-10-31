@@ -27,6 +27,7 @@ import {
   Shield,
   Sparkles,
   Star,
+  TowerControl,
   UserCog,
   Users,
   Utensils,
@@ -220,6 +221,17 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Inbox,
           },
           { etiqueta: "tasks", href: "/administrativo/tareas", icono: ListTodo },
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
+          },
+          {
+            etiqueta: "teamTower",
+            href: "/administrativo/torre-control/equipo",
+            icono: Users,
+            permiso: "operaciones.escribir",
+          },
           {
             etiqueta: "projects",
             href: "/administrativo/proyectos",
@@ -520,6 +532,11 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
+          },
         ],
       },
     ],
@@ -549,18 +566,18 @@ const MENU_HABITUDES: AreaNav[] = [
             href: "/habitudes",
             icono: BookOpen,
           },
-          {
-            etiqueta: "applicants",
-            href: "/expedientes",
-            icono: Users,
-            permiso: "expedientes.postular",
-          },
-          // El alta de un candidato es una solicitud que aprueba
-          // administración (`alta_expediente`).
+          // Postular a un candidato ES una solicitud (`alta_expediente`) que
+          // aprueba administración: no hay lista de expedientes que ver, y una
+          // entrada a `/expedientes` los devolvía a su portal sin explicación.
           {
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+          },
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
           },
         ],
       },
@@ -649,6 +666,7 @@ const MENU_CONTABILIDAD: AreaNav[] = [
       {
         items: [
           ...modulosDeGrupo("departamento").map(itemDeModulo),
+          { etiqueta: "controlTower", href: "/administrativo/torre-control", icono: TowerControl },
           { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
           { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
           { etiqueta: "chatIaAdmin", href: "/chat-ia", icono: Bot, permiso: "ia.usar" },
@@ -681,9 +699,10 @@ const MENU_COLABORADOR: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "myDay",
-            href: "/administrativo/tareas/hoy",
-            icono: ListTodo,
+            // La torre ya es «mi día»: tareas de hoy, vencidas y de la semana.
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
           },
           {
             etiqueta: "expenseReports",

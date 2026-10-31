@@ -30,10 +30,15 @@ function Progress({
       )}
       {...props}
     >
+      {/*
+        Se desplaza con `translateX` en vez de cambiar `width`: no recalcula el
+        diseño y el extremo redondeado no se deforma. Al montar crece desde
+        cero hasta su valor (`progresoEntrada` solo define el `from`).
+      */}
       <div
         data-slot="progress-indicator"
-        className="bg-primary h-full rounded-full transition-[width] duration-500"
-        style={{ width: `${porcentaje}%` }}
+        className="bg-primary h-full w-full rounded-full transition-transform duration-500 ease-salida motion-safe:animate-[progresoEntrada_600ms_var(--ease-salida)_backwards]"
+        style={{ transform: `translateX(-${100 - porcentaje}%)` }}
       />
     </div>
   );

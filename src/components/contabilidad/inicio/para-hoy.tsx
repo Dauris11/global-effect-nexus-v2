@@ -11,7 +11,9 @@ export type ClavePendiente =
   | "facturasBorrador"
   | "rendiciones"
   | "arqueos"
-  | "conciliaciones";
+  | "conciliaciones"
+  | "comprobantes"
+  | "cajasBajas";
 
 export type PendienteVisible = {
   clave: ClavePendiente;

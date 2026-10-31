@@ -13,14 +13,14 @@ import { cn } from "@/lib/utils";
  * Hero rotativo de la página de inicio, con los anuncios que publique
  * administración o los tres de `messages` si no hay ninguno.
  *
- * Solo el titular. Aquí había además una píldora, un párrafo, dos botones fijos
- * y una banda de "Matrícula Abierta" con su enlace: seis cosas compitiendo en la
- * primera pantalla, y ninguna se leía. Ahora el hero dice UNA cosa, en grande, y
- * las acciones están en la barra (la píldora) y en la franja de acceso.
+ * Tres piezas y en este orden de peso: el titular, muy grande; una frase que
+ * dice qué es la Fundación; y un solo botón. Aquí llegó a haber seis cosas
+ * compitiendo (píldora, párrafo, dos botones, una banda de matrícula) y luego
+ * solo el titular, que era bonito pero no decía qué era esto ni qué hacer.
  *
- * La única excepción es el botón de un anuncio publicado desde el panel: ese no
- * es una promoción escrita en el código, es lo que la Fundación tiene que
- * anunciar hoy, y sin su botón el anuncio no serviría de nada.
+ * El botón es el del anuncio si administración le puso uno —es lo que la
+ * Fundación tiene que anunciar hoy— y si no, entrar al portal, que es a lo que
+ * viene casi todo el mundo.
  *
  * Recibe los textos ya traducidos como props en vez de leerlos con
  * `useTranslations`. El espacio `landing` son 10,3 KB de mensajes; pasando solo
@@ -47,11 +47,17 @@ const INTERVALO_MS = 6000;
 
 export function Hero({
   diapositivas,
+  entradilla,
+  accion,
   etiquetaAnterior,
   etiquetaSiguiente,
   etiquetaCarrusel,
 }: {
   diapositivas: readonly Diapositiva[];
+  /** Qué es la Fundación, en una frase. Igual para todos los anuncios. */
+  entradilla: string;
+  /** Botón por defecto cuando el anuncio no trae el suyo. */
+  accion: { texto: string; href: string };
   etiquetaAnterior: string;
   etiquetaSiguiente: string;
   /** "carrusel" en el idioma de la página, para `aria-roledescription`. */
@@ -99,6 +105,7 @@ export function Hero({
   }, []);
 
   const diapositiva = diapositivas[actual];
+  const boton = diapositiva.cta ?? accion;
 
   return (
     /*
@@ -122,7 +129,7 @@ export function Hero({
         onMouseLeave={() => setInteractuando(false)}
         onFocus={() => setInteractuando(true)}
         onBlur={() => setInteractuando(false)}
-        className="relative isolate flex min-h-[440px] flex-col justify-end overflow-hidden rounded-hoja bg-muted md:min-h-[560px]"
+        className="relative isolate flex min-h-[520px] flex-col justify-end overflow-hidden rounded-hoja bg-muted md:min-h-[640px]"
       >
         {diapositivas.map((item, indice) => (
           <div
@@ -139,7 +146,9 @@ export function Hero({
               fill
               priority={indice === 0}
               sizes="(max-width: 1280px) 100vw, 1280px"
-              className="object-cover"
+              // La clase se pone al volverse activa, y ponerla reinicia el
+              // acercamiento: cada anuncio entra con el suyo.
+              className={cn("object-cover", indice === actual && "landing-foto-activa")}
             />
           </div>
         ))}
@@ -149,29 +158,35 @@ export function Hero({
             invierte en modo oscuro y el velo se volvería blanco. */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
+          className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/30 to-transparent"
         />
 
-        <div className="flex flex-col gap-6 p-6 md:flex-row md:items-end md:justify-between md:p-10">
-          <div className="max-w-3xl">
+        <div className="flex flex-col gap-8 p-6 md:flex-row md:items-end md:justify-between md:p-12">
+          {/* `key` con el índice: al cambiar de anuncio el bloque se vuelve a
+              montar y repite la entrada escalonada, titular primero. */}
+          <div key={actual} className="max-w-4xl">
             <h1
               id="hero-titulo"
-              className="font-semibold tracking-tight text-balance text-white"
-              style={{ fontSize: "clamp(30px, 5vw, 56px)", lineHeight: 1.08, letterSpacing: "-0.03em" }}
+              className="landing-entrada text-[38px] leading-[1.02] font-semibold tracking-[-0.035em] text-balance text-white sm:text-[52px] lg:text-[76px]"
             >
               {diapositiva.titulo}
             </h1>
 
-            {/* Solo el del anuncio publicado. Sin anuncio no hay botón: entrar
-                se hace desde la barra y la franja de acceso de justo debajo. */}
-            {diapositiva.cta && (
-              <Button asChild size="lg" className="mt-6">
-                <Link href={diapositiva.cta.href}>
-                  {diapositiva.cta.texto}
-                  <ArrowRight />
+            <p
+              className="landing-entrada mt-5 max-w-xl text-base leading-relaxed text-white/90 md:mt-6 md:text-lg"
+              style={{ "--paso": 1 } as React.CSSProperties}
+            >
+              {entradilla}
+            </p>
+
+            <div className="landing-entrada mt-7 md:mt-8" style={{ "--paso": 2 } as React.CSSProperties}>
+              <Button asChild size="lg" className="group/cta">
+                <Link href={boton.href}>
+                  {boton.texto}
+                  <ArrowRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
                 </Link>
               </Button>
-            )}
+            </div>
           </div>
 
           {total > 1 && (
@@ -188,12 +203,28 @@ export function Hero({
                     aria-label={`${indice + 1} / ${total}`}
                     className="-mx-1.5 flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                   >
+                    {/* El activo es una pista que se llena en lo que dura el
+                        anuncio: dice cuánto falta para el siguiente sin un
+                        número. Con movimiento reducido se ve llena y quieta. */}
                     <span
                       className={cn(
-                        "h-2 rounded-full transition-all",
-                        indice === actual ? "w-6 bg-white" : "w-2 bg-white/50",
+                        "relative h-2 overflow-hidden rounded-full transition-[width,background-color] duration-300",
+                        indice === actual ? "w-8 bg-white/40" : "w-2 bg-white/50",
                       )}
-                    />
+                    >
+                      {indice === actual && (
+                        // La clave cambia al pausar y al reanudar: el
+                        // intervalo vuelve a contar 6 s desde cero al
+                        // reanudarse, y la barra tiene que empezar con él.
+                        <span
+                          key={`${actual}-${enPausa}`}
+                          className={cn(
+                            "absolute inset-0 rounded-full bg-white",
+                            !enPausa && "landing-progreso",
+                          )}
+                        />
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>

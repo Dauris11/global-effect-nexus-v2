@@ -5,6 +5,22 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Ver como, configuración por iconos, torre de control, cuadre de caja, mapas, landing y movimiento (31 oct 2026, migración `0063`):**
+      - **Ver como (super_admin):** cookie `ge_ver_como` honrada solo si el rol REAL es `super_admin` (`src/lib/auth.ts`, `rolReal`); acción `verComoRol` auditada; control en la barra superior y franja fija mientras se ve como otro rol (`components/layout/ver-como.tsx`). Se actúa con los permisos del rol mirado.
+      - **Configuración:** barra de iconos en `configuracion/layout.tsx` (`lib/configuracion.ts`, `components/configuracion/barra-ajustes.tsx`); el índice de tarjetas se retiró.
+      - **Roles:** menús cruzados contra la guarda de cada página; se quitó «Postulantes» de Habitudes (enlace muerto) y «Mi día» del colaborador (sin traducción, duplicaba la torre). Subtítulos y notas técnicas fuera de las portadas; accesos rápidos móviles traducidos y abiertos a `dir_habitudes`/`colaborador`.
+      - **Torre de control:** `/administrativo/torre-control` (de cada usuario; `?usuario=` solo con `operaciones.escribir`) y `/torre-control/equipo`. Migración `0063` (`proyecto.responsable_id`, `proyecto_miembro`, `tarea_comentario`), aplicada.
+      - **Contabilidad:** ~50 consultas rotas contra el esquema real corregidas (asientos de activos, calculadoras, donaciones, inventario, nómina; dashboard con 500 por `saldo_dop`). Tablero con periodo, KPIs clicables, gráfica y pendientes. Caja chica de fondo fijo: gasto con categoría, comprobante y asiento; vales con liquidación; arqueo por denominación DOP aprobado por otra persona, con asiento de faltante/sobrante; reposición como recibo de egreso.
+      - **Mapas:** CARTO Positron/Dark Matter, marcadores de marca, agrupación, filtros, «Cómo llegar», ubicar liceo y comprobar presencia en la visita.
+      - **Landing:** hero, cifras públicas reales, programas (sin formación técnica), noticias, FAQ y cierre rediseñados; revelado al scroll con `animation-timeline`.
+      - **Movimiento:** tokens y keyframes en `globals.css`, primitivos y armazón animados, `template.tsx` de entrada; todo neutralizado con `prefers-reduced-motion`.
+- [ ] **Probar con sesión en pantalla:** ver como (cada rol), torre de control, flujo completo de caja chica (gasto → arqueo → aprobación → reposición) contra la base.
+- [ ] **Ubicar los liceos** en el mapa de Habitudes (el seed no trae coordenadas) y migración para guardar lat/lng de la visita.
+- [ ] **Contabilidad:** `reponer_caja()` en la base sigue rota (ya nadie la llama; retirarla); la depreciación usa las cuentas de la categoría del primer activo para todos; `loading.tsx` en cajas.
+- [ ] **Landing:** fotos reales de la Fundación en el hero; borrar claves sin uso (`work_*_tag`, `work_training_*`, `access_*_f1–f3`).
+- [ ] **Documentar** los nuevos tokens de movimiento en `docs/09-sistema-visual.md` §2.8 y `.claude/rules/design-system.md`.
+- [ ] `proyectos/[id]/page.tsx` conserva textos literales en JSX.
+
 - [x] **Flujo de Fondos, Diagnóstico de Liquidez y Cuadre de Caja en Portal Contabilidad (31 oct 2026):**
       - **Visión Institucional de Fundación (`src/app/[locale]/(portal)/portal/contabilidad/page.tsx`):**
         - Integración del panel de Flujo de Fondos en tiempo real: Dinero que entra (ingresos/donaciones del mes en DOP), Dinero que sale (egresos/gastos y movimientos de caja), Liquidez total disponible consolidada (Bancos + Cajas chicas) y Compromisos pendientes de pago (CxP).

@@ -19,8 +19,20 @@ export const CONTENEDOR = "mx-auto w-full max-w-[1280px] px-4 md:px-6 lg:px-8";
  * Separación entre secciones: aire y una línea fina, no bandas de color
  * (docs/09 §1.3). `scroll-mt` deja sitio a la barra pegajosa, que en móvil
  * mide dos filas (logo y búsqueda).
+ *
+ * 64 / 112 px y no 48 / 64: con el aire de antes cada sección pegaba con la
+ * siguiente y la página se leía como una lista, sin pausas que marcaran dónde
+ * empieza otra cosa.
  */
-export const SECCION = "scroll-mt-36 border-t border-linea py-12 md:scroll-mt-24 md:py-16";
+export const SECCION = "scroll-mt-36 border-t border-linea py-16 md:scroll-mt-24 md:py-28";
+
+/**
+ * Titular de sección de la landing. Más grande que `texto-titulo-seccion`
+ * (22 px), que es la medida del portal: en la portada cada sección abre con
+ * su titular y es lo que lee quien baja rápido.
+ */
+export const TITULO_SECCION =
+  "text-[28px] leading-[1.12] font-semibold tracking-[-0.025em] text-balance text-tinta md:text-[40px]";
 
 /** Título de sección, con su línea de apoyo y una acción opcional a la derecha. */
 export function CabeceraSeccion({
@@ -35,12 +47,12 @@ export function CabeceraSeccion({
   id?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="revelar flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl">
-        <h2 id={id} className="texto-titulo-seccion md:text-[28px]">
+        <h2 id={id} className={TITULO_SECCION}>
           {titulo}
         </h2>
-        {texto && <p className="mt-1.5 text-tinta-2">{texto}</p>}
+        {texto && <p className="mt-3 text-lg leading-relaxed text-tinta-2">{texto}</p>}
       </div>
       {accion}
     </div>
@@ -69,7 +81,7 @@ export function Carrusel({
       aria-label={etiqueta}
       className={cn(
         "sin-barra -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2",
-        "md:mx-0 md:grid md:gap-6 md:overflow-visible md:px-0 md:pb-0",
+        "md:mx-0 md:grid md:gap-6 md:overflow-visible md:px-0 md:pb-0 revelar-hijos",
         columnas === 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3",
       )}
     >
@@ -111,7 +123,7 @@ export function TarjetaAnuncio({
   const lineasVisibles = lineas?.filter(Boolean) ?? [];
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada">
+    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-[translate,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada">
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         {cabecera}
         {insignia && <div className="absolute top-3 left-3 z-10">{insignia}</div>}

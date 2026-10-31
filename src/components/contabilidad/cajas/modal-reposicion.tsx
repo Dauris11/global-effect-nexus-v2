@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowDownRight, Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SELECT } from "@/components/contabilidad/comun";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { reponerCajaDesdeBancoAction } from "@/server/contabilidad/cajas/acciones";
 import type { CajaResumen } from "@/server/contabilidad/cajas/consultas";
@@ -27,6 +27,11 @@ export type CuentaBancoOpcion = {
   saldoActual: string;
 };
 
+/**
+ * Reposición del fondo fijo. Propone lo que falta para volver al fondo
+ * (fondo − efectivo), que en una caja sin vales abiertos es exactamente lo
+ * gastado con comprobante.
+ */
 export function ModalReposicionCaja({
   caja,
   cuentasBanco,
@@ -37,64 +42,39 @@ export function ModalReposicionCaja({
   hoy: string;
 }) {
   const t = useTranslations("contab.cajas");
+  const compatibles = cuentasBanco.filter((c) => c.moneda === caja.moneda);
+  const falta = Math.max(0, Number(caja.fondoFijo) - Number(caja.saldoActual));
+
   const [abierto, setAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Filtrar cuentas que coincidan con la moneda de la caja
-  const cuentasCompatibles = cuentasBanco.filter((c) => c.moneda === caja.moneda);
-
-  const [cuentaBancoId, setCuentaBancoId] = useState(cuentasCompatibles[0]?.id ?? "");
+  const [cuentaBancoId, setCuentaBancoId] = useState(compatibles[0]?.id ?? "");
   const [fecha, setFecha] = useState(hoy);
+  const [monto, setMonto] = useState(falta > 0 ? falta.toFixed(2) : "");
+  const [concepto, setConcepto] = useState(t("conceptoReposicion", { caja: caja.nombre }));
 
-  // Monto sugerido para reponer = fondo_fijo - saldo_actual
-  const gastado = Math.max(0, parseFloat(caja.fondoFijo) - parseFloat(caja.saldoActual));
-  const [monto, setMonto] = useState(gastado > 0 ? gastado.toFixed(2) : "");
-  const [concepto, setConcepto] = useState(`Reposición de fondo fijo - ${caja.nombre}`);
-
-  async function onReponer(e: React.FormEvent) {
-    e.preventDefault();
-    const m = parseFloat(monto);
-    if (isNaN(m) || m <= 0) {
-      setError("El monto a reponer debe ser mayor a cero.");
-      return;
-    }
-
-    if (!cuentaBancoId) {
-      setError("Debes seleccionar una cuenta bancaria de salida.");
-      return;
-    }
-
+  async function reponer(evento: React.FormEvent) {
+    evento.preventDefault();
     setGuardando(true);
     setError(null);
-
-    try {
-      const res = await reponerCajaDesdeBancoAction({
-        cajaId: caja.id,
-        cuentaBancoId,
-        monto: m,
-        fecha,
-        concepto,
-      });
-
-      if (res.exito) {
-        setAbierto(false);
-      } else {
-        setError(res.error);
-      }
-    } catch (err: unknown) {
-      setError((err as Error).message || "Error al procesar la reposición.");
-    } finally {
-      setGuardando(false);
-    }
+    const res = await reponerCajaDesdeBancoAction({
+      cajaId: caja.id,
+      cuentaBancoId,
+      monto: Number(monto),
+      fecha,
+      concepto,
+    });
+    setGuardando(false);
+    if (res.exito) setAbierto(false);
+    else setError(t(`errores.${res.error}`));
   }
 
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <ArrowDownRight className="size-4 text-marca-600" />
-          <span>{t("reponer")}</span>
+        <Button variant="outline" size="sm" disabled={caja.estado !== "activa" || falta <= 0}>
+          <ArrowDownRight className="size-4" />
+          {t("reponer")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
@@ -102,43 +82,43 @@ export function ModalReposicionCaja({
           <DialogTitle>{t("reponerTitulo")}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={onReponer} className="space-y-4 pt-2 text-sm">
-          <div className="rounded-control bg-marca-50/60 p-3 text-xs space-y-1">
-            <div className="flex justify-between">
-              <span className="text-tinta-2">Fondo fijo asignado:</span>
-              <span className="font-semibold text-tinta">
-                {formatearMonto(caja.fondoFijo, caja.moneda)}
-              </span>
+        <form onSubmit={reponer} className="space-y-4">
+          <dl className="space-y-1 rounded-control bg-muted/60 p-3 text-sm">
+            <div className="flex justify-between gap-3">
+              <dt className="text-tinta-2">{t("fondoFijo")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(caja.fondoFijo, caja.moneda)}</dd>
             </div>
-            <div className="flex justify-between">
-              <span className="text-tinta-2">Saldo disponible actual:</span>
-              <span className="font-semibold text-marca-700">
-                {formatearMonto(caja.saldoActual, caja.moneda)}
-              </span>
+            <div className="flex justify-between gap-3">
+              <dt className="text-tinta-2">{t("efectivo")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(caja.saldoActual, caja.moneda)}</dd>
             </div>
-            <div className="flex justify-between pt-1 border-t border-marca-200">
-              <span className="text-tinta font-medium">Monto necesario para completar:</span>
-              <span className="font-bold text-tinta">
-                {formatearMonto(gastado.toFixed(2), caja.moneda)}
-              </span>
+            <div className="flex justify-between gap-3">
+              <dt className="text-tinta-2">{t("valesPendientes")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(caja.valesPendientes, caja.moneda)}</dd>
             </div>
-          </div>
+            <div className="flex justify-between gap-3 border-t border-linea pt-1">
+              <dt className="font-medium text-tinta">{t("porReponer")}</dt>
+              <dd className="font-semibold text-tinta">
+                {formatearMonto(caja.pendienteReposicion, caja.moneda)}
+              </dd>
+            </div>
+          </dl>
 
-          <div className="space-y-1">
-            <Label htmlFor="cuentaBanco">{t("cuentaBanco")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="rep-cuenta">{t("cuentaBanco")}</Label>
             <select
-              id="cuentaBanco"
+              id="rep-cuenta"
               className={SELECT}
               value={cuentaBancoId}
               onChange={(e) => setCuentaBancoId(e.target.value)}
               required
             >
-              {cuentasCompatibles.length === 0 ? (
-                <option value="">No hay cuentas bancarias en {caja.moneda}</option>
+              {compatibles.length === 0 ? (
+                <option value="">{t("sinCuentas", { moneda: caja.moneda })}</option>
               ) : (
-                cuentasCompatibles.map((cb) => (
-                  <option key={cb.id} value={cb.id}>
-                    {cb.bancoNombre} ({cb.numeroCuenta}) · Saldo: {formatearMonto(cb.saldoActual, cb.moneda)}
+                compatibles.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.bancoNombre} · {c.numeroCuenta} · {formatearMonto(c.saldoActual, c.moneda)}
                   </option>
                 ))
               )}
@@ -146,53 +126,47 @@ export function ModalReposicionCaja({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="montoReponer">Monto a desembolsar</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="rep-monto">{t("montoReponer")}</Label>
               <Input
-                id="montoReponer"
+                id="rep-monto"
                 type="number"
+                inputMode="decimal"
                 step="0.01"
+                min="0.01"
+                max={falta.toFixed(2)}
                 required
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="fechaReponer">Fecha de transferencia</Label>
-              <Input
-                id="fechaReponer"
-                type="date"
-                required
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="rep-fecha">{t("fecha")}</Label>
+              <Input id="rep-fecha" type="date" required value={fecha} max={hoy} onChange={(e) => setFecha(e.target.value)} />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="conceptoReponer">{t("concepto")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="rep-concepto">{t("concepto")}</Label>
             <Input
-              id="conceptoReponer"
+              id="rep-concepto"
               required
+              minLength={3}
               maxLength={200}
               value={concepto}
               onChange={(e) => setConcepto(e.target.value)}
             />
           </div>
 
-          {error && (
-            <div className="rounded-control bg-semaforo-alerta/15 p-2.5 text-xs text-semaforo-alerta">
-              {error}
-            </div>
-          )}
+          {error && <AvisoError>{error}</AvisoError>}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-              Cancelar
+              {t("cancelar")}
             </Button>
-            <Button type="submit" disabled={guardando || cuentasCompatibles.length === 0}>
+            <Button type="submit" disabled={guardando || compatibles.length === 0}>
               {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              <span>Desembolsar y reponer</span>
+              {t("reponerBoton")}
             </Button>
           </div>
         </form>

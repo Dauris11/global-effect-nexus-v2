@@ -41,9 +41,6 @@ import { cn } from "@/lib/utils";
  * dos tamaños.
  */
 
-/** Curva del repliegue: sale rápido y frena suave, sin rebote. */
-const SUAVE = "cubic-bezier(0.25, 1.1, 0.4, 1)";
-
 export function Sidebar({
   rol,
   nombre,
@@ -124,7 +121,7 @@ export function Sidebar({
       {/* Velo del cajón móvil. */}
       {abiertaEnMovil && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          className="animate-velo fixed inset-0 z-40 bg-black/40 md:hidden"
           onClick={onCerrarMovil}
           aria-hidden
         />
@@ -153,13 +150,18 @@ export function Sidebar({
            * empieza donde ella acaba, desplegada o replegada, porque su ancho lo
            * ocupa de verdad en lugar de simularse con un `padding`.
            */
-          "bg-sidebar text-sidebar-foreground border-sidebar-border flex shrink-0 flex-col transition-all duration-200",
+          /*
+           * Solo se animan el ancho (replegar, en escritorio: pasa pocas veces
+           * al día y explica de dónde sale el sitio ganado), la posición de la
+           * hoja móvil y su visibilidad, que así se oculta al TERMINAR de bajar.
+           * Curva de cajón de iOS: arranca rápido y frena sin rebote.
+           */
+          "bg-sidebar text-sidebar-foreground border-sidebar-border flex shrink-0 flex-col transition-[width,translate,visibility] duration-[260ms] ease-cajon",
           "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:h-[85dvh] max-md:w-full max-md:rounded-t-hoja max-md:border-t max-md:pb-[env(safe-area-inset-bottom)] max-md:shadow-elevada",
           "md:sticky md:top-0 md:h-dvh md:border-r",
           nombresVisibles ? "md:w-64" : "md:w-[72px]",
           abiertaEnMovil ? "max-md:translate-y-0" : "max-md:translate-y-full max-md:invisible",
         )}
-        style={{ transitionTimingFunction: SUAVE }}
       >
         {/* ── Cabecera: marca y el botón de replegar ─────────────────── */}
         <div
@@ -207,7 +209,7 @@ export function Sidebar({
                 onClick={onContraer}
                 title={t("collapse")}
                 aria-label={t("collapse")}
-                className="hover:bg-sidebar-accent text-tinta-2 hover:text-tinta hidden size-9 shrink-0 items-center justify-center rounded-full transition-colors md:flex"
+                className="hover:bg-sidebar-accent text-tinta-2 hover:text-tinta hidden size-9 shrink-0 items-center justify-center rounded-full transicion-control active:scale-95 md:flex"
               >
                 <ChevronLeft className="size-4" />
               </button>
@@ -216,7 +218,7 @@ export function Sidebar({
                 type="button"
                 onClick={onCerrarMovil}
                 aria-label={t("closeMenu")}
-                className="hover:bg-sidebar-accent text-tinta flex size-11 shrink-0 items-center justify-center rounded-full transition-colors md:hidden"
+                className="hover:bg-sidebar-accent text-tinta flex size-11 shrink-0 items-center justify-center rounded-full transicion-control active:scale-95 md:hidden"
               >
                 <X className="size-5" />
               </button>
@@ -232,7 +234,7 @@ export function Sidebar({
             onClick={onContraer}
             title={t("expand")}
             aria-label={t("expand")}
-            className="hover:bg-sidebar-accent text-tinta-2 hover:text-tinta mx-auto mb-1 hidden size-11 shrink-0 items-center justify-center rounded-full transition-colors md:flex"
+            className="hover:bg-sidebar-accent text-tinta-2 hover:text-tinta mx-auto mb-1 hidden size-11 shrink-0 items-center justify-center rounded-full transicion-control active:scale-95 md:flex"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -335,7 +337,7 @@ export function Sidebar({
             title={tAuth("signOut")}
             aria-label={tAuth("signOut")}
             className={cn(
-              "hover:bg-sidebar-accent text-tinta-2 hover:text-tinta flex items-center gap-3 rounded-control transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+              "hover:bg-sidebar-accent text-tinta-2 hover:text-tinta flex items-center gap-3 rounded-control transicion-control active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               !nombresVisibles
                 ? "size-11 justify-center"
                 : "h-11 w-full px-3 text-[15px]",
@@ -382,11 +384,18 @@ function Enlace({
       title={soloIcono ? texto : undefined}
       aria-label={soloIcono ? texto : undefined}
       className={cn(
-        "group flex items-center gap-3 rounded-control transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        "group relative flex items-center gap-3 rounded-control transicion-control focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.98]",
         soloIcono ? "size-11 justify-center" : "h-11 px-3 text-[15px]",
+        /*
+         * Indicador del activo: una raya turquesa a la izquierda que crece en
+         * vertical. Los enlaces no se desmontan al navegar, así que la del que
+         * se apaga encoge mientras la del nuevo crece: se lee como un cambio,
+         * no como dos estados sueltos.
+         */
+        "before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-marca-500 before:transition-transform before:duration-(--duracion-media) before:ease-salida",
         activo
-          ? "bg-sidebar-accent text-tinta font-semibold"
-          : "text-tinta-2 hover:bg-sidebar-accent hover:text-tinta",
+          ? "bg-sidebar-accent text-tinta font-semibold before:scale-y-100"
+          : "text-tinta-2 hover:bg-sidebar-accent hover:text-tinta before:scale-y-0",
       )}
     >
       {foto ? (
@@ -400,7 +409,10 @@ function Enlace({
         />
       ) : (
         <Icono
-          className={cn("size-5 shrink-0", activo ? "text-marca-500" : "text-tinta-2")}
+          className={cn(
+            "size-5 shrink-0 transition-colors duration-(--duracion-rapida) ease-salida",
+            activo ? "text-marca-500" : "text-tinta-2",
+          )}
         />
       )}
       {!soloIcono && <span className="truncate">{texto}</span>}

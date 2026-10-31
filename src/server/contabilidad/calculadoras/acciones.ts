@@ -44,37 +44,10 @@ export async function convertirCalculoEnAsientoBorrador(datos: {
     const res = await enTransaccionComo<{ asientoId: string; asientoNumero: number }>(await contextoDe(usuario), async (cliente) => {
       await fijarAccion(cliente, "convertir_calculo_en_asiento");
 
-      // Buscar período contable
-      const { rows: perRows } = await cliente.query<{ id: string }>(
-        `SELECT id FROM contabilidad.periodo_contable
-         WHERE $1 BETWEEN fecha_inicio AND fecha_fin AND estado = 'abierto'
-         LIMIT 1`,
-        [fecha]
-      );
-      if (perRows.length === 0) {
-        throw new Error("No hay período contable abierto para la fecha");
-      }
-      const periodoId = perRows[0].id;
-
-      // Obtener secuencia de asiento
-      const { rows: secRows } = await cliente.query<{ num: string }>(
-        `SELECT contabilidad.siguiente_numero('AS')::text AS num`
-      );
-      const numero = Number(secRows[0].num);
-
-      // Crear asiento
-      const { rows: asRows } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.asiento (
-           numero, fecha, periodo_id, tipo, concepto, moneda, tasa, estado, creado_por
-         ) VALUES ($1, $2, $3, 'manual', $4, 'DOP', 1.0, 'borrador', $5)
-         RETURNING id`,
-        [numero, fecha, periodoId, datos.concepto.trim(), usuario.id]
-      );
-      const asientoId = asRows[0].id;
-
-      // Insertar líneas buscando el UUID de la cuenta
-      for (let i = 0; i < datos.lineas.length; i++) {
-        const l = datos.lineas[i];
+      // Las cuentas llegan por código desde la calculadora; se resuelven antes
+      // de crear el asiento para que un código inválido no deje nada a medias.
+      const lineas: { cuenta_id: string; debe: number; haber: number; descripcion: string }[] = [];
+      for (const l of datos.lineas) {
         const { rows: ctaRows } = await cliente.query<{ id: string }>(
           `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1 LIMIT 1`,
           [l.cuentaCodigo]
@@ -83,14 +56,26 @@ export async function convertirCalculoEnAsientoBorrador(datos: {
         if (!ctaId) {
           throw new Error(`Cuenta contable con código ${l.cuentaCodigo} no encontrada`);
         }
-
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea (
-             asiento_id, numero_linea, cuenta_id, descripcion, debe, haber
-           ) VALUES ($1, $2, $3, $4, $5, $6)`,
-          [asientoId, i + 1, ctaId, l.descripcion.trim(), l.debe.toFixed(2), l.haber.toFixed(2)]
-        );
+        lineas.push({
+          cuenta_id: ctaId,
+          debe: Number(Number(l.debe || 0).toFixed(2)),
+          haber: Number(Number(l.haber || 0).toFixed(2)),
+          descripcion: l.descripcion.trim(),
+        });
       }
+
+      // `crear_asiento` asigna número y período (y falla si el período está
+      // cerrado), así que no se replica esa lógica aquí.
+      const { rows: asRows } = await cliente.query<{ id: string }>(
+        `SELECT contabilidad.crear_asiento($1::date, $2, 'manual', NULL, NULL, $3::jsonb) AS id`,
+        [fecha, datos.concepto.trim(), JSON.stringify(lineas)]
+      );
+      const asientoId = asRows[0].id;
+      const { rows: numRows } = await cliente.query<{ numero: string }>(
+        `SELECT numero::text AS numero FROM contabilidad.asiento WHERE id = $1`,
+        [asientoId]
+      );
+      const numero = Number(numRows[0].numero);
 
       // Guardar en historial de calculadoras
       await cliente.query(

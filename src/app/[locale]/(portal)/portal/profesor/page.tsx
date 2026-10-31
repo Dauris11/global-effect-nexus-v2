@@ -93,7 +93,6 @@ export default async function PortalProfesor({
         rol="docente"
         icono={BookOpen}
         titulo={t("greeting", { name: usuario.nombre })}
-        subtitulo={t("summary")}
         insignia={t("eyebrow")}
         kpis={[
           { valor: String(cifras.clases_360), etiqueta: t("stats.classes360") },
@@ -241,10 +240,6 @@ export default async function PortalProfesor({
                     </li>
                   ))}
                 </ul>
-
-                <p className="text-tinta-3 mt-3 text-[11px]">
-                  {tAcad("classes360.catalogHint")}
-                </p>
               </CardContent>
             </Card>
           )}

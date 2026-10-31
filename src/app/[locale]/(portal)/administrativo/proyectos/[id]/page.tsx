@@ -7,8 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { tienePermiso } from "@/lib/rbac";
+import { NextIntlClientProvider } from "next-intl";
+
+import { EquipoProyecto } from "@/components/operaciones/equipo-proyecto";
 import { VisualizadorGantt } from "@/components/operaciones/visualizador-gantt";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { usuariosAsignables } from "@/server/operaciones/consultas";
 import { proyectoParaGantt } from "@/server/operaciones/gantt-consultas";
+import { equipoDeProyecto } from "@/server/operaciones/torre-consultas";
 
 export async function generateMetadata({
   params,
@@ -33,6 +39,11 @@ export default async function PaginaDetalleProyectoGantt({
 
   const proyecto = await proyectoParaGantt(id);
   if (!proyecto) notFound();
+
+  // El equipo solo lo ve y lo toca coordinación: es reparto de trabajo.
+  const [equipo, personas, mensajes] = puedeEditar
+    ? await Promise.all([equipoDeProyecto(id), usuariosAsignables(), mensajesCliente(["torre"])])
+    : [null, [], null];
 
   return (
     <div className="space-y-6">
@@ -75,6 +86,12 @@ export default async function PaginaDetalleProyectoGantt({
 
       {/* Visualizador interactivo de Gantt */}
       <VisualizadorGantt proyecto={proyecto} puedeEditar={puedeEditar} />
+
+      {equipo && mensajes && (
+        <NextIntlClientProvider messages={mensajes}>
+          <EquipoProyecto proyectoId={id} equipo={equipo} personas={personas} />
+        </NextIntlClientProvider>
+      )}
     </div>
   );
 }

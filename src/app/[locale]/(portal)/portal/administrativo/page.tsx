@@ -129,7 +129,6 @@ export default async function PortalAdministrativo({
         rol={usuario.rol}
         icono={Shield}
         titulo={t("greeting", { name: usuario.nombre })}
-        subtitulo={t("summary")}
         insignia={t("eyebrow")}
         kpis={[
           { valor: String(cifras.estudiantes), etiqueta: t("kpi.students") },
@@ -151,9 +150,6 @@ export default async function PortalAdministrativo({
               </Badge>
             )}
           </CardTitle>
-          <p className="text-muted-foreground mb-3 text-xs">
-            {t("pending.hint")}
-          </p>
 
           {avisos.length === 0 ? (
             <div className="py-6 text-center">
@@ -222,9 +218,6 @@ export default async function PortalAdministrativo({
             <LayoutGrid className="size-4" />
             {t("modules.title")}
           </CardTitle>
-          <p className="text-muted-foreground mb-3 text-xs">
-            {t("modules.hint")}
-          </p>
 
           <div className="space-y-4">
             {areas.map((area) => (
@@ -270,9 +263,6 @@ export default async function PortalAdministrativo({
             <History className="size-4" />
             {t("activity.title")}
           </CardTitle>
-          <p className="text-muted-foreground mb-3 text-xs">
-            {t("activity.hint")}
-          </p>
 
           {actividad.length === 0 ? (
             <div className={VACIO.contenedor}>

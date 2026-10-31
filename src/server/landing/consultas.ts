@@ -161,3 +161,37 @@ export const inscritosComidaHoy = unstable_cache(
   ["landing-comida-hoy"],
   { tags: [TAG_LANDING], revalidate: 60 },
 );
+
+export type CifrasPublicas = {
+  /** Estudiantes activos. Desde la 0047 todos son becados. */
+  becados: number;
+  /** Patrocinadores con el estado `activo`. */
+  patrocinadores: number;
+  /** Estudiantes distintos con una materia de Global Effect 360 en curso. */
+  cursando_360: number;
+};
+
+/**
+ * Las cifras de la franja de la portada.
+ *
+ * Solo recuentos: ni un nombre ni un monto. El monto mensual de los
+ * patrocinadores es dato de contabilidad y no se publica aunque sumado no
+ * identificara a nadie, porque decir cuánto entra es decisión de la Dirección.
+ *
+ * Una sola ida al pooler con tres subconsultas, y la misma caché que el resto:
+ * estas cifras cambian al ritmo de una matrícula, no de una visita.
+ */
+export const cifrasPublicas = unstable_cache(
+  async (): Promise<CifrasPublicas> => {
+    const fila = await consultarUna<CifrasPublicas>(
+      `SELECT (SELECT count(*)::int FROM estudiante WHERE estado = 'activo') AS becados,
+              (SELECT count(*)::int FROM patrocinador WHERE estado = 'activo') AS patrocinadores,
+              (SELECT count(DISTINCT estudiante_id)::int FROM inscripcion_360
+                WHERE estado = 'cursando') AS cursando_360`,
+    );
+
+    return fila ?? { becados: 0, patrocinadores: 0, cursando_360: 0 };
+  },
+  ["landing-cifras"],
+  { tags: [TAG_LANDING], revalidate: VIDA_NORMAL },
+);

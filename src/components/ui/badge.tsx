@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * su `*_VISUAL` (con su icono) por encima.
  */
 const variantesBadge = cva(
-  "inline-flex items-center justify-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none transition-colors",
+  "inline-flex items-center justify-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 [&>svg]:pointer-events-none transition-colors duration-(--duracion-rapida)",
   {
     variants: {
       variant: {
@@ -35,15 +35,23 @@ function Badge({
   className,
   variant,
   asChild = false,
+  vivo = false,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof variantesBadge> & { asChild?: boolean }) {
+  VariantProps<typeof variantesBadge> & {
+    asChild?: boolean;
+    /**
+     * Para lo que está pasando ahora (una sesión en curso, un plazo abierto):
+     * respira despacio. Solo uno por pantalla, o deja de significar algo.
+     */
+    vivo?: boolean;
+  }) {
   const Componente = asChild ? Slot : "span";
 
   return (
     <Componente
       data-slot="badge"
-      className={cn(variantesBadge({ variant }), className)}
+      className={cn(variantesBadge({ variant }), vivo && "animate-soft-pulse", className)}
       {...props}
     />
   );

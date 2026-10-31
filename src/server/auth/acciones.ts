@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
 
 import { redirigir } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
-import { obtenerUsuarioActual } from "@/lib/auth";
-import { PORTAL_POR_ROL } from "@/lib/rbac";
+import { COOKIE_VER_COMO, obtenerUsuarioActual } from "@/lib/auth";
+import { esRol, PORTAL_POR_ROL } from "@/lib/rbac";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /**
@@ -92,7 +93,50 @@ export async function cerrarSesion() {
   }
 
   await supabase.auth.signOut();
+  (await cookies()).delete(COOKIE_VER_COMO);
 
   revalidatePath("/", "layout");
   redirigir("/login", locale);
+}
+
+/**
+ * El administrador maestro se pone en el lugar de otro rol para revisar lo que
+ * ve. Se comprueba el rol REAL: estando ya «como docente», el efectivo es
+ * docente y aun así debe poder saltar a otro o volver.
+ *
+ * Queda en la auditoría, porque mientras dure actúa con la cuenta propia pero
+ * con los permisos de otro y conviene poder reconstruirlo.
+ */
+export async function verComoRol(rol: string) {
+  const locale = await getLocale();
+  const usuario = await obtenerUsuarioActual();
+
+  if (!usuario || usuario.rolReal !== "super_admin" || !esRol(rol)) {
+    redirigir("/login", locale);
+  }
+
+  const almacen = await cookies();
+
+  if (rol === "super_admin") {
+    almacen.delete(COOKIE_VER_COMO);
+  } else {
+    // De sesión de navegador y con 8 h de tope: que no se quede olvidado días.
+    almacen.set(COOKIE_VER_COMO, rol, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
+  }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: rol === "super_admin" ? "sesion.ver_como_fin" : "sesion.ver_como",
+    entidad: "sesion",
+    datos: { rol },
+  });
+
+  revalidatePath("/", "layout");
+  redirigir(PORTAL_POR_ROL[rol], locale);
 }

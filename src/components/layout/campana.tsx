@@ -56,14 +56,19 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="relative flex size-11 items-center justify-center rounded-full transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="relative flex size-11 items-center justify-center rounded-full transicion-control hover:bg-muted active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         aria-label={
           sinLeer > 0 ? t("unread", { count: sinLeer }) : t("title")
         }
         title={sinLeer > 0 ? t("unread", { count: sinLeer }) : t("title")}
       >
         {sinLeer > 0 ? (
-          <BellRing className="size-5 text-marca-500" />
+          // `key` con el número: la campana se balancea una vez al llegar un
+          // aviso nuevo, no en bucle. Avisar sin insistir.
+          <BellRing
+            key={sinLeer}
+            className="animate-campaneo size-5 origin-top text-marca-500"
+          />
         ) : (
           <Bell className="size-5 text-tinta" />
         )}
@@ -71,7 +76,10 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
         {sinLeer > 0 && (
           // El número, no solo el punto: «tienes avisos» y «tienes doce» son
           // dos cosas distintas para quien decide si mirar ahora o después.
-          <span className="absolute top-1 right-1 flex min-w-5 items-center justify-center rounded-full border-2 border-background bg-tinta px-1 text-[10px] font-semibold text-background">
+          <span
+            key={sinLeer}
+            className="animate-contador absolute top-1 right-1 flex min-w-5 items-center justify-center rounded-full border-2 border-background bg-tinta px-1 text-[10px] font-semibold text-background"
+          >
             {sinLeer > 9 ? "9+" : sinLeer}
           </span>
         )}
@@ -177,7 +185,7 @@ function Cuerpo({ aviso }: { aviso: AvisoVisible }) {
   );
 
   const clases = cn(
-    "hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2.5 text-left transition-colors",
+    "hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2.5 text-left transition-colors duration-(--duracion-instante)",
     !aviso.leida && "bg-marca-50/60",
   );
 

@@ -11,6 +11,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { MapaLaVega } from "@/components/mapa/mapa-la-vega";
 
 import { Button } from "@/components/ui/button";
@@ -396,6 +398,7 @@ export function CamposExpediente({
   const [latitud, setLatitud] = useState<number | null>(valores?.latitud ?? null);
   const [longitud, setLongitud] = useState<number | null>(valores?.longitud ?? null);
   const [municipio, setMunicipio] = useState<string>(valores?.municipio ?? "Concepción de La Vega");
+  const tMapa = useTranslations("common.mapa.vivienda");
 
   return (
     <>
@@ -699,16 +702,14 @@ export function CamposExpediente({
             <input type="hidden" name="municipio" value={municipio} />
 
             <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-linea dark:border-slate-800">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-tinta dark:text-slate-200 flex items-center gap-1.5">
-                  <MapPin className="size-3.5 text-[#2096BA]" />
-                  Ubicación de Vivienda en la Provincia de La Vega
+              <div className="space-y-0.5">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-tinta">
+                  <MapPin className="size-4 text-marca-600" />
+                  {tMapa("titulo")}
                 </span>
-                <span className="text-[11px] text-muted-foreground italic">
-                  {soloLectura
-                    ? "Coordenadas fijadas en La Vega"
-                    : "Haz clic o arrastra el pin para georreferenciar el hogar del estudiante"}
-                </span>
+                <p className="texto-meta">
+                  {soloLectura ? tMapa("ayudaLectura") : tMapa("ayudaEdicion")}
+                </p>
               </div>
               <MapaLaVega
                 modo={soloLectura ? "vista_vivienda" : "seleccion"}

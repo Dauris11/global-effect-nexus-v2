@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Plus, Receipt, Save, Upload } from "lucide-react";
+import { Loader2, Receipt, Save, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,85 +15,63 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SELECT } from "@/components/contabilidad/comun";
+import { formatearMonto } from "@/lib/contabilidad/formato";
 import { registrarMovimientoCajaAction } from "@/server/contabilidad/cajas/acciones";
-import type { CajaResumen } from "@/server/contabilidad/cajas/consultas";
+import type { CajaResumen, CategoriaGastoCaja } from "@/server/contabilidad/cajas/consultas";
 import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
 
+/**
+ * Gasto o vale de caja. El gasto pide categoría porque se contabiliza al
+ * guardarlo; el vale pide persona porque es dinero que alguien debe rendir.
+ */
 export function FormularioMovimientoCaja({
   caja,
   personas,
+  categorias,
   hoy,
 }: {
   caja: CajaResumen;
   personas: UsuarioSolicitante[];
+  categorias: CategoriaGastoCaja[];
   hoy: string;
 }) {
   const t = useTranslations("contab.cajas");
   const [abierto, setAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [fecha, setFecha] = useState(hoy);
   const [tipo, setTipo] = useState<"gasto" | "vale">("gasto");
   const [monto, setMonto] = useState("");
-  const [concepto, setConcepto] = useState("");
-  const [personaId, setPersonaId] = useState("");
-  const [adjuntoNombre, setAdjuntoNombre] = useState<string | null>(null);
+  const [archivo, setArchivo] = useState<string | null>(null);
 
-  const umbral = parseFloat(caja.umbralAdjunto);
-  const montoNum = parseFloat(monto) || 0;
-  const requiereAdjunto = tipo === "gasto" && montoNum >= umbral;
+  const umbral = Number(caja.umbralAdjunto);
+  const requiereAdjunto = tipo === "gasto" && (Number(monto) || 0) >= umbral;
 
-  async function onRegistrar(e: React.FormEvent) {
-    e.preventDefault();
-    if (montoNum <= 0) {
-      setError("El monto debe ser mayor a cero.");
-      return;
-    }
-
-    if (requiereAdjunto && !adjuntoNombre) {
-      setError(
-        `Para gastos de RD$${umbral.toFixed(2)} o superiores, es obligatorio anexar el comprobante de soporte.`,
-      );
-      return;
-    }
-
+  async function enviar(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    const formulario = evento.currentTarget;
     setGuardando(true);
     setError(null);
-
-    try {
-      const res = await registrarMovimientoCajaAction({
-        cajaId: caja.id,
-        fecha,
-        tipo,
-        monto: montoNum,
-        concepto,
-        personaId: personaId ? personaId : null,
-        adjuntoRuta: adjuntoNombre ? `cajas/${caja.id}/${adjuntoNombre}` : null,
-      });
-
-      if (res.exito) {
-        setAbierto(false);
-        setMonto("");
-        setConcepto("");
-        setAdjuntoNombre(null);
-      } else {
-        setError(res.error);
-      }
-    } catch (err: unknown) {
-      setError((err as Error).message || "Error al registrar movimiento.");
-    } finally {
-      setGuardando(false);
+    const datos = new FormData(formulario);
+    datos.set("cajaId", caja.id);
+    datos.set("tipo", tipo);
+    const res = await registrarMovimientoCajaAction(datos);
+    setGuardando(false);
+    if (res.exito) {
+      formulario.reset();
+      setMonto("");
+      setArchivo(null);
+      setAbierto(false);
+    } else {
+      setError(t(`errores.${res.error}`));
     }
   }
 
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" variant="outline" disabled={caja.estado !== "activa"}>
           <Receipt className="size-4" />
-          <span>{t("nuevoMovimiento")}</span>
+          {t("nuevoMovimiento")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
@@ -100,115 +79,122 @@ export function FormularioMovimientoCaja({
           <DialogTitle>{t("nuevoMovimiento")}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={onRegistrar} className="space-y-4 pt-2 text-sm">
+        <form onSubmit={enviar} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="fecha">Fecha</Label>
-              <Input
-                id="fecha"
-                type="date"
-                required
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="tipo">{t("tipo")}</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="mov-tipo">{t("tipo")}</Label>
               <select
-                id="tipo"
+                id="mov-tipo"
                 className={SELECT}
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as "gasto" | "vale")}
               >
-                <option value="gasto">Gasto con comprobante</option>
-                <option value="vale">Vale provisional de caja</option>
+                <option value="gasto">{t("tipoGasto")}</option>
+                <option value="vale">{t("tipoVale")}</option>
               </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="mov-fecha">{t("fecha")}</Label>
+              <Input id="mov-fecha" name="fecha" type="date" required defaultValue={hoy} max={hoy} />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="monto">
+          <div className="space-y-1.5">
+            <Label htmlFor="mov-monto">
               {t("monto")} ({caja.moneda})
             </Label>
             <Input
-              id="monto"
+              id="mov-monto"
+              name="monto"
               type="number"
+              inputMode="decimal"
               step="0.01"
+              min="0.01"
+              max={caja.saldoActual}
               required
-              placeholder="0.00"
               value={monto}
               onChange={(e) => setMonto(e.target.value)}
             />
+            <p className="texto-meta">
+              {t("efectivo")}: {formatearMonto(caja.saldoActual, caja.moneda)}
+            </p>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="concepto">{t("concepto")}</Label>
-            <Input
-              id="concepto"
-              required
-              maxLength={200}
-              placeholder="Ej. Compra de materiales de limpieza para taller"
-              value={concepto}
-              onChange={(e) => setConcepto(e.target.value)}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="mov-concepto">{t("concepto")}</Label>
+            <Input id="mov-concepto" name="concepto" required minLength={3} maxLength={200} />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="persona">{t("persona")}</Label>
+          {tipo === "gasto" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="mov-categoria">{t("categoria")}</Label>
+              <select id="mov-categoria" name="categoriaId" className={SELECT} required defaultValue="">
+                <option value="" disabled>
+                  {t("elegirCategoria")}
+                </option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre} · {c.cuenta}
+                  </option>
+                ))}
+              </select>
+              <p className="texto-meta">{t("contabilizaGasto")}</p>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="mov-persona">{t("persona")}</Label>
             <select
-              id="persona"
+              id="mov-persona"
+              name="personaId"
               className={SELECT}
-              value={personaId}
-              onChange={(e) => setPersonaId(e.target.value)}
+              required={tipo === "vale"}
+              defaultValue=""
             >
-              <option value="">Selecciona quien recibe o rinde...</option>
+              <option value="">{t("elegirPersona")}</option>
               {personas.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nombre} ({p.rol})
+                  {p.nombre}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Adjunto de comprobante */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="adjunto">{t("adjunto")}</Label>
-              {requiereAdjunto && (
-                <span className="text-[11px] font-semibold text-semaforo-alerta">
-                  * Obligatorio (&ge; {caja.moneda} ${umbral.toFixed(2)})
-                </span>
-              )}
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="mov-adjunto">{t("adjunto")}</Label>
+              {requiereAdjunto && <span className="texto-meta font-medium">{t("obligatorio")}</span>}
             </div>
-            <label className="flex flex-col items-center justify-center rounded-control border border-dashed border-linea p-3 text-xs text-tinta-2 hover:bg-superficie/50 cursor-pointer">
-              <Upload className="size-4 mb-1 text-marca-600" />
-              <span>{adjuntoNombre ? adjuntoNombre : "Subir foto de recibo o factura física"}</span>
-              <input
-                id="adjunto"
-                type="file"
-                accept="application/pdf,image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  setAdjuntoNombre(f ? f.name : null);
-                }}
-              />
+            <label
+              htmlFor="mov-adjunto"
+              className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-control border border-dashed border-linea-fuerte p-3 text-sm text-tinta-2 hover:bg-muted/50"
+            >
+              <Upload className="size-4 text-marca-600" />
+              <span className="truncate">{archivo ?? t("subirAdjunto")}</span>
             </label>
+            <input
+              id="mov-adjunto"
+              name="adjunto"
+              type="file"
+              accept="application/pdf,image/jpeg,image/png"
+              className="sr-only"
+              required={requiereAdjunto}
+              onChange={(e) => setArchivo(e.target.files?.[0]?.name ?? null)}
+            />
+            <p className="texto-meta">
+              {t("reglaSoporte", { monto: formatearMonto(caja.umbralAdjunto, caja.moneda) })}
+            </p>
           </div>
 
-          {error && (
-            <div className="rounded-control bg-semaforo-alerta/15 p-2.5 text-xs text-semaforo-alerta">
-              {error}
-            </div>
-          )}
+          {error && <AvisoError>{error}</AvisoError>}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-              Cancelar
+              {t("cancelar")}
             </Button>
             <Button type="submit" disabled={guardando}>
               {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              <span>Registrar movimiento</span>
+              {t("registrar")}
             </Button>
           </div>
         </form>

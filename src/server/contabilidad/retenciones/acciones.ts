@@ -35,7 +35,7 @@ export async function emitirComprobanteRetencion(datos: {
         periodo_codigo: string;
       }>(
         `SELECT fp.id, fp.proveedor_id, fp.subtotal, fp.itbis, fp.retencion_isr,
-                fp.retencion_itbis, fp.concepto, pc.codigo AS periodo_codigo
+                fp.retencion_itbis, fp.concepto, to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') AS periodo_codigo
          FROM contabilidad.factura_proveedor fp
          JOIN contabilidad.periodo_contable pc ON pc.id = fp.periodo_id
          WHERE fp.id = $1`,

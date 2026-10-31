@@ -7,6 +7,7 @@ import type { AvisoVisible } from "@/components/layout/campana";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ProveedorVisibilidad } from "@/components/layout/visibilidad";
 import { TopBar } from "@/components/layout/topbar";
+import { VerComo } from "@/components/layout/ver-como";
 import { usePathname } from "@/i18n/navigation";
 import type { Rol } from "@/lib/rbac";
 
@@ -26,6 +27,7 @@ import type { Rol } from "@/lib/rbac";
  */
 export function AppShell({
   rol,
+  rolReal,
   nombre,
   foto,
   aviso,
@@ -36,6 +38,8 @@ export function AppShell({
   children,
 }: {
   rol: Rol;
+  /** Rol de verdad de la cuenta; distinto de `rol` mientras se «ve como». */
+  rolReal: Rol;
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
@@ -83,8 +87,10 @@ export function AppShell({
         />
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+          {rol !== rolReal && <VerComo rol={rol} rolReal={rolReal} />}
           <TopBar
             rol={rol}
+            rolReal={rolReal}
             nombre={nombre}
             foto={foto}
             aviso={aviso}
