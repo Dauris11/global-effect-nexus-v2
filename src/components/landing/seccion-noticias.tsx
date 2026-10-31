@@ -38,7 +38,7 @@ export async function SeccionNoticias({
   return (
     <section id="noticias" className={SECCION}>
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("blogTitle")} texto={t("blogEyebrow")} />
+        <CabeceraSeccion titulo={t("blogTitle")} />
 
         <div className="mt-8">
           <Carrusel etiqueta={t("blogTitle")}>
@@ -47,14 +47,13 @@ export async function SeccionNoticias({
                 <TarjetaAnuncio
                   cabecera={<Portada url={noticia.imagen_url} />}
                   insignia={
-                    <Badge variant="neutra" className="bg-background shadow-card">
+                    <Badge variant="neutra" className="bg-background/95 shadow-card">
                       {t("blogTagNews")}
                     </Badge>
                   }
                   titulo={noticia.titulo}
-                  lineas={[noticia.resumen]}
                   pie={
-                    <p className="texto-meta mt-1.5">
+                    <p className="texto-meta">
                       {fechaLarga(noticia.fecha, locale)}
                       {noticia.autor ? ` · ${noticia.autor}` : ""}
                     </p>

@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   BookOpen,
-  Check,
   DollarSign,
   GraduationCap,
   Inbox,
@@ -54,63 +53,57 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
   return (
     <section id="acceso" className="scroll-mt-36 py-12 md:scroll-mt-24 md:py-16">
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("accessTitle")} texto={t("accessText")} />
+        <CabeceraSeccion titulo={t("accessTitle")} />
 
         <ul className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
           {puertas.map((puerta) => (
             <li key={puerta.clave}>
               <Link
                 href={puerta.href}
-                className="group flex h-full flex-col rounded-card border border-linea bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.99]"
+                className="group flex h-full flex-col justify-between rounded-card border border-linea bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-tinta transition-colors group-hover:text-marca-500">
-                    <puerta.icono className="size-6" />
-                  </span>
-                  <Badge variant="neutra">{t(`access_${puerta.clave}_tag`)}</Badge>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600 transition-colors group-hover:bg-marca-500 group-hover:text-white">
+                      <puerta.icono className="size-6" />
+                    </span>
+                    <Badge variant="neutra">{t(`access_${puerta.clave}_tag`)}</Badge>
+                  </div>
+
+                  <h3 className="texto-titulo-tarjeta mt-5 text-lg text-tinta transition-colors group-hover:text-marca-600">
+                    {t(`access_${puerta.clave}_title`)}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-tinta-2">
+                    {t(`access_${puerta.clave}_desc`)}
+                  </p>
+
+                  {puerta.clave === "meals" && (
+                    <div className="mt-4">
+                      <EstadoComedor
+                        aperturaMin={aMinutos(p["comedor.apertura"])}
+                        cierreMin={aMinutos(p["comedor.cierre"])}
+                        textos={{
+                          abierto: t("panelMealsOpen"),
+                          cerrado: t("panelMealsClosed"),
+                          ventana: t("panelMealsWindow", horas),
+                          quedan: t.raw("panelMealsLeft") as string,
+                          proximaApertura: t("panelMealsNext", horas),
+                          inscritos:
+                            inscritosHoy > 0
+                              ? `${inscritosHoy} ${t("accessMealsSignups", { n: inscritosHoy })}`
+                              : "",
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
-                <h3 className="texto-titulo-tarjeta mt-5 text-lg">
-                  {t(`access_${puerta.clave}_title`)}
-                </h3>
-                <p className="mt-1 text-sm text-tinta-2">
-                  {t(`access_${puerta.clave}_desc`)}
-                </p>
-
-                {/* Las viñetas solo desde `sm`: en el teléfono las tres puertas
-                    apiladas ya ocupan dos pantallas, y el título y su línea
-                    bastan para elegir. */}
-                <ul className="mt-4 hidden space-y-2 border-t border-linea pt-4 sm:block">
-                  {([1, 2, 3] as const).map((n) => (
-                    <li key={n} className="flex items-start gap-2 text-sm text-tinta-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-marca-500" />
-                      {t(`access_${puerta.clave}_f${n}`)}
-                    </li>
-                  ))}
-                </ul>
-
-                {puerta.clave === "meals" && (
-                  <EstadoComedor
-                    aperturaMin={aMinutos(p["comedor.apertura"])}
-                    cierreMin={aMinutos(p["comedor.cierre"])}
-                    textos={{
-                      abierto: t("panelMealsOpen"),
-                      cerrado: t("panelMealsClosed"),
-                      ventana: t("panelMealsWindow", horas),
-                      quedan: t.raw("panelMealsLeft") as string,
-                      proximaApertura: t("panelMealsNext", horas),
-                      inscritos:
-                        inscritosHoy > 0
-                          ? `${inscritosHoy} ${t("accessMealsSignups", { n: inscritosHoy })}`
-                          : "",
-                    }}
-                  />
-                )}
-
-                <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-tinta">
-                  {t("enter")}
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                </span>
+                <div className="mt-6 flex items-center justify-between border-t border-linea/60 pt-4">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca-600 transition-colors group-hover:text-marca-700">
+                    {t("enter")}
+                    <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+                  </span>
+                </div>
               </Link>
             </li>
           ))}
@@ -121,7 +114,6 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
         <div className="mt-8 flex flex-col gap-4 border-t border-linea pt-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-semibold text-tinta">{t("accessRolesTitle")}</p>
-            <p className="text-sm text-tinta-2">{t("accessRolesText")}</p>
           </div>
 
           <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">

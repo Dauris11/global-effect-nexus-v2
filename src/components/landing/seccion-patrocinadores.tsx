@@ -35,18 +35,18 @@ export async function SeccionPatrocinadores() {
   return (
     <section id="patrocinadores" className={SECCION}>
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("sponsorTitle")} texto={t("sponsorEyebrow")} />
+        <CabeceraSeccion titulo={t("sponsorTitle")} />
 
         <ul className="mt-8 grid gap-4 sm:grid-cols-3 md:gap-6">
           {garantias.map((garantia) => (
             <li
               key={garantia.clave}
-              className="flex items-center gap-3 rounded-card border border-linea p-4 shadow-card"
+              className="group flex items-center gap-3.5 rounded-card border border-linea bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-marca-300/80 hover:shadow-elevada"
             >
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600">
-                <garantia.icono className="size-5" />
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600 transition-colors group-hover:bg-marca-500 group-hover:text-white">
+                <garantia.icono className="size-6" />
               </span>
-              <span className="text-sm font-semibold text-tinta">
+              <span className="text-sm font-semibold text-tinta transition-colors group-hover:text-marca-600">
                 {t(`sponsor_${garantia.clave}_title`)}
               </span>
             </li>

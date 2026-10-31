@@ -53,7 +53,7 @@ export async function SeccionProgramas() {
   return (
     <section id="que-hacemos" className={SECCION}>
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("workTitle")} texto={t("workEyebrow")} />
+        <CabeceraSeccion titulo={t("workTitle")} />
 
         <div className="mt-8">
           <Carrusel columnas={4} etiqueta={t("workTitle")}>
@@ -61,7 +61,7 @@ export async function SeccionProgramas() {
               <ElementoCarrusel key={programa.clave}>
                 <Link
                   href={programa.href}
-                  className="block h-full rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:outline-none"
+                  className="block h-full rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   <TarjetaAnuncio
                     cabecera={<CabeceraIcono icono={programa.icono} />}
@@ -72,9 +72,9 @@ export async function SeccionProgramas() {
                     }
                     titulo={t(`work_${programa.clave}_title`)}
                     pie={
-                      <span className="mt-1 inline-flex items-center gap-1 text-sm text-tinta-2 group-hover:text-tinta">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca-600 transition-colors group-hover:text-marca-700">
                         {t("enter")}
-                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                        <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
                       </span>
                     }
                   />

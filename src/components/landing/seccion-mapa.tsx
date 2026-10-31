@@ -36,7 +36,7 @@ export async function SeccionMapa() {
     <section id="donde-estamos" className={SECCION}>
       <div className={cn(CONTENEDOR, "grid items-center gap-10 lg:grid-cols-2 lg:gap-16")}>
         <div>
-          <CabeceraSeccion titulo={t("mapTitle")} texto={t("mapEyebrow")} />
+          <CabeceraSeccion titulo={t("mapTitle")} />
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <span className="inline-flex h-11 items-center gap-2 rounded-full border border-linea px-4 text-sm font-medium text-tinta">

@@ -5,6 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Rediseño y simplificación de la Landing y botón de retorno en Login (31 oct 2026):**
+      - **Login (`src/app/[locale]/(auth)/login/page.tsx` y `layout.tsx`):** se incorporó el botón "Volver al inicio" con icono de flecha tanto en el encabezado de la tarjeta principal (junto al logotipo institucional) como en la parte superior del marco de autenticación para facilitar el retorno inmediato a la página principal.
+      - **Landing de inicio (`src/app/[locale]/page.tsx` y componentes en `src/components/landing/`):**
+        - Eliminación de subtítulos redundantes en todas las cabeceras de sección (`CabeceraSeccion`) y en la franja de roles.
+        - Supresión de listas de viñetas innecesarias en las puertas de acceso (`SeccionAcceso`), retirando textos redundantes y simplificando el contenido de las tarjetas de noticias.
+        - Rediseño unificado del formato de tarjetas (`TarjetaAnuncio` en `piezas.tsx`, tarjetas de acceso en `seccion-acceso.tsx` y garantías en `seccion-patrocinadores.tsx`): contenedor cerrado con bordes definidos, elevación suave al interactuar (`hover:-translate-y-1 hover:shadow-elevada hover:border-marca-300`), cabecera visual integrada, espaciado proporcional (`p-5`/`p-6`) y botón de acción con icono alineado en el pie.
+      - **Calidad:** `npm run lint`, `npm run build`, `npm run i18n:check` y `npm run audit:ui` pasando en verde al 100%.
+
 - [x] **Alineación de Navegación Contable y Vinculación de Programas a Comprobantes (25 oct 2026):**
       - **Navegación Contable (`src/lib/nav.ts`):** `MENU_CONTABILIDAD` reestructurado en 7 áreas funcionales por ciclo contable (Contabilidad General, Tesorería, Ingresos, Gastos, Impuestos, Activos, Gestión/Herramientas), dotándolo de acceso a Calendario, Reuniones y Chat IA. En `MENU_ADMINISTRACION`, el acceso directo a Contabilidad se nombró `Inicio` para eliminar redundancias.
       - **Vinculación de Programas a Comprobantes:** en `src/components/contabilidad/comprobantes/panel-revision-comprobante.tsx` y `comprobantes-recibidos/page.tsx`, se integró el catálogo de proyectos activos (`programasParaRendicion`) permitiendo ver y asociar cada comprobante/factura/foto escaneada a un programa misional de la Fundación (Beca Universitaria, Global Effect 360, Comedor, etc.).

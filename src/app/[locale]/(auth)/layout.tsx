@@ -22,18 +22,18 @@ export default function LayoutAuth({
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-muted px-4 py-10">
-      <div className="w-full max-w-[440px] space-y-6">
-        {children}
-
-        <p className="text-center">
+      <div className="w-full max-w-[440px] space-y-4">
+        <div>
           <Link
             href="/"
-            className="inline-flex h-11 items-center gap-1.5 rounded-control px-4 text-sm text-tinta-2 transition-colors hover:bg-background hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="inline-flex h-9 items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-tinta-2 transition-colors hover:bg-card hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <ArrowLeft className="size-4" />
             {t("backHome")}
           </Link>
-        </p>
+        </div>
+
+        {children}
       </div>
     </div>
   );

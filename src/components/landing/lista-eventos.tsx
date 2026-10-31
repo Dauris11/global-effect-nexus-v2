@@ -175,8 +175,8 @@ export function ListaEventos({
                   lineas={[`${evento.fechaTexto} · ${evento.tipoEtiqueta}`]}
                   pie={
                     evento.ubicacion && (
-                      <p className="mt-0.5 flex items-center gap-1 text-sm text-tinta-2">
-                        <MapPin className="size-4 shrink-0" />
+                      <p className="flex items-center gap-1.5 text-sm text-tinta-2">
+                        <MapPin className="size-4 shrink-0 text-marca-600" />
                         <span className="truncate">{evento.ubicacion}</span>
                       </p>
                     )

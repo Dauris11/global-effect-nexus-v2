@@ -67,7 +67,6 @@ export async function SeccionEventos({
             del sistema, así que la sección pública siempre termina en entrar. */}
         <CabeceraSeccion
           titulo={t("eventsTitle")}
-          texto={t("eyebrowCalendar")}
           accion={
             <Button asChild variant="secondary">
               <Link href="/login">

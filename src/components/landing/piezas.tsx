@@ -108,21 +108,33 @@ export function TarjetaAnuncio({
   lineas?: readonly (string | null | undefined)[];
   pie?: React.ReactNode;
 }) {
+  const lineasVisibles = lineas?.filter(Boolean) ?? [];
+
   return (
-    <article className="group flex h-full flex-col">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-muted shadow-card transition-shadow duration-200 group-hover:shadow-elevada">
+    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada">
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         {cabecera}
-        {insignia && <div className="absolute top-3 left-3">{insignia}</div>}
+        {insignia && <div className="absolute top-3 left-3 z-10">{insignia}</div>}
       </div>
-      <h3 className="texto-titulo-tarjeta mt-3">{titulo}</h3>
-      {lineas
-        ?.filter(Boolean)
-        .map((linea) => (
-          <p key={linea} className="mt-0.5 line-clamp-2 text-sm text-tinta-2">
-            {linea}
-          </p>
-        ))}
-      {pie}
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="texto-titulo-tarjeta text-tinta transition-colors group-hover:text-marca-600">
+          {titulo}
+        </h3>
+        {lineasVisibles.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {lineasVisibles.map((linea) => (
+              <p key={linea} className="line-clamp-2 text-sm text-tinta-2">
+                {linea}
+              </p>
+            ))}
+          </div>
+        )}
+        {pie && (
+          <div className="mt-auto border-t border-linea/60 pt-4">
+            {pie}
+          </div>
+        )}
+      </div>
     </article>
   );
 }
@@ -134,8 +146,8 @@ export function CabeceraIcono({
   icono: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex size-full items-center justify-center bg-marca-50">
-      <Icono className="size-12 text-marca-600 transition-transform duration-300 group-hover:scale-105" />
+    <div className="flex size-full items-center justify-center bg-marca-50/70 transition-colors group-hover:bg-marca-50">
+      <Icono className="size-12 text-marca-600 transition-transform duration-300 group-hover:scale-110" />
     </div>
   );
 }

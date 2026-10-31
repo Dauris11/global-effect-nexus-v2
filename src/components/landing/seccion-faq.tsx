@@ -29,7 +29,7 @@ export async function SeccionFaq() {
   return (
     <section id="preguntas" className={SECCION}>
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("faqTitle")} texto={t("faqEyebrow")} />
+        <CabeceraSeccion titulo={t("faqTitle")} />
 
         <div className="mt-6 max-w-3xl divide-y divide-linea border-y border-linea">
           {preguntas.map((pregunta) => (

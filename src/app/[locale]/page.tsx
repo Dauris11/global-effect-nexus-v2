@@ -114,7 +114,7 @@ export default async function PaginaInicio({
     { ancla: "patrocinadores", texto: t("navSponsors") },
     { ancla: "eventos", texto: t("navEventos") },
     ...(noticias.length > 0
-      ? [{ ancla: "noticias", texto: t("blogEyebrow") }]
+      ? [{ ancla: "noticias", texto: t("blogTitle") }]
       : []),
     { ancla: "preguntas", texto: t("navFaq") },
   ];
