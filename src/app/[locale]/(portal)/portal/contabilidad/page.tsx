@@ -1,11 +1,27 @@
 import type { Metadata } from "next";
-import { ArrowRight, Info, Landmark, Plus, Sun } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Calculator,
+  HandCoins,
+  Info,
+  Landmark,
+  Plus,
+  ReceiptText,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  Sun,
+  Wallet,
+} from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Monto } from "@/components/contabilidad/comun";
 import { LanzadorModulos } from "@/components/contabilidad/inicio/lanzador-modulos";
 import { ParaHoy, type PendienteVisible } from "@/components/contabilidad/inicio/para-hoy";
 import { ListaRecibos } from "@/components/contabilidad/recibos/lista-recibos";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -15,10 +31,14 @@ import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import { formatearMonto, sumarMontos } from "@/lib/contabilidad/formato";
 import { GRUPOS_CONTABLES, modulosDeGrupo } from "@/lib/contabilidad/modulos";
 import { claveDia, fechaCorta } from "@/lib/fechas";
-import { TARJETA } from "@/lib/paleta";
+import { TARJETA, INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
-import { pendientesDelDepartamento } from "@/server/contabilidad/inicio/consultas";
+import { listarCajas } from "@/server/contabilidad/cajas/consultas";
+import {
+  pendientesDelDepartamento,
+  resumenFinancieroFundacion,
+} from "@/server/contabilidad/inicio/consultas";
 import { leerFiltroRecibos, recibos } from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
@@ -34,16 +54,12 @@ export async function generateMetadata({
 /**
  * Inicio del Departamento de Contabilidad (§4.1).
  *
- * Se ordena por la pregunta que se hace quien entra: qué me toca hoy. Primero lo
- * que espera a alguien (borradores, cuentas por pagar vencidas, rendiciones,
- * arqueos y conciliaciones abiertas), después dónde está el dinero y, al final,
- * todos los módulos del departamento agrupados —los de `/contabilidad` y las
- * herramientas que viven en otras áreas—, sacados de `MODULOS_CONTABLES`.
- *
- * La puerta es `contabilidad.leer`, no el rol: `super_admin` entra a mirar
- * (auditoría) y no ve ningún botón que escriba. Cada módulo y cada pendiente se
- * filtra con el permiso de la persona, no del rol, para que las excepciones de
- * `usuario_permiso` valgan también aquí.
+ * Diseñado bajo la misión institucional de una Fundación (ASFL Ley 122-05):
+ * 1. Control del flujo de fondos: dinero que entra, dinero que sale y cuánto se tiene.
+ * 2. Indicador de liquidez para saber si hay que solicitar más dinero.
+ * 3. Acceso directo al cuadre de caja (arqueo físico de billetes y monedas).
+ * 4. Cuentas bancarias y cola de decisiones de hoy.
+ * 5. Módulos y funciones organizados por ciclo de trabajo.
  */
 export default async function PortalContabilidad({
   params,
@@ -54,7 +70,7 @@ export default async function PortalContabilidad({
   const idioma = locale === "en" ? "en" : "es";
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, tMiDia, tc, cuentas, tasa, pendientes, recientes] = await Promise.all([
+  const [t, tMiDia, tc, cuentas, tasa, pendientes, recientes, cajas, resumen] = await Promise.all([
     getTranslations({ locale, namespace: "contab.inicio" }),
     getTranslations({ locale, namespace: "miDia" }),
     getTranslations({ locale, namespace: "contab" }),
@@ -62,6 +78,8 @@ export default async function PortalContabilidad({
     tasaVigente(),
     pendientesDelDepartamento(),
     recibos(leerFiltroRecibos({}), 5),
+    listarCajas(),
+    resumenFinancieroFundacion(),
   ]);
 
   const fueraDelMenu = new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu);
@@ -89,8 +107,8 @@ export default async function PortalContabilidad({
   })).filter((grupo) => grupo.modulos.length > 0);
 
   const activas = cuentas.filter((c) => c.estado === "activa");
-  // El total en pesos solo si TODAS las cuentas tienen equivalente: un
-  // total que omite en silencio la cuenta en dólares sería falso.
+  const cajasActivas = cajas.filter((c) => c.estado === "activa");
+
   const totalDop = activas.every((c) => c.saldo_dop !== null)
     ? sumarMontos(activas.map((c) => c.saldo_dop ?? "0"))
     : null;
@@ -104,11 +122,22 @@ export default async function PortalContabilidad({
         subtitulo={t("subtitulo")}
         acciones={
           <>
-            {/* La cola de decisiones de hoy es lo primero que se busca aquí. */}
             <Button asChild variant="outline">
               <Link href="/contabilidad/mi-dia">
                 <Sun className="size-4" />
                 {tMiDia("title")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/contabilidad/cajas">
+                <Calculator className="size-4" />
+                {t("cuadreCaja")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/administrativo/solicitudes">
+                <Send className="size-4" />
+                {t("solicitarFondos")}
               </Link>
             </Button>
             {usuarioTienePermiso(usuario, "contabilidad.registrar") && (
@@ -123,11 +152,211 @@ export default async function PortalContabilidad({
         }
       />
 
+      {/* ── Flujo de fondos institucional: Dinero que entra, sale y cuánto se tiene ── */}
       <section className="space-y-4">
-        <h2 className="texto-titulo-seccion">{t("paraHoy.titulo")}</h2>
-        <ParaHoy pendientes={paraHoy} />
+        <div>
+          <h2 className="texto-titulo-seccion">{t("resumenFundacion")}</h2>
+          <p className="texto-meta">{t("resumenFundacionDesc")}</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Dinero que entra */}
+          <div className={`${TARJETA.contenido} flex flex-col justify-between p-5`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600">
+                <ArrowDownLeft className="size-5" />
+              </span>
+              <Badge variant="neutra">DOP</Badge>
+            </div>
+            <div className="mt-4">
+              <p className="texto-meta">{t("dineroEntra")}</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-tinta">
+                {formatearMonto(resumen.ingresosMesDop, "DOP")}
+              </p>
+            </div>
+          </div>
+
+          {/* Dinero que sale */}
+          <div className={`${TARJETA.contenido} flex flex-col justify-between p-5`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-tinta">
+                <ArrowUpRight className="size-5" />
+              </span>
+              <Badge variant="neutra">DOP</Badge>
+            </div>
+            <div className="mt-4">
+              <p className="texto-meta">{t("dineroSale")}</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-tinta">
+                {formatearMonto(resumen.egresosMesDop, "DOP")}
+              </p>
+            </div>
+          </div>
+
+          {/* Cuánto se tiene (Liquidez Total) */}
+          <div className={`${TARJETA.contenido} flex flex-col justify-between p-5`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600">
+                <Wallet className="size-5" />
+              </span>
+              <Badge variant="solida">Total</Badge>
+            </div>
+            <div className="mt-4">
+              <p className="texto-meta">{t("disponibilidadTotal")}</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-marca-700">
+                {formatearMonto(resumen.totalLiquidezDop, "DOP")}
+              </p>
+              <p className="mt-1 truncate text-xs text-tinta-2">
+                {t("disponibilidadDesglose", {
+                  bancos: formatearMonto(resumen.disponibleBancosDop, "DOP"),
+                  cajas: formatearMonto(resumen.disponibleCajasDop, "DOP"),
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Compromisos por pagar */}
+          <div className={`${TARJETA.contenido} flex flex-col justify-between p-5`}>
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-tinta">
+                <HandCoins className="size-5" />
+              </span>
+              <Badge variant="neutra">CxP</Badge>
+            </div>
+            <div className="mt-4">
+              <p className="texto-meta">{t("compromisosPendientes")}</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-tinta">
+                {formatearMonto(resumen.compromisosPendientesDop, "DOP")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Diagnóstico de Fondos: ¿Hay que solicitar más dinero? */}
+        {resumen.requiereFondos ? (
+          <div className="flex flex-col gap-4 rounded-card border border-semaforo-alerta/40 bg-semaforo-alerta/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 size-5 shrink-0 text-semaforo-alerta" />
+              <div>
+                <p className="font-semibold text-tinta">{t("estadoFondosAlerta")}</p>
+                {resumen.cajasBajasCount > 0 && (
+                  <p className="mt-0.5 text-xs text-tinta-2">
+                    {resumen.cajasBajasCount} caja(s) chica(s) con saldo por debajo del 25% de su fondo fijo.
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button asChild size="sm">
+              <Link href="/administrativo/solicitudes">
+                <Send className="size-4" />
+                {t("solicitarFondos")}
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 rounded-card border border-semaforo-dentro/30 bg-semaforo-dentro/5 p-4">
+            <ShieldCheck className="size-5 shrink-0 text-semaforo-dentro" />
+            <p className="text-sm font-medium text-tinta">{t("estadoFondosOptimo")}</p>
+          </div>
+        )}
       </section>
 
+      {/* ── Cajas chicas y Cuadre de caja físico (Efectivo en mano) ── */}
+      <section className="space-y-4 border-t border-linea pt-8">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h2 className="texto-titulo-seccion">{t("cajasTitulo")}</h2>
+            <p className="texto-meta">{t("cajasSubtitulo")}</p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/contabilidad/cajas">
+              <Calculator className="size-4" />
+              {t("cuadreCaja")}
+            </Link>
+          </Button>
+        </div>
+
+        {cajasActivas.length === 0 ? (
+          <EstadoVacio
+            icono={Wallet}
+            titulo="Sin cajas chicas activas"
+            texto="Crea una caja chica para gastos menores y arqueos físicos."
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cajasActivas.map((caja) => {
+              const saldoNum = parseFloat(caja.saldoActual);
+              const fondoNum = parseFloat(caja.fondoFijo);
+              const pct = Math.min(100, Math.round((saldoNum / (fondoNum || 1)) * 100));
+
+              return (
+                <div key={caja.id} className={`${TARJETA.contenido} flex flex-col justify-between p-5`}>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="rounded bg-marca-50 px-2 py-0.5 font-mono text-xs font-semibold text-marca-700">
+                          {caja.codigo}
+                        </span>
+                        <h3 className="mt-1 line-clamp-1 text-base font-semibold text-tinta">
+                          {caja.nombre}
+                        </h3>
+                        <p className="text-xs text-tinta-2 capitalize">{caja.departamento}</p>
+                      </div>
+                      <Badge className={caja.estado === "activa" ? INSIGNIA_SEMAFORO.dentro : INSIGNIA_SEMAFORO.alerta}>
+                        {caja.estado}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2 rounded-control bg-muted/60 p-3 text-xs">
+                      <div className="flex items-baseline justify-between">
+                        <span className="texto-meta">{t("disponibilidadTotal")}</span>
+                        <span className="text-lg font-bold text-tinta">
+                          {formatearMonto(caja.saldoActual, caja.moneda)}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px] text-tinta-2">
+                          <span>{t("fondoFijo")}: {formatearMonto(caja.fondoFijo, caja.moneda)}</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-linea">
+                          <div
+                            className={`h-full transition-all ${
+                              pct < 25
+                                ? "bg-semaforo-alerta"
+                                : pct < 50
+                                ? "bg-semaforo-precaucion"
+                                : "bg-marca"
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2 border-t border-linea pt-3">
+                    <Button asChild size="sm" className="w-full">
+                      <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>
+                        <Calculator className="size-3.5" />
+                        <span>{t("hacerArqueo")}</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm" className="w-full">
+                      <Link href={`/contabilidad/cajas/${caja.id}`}>
+                        <ReceiptText className="size-3.5" />
+                        <span>{t("verCaja")}</span>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Bancos y Cuentas de la Fundación ── */}
       <section className="space-y-4 border-t border-linea pt-8">
         <div className="flex items-end justify-between gap-3">
           <h2 className="texto-titulo-seccion">{t("saldos")}</h2>
@@ -171,6 +400,13 @@ export default async function PortalContabilidad({
         </p>
       </section>
 
+      {/* ── Para hoy: cola de pendientes del departamento ── */}
+      <section className="space-y-4 border-t border-linea pt-8">
+        <h2 className="texto-titulo-seccion">{t("paraHoy.titulo")}</h2>
+        <ParaHoy pendientes={paraHoy} />
+      </section>
+
+      {/* ── Módulos y funciones del departamento ── */}
       <section className="space-y-4 border-t border-linea pt-8">
         <div>
           <h2 className="texto-titulo-seccion">{t("modulos")}</h2>
@@ -179,6 +415,7 @@ export default async function PortalContabilidad({
         <LanzadorModulos grupos={grupos} />
       </section>
 
+      {/* ── Recibos recientes ── */}
       <section className="space-y-4 border-t border-linea pt-8">
         <div className="flex items-center justify-between gap-3">
           <h2 className="texto-titulo-seccion">{t("recientes")}</h2>

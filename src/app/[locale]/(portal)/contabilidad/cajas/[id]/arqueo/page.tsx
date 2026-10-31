@@ -26,10 +26,13 @@ export default async function PaginaRealizarArqueo({
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   await requerirPermiso("contabilidad.registrar");
 
-  const caja = await obtenerCaja(id);
+  const [t, caja] = await Promise.all([
+    getTranslations({ locale, namespace: "contab.cajas" }),
+    obtenerCaja(id),
+  ]);
   if (!caja) notFound();
 
   return (
@@ -38,14 +41,14 @@ export default async function PaginaRealizarArqueo({
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href={`/contabilidad/cajas/${caja.id}`}>
             <ArrowLeft className="size-4" />
-            <span>Volver a {caja.nombre}</span>
+            <span>{t("volverCajas")}</span>
           </Link>
         </Button>
 
         <EncabezadoPagina
-          antetitulo={`Cuadre Físico · ${caja.codigo}`}
-          titulo={`Arqueo de ${caja.nombre}`}
-          subtitulo="Cuenta física de billetes y monedas para verificar el saldo en caja frente a los registros."
+          antetitulo={`${t("cuadreArqueo")} · ${caja.codigo}`}
+          titulo={`${t("nuevoArqueo")} · ${caja.nombre}`}
+          subtitulo={t("subtitulo")}
         />
       </div>
 

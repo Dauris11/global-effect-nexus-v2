@@ -5,6 +5,17 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Flujo de Fondos, Diagnóstico de Liquidez y Cuadre de Caja en Portal Contabilidad (31 oct 2026):**
+      - **Visión Institucional de Fundación (`src/app/[locale]/(portal)/portal/contabilidad/page.tsx`):**
+        - Integración del panel de Flujo de Fondos en tiempo real: Dinero que entra (ingresos/donaciones del mes en DOP), Dinero que sale (egresos/gastos y movimientos de caja), Liquidez total disponible consolidada (Bancos + Cajas chicas) y Compromisos pendientes de pago (CxP).
+        - Diagnóstico de fondos ("¿Hay que solicitar más dinero?"): Alerta automática cuando los fondos operativos no cubren compromisos o cuando una caja chica está por debajo del 25% de su fondo fijo, con botón directo para "Solicitar fondos" (`/administrativo/solicitudes`).
+      - **Cuadre de Caja y Arqueo Físico:**
+        - Acceso directo y visible a "Cuadre de caja" en la cabecera del portal y tarjetas individuales por cada caja chica activa con barra de nivel del fondo fijo y botón "Hacer arqueo" (`/contabilidad/cajas/[id]/arqueo`).
+        - En `/contabilidad/cajas/page.tsx` y `cajas/[id]/page.tsx`, estandarización de las acciones de "Cuadre / Arqueo" y retiro de cadenas literales por claves de internacionalización.
+      - **Módulos del Departamento (`src/lib/contabilidad/modulos.ts` y `messages/{es,en}.json`):**
+        - Añadidas las claves de traducción faltantes para `nomina`, `activos-fijos` y `consumibles`, definiendo explícitamente la función de cada módulo institucional para donaciones, fondos restringidos, compras y rendición.
+      - **Calidad:** 4,381 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100%.
+
 - [x] **Rediseño y simplificación de la Landing y botón de retorno en Login (31 oct 2026):**
       - **Login (`src/app/[locale]/(auth)/login/page.tsx` y `layout.tsx`):** se incorporó el botón "Volver al inicio" con icono de flecha tanto en el encabezado de la tarjeta principal (junto al logotipo institucional) como en la parte superior del marco de autenticación para facilitar el retorno inmediato a la página principal.
       - **Landing de inicio (`src/app/[locale]/page.tsx` y componentes en `src/components/landing/`):**

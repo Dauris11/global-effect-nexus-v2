@@ -57,10 +57,9 @@ export default async function PaginaCajas({
       {cajas.length === 0 ? (
         <div className="rounded-tarjeta border border-dashed border-linea bg-background p-12 text-center space-y-3">
           <Wallet className="mx-auto size-12 text-tinta-2/50" />
-          <h3 className="text-base font-semibold text-tinta">No hay cajas chicas registradas</h3>
+          <h3 className="text-base font-semibold text-tinta">{t("vacio")}</h3>
           <p className="text-sm text-tinta-2 max-w-md mx-auto">
-            Crea la primera caja chica para gestionar los gastos menores, vales provisionales
-            y arqueos físicos de la Fundación.
+            {t("vacioTexto")}
           </p>
         </div>
       ) : (
@@ -136,13 +135,13 @@ export default async function PaginaCajas({
                   <Button asChild variant="outline" size="sm" className="w-full">
                     <Link href={`/contabilidad/cajas/${caja.id}`}>
                       <Receipt className="size-3.5" />
-                      <span>Movimientos</span>
+                      <span>{t("movimientos")}</span>
                     </Link>
                   </Button>
                   <Button asChild size="sm" className="w-full">
                     <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>
                       <Calculator className="size-3.5" />
-                      <span>Arqueo</span>
+                      <span>{t("cuadreArqueo")}</span>
                     </Link>
                   </Button>
                 </div>

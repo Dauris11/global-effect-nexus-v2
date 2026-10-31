@@ -46,10 +46,11 @@ export default async function PaginaDetalleCaja({
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   await requerirPermiso("contabilidad.leer");
 
-  const [caja, movimientos, arqueos, cuentas, personas] = await Promise.all([
+  const [t, caja, movimientos, arqueos, cuentas, personas] = await Promise.all([
+    getTranslations({ locale, namespace: "contab.cajas" }),
     obtenerCaja(id),
     listarMovimientosCaja(id),
     listarArqueos(id),
@@ -77,7 +78,7 @@ export default async function PaginaDetalleCaja({
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/cajas">
             <ArrowLeft className="size-4" />
-            <span>Volver a cajas chicas</span>
+            <span>{t("volverCajas")}</span>
           </Link>
         </Button>
 
@@ -100,7 +101,7 @@ export default async function PaginaDetalleCaja({
               <Button asChild size="sm">
                 <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>
                   <Calculator className="size-4" />
-                  <span>Realizar arqueo</span>
+                  <span>{t("nuevoArqueo")}</span>
                 </Link>
               </Button>
             </div>
@@ -251,13 +252,13 @@ export default async function PaginaDetalleCaja({
       {/* Historial de Arqueos */}
       <div className="space-y-4 pt-4 border-t border-linea">
         <div className="flex items-center justify-between">
-          <h2 className="texto-titulo-seccion">Historial de arqueos y cuadres físicos</h2>
+          <h2 className="texto-titulo-seccion">{t("arqueos")}</h2>
         </div>
 
         <div className="rounded-tarjeta border border-linea bg-background overflow-hidden shadow-sm">
           {arqueos.length === 0 ? (
             <div className="p-8 text-center text-sm text-tinta-2">
-              Aún no se han realizado arqueos en esta caja.
+              {t("sinArqueos")}
             </div>
           ) : (
             <div className="overflow-x-auto">
