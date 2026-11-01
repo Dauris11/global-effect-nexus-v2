@@ -188,6 +188,8 @@ export type EntregaPorRevisar = {
   estado: string;
   fecha_entrega: Date | null;
   archivo_url: string | null;
+  /** La respuesta que el estudiante escribió en la plataforma. */
+  texto_respuesta: string | null;
   calificacion: number | null;
   comentario_profesor: string | null;
 };
@@ -211,6 +213,7 @@ export async function entregasPorRevisar(
             d.estado,
             d.fecha_entrega,
             d.archivo_url,
+            d.texto_respuesta,
             d.calificacion::float8 AS calificacion,
             d.comentario_profesor
        FROM entrega_estudiante d

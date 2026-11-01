@@ -43,6 +43,7 @@ export function BuzonTareaMoodle({
   const t = useTranslations("moodle");
 
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
+  const [textoRespuesta, setTextoRespuesta] = useState("");
   const [comentarioEstudiante, setComentarioEstudiante] = useState(
     asignacion.entrega_comentario_estudiante ?? "",
   );
@@ -99,39 +100,27 @@ export function BuzonTareaMoodle({
       return;
     }
 
-    if (!archivoSeleccionado && !asignacion.entrega_archivo_url) {
+    if (!archivoSeleccionado && !textoRespuesta.trim() && !asignacion.entrega_archivo_url) {
       setErrorValidacion(t("errorFileRequired"));
       return;
     }
 
+    // El archivo viaja de verdad: el servidor lo sube y lo valida; el navegador
+    // ya no inventa una URL ni declara su propio tamaño y formato.
     const formData = new FormData();
     formData.set("asignacion_id", asignacion.id);
-    if (archivoSeleccionado) {
-      const tamanoMb = (archivoSeleccionado.size / (1024 * 1024)).toFixed(2);
-      const ext = archivoSeleccionado.name.split(".").pop()?.toLowerCase() ?? "bin";
-      formData.set("archivo_nombre", archivoSeleccionado.name);
-      formData.set("archivo_tamano_mb", tamanoMb);
-      formData.set("archivo_formato", ext);
-      // En entorno real con Supabase Storage se usaría uploadFile; aquí se asocia URL de entrega
-      formData.set(
-        "archivo_url",
-        `https://storage.globaleffect.org/entregas/${Date.now()}_${archivoSeleccionado.name}`,
-      );
-    } else {
-      formData.set("archivo_nombre", asignacion.entrega_archivo_nombre ?? "documento");
-      formData.set("archivo_tamano_mb", String(asignacion.entrega_archivo_tamano_mb ?? 1));
-      formData.set("archivo_formato", asignacion.entrega_archivo_formato ?? "pdf");
-      formData.set("archivo_url", asignacion.entrega_archivo_url ?? "");
-    }
+    if (archivoSeleccionado) formData.set("archivo", archivoSeleccionado);
+    formData.set("texto_respuesta", textoRespuesta);
     formData.set("comentario_estudiante", comentarioEstudiante);
 
     startTransition(async () => {
       const res = await entregarTareaMoodleAction(formData);
+      const texto = t(`deliveryResult.${res.mensaje ?? "error"}` as never);
       if (res.ok) {
-        setMensajeExito(res.mensaje ?? t("submitSuccess"));
+        setMensajeExito(texto);
         setEditandoEntrega(false);
       } else {
-        setErrorValidacion(res.mensaje ?? t("submitError"));
+        setErrorValidacion(texto);
       }
     });
   };
@@ -360,6 +349,18 @@ export function BuzonTareaMoodle({
                     </p>
                   </div>
                 </label>
+              </div>
+
+              <div>
+                <Label htmlFor="respuesta-escrita">{t("answerText")}</Label>
+                <Textarea
+                  id="respuesta-escrita"
+                  value={textoRespuesta}
+                  onChange={(e) => setTextoRespuesta(e.target.value)}
+                  rows={5}
+                  maxLength={20000}
+                  className="mt-1"
+                />
               </div>
 
               <div>

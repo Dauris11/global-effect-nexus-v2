@@ -238,7 +238,10 @@ export async function calificarInscripcion360(
           AND i.estado <> 'retirada'
           AND ($4::uuid IS NULL OR m.docente_id = $4)
       RETURNING i.id`,
-      [id, valor, estado, usuarioTienePermiso(usuario, "docencia.impartir") ? usuario.id : null],
+      // Sin filtro solo quien administra lo académico. Antes dependía de tener
+      // `docencia.impartir`: quitárselo a una persona la dejaba calificando
+      // cualquier clase en vez de ninguna.
+      [id, valor, estado, usuarioTienePermiso(usuario, "academico.escribir") ? null : usuario.id],
     );
 
     if (!calificada) return { estado: "no_encontrado" };

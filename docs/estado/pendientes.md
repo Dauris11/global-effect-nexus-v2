@@ -5,6 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [ ] **Etapa 3 (Global Effect 360), parte 1 hecha y parte 2 pendiente (1 nov 2026, migración `0067`):**
+      - **Hecho:** entrega real (archivo subido en servidor, inscripción verificada, formatos cerrados, texto escrito, reinicio de nota al re-entregar); calificación Moodle acotada a la clase del docente; alcance de `calificarInscripcion360` independiente de `docencia.impartir`. Detalle y auditoría en `bitacora-tesis.md`.
+      - **Pendiente (R6, grande):** asistencia por clase (`sesion_360`, `asistencia_360`, acciones con `docencia.impartir`, vista del estudiante y del expediente).
+      - **Pendiente (R7/R9, mediano):** fechas de clase fijadas por administración; validar cuatrimestres (enero–diciembre, sin traslapes, 3–4 por año, solo `cuatrimestre`) en `guardarPeriodo`, `guardarVentana` y `moverBarra`.
+      - **Pendiente (R1/R4/R5):** tareas ligadas al período; nota final derivada de las tareas (con peso/`puntaje_maximo`) y anulación auditada; decisión explícita aprobó/reprobó y paso `prematriculada → cursando`.
+      - **Pendiente (R8/R10):** 360 por cuatrimestre en el expediente e historial; separar el índice de 360 del de la carrera.
+      - **Pendiente (menor):** `guardarMateria360` no escribe docente, horario, aula ni cupo (hoy exige SQL); `puntaje_maximo` hasta 1000 con nota limitada a 0–100; cupo cuenta todas las inscripciones abiertas de todos los períodos; `entregar-tarea.tsx` es código muerto.
+
 - [x] **Etapa 2: un solo acento, sin degradados, datos con icono (1 nov 2026):**
       - **Acento a elección:** Mi perfil → Apariencia ofrece Azul o Negro (`data-acento`, en el navegador). El negro reasigna `marca-*` en `globals.css`; solo en claro (de noche manda el azul).
       - **Cero degradados:** botón, perfil, hero, avatares, barra inferior, widget de IA, anuncios y cáscara de carga (ahora "respira" en opacidad). Se borran `GRADIENTE`, `GRADIENTE_OSCURO`, `PORTAL_BANNER` y `ESTILO_POR_ROL` (sin usos). `audit:ui` falla si reaparecen.

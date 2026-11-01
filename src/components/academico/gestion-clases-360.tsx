@@ -371,6 +371,12 @@ function FilaEntrega({
         )}
       </div>
 
+      {entrega.texto_respuesta && (
+        <blockquote className="max-h-48 overflow-y-auto rounded-control bg-muted/50 p-3 text-sm whitespace-pre-line text-tinta">
+          {entrega.texto_respuesta}
+        </blockquote>
+      )}
+
       <form action={enviar} className="flex flex-wrap items-end gap-2">
         <input type="hidden" name="id" value={entrega.id} />
 

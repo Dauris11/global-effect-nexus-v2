@@ -5202,6 +5202,19 @@
     "approveButton": "Aprobar para Contabilidad"
   },
   "moodle": {
+    "answerText": "Tu respuesta escrita",
+    "deliveryResult": {
+      "entregada": "Tarea entregada.",
+      "entregada_tarde": "Tarea entregada fuera de plazo.",
+      "sin_ficha": "Tu cuenta no está enlazada a una ficha de estudiante.",
+      "no_es_tuya": "Esa tarea no es de una clase tuya.",
+      "sin_contenido": "Sube un documento o escribe tu respuesta.",
+      "formato_no_admitido": "Ese formato no se admite en esta tarea.",
+      "muy_grande": "El archivo supera el tamaño permitido.",
+      "plazo_vencido": "El plazo venció y esta tarea no acepta entregas tardías.",
+      "texto_largo": "La respuesta escrita es demasiado larga.",
+      "error": "No se pudo guardar la entrega. Intenta de nuevo."
+    },
     "errorFileSize": "El archivo excede el límite permitido de {limit} MB (tamaño actual: {size} MB)",
     "errorFileFormat": "El formato .{ext} no está permitido. Formatos aceptados: {formats}",
     "previewSuccessNotice": "[Modo Vista de Estudiante] Demostración de entrega completada con éxito.",

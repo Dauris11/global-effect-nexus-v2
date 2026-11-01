@@ -5202,6 +5202,19 @@
     "approveButton": "Approve for Accounting"
   },
   "moodle": {
+    "answerText": "Your written answer",
+    "deliveryResult": {
+      "entregada": "Assignment submitted.",
+      "entregada_tarde": "Assignment submitted late.",
+      "sin_ficha": "Your account isn't linked to a student record.",
+      "no_es_tuya": "That assignment isn't from one of your classes.",
+      "sin_contenido": "Upload a document or write your answer.",
+      "formato_no_admitido": "That format isn't accepted for this assignment.",
+      "muy_grande": "The file exceeds the allowed size.",
+      "plazo_vencido": "The deadline passed and this assignment doesn't accept late work.",
+      "texto_largo": "The written answer is too long.",
+      "error": "Could not save your submission. Try again."
+    },
     "errorFileSize": "File exceeds the allowed limit of {limit} MB (current size: {size} MB)",
     "errorFileFormat": "Format .{ext} is not allowed. Accepted formats: {formats}",
     "previewSuccessNotice": "[Student Preview Mode] Submission demonstration completed successfully.",
