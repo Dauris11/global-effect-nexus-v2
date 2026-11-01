@@ -107,8 +107,7 @@
     "signInHeading": "Entra a tu portal"
   },
   "nav": {
-    "adminPortal": "Portal administrativo",
-    "dashboard": "Panel",
+    "inbox": "Bandeja",
     "records": "Expedientes",
     "academic": "Materias",
     "academicModule": "Académico",
@@ -1898,21 +1897,13 @@
     "errTanda": "Elige la tanda 1 o la 2.",
     "errOverlap": "Ya hay otra ventana de este período abierta en esas fechas."
   },
-  "adminPortal": {
-    "eyebrow": "Portal administrativo",
+  "bandeja": {
+    "title": "Bandeja",
     "greeting": "Hola, {name}",
-    "summary": "Todo lo que pasa en la Fundación, en una pantalla.",
-    "kpi": {
-      "students": "Estudiantes",
-      "tasks": "Tareas abiertas",
-      "projects": "Proyectos",
-      "giving": "Aporte al mes"
-    },
-    "pending": {
+    "seeAll": "Ver todo",
+    "attention": {
       "title": "Esperando una decisión",
-      "hint": "Cada aviso lleva a la pantalla donde se resuelve.",
       "none": "No hay nada esperando",
-      "noneHint": "Cuando algo requiera una decisión, aparecerá aquí antes que nada.",
       "urgentTasks": "Tareas urgentes o de prioridad alta",
       "overdueTasks": "Tareas con la fecha límite pasada",
       "submissions": "Entregas esperando nota",
@@ -1921,30 +1912,41 @@
       "subjectsNoTerm": "Materias activas sin período",
       "requests": "Solicitudes esperando tu decisión"
     },
-    "figures": {
-      "title": "Cómo va la Fundación",
-      "students": "Estudiantes activos",
-      "subjects": "Materias",
-      "grades": "Notas registradas",
-      "projects": "Proyectos en curso",
-      "tasks": "Tareas abiertas",
-      "sponsors": "Patrocinadores",
-      "giving": "Aporte mensual",
-      "diners": "Comensales hoy",
-      "users": "Cuentas activas",
-      "requests": "Solicitudes en curso",
-      "classes360": "Clases de 360 activas"
+    "tasks": {
+      "title": "Tareas por hacer",
+      "empty": "No tienes tareas abiertas",
+      "overdue": "Vencida",
+      "noDate": "Sin fecha",
+      "noProject": "Sin proyecto"
     },
-    "modules": {
-      "title": "Todos los módulos",
-      "hint": "Sale del mismo menú que la barra lateral, así que no puede quedarse desfasado. Solo se ven las entradas que tu rol permite."
+    "projects": {
+      "title": "Mis proyectos",
+      "empty": "No participas en ningún proyecto",
+      "done": "{hechas} de {total}",
+      "lead": "Responsable"
     },
-    "activity": {
-      "title": "Lo último que ha pasado",
-      "empty": "Todavía no hay actividad registrada.",
-      "hint": "De `audit_log`. Se dice qué pasó y quién lo hizo; el detalle de cada cambio no se muestra aquí.",
-      "by": "por {quien}",
-      "unknown": "cuenta eliminada"
+    "meetings": {
+      "title": "Reuniones en agenda",
+      "empty": "No hay reuniones próximas"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "empty": "No tienes notificaciones",
+      "markAll": "Marcar todas como leídas",
+      "markRead": "Marcar como leída",
+      "unread": "Sin leer"
+    },
+    "charts": {
+      "byPriority": "Mis tareas por prioridad",
+      "byStatus": "Mis tareas por estado",
+      "tasksTotal": "abiertas",
+      "tasksEmpty": "Todo al día",
+      "finance": "Ingresos y egresos",
+      "income": "Ingresos",
+      "expenses": "Egresos",
+      "noFinance": "Sin movimientos registrados",
+      "projects": "Avance de mis proyectos",
+      "projectsEmpty": "Sin proyectos con tareas"
     }
   },
   "monthlyServices": {

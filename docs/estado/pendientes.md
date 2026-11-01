@@ -1408,3 +1408,13 @@ módulo) — esto es solo la cola de pendientes concretos.
       "Editar" (este último abre la ficha ya en modo edición vía
       `?editar=1`). Es distinto de la ficha completa: no tiene familia,
       vivienda, salud ni situación, solo lo que cabe en la tarjeta.
+
+- [x] Bandeja (`/bandeja`) sustituye al "Portal administrativo" y al "Panel"
+      como inicio de `admin`/`super_admin`: avisos que esperan decisión, tareas
+      por vencimiento, proyectos con avance, reuniones próximas,
+      notificaciones (leer/marcar) y gráficas con tokens de marca. Cada bloque
+      se consulta solo con su permiso (`src/server/bandeja/consultas.ts`).
+      `/dashboard` y `/portal/administrativo` quedan como redirecciones.
+      Se borraron las cifras de la Fundación, el listado de módulos y la
+      actividad de `audit_log` del portal viejo; si se quiere recuperar la
+      lectura de `audit_log`, hay que construirle su propia pantalla.

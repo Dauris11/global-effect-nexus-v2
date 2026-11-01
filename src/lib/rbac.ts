@@ -8,8 +8,9 @@
  * son `docente` y `admin`. Manda la base de datos.
  *
  * Las rutas, en cambio, sí conservan los slugs del inventario
- * (`/portal/profesor`, `/portal/administrativo`) porque son URLs públicas ya
- * documentadas.
+ * (`/portal/profesor`) porque son URLs públicas ya documentadas. El inicio de
+ * `admin` y `super_admin` es `/bandeja`; `/portal/administrativo` y
+ * `/dashboard` solo redirigen allí para no romper enlaces viejos.
  *
  * Roles que ya no existen: `psicologo` (la 0030 movió sus cuentas a `admin`) y
  * `colaborador` (la 0065 hizo lo mismo). Si aparecen en un documento viejo,
@@ -114,8 +115,8 @@ export type Permiso = (typeof PERMISOS)[number];
 
 /** Portal al que se envía a cada rol tras iniciar sesión. */
 export const PORTAL_POR_ROL: Record<Rol, string> = {
-  super_admin: "/dashboard",
-  admin: "/dashboard",
+  super_admin: "/bandeja",
+  admin: "/bandeja",
   docente: "/portal/profesor",
   estudiante: "/portal/estudiante",
   contabilidad: "/portal/contabilidad",

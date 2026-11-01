@@ -186,10 +186,8 @@ export async function mesesConMovimiento(): Promise<string[]> {
  * está en el día siguiente y uno en Madrid en el mes siguiente. El "balance del
  * mes" de la pantalla de quien lleva las cuentas no puede depender de eso.
  *
- * Es la misma consulta que necesitaba el panel general, así que
- * `balanceDelMes()` de `@/server/dashboard/consultas` delega aquí en vez de
- * mantener su propia copia: dos definiciones del balance del mes son dos
- * cifras que un día dejan de coincidir.
+ * Una sola definición del balance del mes para todo el sitio (contabilidad y
+ * asistente): dos copias son dos cifras que un día dejan de coincidir.
  */
 export async function resumenDelMesEnCurso(): Promise<ResumenFinanciero> {
   const fila = await consultarUna<ResumenFinanciero>(

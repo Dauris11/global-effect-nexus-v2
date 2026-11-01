@@ -117,7 +117,7 @@ export async function guardarPatrocinador(
 
   revalidatePath("/[locale]/patrocinadores", "page");
   revalidatePath("/[locale]/patrocinadores/becas", "page");
-  revalidatePath("/[locale]/dashboard", "page");
+  revalidatePath("/[locale]/bandeja", "page");
 
   return { estado: "ok" };
 }

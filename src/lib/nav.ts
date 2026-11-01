@@ -14,7 +14,6 @@ import {
   Inbox,
   Landmark,
   Home,
-  LayoutDashboard,
   Library,
   ListTodo,
   Map,
@@ -25,7 +24,6 @@ import {
   Presentation,
   ReceiptText,
   Settings,
-  Shield,
   Sparkles,
   Star,
   TowerControl,
@@ -97,22 +95,14 @@ export type AreaNav = {
 
 const MENU_ADMINISTRACION: AreaNav[] = [
   {
-    clave: "panel",
-    etiqueta: "dashboard",
-    icono: LayoutDashboard,
+    clave: "bandeja",
+    etiqueta: "inbox",
+    icono: Inbox,
     secciones: [
       {
-        items: [
-          // El portal va PRIMERO: es la entrada del rol, donde converge todo.
-          // `/dashboard` se queda como la pantalla de gráficas, que es otra
-          // pregunta y merece su propia entrada.
-          {
-            etiqueta: "adminPortal",
-            href: "/portal/administrativo",
-            icono: Shield,
-          },
-          { etiqueta: "dashboard", href: "/dashboard", icono: LayoutDashboard },
-        ],
+        // Una sola entrada de inicio: la bandeja junta lo que antes eran dos
+        // (portal administrativo y panel) que se pisaban y obligaban a elegir.
+        items: [{ etiqueta: "inbox", href: "/bandeja", icono: Inbox }],
       },
     ],
   },
@@ -869,7 +859,7 @@ export type PestanaMovil =
  * orden de siempre. La entrada de cada portal va primero: es "Inicio".
  */
 const PRIORIDAD_MOVIL = [
-  "/portal/administrativo",
+  "/bandeja",
   "/portal/profesor",
   "/portal/contabilidad",
   "/administrativo/solicitudes",
@@ -883,7 +873,7 @@ const PRIORIDAD_MOVIL = [
 
 /** Etiqueta corta para la pestaña: en 11 px "Portal administrativo" no cabe. */
 const ETIQUETA_CORTA: Record<string, string> = {
-  "/portal/administrativo": "home",
+  "/bandeja": "home",
   "/portal/profesor": "home",
   "/portal/contabilidad": "home",
   "/portal/estudiante": "home",

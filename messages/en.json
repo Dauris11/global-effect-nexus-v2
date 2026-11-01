@@ -107,8 +107,7 @@
     "signInHeading": "Sign in to your portal"
   },
   "nav": {
-    "adminPortal": "Administration portal",
-    "dashboard": "Dashboard",
+    "inbox": "Inbox",
     "records": "Records",
     "academic": "Subjects",
     "academicModule": "Academic",
@@ -1898,53 +1897,56 @@
     "errTanda": "Choose block 1 or 2.",
     "errOverlap": "Another window for this term is already open on those dates."
   },
-  "adminPortal": {
-    "eyebrow": "Administration portal",
+  "bandeja": {
+    "title": "Inbox",
     "greeting": "Hello, {name}",
-    "summary": "Everything happening at the Foundation, on one screen.",
-    "kpi": {
-      "students": "Students",
-      "tasks": "Open tasks",
-      "projects": "Projects",
-      "giving": "Monthly giving"
-    },
-    "pending": {
-      "title": "Waiting on a decision",
-      "hint": "Each notice links to the screen where it gets resolved.",
+    "seeAll": "See all",
+    "attention": {
+      "title": "Waiting for a decision",
       "none": "Nothing is waiting",
-      "noneHint": "When something needs a decision, it'll show up here before anything else.",
       "urgentTasks": "Urgent or high-priority tasks",
       "overdueTasks": "Tasks past their due date",
-      "submissions": "Submissions waiting to be graded",
-      "unsponsored": "Scholarship students with no sponsor",
-      "terms": "Terms whose status doesn't match their dates",
-      "subjectsNoTerm": "Active subjects with no term",
+      "submissions": "Submissions waiting for a grade",
+      "unsponsored": "Scholarship students without a sponsor",
+      "terms": "Terms whose status does not match their dates",
+      "subjectsNoTerm": "Active subjects without a term",
       "requests": "Requests waiting for your decision"
     },
-    "figures": {
-      "title": "How the Foundation is doing",
-      "students": "Active students",
-      "subjects": "Subjects",
-      "grades": "Grades recorded",
-      "projects": "Projects under way",
-      "tasks": "Open tasks",
-      "sponsors": "Sponsors",
-      "giving": "Monthly giving",
-      "diners": "Diners today",
-      "users": "Active accounts",
-      "requests": "Open requests",
-      "classes360": "Active 360 classes"
+    "tasks": {
+      "title": "Tasks to do",
+      "empty": "You have no open tasks",
+      "overdue": "Overdue",
+      "noDate": "No date",
+      "noProject": "No project"
     },
-    "modules": {
-      "title": "Every module",
-      "hint": "It comes from the same menu as the sidebar, so it can't fall out of date. You only see the entries your role allows."
+    "projects": {
+      "title": "My projects",
+      "empty": "You are not part of any project",
+      "done": "{hechas} of {total}",
+      "lead": "Lead"
     },
-    "activity": {
-      "title": "What just happened",
-      "empty": "No activity recorded yet.",
-      "hint": "From `audit_log`. It says what happened and who did it; the detail of each change isn't shown here.",
-      "by": "by {quien}",
-      "unknown": "deleted account"
+    "meetings": {
+      "title": "Scheduled meetings",
+      "empty": "No upcoming meetings"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "empty": "You have no notifications",
+      "markAll": "Mark all as read",
+      "markRead": "Mark as read",
+      "unread": "Unread"
+    },
+    "charts": {
+      "byPriority": "My tasks by priority",
+      "byStatus": "My tasks by status",
+      "tasksTotal": "open",
+      "tasksEmpty": "All caught up",
+      "finance": "Income and expenses",
+      "income": "Income",
+      "expenses": "Expenses",
+      "noFinance": "No movements recorded",
+      "projects": "My projects progress",
+      "projectsEmpty": "No projects with tasks"
     }
   },
   "monthlyServices": {

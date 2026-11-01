@@ -295,14 +295,16 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
   },
   {
     identificadores: [
+      "bandeja",
       "dashboard",
       "panel general",
       "graficas",
+      "notificaciones",
       "inicio",
     ],
-    etiqueta: "Panel General",
-    descripcion: "Dashboard con métricas institucionales y gráficas de rendimiento.",
-    ruta: "/dashboard",
+    etiqueta: "Bandeja",
+    descripcion: "Bandeja con tareas, proyectos, reuniones, notificaciones y gráficas.",
+    ruta: "/bandeja",
     rolesPermitidos: ["admin", "super_admin"],
   },
   {

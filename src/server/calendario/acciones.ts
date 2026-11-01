@@ -372,7 +372,7 @@ function anotar(
 function refrescar() {
   revalidatePath("/[locale]/calendario", "page");
   // El próximo evento sale también en el panel y en la portada pública.
-  revalidatePath("/[locale]/dashboard", "page");
+  revalidatePath("/[locale]/bandeja", "page");
   // Una cita movida cambia en la línea de tiempo de su solicitud.
   revalidatePath("/[locale]/administrativo/solicitudes", "page");
   revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");

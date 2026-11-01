@@ -16,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Global Effect Nexus",
     short_name: "Nexus",
     description: "ERP Institucional de la Fundación Global Effect",
-    start_url: "/es/dashboard",
+    start_url: "/es/bandeja",
     display: "standalone",
     background_color: BLANCO,
     theme_color: AZUL,
