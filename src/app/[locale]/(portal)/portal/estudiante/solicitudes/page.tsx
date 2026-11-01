@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Cabecera } from "@/components/estudiante/cabecera";
+import { FormularioCompra } from "@/components/solicitudes/formulario-compra";
 import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
 import { Card } from "@/components/ui/card";
@@ -69,6 +70,13 @@ export default async function PaginaSolicitudesEstudiante({
               tipos={TRAMITES_ESTUDIANTE}
               minimoFecha={claveDia()}
             />
+          </Card>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="texto-titulo-seccion">{t("purchase.title")}</h2>
+          <Card className="p-5 md:p-6">
+            <FormularioCompra />
           </Card>
         </section>
 

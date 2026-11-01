@@ -2539,7 +2539,8 @@
       "otro": "Otro trámite",
       "alta_expediente": "Alta de expediente",
       "beca": "Beca",
-      "gasto": "Gasto o compra"
+      "gasto": "Gasto",
+      "compra": "Compra con cotización"
     },
     "typeHint": {
       "constancia": "De estudios o de beca. Di para qué institución es.",
@@ -2549,7 +2550,8 @@
       "otro": "Cualquier cosa que no encaje en las demás.",
       "alta_expediente": "Pasar a un candidato del embudo a estudiante activo. Lo aprueba administración.",
       "beca": "Asignar o cambiar una beca. La aprueba administración y después dirección.",
-      "gasto": "Lo aprueba contabilidad, y dirección si es grande."
+      "gasto": "Lo aprueba contabilidad, y dirección si es grande.",
+      "compra": "Pide a contabilidad que compre algo. Adjunta la cotización; contabilidad la aprueba o la rechaza."
     },
     "titlePlaceholder": {
       "constancia": "Constancia de beca para la universidad",
@@ -2559,7 +2561,8 @@
       "otro": "Qué necesitas, en pocas palabras",
       "alta_expediente": "Alta de un candidato de Habitudes",
       "beca": "Beca universitaria para el próximo cuatrimestre",
-      "gasto": "Material para el curso técnico"
+      "gasto": "Material para el curso técnico",
+      "compra": "Proyector para el taller de liderazgo"
     },
     "dateLabel": {
       "constancia": "Para cuándo la necesitas",
@@ -2569,7 +2572,8 @@
       "otro": "Fecha, si la hay",
       "alta_expediente": "Fecha",
       "beca": "Inicio de la beca",
-      "gasto": "Fecha del gasto"
+      "gasto": "Fecha del gasto",
+      "compra": "Fecha de la compra"
     },
     "status": {
       "enviada": "Enviada",
@@ -2600,8 +2604,21 @@
         "invalido": "Revisa los campos: falta algo obligatorio o hay un valor que no vale.",
         "fecha_invalida": "La fecha falta o ya pasó.",
         "duplicada": "Ya tienes una solicitud de este tipo en curso.",
+        "sin_archivo": "Adjunta la cotización: sin ella contabilidad no puede decidir.",
+        "formato_no_admitido": "La cotización debe ser PDF, PNG, JPG o DOCX.",
+        "muy_grande": "La cotización pesa demasiado.",
         "error": "No se pudo enviar. Inténtalo de nuevo."
       }
+    },
+    "purchase": {
+      "title": "Compra a contabilidad",
+      "description": "Qué hay que comprar y para qué",
+      "descriptionPlaceholder": "Qué se compra, cuántas unidades y por qué hace falta.",
+      "quote": "Cotización",
+      "quoteHint": "PDF, PNG, JPG o DOCX. Máximo {mb} MB.",
+      "submit": "Enviar compra",
+      "success": "Compra enviada a contabilidad. Verás su estado en la lista.",
+      "download": "Descargar la cotización"
     },
     "step": {
       "comment": "Comentario",

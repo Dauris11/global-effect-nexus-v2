@@ -5,6 +5,11 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Etapa 4 (B): solicitudes de compra a contabilidad con cotización (1 nov 2026, migración `0070`):**
+      - Tipo `compra` para todos los roles, cotización obligatoria (pdf/png/jpg/docx, 10 MB, validada en servidor), descarga protegida, contabilidad aprueba o rechaza (motivo obligatorio), estado y línea de tiempo visibles para ambos, menús de contabilidad y chofer con "Solicitudes".
+      - **ANTES DE DESPLEGAR:** aplicar `0070` con `npm run db:migrate`. Nada se ha ejecutado contra una base real ni en navegador.
+      - **Pendiente:** reemplazar cotización, vista de contabilidad filtrada por estado, trigger que exija adjunto en `compra`, generar cuenta por pagar al llegar la factura.
+
 - [x] **Etapa 3: Global Effect 360 como portal estudiantil completo (1 nov 2026, migraciones `0067`–`0069`):**
       - **Entrega real:** archivo subido en servidor, inscripción verificada, formatos cerrados (sin `zip`), respuesta escrita, la revisión se anula al re-entregar; calificación acotada a la clase del docente (detalle de la auditoría en `bitacora-tesis.md`).
       - **Asistencia (`0068`):** `sesion_360` programada por administración y `asistencia_360` marcada por el docente de la clase; vista del estudiante y del expediente.

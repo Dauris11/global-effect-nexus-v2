@@ -45,9 +45,20 @@ export const TRAMITES_ESTUDIANTE = [
 /** Lo que pide el personal para que otro lo autorice. */
 export const APROBACIONES_INTERNAS = ["alta_expediente", "beca", "gasto"] as const;
 
+/**
+ * Compra a contabilidad con cotización adjunta (migración 0070).
+ *
+ * Va aparte de `gasto` y fuera de `APROBACIONES_INTERNAS` a propósito: la
+ * puede pedir CUALQUIER rol (también estudiante y chofer) y su formulario
+ * sube un archivo, así que no pasa por `crearSolicitudInterna`. El `gasto`
+ * sigue siendo el gasto ya decidido del personal, con umbral de dirección.
+ */
+export const COMPRAS = ["compra"] as const;
+
 export const TIPOS_SOLICITUD = [
   ...TRAMITES_ESTUDIANTE,
   ...APROBACIONES_INTERNAS,
+  ...COMPRAS,
 ] as const;
 
 export type TipoSolicitud = (typeof TIPOS_SOLICITUD)[number];
@@ -92,6 +103,22 @@ export const HORAS_CITA = [
   "15:00",
   "16:00",
 ] as const;
+
+/**
+ * Formatos cerrados de la cotización y su tipo MIME. La extensión y el tipo
+ * declarado por el navegador tienen que cuadrar; la lista es la misma que la
+ * del CHECK de `solicitud_adjunto.formato` (0070), con `jpeg` normalizado a `jpg`.
+ */
+export const FORMATOS_COTIZACION: Record<string, string> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+
+/** Mismo tope que el CHECK de la 0070 y que las entregas del aula. */
+export const MAXIMO_COTIZACION_BYTES = 10 * 1024 * 1024;
 
 /** Mismos topes que los CHECK de la 0031, para que el navegador avise antes. */
 export const MAXIMO_TITULO = 160;
@@ -189,6 +216,19 @@ export const REGLAS: Record<TipoSolicitud, ReglaTipo> = {
     fecha: "opcional",
     direccion: (monto) => (monto ?? 0) >= UMBRAL_DIRECCION_USD,
   },
+  compra: {
+    // Todos los roles: la lista vacía no se usa porque este tipo no sale en
+    // `tiposQuePuedeCrear` (tiene su propia acción, `crearCompra`).
+    crea: [],
+    // Contabilidad decide, como en el gasto.
+    revisa: "contabilidad.aprobar",
+    estudiante: "no",
+    monto: "obligatorio",
+    fecha: "no",
+    // Contabilidad aprueba o rechaza y ahí termina: la compra no compromete
+    // una partida (no crea cuenta por pagar), así que no hay segundo nivel.
+    direccion: NUNCA,
+  },
 };
 
 export function esTipoSolicitud(valor: unknown): valor is TipoSolicitud {
@@ -229,6 +269,20 @@ export function tiposQuePuedeCrear(
     return crea.length === 0 ||
       crea.some((permiso) => usuarioTienePermiso(usuario, permiso));
   });
+}
+
+/**
+ * Quién puede bajar la cotización: quien la pidió y quien revisa compras.
+ * Es un archivo con precios y proveedores; el resto del personal no lo ve.
+ */
+export function puedeVerCotizacion(
+  usuario: UsuarioConPermisos & { id: string },
+  solicitanteId: string | null,
+): boolean {
+  return (
+    solicitanteId === usuario.id ||
+    usuarioTienePermiso(usuario, REGLAS.compra.revisa)
+  );
 }
 
 /** Las acciones del flujo. Cada una es un paso en `solicitud_paso`. */

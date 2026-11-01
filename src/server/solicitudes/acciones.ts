@@ -8,8 +8,11 @@ import { requerirRol, requerirUsuario } from "@/lib/auth";
 import { enTransaccion, fijarContexto } from "@/lib/db";
 import { contextoDe } from "@/server/contabilidad/sesion";
 import type { Permiso } from "@/lib/rbac";
+import { borrarDocumento, subirMaterial } from "@/lib/supabase/almacen";
 import {
   accionesPermitidas,
+  FORMATOS_COTIZACION,
+  MAXIMO_COTIZACION_BYTES,
   esAccionSolicitud,
   esTramiteEstudiante,
   estadoTrasAccion,
@@ -49,6 +52,9 @@ export type EstadoFormularioSolicitud = {
     | "invalido"
     | "fecha_invalida"
     | "duplicada"
+    | "sin_archivo"
+    | "formato_no_admitido"
+    | "muy_grande"
     | "error";
 };
 
@@ -200,6 +206,82 @@ export async function crearSolicitudInterna(
 }
 
 /**
+ * Solicitud de compra a contabilidad con cotización adjunta (migración 0070).
+ *
+ * La puede pedir CUALQUIER usuario con sesión, de cualquier rol: no hay
+ * `tiposQuePuedeCrear` aquí a propósito. Lo que protege el flujo es quién
+ * DECIDE (`contabilidad.aprobar`, y nunca quien la pidió), no quién pide.
+ *
+ * La cotización es obligatoria y se valida entera en el servidor —extensión,
+ * tipo declarado y tamaño—: el `accept` del input solo es una ayuda. Se sube
+ * ANTES de la transacción porque la ruta no depende del id de la solicitud
+ * (lleva un UUID propio, nunca el nombre del archivo), y si la transacción
+ * falla se borra el archivo para no dejar huérfanos en el bucket.
+ */
+export async function crearCompra(
+  _previo: EstadoFormularioSolicitud,
+  datos: FormData,
+): Promise<EstadoFormularioSolicitud> {
+  const usuario = await requerirUsuario();
+
+  const campos = leerCampos(datos, "compra");
+  if (campos === "invalido" || campos === "fecha_invalida") {
+    return { estado: campos };
+  }
+
+  const archivo = datos.get("cotizacion");
+  if (!(archivo instanceof File) || archivo.size === 0) {
+    return { estado: "sin_archivo" };
+  }
+
+  const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!(extension in FORMATOS_COTIZACION)) return { estado: "formato_no_admitido" };
+  if (archivo.type && archivo.type !== FORMATOS_COTIZACION[extension]) {
+    return { estado: "formato_no_admitido" };
+  }
+  if (archivo.size > MAXIMO_COTIZACION_BYTES) return { estado: "muy_grande" };
+
+  const formato = extension === "jpeg" ? "jpg" : extension;
+  const ruta = `compras/${crypto.randomUUID()}.${formato}`;
+
+  const subida = await subirMaterial(ruta, archivo);
+  if (!subida.ok) return { estado: "error" };
+
+  try {
+    await enTransaccion(async (cliente) => {
+      const id = await insertarSolicitud(cliente, {
+        tipo: "compra",
+        ...campos,
+        solicitanteId: usuario.id,
+        estudianteId: null,
+        requiereDireccion: false,
+      });
+
+      await cliente.query(
+        `INSERT INTO solicitud_adjunto
+           (solicitud_id, ruta, nombre, formato, tamano_bytes, subido_por)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, ruta, archivo.name.slice(0, 200), formato, archivo.size, usuario.id],
+      );
+    });
+  } catch (error) {
+    await borrarDocumento(ruta);
+    console.error("[solicitudes] no se pudo registrar la compra", error);
+    return { estado: "error" };
+  }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "solicitud.creada",
+    entidad: "solicitud",
+    datos: { tipo: "compra" },
+  });
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+/**
  * Un paso del flujo: tomar, aprobar, aprobar en dirección, rechazar, completar
  * o cancelar.
  *
@@ -217,6 +299,9 @@ export async function avanzarSolicitud(
   const comentario = String(datos.get("comentario") ?? "").trim().slice(0, MAXIMO_TEXTO);
 
   if (!esUuid(id) || !esAccionSolicitud(accion)) return { estado: "invalido" };
+  // `rechazar` es la ÚNICA vía de rechazo, también la del segundo nivel
+  // (dirección rechaza con esta misma acción), así que este es el único sitio
+  // donde hay que exigir el motivo.
   if (accion === "rechazar" && !comentario) return { estado: "falta_comentario" };
 
   const solicitud = await solicitudParaFlujo(id);
@@ -379,7 +464,7 @@ async function insertarSolicitud(
     estudianteId: string | null;
     requiereDireccion: boolean;
   },
-) {
+): Promise<string> {
   const fila = await cliente.query<{ id: string; folio: number; pasada: boolean }>(
     `INSERT INTO solicitud
        (tipo, titulo, detalle, solicitante_id, estudiante_id, monto,
@@ -419,6 +504,8 @@ async function insertarSolicitud(
     "enviada",
     datos.solicitanteId,
   );
+
+  return creada.id;
 }
 
 /** Aviso a todas las cuentas activas cuyo rol tiene el permiso, menos a quien actúa. */

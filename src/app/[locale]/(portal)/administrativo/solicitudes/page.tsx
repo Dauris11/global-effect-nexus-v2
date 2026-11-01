@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { History, Inbox, Send, UserRound } from "lucide-react";
+import { History, Inbox, Send, ShoppingCart, UserRound } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { FormularioCompra } from "@/components/solicitudes/formulario-compra";
 import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +93,17 @@ export default async function PaginaSolicitudes({
             contar
           />
         )}
+
+        {/* Todo rol puede pedir una compra a contabilidad con su cotización. */}
+        <Card className="rounded-card border-linea shadow-card">
+          <CardContent className="space-y-4 pt-5">
+            <CardTitle>
+              <ShoppingCart className="size-4" />
+              {t("purchase.title")}
+            </CardTitle>
+            <FormularioCompra />
+          </CardContent>
+        </Card>
 
         {tipos.length > 0 && (
           <Card className="rounded-card border-linea shadow-card">

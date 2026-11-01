@@ -343,6 +343,58 @@ el SQL con control de acceso (marcar asistencia).
 
 ---
 
+## 1 nov 2026 — Etapa 4 (parte B): solicitudes de compra a contabilidad (migración `0070`)
+
+**Qué se pidió.** Que todos los roles puedan pedir a contabilidad una compra
+con cotización adjunta; que contabilidad apruebe o rechace (rechazar exige
+motivo); que ambas partes vean el estado; que la Bandeja avise a contabilidad.
+
+**Decisiones.**
+1. **Tipo nuevo `compra`, no reutilizar `gasto`.** El `gasto` es una decisión
+   ya tomada del personal, con umbral de dirección y cuenta por pagar al
+   aprobarse. La compra la puede pedir cualquier rol (también estudiante y
+   chofer), exige archivo y contabilidad solo aprueba o rechaza. Mezclarlos
+   habría obligado a bifurcar el flujo del gasto. `compra` queda fuera de
+   `APROBACIONES_INTERNAS` y tiene su propia acción (`crearCompra`), porque
+   sube un archivo y no depende de `tiposQuePuedeCrear`.
+2. **Sin segundo nivel de dirección** (`direccion: NUNCA`): el requisito dice
+   que contabilidad decide. Aprobar no genera cuenta por pagar; se registrará
+   con la factura real.
+3. **Adjunto en tabla propia `solicitud_adjunto`** (una por solicitud, UNIQUE),
+   con CHECK de formato (pdf/png/jpg/docx) y tamaño (<= 10 MB). Alternativa
+   descartada: columnas en `solicitud`, que es de todos los tipos.
+4. **Validación en el servidor** (extensión, tipo MIME declarado, tamaño),
+   mismo patrón que `subirEntrega`. La ruta del bucket privado lleva un UUID
+   propio, nunca el nombre del archivo. Se sube antes de la transacción y se
+   borra si esta falla.
+5. **Descarga por ruta protegida** `/api/solicitudes/[id]/cotizacion`: solo el
+   solicitante y quien tiene `contabilidad.aprobar`; al resto, 404. Enlace
+   firmado de 10 minutos.
+6. **Rechazo con motivo.** `rechazar` es la única vía de rechazo (también la de
+   dirección), y `avanzarSolicitud` ya devolvía `falta_comentario`; se
+   documentó y se añadió la comprobación en el formulario (no viaja si está vacío).
+7. **Notificaciones:** ya existían: al crear, a quien revisa; en cada paso, al
+   solicitante. La Bandeja cuenta lo pendiente con `cuantasPorAtender`, que
+   recoge `compra` sin cambios porque filtra por los tipos que el rol revisa.
+8. **Menús:** `requests` se añadió a contabilidad y chofer (docente, habitudes,
+   dir_habitudes y admin ya lo tenían; el estudiante tiene su portal).
+9. **`next.config.mjs`:** `serverActions.bodySizeLimit` a 12 MB; el tope por
+   defecto (1 MB) habría roto cualquier subida mayor, incluidas las entregas.
+
+**Verificación.** `tsc`, `lint`, `i18n:check`, `audit:ui` y `build` en verde.
+
+**Limitaciones.**
+1. La migración `0070` no se aplicó y nada se probó contra base ni navegador.
+2. Que la compra lleve cotización lo garantiza la acción, no la base (un
+   INSERT directo podría crear una compra sin adjunto).
+3. Una cotización por solicitud; no se puede reemplazar tras enviar.
+4. No hay vista de contabilidad por estado ni búsqueda de compras ya cerradas
+   más allá de "Resueltas por ti".
+5. Un usuario con permiso de contabilidad que pide una compra no puede
+   aprobarla él mismo (separación de funciones): otro revisor debe decidir.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Etapa 4 — administrativo como ERP: bandeja y solicitudes a contabilidad.

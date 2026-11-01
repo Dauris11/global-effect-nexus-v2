@@ -599,6 +599,13 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             href: "/portal/contabilidad",
             icono: Home,
           },
+          // Aquí le llegan las compras que debe aprobar o rechazar y desde
+          // aquí pide las suyas, como todos los roles.
+          {
+            etiqueta: "requests",
+            href: "/administrativo/solicitudes",
+            icono: Inbox,
+          },
           ...modulosDeGrupo("general").map(itemDeModulo),
         ],
       },
@@ -697,6 +704,13 @@ const MENU_CHOFER: AreaNav[] = [
             href: "/portal/chofer",
             icono: Bus,
             permiso: "transporte.operar",
+          },
+          // Pedir una compra a contabilidad y ver cómo va: lo puede hacer
+          // todo rol, sin permiso de entrada.
+          {
+            etiqueta: "requests",
+            href: "/administrativo/solicitudes",
+            icono: Inbox,
           },
         ],
       },

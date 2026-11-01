@@ -2539,7 +2539,8 @@
       "otro": "Other",
       "alta_expediente": "Student enrollment",
       "beca": "Scholarship",
-      "gasto": "Expense or purchase"
+      "gasto": "Expense",
+      "compra": "Purchase with quote"
     },
     "typeHint": {
       "constancia": "Of studies or scholarship. Say which institution it is for.",
@@ -2549,7 +2550,8 @@
       "otro": "Anything that doesn't fit the others.",
       "alta_expediente": "Move a candidate from the pipeline to active student. Approved by administration.",
       "beca": "Assign or change a scholarship. Approved by administration and then by the director.",
-      "gasto": "Approved by accounting, and by the director if large."
+      "gasto": "Approved by accounting, and by the director if large.",
+      "compra": "Ask accounting to buy something. Attach the quote; accounting approves or rejects it."
     },
     "titlePlaceholder": {
       "constancia": "Scholarship certificate for the university",
@@ -2559,7 +2561,8 @@
       "otro": "What you need, briefly",
       "alta_expediente": "Enroll a Habitudes candidate",
       "beca": "University scholarship for next term",
-      "gasto": "Supplies for the technical course"
+      "gasto": "Supplies for the technical course",
+      "compra": "Projector for the leadership workshop"
     },
     "dateLabel": {
       "constancia": "When you need it",
@@ -2569,7 +2572,8 @@
       "otro": "Date, if any",
       "alta_expediente": "Date",
       "beca": "Scholarship start",
-      "gasto": "Expense date"
+      "gasto": "Expense date",
+      "compra": "Purchase date"
     },
     "status": {
       "enviada": "Sent",
@@ -2600,8 +2604,21 @@
         "invalido": "Check the fields: something required is missing or a value is invalid.",
         "fecha_invalida": "The date is missing or already past.",
         "duplicada": "You already have a request of this kind in progress.",
+        "sin_archivo": "Attach the quote: accounting cannot decide without it.",
+        "formato_no_admitido": "The quote must be a PDF, PNG, JPG or DOCX.",
+        "muy_grande": "The quote file is too large.",
         "error": "Couldn't send it. Try again."
       }
+    },
+    "purchase": {
+      "title": "Purchase request to accounting",
+      "description": "What needs to be bought and why",
+      "descriptionPlaceholder": "What is being bought, how many, and why it is needed.",
+      "quote": "Quote",
+      "quoteHint": "PDF, PNG, JPG or DOCX. Maximum {mb} MB.",
+      "submit": "Send purchase",
+      "success": "Purchase sent to accounting. You will see its status in the list.",
+      "download": "Download the quote"
     },
     "step": {
       "comment": "Comment",

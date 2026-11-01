@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   AlertCircle,
   CalendarDays,
@@ -8,6 +8,7 @@ import {
   DollarSign,
   Loader2,
   MessageSquare,
+  Paperclip,
   ShieldCheck,
   User,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dato, FilaDatos } from "@/components/ui/dato";
 import { Textarea } from "@/components/ui/textarea";
 import type { Locale } from "@/i18n/routing";
 import { fechaConHora, fechaCorta } from "@/lib/fechas";
@@ -54,6 +56,8 @@ export function TarjetaSolicitud({
   const t = useTranslations("requests");
   const locale = useLocale() as Locale;
   const [abierta, setAbierta] = useState(solicitud.acciones.length > 0);
+  const comentarioRef = useRef<HTMLTextAreaElement>(null);
+  const [sinMotivo, setSinMotivo] = useState(false);
   const [estado, enviar, enviando] = useActionState<EstadoPasoSolicitud, FormData>(
     avanzarSolicitud,
     { estado: "inicial" },
@@ -61,10 +65,21 @@ export function TarjetaSolicitud({
 
   const { insignia, icono: Icono } = visualDeSolicitud(solicitud.estado);
 
-  const error =
-    estado.estado === "inicial" || estado.estado === "ok"
+  const error = sinMotivo
+    ? t("step.error.falta_comentario")
+    : estado.estado === "inicial" || estado.estado === "ok"
       ? null
       : t(`step.error.${estado.estado}` as never);
+
+  // Rechazar sin motivo se corta aquí para no hacer el viaje; el servidor lo
+  // vuelve a exigir, que es el control de verdad.
+  function antesDeRechazar(evento: React.MouseEvent<HTMLButtonElement>) {
+    if (comentarioRef.current?.value.trim()) return;
+
+    evento.preventDefault();
+    setSinMotivo(true);
+    comentarioRef.current?.focus();
+  }
 
   return (
     <li className="rounded-xl border border-linea/80 bg-card shadow-xs transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
@@ -142,6 +157,22 @@ export function TarjetaSolicitud({
             </p>
           )}
 
+          {solicitud.cotizacion && (
+            <FilaDatos>
+              <Dato icono={Paperclip}>
+                <a
+                  href={`/api/solicitudes/${solicitud.id}/cotizacion`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-marca-600 hover:underline"
+                  title={t("purchase.download")}
+                >
+                  {solicitud.cotizacion.nombre}
+                </a>
+              </Dato>
+            </FilaDatos>
+          )}
+
           {solicitud.respuesta && (
             <div className="flex items-start gap-2 rounded-lg bg-[#2096BA]/10 p-3 text-xs text-[#0a6a8a]">
               <MessageSquare className="mt-0.5 size-3.5 shrink-0" />
@@ -190,7 +221,9 @@ export function TarjetaSolicitud({
             <form action={enviar} className="space-y-2">
               <input type="hidden" name="id" value={solicitud.id} />
               <Textarea
+                ref={comentarioRef}
                 name="comentario"
+                onChange={() => setSinMotivo(false)}
                 rows={2}
                 maxLength={MAXIMO_TEXTO}
                 placeholder={t("step.commentPlaceholder")}
@@ -215,6 +248,7 @@ export function TarjetaSolicitud({
                     accion={accion}
                     etiqueta={t(`step.action.${accion}` as never)}
                     deshabilitado={enviando}
+                    alPulsar={accion === "rechazar" ? antesDeRechazar : undefined}
                   />
                 ))}
                 {enviando && <Loader2 className="size-4 animate-spin self-center text-[#2096BA]" />}
@@ -235,10 +269,12 @@ function BotonAccion({
   accion,
   etiqueta,
   deshabilitado,
+  alPulsar,
 }: {
   accion: AccionSolicitud;
   etiqueta: string;
   deshabilitado: boolean;
+  alPulsar?: (evento: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const principal =
     accion === "aprobar" || accion === "aprobar_direccion" || accion === "completar";
@@ -251,6 +287,7 @@ function BotonAccion({
       value={accion}
       size="sm"
       disabled={deshabilitado}
+      onClick={alPulsar}
       variant={principal ? "default" : "outline"}
       className={cn(
         "rounded-md active:scale-[0.99]",

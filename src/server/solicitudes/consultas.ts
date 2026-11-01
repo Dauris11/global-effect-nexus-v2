@@ -29,6 +29,12 @@ export type PasoSolicitud = {
   creado: string;
 };
 
+/** Datos visibles de la cotización; el archivo se baja por su ruta protegida. */
+export type CotizacionSolicitud = {
+  nombre: string;
+  formato: string;
+};
+
 export type FilaSolicitud = {
   id: string;
   folio: number;
@@ -49,11 +55,16 @@ export type FilaSolicitud = {
   creada: string;
   resuelta_en: string | null;
   pasos: PasoSolicitud[];
+  /** Solo las compras (0070). La descarga comprueba el acceso en el servidor. */
+  cotizacion: CotizacionSolicitud | null;
   /** Lo que quien mira puede hacer ahora mismo. Vacío si nada. */
   acciones: AccionSolicitud[];
 };
 
-type FilaBase = Omit<FilaSolicitud, "pasos" | "acciones">;
+type FilaBase = Omit<FilaSolicitud, "pasos" | "acciones" | "cotizacion"> & {
+  cotizacion_nombre: string | null;
+  cotizacion_formato: string | null;
+};
 
 const COLUMNAS = `
   s.id,
@@ -73,13 +84,16 @@ const COLUMNAS = `
   re.nombre AS responsable,
   s.respuesta,
   s.created_at::text AS creada,
-  s.resuelta_en::text AS resuelta_en`;
+  s.resuelta_en::text AS resuelta_en,
+  ad.nombre AS cotizacion_nombre,
+  ad.formato AS cotizacion_formato`;
 
 const ORIGEN = `
   FROM solicitud s
   LEFT JOIN usuario so    ON so.id = s.solicitante_id
   LEFT JOIN usuario re    ON re.id = s.responsable_id
-  LEFT JOIN estudiante e  ON e.id  = s.estudiante_id`;
+  LEFT JOIN estudiante e  ON e.id  = s.estudiante_id
+  LEFT JOIN solicitud_adjunto ad ON ad.solicitud_id = s.id`;
 
 /** La línea de tiempo de varias solicitudes en una sola consulta. */
 async function conPasos(
@@ -103,9 +117,13 @@ async function conPasos(
     [filas.map((fila) => fila.id)],
   );
 
-  return filas.map((fila) => ({
+  return filas.map(({ cotizacion_nombre, cotizacion_formato, ...fila }) => ({
     ...fila,
     pasos: pasos.filter((paso) => paso.solicitud_id === fila.id),
+    cotizacion:
+      cotizacion_nombre && cotizacion_formato
+        ? { nombre: cotizacion_nombre, formato: cotizacion_formato }
+        : null,
     acciones: accionesPermitidas(fila, usuario),
   }));
 }
@@ -214,6 +232,21 @@ export async function solicitudParaFlujo(id: string) {
        FROM solicitud
       WHERE id = $1`,
     [id],
+  );
+}
+
+/** La cotización de una solicitud, para decidir si se puede entregar el archivo. */
+export async function cotizacionDeSolicitud(solicitudId: string) {
+  return consultarUna<{
+    ruta: string;
+    nombre: string;
+    solicitante_id: string | null;
+  }>(
+    `SELECT a.ruta, a.nombre, s.solicitante_id
+       FROM solicitud_adjunto a
+       JOIN solicitud s ON s.id = a.solicitud_id
+      WHERE a.solicitud_id = $1`,
+    [solicitudId],
   );
 }
 
