@@ -343,6 +343,40 @@ el SQL con control de acceso (marcar asistencia).
 
 ---
 
+## 1 nov 2026 — Etapa 4 (parte A): una sola Bandeja administrativa
+
+**Qué se pidió.** Admin veía dos módulos redundantes ("Portal administrativo" y
+"Panel"). Se pidió reemplazarlos por un inbox: tareas por hacer, proyectos
+propios, reuniones en agenda, notificaciones y gráficos interactivos.
+
+**Decisión.** Una sola ruta `/bandeja`, inicio de `admin` y `super_admin`. Las
+rutas viejas quedan como redirecciones para no romper enlaces ni la PWA
+(`start_url`). Orden: avisos que esperan decisión, tareas del usuario,
+notificaciones, proyectos, reuniones y gráficas (recharts, solo tonos de marca).
+
+**Por qué.** Dos pantallas respondían la misma pregunta ("qué debo atender").
+Un inbox ordena por urgencia y no por módulo; las gráficas pasan a apoyo.
+
+**Alternativas descartadas.** Conservar `/dashboard` como pantalla de gráficas
+(mantenía la duplicidad); mantener las 12 cifras y el listado de módulos (ruido:
+el menú lateral ya lista los módulos).
+
+**Control de acceso.** Cada bloque se consulta solo con su permiso
+(`operaciones.leer`, `reuniones.leer`, `finanzas.leer`, vía
+`usuarioTienePermiso`): lo que el rol no puede ver no se lanza como consulta.
+
+**Verificación.** `tsc`, `lint`, `i18n:check`, `audit:ui` y `build` en verde.
+
+**Limitaciones.**
+1. No probada en navegador ni con datos reales.
+2. Se descartó la lectura de `audit_log` que tenía el portal viejo: ya no hay
+   pantalla que la muestre.
+3. Para admin las reuniones son todas las próximas de la Fundación, no solo las
+   suyas.
+4. Claves i18n del namespace `dashboard` quedaron sin uso (poda pendiente).
+
+---
+
 ## 1 nov 2026 — Etapa 4 (parte B): solicitudes de compra a contabilidad (migración `0070`)
 
 **Qué se pidió.** Que todos los roles puedan pedir a contabilidad una compra
@@ -397,4 +431,4 @@ motivo); que ambas partes vean el estado; que la Bandeja avise a contabilidad.
 
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
-- Etapa 4 — administrativo como ERP: bandeja y solicitudes a contabilidad.
+- Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).
