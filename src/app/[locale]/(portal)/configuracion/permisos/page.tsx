@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { PermisosPorPersona } from "@/components/permisos/permisos-por-persona";
 import { PermisosPorRol } from "@/components/permisos/permisos-por-rol";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requerirRol } from "@/lib/auth";
 import {
@@ -34,10 +36,12 @@ export default async function PaginaPermisos({
   const { locale } = await params;
   await requerirRol(["super_admin"]);
 
-  const [t, roles, personas] = await Promise.all([
+  const [t, roles, personas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "permisosAdmin" }),
     listarPermisosPorRol(),
     listarPersonasConPermisos(),
+    // Los componentes de abajo son cliente: sin su espacio no tendrían textos.
+    mensajesCliente(["permisosAdmin"]),
   ]);
 
   return (
@@ -50,12 +54,14 @@ export default async function PaginaPermisos({
           <TabsTrigger value="persona">{t("byPerson")}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rol">
-          <PermisosPorRol roles={roles} />
-        </TabsContent>
-        <TabsContent value="persona">
-          <PermisosPorPersona personas={personas} roles={roles} />
-        </TabsContent>
+        <NextIntlClientProvider messages={mensajes}>
+          <TabsContent value="rol">
+            <PermisosPorRol roles={roles} />
+          </TabsContent>
+          <TabsContent value="persona">
+            <PermisosPorPersona personas={personas} roles={roles} />
+          </TabsContent>
+        </NextIntlClientProvider>
       </Tabs>
     </div>
   );

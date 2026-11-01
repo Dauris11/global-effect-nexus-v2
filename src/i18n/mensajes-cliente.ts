@@ -39,6 +39,9 @@ const ESPACIOS_BASE = [
   "verComo",
   // Cajón de accesos rápidos de la barra inferior del móvil.
   "accesoRapido",
+  // Línea de tiempo compartida: la usan el panorama, el proyecto y los
+  // vencimientos, y son pocas claves.
+  "lineaTiempo",
 ] as const;
 
 /**

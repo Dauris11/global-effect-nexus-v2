@@ -202,9 +202,8 @@ export async function familiaTareas(
 /**
  * Familia 3 — proyectos y las tareas administrativas que cuelgan de ellos.
  *
- * Una tarea empieza cuando se creó y termina cuando vence: `tarea` no tiene
- * fecha de inicio, y `created_at` es la única marca real de cuándo entró en la
- * lista de alguien. Es una aproximación y se dice; lo que no se hace es fingir
+ * Una tarea empieza en su `fecha_inicio` y, si no la tiene, cuando se creó:
+ * `created_at` es la marca real de cuándo entró en la lista de alguien. Es una aproximación y se dice; lo que no se hace es fingir
  * que la tarea empieza el día que vence.
  */
 export async function familiaOperaciones(
@@ -231,7 +230,7 @@ export async function familiaOperaciones(
             'tarea',
             t.titulo,
             pr.nombre,
-            t.created_at::date::text,
+            coalesce(t.fecha_inicio, t.created_at::date)::text,
             t.fecha_limite::text,
             t.estado,
             t.prioridad
@@ -239,7 +238,7 @@ export async function familiaOperaciones(
        LEFT JOIN proyecto pr ON pr.id = t.proyecto_id
       WHERE t.fecha_limite IS NOT NULL
         AND t.fecha_limite >= $1::date
-        AND t.created_at::date <= $2::date
+        AND coalesce(t.fecha_inicio, t.created_at::date) <= $2::date
 
       ORDER BY 4 NULLS FIRST, 6`,
     [desde, hasta],

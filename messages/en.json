@@ -5785,5 +5785,26 @@
       "transporte_operar": "Operate transport routes",
       "usuarios_administrar": "Manage users"
     }
+  },
+  "lineaTiempo": {
+    "scale": "Scale",
+    "weekScale": "Week",
+    "monthScale": "Month",
+    "periodScale": "Term",
+    "today": "Today",
+    "goToToday": "Go to today",
+    "close": "Close",
+    "open": "Open record",
+    "start": "Start",
+    "end": "End",
+    "milestone": "Milestone",
+    "attention": "Needs attention",
+    "moveError": "Could not move it. The dates were restored.",
+    "barLabel": "{title}: {start} to {end}",
+    "saving": "Saving",
+    "period": "Term",
+    "all": "All",
+    "families": "What to draw",
+    "noSelection": "Pick a term"
   }
 }

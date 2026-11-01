@@ -5,6 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Línea de tiempo rediseñada y unificada (1 nov 2026):**
+      - **Un solo componente** (`components/linea-tiempo/linea-tiempo.tsx`, tipos y aritmética de días en `lib/linea-tiempo.ts`) para las tres líneas de tiempo: panorama (`/calendario/gantt`), detalle de proyecto y vencimientos de cuentas por pagar. Se borra `visualizador-gantt.tsx`.
+      - **Función:** además de ver qué corre a la vez, se editan fechas arrastrando (mover el cuerpo, estirar los extremos); con teclado, flechas ±1 día y Mayús+flechas para el fin. Optimista con reversión si el servidor rechaza. `moverBarra` (`server/calendario/acciones-gantt.ts`) decide por clase: `proyecto` y `tarea` con `operaciones.escribir`, `periodo` con `academico.escribir`; la tarea mueve también su evento del calendario; audita. Materias, clases 360 y entregas no se mueven (heredan o se deducen).
+      - **Diseño:** rejilla con nombres fijos y eje con meses y días, línea de hoy, escala semana/mes/período, barras redondeadas con progreso, hitos como rombo, detalle al tocar; en móvil, lista por fechas. Lo vencido va con icono de aviso y tinta, no en rojo. La tarea ahora empieza en su `fecha_inicio` (antes, siempre su creación).
+      - **Filtros en la URL** (`filtros-linea-tiempo.tsx`): período, "todo" y familias.
+      - **Corregido de paso:** los componentes cliente de transporte y los de `/configuracion/permisos` no recibían sus mensajes (`useTranslations` sin espacio entregado fallaría en ejecución aunque el build pase): las páginas ahora entregan `transport` y `permisosAdmin` con `mensajesCliente`; `lineaTiempo` pasó a espacios base.
+      - **Pendiente:** no se probó el arrastre en navegador (solo tipos, lint y build); dependencias entre tareas (`tarea_dependencia`) sin dibujar; `proyectos/[id]/page.tsx` conserva textos literales sin i18n.
+
 - [x] **Roles definitivos, permisos granulares y portal limpio (1 nov 2026, migración `0065`):**
       - **Roles:** quedan `super_admin`, `admin` (administrativo), `docente`, `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes` y `chofer`. Se retira `colaborador`: la `0065` pasa sus cuentas a `admin` (avisa cuántas con `RAISE NOTICE`) y borra el rol, su `rol_permiso` y su `visibilidad_menu`; se elimina `/portal/colaborador`. El módulo "colaborador" (torre de control, rendiciones, tareas) sigue: lo usan los demás roles.
       - **Permisos por rol editables:** la sesión carga `rol_permiso` del rol efectivo (`permisosRol`, `permisos` en `UsuarioSesion`); `PERMISOS_POR_ROL` pasa a ser reparto de fábrica. Los ~95 `tienePermiso(usuario.rol, …)` pasaron a `usuarioTienePermiso(usuario, …)`; `menuDe`, `ajustesDeUsuario`, solicitudes, IA y calendario reciben la persona, no el rol.

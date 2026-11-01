@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { ArrowLeft, Bus, Clock, LogIn, Navigation } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { FormularioPuntual } from "@/components/transporte/formulario-puntual";
 import { MapaTransporte } from "@/components/transporte/mapa-transporte";
 import { Badge } from "@/components/ui/badge";
@@ -34,16 +36,18 @@ export default async function PaginaTransportePublico({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, viajeEnVivo, rutas, horarios] = await Promise.all([
+  const [t, viajeEnVivo, rutas, horarios, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "transport" }),
     obtenerViajeEnVivo(),
     listarRutasConParadas(),
     listarHorariosTransporte(),
+    mensajesCliente(["transport"]),
   ]);
 
   const paradasRuta = rutas[0]?.paradas ?? [];
 
   return (
+    <NextIntlClientProvider messages={mensajes}>
     <div className="min-h-dvh bg-muted/30 px-4 py-8 dark:bg-background">
       <div className="animate-entrada mx-auto max-w-4xl space-y-6">
         {/* Barra superior de navegación rápida */}
@@ -142,6 +146,7 @@ export default async function PaginaTransportePublico({
         </div>
       </div>
     </div>
+    </NextIntlClientProvider>
   );
 }
 

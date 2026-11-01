@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { PanelChofer } from "@/components/transporte/panel-chofer";
 import { requerirPermiso } from "@/lib/auth";
 import { obtenerEstadoChofer } from "@/server/transporte/consultas";
@@ -18,9 +20,13 @@ export async function generateMetadata({
 
 export default async function PaginaPortalChofer() {
   const usuario = await requerirPermiso("transporte.operar");
-  const estado = await obtenerEstadoChofer(usuario.id);
+  const [estado, mensajes] = await Promise.all([
+    obtenerEstadoChofer(usuario.id),
+    mensajesCliente(["transport"]),
+  ]);
 
   return (
+    <NextIntlClientProvider messages={mensajes}>
     <div className="animate-entrada py-4">
       <PanelChofer
         viajeActivoInicial={estado.viajeActivo}
@@ -30,6 +36,7 @@ export default async function PaginaPortalChofer() {
         paradasIniciales={estado.paradasDisponibles}
       />
     </div>
+    </NextIntlClientProvider>
   );
 }
 

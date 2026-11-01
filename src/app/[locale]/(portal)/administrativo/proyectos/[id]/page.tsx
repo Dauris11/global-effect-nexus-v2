@@ -10,10 +10,14 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 import { EquipoProyecto } from "@/components/operaciones/equipo-proyecto";
-import { VisualizadorGantt } from "@/components/operaciones/visualizador-gantt";
+import { LineaTiempo } from "@/components/linea-tiempo/linea-tiempo";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { moverBarra } from "@/server/calendario/acciones-gantt";
+import { hoyEnLaBase } from "@/server/calendario/gantt";
+import { esIncoherente, tramoDe, type SeccionTiempo } from "@/lib/linea-tiempo";
 import { usuariosAsignables } from "@/server/operaciones/consultas";
 import { proyectoParaGantt } from "@/server/operaciones/gantt-consultas";
 import { equipoDeProyecto } from "@/server/operaciones/torre-consultas";
@@ -46,6 +50,39 @@ export default async function PaginaDetalleProyectoGantt({
   const [equipo, personas, mensajes] = puedeEditar
     ? await Promise.all([equipoDeProyecto(id), usuariosAsignables(), mensajesCliente(["torre"])])
     : [null, [], null];
+
+  const [tc, tl, hoy] = await Promise.all([
+    getTranslations("calendar"),
+    getTranslations("lineaTiempo"),
+    hoyEnLaBase(),
+  ]);
+
+  // Las tareas se agrupan por fase, en el orden de las fases; las que no
+  // tienen fase cuelgan del proyecto.
+  const porFase = new Map<string, SeccionTiempo>();
+  for (const tarea of proyecto.tareas) {
+    if (esIncoherente({ inicio: tarea.fecha_inicio, fin: tarea.fecha_limite })) continue;
+
+    const titulo = tarea.fase_nombre ?? proyecto.nombre;
+    const seccion = porFase.get(titulo) ?? { clave: titulo, titulo, barras: [] };
+    seccion.barras.push({
+      id: tarea.id,
+      clase: "tarea",
+      claseEtiqueta: tarea.es_hito ? tl("milestone") : tc("gantt.kind.tarea"),
+      titulo: tarea.titulo,
+      grupo: null,
+      inicio: tarea.fecha_inicio,
+      fin: tarea.fecha_limite,
+      detalle: tarea.asignados,
+      editable: puedeEditar,
+      progreso: tarea.progreso,
+      hito: tarea.es_hito,
+      tono: tarea.estado === "completada" ? "apagado" : "marca",
+    });
+    porFase.set(titulo, seccion);
+  }
+  const secciones = [...porFase.values()];
+  const rango = tramoDe(secciones.flatMap((s) => s.barras), hoy);
 
   return (
     <div className="animate-entrada space-y-6">
@@ -82,8 +119,15 @@ export default async function PaginaDetalleProyectoGantt({
         </div>
       </div>
 
-      {/* Visualizador interactivo de Gantt */}
-      <VisualizadorGantt proyecto={proyecto} puedeEditar={puedeEditar} />
+      {rango && (
+        <LineaTiempo
+          secciones={secciones}
+          inicio={rango.inicio}
+          fin={rango.fin}
+          hoy={hoy}
+          alMover={puedeEditar ? moverBarra : undefined}
+        />
+      )}
 
       {equipo && mensajes && (
         <NextIntlClientProvider messages={mensajes}>

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Bus, CalendarCheck, Clock, Navigation } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { FormularioRecurrente } from "@/components/transporte/formulario-recurrente";
 import { MapaTransporte } from "@/components/transporte/mapa-transporte";
@@ -35,17 +37,19 @@ export default async function PaginaTransporteEstudiante({
   const usuario = await requerirRol(["estudiante", "admin", "super_admin"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  const [t, viajeEnVivo, rutas, horarios, inscripciones] = await Promise.all([
+  const [t, viajeEnVivo, rutas, horarios, inscripciones, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "transport" }),
     obtenerViajeEnVivo(),
     listarRutasConParadas(),
     listarHorariosTransporte(),
     obtenerInscripcionesRecurrentesEstudiante(estudiante.id),
+    mensajesCliente(["transport"]),
   ]);
 
   const paradasRuta = rutas[0]?.paradas ?? [];
 
   return (
+    <NextIntlClientProvider messages={mensajes}>
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
       <Cabecera
         titulo={t("studentTransportTitle")}
@@ -111,6 +115,7 @@ export default async function PaginaTransporteEstudiante({
         </TabsContent>
       </Tabs>
     </div>
+    </NextIntlClientProvider>
   );
 }
 
