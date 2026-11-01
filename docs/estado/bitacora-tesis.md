@@ -339,7 +339,8 @@ el SQL con control de acceso (marcar asistencia).
    un trigger.
 4. Inscripciones calificadas **antes** de la migración quedan sin "quién
    decidió".
-5. Pendiente de aplicar a la base: `0066`, `0067`, `0068` y `0069`, en orden.
+5. Migraciones `0066` a `0069` aplicadas a la base real el 1 nov 2026 (ver
+   «Aplicación de migraciones»).
 
 ---
 
@@ -418,7 +419,8 @@ motivo); que ambas partes vean el estado; que la Bandeja avise a contabilidad.
 **Verificación.** `tsc`, `lint`, `i18n:check`, `audit:ui` y `build` en verde.
 
 **Limitaciones.**
-1. La migración `0070` no se aplicó y nada se probó contra base ni navegador.
+1. La migración `0070` se aplicó el 1 nov 2026 (ver «Aplicación de
+   migraciones»); nada se probó en navegador.
 2. Que la compra lleve cotización lo garantiza la acción, no la base (un
    INSERT directo podría crear una compra sin adjunto).
 3. Una cotización por solicitud; no se puede reemplazar tras enviar.
@@ -426,6 +428,26 @@ motivo); que ambas partes vean el estado; que la Bandeja avise a contabilidad.
    más allá de "Resueltas por ti".
 5. Un usuario con permiso de contabilidad que pide una compra no puede
    aprobarla él mismo (separación de funciones): otro revisor debe decidir.
+
+---
+
+## 1 nov 2026 — Aplicación de migraciones `0065` a `0070` en la base real
+
+**Qué se hizo.** A petición explícita del autor se corrió `npm run db:migrate`
+contra la base de Supabase. El runner aplica cada archivo en su propia
+transacción y lo registra en `_migracion`; si uno falla, se revierte y se
+detiene. Se aplicaron las seis, sin errores.
+
+**Verificación posterior (solo esquema, sin escribir datos).** Los 8 roles
+definitivos y ninguno más (`colaborador` ya no existe); `docencia.impartir`
+asignado a un rol; ningún usuario con rol inexistente; tablas `sesion_360`,
+`asistencia_360` y `solicitud_adjunto`; columnas de entrega con texto, peso y
+período de tarea, decisión del profesor y origen de la inscripción de
+transporte; CHECK de `solicitud` con el tipo `compra` y monto obligatorio.
+
+**Limitaciones.** No hubo copia de respaldo previa hecha desde aquí ni entorno
+de pruebas separado: se aplicó directamente. Verificar el esquema no prueba el
+SQL de las consultas nuevas; falta el recorrido manual en navegador.
 
 ---
 

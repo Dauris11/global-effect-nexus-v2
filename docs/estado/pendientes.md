@@ -7,7 +7,7 @@ módulo) — esto es solo la cola de pendientes concretos.
 
 - [x] **Etapa 4 (B): solicitudes de compra a contabilidad con cotización (1 nov 2026, migración `0070`):**
       - Tipo `compra` para todos los roles, cotización obligatoria (pdf/png/jpg/docx, 10 MB, validada en servidor), descarga protegida, contabilidad aprueba o rechaza (motivo obligatorio), estado y línea de tiempo visibles para ambos, menús de contabilidad y chofer con "Solicitudes".
-      - **ANTES DE DESPLEGAR:** aplicar `0070` con `npm run db:migrate`. Nada se ha ejecutado contra una base real ni en navegador.
+      - **Migración `0070` aplicada** en la base real (1 nov 2026). Falta recorrido manual en navegador: enviar una compra con cotización, rechazarla con comentario y bajar el archivo.
       - **Pendiente:** reemplazar cotización, vista de contabilidad filtrada por estado, trigger que exija adjunto en `compra`, generar cuenta por pagar al llegar la factura.
 
 - [x] **Etapa 3: Global Effect 360 como portal estudiantil completo (1 nov 2026, migraciones `0067`–`0069`):**
@@ -16,7 +16,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Cuatrimestres:** `validarPeriodo` (`lib/periodos.ts`) en `guardarPeriodo`, `guardarVentana` y `moverBarra`; `guardarMateria360` escribe docente, horario, aula y cupo.
       - **Notas (`0069`):** tareas por período con `peso`; nota final propuesta (`lib/nota-final.ts`) con anulación auditada; el profesor decide aprobó/reprobó (`decidida_por/en`); escala hasta 1000 puntos; `prematriculada → cursando` perezoso; cupo por período.
       - **Expediente e historial:** 360 por cuatrimestre aparte de la carrera; índice de la carrera separado del promedio de 360.
-      - **ANTES DE DESPLEGAR:** aplicar `0066`, `0067`, `0068` y `0069` en orden con `npm run db:migrate`. **Ninguna consulta nueva se ha ejecutado contra una base real**: probarlas en un entorno de pruebas primero.
+      - **Migraciones `0066` a `0069` aplicadas** en la base real (1 nov 2026), verificadas por esquema. Las consultas nuevas siguen sin recorrido manual en navegador.
       - **Pendiente:** pruebas unitarias de `validarPeriodo` y `calcularNotaFinal` (no hay marco de pruebas); trigger que impida marcar asistencia de una inscripción ajena a la sesión; `gantt.familiaTareas` sigue sin filtrar por período (vista global); clave `taskAverage` huérfana; mensajes de `moodle/acciones.ts` y de inventario con literales; aplicar `Dato` al resto de tarjetas (etapa 2).
 
 - [x] **Etapa 2: un solo acento, sin degradados, datos con icono (1 nov 2026):**
@@ -49,7 +49,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Permiso de capacidad `docencia.impartir`:** nativo de `docente`. Habilita a otro rol (p. ej. profesor de Habitudes que da una clase de 360) el portal de profesor, `clases-360`, publicar tareas, calificar y aparecer como docente asignable; el menú le suma el área de docencia. Guardia nueva `requerirDocencia`.
       - **Contables:** un solo rol `contabilidad`; jefe, contables locales y contable externa se diferencian con permisos por persona.
       - **Limpieza visual (6 frentes):** landing, portal del estudiante, dirección/agenda, administrativo/configuración, contabilidad y académico/Habitudes/transporte. Fuera subtítulos, antetítulos, introducciones y ayudas redundantes; cabeceras con `EncabezadoPagina` solo con título; `animate-entrada` en las pantallas.
-      - **ANTES DE DESPLEGAR:** correr `npm run db:migrate`. Sin la `0065`, `docente` no tiene `docencia.impartir` en la base y los docentes quedan fuera de su portal. Revisar las cuentas que eran `colaborador` (ahora `admin`) y bajarles permisos desde la pantalla nueva.
+      - **Migración `0065` aplicada** (1 nov 2026): `docente` ya tiene `docencia.impartir` y `colaborador` no existe. **Pendiente:** revisar las cuentas que eran `colaborador` (ahora `admin`) y bajarles permisos desde la pantalla nueva.
       - **Pendiente:** podar claves de i18n sin uso (`*Hint`, `subtitle`, `eyebrow`, `FichaRol`…); `BannerPortal` e `AccesosPortal` (`components/layout/`) aún aceptan `insignia`/`subtitulo`/`texto`; páginas sobre 300 líneas (`expedientes` ~690, `gantt` ~580, `reportes` ~555, `auditoria` 409, `actividad` 362, `sitemap` ~320, `portal/administrativo` ~305); literales sin i18n en inventario, `comprobantes-recibidos` y `vista-nomina`; `comida/page.tsx` con hex y `rounded-xl/lg`; renombrar el namespace i18n `colaborador` (ya no es un rol); los roles con `habitudes`/`docente` siguen compartiendo listas en `server/habitudes/consultas.ts` por nombre de rol.
 
 - [x] **Revisión y corrección de los commits del 1 nov 2026 contra el plan (transporte, calendario, portal del estudiante):**
