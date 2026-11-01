@@ -44,7 +44,7 @@ export default async function PaginaTransportePublico({
   const paradasRuta = rutas[0]?.paradas ?? [];
 
   return (
-    <div className="min-h-dvh bg-slate-50/70 px-4 py-8 dark:bg-background">
+    <div className="min-h-dvh bg-muted/30 px-4 py-8 dark:bg-background">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Barra superior de navegación rápida */}
         <div className="flex items-center justify-between">

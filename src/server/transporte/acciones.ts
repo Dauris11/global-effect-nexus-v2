@@ -5,8 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import type { TipoIncidenciaTransporte } from "@/lib/transporte";
+import type { PasajeroViaje, TipoIncidenciaTransporte } from "@/lib/transporte";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import { obtenerPasajerosHorario } from "./consultas";
 
 /**
  * Guarda o actualiza la configuración semanal recurrente de transporte del estudiante.
@@ -344,6 +345,58 @@ export async function reportarIncidenciaAction(datos: {
   } catch (error) {
     console.error("[transporte] Error al reportar incidencia:", error);
     return { ok: false, mensaje: "error_servidor" };
+  }
+}
+
+/**
+ * Actualiza manualmente la parada actual o próxima alcanzada por la guagua.
+ * Muy útil como respaldo en zonas rurales donde el GPS o la cobertura móvil fluctúan.
+ */
+export async function actualizarParadaActualViajeAction(datos: {
+  viajeId: string;
+  paradaId: string;
+}): Promise<{ ok: boolean; mensaje?: string }> {
+  const usuario = await requerirPermiso("transporte.operar");
+
+  try {
+    await consultarUna(
+      `UPDATE transporte_viaje v
+          SET parada_actual_id = p.id,
+              lat_actual = COALESCE(v.lat_actual, p.lat),
+              lng_actual = COALESCE(v.lng_actual, p.lng),
+              actualizado_en = now()
+         FROM transporte_parada p
+        WHERE v.id = $1
+          AND v.chofer_id = $2
+          AND p.id = $3`,
+      [datos.viajeId, usuario.id, datos.paradaId],
+    );
+
+    revalidatePath("/portal/chofer");
+    revalidatePath("/portal/estudiante/transporte");
+    revalidatePath("/transporte");
+
+    return { ok: true };
+  } catch (error) {
+    console.error("[transporte] Error al actualizar parada actual:", error);
+    return { ok: false, mensaje: "error_servidor" };
+  }
+}
+
+/**
+ * Carga dinámica de la lista de pasajeros convocados para un horario específico.
+ */
+export async function obtenerPasajerosHorarioAction(
+  horarioId: string,
+): Promise<{ ok: boolean; pasajeros: PasajeroViaje[] }> {
+  await requerirPermiso("transporte.operar");
+
+  try {
+    const pasajeros = await obtenerPasajerosHorario(horarioId);
+    return { ok: true, pasajeros };
+  } catch (error) {
+    console.error("[transporte] Error al obtener pasajeros:", error);
+    return { ok: false, pasajeros: [] };
   }
 }
 

@@ -27,6 +27,7 @@ export default async function PaginaPortalChofer() {
         horarioSugerido={estado.horarioSugerido}
         horariosDisponibles={estado.horariosDisponibles}
         pasajerosIniciales={estado.pasajerosHoy}
+        paradasIniciales={estado.paradasDisponibles}
       />
     </div>
   );

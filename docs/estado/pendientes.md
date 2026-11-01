@@ -1354,3 +1354,24 @@ módulo) — esto es solo la cola de pendientes concretos.
       "Editar" (este último abre la ficha ya en modo edición vía
       `?editar=1`). Es distinto de la ficha completa: no tiene familia,
       vivienda, salud ni situación, solo lo que cabe en la tarjeta.
+
+- [x] **Sistema de Transporte Institucional en Tiempo Real (1 nov 2026, migración `0064`):**
+      - **Modelo de datos y paradas (`0064_sistema_transporte_institucional.sql`):**
+        - Tablas creadas: `transporte_ruta`, `transporte_parada`, `transporte_horario`, `transporte_inscripcion_recurrente`, `transporte_inscripcion_diaria`, `transporte_viaje` y `transporte_incidencia`.
+        - Sembrado de 4 turnos fijos diarios (06:00 AM, 12:00 PM, 06:00 PM, 08:00 PM) y circuito geográfico La Vega $\leftrightarrow$ Cruce de Controba $\leftrightarrow$ Rincón $\leftrightarrow$ Jima Abajo $\leftrightarrow$ La Ceivita $\leftrightarrow$ El Ranchito $\leftrightarrow$ Sabana Rey $\leftrightarrow$ La Vega.
+      - **Nuevo Rol de Chofer y Portal Operativo (`/portal/chofer`):**
+        - Rol `chofer` con permisos `transporte.operar` y `transporte.gestionar`.
+        - Mando táctil mobile-first simplificado con botones gigantes de inicio y culminación de viaje.
+        - Transmisión continua por Geolocation API con rumbo, velocidad y posición con throttling a 4s.
+        - Respaldo de puntos de control de paradas manuales y alertas visuales en caso de corte o denegación de permisos de GPS.
+        - Reporte rápido de incidencias y averías mecánicas con disparo inmediato de notificaciones push/campana a los estudiantes convocados.
+      - **Portal del Estudiante (`/portal/estudiante/transporte`):**
+        - Matriz semanal recurrente Lunes a Sábado con selección de turnos, parada de abordaje y destino, y función de copiado rápido a todos los días para no tener que anotarse a diario.
+        - Mapa Leaflet con teselas CARTO (modo claro/oscuro) y marcador 3D animado de la guagua institucional (`iconoGuagua3D`) con rotación en grados según el rumbo, indicador de velocidad y halo de pulso.
+      - **Acceso Público Rápido (`/transporte`):**
+        - Registro diario puntual sin login obligatorio (estilo módulo de comida) y seguimiento en vivo de la posición del autobús para estudiantes y beneficiarios de la comunidad.
+      - **Calidad y Cumplimiento:**
+        - Cero colores fuera de marca (`npm run audit:ui`).
+        - 4,828 claves simétricas en español e inglés (`npm run i18n:check`).
+        - Cero errores ni advertencias de ESLint (`npm run lint`).
+        - Compilación Next.js 16 y chequeo estricto de tipos de TypeScript exitosos (`npm run build`).

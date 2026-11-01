@@ -122,7 +122,7 @@ export function MapaTransporteCliente({
           <strong style="color: #0A6A8A; font-size: 13px;">${parada.orden}. ${parada.nombre}</strong>
           ${parada.referencia ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: #171A1D; opacity: 0.75;">${parada.referencia}</p>` : ""}
           <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 600;">
-            ⏱️ Estimado: +${parada.minutos_estimados} min desde inicio
+            ${t("popup.estimated", { minutes: parada.minutos_estimados })}
           </p>
         </div>
       `);
@@ -131,7 +131,7 @@ export function MapaTransporteCliente({
     if (coordenadasRuta.length > 0) {
       mapa.fitBounds(L.latLngBounds(coordenadasRuta), { padding: [35, 35] });
     }
-  }, [paradas]);
+  }, [paradas, t]);
 
   // Actualización del marcador 3D de la guagua
   useEffect(() => {
@@ -148,6 +148,7 @@ export function MapaTransporteCliente({
       rumbo: viaje?.rumbo ?? 0,
       estado: viaje?.estado ?? "programado",
       velocidadKmh: viaje?.velocidad_kmh ?? 0,
+      etiquetaParada: t("popup.stopped"),
     });
 
     if (marcadorGuaguaRef.current) {
@@ -161,15 +162,15 @@ export function MapaTransporteCliente({
 
       marcador.bindPopup(`
         <div style="font-family: inherit;">
-          <strong style="color: #2096BA; font-size: 14px;">🚐 Transporte Global Effect</strong>
-          <p style="margin: 3px 0 0 0; font-size: 12px;"><strong>Chofer:</strong> ${viaje?.chofer_nombre ?? "Asignado"}</p>
-          <p style="margin: 2px 0 0 0; font-size: 12px;"><strong>Estado:</strong> ${viaje?.estado ?? "En espera"}</p>
+          <strong style="color: #2096BA; font-size: 14px;">🚐 ${t("popup.title")}</strong>
+          <p style="margin: 3px 0 0 0; font-size: 12px;"><strong>${t("popup.driver")}:</strong> ${viaje?.chofer_nombre ?? t("popup.assigned")}</p>
+          <p style="margin: 2px 0 0 0; font-size: 12px;"><strong>${t("popup.status")}:</strong> ${t(`status.${viaje?.estado ?? "programado"}`)}</p>
         </div>
       `);
 
       marcadorGuaguaRef.current = marcador;
     }
-  }, [viaje, paradas]);
+  }, [viaje, paradas, t]);
 
   // Sondeo periódico liviano en vivo cada 4 segundos cuando el viaje está en curso o averiado
   useEffect(() => {

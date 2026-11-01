@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 
-import { consultarUna } from "@/lib/db";
-import type { TransporteViaje } from "@/lib/transporte";
+import { consultar, consultarUna } from "@/lib/db";
+import type { TransporteIncidencia, TransporteViaje } from "@/lib/transporte";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const viajeId = searchParams.get("viajeId");
 
-  if (!viajeId) {
-    return NextResponse.json({ error: "viajeId requerido" }, { status: 400 });
+  if (!viajeId || !UUID_REGEX.test(viajeId)) {
+    return NextResponse.json({ error: "viaje_invalido" }, { status: 400 });
   }
 
   try {
@@ -41,10 +44,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "no_encontrado" }, { status: 404 });
     }
 
+    const incidencias = await consultar<TransporteIncidencia>(
+      `SELECT i.id, i.viaje_id, i.chofer_id, u.nombre AS chofer_nombre,
+              i.tipo, i.descripcion, i.lat::float AS lat, i.lng::float AS lng,
+              to_char(i.creado_en, 'HH24:MI') AS creado_en
+         FROM transporte_incidencia i
+         JOIN usuario u ON u.id = i.chofer_id
+        WHERE i.viaje_id = $1
+        ORDER BY i.creado_en DESC`,
+      [viaje.id],
+    );
+    viaje.incidencias = incidencias;
+
     return NextResponse.json(viaje);
   } catch (error) {
     console.error("[api/transporte/posicion] Error:", error);
     return NextResponse.json({ error: "error_servidor" }, { status: 500 });
   }
 }
-

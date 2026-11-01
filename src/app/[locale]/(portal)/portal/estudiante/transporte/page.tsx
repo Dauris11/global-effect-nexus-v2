@@ -26,12 +26,17 @@ export async function generateMetadata({
   return { title: t("studentTransportTitle") };
 }
 
-export default async function PaginaTransporteEstudiante() {
+export default async function PaginaTransporteEstudiante({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const usuario = await requerirRol(["estudiante", "admin", "super_admin"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
   const [t, viajeEnVivo, rutas, horarios, inscripciones] = await Promise.all([
-    getTranslations("transport"),
+    getTranslations({ locale, namespace: "transport" }),
     obtenerViajeEnVivo(),
     listarRutasConParadas(),
     listarHorariosTransporte(),

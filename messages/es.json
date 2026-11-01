@@ -5691,12 +5691,26 @@
     "routeStopsTitle": "Paradas y Tiempos Estimados",
     "routeStopsSubtitle": "Recorrido planificado de la ruta con tiempos estimados desde el inicio.",
     "breakdownAlert": "Alerta del transporte en ruta",
+    "gpsErrorTitle": "Acceso a ubicación requerido",
+    "gpsErrorDesc": "El chofer debe permitir el acceso a la ubicación en el navegador para que los estudiantes puedan ver la guagua en vivo.",
+    "gpsUnavailableDesc": "La señal GPS no está disponible en este momento. Se utilizarán puntos de control manuales.",
+    "manualStopSelectorLabel": "Punto de control (Parada actual / próxima)",
+    "selectStopPlaceholder": "Actualizar parada alcanzada",
+    "stopUpdated": "Parada actualizada",
     "status": {
       "programado": "Programado",
       "en_curso": "En camino",
       "completado": "Finalizado",
       "averiado": "Averiado / Retraso",
       "cancelado": "Suspendido"
+    },
+    "popup": {
+      "title": "Transporte Global Effect",
+      "driver": "Chofer",
+      "status": "Estado",
+      "assigned": "Asignado",
+      "stopped": "Parada",
+      "estimated": "⏱️ Estimado: +{minutes} min desde inicio"
     }
   }
 }

@@ -5691,12 +5691,26 @@
     "routeStopsTitle": "Stops and Estimated Times",
     "routeStopsSubtitle": "Planned route trajectory with estimated travel times from start.",
     "breakdownAlert": "Transport Alert in Route",
+    "gpsErrorTitle": "Location access required",
+    "gpsErrorDesc": "The driver must grant browser location permission so students can track the bus live.",
+    "gpsUnavailableDesc": "GPS signal is currently unavailable. Manual checkpoints will be used.",
+    "manualStopSelectorLabel": "Checkpoint (Current / Next stop)",
+    "selectStopPlaceholder": "Update reached stop",
+    "stopUpdated": "Stop updated",
     "status": {
       "programado": "Scheduled",
       "en_curso": "En route",
       "completado": "Completed",
       "averiado": "Breakdown / Delay",
       "cancelado": "Cancelled"
+    },
+    "popup": {
+      "title": "Global Effect Transport",
+      "driver": "Driver",
+      "status": "Status",
+      "assigned": "Assigned",
+      "stopped": "Stopped",
+      "estimated": "⏱️ Estimated: +{minutes} min from start"
     }
   }
 }

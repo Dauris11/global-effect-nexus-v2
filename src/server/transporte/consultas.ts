@@ -224,6 +224,7 @@ export async function obtenerEstadoChofer(choferId: string): Promise<{
   horarioSugerido: TransporteHorario | null;
   horariosDisponibles: TransporteHorario[];
   pasajerosHoy: PasajeroViaje[];
+  paradasDisponibles: TransporteParada[];
 }> {
   // 1. Viaje activo en curso del chofer
   const viajeActivo = await consultarUna<TransporteViaje>(
@@ -309,13 +310,25 @@ export async function obtenerEstadoChofer(choferId: string): Promise<{
     }
   }
 
-  // 4. Pasajeros de hoy para el horario sugerido/activo
+  // 4. Pasajeros y paradas de hoy para el horario sugerido/activo
   const horarioIdParaPasajeros =
     viajeActivo?.horario_id ?? horarioSugerido?.id ?? null;
 
   let pasajerosHoy: PasajeroViaje[] = [];
+  let paradasDisponibles: TransporteParada[] = [];
+
   if (horarioIdParaPasajeros) {
     pasajerosHoy = await obtenerPasajerosHorario(horarioIdParaPasajeros);
+
+    paradasDisponibles = await consultar<TransporteParada>(
+      `SELECT p.id, p.ruta_id, p.orden, p.nombre, p.referencia,
+              p.lat::float AS lat, p.lng::float AS lng, p.minutos_estimados
+         FROM transporte_parada p
+         JOIN transporte_horario h ON h.ruta_id = p.ruta_id
+        WHERE h.id = $1
+        ORDER BY p.orden ASC`,
+      [horarioIdParaPasajeros],
+    );
   }
 
   return {
@@ -323,6 +336,7 @@ export async function obtenerEstadoChofer(choferId: string): Promise<{
     horarioSugerido,
     horariosDisponibles,
     pasajerosHoy,
+    paradasDisponibles,
   };
 }
 
@@ -337,8 +351,7 @@ export async function obtenerPasajerosHorario(
   const fechaConsulta = fecha ?? "CURRENT_DATE";
 
   return consultar<PasajeroViaje>(
-    `SELECT DISTINCT ON (nombre)
-            id,
+    `SELECT id,
             nombre,
             matricula_o_telefono,
             tipo,
@@ -346,38 +359,51 @@ export async function obtenerPasajerosHorario(
             parada_destino_nombre,
             presente
        FROM (
-         -- Pasajeros recurrentes semanales
-         SELECT r.id::text,
-                e.nombre,
-                e.matricula AS matricula_o_telefono,
-                'recurrente' AS tipo,
-                pa.nombre AS parada_abordaje_nombre,
-                pd.nombre AS parada_destino_nombre,
-                false AS presente
-           FROM transporte_inscripcion_recurrente r
-           JOIN estudiante e ON e.id = r.estudiante_id
-           JOIN transporte_parada pa ON pa.id = r.parada_abordaje_id
-           JOIN transporte_parada pd ON pd.id = r.parada_destino_id
-          WHERE r.horario_id = $1
-            AND r.activo = true
-            AND r.dia_semana = EXTRACT(ISODOW FROM ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"})::smallint
+         SELECT DISTINCT ON (clave_dedup)
+                id,
+                nombre,
+                matricula_o_telefono,
+                tipo,
+                parada_abordaje_nombre,
+                parada_destino_nombre,
+                presente
+           FROM (
+             -- Pasajeros recurrentes semanales
+             SELECT r.id::text AS id,
+                    COALESCE(r.estudiante_id::text, r.id::text) AS clave_dedup,
+                    e.nombre,
+                    e.matricula AS matricula_o_telefono,
+                    'recurrente' AS tipo,
+                    pa.nombre AS parada_abordaje_nombre,
+                    pd.nombre AS parada_destino_nombre,
+                    false AS presente
+               FROM transporte_inscripcion_recurrente r
+               JOIN estudiante e ON e.id = r.estudiante_id
+               JOIN transporte_parada pa ON pa.id = r.parada_abordaje_id
+               JOIN transporte_parada pd ON pd.id = r.parada_destino_id
+              WHERE r.horario_id = $1
+                AND r.activo = true
+                AND r.dia_semana = EXTRACT(ISODOW FROM ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"})::smallint
 
-         UNION ALL
+             UNION ALL
 
-         -- Pasajeros puntuales diarios (con o sin login)
-         SELECT d.id::text,
-                d.nombre_beneficiario AS nombre,
-                d.matricula_o_telefono,
-                'diaria' AS tipo,
-                pa.nombre AS parada_abordaje_nombre,
-                pd.nombre AS parada_destino_nombre,
-                d.presente
-           FROM transporte_inscripcion_diaria d
-           JOIN transporte_parada pa ON pa.id = d.parada_abordaje_id
-           JOIN transporte_parada pd ON pd.id = d.parada_destino_id
-          WHERE d.horario_id = $1
-            AND d.fecha = ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"}
-       ) combinados
+             -- Pasajeros puntuales diarios (con o sin login)
+             SELECT d.id::text AS id,
+                    COALESCE(d.estudiante_id::text, d.id::text) AS clave_dedup,
+                    d.nombre_beneficiario AS nombre,
+                    d.matricula_o_telefono,
+                    'diaria' AS tipo,
+                    pa.nombre AS parada_abordaje_nombre,
+                    pd.nombre AS parada_destino_nombre,
+                    d.presente
+               FROM transporte_inscripcion_diaria d
+               JOIN transporte_parada pa ON pa.id = d.parada_abordaje_id
+               JOIN transporte_parada pd ON pd.id = d.parada_destino_id
+              WHERE d.horario_id = $1
+                AND d.fecha = ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"}
+           ) combinados
+          ORDER BY clave_dedup, tipo ASC
+       ) deduplicados
       ORDER BY nombre ASC`,
     fechaConsulta === "CURRENT_DATE" ? [horarioId] : [horarioId, fecha],
   );

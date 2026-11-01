@@ -11,26 +11,29 @@ export function iconoGuagua3D({
   rumbo = 0,
   estado = "en_curso",
   velocidadKmh = 0,
+  etiquetaParada = "Parada",
 }: {
   rumbo?: number;
   estado?: EstadoViaje;
   velocidadKmh?: number;
+  etiquetaParada?: string;
 }): L.DivIcon {
   const esAveriado = estado === "averiado";
 
   const colorChasis = esAveriado ? "#B4342B" : "#2096BA";
-  const colorBorde = esAveriado ? "#781D17" : "#0A6A8A";
-  const textoVelocidad = velocidadKmh > 0 ? `${Math.round(velocidadKmh)} km/h` : "Parada";
+  const colorBorde = esAveriado ? "#171A1D" : "#0A6A8A";
+  const textoVelocidad =
+    velocidadKmh > 0 ? `${Math.round(velocidadKmh)} km/h` : etiquetaParada;
 
   const html = `
     <div class="guagua-marcador-raiz" style="position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
       <!-- Pulso radial o alarma -->
-      <div class="guagua-pulso ${esAveriado ? 'guagua-pulso-averia' : 'guagua-pulso-activo'}" style="
+      <div class="guagua-pulso ${esAveriado ? "guagua-pulso-averia" : "guagua-pulso-activo"}" style="
         position: absolute;
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: ${esAveriado ? 'rgba(180, 52, 43, 0.25)' : 'rgba(32, 150, 186, 0.25)'};
+        background: ${esAveriado ? "rgba(180, 52, 43, 0.25)" : "rgba(32, 150, 186, 0.25)"};
         animation: guaguaOnda 2s infinite ease-out;
         pointer-events: none;
       "></div>
@@ -101,8 +104,8 @@ export function iconoGuagua3D({
             justify-content: space-between;
             width: 18px;
           ">
-            <span style="width: 4px; height: 3px; background: ${esAveriado ? '#FF4438' : '#B4342B'}; border-radius: 1px;"></span>
-            <span style="width: 4px; height: 3px; background: ${esAveriado ? '#FF4438' : '#B4342B'}; border-radius: 1px;"></span>
+            <span style="width: 4px; height: 3px; background: #B4342B; border-radius: 1px;"></span>
+            <span style="width: 4px; height: 3px; background: #B4342B; border-radius: 1px;"></span>
           </div>
         </div>
 
@@ -115,8 +118,8 @@ export function iconoGuagua3D({
           display: flex;
           justify-content: space-between;
         ">
-          <span style="width: 4px; height: 4px; background: #FFF4B8; border-radius: 50%; box-shadow: 0 -4px 6px #FFF4B8;"></span>
-          <span style="width: 4px; height: 4px; background: #FFF4B8; border-radius: 50%; box-shadow: 0 -4px 6px #FFF4B8;"></span>
+          <span style="width: 4px; height: 4px; background: #FFFFFF; border-radius: 50%; box-shadow: 0 -4px 6px #FFFFFF;"></span>
+          <span style="width: 4px; height: 4px; background: #FFFFFF; border-radius: 50%; box-shadow: 0 -4px 6px #FFFFFF;"></span>
         </div>
       </div>
 
@@ -146,4 +149,3 @@ export function iconoGuagua3D({
     iconAnchor: [32, 32],
   });
 }
-
