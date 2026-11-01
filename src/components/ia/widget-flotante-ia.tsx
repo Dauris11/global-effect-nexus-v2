@@ -438,6 +438,7 @@ export function WidgetFlotanteIA({
     habitudes: t("rolHabitudes"),
     dir_habitudes: t("rolDirHabitudes"),
     colaborador: t("rolColaborador"),
+    chofer: t("rolChofer"),
   }[usuario.rol];
 
   return (

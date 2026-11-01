@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import {
   Bot,
+  Bus,
   CalendarDays,
   Camera,
   CheckSquare,
@@ -109,7 +110,13 @@ export function CajonAccionesRapidas({
       clave: "ia",
       onClick: abrirIA,
       icono: Bot,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes", "colaborador"],
+      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes", "colaborador", "chofer"],
+    },
+    {
+      clave: "transport",
+      href: "/portal/chofer",
+      icono: Bus,
+      roles: ["super_admin", "admin", "chofer"],
     },
   ];
 

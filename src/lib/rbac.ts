@@ -28,8 +28,10 @@ export const ROLES = [
   "habitudes",
   // Director de Habitudes (DH): supervisión pedagógica, monitoreo de profesores y liceos en La Vega
   "dir_habitudes",
-  // Personal operativo y de apoyo esencial (choferes, mantenimiento, cocina, auxiliares)
+  // Personal operativo y de apoyo esencial (mantenimiento, cocina, auxiliares)
   "colaborador",
+  // Chofer institucional: operador exclusivo de rutas y seguimiento del transporte
+  "chofer",
 ] as const;
 
 export type Rol = (typeof ROLES)[number];
@@ -97,6 +99,8 @@ export const PERMISOS = [
   "reuniones.leer",
   "solicitudes.direccion",
   "solicitudes.gestionar",
+  "transporte.gestionar",
+  "transporte.operar",
   "usuarios.administrar",
 ] as const;
 
@@ -112,6 +116,7 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   habitudes: "/habitudes",
   dir_habitudes: "/habitudes",
   colaborador: "/portal/colaborador",
+  chofer: "/portal/chofer",
 };
 
 /** El único acento del sistema: azul de la marca al azul más oscuro. */
@@ -147,6 +152,7 @@ export const ESTILO_POR_ROL: Record<
   habitudes: MARCA,
   dir_habitudes: MARCA,
   colaborador: MARCA,
+  chofer: MARCA,
 };
 
 
@@ -222,6 +228,8 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "reuniones.leer",
     "solicitudes.direccion",
     "solicitudes.gestionar",
+    "transporte.gestionar",
+    "transporte.operar",
     "usuarios.administrar",
   ],
   admin: [
@@ -250,6 +258,8 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "reuniones.gestionar",
     "reuniones.leer",
     "solicitudes.gestionar",
+    "transporte.gestionar",
+    "transporte.operar",
   ],
   habitudes: [
     "expedientes.postular",
@@ -298,6 +308,10 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "rendicion.enviar",
     "reuniones.leer",
     "solicitudes.gestionar",
+  ],
+  chofer: [
+    "transporte.operar",
+    "ia.usar",
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.

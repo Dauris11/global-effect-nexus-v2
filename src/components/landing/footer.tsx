@@ -60,6 +60,11 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
               </Link>
             </li>
             <li>
+              <Link href="/transporte" className={CLASE_ENLACE}>
+                {t("access_transport_title")}
+              </Link>
+            </li>
+            <li>
               <Link href="/portal/estudiante/solicitudes" className={CLASE_ENLACE}>
                 {t("access_requests_title")}
               </Link>

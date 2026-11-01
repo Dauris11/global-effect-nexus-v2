@@ -5,6 +5,26 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Sistema de Transporte Institucional en Tiempo Real y Cabina del Chofer (1 nov 2026, migración `0064`):**
+      - **Migración `0064_sistema_transporte_institucional.sql`:**
+        - Tablas creadas: `transporte_ruta`, `transporte_parada`, `transporte_horario`, `transporte_inscripcion_recurrente`, `transporte_inscripcion_diaria`, `transporte_viaje` y `transporte_incidencia`.
+        - Carga de semillas con los 4 turnos fijos diarios (06:00 AM Matutino, 12:00 PM Mediodía, 06:00 PM Tarde y 08:00 PM Noche) y paradas geográficas reales en La Vega: UCATECI, Oficina Central, Cruce de Controba, Rincón, Jima Abajo (Cimabajo), La Ceivita, El Ranchito, Sabana Rey y conexión interior.
+      - **Rol `chofer` y Permisos RBAC (`src/lib/rbac.ts`):**
+        - Rol `chofer` incorporado al sistema con permiso `transporte.operar`. Portal directo `/portal/chofer`.
+        - Permisos `transporte.operar` y `transporte.gestionar` integrados en la matriz RBAC.
+      - **Portal Minimalista del Chofer (`/portal/chofer`):**
+        - Operación táctil móvil con una sola mano: botón gigante "INICIAR VIAJE" y "FINALIZAR VIAJE".
+        - Transmisión continua de geolocalización en segundo plano con `navigator.geolocation.watchPosition` (latitud, longitud, rumbo y velocidad).
+        - Botón de emergencia "Reportar avería / problema" con modal rápido (Avería mecánica, Tránsito, Desvío, Accidente) que despacha alertas inmediatas a los estudiantes inscritos en ese viaje.
+      - **Portal del Estudiante (`/portal/estudiante/transporte`):**
+        - Pestaña "Dónde viene la guagua": mapa interactivo en vivo con el autobús animado en 3D (`iconoGuagua3D`), orientación de rumbo (`heading`), pulso en ruta y parada aproximada con cálculo de tiempo estimado.
+        - Pestaña "Mi horario semanal": matriz de Lunes a Sábado para configurar turnos y paradas fijas, eliminando la necesidad de anotarse a diario.
+      - **Puerta Pública de Transporte (`/transporte`):**
+        - Acceso público sin login previo (similar a `/comida`) con mapa en vivo, información de próximos turnos e inscripción puntual para viajes del día.
+        - Enlace integrado en el pie de página institucional (`src/components/landing/footer.tsx`).
+      - **API de Rastreo (`/api/transporte/posicion`):** Sondeo periódico liviano en vivo cada 4 segundos durante viajes en curso.
+      - **Calidad:** 4,816 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (194/194 páginas).
+
 - [x] **Aislamiento Estricto de Agendas y Calendarios por Rol y Proyección de Clases Semanales (1 nov 2026):**
       - **Aislamiento Estricto y Privacidad por Rol:**
         - Garantizado que cada usuario (estudiante, docente, colaborador, personal) vea en su agenda y calendario ÚNICAMENTE lo que le compete a él: sus propias clases, sus trámites/citas solicitadas (`solicitante_id` o `estudiante_id`), y las reuniones institucionales donde es organizador o participante convocado (`reunion_participante`), sin fuga de eventos de otros usuarios.

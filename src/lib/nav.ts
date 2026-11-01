@@ -2,6 +2,7 @@ import {
   BarChart3,
   Bot,
   BookOpen,
+  Bus,
   CalendarDays,
   Camera,
   GanttChartSquare,
@@ -434,6 +435,11 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             href: "/reuniones",
             icono: Users,
           },
+          {
+            etiqueta: "transport",
+            href: "/portal/estudiante/transporte",
+            icono: Bus,
+          },
           // Trámites con administración: constancias, cartas, citas y
           // permisos. Va en la agenda porque casi todo lo que pide tiene
           // fecha, y la cita aprobada aparece en su calendario.
@@ -722,6 +728,29 @@ const MENU_COLABORADOR: AreaNav[] = [
   },
 ];
 
+/**
+ * Menú exclusivo del chofer institucional: cabina de mando móvil y directa.
+ */
+const MENU_CHOFER: AreaNav[] = [
+  {
+    clave: "chofer",
+    etiqueta: "transport",
+    icono: Bus,
+    secciones: [
+      {
+        items: [
+          {
+            etiqueta: "driverDashboard",
+            href: "/portal/chofer",
+            icono: Bus,
+            permiso: "transporte.operar",
+          },
+        ],
+      },
+    ],
+  },
+];
+
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   super_admin: MENU_ADMINISTRACION,
   admin: MENU_ADMINISTRACION,
@@ -731,6 +760,7 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   habitudes: MENU_HABITUDES,
   dir_habitudes: MENU_HABITUDES,
   colaborador: MENU_COLABORADOR,
+  chofer: MENU_CHOFER,
 };
 
 /**
