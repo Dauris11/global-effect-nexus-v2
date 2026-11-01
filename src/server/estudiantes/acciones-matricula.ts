@@ -66,7 +66,7 @@ export async function inscribirseEnMateria(
 
   // Sin filtro por tipo: desde la 0047 todo estudiante es becado, y una
   // comprobación que nunca falla solo esconde dónde está la regla de verdad.
-  if (!estudiante) return { estado: "sin_ficha" };
+  if (!estudiante.id) return { estado: "sin_ficha" };
 
   const materiaId = String(datos.get("materia") ?? "");
 
@@ -145,7 +145,7 @@ export async function quitarseDeMateria(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) return { estado: "sin_ficha" };
+  if (!estudiante.id) return { estado: "sin_ficha" };
 
   const materiaId = String(datos.get("materia") ?? "");
 

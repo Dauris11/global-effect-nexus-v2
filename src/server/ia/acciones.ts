@@ -53,7 +53,6 @@ export async function preguntarAlAsistente(
   if (!tienePermiso(usuario.rol, "ia.usar")) return { estado: "sin_permiso" };
 
   const estudiante = await estudianteDeUsuario(usuario.id);
-  if (!estudiante) return { estado: "sin_expediente" };
 
   const pregunta = String(datos.get("pregunta") ?? "").trim();
 

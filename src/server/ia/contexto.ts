@@ -49,9 +49,6 @@ export async function prepararTurno(
 
   if (usuario.rol === "estudiante") {
     const estudiante = await estudianteDeUsuario(usuario.id);
-
-    if (!estudiante) return { error: "sin_expediente" };
-
     const previa = await conversacionDelEstudiante(usuario.id);
     const historial = previa ? await mensajesDeConversacion(previa, 15) : [];
     const base = await instruccionesPara(estudiante, usuario.idioma);

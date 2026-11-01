@@ -486,10 +486,6 @@ export async function enviarMensajeWidget({
   } else if (usuario.rol === "estudiante") {
     // 2. Caso: Estudiante (Consultas con base de conocimiento)
     const estudiante = await estudianteDeUsuario(usuario.id);
-    if (!estudiante) {
-      return { ok: false, error: "sinExpediente" };
-    }
-
     const conversacionPrevia = await conversacionDelEstudiante(usuario.id);
     const historial = conversacionPrevia
       ? await mensajesDeConversacion(conversacionPrevia, 15)

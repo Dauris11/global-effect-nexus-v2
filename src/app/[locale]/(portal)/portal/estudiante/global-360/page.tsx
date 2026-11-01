@@ -8,7 +8,6 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { MatriculaCuatrimestral360 } from "@/components/estudiante/matricula-cuatrimestral-360";
 import {
   TarjetaMateriaG360,
@@ -75,8 +74,6 @@ export default async function PaginaGlobal360({
     mensajesCliente(["global360"]),
   ]);
 
-  if (!estudiante) return <AvisoSinFicha />;
-
   const [materias, avance, ventana, catalogoMatricula] = await Promise.all([
     catalogoConSituacion(estudiante.id),
     avanceEn360(estudiante.id),
@@ -86,9 +83,10 @@ export default async function PaginaGlobal360({
 
   // Las tandas son del período de la ventana: sin ventana no hay período del
   // que hablar.
-  const tandas = ventana
-    ? await tandasDelEstudiante(estudiante.id, ventana.periodo_id)
-    : [];
+  const tandas =
+    ventana && estudiante.id
+      ? await tandasDelEstudiante(estudiante.id, ventana.periodo_id)
+      : [];
 
   const dadas = materias.filter((m) => m.situacion === "aprobada");
   const porDar = materias.filter((m) => m.situacion !== "aprobada");

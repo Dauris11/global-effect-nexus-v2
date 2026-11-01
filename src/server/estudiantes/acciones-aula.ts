@@ -59,7 +59,7 @@ export async function entregarTarea(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) return { estado: "sin_ficha" };
+  if (!estudiante.id) return { estado: "sin_ficha" };
 
   const asignacionId = String(datos.get("asignacion") ?? "");
   const archivo = datos.get("archivo");

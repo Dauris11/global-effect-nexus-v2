@@ -5,6 +5,15 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Independencia del Portal del Estudiante del Expediente Administrativo (1 nov 2026):**
+      - **Restricción de Acceso:** Confirmado y blindado que el rol `estudiante` NO tiene acceso a su propio expediente administrativo ni a la ruta `/expedientes` (solo manejado por personal administrativo; no posee el permiso `expedientes.leer`).
+      - **Desacoplamiento Total del Portal:**
+        - `estudianteDeUsuario(usuarioId)` (`src/server/estudiantes/portal.ts`): La sesión se fundamenta directamente en el usuario autenticado (`usuario`). Si existe una fila en `estudiante` enlazada por `usuario_id`, resuelve su `id` y `tieneExpediente: true`; si no está enlazada aún, retorna una sesión válida basada en `usuario` con `id: null` y `tieneExpediente: false`, impidiendo cualquier bloqueo del portal.
+        - Retiro de `AvisoSinFicha` de todas las páginas del portal del estudiante (`/portal/estudiante`, `aula-virtual`, `calificaciones`, `global-360`, `prematricula`, `calendario`, `solicitudes`, `chat`): el estudiante siempre puede navegar su portal, consultar el catálogo, revisar eventos institucionales, enviar solicitudes y chatear con el asistente de IA.
+        - Capa de consultas (`portal.ts`, `aula.ts`, `academico.ts`, `agenda.ts`, `global360/consultas.ts`, `moodle/consultas.ts`): aceptan `estudianteId: string | null` y devuelven estados vacíos ordenados y limpios sin errores de consulta ni fallas de renderizado.
+        - Sincronización al final de cuatrimestre: las vistas, estadísticas y calificaciones reflejan los cierres oficiales de término hechos por coordinación académica (`termUpdateHint`).
+      - **Calidad:** 4,732 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (187/187 rutas).
+
 - [x] **Ver como, configuración por iconos, torre de control, cuadre de caja, mapas, landing y movimiento (31 oct 2026, migración `0063`):**
       - **Ver como (super_admin):** cookie `ge_ver_como` honrada solo si el rol REAL es `super_admin` (`src/lib/auth.ts`, `rolReal`); acción `verComoRol` auditada; control en la barra superior y franja fija mientras se ve como otro rol (`components/layout/ver-como.tsx`). Se actúa con los permisos del rol mirado.
       - **Configuración:** barra de iconos en `configuracion/layout.tsx` (`lib/configuracion.ts`, `components/configuracion/barra-ajustes.tsx`); el índice de tarjetas se retiró.

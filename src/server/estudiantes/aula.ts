@@ -61,8 +61,9 @@ export type AsignacionDelEstudiante = {
  * tareas sueltas que repartir a todo el mundo.
  */
 export async function asignacionesDelEstudiante(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<AsignacionDelEstudiante[]> {
+  if (!estudianteId) return [];
   return consultar<AsignacionDelEstudiante>(
     `SELECT a.id,
             a.titulo,

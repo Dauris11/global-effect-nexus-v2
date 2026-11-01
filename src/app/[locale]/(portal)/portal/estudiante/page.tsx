@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { CondicionFundacion } from "@/components/estudiante/condicion-fundacion";
 import { EventosProximos } from "@/components/estudiante/eventos-proximos";
 import { MateriasEnCurso } from "@/components/estudiante/materias-en-curso";
@@ -81,10 +80,6 @@ export default async function PortalEstudiante({
   const estudiante = await estudianteDeUsuario(usuario.id);
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
-
-  // Usuario sin ficha enlazada: se explica y se remite a coordinación, en vez
-  // de mostrar un portal vacío que parecería roto.
-  if (!estudiante) return <AvisoSinFicha />;
 
   const [materias, notas, condicion, solicitudes, eventos, asignaciones] =
     await Promise.all([
@@ -174,6 +169,7 @@ export default async function PortalEstudiante({
           icono={GraduationCap}
           insignia={t(`type.${estudiante.tipo}`)}
           titulo={t("greeting", { name: estudiante.nombre })}
+          subtitulo={t("termUpdateHint")}
           kpis={[
             {
               valor:

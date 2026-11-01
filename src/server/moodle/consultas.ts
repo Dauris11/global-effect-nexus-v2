@@ -111,8 +111,37 @@ export async function entregasDeAsignacionDocente(
  * vuelve a ofrecer: ya cuenta para el programa.
  */
 export async function catalogoMatricula360(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<Materia360Matricula[]> {
+  if (!estudianteId) {
+    const query = `
+      SELECT m.id,
+             m.nombre,
+             m.codigo,
+             m.descripcion,
+             m.creditos,
+             m.horas,
+             m.horario,
+             m.aula,
+             coalesce(m.cupo_maximo, 30)::int AS cupo_maximo,
+             (SELECT count(*)::int
+                FROM public.inscripcion_360 i
+               WHERE i.materia_id = m.id
+                 AND i.estado IN ('prematriculada', 'cursando')) AS cupo_ocupado,
+             u.nombre AS docente_nombre,
+             false AS inscrita,
+             NULL::uuid AS inscripcion_id,
+             NULL::int AS ronda_inscrita,
+             NULL::text AS estado_inscripcion,
+             false AS aprobada
+        FROM public.materia_360 m
+        LEFT JOIN public.usuario u ON u.id = m.docente_id
+       WHERE m.activa = true
+       ORDER BY m.orden ASC, m.nombre ASC
+    `;
+    return consultar<Materia360Matricula>(query);
+  }
+
   const query = `
     SELECT m.id,
            m.nombre,

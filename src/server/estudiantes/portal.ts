@@ -7,53 +7,74 @@ import { esLetra, gpaDe, type Letra, letraDe } from "@/lib/notas";
 /**
  * Datos del portal del estudiante.
  *
- * REGLA DE ESTE ARCHIVO: el estudiante NO tiene acceso a su expediente.
- *
- * El expediente son 75 campos —historia de vida, situación familiar y
- * económica, datos de los padres, salud, amonestaciones— y lo redacta el equipo de la Fundación PARA la Fundación. Que el
- * estudiante lo lea cambiaría lo que se escribe en él, y con eso perdería su
- * utilidad.
- *
- * De la tabla `estudiante` solo se leen aquí los campos que el propio
- * estudiante ya conoce de sí mismo: su nombre, su tipo y si está activo.
- * Ninguna consulta de este archivo toca `familiar`, `perfil_vivienda`,
- * `perfil_salud` ni `perfil_socioeconomico`.
- *
- * Y todas filtran por `estudiante_id`, que se obtiene del usuario de la sesión:
- * nunca de un parámetro de la URL, o cualquiera podría leer las notas de otro
- * cambiando un identificador.
+ * REGLAS DE ESTE ARCHIVO:
+ * 1. El estudiante NO tiene acceso a su expediente administrativo.
+ *    El expediente son más de 75 campos —historia de vida, situación familiar y
+ *    económica, datos de los padres, salud, amonestaciones— y lo redacta y gestiona
+ *    el personal administrativo exclusivamente para la Fundación.
+ * 2. El portal del estudiante es INDEPENDIENTE de su expediente:
+ *    La sesión del estudiante se fundamenta en su usuario (`usuario`), y sus
+ *    vistas académicas (materias, notas, aula virtual, 360) están correlacionadas
+ *    con los registros cerrados al final de cada cuatrimestre por coordinación,
+ *    no en vivo ni dependiendo de que exista un expediente enlazado para operar.
+ *    Si un usuario aún no tiene expediente administrativo enlazado, el portal
+ *    opera plenamente mostrando estados limpios sin bloquear al estudiante.
  */
 
 export type EstudianteDeSesion = {
-  id: string;
+  /** Identificador de la ficha administrativa (`estudiante.id`), o `null` si no está enlazada. */
+  id: string | null;
   nombre: string;
   tipo: TipoEstudiante;
   estado: string;
+  tieneExpediente: boolean;
 };
 
 /**
- * Localiza la ficha del estudiante a partir del usuario de la sesión.
+ * Resuelve la sesión del estudiante a partir del usuario autenticado.
  *
- * Devuelve `null` cuando el usuario existe pero nadie lo ha enlazado todavía a
- * una ficha (`estudiante.usuario_id`). No es un error: el portal lo explica y
- * remite a coordinación, tal como prevé `studentPortal.noRecord`.
+ * Busca si existe un expediente enlazado en `estudiante.usuario_id`. Si no
+ * existe, devuelve una sesión válida basada en `usuario`, garantizando que el
+ * portal del estudiante funcione de forma autónoma e independiente.
  *
- * Va envuelta en `cache()` porque ahora la piden dos sitios en la misma
- * petición: el layout del portal, que necesita el tipo de estudiante para
- * armar el menú, y la propia pantalla. Sin esto serían dos consultas idénticas
- * a la base por cada página que abre un estudiante.
+ * Va envuelta en `cache()` para deduplicar consultas en la misma petición.
  */
 export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
   usuarioId: string,
-): Promise<EstudianteDeSesion | null> {
-  // El ENUM solo admite `becado` desde la 0047, así que el texto que devuelve
-  // la base ya es un `TipoEstudiante` válido.
-  return consultarUna<EstudianteDeSesion>(
-    `SELECT e.id, e.nombre, e.tipo::text AS tipo, e.estado::text AS estado
-       FROM estudiante e
-      WHERE e.usuario_id = $1`,
+): Promise<EstudianteDeSesion> {
+  const fila = await consultarUna<{
+    id: string | null;
+    nombre: string;
+    tipo: string | null;
+    estado: string | null;
+  }>(
+    `SELECT e.id,
+            COALESCE(e.nombre, u.nombre) AS nombre,
+            COALESCE(e.tipo::text, 'becado') AS tipo,
+            COALESCE(e.estado::text, 'activo') AS estado
+       FROM usuario u
+       LEFT JOIN estudiante e ON e.usuario_id = u.id
+      WHERE u.id = $1`,
     [usuarioId],
   );
+
+  if (!fila) {
+    return {
+      id: null,
+      nombre: "Estudiante",
+      tipo: "becado",
+      estado: "activo",
+      tieneExpediente: false,
+    };
+  }
+
+  return {
+    id: fila.id,
+    nombre: fila.nombre,
+    tipo: (fila.tipo as TipoEstudiante) ?? "becado",
+    estado: fila.estado ?? "activo",
+    tieneExpediente: fila.id !== null,
+  };
 });
 
 export type MateriaInscrita = {
@@ -69,8 +90,9 @@ export type MateriaInscrita = {
 
 /** Materias del estudiante con inscripción activa. */
 export async function materiasInscritas(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<MateriaInscrita[]> {
+  if (!estudianteId) return [];
   return consultar<MateriaInscrita>(
     `SELECT m.id, m.nombre, m.codigo, m.creditos, m.horario, m.aula,
             m.profesor_nombre AS profesor, p.nombre AS periodo
@@ -125,8 +147,9 @@ export type NotaDelEstudiante = {
  * aquí hace falta un número con el que calcular promedios.
  */
 export async function notasDelEstudiante(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<NotaDelEstudiante[]> {
+  if (!estudianteId) return [];
   const filas = await consultar<{
     id: string;
     nota: number;
@@ -205,9 +228,10 @@ export type CondicionMes = {
  * el cumplimiento, no un mensaje para el estudiante.
  */
 export async function condicionEnLaFundacion(
-  estudianteId: string,
+  estudianteId: string | null,
   meses = 3,
 ): Promise<CondicionMes[]> {
+  if (!estudianteId) return [];
   return consultar<CondicionMes>(
     `SELECT mes, hizo_servicio, asistio_reunion
        FROM registro_servicio

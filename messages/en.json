@@ -1305,6 +1305,7 @@
     "eyebrow": "My portal",
     "greeting": "Hi, {name}",
     "summary": "Your subjects, your grades and what's coming up.",
+    "termUpdateHint": "Your courses, grades, and progress are officially updated at the end of each academic term by coordination.",
     "toDashboard": "Go to dashboard",
     "noRecord": "You don't have a student record linked yet",
     "noRecordHint": "Your account exists, but it isn't linked to a student record yet. Contact the Foundation's coordination team so they can link it.",

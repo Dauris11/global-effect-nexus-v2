@@ -3,7 +3,6 @@ import { BookOpen, CalendarRange, CircleCheck, Coins } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { ElegirMaterias } from "@/components/estudiante/elegir-materias";
 import { PeriodoInscripciones } from "@/components/estudiante/prematricula-periodo";
 import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
@@ -75,8 +74,6 @@ export default async function PaginaMisMaterias({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  if (!estudiante) return <AvisoSinFicha />;
-
   const [inscripciones, ventana] = await Promise.all([
     inscripcionesDelEstudiante(estudiante.id),
     ventanaVigente(),
@@ -91,7 +88,9 @@ export default async function PaginaMisMaterias({
           estudianteId: estudiante.id,
         }),
         mensajesCliente(["studentPortal"]),
-        tandasDelEstudiante(estudiante.id, ventana.periodo_id),
+        estudiante.id
+          ? tandasDelEstudiante(estudiante.id, ventana.periodo_id)
+          : Promise.resolve([]),
       ])
     : [[], null, []];
 

@@ -3,7 +3,6 @@ import { Inbox } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
@@ -13,7 +12,6 @@ import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
 import { TRAMITES_ESTUDIANTE } from "@/lib/solicitudes";
-import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { solicitudesDe } from "@/server/solicitudes/consultas";
 
 export async function generateMetadata({
@@ -47,9 +45,6 @@ export default async function PaginaSolicitudesEstudiante({
   const { locale } = await params;
 
   const usuario = await requerirRol(["estudiante"]);
-  const estudiante = await estudianteDeUsuario(usuario.id);
-
-  if (!estudiante) return <AvisoSinFicha />;
 
   const [t, solicitudes, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "requests" }),

@@ -11,7 +11,6 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import {
   TarjetaAsignacion,
   type TextosAsignacion,
@@ -108,8 +107,6 @@ export default async function PaginaAulaVirtual({
     // layout solo manda los cuatro del armazón.
     mensajesCliente(["studentPortal"]),
   ]);
-
-  if (!estudiante) return <AvisoSinFicha />;
 
   const asignaciones = await asignacionesDelEstudiante(estudiante.id);
 

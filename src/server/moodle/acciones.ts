@@ -28,7 +28,7 @@ export async function entregarTareaMoodleAction(
   const usuario = await requerirUsuario();
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) {
+  if (!estudiante.id) {
     return { ok: false, mensaje: "No se encontró ficha de estudiante asociada a tu usuario." };
   }
 

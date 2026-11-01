@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CalendarDays, CalendarX2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { DiaAgenda } from "@/components/estudiante/dia-agenda";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
@@ -57,9 +56,7 @@ export default async function PaginaCalendario({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  if (!estudiante) return <AvisoSinFicha />;
-
-  const meses = await mesesConAgenda(estudiante.id);
+  const meses = await mesesConAgenda(estudiante.id, usuario.id);
   const hoy = claveDia();
   const mesActual = claveMes();
 
@@ -74,7 +71,7 @@ export default async function PaginaCalendario({
     meses[0] ??
     mesActual;
 
-  const entradas = await agendaDelEstudiante(estudiante.id, mes);
+  const entradas = await agendaDelEstudiante(estudiante.id, mes, usuario.id);
   const dias = agruparPorDia(entradas);
 
   return (

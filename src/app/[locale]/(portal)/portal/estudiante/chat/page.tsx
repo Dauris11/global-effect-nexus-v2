@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Lock, ShieldAlert } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { ChatIA } from "@/components/ia/chat";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -11,7 +10,6 @@ import { requerirRol } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { MAXIMO_CARACTERES_PREGUNTA } from "@/lib/ia";
 import { tienePermiso } from "@/lib/rbac";
-import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { preguntarAlAsistente } from "@/server/ia/acciones";
 import {
   conversacionDelEstudiante,
@@ -63,9 +61,6 @@ export default async function PaginaChatEstudiante({
       />
     );
   }
-
-  const estudiante = await estudianteDeUsuario(usuario.id);
-  if (!estudiante) return <AvisoSinFicha />;
 
   const conversacion = await conversacionDelEstudiante(usuario.id);
   const mensajes = conversacion

@@ -60,7 +60,7 @@ export async function prematricular(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) return { estado: "sin_ficha" };
+  if (!estudiante.id) return { estado: "sin_ficha" };
 
   const materiaId = String(datos.get("materia") ?? "");
 
@@ -206,7 +206,7 @@ export async function retirarPrematricula(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) return { estado: "sin_ficha" };
+  if (!estudiante.id) return { estado: "sin_ficha" };
 
   const materiaId = String(datos.get("materia") ?? "");
 

@@ -76,7 +76,7 @@ export default async function LayoutPortal({
    */
   const conExpediente =
     usuario.rol === "estudiante" &&
-    (await estudianteDeUsuario(usuario.id)) !== null;
+    (await estudianteDeUsuario(usuario.id)).tieneExpediente;
 
   /*
    * Aviso de prematrícula en la cabecera, a todo estudiante con expediente:

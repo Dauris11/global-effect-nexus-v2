@@ -38,8 +38,9 @@ export type InscripcionDelEstudiante = {
  * coordinación.
  */
 export async function inscripcionesDelEstudiante(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<InscripcionDelEstudiante[]> {
+  if (!estudianteId) return [];
   return consultar<InscripcionDelEstudiante>(
     `SELECT i.id,
             i.estado,
@@ -91,8 +92,26 @@ export async function materiasOfertadas({
   estudianteId,
 }: {
   periodoId: string;
-  estudianteId: string;
+  estudianteId: string | null;
 }): Promise<MateriaOfertada[]> {
+  if (!estudianteId) {
+    return consultar<MateriaOfertada>(
+      `SELECT m.id,
+              m.nombre,
+              m.codigo,
+              m.creditos,
+              m.horario,
+              m.aula,
+              m.profesor_nombre AS profesor,
+              NULL::text AS estado_inscripcion
+         FROM materia m
+        WHERE m.periodo_id = $1
+          AND m.estado = 'activa'
+        ORDER BY m.nombre`,
+      [periodoId],
+    );
+  }
+
   return consultar<MateriaOfertada>(
     `SELECT m.id,
             m.nombre,

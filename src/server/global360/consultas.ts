@@ -42,8 +42,25 @@ export type MateriaProgramada = {
  * `DISTINCT ON`, que se queda con la inscripción de mayor peso.
  */
 export async function catalogoConSituacion(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<MateriaProgramada[]> {
+  if (!estudianteId) {
+    return consultar<MateriaProgramada>(
+      `SELECT m.id,
+              m.nombre,
+              m.codigo,
+              m.descripcion,
+              m.creditos,
+              m.horas,
+              'pendiente' AS situacion,
+              NULL::text AS periodo,
+              NULL::float8 AS nota
+         FROM materia_360 m
+        WHERE m.activa
+        ORDER BY m.orden, m.nombre`,
+    );
+  }
+
   return consultar<MateriaProgramada>(
     `SELECT m.id,
             m.nombre,
@@ -89,8 +106,15 @@ export type AvanceEn360 = {
  * obligatorio, no hay otra cuenta que separar.
  */
 export async function avanceEn360(
-  estudianteId: string,
+  estudianteId: string | null,
 ): Promise<AvanceEn360> {
+  if (!estudianteId) {
+    const fila = await consultarUna<{ total: number }>(
+      `SELECT count(*)::int AS total FROM materia_360 WHERE activa`,
+    );
+    return { total: fila?.total ?? 0, dadas: 0 };
+  }
+
   const fila = await consultarUna<AvanceEn360>(
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE d.dada)::int AS dadas
@@ -223,9 +247,10 @@ export type TandaDelEstudiante = {
  * que enseñarla libre para que vuelva a elegir.
  */
 export async function tandasDelEstudiante(
-  estudianteId: string,
+  estudianteId: string | null,
   periodoId: string,
 ): Promise<TandaDelEstudiante[]> {
+  if (!estudianteId) return [];
   return consultar<TandaDelEstudiante>(
     `SELECT i.ronda, i.materia_id, m.nombre AS materia, m.codigo, i.estado
        FROM inscripcion_360 i

@@ -80,8 +80,6 @@ export async function crearTramite(
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  if (!estudiante) return { estado: "sin_expediente" };
-
   const tipo = String(datos.get("tipo") ?? "");
   if (!esTramiteEstudiante(tipo)) return { estado: "invalido" };
 

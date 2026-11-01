@@ -1305,6 +1305,7 @@
     "eyebrow": "Mi portal",
     "greeting": "Hola, {name}",
     "summary": "Tus materias, tus notas y lo que viene.",
+    "termUpdateHint": "Tus asignaturas, calificaciones y progreso se actualizan oficialmente al cierre de cada cuatrimestre por coordinación académica.",
     "toDashboard": "Ir al panel",
     "noRecord": "Todavía no tienes expediente enlazado",
     "noRecordHint": "Tu usuario existe, pero aún no está asociado a un expediente de estudiante. Escríbele a la coordinación de la Fundación para que lo enlace.",

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CalendarRange, Layers, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { AvisoSinFicha } from "@/components/estudiante/aviso-sin-ficha";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { DistribucionLetras } from "@/components/estudiante/distribucion-letras";
 import { agruparPorPeriodo } from "@/components/estudiante/periodos";
@@ -61,8 +60,6 @@ export default async function PaginaCalificaciones({
   const estudiante = await estudianteDeUsuario(usuario.id);
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
-
-  if (!estudiante) return <AvisoSinFicha />;
 
   const notas = await notasDelEstudiante(estudiante.id);
 

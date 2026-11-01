@@ -40,9 +40,14 @@ export type EntradaAgenda = {
  * calcular el primer y el último día del mes en tres sitios distintos.
  */
 export async function agendaDelEstudiante(
-  estudianteId: string,
+  estudianteId: string | null,
   mes: string,
+  usuarioId?: string,
 ): Promise<EntradaAgenda[]> {
+  const dummyUuid = "00000000-0000-0000-0000-000000000000";
+  const idEst = estudianteId ?? dummyUuid;
+  const idUsr = usuarioId ?? dummyUuid;
+
   return consultar<EntradaAgenda>(
     `SELECT 'evento' AS origen,
             e.id,
@@ -89,7 +94,7 @@ export async function agendaDelEstudiante(
             s.estado,
             NULL AS ubicacion
        FROM solicitud s
-      WHERE s.estudiante_id = $1
+      WHERE (s.estudiante_id = $1 OR s.solicitante_id = $3)
         AND s.fecha_requerida IS NOT NULL
         AND s.estado NOT IN ('rechazada', 'cancelada')
         AND to_char(s.fecha_requerida, 'YYYY-MM') = $2
@@ -111,12 +116,12 @@ export async function agendaDelEstudiante(
           r.estudiante_id = $1
           OR EXISTS (
             SELECT 1 FROM reunion_participante rp
-             WHERE rp.reunion_id = r.id AND rp.estudiante_id = $1
+             WHERE rp.reunion_id = r.id AND (rp.estudiante_id = $1 OR rp.usuario_id = $3)
           )
         )
 
       ORDER BY dia, hora NULLS FIRST`,
-    [estudianteId, mes],
+    [idEst, mes, idUsr],
   );
 }
 
@@ -126,7 +131,14 @@ export async function agendaDelEstudiante(
  *
  * Se limita a los 18 más recientes: la lista es un `select`, no un archivo.
  */
-export async function mesesConAgenda(estudianteId: string): Promise<string[]> {
+export async function mesesConAgenda(
+  estudianteId: string | null,
+  usuarioId?: string,
+): Promise<string[]> {
+  const dummyUuid = "00000000-0000-0000-0000-000000000000";
+  const idEst = estudianteId ?? dummyUuid;
+  const idUsr = usuarioId ?? dummyUuid;
+
   const filas = await consultar<{ mes: string }>(
     `SELECT DISTINCT mes FROM (
        SELECT to_char(fecha, 'YYYY-MM') AS mes
@@ -147,26 +159,26 @@ export async function mesesConAgenda(estudianteId: string): Promise<string[]> {
 
        SELECT to_char(fecha_requerida, 'YYYY-MM') AS mes
          FROM solicitud
-        WHERE estudiante_id = $1
+        WHERE (estudiante_id = $1 OR solicitante_id = $2)
           AND fecha_requerida IS NOT NULL
           AND estado NOT IN ('rechazada', 'cancelada')
 
        UNION ALL
 
        SELECT to_char(fecha, 'YYYY-MM') AS mes
-         FROM reunion
-        WHERE estado <> 'cancelada'
+         FROM reunion r
+        WHERE r.estado <> 'cancelada'
           AND (
-            estudiante_id = $1
+            r.estudiante_id = $1
             OR EXISTS (
               SELECT 1 FROM reunion_participante rp
-               WHERE rp.reunion_id = reunion.id AND rp.estudiante_id = $1
+               WHERE rp.reunion_id = r.id AND (rp.estudiante_id = $1 OR rp.usuario_id = $2)
             )
           )
      ) AS meses
      ORDER BY mes DESC
      LIMIT 18`,
-    [estudianteId],
+    [idEst, idUsr],
   );
 
   return filas.map((fila) => fila.mes);
