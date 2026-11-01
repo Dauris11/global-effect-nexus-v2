@@ -12,6 +12,7 @@ import {
 import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
+import { Historial360 } from "@/components/expedientes/historial-360";
 import { Badge } from "@/components/ui/badge";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import {
   recortarHistorial,
   resumenDelHistorial,
 } from "@/server/academico/consultas";
+import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,7 +55,8 @@ export async function generateMetadata({
  *
  * Es el expediente del becado universitario: las materias de la carrera ya
  * CERRADAS, con su índice sobre 4.00 guardado cuatrimestre a cuatrimestre. Las
- * notas de Global Effect 360 son la otra mitad y viven en `/academico/clases-360`.
+ * notas de Global Effect 360 son otro programa: al abrir a un estudiante salen
+ * en un bloque aparte, con su propio promedio, y no cuentan para este índice.
  *
  * NO HAY NI UNA LÍNEA DE JAVASCRIPT DE CLIENTE, y es lo que corresponde: esta
  * pantalla no escribe nada. El historial lo cierra el proceso académico, no un
@@ -98,13 +101,16 @@ export default async function PaginaAcademicoHistorial({
   const periodo = (cuatrimestre ?? "").trim().slice(0, 20) || null;
   const abierto = UUID.test(estudiante ?? "") ? estudiante! : null;
 
-  const [filas, resumen, cuatrimestres, detalle] = await Promise.all([
+  const [filas, resumen, cuatrimestres, detalle, detalle360] = await Promise.all([
     historialPorEstudiante({ cuatrimestre: periodo, busqueda }),
     resumenDelHistorial({ cuatrimestre: periodo, busqueda }),
     cuatrimestresDelHistorial(),
     // El detalle se pide SOLO del estudiante abierto. Cargar el de los 300 de
     // la lista para enseñar uno es el reparto exactamente al revés.
     abierto ? materiasDelHistorial(abierto) : Promise.resolve([]),
+    // Global Effect 360 va en un bloque aparte del de la carrera: son programas
+    // distintos y no comparten tabla ni promedio.
+    abierto ? historial360DelEstudiante(abierto) : Promise.resolve(null),
   ]);
 
   const lista = recortarHistorial(filas);
@@ -245,7 +251,14 @@ export default async function PaginaAcademicoHistorial({
                       />
 
                       {abierto === fila.estudiante_id && (
-                        <Detalle materias={detalle} t={t} />
+                        <>
+                          <Detalle materias={detalle} t={t} />
+                          {detalle360 && (
+                            <div className="mt-4">
+                              <Historial360 datos={detalle360} />
+                            </div>
+                          )}
+                        </>
                       )}
                     </li>
                   ))}

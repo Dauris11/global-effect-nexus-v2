@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirRol } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
+import { aDia, esDiaValido } from "@/lib/periodos";
+import { docentesAsignables } from "@/server/academico/consultas";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 
 /**
@@ -135,8 +137,11 @@ export async function prematricular(
         `SELECT count(*)::int AS ocupado
            FROM inscripcion_360
           WHERE materia_id = $1
+            AND periodo_id = $2
             AND estado IN ('prematriculada', 'cursando')`,
-        [materiaId],
+        // Solo el MISMO período: el cupo es de un cuatrimestre, y contar los
+        // anteriores dejaba sin cupo a una clase por gente que ya la terminó.
+        [materiaId, ventana.periodo_id],
       );
 
       if (ocupacion[0].ocupado >= materias[0].cupo_maximo) {
@@ -153,6 +158,8 @@ export async function prematricular(
          DO UPDATE SET estado = 'prematriculada',
                        ronda = EXCLUDED.ronda,
                        nota = NULL,
+                       decidida_por = NULL,
+                       decidida_en = NULL,
                        updated_at = now()
                WHERE inscripcion_360.estado = 'retirada'
          RETURNING id`,
@@ -250,6 +257,9 @@ export type EstadoAdmin360 = {
     | "ok"
     | "nombre_vacio"
     | "fechas_invalidas"
+    | "fuera_de_periodo"
+    | "cupo_invalido"
+    | "docente_invalido"
     | "ronda_invalida"
     | "ventana_solapada"
     | "no_encontrada"
@@ -268,33 +278,54 @@ export async function guardarMateria360(
   const codigo = String(datos.get("codigo") ?? "").trim().slice(0, 24) || null;
   const creditos = Number(datos.get("creditos") ?? 0);
   const horas = Number(datos.get("horas") ?? 0);
+  const docenteId = String(datos.get("docente") ?? "").trim() || null;
+  const horario = String(datos.get("horario") ?? "").trim().slice(0, 120) || null;
+  const aula = String(datos.get("aula") ?? "").trim().slice(0, 80) || null;
+  const cupo = Number(datos.get("cupo_maximo") ?? 30);
 
   if (!nombre) return { estado: "nombre_vacio" };
   if (id && !esUuid(id)) return { estado: "no_encontrada" };
+  if (!Number.isInteger(cupo) || cupo <= 0) return { estado: "cupo_invalido" };
+
+  // El docente sale de la misma lista que ofrece el formulario (activo y con
+  // docencia por rol o por permiso personal): un id manipulado en el navegador
+  // no puede dejar una clase a cargo de quien no puede darla.
+  if (docenteId) {
+    const asignables = await docentesAsignables();
+    if (!esUuid(docenteId) || !asignables.some((d) => d.id === docenteId)) {
+      return { estado: "docente_invalido" };
+    }
+  }
 
   try {
     if (id) {
       const editada = await consultarUna<{ id: string }>(
         `UPDATE materia_360
             SET nombre = $2, codigo = $3,
-                creditos = $4, horas = NULLIF($5, 0)
+                creditos = $4, horas = NULLIF($5, 0),
+                docente_id = $6, horario = $7, aula = $8, cupo_maximo = $9
           WHERE id = $1
         RETURNING id`,
-        [id, nombre, codigo, creditos, horas],
+        [id, nombre, codigo, creditos, horas, docenteId, horario, aula, cupo],
       );
 
       if (!editada) return { estado: "no_encontrada" };
 
-      await anotar(admin.id, "360.materia_editada", editada.id, { nombre });
+      await anotar(admin.id, "360.materia_editada", editada.id, {
+        nombre,
+        docente_id: docenteId,
+        cupo_maximo: cupo,
+      });
     } else {
       // `orden` al final del catálogo, como los anuncios del hero: con el
       // DEFAULT 0 cada materia nueva se colaría delante de las demás.
       const creada = await consultarUna<{ id: string }>(
-        `INSERT INTO materia_360 (nombre, codigo, creditos, horas, orden)
-         VALUES ($1, $2, $3, NULLIF($4, 0),
+        `INSERT INTO materia_360
+           (nombre, codigo, creditos, horas, docente_id, horario, aula, cupo_maximo, orden)
+         VALUES ($1, $2, $3, NULLIF($4, 0), $5, $6, $7, $8,
                  coalesce((SELECT max(orden) + 1 FROM materia_360), 0))
          RETURNING id`,
-        [nombre, codigo, creditos, horas],
+        [nombre, codigo, creditos, horas, docenteId, horario, aula, cupo],
       );
 
       if (!creada) return { estado: "error" };
@@ -368,8 +399,32 @@ export async function guardarVentana(
 
   if (!esUuid(periodoId)) return { estado: "no_encontrada" };
   if (ronda !== 1 && ronda !== 2) return { estado: "ronda_invalida" };
-  if (!abre || !cierra || new Date(cierra) <= new Date(abre)) {
+  // `new Date()` traga casi cualquier cosa; se exige el formato del campo
+  // `datetime-local` y que el día exista, y solo entonces se compara.
+  const FORMATO = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/;
+  if (
+    !FORMATO.test(abre) ||
+    !FORMATO.test(cierra) ||
+    !esDiaValido(abre.slice(0, 10)) ||
+    !esDiaValido(cierra.slice(0, 10)) ||
+    Number.isNaN(new Date(abre).getTime()) ||
+    Number.isNaN(new Date(cierra).getTime()) ||
+    new Date(cierra) <= new Date(abre)
+  ) {
     return { estado: "fechas_invalidas" };
+  }
+
+  const periodo = await consultarUna<{ inicio: string; fin: string }>(
+    `SELECT to_char(fecha_inicio, 'YYYY-MM-DD') AS inicio,
+            to_char(fecha_fin, 'YYYY-MM-DD') AS fin
+       FROM periodo WHERE id = $1`,
+    [periodoId],
+  );
+  if (!periodo) return { estado: "no_encontrada" };
+
+  // La matrícula de un cuatrimestre no puede abrir ni cerrar fuera de él.
+  if (aDia(abre) < periodo.inicio || aDia(cierra) > periodo.fin) {
+    return { estado: "fuera_de_periodo" };
   }
 
   try {

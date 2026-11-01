@@ -100,7 +100,9 @@ export async function entregarTareaMoodleAction(
             OR EXISTS (SELECT 1 FROM public.inscripcion_360 t
                         WHERE t.materia_id = a.materia_360_id
                           AND t.estudiante_id = $2
-                          AND t.estado IN ('prematriculada', 'cursando'))
+                          AND t.estado IN ('prematriculada', 'cursando')
+                          -- La tarea es del período de ESTA inscripción (nula = anterior a la 0069).
+                          AND (a.periodo_id IS NULL OR a.periodo_id = t.periodo_id))
           )`,
       [asignacionId, estudiante.id],
     );
@@ -232,29 +234,49 @@ export async function calificarEntregaMoodleAction(
     return { ok: false, mensaje: "Identificador de entrega inválido." };
   }
 
-  if (isNaN(calificacion) || calificacion < 0 || calificacion > 100) {
-    return { ok: false, mensaje: "La calificación debe ser una nota numérica entre 0 y 100." };
+  if (isNaN(calificacion) || calificacion < 0) {
+    return { ok: false, mensaje: "La calificación debe ser una nota numérica no negativa." };
   }
 
   try {
-    const actualizada = await consultarUna<{ id: string; estudiante_id: string }>(
-      `UPDATE public.entrega_estudiante
-          SET calificacion = $2,
-              comentario_profesor = $3,
-              estado = 'calificado',
-              revisada_por_id = $4,
-              revisada_en = now(),
-              updated_at = now()
-        FROM public.asignacion a
-        LEFT JOIN public.materia     mu ON mu.id = a.materia_id
-        LEFT JOIN public.materia_360 m3 ON m3.id = a.materia_360_id
-       WHERE entrega_estudiante.id = $1
-         AND a.id = entrega_estudiante.asignacion_id
-         -- Solo se califica lo que el estudiante entregó.
-         AND entrega_estudiante.estado IN ('entregado', 'tarde', 'calificado')
-         -- Y solo de la propia clase, salvo quien administra lo académico.
-         AND ($5::uuid IS NULL OR mu.profesor_usuario_id = $5 OR m3.docente_id = $5)
-        RETURNING entrega_estudiante.id, entrega_estudiante.estudiante_id`,
+    /*
+     * La nota cabe en la escala de ESA tarea (`puntaje_maximo`, de 1 a 1000),
+     * no en un 100 fijo. Se lee en la misma consulta que escribe, así no hay
+     * ventana entre comprobar y guardar; el SELECT final distingue "no existe
+     * o no es tuya" de "nota fuera de escala".
+     */
+    const actualizada = await consultarUna<{
+      id: string;
+      maximo: number;
+      escrita: boolean;
+    }>(
+      `WITH objetivo AS (
+         SELECT e.id, coalesce(a.puntaje_maximo, 100) AS maximo
+           FROM public.entrega_estudiante e
+           JOIN public.asignacion a ON a.id = e.asignacion_id
+           LEFT JOIN public.materia     mu ON mu.id = a.materia_id
+           LEFT JOIN public.materia_360 m3 ON m3.id = a.materia_360_id
+          WHERE e.id = $1
+            -- Solo se califica lo que el estudiante entregó.
+            AND e.estado IN ('entregado', 'tarde', 'calificado')
+            -- Y solo de la propia clase, salvo quien administra lo académico.
+            AND ($5::uuid IS NULL OR mu.profesor_usuario_id = $5 OR m3.docente_id = $5)
+       ), escrita AS (
+         UPDATE public.entrega_estudiante e
+            SET calificacion = $2,
+                comentario_profesor = $3,
+                estado = 'calificado',
+                revisada_por_id = $4,
+                revisada_en = now(),
+                updated_at = now()
+           FROM objetivo o
+          WHERE e.id = o.id
+            AND $2::numeric <= o.maximo
+        RETURNING e.id
+       )
+       SELECT o.id, o.maximo::float8 AS maximo,
+              EXISTS (SELECT 1 FROM escrita) AS escrita
+         FROM objetivo o`,
       [
         entregaId,
         calificacion,
@@ -266,6 +288,13 @@ export async function calificarEntregaMoodleAction(
 
     if (!actualizada) {
       return { ok: false, mensaje: "La entrega especificada no existe." };
+    }
+
+    if (!actualizada.escrita) {
+      return {
+        ok: false,
+        mensaje: `La calificación debe estar entre 0 y ${actualizada.maximo}, el puntaje de esta tarea.`,
+      };
     }
 
     await registrar({

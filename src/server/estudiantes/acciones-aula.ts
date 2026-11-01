@@ -93,7 +93,9 @@ export async function entregarTarea(
           OR EXISTS (SELECT 1 FROM inscripcion_360 t
                       WHERE t.materia_id = a.materia_360_id
                         AND t.estudiante_id = $2
-                        AND t.estado IN ('prematriculada', 'cursando'))
+                        AND t.estado IN ('prematriculada', 'cursando')
+                        -- La tarea es del período de ESTA inscripción (nula = anterior a la 0069).
+                        AND (a.periodo_id IS NULL OR a.periodo_id = t.periodo_id))
         )`,
     [asignacionId, estudiante.id],
   );

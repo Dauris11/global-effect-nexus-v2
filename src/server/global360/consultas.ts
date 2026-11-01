@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
 
 /**
  * Global Effect 360: la formación propia de la Fundación, para todos sus
@@ -202,6 +203,10 @@ export type MateriaCatalogo = {
   horas: number | null;
   activa: boolean;
   orden: number;
+  docente_id: string | null;
+  horario: string | null;
+  aula: string | null;
+  cupo_maximo: number | null;
   /** Cuántos estudiantes la llevan prematriculada o cursando ahora. */
   inscritos: number;
 };
@@ -210,7 +215,7 @@ export type MateriaCatalogo = {
 export async function catalogo(): Promise<MateriaCatalogo[]> {
   return consultar<MateriaCatalogo>(
     `SELECT m.id, m.nombre, m.codigo, m.creditos, m.horas,
-            m.activa, m.orden,
+            m.activa, m.orden, m.docente_id, m.horario, m.aula, m.cupo_maximo,
             (SELECT count(*)::int
                FROM inscripcion_360 i
               WHERE i.materia_id = m.id
@@ -261,4 +266,32 @@ export async function tandasDelEstudiante(
       ORDER BY i.ronda`,
     [estudianteId, periodoId],
   );
+}
+
+/**
+ * Pasa a `cursando` las inscripciones cuyo período ya empezó y no ha terminado.
+ *
+ * PEREZOSA A PROPÓSITO: no hay cron en el proyecto, así que la llaman al
+ * principio las páginas que muestran el estado de las inscripciones
+ * (clases-360, portal del profesor y global-360 del estudiante). Es idempotente
+ * y barata —un UPDATE con índice por estado que casi nunca toca filas—, y vive
+ * aquí y no en `acciones.ts` para que no sea una acción de servidor que el
+ * navegador pueda invocar. La fecha de hoy es la de La Vega, no la de UTC.
+ */
+export async function iniciarInscripcionesVigentes(): Promise<void> {
+  try {
+    await consultar(
+      `UPDATE inscripcion_360 i
+          SET estado = 'cursando', updated_at = now()
+         FROM periodo p
+        WHERE p.id = i.periodo_id
+          AND i.estado = 'prematriculada'
+          AND p.fecha_inicio <= ${SQL_HOY_RD}
+          AND p.fecha_fin >= ${SQL_HOY_RD}`,
+    );
+  } catch (error) {
+    // Un fallo aquí no debe tumbar la pantalla: la inscripción sigue
+    // prematriculada y se reintenta en la siguiente visita.
+    console.error("[360] no se pudo iniciar las inscripciones vigentes", error);
+  }
 }

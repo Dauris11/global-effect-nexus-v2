@@ -5,7 +5,9 @@ import { getTranslations } from "next-intl/server";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { DistribucionLetras } from "@/components/estudiante/distribucion-letras";
 import { agruparPorPeriodo } from "@/components/estudiante/periodos";
+import { Seccion } from "@/components/estudiante/seccion";
 import { TablaNotas } from "@/components/estudiante/tabla-notas";
+import { Badge } from "@/components/ui/badge";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
@@ -14,6 +16,7 @@ import { requerirRol } from "@/lib/auth";
 import { aprobada, promedio } from "@/lib/notas";
 import {
   estudianteDeUsuario,
+  notas360DelEstudiante,
   notasDelEstudiante,
 } from "@/server/estudiantes/portal";
 
@@ -41,10 +44,10 @@ export async function generateMetadata({
  * cambiar al pulsar un período daría la impresión de que la Fundación lo calcula
  * por cuatrimestre.
  *
- * Sirve a las dos clases de estudiante, porque `notasDelEstudiante` lee las dos
- * tablas donde se guardan notas. De ahí que la letra y el índice de cada fila
- * lleguen ya resueltos en lugar de calcularse aquí: los del historial
- * universitario vienen guardados y no se recalculan.
+ * La carrera y Global Effect 360 son programas distintos: van en bloques
+ * separados y las cifras de arriba son solo de la carrera. La letra y el índice
+ * de cada fila llegan ya resueltos: los del historial universitario vienen
+ * guardados y no se recalculan.
  */
 export default async function PaginaCalificaciones({
   params,
@@ -61,7 +64,15 @@ export default async function PaginaCalificaciones({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  const notas = await notasDelEstudiante(estudiante.id);
+  const [notas, notas360] = await Promise.all([
+    notasDelEstudiante(estudiante.id),
+    notas360DelEstudiante(estudiante.id),
+  ]);
+
+  // Global Effect 360 es otro programa: su promedio es propio y nunca entra en
+  // el índice ni en las cifras de la carrera.
+  const promedio360 = promedio(notas360.map((nota) => nota.nota));
+  const periodos360 = agruparPorPeriodo(notas360);
 
   const todas = notas.map((nota) => nota.nota);
   const promedioGeneral = promedio(todas);
@@ -110,7 +121,7 @@ export default async function PaginaCalificaciones({
         />
       </div>
 
-      {notas.length === 0 ? (
+      {notas.length === 0 && notas360.length === 0 ? (
         <EstadoVacio
           icono={Star}
           titulo={t("gradesEmpty")}
@@ -137,11 +148,30 @@ export default async function PaginaCalificaciones({
             </FilaChips>
           )}
 
-          <DistribucionLetras notas={notasVisibles} />
+          {notas.length > 0 && (
+            <>
+              <DistribucionLetras notas={notasVisibles} />
 
-          {visibles.map((periodo) => (
-            <TablaNotas key={periodo.id} periodo={periodo} />
-          ))}
+              {visibles.map((periodo) => (
+                <TablaNotas key={periodo.id} periodo={periodo} />
+              ))}
+            </>
+          )}
+
+          {notas360.length > 0 && (
+            <Seccion
+              titulo={t("gradesPage.origin.g360")}
+              accion={
+                <Badge variant="marca">
+                  {t("gradesPage.average360")} {promedio360?.toFixed(1) ?? "—"}
+                </Badge>
+              }
+            >
+              {periodos360.map((periodo) => (
+                <TablaNotas key={periodo.id} periodo={periodo} conIndice={false} />
+              ))}
+            </Seccion>
+          )}
         </>
       )}
     </div>

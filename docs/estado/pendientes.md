@@ -5,13 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
-- [ ] **Etapa 3 (Global Effect 360), parte 1 hecha y parte 2 pendiente (1 nov 2026, migración `0067`):**
-      - **Hecho:** entrega real (archivo subido en servidor, inscripción verificada, formatos cerrados, texto escrito, reinicio de nota al re-entregar); calificación Moodle acotada a la clase del docente; alcance de `calificarInscripcion360` independiente de `docencia.impartir`. Detalle y auditoría en `bitacora-tesis.md`.
-      - **Pendiente (R6, grande):** asistencia por clase (`sesion_360`, `asistencia_360`, acciones con `docencia.impartir`, vista del estudiante y del expediente).
-      - **Pendiente (R7/R9, mediano):** fechas de clase fijadas por administración; validar cuatrimestres (enero–diciembre, sin traslapes, 3–4 por año, solo `cuatrimestre`) en `guardarPeriodo`, `guardarVentana` y `moverBarra`.
-      - **Pendiente (R1/R4/R5):** tareas ligadas al período; nota final derivada de las tareas (con peso/`puntaje_maximo`) y anulación auditada; decisión explícita aprobó/reprobó y paso `prematriculada → cursando`.
-      - **Pendiente (R8/R10):** 360 por cuatrimestre en el expediente e historial; separar el índice de 360 del de la carrera.
-      - **Pendiente (menor):** `guardarMateria360` no escribe docente, horario, aula ni cupo (hoy exige SQL); `puntaje_maximo` hasta 1000 con nota limitada a 0–100; cupo cuenta todas las inscripciones abiertas de todos los períodos; `entregar-tarea.tsx` es código muerto.
+- [x] **Etapa 3: Global Effect 360 como portal estudiantil completo (1 nov 2026, migraciones `0067`–`0069`):**
+      - **Entrega real:** archivo subido en servidor, inscripción verificada, formatos cerrados (sin `zip`), respuesta escrita, la revisión se anula al re-entregar; calificación acotada a la clase del docente (detalle de la auditoría en `bitacora-tesis.md`).
+      - **Asistencia (`0068`):** `sesion_360` programada por administración y `asistencia_360` marcada por el docente de la clase; vista del estudiante y del expediente.
+      - **Cuatrimestres:** `validarPeriodo` (`lib/periodos.ts`) en `guardarPeriodo`, `guardarVentana` y `moverBarra`; `guardarMateria360` escribe docente, horario, aula y cupo.
+      - **Notas (`0069`):** tareas por período con `peso`; nota final propuesta (`lib/nota-final.ts`) con anulación auditada; el profesor decide aprobó/reprobó (`decidida_por/en`); escala hasta 1000 puntos; `prematriculada → cursando` perezoso; cupo por período.
+      - **Expediente e historial:** 360 por cuatrimestre aparte de la carrera; índice de la carrera separado del promedio de 360.
+      - **ANTES DE DESPLEGAR:** aplicar `0066`, `0067`, `0068` y `0069` en orden con `npm run db:migrate`. **Ninguna consulta nueva se ha ejecutado contra una base real**: probarlas en un entorno de pruebas primero.
+      - **Pendiente:** pruebas unitarias de `validarPeriodo` y `calcularNotaFinal` (no hay marco de pruebas); trigger que impida marcar asistencia de una inscripción ajena a la sesión; `gantt.familiaTareas` sigue sin filtrar por período (vista global); clave `taskAverage` huérfana; mensajes de `moodle/acciones.ts` y de inventario con literales; aplicar `Dato` al resto de tarjetas (etapa 2).
 
 - [x] **Etapa 2: un solo acento, sin degradados, datos con icono (1 nov 2026):**
       - **Acento a elección:** Mi perfil → Apariencia ofrece Azul o Negro (`data-acento`, en el navegador). El negro reasigna `marca-*` en `globals.css`; solo en claro (de noche manda el azul).

@@ -5,6 +5,7 @@ import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import {
   condicionEnLaFundacion,
   materiasInscritas,
+  notas360DelEstudiante,
   notasDelEstudiante,
   type EstudianteDeSesion,
 } from "@/server/estudiantes/portal";
@@ -144,9 +145,10 @@ export async function instruccionesPara(
   estudiante: EstudianteDeSesion,
   idioma: "es" | "en",
 ): Promise<string> {
-  const [materias, notas, condicion, asignaciones] = await Promise.all([
+  const [materias, notas, notas360, condicion, asignaciones] = await Promise.all([
     materiasInscritas(estudiante.id),
     notasDelEstudiante(estudiante.id),
+    notas360DelEstudiante(estudiante.id),
     condicionEnLaFundacion(estudiante.id, 3),
     asignacionesDelEstudiante(estudiante.id),
   ]);
@@ -154,6 +156,7 @@ export async function instruccionesPara(
   const valores = notas.map((nota) => nota.nota);
   // El índice sale de los de cada fila, no de convertir el promedio: el
   // historial universitario trae el suyo guardado (ver `notasDelEstudiante`).
+  // Solo de la carrera: las notas de 360 se listan aparte y no entran en él.
   const indice = promedio(notas.map((nota) => nota.gpa));
   const media = promedio(valores);
 
@@ -199,7 +202,14 @@ export async function instruccionesPara(
       "Calificaciones registradas:",
       notas.map(
         (nota) =>
-          `${nota.materia} (${nota.periodo}, ${nota.origen === "g360" ? "Global Effect 360" : "universidad"}): ${nota.nota.toFixed(1)} — ${nota.letra}`,
+          `${nota.materia} (${nota.periodo}, universidad): ${nota.nota.toFixed(1)} — ${nota.letra}`,
+      ),
+    ),
+    lista(
+      "Calificaciones de Global Effect 360 (no cuentan para el índice académico):",
+      notas360.map(
+        (nota) =>
+          `${nota.materia} (${nota.periodo}): ${nota.nota.toFixed(1)} — ${nota.letra}`,
       ),
     ),
     lista(

@@ -270,7 +270,79 @@ una subida real a Storage.**
 
 ---
 
+## 1 nov 2026 — Etapa 3 (parte 2): asistencia, fechas, nota final y 360 en el expediente (migraciones `0068`, `0069`)
+
+**Petición.** Cerrar los huecos que dejó la auditoría de la parte 1.
+
+**Método.** Tres bloques ejecutados en secuencia por agentes distintos (los
+bloques tocan los mismos archivos del panel del profesor y los mismos archivos
+de traducción, así que en paralelo se habrían pisado). Cada bloque se verificó
+con las cinco comprobaciones antes de lanzar el siguiente, y yo revisé a mano
+el SQL con control de acceso (marcar asistencia).
+
+**Bloque A — asistencia, fechas, docente y cuatrimestres.**
+- *Decisión de diseño:* "las fechas de clase las decide administración" y "el
+  profesor marca presente o ausente por clase" se resolvieron con un solo
+  concepto: la **sesión** (`sesion_360`). Administración programa las sesiones
+  de cada clase y cuatrimestre; el profesor marca `asistencia_360` en cada una.
+  Así la fecha de clase y la asistencia no pueden desincronizarse.
+- *Seguridad:* programar exige `academico.escribir`; marcar exige
+  `docencia.impartir` y el filtro por `docente_id` va **dentro** de la propia
+  sentencia SQL (solo se omite con `academico.escribir`).
+- *Cuatrimestres:* función pura `validarPeriodo` (`src/lib/periodos.ts`): tipo
+  cuatrimestre, inicio y fin en el mismo año calendario (enero–diciembre), sin
+  traslape y a lo sumo 4 por año. Se aplica en tres sitios que escribían fechas
+  de período sin validar: `guardarPeriodo`, `guardarVentana` y el arrastre de la
+  línea de tiempo (`moverBarra`).
+- `guardarMateria360` ahora escribe docente, horario, aula y cupo: antes dar
+  una clase exigía SQL manual.
+
+**Bloque B — tareas por período, nota final y decisión.**
+- Las tareas de 360 pasan a ligarse al cuatrimestre (`asignacion.periodo_id`);
+  `NULL` conserva el comportamiento anterior para los datos existentes. Corrige
+  que quien repite una materia heredara tareas, entregas y promedio.
+- **Nota final derivada** (`calcularNotaFinal`): promedio ponderado por `peso`
+  de nota/puntaje máximo. *Decisión de producto declarada:* una tarea vencida
+  sin entrega cuenta como 0; una vencida **entregada y aún sin calificar no
+  cuenta**, para no castigar al estudiante por la demora de quien revisa. La
+  dueña puede cambiar esta regla.
+- El profesor ve la propuesta, puede usarla o teclear otra; si difiere, la
+  auditoría guarda ambas (constancia de la anulación).
+- **Aprobó/reprobó lo decide el profesor** (el umbral de 70 solo sugiere); se
+  guarda quién decidió y cuándo.
+- La escala de notas se amplía a 1000 puntos (`NUMERIC(6,2)`), porque con
+  `(5,2)` una tarea de 1000 puntos ni siquiera se podía publicar.
+- `prematriculada → cursando`: no había quien lo hiciera. Se resuelve de forma
+  **perezosa** (al abrir las pantallas de 360), no con un cron: no hay
+  infraestructura de tareas programadas y la operación es idempotente y barata.
+- El cupo cuenta solo el mismo cuatrimestre.
+
+**Bloque C — expediente, historial e índices.**
+- El expediente y el historial muestran las materias de 360 por cuatrimestre
+  (estado, nota, quién decidió, asistencia), en un bloque **aparte** de la
+  carrera.
+- **Separación de índices:** el índice académico de la carrera ya no se mezcla
+  con 360 (contradecía el diseño original de la migración `0027`); 360 tiene su
+  propio promedio. Efecto colateral aceptado: el inicio del portal del
+  estudiante deja de mostrar notas de 360 en "recientes".
+- El filtro por período se completó en calendario y agenda del estudiante.
+
+**Verificación.** Las cinco comprobaciones sobre las tres partes, build incluido.
+
+**Limitaciones que se declaran (importante para la defensa).**
+1. **Ninguna consulta nueva se ejecutó contra una base real** ni se probó nada
+   en navegador: la validación es estática (tipos, lint, build).
+2. `validarPeriodo` y `calcularNotaFinal` son funciones puras, ideales para
+   pruebas unitarias, pero el proyecto no tiene marco de pruebas.
+3. La base no impide por sí sola que una marca de asistencia apunte a una
+   inscripción de otra materia o período; lo garantiza el JOIN de la acción, no
+   un trigger.
+4. Inscripciones calificadas **antes** de la migración quedan sin "quién
+   decidió".
+5. Pendiente de aplicar a la base: `0066`, `0067`, `0068` y `0069`, en orden.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
-- Etapa 3 (parte 2) — asistencia, fechas, nota final, expediente (ver arriba).
 - Etapa 4 — administrativo como ERP: bandeja y solicitudes a contabilidad.

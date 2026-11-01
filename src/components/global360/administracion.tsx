@@ -46,10 +46,12 @@ export function Administracion360({
   materias,
   ventanas,
   periodos,
+  docentes,
 }: {
   materias: readonly MateriaCatalogo[];
   ventanas: readonly Ventana[];
   periodos: readonly { id: string; nombre: string }[];
+  docentes: readonly { id: string; nombre: string }[];
 }) {
   const t = useTranslations("global360");
   const [editando, setEditando] = useState<string | null>(null);
@@ -147,7 +149,10 @@ export function Administracion360({
           </div>
 
           {editando === "nueva" && (
-            <FormularioMateria alTerminar={() => setEditando(null)} />
+            <FormularioMateria
+              docentes={docentes}
+              alTerminar={() => setEditando(null)}
+            />
           )}
 
           {materias.length === 0 ? (
@@ -207,6 +212,7 @@ export function Administracion360({
                   {editando === materia.id && (
                     <FormularioMateria
                       materia={materia}
+                      docentes={docentes}
                       alTerminar={() => setEditando(null)}
                     />
                   )}
@@ -223,9 +229,11 @@ export function Administracion360({
 /** Alta y edición de una materia. Con `materia`, es edición. */
 function FormularioMateria({
   materia,
+  docentes,
   alTerminar,
 }: {
   materia?: MateriaCatalogo;
+  docentes: readonly { id: string; nombre: string }[];
   alTerminar: () => void;
 }) {
   const t = useTranslations("global360");
@@ -290,11 +298,67 @@ function FormularioMateria({
           />
         </div>
 
+        <div className="space-y-1.5 lg:col-span-2">
+          <Label htmlFor={`m-docente-${clave}`}>{t("fieldTeacher")}</Label>
+          <select
+            id={`m-docente-${clave}`}
+            name="docente"
+            defaultValue={materia?.docente_id ?? ""}
+            aria-invalid={estado.estado === "docente_invalido" || undefined}
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-control border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+          >
+            <option value="">{t("noTeacher")}</option>
+            {docentes.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`m-horario-${clave}`}>{t("fieldSchedule")}</Label>
+          <Input
+            id={`m-horario-${clave}`}
+            name="horario"
+            defaultValue={materia?.horario ?? ""}
+            maxLength={120}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`m-aula-${clave}`}>{t("fieldRoom")}</Label>
+          <Input
+            id={`m-aula-${clave}`}
+            name="aula"
+            defaultValue={materia?.aula ?? ""}
+            maxLength={80}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`m-cupo-${clave}`}>{t("fieldCapacity")}</Label>
+          <Input
+            id={`m-cupo-${clave}`}
+            name="cupo_maximo"
+            type="number"
+            min={1}
+            required
+            defaultValue={materia?.cupo_maximo ?? 30}
+            aria-invalid={estado.estado === "cupo_invalido" || undefined}
+          />
+        </div>
       </div>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "nombre_vacio" ? t("errName") : t("errGeneric")}
+          {estado.estado === "nombre_vacio"
+            ? t("errName")
+            : estado.estado === "cupo_invalido"
+              ? t("errCapacity")
+              : estado.estado === "docente_invalido"
+                ? t("errTeacher")
+                : t("errGeneric")}
         </p>
       )}
 
@@ -396,11 +460,13 @@ function FormularioVentana({
         <p role="alert" className="text-destructive text-xs">
           {estado.estado === "fechas_invalidas"
             ? t("errDates")
-            : estado.estado === "ronda_invalida"
-              ? t("errTanda")
-              : estado.estado === "ventana_solapada"
-                ? t("errOverlap")
-                : t("errGeneric")}
+            : estado.estado === "fuera_de_periodo"
+              ? t("errOutsideTerm")
+              : estado.estado === "ronda_invalida"
+                ? t("errTanda")
+                : estado.estado === "ventana_solapada"
+                  ? t("errOverlap")
+                  : t("errGeneric")}
         </p>
       )}
 

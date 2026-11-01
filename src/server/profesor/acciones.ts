@@ -5,10 +5,10 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
-import { NOTA_APROBADA } from "@/lib/notas";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
+import { propuestaDeInscripcion } from "@/server/profesor/consultas";
 
 /**
  * Gestión de las clases de Global Effect 360: tareas, revisión de entregas y
@@ -36,6 +36,7 @@ export type EstadoAcademico = {
     | "no_encontrado"
     | "nombre_vacio"
     | "nota_invalida"
+    | "decision_invalida"
     | "invalido"
     | "error";
 };
@@ -67,11 +68,15 @@ export async function publicarTarea(
   const puntajeMaximo = Math.max(1, Math.min(1000, Number(datos.get("puntaje_maximo") || 100)));
   const permiteTardias = datos.get("permite_entregas_tardias") !== "false";
   const instrucciones = String(datos.get("instrucciones_entrega") ?? "").trim().slice(0, 2000);
+  const periodoId = String(datos.get("periodo") ?? "");
+  const peso = Number(datos.get("peso") || 1);
 
   if (!titulo) return { estado: "nombre_vacio" };
   if (tipo !== "tarea" && tipo !== "examen") return { estado: "invalido" };
 
-  if (!esUuid(materiaId)) return { estado: "invalido" };
+  if (!esUuid(materiaId) || !esUuid(periodoId)) return { estado: "invalido" };
+  // NUMERIC(5,2) admite hasta 999.99; 100 sobra para un peso relativo.
+  if (!Number.isFinite(peso) || peso <= 0 || peso > 100) return { estado: "invalido" };
 
   try {
     /*
@@ -82,17 +87,24 @@ export async function publicarTarea(
     const creada = await consultarUna<{ id: string }>(
       `INSERT INTO asignacion (
          titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
-         limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega
+         limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega,
+         periodo_id, peso
        )
        SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
               NULLIF($4, '')::timestamptz, $5,
-              $8, $9, $10, $11, NULLIF($12, '')
+              $8, $9, $10, $11, NULLIF($12, ''),
+              $13, $14
          FROM materia_360 m
         WHERE m.id = $6
           AND ($7::uuid IS NULL OR m.docente_id = $7)
+          -- Una tarea en un período donde nadie cursa no la vería nadie.
+          AND EXISTS (SELECT 1 FROM inscripcion_360 i
+                       WHERE i.materia_id = m.id
+                         AND i.periodo_id = $13
+                         AND i.estado <> 'retirada')
        RETURNING id`,
       [titulo, descripcion, tipo, vence, usuario.id, materiaId,
-       puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones],
+       puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones, periodoId, peso],
     );
 
     if (!creada) return { estado: "no_encontrado" };
@@ -102,7 +114,7 @@ export async function publicarTarea(
       accion: "tarea.publicada",
       entidad: "asignacion",
       entidadId: creada.id,
-      datos: { titulo, materia_360_id: materiaId },
+      datos: { titulo, materia_360_id: materiaId, periodo_id: periodoId, peso },
     });
   } catch (error) {
     console.error("[academico] no se pudo publicar la tarea", error);
@@ -145,33 +157,49 @@ export async function revisarEntrega(
 
   const valor = nota === "" ? null : Number(nota);
 
-  if (valor !== null && (!Number.isFinite(valor) || valor < 0 || valor > 100)) {
+  if (valor !== null && (!Number.isFinite(valor) || valor < 0)) {
     return { estado: "nota_invalida" };
   }
 
   try {
-    // La entrega tiene que ser de una clase de este docente. Las dos vías, en
-    // el WHERE, igual que en la consulta que las lista.
-    const revisada = await consultarUna<{ id: string }>(
-      `UPDATE entrega_estudiante d
-          SET estado = CASE WHEN $2::numeric IS NULL THEN d.estado ELSE 'calificado' END,
-              calificacion = $2::numeric,
-              comentario_profesor = NULLIF($3, ''),
-              revisada_por_id = $4,
-              revisada_en = now()
-         FROM asignacion a
-         LEFT JOIN materia     mu ON mu.id = a.materia_id
-         LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
-        WHERE d.id = $1
-          AND a.id = d.asignacion_id
-          AND ($5::uuid IS NULL
-               OR mu.profesor_usuario_id = $5
-               OR m3.docente_id          = $5)
-      RETURNING d.id`,
+    /*
+     * La entrega tiene que ser de una clase de este docente (las dos vías, en
+     * el WHERE) y la nota cabe en la escala de ESA tarea: `puntaje_maximo` va
+     * de 1 a 1000, así que el tope ya no es 100. Se lee en la misma consulta
+     * para no tener una ventana entre comprobar y escribir; el SELECT final
+     * distingue "no es tuya" de "nota fuera de escala".
+     */
+    const revisada = await consultarUna<{ id: string; maximo: number; escrita: boolean }>(
+      `WITH objetivo AS (
+         SELECT d.id, coalesce(a.puntaje_maximo, 100) AS maximo
+           FROM entrega_estudiante d
+           JOIN asignacion a ON a.id = d.asignacion_id
+           LEFT JOIN materia     mu ON mu.id = a.materia_id
+           LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
+          WHERE d.id = $1
+            AND ($5::uuid IS NULL
+                 OR mu.profesor_usuario_id = $5
+                 OR m3.docente_id          = $5)
+       ), escrita AS (
+         UPDATE entrega_estudiante d
+            SET estado = CASE WHEN $2::numeric IS NULL THEN d.estado ELSE 'calificado' END,
+                calificacion = $2::numeric,
+                comentario_profesor = NULLIF($3, ''),
+                revisada_por_id = $4,
+                revisada_en = now()
+           FROM objetivo o
+          WHERE d.id = o.id
+            AND ($2::numeric IS NULL OR $2::numeric <= o.maximo)
+        RETURNING d.id
+       )
+       SELECT o.id, o.maximo::float8 AS maximo,
+              EXISTS (SELECT 1 FROM escrita) AS escrita
+         FROM objetivo o`,
       [id, valor, comentario, usuario.id, puedeTodo ? null : usuario.id],
     );
 
     if (!revisada) return { estado: "no_encontrado" };
+    if (!revisada.escrita) return { estado: "nota_invalida" };
 
     await registrar({
       usuarioId: usuario.id,
@@ -215,6 +243,7 @@ export async function calificarInscripcion360(
 
   const id = String(datos.get("id") ?? "");
   const nota = String(datos.get("nota") ?? "").trim();
+  const decision = String(datos.get("decision") ?? "");
 
   if (!esUuid(id)) return { estado: "no_encontrado" };
 
@@ -224,14 +253,23 @@ export async function calificarInscripcion360(
     return { estado: "nota_invalida" };
   }
 
-  const estado =
-    valor === null ? "cursando" : valor >= NOTA_APROBADA ? "aprobada" : "reprobada";
+  // Sin nota no hay decisión; con nota hace falta que alguien la tome. El
+  // umbral solo SUGIERE en la pantalla: aprobar o reprobar es del profesor.
+  if (valor !== null && decision !== "aprobada" && decision !== "reprobada") {
+    return { estado: "decision_invalida" };
+  }
+
+  const estado = valor === null ? "cursando" : decision;
 
   try {
+    const propuesta = await propuestaDeInscripcion(id);
+
     // Una inscripción retirada no se califica: el estudiante no terminó la clase.
     const calificada = await consultarUna<{ id: string }>(
       `UPDATE inscripcion_360 i
-          SET nota = $2::numeric, estado = $3
+          SET nota = $2::numeric, estado = $3,
+              decidida_por = CASE WHEN $2::numeric IS NULL THEN NULL ELSE $5::uuid END,
+              decidida_en  = CASE WHEN $2::numeric IS NULL THEN NULL ELSE now() END
          FROM materia_360 m
         WHERE i.id = $1
           AND m.id = i.materia_id
@@ -241,7 +279,7 @@ export async function calificarInscripcion360(
       // Sin filtro solo quien administra lo académico. Antes dependía de tener
       // `docencia.impartir`: quitárselo a una persona la dejaba calificando
       // cualquier clase en vez de ninguna.
-      [id, valor, estado, usuarioTienePermiso(usuario, "academico.escribir") ? null : usuario.id],
+      [id, valor, estado, usuarioTienePermiso(usuario, "academico.escribir") ? null : usuario.id, usuario.id],
     );
 
     if (!calificada) return { estado: "no_encontrado" };
@@ -251,7 +289,11 @@ export async function calificarInscripcion360(
       accion: "inscripcion_360.calificada",
       entidad: "inscripcion_360",
       entidadId: calificada.id,
-      datos: { nota: valor, estado },
+      // Si la nota no es la propuesta, queda constancia de que se anuló.
+      datos:
+        valor !== null && (propuesta === null || Math.abs(valor - propuesta) > 0.005)
+          ? { nota: valor, estado, propuesta }
+          : { nota: valor, estado },
     });
   } catch (error) {
     console.error("[academico] no se pudo calificar la inscripción de 360", error);

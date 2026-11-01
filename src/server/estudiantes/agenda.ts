@@ -154,7 +154,13 @@ export async function agendaDelEstudiante(
         AND (
           a.materia_id IN (SELECT i.materia_id FROM inscripcion i WHERE i.estudiante_id = e.id AND i.estado = 'activa')
           OR
-          a.materia_360_id IN (SELECT i360.materia_id FROM inscripcion_360 i360 WHERE i360.estudiante_id = e.id AND i360.estado IN ('cursando', 'prematriculada'))
+          -- Una tarea con período solo es de las inscripciones de ESE período
+            -- (nula = anterior a la 0069, visible para todas).
+            EXISTS (SELECT 1 FROM inscripcion_360 i360
+                     WHERE i360.materia_id = a.materia_360_id
+                       AND i360.estudiante_id = e.id
+                       AND i360.estado IN ('cursando', 'prematriculada')
+                       AND (a.periodo_id IS NULL OR a.periodo_id = i360.periodo_id))
         )
 
       UNION ALL
@@ -240,7 +246,13 @@ export async function mesesConAgenda(
           AND (
             a.materia_id IN (SELECT i.materia_id FROM inscripcion i WHERE i.estudiante_id = e.id AND i.estado = 'activa')
             OR
-            a.materia_360_id IN (SELECT i360.materia_id FROM inscripcion_360 i360 WHERE i360.estudiante_id = e.id AND i360.estado IN ('cursando', 'prematriculada'))
+            -- Una tarea con período solo es de las inscripciones de ESE período
+            -- (nula = anterior a la 0069, visible para todas).
+            EXISTS (SELECT 1 FROM inscripcion_360 i360
+                     WHERE i360.materia_id = a.materia_360_id
+                       AND i360.estudiante_id = e.id
+                       AND i360.estado IN ('cursando', 'prematriculada')
+                       AND (a.periodo_id IS NULL OR a.periodo_id = i360.periodo_id))
           )
 
        UNION ALL

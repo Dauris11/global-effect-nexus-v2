@@ -6,6 +6,7 @@ import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
 import { aMs, type CambioDeFechas } from "@/lib/linea-tiempo";
+import { validarPeriodo, type PeriodoExistente } from "@/lib/periodos";
 import { usuarioTienePermiso, type Permiso } from "@/lib/rbac";
 
 const UUID =
@@ -54,6 +55,21 @@ export async function moverBarra(
       }
 
       if (cambio.clase === "periodo") {
+        // Mismas reglas que al guardar el período (mismo año, sin traslape, máximo
+        // por año). Se lee dentro de la transacción para no validar contra datos
+        // viejos. `tipo` no cambia al arrastrar: se conserva el que ya tiene,
+        // y un semestre antiguo se trata como cuatrimestre solo para esta regla.
+        const { rows: todos } = await cliente.query<PeriodoExistente>(
+          `SELECT id, to_char(fecha_inicio, 'YYYY-MM-DD') AS fecha_inicio,
+                  to_char(fecha_fin, 'YYYY-MM-DD') AS fecha_fin
+             FROM periodo`,
+        );
+        const error = validarPeriodo(
+          { id, tipo: "cuatrimestre", fecha_inicio: inicio, fecha_fin: fin },
+          todos,
+        );
+        if (error) return false;
+
         const { rows } = await cliente.query<{ id: string }>(
           `UPDATE periodo SET fecha_inicio = $2::date, fecha_fin = $3::date
             WHERE id = $1 RETURNING id`,

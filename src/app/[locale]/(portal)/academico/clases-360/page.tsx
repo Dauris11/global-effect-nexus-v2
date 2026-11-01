@@ -10,11 +10,14 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { enlaceDeDocumento } from "@/lib/supabase/almacen";
+import { iniciarInscripcionesVigentes } from "@/server/global360/consultas";
+import { asistenciaDeClases360 } from "@/server/profesor/asistencia";
 import {
   cifrasDocente,
   clases360,
   entregasPorRevisar,
   inscritosDeClase360,
+  periodosParaTareas360,
 } from "@/server/profesor/consultas";
 
 export async function generateMetadata({
@@ -72,10 +75,15 @@ export default async function PaginaClases360({
 
   const docenteId = puedeTodo ? null : usuario.id;
 
-  const [cifras, clases, entregasBrutas, mensajes] = await Promise.all([
+  // Antes de leer: así el estado que se pinta ya es el de hoy.
+  await iniciarInscripcionesVigentes();
+
+  const [cifras, clases, entregasBrutas, asistencia, periodosDeTarea, mensajes] = await Promise.all([
     cifrasDocente(docenteId),
     clases360(docenteId),
     entregasPorRevisar(docenteId, 20),
+    asistenciaDeClases360(docenteId),
+    periodosParaTareas360(docenteId),
     mensajesCliente(["academic"]),
   ]);
 
@@ -117,6 +125,9 @@ export default async function PaginaClases360({
           clases={clases}
           inscritosPorClase={Object.fromEntries(porClase)}
           entregas={entregas}
+          asistencia={asistencia}
+          periodosDeTarea={periodosDeTarea}
+          puedeProgramar={puedeTodo}
           puedeCalificar={usuarioTienePermiso(usuario, "calificaciones.registrar")}
         />
       </NextIntlClientProvider>

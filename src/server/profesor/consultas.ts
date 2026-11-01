@@ -1,4 +1,6 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
+import { calcularNotaFinal } from "@/lib/nota-final";
 
 /**
  * Gestión académica: las clases de Global Effect 360 y las materias del docente.
@@ -87,47 +89,173 @@ export type InscritoEn360 = {
   periodo: string | null;
   ronda: number;
   nota: number | null;
-  /** Promedio de sus entregas calificadas: la base para poner la nota final. */
-  promedio_tareas: number | null;
+  /**
+   * Nota final sugerida con las tareas DE SU PERÍODO (`calcularNotaFinal`).
+   * Es una propuesta: el profesor decide la nota.
+   */
+  notaPropuesta: number | null;
   entregadas: number;
+  /** Tareas evaluables del período de esta inscripción. */
   tareas: number;
+  /** Quién dio la materia por aprobada o reprobada, y cuándo. */
+  decidida_por: string | null;
+  decidida_en: Date | null;
 };
 
-/** Los inscritos en una clase de 360, con su avance y su nota. */
+type FilaInscrito = Omit<InscritoEn360, "notaPropuesta" | "entregadas" | "tareas">;
+
+type FilaTareaDeInscrito = {
+  inscripcion_id: string;
+  tipo: string;
+  peso: number;
+  puntaje_maximo: number;
+  fecha_vencimiento: Date | null;
+  calificacion: number | null;
+  entregada: boolean;
+};
+
+/** Las tareas evaluables de cada inscripción, ya filtradas por su período. */
+async function tareasPorInscripcion(
+  materiaId: string | null,
+  inscripcionId: string | null,
+): Promise<Map<string, FilaTareaDeInscrito[]>> {
+  const tareas = await consultar<FilaTareaDeInscrito>(
+    `SELECT i.id AS inscripcion_id,
+            a.tipo::text AS tipo,
+            a.peso::float8 AS peso,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            a.fecha_vencimiento,
+            d.calificacion::float8 AS calificacion,
+            coalesce(d.estado IN ('entregado', 'tarde', 'calificado'), false) AS entregada
+       FROM inscripcion_360 i
+       JOIN asignacion a
+         ON a.materia_360_id = i.materia_id
+        AND a.tipo IN ('tarea', 'examen')
+        AND (a.periodo_id IS NULL OR a.periodo_id = i.periodo_id)
+       LEFT JOIN entrega_estudiante d
+         ON d.asignacion_id = a.id AND d.estudiante_id = i.estudiante_id
+      WHERE ($1::uuid IS NULL OR i.materia_id = $1)
+        AND ($2::uuid IS NULL OR i.id = $2)`,
+    [materiaId, inscripcionId],
+  );
+
+  const porInscripcion = new Map<string, FilaTareaDeInscrito[]>();
+  for (const tarea of tareas) {
+    const lista = porInscripcion.get(tarea.inscripcion_id) ?? [];
+    lista.push(tarea);
+    porInscripcion.set(tarea.inscripcion_id, lista);
+  }
+
+  return porInscripcion;
+}
+
+function proponer(tareas: readonly FilaTareaDeInscrito[]): number | null {
+  return calcularNotaFinal(
+    tareas.map((t) => ({
+      tipo: t.tipo,
+      peso: t.peso,
+      puntajeMaximo: t.puntaje_maximo,
+      calificacion: t.calificacion,
+      vence: t.fecha_vencimiento,
+      entregada: t.entregada,
+    })),
+  ).propuesta;
+}
+
+/**
+ * La propuesta de UNA inscripción, calculada en el servidor.
+ *
+ * La usa la acción de calificar para dejar constancia de si el profesor anuló
+ * la propuesta: no se fía de lo que mande el formulario.
+ */
+export async function propuestaDeInscripcion(
+  inscripcionId: string,
+): Promise<number | null> {
+  const mapa = await tareasPorInscripcion(null, inscripcionId);
+
+  return proponer(mapa.get(inscripcionId) ?? []);
+}
+
+/**
+ * Los inscritos de una clase de 360, con su avance y su nota.
+ *
+ * Las tareas de cada inscrito son las de SU período: una con `periodo_id = P`
+ * solo cuenta para inscripciones de P, y una con `periodo_id` nulo (anterior a
+ * la 0069) cuenta para todas. Así quien repite la materia no hereda las notas
+ * del intento anterior.
+ */
 export async function inscritosDeClase360(
   materiaId: string,
 ): Promise<InscritoEn360[]> {
-  return consultar<InscritoEn360>(
-    `SELECT i.id,
-            e.id AS estudiante_id,
-            e.nombre,
-            i.estado,
-            p.nombre AS periodo,
-            i.ronda,
-            i.nota::float8 AS nota,
-            (SELECT round(avg(d.calificacion), 2)::float8
-               FROM entrega_estudiante d
-               JOIN asignacion a ON a.id = d.asignacion_id
-              WHERE a.materia_360_id = $1
-                AND d.estudiante_id = e.id
-                AND d.calificacion IS NOT NULL) AS promedio_tareas,
-            (SELECT count(*)::int
-               FROM entrega_estudiante d
-               JOIN asignacion a ON a.id = d.asignacion_id
-              WHERE a.materia_360_id = $1
-                AND d.estudiante_id = e.id
-                AND d.estado IN ('entregado', 'tarde', 'calificado')) AS entregadas,
-            (SELECT count(*)::int
-               FROM asignacion a
-              WHERE a.materia_360_id = $1
-                AND a.tipo IN ('tarea', 'examen')) AS tareas
+  const [inscritos, porInscripcion] = await Promise.all([
+    consultar<FilaInscrito>(
+      `SELECT i.id,
+              e.id AS estudiante_id,
+              e.nombre,
+              i.estado,
+              p.nombre AS periodo,
+              i.ronda,
+              i.nota::float8 AS nota,
+              u.nombre AS decidida_por,
+              i.decidida_en
+         FROM inscripcion_360 i
+         JOIN estudiante e ON e.id = i.estudiante_id
+         LEFT JOIN periodo p ON p.id = i.periodo_id
+         LEFT JOIN usuario u ON u.id = i.decidida_por
+        WHERE i.materia_id = $1
+        ORDER BY p.fecha_inicio DESC NULLS LAST, i.ronda, e.nombre`,
+      [materiaId],
+    ),
+    tareasPorInscripcion(materiaId, null),
+  ]);
+
+  return inscritos.map((inscrito) => {
+    const suyas = porInscripcion.get(inscrito.id) ?? [];
+
+    return {
+      ...inscrito,
+      notaPropuesta: proponer(suyas),
+      entregadas: suyas.filter((t) => t.entregada).length,
+      tareas: suyas.length,
+    };
+  });
+}
+
+export type PeriodoParaTarea = {
+  id: string;
+  nombre: string;
+  /** Hoy cae dentro del período: es el que se propone por defecto. */
+  vigente: boolean;
+};
+
+/**
+ * Los períodos donde cada clase tiene inscritos, para elegir a cuál pertenece
+ * una tarea nueva. Con `docenteId` solo las clases de esa persona.
+ *
+ * Solo inscripciones no retiradas: una tarea en un período donde nadie cursa
+ * no la vería nadie.
+ */
+export async function periodosParaTareas360(
+  docenteId: string | null,
+): Promise<Record<string, PeriodoParaTarea[]>> {
+  const filas = await consultar<PeriodoParaTarea & { materia_id: string }>(
+    `SELECT DISTINCT i.materia_id, p.id, p.nombre, p.fecha_inicio,
+            (${SQL_HOY_RD} BETWEEN p.fecha_inicio AND p.fecha_fin) AS vigente
        FROM inscripcion_360 i
-       JOIN estudiante e ON e.id = i.estudiante_id
-       LEFT JOIN periodo p ON p.id = i.periodo_id
-      WHERE i.materia_id = $1
-      ORDER BY p.fecha_inicio DESC NULLS LAST, i.ronda, e.nombre`,
-    [materiaId],
+       JOIN materia_360 m ON m.id = i.materia_id
+       JOIN periodo p ON p.id = i.periodo_id
+      WHERE i.estado <> 'retirada'
+        AND ($1::uuid IS NULL OR m.docente_id = $1)
+      ORDER BY p.fecha_inicio DESC`,
+    [docenteId],
   );
+
+  const resultado: Record<string, PeriodoParaTarea[]> = {};
+  for (const { materia_id, id, nombre, vigente } of filas) {
+    (resultado[materia_id] ??= []).push({ id, nombre, vigente });
+  }
+
+  return resultado;
 }
 
 export type MateriaDelDocente = {
@@ -191,6 +319,8 @@ export type EntregaPorRevisar = {
   /** La respuesta que el estudiante escribió en la plataforma. */
   texto_respuesta: string | null;
   calificacion: number | null;
+  /** Escala de ESTA tarea: la nota va de 0 a aquí. */
+  puntaje_maximo: number;
   comentario_profesor: string | null;
 };
 
@@ -215,6 +345,7 @@ export async function entregasPorRevisar(
             d.archivo_url,
             d.texto_respuesta,
             d.calificacion::float8 AS calificacion,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
             d.comentario_profesor
        FROM entrega_estudiante d
        JOIN asignacion  a  ON a.id = d.asignacion_id

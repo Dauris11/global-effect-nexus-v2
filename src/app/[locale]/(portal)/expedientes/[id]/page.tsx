@@ -3,6 +3,7 @@ import { ArrowLeft, FileQuestion } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
+import { Historial360 } from "@/components/expedientes/historial-360";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
 import { FormularioEdicionExpediente } from "@/components/expedientes/formulario-edicion-expediente";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ import {
 } from "@/lib/rbac";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
+import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
 import { obtenerExpediente } from "@/server/expedientes/consultas";
 
@@ -133,14 +135,17 @@ export default async function PaginaExpediente({
    *
    * Se agrupa en JavaScript y no en SQL, que es lo contrario de lo que hace el
    * resto del sistema, y hay un motivo concreto: el índice sobre 4.00 sale de
-   * `notasDelEstudiante`, que devuelve el gpa GUARDADO cuando existe (historial
-   * universitario) y solo lo calcula con la escala de `lib/notas.ts` cuando
-   * falta (Global Effect 360). Agrupar en SQL obligaría a escribir esa escala de
-   * conversión dentro de la consulta, y entonces habría dos —la 0006 dice que
-   * la escala puede cambiar de un año a otro—. Son las notas de UNA persona:
+   * `notasDelEstudiante`, que devuelve el gpa GUARDADO del historial
+   * universitario; agrupar en SQL obligaría a escribir la escala de conversión
+   * dentro de la consulta, y la 0006 dice que puede cambiar de un año a otro.
+   * Global Effect 360 es otro programa: ni el índice ni la gráfica lo incluyen,
+   * va en su propia sección. Son las notas de UNA persona:
    * unas decenas de filas, no un agregado sobre la tabla entera.
    */
-  const notas = await notasDelEstudiante(expediente.id);
+  const [notas, historial360] = await Promise.all([
+    notasDelEstudiante(expediente.id),
+    historial360DelEstudiante(expediente.id),
+  ]);
 
   const porPeriodo = new Map<string, number[]>();
 
@@ -265,6 +270,8 @@ export default async function PaginaExpediente({
           </CardContent>
         </Card>
       )}
+
+      <Historial360 datos={historial360} />
 
       <FormularioEdicionExpediente
         expediente={expediente}

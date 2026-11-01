@@ -105,9 +105,15 @@ export async function asignacionesDelEstudiante(
            WHERE i.estudiante_id = $1 AND i.estado = 'activa'
         )
         OR
-        a.materia_360_id IN (
-          SELECT i360.materia_id FROM inscripcion_360 i360
-           WHERE i360.estudiante_id = $1 AND i360.estado IN ('cursando', 'prematriculada')
+        -- Una tarea con período solo es de las inscripciones de ESE período
+        -- (nula = anterior a la 0069, visible para todas): quien repite la
+        -- materia no hereda las tareas del intento anterior.
+        EXISTS (
+          SELECT 1 FROM inscripcion_360 i360
+           WHERE i360.materia_id = a.materia_360_id
+             AND i360.estudiante_id = $1
+             AND i360.estado IN ('cursando', 'prematriculada')
+             AND (a.periodo_id IS NULL OR a.periodo_id = i360.periodo_id)
         )
       )
       ORDER BY a.fecha_vencimiento ASC NULLS LAST, a.fecha_publicacion DESC`,

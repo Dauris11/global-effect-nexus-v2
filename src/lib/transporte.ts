@@ -121,12 +121,8 @@ export type PasajeroViaje = {
   presente: boolean;
 };
 
-/**
- * "Hoy" en hora dominicana, como fragmento SQL constante (no lleva valores).
- * La BD corre en UTC: con `CURRENT_DATE` el turno de las 8 PM (00:00 UTC)
- * caería en el día siguiente y se perdería su lista de pasajeros.
- */
-export const SQL_HOY_RD = "(now() AT TIME ZONE 'America/Santo_Domingo')::date";
+// Vive en `fecha-rd.ts` desde que lo usan también los cuatrimestres de 360.
+export { SQL_HOY_RD } from "@/lib/fecha-rd";
 
 /** Minutos desde medianoche en La Vega; el servidor puede estar en otra zona. */
 export function minutosActualesRD(ahora: Date = new Date()): number {

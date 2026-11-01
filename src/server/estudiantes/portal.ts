@@ -124,24 +124,21 @@ export type NotaDelEstudiante = {
 };
 
 /**
- * Notas del estudiante, agrupables por período.
+ * Notas de la CARRERA del estudiante, agrupables por período.
  *
- * Lee LAS DOS fuentes, porque cada una guarda sus notas en otra tabla:
- *
- *   - Global Effect 360 → `inscripcion_360.nota`, la nota final de cada
- *     materia de la Fundación (una por tanda), ya cerrada como `aprobada` o
- *     `reprobada`.
- *   - Universidad → `historial_calificacion`, una fila por materia cerrada,
- *     con la letra y el índice ya escritos.
- *
- * De 360 solo entran las inscripciones con nota y en estado final: una
- * `cursando` con nota provisional no es todavía una calificación, y una
- * `retirada` no tiene nada que calificar.
+ * Lee solo `historial_calificacion`: una fila por materia universitaria
+ * cerrada, con la letra y el índice ya escritos. Global Effect 360 es OTRO
+ * programa y no cuenta para el índice de la carrera (ver la nota de la 0027);
+ * sus notas salen de `notas360DelEstudiante`, y quien necesite las dos las pide
+ * por separado en vez de recibirlas mezcladas.
  *
  * El índice y la letra del historial se respetan tal como están guardados, no se
  * recalculan: la escala de conversión puede cambiar de un año a otro y eso es lo
- * que dice la migración 0006. Solo se completan cuando faltan, que es el caso de
- * 360, donde la base guarda el número y nada más.
+ * que dice la migración 0006.
+ *
+ * Ordena por el NOMBRE del cuatrimestre y no por fecha: un cuatrimestre ya
+ * cursado no suele tener fila en `periodo`. El nombre sigue la convención de la
+ * 0006 ('2026-I', '2026-II'), así que DESC pone el más reciente primero.
  *
  * `::float8` porque `pg` entrega NUMERIC como texto para no perder precisión, y
  * aquí hace falta un número con el que calcular promedios.
@@ -160,51 +157,20 @@ export async function notasDelEstudiante(
     letra: string | null;
     gpa: number | null;
   }>(
-    // El ORDEN va fuera de la unión, sobre las dos mitades a la vez, y ordena
-    // por el NOMBRE del período, no por su fecha de inicio. La fecha parece la
-    // clave natural y no sirve aquí: el historial universitario solo la tiene
-    // cuando su cuatrimestre coincide por nombre con una fila de `periodo`, y
-    // lo normal es que no coincida —son cuatrimestres ya cursados, anteriores
-    // a los períodos que la plataforma abre—. Con la fecha, un '2025-II' sin
-    // período caía por detrás de un '2025-I' que sí lo tenía. El nombre sigue
-    // la convención que fija la 0006 ('2026-I', '2026-II'), es único, y ordena
-    // igual a las dos mitades: DESC pone el más reciente primero.
-    `SELECT q.id, q.nota, q.origen, q.materia, q.periodo, q.periodo_id,
-            q.letra, q.gpa
-       FROM (
-              SELECT i.id::text AS id,
-                     i.nota::float8 AS nota,
-                     'g360' AS origen,
-                     m.nombre AS materia,
-                     p.nombre AS periodo,
-                     p.id::text AS periodo_id,
-                     NULL::text AS letra,
-                     NULL::float8 AS gpa
-                FROM inscripcion_360 i
-                JOIN materia_360 m ON m.id = i.materia_id
-                JOIN periodo     p ON p.id = i.periodo_id
-               WHERE i.estudiante_id = $1
-                 AND i.nota IS NOT NULL
-                 AND i.estado IN ('aprobada', 'reprobada')
-
-              UNION ALL
-
-              -- periodo_id sale del periodo que se llame igual que el
-              -- cuatrimestre, y solo cae al texto si no existe: así una nota de
-              -- las dos fuentes en el mismo cuatrimestre acaba en un único grupo.
-              SELECT h.id::text AS id,
-                     h.nota_numerica::float8 AS nota,
-                     'universidad' AS origen,
-                     h.materia AS materia,
-                     h.cuatrimestre AS periodo,
-                     coalesce(p.id::text, h.cuatrimestre) AS periodo_id,
-                     h.nota_letra AS letra,
-                     h.gpa::float8 AS gpa
-                FROM historial_calificacion h
-                LEFT JOIN periodo p ON p.nombre = h.cuatrimestre
-               WHERE h.estudiante_id = $1
-            ) q
-      ORDER BY q.periodo DESC, q.materia`,
+    // periodo_id sale del periodo que se llame igual que el cuatrimestre, y solo
+    // cae al texto si no existe, para que un cuatrimestre acabe en un único grupo.
+    `SELECT h.id::text AS id,
+            h.nota_numerica::float8 AS nota,
+            'universidad' AS origen,
+            h.materia AS materia,
+            h.cuatrimestre AS periodo,
+            coalesce(p.id::text, h.cuatrimestre) AS periodo_id,
+            h.nota_letra AS letra,
+            h.gpa::float8 AS gpa
+       FROM historial_calificacion h
+       LEFT JOIN periodo p ON p.nombre = h.cuatrimestre
+      WHERE h.estudiante_id = $1
+      ORDER BY h.cuatrimestre DESC, h.materia`,
     [estudianteId],
   );
 
@@ -212,6 +178,49 @@ export async function notasDelEstudiante(
     ...fila,
     letra: esLetra(fila.letra) ? fila.letra : letraDe(fila.nota),
     gpa: fila.gpa ?? gpaDe(fila.nota),
+  }));
+}
+
+/**
+ * Notas de Global Effect 360: `inscripcion_360.nota` de cada materia ya cerrada
+ * como `aprobada` o `reprobada`.
+ *
+ * Una `cursando` con nota provisional no es todavía una calificación, y una
+ * `retirada` no tiene nada que calificar. La base guarda el número y nada más,
+ * así que letra e índice se calculan con la escala de `lib/notas.ts`; sirven
+ * para mostrar, NO para el índice de la carrera.
+ */
+export async function notas360DelEstudiante(
+  estudianteId: string | null,
+): Promise<NotaDelEstudiante[]> {
+  if (!estudianteId) return [];
+  const filas = await consultar<{
+    id: string;
+    nota: number;
+    materia: string;
+    periodo: string;
+    periodo_id: string;
+  }>(
+    `SELECT i.id::text AS id,
+            i.nota::float8 AS nota,
+            m.nombre AS materia,
+            p.nombre AS periodo,
+            p.id::text AS periodo_id
+       FROM inscripcion_360 i
+       JOIN materia_360 m ON m.id = i.materia_id
+       JOIN periodo     p ON p.id = i.periodo_id
+      WHERE i.estudiante_id = $1
+        AND i.nota IS NOT NULL
+        AND i.estado IN ('aprobada', 'reprobada')
+      ORDER BY p.nombre DESC, m.nombre`,
+    [estudianteId],
+  );
+
+  return filas.map((fila) => ({
+    ...fila,
+    origen: "g360" as const,
+    letra: letraDe(fila.nota),
+    gpa: gpaDe(fila.nota),
   }));
 }
 

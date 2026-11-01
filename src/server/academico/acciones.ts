@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
-import { consultarUna } from "@/lib/db";
+import { consultar, consultarUna } from "@/lib/db";
+import { validarPeriodo, type PeriodoExistente } from "@/lib/periodos";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -40,6 +41,10 @@ export type EstadoCatalogo = {
     | "nombre_vacio"
     | "fechas_faltan"
     | "fin_antes_de_inicio"
+    | "tipo_invalido"
+    | "anio_distinto"
+    | "traslape"
+    | "demasiados_en_anio"
     | "duplicado"
     | "tiene_datos"
     | "faltan_campos"
@@ -54,7 +59,6 @@ export type EstadoCatalogo = {
   dependencias?: Record<string, number>;
 };
 
-const TIPOS_PERIODO = ["semestre", "cuatrimestre"];
 const ESTADOS_PERIODO = ["planificado", "activo", "completado"];
 const ESTADOS_MATERIA = ["activa", "inactiva"];
 
@@ -87,14 +91,24 @@ export async function guardarPeriodo(
   if (!inicio || !fin) return { estado: "fechas_faltan" };
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
 
-  // El CHECK de la tabla exige fin >= inicio y rechazaría la escritura con un
-  // error de base. Se comprueba antes para poder decir cuál de las dos fechas
-  // está mal, que es lo que la persona necesita saber.
-  if (fin < inicio) return { estado: "fin_antes_de_inicio" };
-
   // Desplegables que se pueden manipular en el navegador: se comprueban aquí.
-  const tipoOk = TIPOS_PERIODO.includes(tipo) ? tipo : "cuatrimestre";
   const estadoOk = ESTADOS_PERIODO.includes(estado) ? estado : "planificado";
+
+  // Las reglas del cuatrimestre (tipo, fechas, mismo año, sin traslape, máximo
+  // por año) viven en `validarPeriodo`. Se corren antes de escribir para poder
+  // decir cuál falla; el CHECK de la tabla solo sabe de fin >= inicio.
+  const existentes = await consultar<PeriodoExistente>(
+    `SELECT id, to_char(fecha_inicio, 'YYYY-MM-DD') AS fecha_inicio,
+            to_char(fecha_fin, 'YYYY-MM-DD') AS fecha_fin
+       FROM periodo`,
+  );
+  const error = validarPeriodo(
+    { id: id || null, tipo, fecha_inicio: inicio, fecha_fin: fin },
+    existentes,
+  );
+  if (error === "fechas_invalidas") return { estado: "fechas_faltan" };
+  if (error) return { estado: error };
+  const tipoOk = tipo;
 
   try {
     if (id) {

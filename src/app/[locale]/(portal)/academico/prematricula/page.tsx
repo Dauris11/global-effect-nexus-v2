@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { Administracion360 } from "@/components/global360/administracion";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
+import { docentesAsignables } from "@/server/academico/consultas";
 import {
   catalogo,
   periodosDisponibles,
@@ -45,11 +46,12 @@ export default async function PaginaPrematricula({
 
   await requerirPermiso("academico.escribir");
 
-  const [t, materias, lista, periodos, mensajes] = await Promise.all([
+  const [t, materias, lista, periodos, docentes, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "global360" }),
     catalogo(),
     ventanas(),
     periodosDisponibles(),
+    docentesAsignables(),
     mensajesCliente(["global360"]),
   ]);
 
@@ -70,6 +72,7 @@ export default async function PaginaPrematricula({
           materias={materias}
           ventanas={lista}
           periodos={periodos}
+          docentes={docentes}
         />
       </NextIntlClientProvider>
     </div>

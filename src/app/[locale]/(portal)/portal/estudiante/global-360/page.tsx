@@ -8,6 +8,7 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { AsistenciaEstudiante360 } from "@/components/global360/asistencia-estudiante";
 import { MatriculaCuatrimestral360 } from "@/components/estudiante/matricula-cuatrimestral-360";
 import {
   TarjetaMateriaG360,
@@ -27,10 +28,12 @@ import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import {
   avanceEn360,
   catalogoConSituacion,
+  iniciarInscripcionesVigentes,
   tandasDelEstudiante,
   ventanaVigente,
 } from "@/server/global360/consultas";
 import { catalogoMatricula360 } from "@/server/moodle/consultas";
+import { asistenciaDelEstudiante } from "@/server/profesor/asistencia";
 
 export async function generateMetadata({
   params,
@@ -69,16 +72,20 @@ export default async function PaginaGlobal360({
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
+  // Antes de leer: así el estado que se pinta ya es el de hoy.
+  await iniciarInscripcionesVigentes();
+
   const [t, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "global360" }),
     mensajesCliente(["global360"]),
   ]);
 
-  const [materias, avance, ventana, catalogoMatricula] = await Promise.all([
+  const [materias, avance, ventana, catalogoMatricula, asistencia] = await Promise.all([
     catalogoConSituacion(estudiante.id),
     avanceEn360(estudiante.id),
     ventanaVigente(),
     catalogoMatricula360(estudiante.id),
+    estudiante.id ? asistenciaDelEstudiante(estudiante.id) : Promise.resolve([]),
   ]);
 
   // Las tandas son del período de la ventana: sin ventana no hay período del
@@ -156,6 +163,10 @@ export default async function PaginaGlobal360({
           tandas={tandas}
         />
       </NextIntlClientProvider>
+
+      {asistencia.length > 0 && (
+        <AsistenciaEstudiante360 filas={asistencia} locale={locale} />
+      )}
 
       <section className="space-y-6 border-t border-linea pt-8">
         <div className="flex flex-wrap items-center gap-3">

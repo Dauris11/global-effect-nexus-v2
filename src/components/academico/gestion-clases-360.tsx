@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import {
+  CalendarCheck,
   ExternalLink,
   GraduationCap,
   Loader2,
@@ -12,6 +13,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { AsistenciaClase360 } from "@/components/academico/asistencia-clase-360";
+import { FilaInscrito } from "@/components/academico/fila-inscrito-360";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -22,15 +25,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
-  calificarInscripcion360,
   publicarTarea,
   revisarEntrega,
   type EstadoAcademico,
 } from "@/server/profesor/acciones";
+import type { AsistenciaDeClases } from "@/server/profesor/asistencia";
 import type {
   Clase360,
   EntregaPorRevisar,
   InscritoEn360,
+  PeriodoParaTarea,
 } from "@/server/profesor/consultas";
 
 const SELECTOR =
@@ -57,8 +61,16 @@ export function GestionClases360({
   inscritosPorClase,
   entregas,
   puedeCalificar,
+  asistencia,
+  puedeProgramar,
+  periodosDeTarea,
 }: {
   clases: readonly Clase360[];
+  asistencia: AsistenciaDeClases;
+  /** Períodos donde cada clase tiene inscritos: a cuál pertenece una tarea nueva. */
+  periodosDeTarea: Record<string, PeriodoParaTarea[]>;
+  /** `academico.escribir`: fija las fechas de clase. El profesor solo marca. */
+  puedeProgramar: boolean;
   inscritosPorClase: Record<string, InscritoEn360[]>;
   entregas: readonly (EntregaPorRevisar & { enlace: string | null })[];
   /** `calificaciones.registrar`: coordinación ve las notas pero no las pone. */
@@ -67,6 +79,7 @@ export function GestionClases360({
   const t = useTranslations("academic.classes360");
   const [abierto, setAbierto] = useState<string | null>(null);
   const [tareaEn, setTareaEn] = useState<string | null>(null);
+  const [asistenciaEn, setAsistenciaEn] = useState<string | null>(null);
 
   return (
     <div className="space-y-6">
@@ -169,6 +182,19 @@ export function GestionClases360({
                       <Button
                         type="button"
                         variant="ghost"
+                        size="sm"
+                        aria-expanded={asistenciaEn === clase.id}
+                        onClick={() =>
+                          setAsistenciaEn(asistenciaEn === clase.id ? null : clase.id)
+                        }
+                      >
+                        <CalendarCheck className="size-3.5" />
+                        {t("attendance")}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
                         size="icon"
                         title={t("newTask")}
                         aria-label={t("newTask")}
@@ -183,7 +209,18 @@ export function GestionClases360({
                   {tareaEn === clase.id && (
                     <FormularioTarea
                       materiaId={clase.id}
+                      periodos={periodosDeTarea[clase.id] ?? []}
                       alTerminar={() => setTareaEn(null)}
+                    />
+                  )}
+
+                  {asistenciaEn === clase.id && (
+                    <AsistenciaClase360
+                      materiaId={clase.id}
+                      sesiones={asistencia.sesiones[clase.id] ?? []}
+                      marcas={asistencia.marcas}
+                      periodos={asistencia.periodos[clase.id] ?? []}
+                      puedeProgramar={puedeProgramar}
                     />
                   )}
 
@@ -204,10 +241,10 @@ export function GestionClases360({
 }
 
 /**
- * Los inscritos de una clase: cumplimiento, promedio de tareas y nota final.
+ * Los inscritos de una clase: cumplimiento, nota propuesta y nota final.
  *
- * El promedio de tareas va al lado del campo de la nota porque es de donde el
- * docente la saca, pero no la rellena: la nota final puede pesar un examen o la
+ * La propuesta va al lado del campo de la nota porque es de donde el docente la
+ * saca, pero no la rellena sola: la nota final puede pesar un examen o la
  * participación, y eso lo decide quien da la clase.
  */
 function TablaInscritos({
@@ -235,103 +272,6 @@ function TablaInscritos({
         ))}
       </ul>
     </div>
-  );
-}
-
-function FilaInscrito({
-  fila,
-  puedeCalificar,
-}: {
-  fila: InscritoEn360;
-  puedeCalificar: boolean;
-}) {
-  const t = useTranslations("academic.classes360");
-  const [estado, enviar, enviando] = useActionState<EstadoAcademico, FormData>(
-    calificarInscripcion360,
-    { estado: "inicial" },
-  );
-
-  const retirada = fila.estado === "retirada";
-
-  return (
-    <li className="bg-muted/40 rounded-control flex flex-wrap items-center gap-3 px-3 py-2 text-xs">
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium">{fila.nombre}</span>
-        <span className="text-tinta-3 block truncate">
-          {[fila.periodo, t("round", { ronda: fila.ronda }), t(`status.${fila.estado}` as never)]
-            .filter(Boolean)
-            .join(" · ")}
-        </span>
-      </span>
-
-      <span className="text-tinta-3">
-        {t("taskAverage")}: <b>{fila.promedio_tareas?.toFixed(1) ?? "—"}</b>
-      </span>
-
-      <Badge
-        className={cn(
-          "text-[10px]",
-          fila.tareas > 0 && fila.entregadas >= fila.tareas
-            ? "bg-marca-700 text-white"
-            : "bg-marca-500/15 text-marca-600",
-        )}
-      >
-        {t("compliance")}: {fila.entregadas}/{fila.tareas}
-      </Badge>
-
-      {puedeCalificar && !retirada ? (
-        <form action={enviar} className="flex items-center gap-1.5">
-          <input type="hidden" name="id" value={fila.id} />
-          <Label htmlFor={`nota-${fila.id}`} className="sr-only">
-            {t("finalGrade")}
-          </Label>
-          <Input
-            id={`nota-${fila.id}`}
-            name="nota"
-            type="number"
-            min={0}
-            max={100}
-            step="0.1"
-            placeholder={t("finalGrade")}
-            defaultValue={fila.nota ?? ""}
-            className="h-8 w-24 text-xs"
-            aria-invalid={estado.estado === "nota_invalida" || undefined}
-          />
-          <Button
-            type="submit"
-            size="icon"
-            variant="ghost"
-            disabled={enviando}
-            title={t("saveGrade")}
-            aria-label={t("saveGrade")}
-          >
-            {enviando ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Save className="size-3.5" />
-            )}
-          </Button>
-        </form>
-      ) : (
-        <span className="text-tinta-3">
-          {t("finalGrade")}: <b>{fila.nota?.toFixed(1) ?? "—"}</b>
-        </span>
-      )}
-
-      {estado.estado === "ok" && (
-        <p className="text-marca-600 w-full text-[11px] font-medium">{t("gradeSaved")}</p>
-      )}
-
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive w-full text-[11px]">
-          {estado.estado === "nota_invalida"
-            ? t("errGrade")
-            : estado.estado === "no_encontrado"
-              ? t("errOwner")
-              : t("errGeneric")}
-        </p>
-      )}
-    </li>
   );
 }
 
@@ -381,15 +321,17 @@ function FilaEntrega({
         <input type="hidden" name="id" value={entrega.id} />
 
         <label className="flex flex-col gap-1">
-          <span className="text-tinta-3 text-[11px] font-medium">{t("grade")}</span>
+          <span className="text-tinta-3 text-[11px] font-medium">
+            {t("grade")} · {t("gradeMax", { max: entrega.puntaje_maximo })}
+          </span>
           <Input
             name="nota"
             type="number"
             min={0}
-            max={100}
+            max={entrega.puntaje_maximo}
             step="0.1"
             defaultValue={entrega.calificacion ?? ""}
-            className="h-8 w-20 text-xs"
+            className="h-8 w-24 text-xs"
             aria-invalid={estado.estado === "nota_invalida" || undefined}
           />
         </label>
@@ -421,7 +363,7 @@ function FilaEntrega({
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className="text-destructive text-[11px]">
           {estado.estado === "nota_invalida"
-            ? t("errGrade")
+            ? t("errGradeScale", { max: entrega.puntaje_maximo })
             : estado.estado === "no_encontrado"
               ? t("errOwner")
               : t("errGeneric")}
@@ -434,9 +376,11 @@ function FilaEntrega({
 /** Publicar una tarea o examen en una clase de 360. */
 function FormularioTarea({
   materiaId,
+  periodos,
   alTerminar,
 }: {
   materiaId: string;
+  periodos: readonly PeriodoParaTarea[];
   alTerminar: () => void;
 }) {
   const t = useTranslations("academic.classes360");
@@ -476,6 +420,38 @@ function FormularioTarea({
       <div className="space-y-1.5">
         <Label htmlFor={`t-desc-${materiaId}`}>{t("taskDescription")}</Label>
         <Textarea id={`t-desc-${materiaId}`} name="descripcion" maxLength={900} rows={2} />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor={`t-periodo-${materiaId}`}>{t("taskPeriod")}</Label>
+          <select
+            id={`t-periodo-${materiaId}`}
+            name="periodo"
+            required
+            defaultValue={(periodos.find((p) => p.vigente) ?? periodos[0])?.id}
+            className={SELECTOR}
+          >
+            {periodos.map((periodo) => (
+              <option key={periodo.id} value={periodo.id}>
+                {periodo.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor={`t-peso-${materiaId}`}>{t("taskWeight")}</Label>
+          <Input
+            id={`t-peso-${materiaId}`}
+            name="peso"
+            type="number"
+            min={0.01}
+            max={100}
+            step="0.01"
+            defaultValue={1}
+          />
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -541,12 +517,14 @@ function FormularioTarea({
             ? t("taskTitleRequired")
             : estado.estado === "no_encontrado"
               ? t("errOwner")
+              : estado.estado === "invalido" && periodos.length === 0
+                ? t("errNoPeriod")
               : t("errGeneric")}
         </p>
       )}
 
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando}>
+        <Button type="submit" size="sm" disabled={enviando || periodos.length === 0}>
           {enviando && <Loader2 className="size-3.5 animate-spin" />}
           {t("newTask")}
         </Button>

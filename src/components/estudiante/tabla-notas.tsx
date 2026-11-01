@@ -15,7 +15,14 @@ import { cn } from "@/lib/utils";
  * La letra lleva el color de `colorDeLetra` (`lib/notas.ts`); la cifra va en
  * el azul de texto si aprueba y en tinta si no, que es lo que más pesa.
  */
-export async function TablaNotas({ periodo }: { periodo: PeriodoConNotas }) {
+export async function TablaNotas({
+  periodo,
+  conIndice = true,
+}: {
+  periodo: PeriodoConNotas;
+  /** Falso en Global Effect 360: su nota no alimenta el índice de la carrera. */
+  conIndice?: boolean;
+}) {
   const t = await getTranslations("studentPortal");
 
   const promedioPeriodo = promedio(periodo.notas.map((nota) => nota.nota));
@@ -32,9 +39,11 @@ export async function TablaNotas({ periodo }: { periodo: PeriodoConNotas }) {
           <Badge variant="marca">
             {t("stats.average")} {promedioPeriodo?.toFixed(1) ?? "—"}
           </Badge>
-          <Badge variant="marca">
-            {t("gradesPage.gpaShort")} {indicePeriodo?.toFixed(2) ?? "—"}
-          </Badge>
+          {conIndice && (
+            <Badge variant="marca">
+              {t("gradesPage.gpaShort")} {indicePeriodo?.toFixed(2) ?? "—"}
+            </Badge>
+          )}
         </div>
       }
     >

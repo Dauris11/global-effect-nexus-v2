@@ -18,6 +18,7 @@ import { requerirDocencia } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
+import { iniciarInscripcionesVigentes } from "@/server/global360/consultas";
 import {
   cifrasDocente,
   clases360,
@@ -73,6 +74,8 @@ export default async function PortalProfesor({
   const docenteId = usuarioTienePermiso(usuario, "docencia.impartir")
     ? usuario.id
     : null;
+
+  await iniciarInscripcionesVigentes();
 
   const [t, tAcad, cifras, materias, clases, entregas] =
     await Promise.all([

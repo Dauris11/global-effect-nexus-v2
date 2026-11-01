@@ -155,6 +155,18 @@ export function GestionPeriodos({
   );
 }
 
+/** Estado de error de `guardarPeriodo` → clave del mensaje en `academic`. */
+const CLAVE_ERROR_PERIODO: Partial<Record<EstadoCatalogo["estado"], string>> = {
+  nombre_vacio: "newTerm.nameRequired",
+  fechas_faltan: "newTerm.datesRequired",
+  fin_antes_de_inicio: "newTerm.endBeforeStart",
+  tipo_invalido: "newTerm.invalidType",
+  anio_distinto: "newTerm.differentYear",
+  traslape: "newTerm.overlap",
+  demasiados_en_anio: "newTerm.tooManyInYear",
+  duplicado: "newTerm.duplicate",
+};
+
 /** Un período: fechas, estado, lo que cuelga de él y sus incoherencias. */
 function FilaPeriodo({
   periodo,
@@ -302,18 +314,8 @@ function FormularioPeriodo({
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`p-tipo-${clave}`}>{t("termKind.label")}</Label>
-          <select
-            id={`p-tipo-${clave}`}
-            name="tipo"
-            defaultValue={periodo?.tipo ?? "cuatrimestre"}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-          >
-            <option value="cuatrimestre">{t("termKind.quarter")}</option>
-            <option value="semestre">{t("termKind.semester")}</option>
-          </select>
-        </div>
+        {/* Solo hay cuatrimestres: el tipo no se elige, pero el servidor lo pide. */}
+        <input type="hidden" name="tipo" value="cuatrimestre" />
 
         <div className="space-y-1.5">
           <Label htmlFor={`p-inicio-${clave}`}>{t("term.start")}</Label>
@@ -358,15 +360,7 @@ function FormularioPeriodo({
         <p role="alert" className={ALERTA_RIESGO.contenedor}>
           <AlertCircle className={ALERTA_RIESGO.icono} />
           <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("newTerm.nameRequired")
-              : estado.estado === "fechas_faltan"
-                ? t("newTerm.datesRequired")
-                : estado.estado === "fin_antes_de_inicio"
-                  ? t("newTerm.endBeforeStart")
-                  : estado.estado === "duplicado"
-                    ? t("newTerm.duplicate")
-                    : t("newTerm.error")}
+            {t(CLAVE_ERROR_PERIODO[estado.estado] ?? "newTerm.error")}
           </span>
         </p>
       )}

@@ -58,12 +58,25 @@ export async function asignacionMoodlePorId(
        AND e.estudiante_id = $2
       LEFT JOIN public.usuario rev ON rev.id = e.revisada_por_id
      WHERE a.id = $1
+       -- Con estudiante, una tarea de 360 con período solo es visible para quien
+       -- tiene inscripción en ESE período (nula = anterior a la 0069, visible
+       -- para todos). Sin estudiante (docente) no se restringe.
+       AND (
+         $3::boolean IS FALSE
+         OR a.materia_360_id IS NULL
+         OR a.periodo_id IS NULL
+         OR EXISTS (SELECT 1 FROM public.inscripcion_360 ip
+                     WHERE ip.materia_id = a.materia_360_id
+                       AND ip.estudiante_id = $2
+                       AND ip.periodo_id = a.periodo_id)
+       )
      LIMIT 1
   `;
 
   return consultarUna<AsignacionMoodleDetalle>(query, [
     asignacionId,
     estudianteId || "00000000-0000-0000-0000-000000000000",
+    Boolean(estudianteId),
   ]);
 }
 
