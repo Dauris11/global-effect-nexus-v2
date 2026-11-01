@@ -30,15 +30,14 @@ export type AccesoPortal = {
    */
   color?: string;
   titulo: string;
-  texto: string;
+  /** Se acepta y no se pinta: la tarjeta es icono y título, sin subtítulo. */
+  texto?: string;
   /** Etiqueta de "próximamente" cuando no hay `href`. */
   pendiente?: string;
 };
 
 export function BannerPortal({
   titulo,
-  subtitulo,
-  insignia,
   kpis,
 }: {
   /** @deprecated El portal ya no tiene color por rol. */
@@ -46,13 +45,14 @@ export function BannerPortal({
   /** @deprecated El saludo no lleva icono. */
   icono: React.ComponentType<{ className?: string }>;
   titulo: string;
+  /** Se aceptan y no se pintan: el saludo es solo el título. */
   subtitulo?: string;
   insignia?: string;
   kpis: readonly KpiPortal[];
 }) {
   return (
     <section className="animate-fade-in-up space-y-6">
-      <EncabezadoPagina titulo={titulo} subtitulo={subtitulo} antetitulo={insignia} />
+      <EncabezadoPagina titulo={titulo} />
 
       {kpis.length > 0 && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
@@ -94,8 +94,6 @@ export function AccesosPortal({
               <p className="texto-titulo-tarjeta">{acceso.titulo}</p>
               {acceso.pendiente && <Badge variant="neutra">{acceso.pendiente}</Badge>}
             </div>
-
-            <p className="mt-1 line-clamp-2 text-sm text-tinta-2">{acceso.texto}</p>
 
             {acceso.href && (
               <ArrowRight className="mt-3 size-4 text-tinta-3 transition-transform group-hover:translate-x-0.5 group-hover:text-tinta" />

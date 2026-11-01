@@ -155,7 +155,7 @@ export function Hero({
             invierte en modo oscuro y el velo se volvería blanco. */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/30 to-transparent"
+          className="absolute inset-0 -z-10 bg-black/45"
         />
 
         <div className="flex flex-col gap-8 p-6 md:flex-row md:items-end md:justify-between md:p-12">

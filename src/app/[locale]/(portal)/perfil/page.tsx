@@ -50,7 +50,7 @@ export default async function PaginaPerfil({
   return (
     <div className="mx-auto max-w-4xl animate-entrada space-y-8 pb-10">
       {/* Banner / Header del Perfil */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2096BA] via-[#187a99] to-[#0a6a8a] p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-hoja bg-marca-600 p-6 sm:p-8 text-white shadow-card">
         <div className="absolute -right-10 -top-10 size-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="absolute -left-10 -bottom-10 size-48 rounded-full bg-[#171A1D]/20 blur-xl pointer-events-none" />
 

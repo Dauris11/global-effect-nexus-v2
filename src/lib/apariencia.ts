@@ -10,13 +10,28 @@
 
 export const TEMAS = ["claro", "oscuro"] as const;
 export const BARRAS = ["estandar", "negra"] as const;
+export const ACENTOS = ["azul", "negro"] as const;
 
 export type Tema = (typeof TEMAS)[number];
 export type Barra = (typeof BARRAS)[number];
+export type Acento = (typeof ACENTOS)[number];
 
-export type Apariencia = { tema: Tema; barra: Barra };
+export type Apariencia = { tema: Tema; barra: Barra; acento: Acento };
 
-export const APARIENCIA_INICIAL: Apariencia = { tema: "claro", barra: "estandar" };
+export const APARIENCIA_INICIAL: Apariencia = {
+  tema: "claro",
+  barra: "estandar",
+  acento: "azul",
+};
+
+/**
+ * El color de las muestras del selector. Fijo a propósito: enseña cada acento
+ * entero, no el que esté vigente.
+ */
+export const COLORES_ACENTO: Record<Acento, string> = {
+  azul: "#2096BA",
+  negro: "#171A1D",
+};
 
 /**
  * Colores de las miniaturas del selector. Están aquí y no en el `.tsx` porque
@@ -61,6 +76,7 @@ export function leerApariencia(): Apariencia {
     return {
       tema: TEMAS.includes(crudo.tema) ? crudo.tema : APARIENCIA_INICIAL.tema,
       barra: BARRAS.includes(crudo.barra) ? crudo.barra : APARIENCIA_INICIAL.barra,
+      acento: ACENTOS.includes(crudo.acento) ? crudo.acento : APARIENCIA_INICIAL.acento,
     };
   } catch {
     // Navegación privada o almacenamiento bloqueado: se queda lo de siempre.
@@ -68,12 +84,13 @@ export function leerApariencia(): Apariencia {
   }
 }
 
-/** Pinta la apariencia en `<html>`, donde la leen `.dark` y `data-barra`. */
-export function aplicarApariencia({ tema, barra }: Apariencia) {
+/** Pinta la apariencia en `<html>`, donde la leen `.dark`, `data-barra` y `data-acento`. */
+export function aplicarApariencia({ tema, barra, acento }: Apariencia) {
   const raiz = document.documentElement;
 
   raiz.classList.toggle("dark", tema === "oscuro");
   raiz.dataset.barra = barra;
+  raiz.dataset.acento = acento;
 }
 
 /**
@@ -83,4 +100,4 @@ export function aplicarApariencia({ tema, barra }: Apariencia) {
  */
 export const SCRIPT_APARIENCIA = `(function(){try{var a=JSON.parse(localStorage.getItem(${JSON.stringify(
   CLAVE_APARIENCIA,
-)})||"{}");var r=document.documentElement;r.classList.toggle("dark",a.tema==="oscuro");r.dataset.barra=a.barra==="negra"?"negra":"estandar"}catch(e){}})()`;
+)})||"{}");var r=document.documentElement;r.classList.toggle("dark",a.tema==="oscuro");r.dataset.barra=a.barra==="negra"?"negra":"estandar";r.dataset.acento=a.acento==="negro"?"negro":"azul"}catch(e){}})()`;

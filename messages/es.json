@@ -1739,6 +1739,11 @@
     "accountActive": "Cuenta activa",
     "preview": "Previsualización",
     "appearance": {
+      "accent": "Color",
+      "accents": {
+        "azul": "Azul",
+        "negro": "Negro"
+      },
       "title": "Apariencia",
       "description": "Cómo ves el portal en este navegador.",
       "theme": "Tema",

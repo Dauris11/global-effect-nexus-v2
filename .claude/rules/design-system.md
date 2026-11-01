@@ -40,6 +40,16 @@ de app en el móvil (pestañas abajo, hojas que suben desde abajo).
   `src/lib/solicitudes.ts`), para que la diferencia sobreviva en grises.
 - Escrito como `bg-[#1E9E6A]`, nunca `green-*` / `red-*`.
 
+## 2b. Un solo acento y cero degradados
+
+- **Prohibido todo degradado** (`bg-gradient-*`, `bg-linear-*`, `linear-gradient`),
+  también en botones, banners y avatares. Superficie de acento = color plano.
+- El acento es **azul o negro**, a elección de cada persona (Mi perfil →
+  Apariencia). Se logra reasignando `marca-*` en `globals.css`; por eso se
+  pinta **siempre con tokens** (`bg-marca-500`), nunca con hex.
+- **Sin subtítulos** en tarjetas, botones, tareas ni asignaciones. Los datos de
+  una tarjeta van como `Dato`/`FilaDatos` (icono + valor), no como texto gris.
+
 ## 3. Forma
 
 - Radios: `rounded-control` (12 px: botón, input), `rounded-card` (16 px:

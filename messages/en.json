@@ -1739,6 +1739,11 @@
     "accountActive": "Active account",
     "preview": "Preview",
     "appearance": {
+      "accent": "Color",
+      "accents": {
+        "azul": "Blue",
+        "negro": "Black"
+      },
       "title": "Appearance",
       "description": "How you see the portal in this browser.",
       "theme": "Theme",

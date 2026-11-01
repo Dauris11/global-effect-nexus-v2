@@ -117,11 +117,31 @@ Tres animaciones (`animate-fade-in-up`, `animate-shimmer`, `animate-soft-pulse`)
 la transición de página de 180 ms y los skeletons. Nada rebota. Todo se apaga
 con `prefers-reduced-motion`.
 
+### 2.9 Un solo acento, elegido por la persona; sin degradados
+
+Nada del sistema lleva degradado: ni botones, ni banners, ni avatares, ni
+iconos flotantes. Las superficies de acento son un color plano.
+
+El acento es **azul** (el de la marca) o **negro** (tinta), y lo elige cada
+persona en Mi perfil → Apariencia (`data-acento` en `<html>`, guardado en el
+navegador con el resto de la apariencia). El negro reasigna la escala
+`marca-*` a tinta en `globals.css`, así que ningún componente decide el color:
+todos pintan con `bg-marca-500`, `text-marca-600`… En modo oscuro manda siempre
+el azul, porque un botón negro sobre fondo oscuro desaparecería.
+
+### 2.10 Sin subtítulos en tarjetas, botones, tareas ni asignaciones
+
+Una tarjeta es icono y título. Lo que antes iba debajo como texto gris pequeño
+(fecha, materia, lugar, responsable) se pinta con `Dato`
+(`components/ui/dato.tsx`): icono y valor, en `FilaDatos`. Cada dato es una
+pieza que se reconoce sin leer. Una explicación que solo repite el título no se
+escribe; si hace falta, es un aviso (§5), no un subtítulo.
+
 ## 3. Componentes base
 
 | Primitivo | Regla |
 |---|---|
-| Botón | `default` = degradado `marca-500→marca-600`, texto blanco, semibold, `h-11`, `rounded-control`, `active:scale-[.97]`. `secondary` = blanco, borde `linea-fuerte`, texto tinta. `destructive` es **tinta**, no rojo. Prop `cargando`. |
+| Botón | `default` = color plano `marca-500` (hover `marca-600`), sin degradado, texto blanco, semibold, `h-11`, `rounded-control`, `active:scale-[.97]`. `secondary` = blanco, borde `linea-fuerte`, texto tinta. `destructive` es **tinta**, no rojo. Prop `cargando`. |
 | Input / select / textarea | `h-12`, `rounded-control`, borde `linea-fuerte`, foco = anillo de 2 px **tinta**, placeholder `tinta-3`, etiqueta arriba en `text-sm font-medium`. |
 | Tarjeta | `rounded-card`, borde `linea`, `shadow-card`. Con `interactiva`: `hover:shadow-elevada hover:-translate-y-0.5`. |
 | Diálogo | ≥ md: centrado, `rounded-hoja`, cerrar a la **izquierda**, título centrado, pie fijo. < md: hoja inferior con asa, `max-h-[90dvh]`. |
@@ -146,11 +166,11 @@ Un título por página, dentro de la página (no en la barra superior).
 
 ### 4.2 Saludo de portal
 
-Sustituye al banner en degradado: saludo grande, subtítulo gris y una fila de
+Sustituye al banner en degradado: saludo grande, sin subtítulo, y una fila de
 tarjetas KPI blancas.
 
 ```tsx
-<EncabezadoPagina titulo={t("greeting", { name })} subtitulo={t("summary")} />
+<EncabezadoPagina titulo={t("greeting", { name })} />
 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
   <StatCard icono={Users} valor={cifras.estudiantes} etiqueta={t("students")} />
 </div>

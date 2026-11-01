@@ -483,20 +483,40 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   }
 }
 
+/*
+ * Acento negro: preferencia de cada persona (Mi perfil → Apariencia). Reasigna
+ * la escala `marca-*` a tinta, así botones, enlaces, foco e iconos activos
+ * cambian de color sin tocar un solo componente: todos pintan con el token.
+ * Solo en claro: un botón negro sobre fondo oscuro desaparecería, así que de
+ * noche manda siempre el azul.
+ */
+html:not(.dark)[data-acento="negro"] {
+  --color-marca-50: #f4f6f8;
+  --color-marca-100: #e9ecef;
+  --color-marca-200: #d3d8dd;
+  --color-marca-300: #9aa2aa;
+  --color-marca-400: #5f676f;
+  --color-marca-500: #171a1d;
+  --color-marca-600: #2b3036;
+  --color-marca-700: #0f1113;
+  --color-marca-800: #0b0d0f;
+  --color-marca-900: #000000;
+  --primary: #171a1d;
+}
+
 .animate-fade-in-up {
   animation: fadeInUp var(--duracion-lenta) var(--ease-salida) backwards;
 }
 
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--muted) 25%,
-    var(--linea) 50%,
-    var(--muted) 75%
-  );
-  background-size: 200% 100%;
-  /* Lineal: es movimiento constante, no algo que llega. */
-  animation: shimmer 1.6s linear infinite;
+  /* Sin degradado: un color plano que respira. */
+  background: var(--muted);
+  animation: respirar 1.6s ease-in-out infinite;
+}
+
+@keyframes respirar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 .animate-soft-pulse {

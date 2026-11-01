@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 /**
  * Botón base (docs/09-sistema-visual.md §3).
  *
- * `default` es el CTA: un degradado sutil de la marca, como el de Airbnb, y es
- * el único sitio donde el turquesa ocupa una superficie entera. `secondary` es
+ * `default` es el CTA: un solo color plano de la marca (azul o negro, según lo
+ * que cada persona elija en su perfil), sin degradado, y es el único sitio donde
+ * el acento ocupa una superficie entera. `secondary` es
  * blanco con borde. `destructive` es tinta y no rojo: la gravedad la dice el
  * peso, no el matiz.
  *
@@ -21,7 +22,7 @@ const variantesBoton = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-marca-500 to-marca-600 text-white shadow-card hover:from-marca-600 hover:to-marca-700 hover:shadow-elevada active:shadow-card",
+          "bg-marca-500 text-white hover:bg-marca-600",
         destructive: "bg-tinta text-background hover:bg-tinta/90",
         outline:
           "border border-linea-fuerte bg-background text-tinta hover:border-tinta hover:bg-muted",

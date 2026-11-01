@@ -59,7 +59,7 @@ export function FormularioPerfil({
           htmlFor="perfil-foto"
           className="group relative cursor-pointer focus-within:outline-none"
         >
-          <div className="relative size-24 shrink-0 rounded-2xl overflow-hidden ring-4 ring-[#2096BA]/20 group-hover:ring-[#2096BA]/50 transition-all shadow-md bg-gradient-to-br from-[#2096BA]/20 to-[#187a99]/30 flex items-center justify-center text-3xl font-extrabold text-[#187a99] dark:text-[#5FB8D4]">
+          <div className="relative size-24 shrink-0 rounded-2xl overflow-hidden ring-4 ring-marca-500/20 group-hover:ring-marca-500/40 transition-all shadow-card bg-marca-50 flex items-center justify-center text-3xl font-semibold text-marca-700">
             {previa ?? fotoActual ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

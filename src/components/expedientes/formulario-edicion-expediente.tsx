@@ -115,7 +115,7 @@ export function FormularioEdicionExpediente({
             editando ? "cursor-pointer" : "cursor-default",
           )}
         >
-          <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#2096BA]/20 to-[#187a99]/30 text-2xl font-extrabold text-[#187a99] shadow-md ring-4 ring-[#2096BA]/20 transition-all group-hover:ring-[#2096BA]/40 dark:text-[#5FB8D4]">
+          <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-marca-50 text-2xl font-semibold text-marca-700 shadow-card ring-4 ring-marca-500/20 transition-all group-hover:ring-marca-500/40">
             {previa ?? fotoActual ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

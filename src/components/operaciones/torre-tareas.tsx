@@ -8,6 +8,7 @@ import {
   CalendarOff,
   CalendarRange,
   CheckCircle2,
+  FolderKanban,
   ListTodo,
   Loader2,
   MessageSquare,
@@ -20,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
+import { Dato } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
 import { Progress } from "@/components/ui/progress";
@@ -214,7 +216,7 @@ function Titulo({ tarea }: { tarea: TareaTorre }) {
   return (
     <div className="min-w-0">
       <p className="font-medium text-tinta">{tarea.titulo}</p>
-      <p className="texto-meta truncate">
+      <Dato icono={FolderKanban} className="mt-0.5">
         {tarea.proyecto_id ? (
           <Link href={`/administrativo/proyectos/${tarea.proyecto_id}`} className="hover:underline">
             {tarea.proyecto_nombre}
@@ -222,7 +224,7 @@ function Titulo({ tarea }: { tarea: TareaTorre }) {
         ) : (
           t("noProject")
         )}
-      </p>
+      </Dato>
     </div>
   );
 }

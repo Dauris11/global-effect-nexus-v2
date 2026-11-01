@@ -451,7 +451,7 @@ export function WidgetFlotanteIA({
           aria-expanded={abierto}
           className={cn(
             "relative flex size-14 items-center justify-center rounded-full text-white shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca-500",
-            "bg-gradient-to-br from-marca-500 to-marca-700 hover:from-marca-600 hover:to-marca-800",
+            "bg-marca-500 hover:bg-marca-600",
           )}
         >
           {abierto ? (

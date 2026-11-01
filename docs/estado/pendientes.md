@@ -5,6 +5,13 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Etapa 2: un solo acento, sin degradados, datos con icono (1 nov 2026):**
+      - **Acento a elección:** Mi perfil → Apariencia ofrece Azul o Negro (`data-acento`, en el navegador). El negro reasigna `marca-*` en `globals.css`; solo en claro (de noche manda el azul).
+      - **Cero degradados:** botón, perfil, hero, avatares, barra inferior, widget de IA, anuncios y cáscara de carga (ahora "respira" en opacidad). Se borran `GRADIENTE`, `GRADIENTE_OSCURO`, `PORTAL_BANNER` y `ESTILO_POR_ROL` (sin usos). `audit:ui` falla si reaparecen.
+      - **Sin subtítulos:** `AccesosPortal` y `BannerPortal` pintan solo icono y título; nuevo primitivo `Dato`/`FilaDatos` aplicado a "Lo próximo" y a las filas de tareas.
+      - **Norma actualizada:** `docs/09-sistema-visual.md` §2.9–2.10 y `.claude/rules/design-system.md` §2b.
+      - **Pendiente:** aplicar `Dato` al resto de tarjetas (tabla de notas, aula, solicitudes, matrícula, Habitudes…); probar en navegador el acento negro (contrastes de insignias y foco).
+
 - [x] **Transporte, etapa 1: nombres cortos, invitados e inscripción asistida (1 nov 2026, migración `0066`):**
       - **Nombres de viaje:** los cuatro turnos pasan a `Mañana`, `Mediodía`, `Tarde` y `Noche`; el selector muestra `nombre · hora`.
       - **Invitados:** nueva pestaña "Invitados" en el portal del estudiante (`inscribirInvitado`, `quitarInvitado`, `invitadosDeUsuario`): anota a otra persona en un viaje de hoy o de otro día, ve a quién anotó y la quita. Tope de 8 por día.

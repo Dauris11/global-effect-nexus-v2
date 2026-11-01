@@ -26,18 +26,22 @@ function suscribir(aviso: () => void) {
 // El snapshot es un texto y no un objeto: `useSyncExternalStore` compara por
 // identidad y un objeto nuevo en cada lectura lo haría repintar sin parar.
 const instantanea = () => {
-  const { tema, barra } = leerApariencia();
+  const { tema, barra, acento } = leerApariencia();
 
-  return `${tema}|${barra}`;
+  return `${tema}|${barra}|${acento}`;
 };
 
 const instantaneaServidor = () =>
-  `${APARIENCIA_INICIAL.tema}|${APARIENCIA_INICIAL.barra}`;
+  `${APARIENCIA_INICIAL.tema}|${APARIENCIA_INICIAL.barra}|${APARIENCIA_INICIAL.acento}`;
 
 /** Apariencia vigente y la función para cambiarla (se guarda y se aplica). */
 export function useApariencia() {
   const valor = useSyncExternalStore(suscribir, instantanea, instantaneaServidor);
-  const [tema, barra] = valor.split("|") as [Apariencia["tema"], Apariencia["barra"]];
+  const [tema, barra, acento] = valor.split("|") as [
+    Apariencia["tema"],
+    Apariencia["barra"],
+    Apariencia["acento"],
+  ];
 
   const cambiar = useCallback((parcial: Partial<Apariencia>) => {
     const nueva = { ...leerApariencia(), ...parcial };
@@ -52,5 +56,5 @@ export function useApariencia() {
     oyentes.forEach((aviso) => aviso());
   }, []);
 
-  return { tema, barra, cambiar };
+  return { tema, barra, acento, cambiar };
 }

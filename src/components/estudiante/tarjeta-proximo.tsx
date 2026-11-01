@@ -1,12 +1,17 @@
 import {
+  BookOpen,
   CalendarClock,
   CalendarDays,
   ChevronRight,
   ClipboardCheck,
+  Clock,
+  MapPin,
+  type LucideIcon,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Card } from "@/components/ui/card";
+import { Dato, FilaDatos } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -54,14 +59,16 @@ export async function TarjetaProximo({
             <Fila
               href="/portal/estudiante/aula-virtual"
               icono={ClipboardCheck}
-              antetitulo={t("next.assignment")}
               titulo={entrega.titulo}
-              // La fecha primero: si la línea se corta en el móvil, lo que
-              // se pierde es el nombre de la materia, no cuándo vence.
-              detalle={[
-                `${t("classroom.dueOn")} ${fechaConHora(entrega.fecha_vencimiento, null, locale)}`,
-                entrega.materia,
-              ].join(" · ")}
+              // La fecha primero: si la fila se corta en el móvil, lo que
+              // se pierde es la materia, no cuándo vence.
+              datos={[
+                {
+                  icono: Clock,
+                  texto: fechaConHora(entrega.fecha_vencimiento, null, locale),
+                },
+                { icono: BookOpen, texto: entrega.materia },
+              ]}
             />
           )}
 
@@ -69,14 +76,16 @@ export async function TarjetaProximo({
             <Fila
               href="/portal/estudiante/calendario"
               icono={CalendarDays}
-              antetitulo={t("heroEventBadge")}
               titulo={evento.titulo}
-              detalle={[
-                fechaConHora(evento.fecha, evento.hora_inicio, locale),
-                evento.ubicacion,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+              datos={[
+                {
+                  icono: Clock,
+                  texto: fechaConHora(evento.fecha, evento.hora_inicio, locale),
+                },
+                ...(evento.ubicacion
+                  ? [{ icono: MapPin, texto: evento.ubicacion }]
+                  : []),
+              ]}
             />
           )}
         </ul>
@@ -88,15 +97,13 @@ export async function TarjetaProximo({
 function Fila({
   href,
   icono: Icono,
-  antetitulo,
   titulo,
-  detalle,
+  datos,
 }: {
   href: string;
   icono: React.ComponentType<{ className?: string }>;
-  antetitulo: string;
   titulo: string;
-  detalle: string;
+  datos: { icono: LucideIcon; texto: string }[];
 }) {
   return (
     <li>
@@ -109,9 +116,14 @@ function Fila({
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="texto-meta font-medium">{antetitulo}</p>
-          <p className="texto-titulo-tarjeta mt-0.5 truncate">{titulo}</p>
-          <p className="mt-0.5 truncate text-sm text-tinta-2">{detalle}</p>
+          <p className="texto-titulo-tarjeta truncate">{titulo}</p>
+          <FilaDatos className="mt-1">
+            {datos.map((d) => (
+              <Dato key={d.texto} icono={d.icono}>
+                {d.texto}
+              </Dato>
+            ))}
+          </FilaDatos>
         </div>
 
         <ChevronRight className="size-5 shrink-0 text-tinta-3 transition-transform group-hover:translate-x-0.5 group-hover:text-tinta" />

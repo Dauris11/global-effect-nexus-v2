@@ -124,42 +124,6 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   chofer: "/portal/chofer",
 };
 
-/** El único acento del sistema: azul de la marca al azul más oscuro. */
-const MARCA = {
-  gradiente: "bg-gradient-to-br from-[#2096BA] to-[#0a6a8a]",
-  badge: "bg-[#2096BA]/15 text-[#187a99]",
-} as const;
-
-/**
- * Acento visual de los roles.
- *
- * Antes había uno por rol —naranja administración, rosa para el portal
- * clínico que ya no existe, violeta contabilidad— y era la mayor fuente de color fuera de marca del sistema:
- * cada portal parecía de una aplicación distinta. Ahora todos comparten el azul
- * de la Fundación, y lo que identifica al portal es su icono y su título, no un
- * tono.
- *
- * Se conserva la forma del objeto —un gradiente y unas clases de insignia por
- * rol— porque las pantallas la consumen así, y porque si algún día vuelve a
- * hacer falta distinguir, el sitio donde hacerlo es este y no veinte archivos.
- *
- * Clases literales: Tailwind necesita verlas completas en el código.
- */
-export const ESTILO_POR_ROL: Record<
-  Rol,
-  { gradiente: string; badge: string }
-> = {
-  super_admin: MARCA,
-  admin: MARCA,
-  docente: MARCA,
-  estudiante: MARCA,
-  contabilidad: MARCA,
-  habitudes: MARCA,
-  dir_habitudes: MARCA,
-  chofer: MARCA,
-};
-
-
 /**
  * Cómo se agrupan los permisos en la pantalla de permisos: por el prefijo del
  * código, en seis módulos. Vive aquí, junto al catálogo, para que un permiso

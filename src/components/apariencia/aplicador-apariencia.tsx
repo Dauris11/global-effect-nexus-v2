@@ -19,6 +19,7 @@ export function AplicadorApariencia() {
 
       raiz.classList.remove("dark");
       delete raiz.dataset.barra;
+      delete raiz.dataset.acento;
     };
   }, []);
 

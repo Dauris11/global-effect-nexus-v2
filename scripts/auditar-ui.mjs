@@ -27,6 +27,12 @@ import { join } from "node:path";
 const ARCOIRIS =
   /\b(bg|text|border|from|to|via|ring|fill|stroke|divide|outline|shadow|decoration|accent|caret|placeholder)-(emerald|amber|orange|rose|violet|red|green|yellow|purple|teal|pink|indigo|lime|fuchsia|cyan|sky)-[0-9]/;
 const HEX = /#[0-9A-Fa-f]{6}\b/g;
+/**
+ * Degradados: el sistema usa un solo color plano de acento (docs/09 §2.9). Se
+ * permiten las rayas de una rejilla (`repeating-linear-gradient`) y las máscaras
+ * de desvanecido en los bordes (`mask-image`): no son decoración de color.
+ */
+const DEGRADADO = /bg-(gradient|linear|radial)-|(?<!repeating-)(linear|radial)-gradient\(/;
 /** Colores estrictos de la marca y del semáforo institucional (docs/09-sistema-visual.md). */
 const PERMITIDOS_HEX = new Set([
   "#1E9E6A", // Semáforo entidad activa / aprobado
@@ -56,6 +62,7 @@ const archivos = [];
 
 let arcoiris = 0;
 let hex = 0;
+let degradados = 0;
 const porArchivo = new Map();
 
 for (const archivo of archivos) {
@@ -64,6 +71,14 @@ for (const archivo of archivos) {
     if (ARCOIRIS.test(linea)) {
       arcoiris++;
       console.log(`arcoíris  ${archivo}:${i + 1}  ${linea.trim().slice(0, 100)}`);
+    }
+    if (
+      DEGRADADO.test(linea) &&
+      !/mask-image/.test(linea) &&
+      !/^\s*(\*|\/\/|\/\*)/.test(linea)
+    ) {
+      degradados++;
+      console.log(`degradado ${archivo}:${i + 1}  ${linea.trim().slice(0, 100)}`);
     }
     if (!archivo.endsWith(".tsx") || EXCEPCIONES_HEX.includes(archivo)) return;
     // Un comentario que cita un color no pinta nada.
@@ -83,8 +98,10 @@ if (hex > 0) {
   }
 }
 
-if (arcoiris || hex) {
-  console.log(`\n✗ audit:ui — ${arcoiris} arcoíris, ${hex} hex sueltos`);
+if (arcoiris || hex || degradados) {
+  console.log(
+    `\n✗ audit:ui — ${arcoiris} arcoíris, ${hex} hex sueltos, ${degradados} degradados`,
+  );
   process.exit(1);
 }
-console.log("✓ audit:ui — sin arcoíris y sin hex sueltos");
+console.log("✓ audit:ui — sin arcoíris, sin hex sueltos y sin degradados");

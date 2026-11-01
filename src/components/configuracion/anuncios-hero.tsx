@@ -365,7 +365,7 @@ function Formulario({
         <p className="text-muted-foreground text-xs font-semibold">
           {t("preview")}
         </p>
-        <div className="rounded-xl bg-gradient-to-br from-[#171A1D] via-[#0a6a8a] to-[#171A1D] p-6">
+        <div className="rounded-card bg-tinta p-6">
           <p className="text-2xl font-bold tracking-tight text-white">
             {titulo || t("fieldTitle")}
           </p>

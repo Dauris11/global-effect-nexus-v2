@@ -180,9 +180,6 @@ export const CUADRO = {
  * @deprecated El lenguaje "app web" no usa banners en degradado: la cabecera
  * es `EncabezadoPagina`. Se elimina al terminar la Fase 5 del rediseño.
  */
-export const GRADIENTE = "bg-gradient-to-br from-marca-500 to-marca-700";
-/** @deprecated Igual que `GRADIENTE`. */
-export const GRADIENTE_OSCURO = "bg-gradient-to-br from-marca-600 to-tinta";
 
 /**
  * Las dos únicas excepciones a la regla de un solo matiz.
@@ -245,27 +242,6 @@ export const GRAFICA = {
  */
 
 /**
- * @deprecated Banner hero de portal en degradado. El lenguaje "app web" lo
- * sustituye por `EncabezadoPagina` + fila de `StatCard` (Fase 4); se elimina al
- * terminar la Fase 5.
- */
-export const PORTAL_BANNER = {
-  contenedor:
-    "rounded-card bg-gradient-to-br from-marca-500 to-marca-700 p-5 text-white md:p-6",
-  icono:
-    "flex size-11 shrink-0 items-center justify-center rounded-full bg-white/20",
-  eyebrow: "text-[10px] uppercase tracking-widest text-white/60 font-medium mb-0.5",
-  titulo: "truncate text-xl font-semibold leading-tight",
-  subtitulo: "text-xs text-white/70 mt-0.5",
-  badge: "border-white/30 bg-white/20 text-[10px] text-white shrink-0 gap-1 px-2.5 py-1",
-  divisor: "h-8 w-px bg-white/20 mx-3",
-  kpiZona: "mt-4 flex flex-wrap items-center gap-1 border-t border-white/20 pt-4",
-  nota: "mt-3 text-[10px] text-white/50 flex items-center gap-1.5",
-  kpiValor: "text-2xl font-semibold leading-none",
-  kpiLabel: "text-[10px] text-white/70 mt-1 flex items-center gap-1",
-} as const;
-
-/**
  * Tarjeta de módulo (AccesoRapido y cards de listas).
  *
  * Usar siempre con `group` en el contenedor para que el icono se escale.
@@ -296,9 +272,9 @@ export const TARJETA = {
  * Botones — estados de carga y variantes de marca.
  */
 export const BOTON = {
-  /** El CTA: degradado sutil de la marca, como el de Airbnb. */
+  /** El CTA: un solo color plano de la marca. */
   primario:
-    "rounded-control bg-gradient-to-r from-marca-500 to-marca-600 font-semibold text-white transition-all duration-150 hover:from-marca-600 hover:to-marca-700 active:scale-[0.97]",
+    "rounded-control bg-marca-500 font-semibold text-white transition-all duration-150 hover:bg-marca-600 active:scale-[0.97]",
   /** Secundario: blanco con borde, texto tinta. */
   secundario:
     "rounded-control border border-linea-fuerte bg-background font-semibold text-tinta transition-all duration-150 hover:bg-muted active:scale-[0.97]",

@@ -1,9 +1,17 @@
 "use client";
 
-import { Check, Moon, PanelLeft, Sun } from "lucide-react";
+import { Check, Moon, PanelLeft, Palette, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { BARRAS, COLORES_MINIATURA, TEMAS, type Barra, type Tema } from "@/lib/apariencia";
+import {
+  ACENTOS,
+  BARRAS,
+  COLORES_ACENTO,
+  COLORES_MINIATURA,
+  TEMAS,
+  type Barra,
+  type Tema,
+} from "@/lib/apariencia";
 import { cn } from "@/lib/utils";
 
 import { useApariencia } from "./usar-apariencia";
@@ -14,7 +22,7 @@ import { useApariencia } from "./usar-apariencia";
  */
 export function SelectorApariencia() {
   const t = useTranslations("profile.appearance");
-  const { tema, barra, cambiar } = useApariencia();
+  const { tema, barra, acento, cambiar } = useApariencia();
 
   return (
     <div className="space-y-6">
@@ -28,6 +36,28 @@ export function SelectorApariencia() {
             onElegir={() => cambiar({ tema: valor })}
           >
             <Miniatura tema={valor} barra={barra} />
+          </Opcion>
+        ))}
+      </Grupo>
+
+      <Grupo titulo={t("accent")}>
+        {ACENTOS.map((valor) => (
+          <Opcion
+            key={valor}
+            activa={acento === valor}
+            etiqueta={t(`accents.${valor}`)}
+            icono={Palette}
+            onElegir={() => cambiar({ acento: valor })}
+          >
+            <span
+              aria-hidden
+              className="flex h-20 items-center justify-center rounded-control border border-linea bg-background"
+            >
+              <span
+                className="size-10 rounded-full"
+                style={{ background: COLORES_ACENTO[valor] }}
+              />
+            </span>
           </Opcion>
         ))}
       </Grupo>

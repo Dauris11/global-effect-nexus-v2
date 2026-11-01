@@ -113,7 +113,7 @@ export function BarraInferior({
               type="button"
               onClick={() => setAccionesRapidasAbiertas(true)}
               aria-label={tRapidas("open")}
-              className="group -mt-4 flex size-12 flex-col items-center justify-center rounded-full bg-linear-to-br from-marca-500 to-marca-700 text-white shadow-elevada transicion-control active:scale-90 focus-visible:ring-2 focus-visible:ring-marca-500"
+              className="group -mt-4 flex size-12 flex-col items-center justify-center rounded-full bg-marca-500 text-white shadow-elevada hover:bg-marca-600 transicion-control active:scale-90 focus-visible:ring-2 focus-visible:ring-marca-500"
             >
               <Zap className="size-6 transition-transform duration-(--duracion-rapida) ease-salida group-active:rotate-12" />
             </button>
