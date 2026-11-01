@@ -30,6 +30,7 @@ export function BarraInferior({
 }) {
   const [accionesRapidasAbiertas, setAccionesRapidasAbiertas] = useState(false);
   const t = useTranslations("nav");
+  const tRapidas = useTranslations("accesoRapido");
   const ruta = usePathname();
   const ocultos = useOcultos();
   const pestanas = pestanasMoviles(rol, ocultos);
@@ -51,12 +52,19 @@ export function BarraInferior({
     const Icono = pestana.icono;
     const esActiva = pestana.tipo === "mas" ? menuAbierto : pestana === activa;
     const clases = cn(
-      "flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors outline-none focus-visible:bg-muted active:scale-95",
+      "group flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transicion-control outline-none focus-visible:bg-muted active:scale-95",
       esActiva ? "text-marca-500 font-bold" : "text-tinta-2",
     );
     const contenido = (
       <>
-        <Icono className="size-5" />
+        {/* La pestaña activa sube el icono 2 px: se nota el cambio sin que nada
+            salte, y en grises sigue leyéndose por el peso del texto. */}
+        <Icono
+          className={cn(
+            "size-5 transition-transform duration-(--duracion-media) ease-salida",
+            esActiva && "-translate-y-0.5",
+          )}
+        />
         <span className="max-w-full truncate px-1">{t(pestana.etiqueta)}</span>
       </>
     );
@@ -104,10 +112,10 @@ export function BarraInferior({
             <button
               type="button"
               onClick={() => setAccionesRapidasAbiertas(true)}
-              aria-label="Abrir accesos rápidos"
-              className="group -mt-4 flex size-12 flex-col items-center justify-center rounded-full bg-linear-to-br from-marca-500 to-marca-700 text-white shadow-lg shadow-marca-500/40 transition-all active:scale-90 focus-visible:ring-2 focus-visible:ring-marca-500"
+              aria-label={tRapidas("open")}
+              className="group -mt-4 flex size-12 flex-col items-center justify-center rounded-full bg-linear-to-br from-marca-500 to-marca-700 text-white shadow-elevada transicion-control active:scale-90 focus-visible:ring-2 focus-visible:ring-marca-500"
             >
-              <Zap className="size-6 transition-transform group-hover:scale-110" />
+              <Zap className="size-6 transition-transform duration-(--duracion-rapida) ease-salida group-active:rotate-12" />
             </button>
           </li>
 

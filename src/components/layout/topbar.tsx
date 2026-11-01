@@ -7,6 +7,7 @@ import {
   Globe2,
   LogOut,
   Menu,
+  Palette,
   Search,
   Settings,
   User,
@@ -26,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname } from "@/i18n/navigation";
+import { VerComo } from "@/components/layout/ver-como";
 import { useOcultos } from "@/components/layout/visibilidad";
 import { menuDe } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
@@ -49,6 +51,7 @@ import { cn } from "@/lib/utils";
  */
 export function TopBar({
   rol,
+  rolReal,
   nombre,
   foto,
   aviso,
@@ -57,6 +60,7 @@ export function TopBar({
   onCerrarSesion,
 }: {
   rol: Rol;
+  rolReal: Rol;
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
@@ -137,7 +141,7 @@ export function TopBar({
         <button
           type="button"
           onClick={() => setBuscando(true)}
-          className="flex h-12 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-background pr-1.5 pl-5 text-left shadow-card transition-shadow hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex h-12 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-background pr-1.5 pl-5 text-left shadow-card transicion-control duration-(--duracion-media) hover:shadow-elevada active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <span className="flex-1 truncate text-[15px] text-tinta-2">{t("commandOpen")}</span>
           <kbd className="texto-meta hidden rounded-md border border-linea px-1.5 py-0.5 font-sans lg:inline">
@@ -155,7 +159,7 @@ export function TopBar({
           type="button"
           onClick={() => setBuscando(true)}
           aria-label={t("commandOpen")}
-          className="flex size-11 items-center justify-center rounded-full text-tinta transition-colors hover:bg-muted md:hidden"
+          className="flex size-11 items-center justify-center rounded-full text-tinta transicion-control hover:bg-muted active:scale-95 md:hidden"
         >
           <Search className="size-5" />
         </button>
@@ -166,11 +170,18 @@ export function TopBar({
           <Link
             href={aviso.href}
             title={aviso.texto}
-            className="inline-flex h-11 max-w-[18rem] items-center gap-1.5 rounded-full bg-marca-50 px-3 text-sm font-semibold text-marca-700 transition-colors hover:bg-marca-100"
+            className="inline-flex h-11 max-w-[18rem] items-center gap-1.5 rounded-full bg-marca-50 px-3 text-sm font-semibold text-marca-700 transicion-control hover:bg-marca-100 active:scale-[0.97]"
           >
             <CalendarClock className="size-4 shrink-0" />
             <span className="hidden truncate lg:inline">{aviso.texto}</span>
           </Link>
+        )}
+
+        {/* Con un rol prestado, el control vive en la franja de arriba. */}
+        {rol === rolReal && (
+          <div className="hidden md:block">
+            <VerComo rol={rol} rolReal={rolReal} />
+          </div>
         )}
 
         <Campana avisos={avisos} sinLeer={sinLeer} />
@@ -178,7 +189,7 @@ export function TopBar({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t("accountMenu")}
-            className="flex h-11 items-center gap-2 rounded-full border border-linea pr-1 pl-3 transition-shadow hover:shadow-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex h-11 items-center gap-2 rounded-full border border-linea pr-1 pl-3 transicion-control hover:shadow-card active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <Menu className="size-4 text-tinta" />
             <Avatar className="size-8">
@@ -206,6 +217,20 @@ export function TopBar({
                 {t("profile")}
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/perfil">
+                <Palette />
+                {t("appearance")}
+              </Link>
+            </DropdownMenuItem>
+            {rol === "contabilidad" && (
+              <DropdownMenuItem asChild>
+                <Link href="/contabilidad/configuracion">
+                  <Settings />
+                  {t("accountingSettings")}
+                </Link>
+              </DropdownMenuItem>
+            )}
             {tieneConfiguracion && (
               <DropdownMenuItem asChild>
                 <Link href="/configuracion">

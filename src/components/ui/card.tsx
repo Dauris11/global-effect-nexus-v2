@@ -25,7 +25,7 @@ function Card({
       className={cn(
         "bg-card text-card-foreground flex flex-col rounded-card border border-linea shadow-card",
         interactiva &&
-          "cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevada active:scale-[0.99]",
+          "cursor-pointer transition-[translate,scale,box-shadow] duration-(--duracion-media) ease-salida hover:-translate-y-0.5 hover:shadow-elevada active:scale-[0.99] active:duration-(--duracion-instante)",
         className,
       )}
       {...props}

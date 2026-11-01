@@ -22,8 +22,10 @@ export function EstadoVacio({
   className?: string;
 }) {
   return (
-    <div className={cn(VACIO.contenedor, className)}>
-      <span className={VACIO.icono}>
+    // Entra suave y el icono un instante después: el vacío no es un error, no
+    // debe aparecer de golpe como si algo hubiera fallado.
+    <div className={cn(VACIO.contenedor, "animate-entrada", className)}>
+      <span className={cn(VACIO.icono, "animate-escala-entrada [animation-delay:80ms]")}>
         <Icono className="size-7" />
       </span>
       <p className={VACIO.titulo}>{titulo}</p>

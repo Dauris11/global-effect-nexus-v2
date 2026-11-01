@@ -16,12 +16,12 @@ import { cn } from "@/lib/utils";
  * no cambien de firma; lo que cambia es el aspecto.
  */
 const variantesBoton = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-sm font-semibold transition-all duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-sm font-semibold transicion-control active:scale-[0.97] active:duration-(--duracion-instante) disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-marca-500 to-marca-600 text-white hover:from-marca-600 hover:to-marca-700",
+          "bg-gradient-to-r from-marca-500 to-marca-600 text-white shadow-card hover:from-marca-600 hover:to-marca-700 hover:shadow-elevada active:shadow-card",
         destructive: "bg-tinta text-background hover:bg-tinta/90",
         outline:
           "border border-linea-fuerte bg-background text-tinta hover:border-tinta hover:bg-muted",

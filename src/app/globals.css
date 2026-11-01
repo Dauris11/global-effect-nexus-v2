@@ -248,6 +248,40 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --radius-control: 12px;
   --radius-card: 16px;
   --radius-hoja: 24px;
+
+  /*
+   * Movimiento. Tres curvas y nada más, para que todo el portal se mueva con
+   * la misma mano. Las de CSS (`ease`, `ease-out`) son demasiado blandas: la
+   * respuesta se nota tarde, que es justo cuando el ojo está mirando.
+   *   · salida   → lo que entra o reacciona (ease-out fuerte). El 80 %.
+   *   · cajon    → hojas y cajones que suben: la curva de iOS.
+   *   · movimiento → lo que ya está en pantalla y se desplaza o cambia de ancho.
+   * Generan `ease-salida`, `ease-cajon`, `ease-movimiento`.
+   */
+  --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-cajon: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-movimiento: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Animaciones con nombre: `animate-entrada`, `animate-escala-entrada`… */
+  --animate-entrada: entrada var(--duracion-lenta) var(--ease-salida) backwards;
+  --animate-escala-entrada: escalaEntrada var(--duracion-media) var(--ease-salida) backwards;
+  --animate-hoja: subeHoja 280ms var(--ease-cajon) backwards;
+  --animate-velo: velo var(--duracion-media) var(--ease-salida) backwards;
+  --animate-contador: contador var(--duracion-media) var(--ease-salida) backwards;
+  --animate-campaneo: campaneo 520ms var(--ease-movimiento) 1;
+}
+
+/*
+ * Duraciones. Fuera de `@theme` porque Tailwind 4 no tiene espacio de nombres
+ * para ellas; se usan como `duration-(--duracion-media)` o desde el CSS. Todo
+ * lo de la interfaz por debajo de 300 ms: un menú de 180 ms se siente más
+ * rápido que uno de 400 aunque la página tarde lo mismo.
+ */
+:root {
+  --duracion-instante: 120ms; /* pulsar, color al pasar */
+  --duracion-rapida: 160ms; /* foco, salida de menús */
+  --duracion-media: 200ms; /* menús, popovers, diálogos */
+  --duracion-lenta: 240ms; /* entrada de página y de tarjetas */
 }
 
 /*
@@ -338,37 +372,97 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
     background: #ffffff;
   }
 }
-
 /**
- * Sistema de micro-animaciones — Global Effect Nexus
+ * Sistema de movimiento — Global Effect Nexus (docs/09-sistema-visual.md §2.8)
  *
- * REGLA: solo estas tres (más la transición de página de arriba). Añadir más
- * aquí antes de usarlas en los portales para que el equipo no invente
- * animaciones sueltas por cada módulo. Ninguna rebota.
+ * REGLA: las animaciones viven aquí y los componentes las nombran; nadie
+ * inventa una en un módulo. Ninguna rebota, ninguna pasa de 300 ms salvo las
+ * de fondo (shimmer, pulso), y solo se animan `transform` y `opacity`, que no
+ * recalculan el diseño de la página.
  *
- *  animate-fade-in-up  →  entrada de página / sección
- *  animate-shimmer     →  skeleton / placeholder de carga
- *  animate-soft-pulse  →  badge de estado activo / indicador vivo
+ *  animate-entrada / animate-fade-in-up  →  entrada de página, sección, vacío
+ *  animate-escala-entrada                →  algo que aparece en su sitio
+ *  animate-hoja                          →  hoja móvil que sube desde abajo
+ *  animate-velo                          →  velo oscuro detrás de una hoja
+ *  animate-contador                      →  el número de un contador cambia
+ *  animate-campaneo                      →  la campana avisa (una vez)
+ *  animate-shimmer                       →  skeleton
+ *  animate-soft-pulse                    →  badge o indicador vivo
+ *  entrada-pagina                        →  contenedor de cada página
+ *  escalonado                            →  grid cuyos hijos entran en cascada
  *
- * Uso en Tailwind: className="animate-fade-in-up"
+ * Las de entrada usan `backwards` y no `both`: al terminar no dejan un
+ * `transform` puesto, que convertiría el contenedor en el bloque de referencia
+ * de cualquier `position: fixed` de dentro y lo descolocaría.
  */
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Alias histórico: hay pantallas que ya usan `animate-fade-in-up`. */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+/* Nunca desde scale(0): nada en el mundo aparece de la nada. */
+@keyframes escalaEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes subeHoja {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes velo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes contador {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* Dos idas y vueltas que se apagan: avisa sin insistir. */
+@keyframes campaneo {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(14deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+  80% {
+    transform: rotate(-3deg);
   }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -200% center;
+    background-position: 200% center;
   }
   100% {
-    background-position: 200% center;
+    background-position: -200% center;
   }
 }
 
@@ -382,8 +476,15 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   }
 }
 
+/* Barra de progreso: crece desde cero hasta su valor (el `transform` en línea). */
+@keyframes progresoEntrada {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
 .animate-fade-in-up {
-  animation: fadeInUp 0.3s ease both;
+  animation: fadeInUp var(--duracion-lenta) var(--ease-salida) backwards;
 }
 
 .animate-shimmer {
@@ -394,11 +495,70 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
     var(--muted) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
+  /* Lineal: es movimiento constante, no algo que llega. */
+  animation: shimmer 1.6s linear infinite;
 }
 
 .animate-soft-pulse {
   animation: softPulse 2.4s ease-in-out infinite;
+}
+
+/*
+ * Entrada de página: la pone `(portal)/template.tsx`, que React vuelve a
+ * montar al cambiar de módulo. Corta (240 ms) y de 8 px: dice "esto es nuevo"
+ * sin hacer esperar a quien navega cuarenta veces al día.
+ */
+.entrada-pagina {
+  animation: entrada var(--duracion-lenta) var(--ease-salida) backwards;
+}
+
+/*
+ * Cascada para grids de tarjetas: 35 ms entre hijos y tope en el noveno, para
+ * que una lista larga no tarde medio segundo en estar entera.
+ */
+.escalonado > * {
+  animation: entrada var(--duracion-lenta) var(--ease-salida) backwards;
+  animation-delay: 280ms;
+}
+.escalonado > :nth-child(1) {
+  animation-delay: 0ms;
+}
+.escalonado > :nth-child(2) {
+  animation-delay: 35ms;
+}
+.escalonado > :nth-child(3) {
+  animation-delay: 70ms;
+}
+.escalonado > :nth-child(4) {
+  animation-delay: 105ms;
+}
+.escalonado > :nth-child(5) {
+  animation-delay: 140ms;
+}
+.escalonado > :nth-child(6) {
+  animation-delay: 175ms;
+}
+.escalonado > :nth-child(7) {
+  animation-delay: 210ms;
+}
+.escalonado > :nth-child(8) {
+  animation-delay: 245ms;
+}
+
+/*
+ * Transición de los controles (botón, pestaña, chip): colores —incluidos los
+ * extremos del degradado del CTA—, sombra y escala. Nunca `transition: all`,
+ * que también animaría el ancho o el padding si alguien los cambia. Van
+ * `translate`, `scale` y `rotate` además de `transform` porque Tailwind 4
+ * pinta `scale-*` y `translate-*` con esas propiedades sueltas.
+ */
+@utility transicion-control {
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke,
+    --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, box-shadow,
+    transform, translate, scale, rotate, opacity;
+  transition-duration: var(--duracion-rapida);
+  transition-timing-function: var(--ease-salida);
 }
 
 /**
@@ -406,43 +566,51 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
  *
  * .card-interactiva  →  tarjeta clicable con hover lift
  * .btn-press         →  micro-compresión al pulsar cualquier botón
- * .icon-hover        →  escala del icono al hacer hover en el padre (grupo)
  *
- * Uso: siempre combinar con `group` en el contenedor para que icon-hover funcione.
+ * El "levantar" al pasar va solo con ratón: en táctil el hover se dispara al
+ * tocar y la tarjeta se quedaría levantada.
  */
 .card-interactiva {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow var(--duracion-media) var(--ease-salida),
+    transform var(--duracion-media) var(--ease-salida);
 }
 
-.card-interactiva:hover {
-  box-shadow: var(--shadow-elevada);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .card-interactiva:hover {
+    box-shadow: var(--shadow-elevada);
+    transform: translateY(-2px);
+  }
 }
 
 .card-interactiva:active {
   transform: scale(0.98);
+  transition-duration: var(--duracion-instante);
 }
 
 .btn-press {
-  transition: transform 0.12s ease;
+  transition: transform var(--duracion-instante) var(--ease-salida);
 }
 
 .btn-press:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 /*
  * Movimiento reducido: quien lo pide en su sistema no ve ninguna animación ni
  * transición, ni las de arriba ni las de `tw-animate-css`. Se apaga aquí, una
- * vez, y no en cada componente.
+ * vez, y no en cada componente. Las entradas usan `backwards`, así que con la
+ * duración casi a cero el elemento aparece directamente en su sitio.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 

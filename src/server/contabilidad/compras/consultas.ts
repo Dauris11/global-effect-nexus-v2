@@ -76,8 +76,8 @@ export async function listarOrdenesCompra(opciones?: {
       p.nombre AS "proyectoNombre",
       oc.estado,
       oc.justificacion,
-      u1.nombre_completo AS "creadoPorNombre",
-      u2.nombre_completo AS "aprobadoPorNombre",
+      u1.nombre AS "creadoPorNombre",
+      u2.nombre AS "aprobadoPorNombre",
       oc.aprobado_en::text AS "aprobadoEn",
       oc.motivo_rechazo AS "motivoRechazo",
       (SELECT COUNT(*) FROM contabilidad.orden_compra_linea ocl WHERE ocl.orden_compra_id = oc.id)::int AS "lineasCount"
@@ -115,8 +115,8 @@ export async function obtenerOrdenCompra(id: string): Promise<OrdenCompraDetalle
       p.nombre AS "proyectoNombre",
       oc.estado,
       oc.justificacion,
-      u1.nombre_completo AS "creadoPorNombre",
-      u2.nombre_completo AS "aprobadoPorNombre",
+      u1.nombre AS "creadoPorNombre",
+      u2.nombre AS "aprobadoPorNombre",
       oc.aprobado_en::text AS "aprobadoEn",
       oc.motivo_rechazo AS "motivoRechazo",
       COALESCE(
@@ -144,7 +144,7 @@ export async function obtenerOrdenCompra(id: string): Promise<OrdenCompraDetalle
     LEFT JOIN public.proyecto p ON p.id = oc.proyecto_id
     LEFT JOIN contabilidad.orden_compra_linea ocl ON ocl.orden_compra_id = oc.id
     WHERE oc.id = $1
-    GROUP BY oc.id, pr.nombre, pr.identificacion, f.nombre, c.nombre, p.nombre, u1.nombre_completo, u2.nombre_completo
+    GROUP BY oc.id, pr.nombre, pr.identificacion, f.nombre, c.nombre, p.nombre, u1.nombre, u2.nombre
   `;
 
   return consultarUna<OrdenCompraDetalle>(sql, [id]);

@@ -25,8 +25,10 @@ import { validarComprobanteRecibido } from "@/server/contabilidad/comprobantes/r
 
 export function PanelRevisionComprobante({
   comprobantes,
+  proyectos = [],
 }: {
   comprobantes: ComprobanteRecibidoFila[];
+  proyectos?: { id: string; nombre: string }[];
 }) {
   const [seleccionado, setSeleccionado] = useState<ComprobanteRecibidoFila | null>(
     comprobantes[0] ?? null,
@@ -35,6 +37,7 @@ export function PanelRevisionComprobante({
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [guardando, setGuardando] = useState(false);
   const [observacion, setObservacion] = useState("");
+  const [proyectoId, setProyectoId] = useState<string>(seleccionado?.proyecto_id || "");
 
   const filtrados = comprobantes.filter((c) => {
     const coincideEstado = filtroEstado === "todos" || c.estado === filtroEstado;
@@ -53,10 +56,14 @@ export function PanelRevisionComprobante({
       const res = await validarComprobanteRecibido({
         id: seleccionado.id,
         estado: nuevoEstado,
+        proyectoId: proyectoId || undefined,
         observaciones: observacion || undefined,
       });
       if (res.ok) {
         seleccionado.estado = nuevoEstado;
+        seleccionado.proyecto_id = proyectoId || null;
+        const proyObj = proyectos.find((p) => p.id === proyectoId);
+        seleccionado.proyecto_nombre = proyObj ? proyObj.nombre : null;
         setObservacion("");
       }
     } finally {
@@ -107,6 +114,7 @@ export function PanelRevisionComprobante({
                   onClick={() => {
                     setSeleccionado(comp);
                     setObservacion(comp.observaciones || "");
+                    setProyectoId(comp.proyecto_id || "");
                   }}
                   className={`cursor-pointer rounded-xl border p-4 transition-all ${
                     esActivo
@@ -134,6 +142,11 @@ export function PanelRevisionComprobante({
                   <p className="mt-1 font-semibold text-tinta line-clamp-1">
                     {comp.concepto}
                   </p>
+                  {comp.proyecto_nombre && (
+                    <span className="mt-1 inline-block rounded-md bg-marca-50 px-2 py-0.5 text-[11px] font-medium text-marca-700">
+                      {comp.proyecto_nombre}
+                    </span>
+                  )}
                   <div className="mt-2 flex items-center justify-between text-xs text-tinta-2">
                     <span>{comp.remitente_nombre}</span>
                     <span className="font-mono font-bold text-tinta">
@@ -198,6 +211,31 @@ export function PanelRevisionComprobante({
                 <p className="texto-meta text-xs">NCF</p>
                 <p className="font-mono text-tinta">{seleccionado.ncf || "—"}</p>
               </div>
+            </div>
+
+            {/* Vinculación de Programa / Proyecto */}
+            <div className="rounded-xl border border-linea bg-muted/30 p-3.5 space-y-1.5">
+              <label className="text-xs font-semibold text-tinta flex items-center gap-1.5">
+                <Building className="size-3.5 text-marca-600" />
+                Vincular a Programa o Proyecto de la Fundación
+              </label>
+              <select
+                value={proyectoId}
+                onChange={(e) => setProyectoId(e.target.value)}
+                className="w-full rounded-lg border border-linea bg-superficie p-2 text-sm text-tinta"
+              >
+                <option value="">— Sin programa asignado (Gasto general) —</option>
+                {proyectos.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+              {seleccionado.proyecto_nombre && (
+                <p className="texto-meta text-xs">
+                  Asignado actualmente a: <span className="font-semibold text-tinta">{seleccionado.proyecto_nombre}</span>
+                </p>
+              )}
             </div>
 
             {/* Previsualización del comprobante / imagen */}

@@ -39,7 +39,7 @@ export async function calcularIt1(periodoIso: string): Promise<ResumenIt1> {
     `SELECT COALESCE(SUM(d.monto_dop), 0)::text AS total
      FROM contabilidad.donacion d
      JOIN contabilidad.periodo_contable pc ON pc.id = d.periodo_id
-     WHERE pc.codigo = $1 AND d.estado = 'confirmada' AND d.tratamiento = 'exento'`,
+     WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND d.estado = 'confirmada' AND d.tratamiento = 'exento'`,
     [periodoIso]
   );
   const ingresosExentos = Number(don?.total ?? 0);
@@ -49,7 +49,7 @@ export async function calcularIt1(periodoIso: string): Promise<ResumenIt1> {
     `SELECT COALESCE(SUM(d.monto_dop), 0)::text AS total
      FROM contabilidad.donacion d
      JOIN contabilidad.periodo_contable pc ON pc.id = d.periodo_id
-     WHERE pc.codigo = $1 AND d.estado = 'confirmada' AND d.tratamiento = 'gravado'`,
+     WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND d.estado = 'confirmada' AND d.tratamiento = 'gravado'`,
     [periodoIso]
   );
   const ingresosGravados = Number(grav?.total ?? 0);
@@ -60,7 +60,7 @@ export async function calcularIt1(periodoIso: string): Promise<ResumenIt1> {
             COALESCE(SUM(fp.retencion_itbis), 0)::text AS ret_itbis
      FROM contabilidad.factura_proveedor fp
      JOIN contabilidad.periodo_contable pc ON pc.id = fp.periodo_id
-     WHERE pc.codigo = $1 AND fp.estado = 'aprobada'`,
+     WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND fp.estado = 'aprobada'`,
     [periodoIso]
   );
 
@@ -89,7 +89,7 @@ export async function calcularIr17(periodoIso: string): Promise<ResumenIr17> {
        COALESCE(SUM(fp.retencion_isr), 0)::text AS ret
      FROM contabilidad.factura_proveedor fp
      JOIN contabilidad.periodo_contable pc ON pc.id = fp.periodo_id
-     WHERE pc.codigo = $1 AND fp.estado = 'aprobada' AND fp.retencion_isr > 0`,
+     WHERE to_char(make_date(pc.anio, pc.mes, 1), 'YYYY-MM') = $1 AND fp.estado = 'aprobada' AND fp.retencion_isr > 0`,
     [periodoIso]
   );
 

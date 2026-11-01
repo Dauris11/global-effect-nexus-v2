@@ -137,7 +137,7 @@ export async function listarEmpleados(filtros?: {
   }>(
     `SELECT e.id,
             e.tercero_id,
-            t.nombre AS tercero_nombre,
+            t.nombre_razon_social AS tercero_nombre,
             t.identificacion AS tercero_identificacion,
             t.tipo_id AS tercero_tipo_id,
             e.usuario_id,
@@ -218,7 +218,7 @@ export async function obtenerEmpleado(id: string): Promise<EmpleadoContable | nu
   }>(
     `SELECT e.id,
             e.tercero_id,
-            t.nombre AS tercero_nombre,
+            t.nombre_razon_social AS tercero_nombre,
             t.identificacion AS tercero_identificacion,
             t.tipo_id AS tercero_tipo_id,
             e.usuario_id,
@@ -433,7 +433,7 @@ export async function obtenerNomina(id: string): Promise<NominaDetallada | null>
     `SELECT nl.id,
             nl.empleado_id,
             e.codigo_empleado,
-            t.nombre AS empleado_nombre,
+            t.nombre_razon_social AS empleado_nombre,
             t.identificacion AS empleado_identificacion,
             e.cargo,
             cc.nombre AS centro_costo_nombre,

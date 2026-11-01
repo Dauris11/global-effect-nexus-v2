@@ -154,7 +154,7 @@ export async function historialDebidaDiligencia(terceroId: string): Promise<Debi
       dd.verificacion_listas AS "verificacionListas",
       dd.resultado,
       dd.oficial_cumplimiento_id AS "oficialCumplimientoId",
-      u.nombre_completo AS "oficialNombre",
+      u.nombre AS "oficialNombre",
       dd.observaciones,
       dd.soporte_url AS "soporteUrl",
       dd.creado_en AS "creadoEn"

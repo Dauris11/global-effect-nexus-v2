@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { requerirRol } from "@/lib/auth";
+import { programasParaRendicion } from "@/server/colaborador/consultas";
 import { listarComprobantesRecibidos } from "@/server/contabilidad/comprobantes/recibidos-consultas";
 import { PanelRevisionComprobante } from "@/components/contabilidad/comprobantes/panel-revision-comprobante";
 
@@ -33,11 +34,14 @@ export default async function ComprobantesRecibidosPage({
   await requerirRol(["contabilidad", "super_admin", "admin"]);
   const params = await searchParams;
 
-  const comprobantes = await listarComprobantesRecibidos({
-    estado: params.estado,
-    busqueda: params.q,
-    limite: 100,
-  });
+  const [comprobantes, proyectos] = await Promise.all([
+    listarComprobantesRecibidos({
+      estado: params.estado,
+      busqueda: params.q,
+      limite: 100,
+    }),
+    programasParaRendicion(),
+  ]);
 
   const conteoPorEstado = {
     recibido: comprobantes.filter((c) => c.estado === "recibido").length,
@@ -86,7 +90,7 @@ export default async function ComprobantesRecibidosPage({
       </div>
 
       {/* Lista interactiva de comprobantes con panel de revisión */}
-      <PanelRevisionComprobante comprobantes={comprobantes} />
+      <PanelRevisionComprobante comprobantes={comprobantes} proyectos={proyectos} />
     </div>
   );
 }

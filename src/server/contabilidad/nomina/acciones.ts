@@ -474,32 +474,6 @@ export async function aprobarNomina(nominaId: string): Promise<{ asientoId: stri
       throw new Error("Faltan cuentas contables básicas de nómina en el catálogo.");
     }
 
-    // Número correlativo de asiento
-    const numSeq = await cliente.query<{ siguiente: number }>(
-      `UPDATE contabilidad.secuencia
-          SET siguiente = siguiente + 1
-        WHERE clave = 'asiento'
-        RETURNING siguiente`,
-    );
-    const numeroAsiento = `AS-${nom.anio}-${String(numSeq.rows[0].siguiente).padStart(5, "0")}`;
-
-    const { rows: asRows } = await cliente.query<{ id: string }>(
-      `INSERT INTO contabilidad.asiento
-         (numero, fecha, concepto, tipo, estado, anio, mes, creado_por)
-       VALUES ($1, $2::date, $3, 'ajuste', 'publicado', $4, $5, $6)
-       RETURNING id`,
-      [
-        numeroAsiento,
-        nom.fecha_corte,
-        `Contabilización de Nómina ${nom.codigo}`,
-        nom.anio,
-        nom.mes,
-        usuario.id,
-      ],
-    );
-    const asientoId = asRows[0].id;
-
-    let lineaIdx = 1;
     const totalDev = Number(nom.total_devengado);
     const totalPat = Number(nom.total_costo_patronal);
     const totalNeto = Number(nom.total_neto);
@@ -507,61 +481,27 @@ export async function aprobarNomina(nominaId: string): Promise<{ asientoId: stri
     const totalTssPat = totalPat;
     const totalIsr = Number(nom.total_isr_empleado);
 
-    // 1. Débito Gasto Sueldos
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, $2, $3, $4, 0, $5)`,
-      [asientoId, lineaIdx++, ctaSueldosGasto, totalDev, `Sueldos devengados nómina ${nom.codigo}`],
+    // `crear_asiento` descarta las líneas en cero, así que los montos nulos
+    // (sin aporte patronal, sin ISR) no generan renglones vacíos. Las cuentas
+    // opcionales que falten en el catálogo se omiten como antes.
+    const lineasAsiento = [
+      { cuenta_id: ctaSueldosGasto, debe: totalDev, haber: 0, descripcion: `Sueldos devengados nómina ${nom.codigo}` },
+      ...(ctaTssPatronalGasto
+        ? [{ cuenta_id: ctaTssPatronalGasto, debe: totalPat, haber: 0, descripcion: `Aportes patronales TSS/INFOTEP nómina ${nom.codigo}` }]
+        : []),
+      { cuenta_id: ctaSueldosPagar, debe: 0, haber: totalNeto, descripcion: `Sueldos netos por pagar nómina ${nom.codigo}` },
+      { cuenta_id: ctaTssEmpPagar, debe: 0, haber: totalTssEmp, descripcion: `Retenciones TSS empleado nómina ${nom.codigo}` },
+      ...(ctaTssPatPagar
+        ? [{ cuenta_id: ctaTssPatPagar, debe: 0, haber: totalTssPat, descripcion: `Aportes patronales por pagar TSS nómina ${nom.codigo}` }]
+        : []),
+      { cuenta_id: ctaIsrPagar, debe: 0, haber: totalIsr, descripcion: `Retenciones ISR asalariados nómina ${nom.codigo}` },
+    ];
+
+    const { rows: asRows } = await cliente.query<{ id: string }>(
+      `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', 'contabilidad.nomina', $3, $4::jsonb) AS id`,
+      [nom.fecha_corte, `Contabilización de Nómina ${nom.codigo}`, nominaId, JSON.stringify(lineasAsiento)],
     );
-
-    // 2. Débito Gasto Cargas Patronales TSS
-    if (totalPat > 0 && ctaTssPatronalGasto) {
-      await cliente.query(
-        `INSERT INTO contabilidad.asiento_linea
-           (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-         VALUES ($1, $2, $3, $4, 0, $5)`,
-        [asientoId, lineaIdx++, ctaTssPatronalGasto, totalPat, `Aportes patronales TSS/INFOTEP nómina ${nom.codigo}`],
-      );
-    }
-
-    // 3. Crédito Sueldos por Pagar
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, $2, $3, 0, $4, $5)`,
-      [asientoId, lineaIdx++, ctaSueldosPagar, totalNeto, `Sueldos netos por pagar nómina ${nom.codigo}`],
-    );
-
-    // 4. Crédito TSS por Pagar Empleado
-    if (totalTssEmp > 0) {
-      await cliente.query(
-        `INSERT INTO contabilidad.asiento_linea
-           (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-         VALUES ($1, $2, $3, 0, $4, $5)`,
-        [asientoId, lineaIdx++, ctaTssEmpPagar, totalTssEmp, `Retenciones TSS empleado nómina ${nom.codigo}`],
-      );
-    }
-
-    // 5. Crédito TSS por Pagar Empleador
-    if (totalTssPat > 0 && ctaTssPatPagar) {
-      await cliente.query(
-        `INSERT INTO contabilidad.asiento_linea
-           (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-         VALUES ($1, $2, $3, 0, $4, $5)`,
-        [asientoId, lineaIdx++, ctaTssPatPagar, totalTssPat, `Aportes patronales por pagar TSS nómina ${nom.codigo}`],
-      );
-    }
-
-    // 6. Crédito Retenciones ISR por Pagar
-    if (totalIsr > 0) {
-      await cliente.query(
-        `INSERT INTO contabilidad.asiento_linea
-           (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-         VALUES ($1, $2, $3, 0, $4, $5)`,
-        [asientoId, lineaIdx++, ctaIsrPagar, totalIsr, `Retenciones ISR asalariados nómina ${nom.codigo}`],
-      );
-    }
+    const asientoId = asRows[0].id;
 
     // Actualizar estado de la nómina
     await cliente.query(
@@ -626,47 +566,31 @@ export async function pagarNomina(
       throw new Error("No se encontró la cuenta '2.1.03.01' de Sueldos por pagar.");
     }
 
-    const numSeq = await cliente.query<{ siguiente: number }>(
-      `UPDATE contabilidad.secuencia
-          SET siguiente = siguiente + 1
-        WHERE clave = 'asiento'
-        RETURNING siguiente`,
-    );
-    const numeroAsiento = `AS-${nom.anio}-${String(numSeq.rows[0].siguiente).padStart(5, "0")}`;
-
     const totalNeto = Number(nom.total_neto);
 
     const { rows: asRows } = await cliente.query<{ id: string }>(
-      `INSERT INTO contabilidad.asiento
-         (numero, fecha, concepto, tipo, estado, anio, mes, creado_por)
-       VALUES ($1, $2::date, $3, 'ajuste', 'publicado', $4, $5, $6)
-       RETURNING id`,
+      `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', 'contabilidad.nomina', $3, $4::jsonb) AS id`,
       [
-        numeroAsiento,
         nom.fecha_pago,
         `Pago y desembolso de nómina ${nom.codigo}`,
-        nom.anio,
-        nom.mes,
-        usuario.id,
+        nominaId,
+        JSON.stringify([
+          {
+            cuenta_id: ctaSueldosPagar.rows[0].id,
+            debe: totalNeto,
+            haber: 0,
+            descripcion: `Liquidación de sueldos por pagar nómina ${nom.codigo}`,
+          },
+          {
+            cuenta_id: cuentaBancoId,
+            debe: 0,
+            haber: totalNeto,
+            descripcion: `Desembolso bancario de sueldos nómina ${nom.codigo}`,
+          },
+        ]),
       ],
     );
     const asientoPagoId = asRows[0].id;
-
-    // Débito: Sueldos por pagar
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, 1, $2, $3, 0, $4)`,
-      [asientoPagoId, ctaSueldosPagar.rows[0].id, totalNeto, `Liquidación de sueldos por pagar nómina ${nom.codigo}`],
-    );
-
-    // Crédito: Banco
-    await cliente.query(
-      `INSERT INTO contabilidad.asiento_linea
-         (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-       VALUES ($1, 2, $2, 0, $3, $4)`,
-      [asientoPagoId, cuentaBancoId, totalNeto, `Desembolso bancario de sueldos nómina ${nom.codigo}`],
-    );
 
     await cliente.query(
       `UPDATE contabilidad.nomina

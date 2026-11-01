@@ -986,10 +986,11 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
     const ultimoDia = new Date(anio, mes, 0).getDate();
     const fechaHastaMes = `${anio}-${String(mes).padStart(2, "0")}-${String(ultimoDia).padStart(2, "0")}`;
 
-    // Promesas de donación con vencimiento en este mes
+    // Cuotas de promesa que vencen en el mes; se proyecta solo lo que falta
+    // por cobrar porque una cuota puede haberse abonado en parte.
     const filaPromesas = await consultarUna<{ total_promesas: string }>(
-      `SELECT COALESCE(SUM(monto_programado), 0) AS total_promesas
-       FROM contabilidad.donacion_promesa_cuota
+      `SELECT COALESCE(SUM(monto - monto_cobrado), 0) AS total_promesas
+       FROM contabilidad.promesa_cuota
        WHERE estado IN ('pendiente', 'vencida')
          AND fecha_vencimiento BETWEEN $1 AND $2`,
       [fechaDesdeMes, fechaHastaMes],
@@ -1081,7 +1082,7 @@ export async function listarSnapshotsFinancieros(ejercicio?: number): Promise<Sn
        s.titulo,
        s.datos_json,
        s.generado_por,
-       COALESCE(u.nombre || ' ' || u.apellidos, u.email) AS generado_por_nombre,
+       COALESCE(u.nombre, u.email) AS generado_por_nombre,
        s.generado_en::text
      FROM contabilidad.snapshot_financiero s
      JOIN public.usuario u ON u.id = s.generado_por

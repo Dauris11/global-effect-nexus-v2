@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { cache } from "react";
 import { getLocale } from "next-intl/server";
 
 import { redirigir } from "@/i18n/navigation";
@@ -31,7 +33,13 @@ export type UsuarioSesion = {
   email: string;
   nombre: string;
   idioma: "es" | "en";
+  /**
+   * Rol EFECTIVO: el que decide menús, pantallas y permisos. Coincide con
+   * `rolReal` salvo cuando el administrador maestro está «viendo como» otro rol.
+   */
   rol: Rol;
+  /** Rol que la cuenta tiene de verdad en la tabla `usuario`. */
+  rolReal: Rol;
   authUserId: string;
   /**
    * RUTA de la foto en el bucket `avatares`, no una URL. Se convierte a URL con
@@ -67,7 +75,19 @@ type FilaUsuario = {
  * y distinguirlos en la interfaz solo serviría para decirle a un desconocido
  * qué correos existen.
  */
-export async function obtenerUsuarioActual(): Promise<UsuarioSesion | null> {
+/**
+ * Cookie con la que el administrador maestro se pone en el lugar de otro rol.
+ *
+ * Solo se honra si el rol REAL de la cuenta es `super_admin`: a cualquier otra
+ * persona la cookie no le hace nada, así que falsificarla no sube privilegios.
+ * Y como el rol efectivo pasa a ser el de menos permisos, mientras se «ve como»
+ * también se ACTÚA como ese rol: lo que no podría hacer él, tampoco aquí.
+ */
+export const COOKIE_VER_COMO = "ge_ver_como";
+
+export const obtenerUsuarioActual = cache(obtenerUsuarioSinCache);
+
+async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
   const supabase = await crearClienteServidor();
   const {
     data: { user },
@@ -100,15 +120,31 @@ export async function obtenerUsuarioActual(): Promise<UsuarioSesion | null> {
 
   if (!fila || !fila.activo || !esRol(fila.rol_nombre)) return null;
 
+  const rolReal = fila.rol_nombre;
+  let rol: Rol = rolReal;
+  let excepciones = fila.excepciones;
+
+  if (rolReal === "super_admin") {
+    const verComo = (await cookies()).get(COOKIE_VER_COMO)?.value;
+
+    if (esRol(verComo) && verComo !== "super_admin") {
+      rol = verComo;
+      // Las excepciones son de la cuenta del administrador, no del rol que se
+      // está mirando: mezclarlas enseñaría una pantalla que nadie de ese rol ve.
+      excepciones = [];
+    }
+  }
+
   return {
     id: fila.id,
     email: fila.email,
     nombre: fila.nombre,
     idioma: fila.idioma === "en" ? "en" : "es",
-    rol: fila.rol_nombre,
+    rol,
+    rolReal,
     authUserId: user.id,
     fotoUrl: fila.foto_url,
-    excepciones: fila.excepciones.flatMap((e) =>
+    excepciones: excepciones.flatMap((e) =>
       esPermiso(e.permiso) ? [{ permiso: e.permiso, concedido: e.concedido }] : [],
     ),
   };

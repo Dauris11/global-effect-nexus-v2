@@ -1,0 +1,132 @@
+/*
+ * Movimiento de la landing.
+ *
+ * Vive aquí y no en `globals.css` porque solo lo usa la portada: el portal es
+ * una herramienta de trabajo y no debe animar nada al hacer scroll.
+ *
+ * Tres reglas para todo lo de este archivo:
+ *   1. Solo `transform` y `opacity`. Nada que recalcule la maquetación.
+ *   2. Todo dentro de `prefers-reduced-motion: no-preference`: quien pide menos
+ *      movimiento ve la página entera, quieta, desde el primer momento.
+ *   3. El estado de partida nunca es "oculto" sin red: si el navegador no
+ *      entiende `animation-timeline`, la regla no se aplica y el contenido se
+ *      ve tal cual. Por eso no hay JavaScript ni clase "visible" que poner.
+ *
+ * `transform` y no `translate`: Tailwind 4 mueve las tarjetas en hover con la
+ * propiedad `translate`, y si la animación usara la misma la dejaría fija al
+ * terminar (una animación con `fill: both` gana a cualquier `:hover`).
+ */
+
+:root {
+  /* Salida rápida y frenada larga: lo que entra parece llegar, no deslizarse. */
+  --landing-salida: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes landing-subir {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes landing-acercar {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes landing-progreso {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* La barra del punto activo: sin movimiento, se ve llena y quieta. */
+.landing-progreso {
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * Entrada del hero al cargar y al cambiar de anuncio. Es por tiempo, no por
+   * scroll: el hero ya está a la vista y no hay nada que esperar.
+   */
+  .landing-entrada {
+    animation: landing-subir 700ms var(--landing-salida) both;
+    animation-delay: calc(var(--paso, 0) * 80ms);
+  }
+
+  /* Acercamiento lento de la foto activa: el hero respira sin distraer. */
+  .landing-foto-activa {
+    animation: landing-acercar 7s var(--landing-salida) both;
+  }
+
+  /* Dura lo mismo que `INTERVALO_MS` en hero.tsx. */
+  .landing-progreso {
+    animation: landing-progreso 6s linear both;
+  }
+
+  /*
+   * Revelado al hacer scroll, atado a la posición del propio elemento. Lo que
+   * ya está en pantalla al cargar se calcula como "ya entrado" y no parpadea.
+   */
+  @supports (animation-timeline: view()) {
+    .revelar,
+    .revelar-hijos > * {
+      animation: landing-subir linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+
+    /*
+     * Escalonado entre hermanos de una misma fila. Todos comparten posición
+     * vertical, así que el retraso se expresa como un tramo más tardío del
+     * mismo recorrido y no como milisegundos.
+     */
+    .revelar-hijos > :nth-child(2) {
+      animation-range: entry 6% entry 61%;
+    }
+    .revelar-hijos > :nth-child(3) {
+      animation-range: entry 12% entry 67%;
+    }
+    .revelar-hijos > :nth-child(4) {
+      animation-range: entry 18% entry 73%;
+    }
+    .revelar-hijos > :nth-child(n + 5) {
+      animation-range: entry 22% entry 77%;
+    }
+  }
+
+  /*
+   * Apertura suave de las preguntas. `::details-content` solo existe en los
+   * Chromium recientes; en el resto el `<details>` se abre de golpe, que es
+   * lo que hacía antes.
+   */
+  @supports selector(::details-content) {
+    .landing-faq {
+      interpolate-size: allow-keywords;
+    }
+
+    .landing-faq details::details-content {
+      block-size: 0;
+      overflow: hidden;
+      transition:
+        block-size 300ms var(--landing-salida),
+        content-visibility 300ms allow-discrete;
+    }
+
+    .landing-faq details[open]::details-content {
+      block-size: auto;
+    }
+  }
+}

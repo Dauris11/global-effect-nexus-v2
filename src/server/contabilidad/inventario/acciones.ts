@@ -135,50 +135,31 @@ export async function registrarMovimientoInventario(
 
       // Generar asiento contable de consumo si es salida de consumo
       if (input.tipo === "salida_consumo" && costoTotal > 0) {
-        const fechaObj = new Date(input.fecha);
-        const anio = fechaObj.getFullYear();
-        const mes = fechaObj.getMonth() + 1;
-
-        const numSeq = await cliente.query<{ siguiente: number }>(
-          `UPDATE contabilidad.secuencia
-              SET siguiente = siguiente + 1
-            WHERE clave = 'asiento'
-            RETURNING siguiente`,
-        );
-        const numeroAsiento = `AS-${anio}-${String(numSeq.rows[0].siguiente).padStart(5, "0")}`;
-
+        // La cabecera la crea `crear_asiento` (número y período); las líneas
+        // van a mano porque el débito lleva centro de costo y la función no
+        // lo acepta. El cuadre lo valida el disparador diferido al confirmar.
         const asRes = await cliente.query<{ id: string }>(
-          `INSERT INTO contabilidad.asiento
-             (numero, fecha, concepto, tipo, estado, anio, mes, creado_por)
-           VALUES ($1, $2::date, $3, 'ajuste', 'publicado', $4, $5, $6)
-           RETURNING id`,
-          [
-            numeroAsiento,
-            input.fecha,
-            `Consumo de inventario: ${art.nombre} (${input.cantidad})`,
-            anio,
-            mes,
-            usuario.id,
-          ],
+          `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', NULL, NULL, '[]'::jsonb) AS id`,
+          [input.fecha, `Consumo de inventario: ${art.nombre} (${input.cantidad})`],
         );
         asientoId = asRes.rows[0].id;
 
         const centroImputacion = input.centro_costo_id || art.centro_costo_id;
 
-        // Débito: Cuenta Gasto Consumo
         await cliente.query(
           `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, centro_costo_id, debito, credito, descripcion)
-           VALUES ($1, 1, $2, $3, $4, 0, $5)`,
-          [asientoId, art.cuenta_gasto_id, centroImputacion, costoTotal, `Consumo de ${art.nombre}`],
-        );
-
-        // Crédito: Cuenta Inventario
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-           VALUES ($1, 2, $2, 0, $3, $4)`,
-          [asientoId, art.cuenta_inventario_id, costoTotal, `Salida de almacén ${art.nombre}`],
+             (asiento_id, cuenta_id, centro_costo_id, debe, haber, descripcion)
+           VALUES ($1, $2, $3, $4, 0, $5),
+                  ($1, $6, NULL, 0, $4, $7)`,
+          [
+            asientoId,
+            art.cuenta_gasto_id,
+            centroImputacion,
+            costoTotal,
+            `Consumo de ${art.nombre}`,
+            art.cuenta_inventario_id,
+            `Salida de almacén ${art.nombre}`,
+          ],
         );
       }
     }
@@ -400,68 +381,28 @@ export async function aplicarConteoFisico(
 
     // Si hubo diferencia monetaria neta, generar asiento de ajuste
     if (Math.abs(impactoNeto) > 0) {
-      const fechaObj = new Date(cf.fecha);
-      const anio = fechaObj.getFullYear();
-      const mes = fechaObj.getMonth() + 1;
-
-      const numSeq = await cliente.query<{ siguiente: number }>(
-        `UPDATE contabilidad.secuencia
-            SET siguiente = siguiente + 1
-          WHERE clave = 'asiento'
-          RETURNING siguiente`,
-      );
-      const numeroAsiento = `AS-${anio}-${String(numSeq.rows[0].siguiente).padStart(5, "0")}`;
-
-      const { rows: asRows } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.asiento
-           (numero, fecha, concepto, tipo, estado, anio, mes, creado_por)
-         VALUES ($1, $2::date, $3, 'ajuste', 'publicado', $4, $5, $6)
-         RETURNING id`,
-        [
-          numeroAsiento,
-          cf.fecha,
-          `Ajuste de inventario físico ${cf.codigo}`,
-          anio,
-          mes,
-          usuario.id,
-        ],
-      );
-      asientoAjusteId = asRows[0].id;
-
       // Cuenta inventario general y cuenta ajuste/gasto
       const ctaInventario = lineas[0].cuenta_inventario_id;
       const ctaGasto = lineas[0].cuenta_gasto_id;
+      const monto = Math.abs(impactoNeto);
 
-      if (impactoNeto > 0) {
-        // Sobrante: Débito Inventario, Crédito Otros Ingresos / Ajuste
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-           VALUES ($1, 1, $2, $3, 0, 'Ajuste sobrante de inventario físico')`,
-          [asientoAjusteId, ctaInventario, impactoNeto],
-        );
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-           VALUES ($1, 2, $2, 0, $3, 'Ganancia por ajuste sobrante físico')`,
-          [asientoAjusteId, ctaGasto, impactoNeto],
-        );
-      } else {
-        // Faltante: Débito Gasto/Pérdida ajuste, Crédito Inventario
-        const montoPositivo = Math.abs(impactoNeto);
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-           VALUES ($1, 1, $2, $3, 0, 'Gasto / pérdida por faltante de inventario')`,
-          [asientoAjusteId, ctaGasto, montoPositivo],
-        );
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, linea, cuenta_id, debito, credito, descripcion)
-           VALUES ($1, 2, $2, 0, $3, 'Ajuste faltante de inventario físico')`,
-          [asientoAjusteId, ctaInventario, montoPositivo],
-        );
-      }
+      // Sobrante: débito inventario contra ajuste; faltante: al revés.
+      const lineasAsiento =
+        impactoNeto > 0
+          ? [
+              { cuenta_id: ctaInventario, debe: monto, haber: 0, descripcion: "Ajuste sobrante de inventario físico" },
+              { cuenta_id: ctaGasto, debe: 0, haber: monto, descripcion: "Ganancia por ajuste sobrante físico" },
+            ]
+          : [
+              { cuenta_id: ctaGasto, debe: monto, haber: 0, descripcion: "Gasto / pérdida por faltante de inventario" },
+              { cuenta_id: ctaInventario, debe: 0, haber: monto, descripcion: "Ajuste faltante de inventario físico" },
+            ];
+
+      const { rows: asRows } = await cliente.query<{ id: string }>(
+        `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', NULL, NULL, $3::jsonb) AS id`,
+        [cf.fecha, `Ajuste de inventario físico ${cf.codigo}`, JSON.stringify(lineasAsiento)],
+      );
+      asientoAjusteId = asRows[0].id;
     }
 
     await cliente.query(

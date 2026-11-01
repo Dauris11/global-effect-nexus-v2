@@ -36,6 +36,9 @@ export interface HabitudesLiceo {
     tanda: TandaLiceo;
   }>;
   totalEstudiantes?: number;
+  /** Fecha (YYYY-MM-DD) de la última visita no borrador; la usa el popup del mapa. */
+  ultimaVisita?: string | null;
+  totalVisitas?: number;
 }
 
 export interface HabitudesLiceoProfesor {

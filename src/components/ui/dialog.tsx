@@ -51,6 +51,7 @@ function DialogOverlay({
       className={cn(
         "fixed inset-0 z-50 bg-black/40",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "duration-(--duracion-media) ease-salida data-[state=closed]:duration-(--duracion-rapida)",
         className,
       )}
       {...props}
@@ -74,7 +75,14 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed z-50 grid gap-4 border border-linea p-5 pt-7 shadow-elevada duration-200 md:p-6",
+          "bg-background fixed z-50 grid gap-4 border border-linea p-5 pt-7 shadow-elevada md:p-6",
+          /*
+           * Entra más despacio de lo que sale: lo que aparece se mira, lo que
+           * se cierra ya no interesa. En móvil sube con la curva de iOS; en
+           * escritorio crece desde 95 % en el centro —un modal no nace de
+           * ningún botón concreto, así que no lleva origen propio—.
+           */
+          "ease-cajon duration-[280ms] data-[state=closed]:duration-(--duracion-media) md:ease-salida md:duration-(--duracion-media) md:data-[state=closed]:duration-(--duracion-rapida)",
           // Móvil: hoja inferior.
           "inset-x-0 bottom-0 max-h-[90dvh] w-full rounded-t-hoja pb-[max(1.25rem,env(safe-area-inset-bottom))]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom",

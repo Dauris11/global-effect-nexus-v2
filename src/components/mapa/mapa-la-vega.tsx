@@ -1,22 +1,36 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { PropsMapaLaVega, LiceoMapaItem } from "./mapa-la-vega-cliente";
 
-export type { PropsMapaLaVega, LiceoMapaItem };
+import { Skeleton } from "@/components/ui/skeleton";
+
+import type { LiceoMapaItem, PropsMapaLaVega } from "./mapa-la-vega-cliente";
+
+export type { LiceoMapaItem, PropsMapaLaVega };
 
 /**
- * Componente de Mapa de La Vega cargado exclusivamente en el cliente (SSR desactivado)
- * para garantizar compatibilidad total con Leaflet en Next.js y Vercel.
+ * Hueco con la forma del mapa: barra de filtros, lienzo y leyenda. Las alturas
+ * son las mismas que pone el cliente para que nada salte al llegar Leaflet.
+ */
+function EsqueletoMapa() {
+  return (
+    <div className="space-y-3" aria-busy="true">
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-11 w-44" />
+        <Skeleton className="h-11 w-28 rounded-full" />
+        <Skeleton className="h-11 w-32 rounded-full" />
+      </div>
+      <Skeleton className="h-[min(420px,65svh)] min-h-64 w-full rounded-card" />
+      <Skeleton className="h-4 w-56" />
+    </div>
+  );
+}
+
+/**
+ * Leaflet toca `window` al importarse, así que el mapa entero se carga solo en
+ * el navegador. De paso, sus ~150 KB no viajan a las páginas que no lo usan.
  */
 export const MapaLaVega = dynamic<PropsMapaLaVega>(
   () => import("./mapa-la-vega-cliente").then((mod) => mod.MapaLaVegaCliente),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[420px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 flex items-center justify-center animate-pulse text-xs text-slate-500 font-medium">
-        Cargando mapa de La Vega...
-      </div>
-    ),
-  },
+  { ssr: false, loading: EsqueletoMapa },
 );

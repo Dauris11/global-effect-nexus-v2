@@ -6,6 +6,7 @@ import { Footer } from "@/components/landing/footer";
 import { Hero, type Diapositiva } from "@/components/landing/hero";
 import { Navbar } from "@/components/landing/navbar";
 import { SeccionAcceso } from "@/components/landing/seccion-acceso";
+import { SeccionCifras } from "@/components/landing/seccion-cifras";
 import { SeccionCierre } from "@/components/landing/seccion-cierre";
 import { SeccionEventos } from "@/components/landing/seccion-eventos";
 import { SeccionFaq } from "@/components/landing/seccion-faq";
@@ -15,11 +16,15 @@ import { SeccionPatrocinadores } from "@/components/landing/seccion-patrocinador
 import { SeccionProgramas } from "@/components/landing/seccion-programas";
 import type { Locale } from "@/i18n/routing";
 import {
+  cifrasPublicas,
   diapositivasLanding,
   eventosPublicos,
   inscritosComidaHoy,
   noticiasPublicas,
 } from "@/server/landing/consultas";
+
+// Movimiento propio de la portada; el portal no lo carga.
+import "@/components/landing/landing.css";
 
 export async function generateMetadata({
   params,
@@ -38,9 +43,9 @@ export async function generateMetadata({
 /**
  * Página de inicio pública. No exige sesión.
  *
- * Los datos se leen en el servidor, en paralelo: son cinco consultas
- * independientes y encadenarlas con `await` seguidos sumaría cinco idas y
- * vueltas al pooler para nada. Todas van cacheadas con la etiqueta
+ * Los datos se leen en el servidor, en paralelo: son varias consultas
+ * independientes y encadenarlas con `await` seguidos sumaría una ida y
+ * vuelta al pooler por cada una para nada. Todas van cacheadas con la etiqueta
  * `TAG_LANDING`, así que la visita normal no toca la base; las acciones del
  * panel de administración tiran esa caché al publicar.
  *
@@ -60,12 +65,13 @@ export default async function PaginaInicio({
 
   const idioma: Locale = locale === "en" ? "en" : "es";
 
-  const [diapositivasBd, eventos, noticias, inscritos] =
+  const [diapositivasBd, eventos, noticias, inscritos, cifras] =
     await Promise.all([
       diapositivasLanding(),
       eventosPublicos(12),
       noticiasPublicas(3),
       inscritosComidaHoy(),
+      cifrasPublicas(),
     ]);
 
   /*
@@ -114,7 +120,7 @@ export default async function PaginaInicio({
     { ancla: "patrocinadores", texto: t("navSponsors") },
     { ancla: "eventos", texto: t("navEventos") },
     ...(noticias.length > 0
-      ? [{ ancla: "noticias", texto: t("blogEyebrow") }]
+      ? [{ ancla: "noticias", texto: t("blogTitle") }]
       : []),
     { ancla: "preguntas", texto: t("navFaq") },
   ];
@@ -164,6 +170,8 @@ export default async function PaginaInicio({
       <main>
         <Hero
           diapositivas={diapositivas}
+          entradilla={t("heroText")}
+          accion={{ texto: t("heroCta"), href: "/login" }}
           etiquetaAnterior={t("heroPrev")}
           etiquetaSiguiente={t("heroNext")}
           etiquetaCarrusel={t("heroCarousel")}
@@ -181,6 +189,10 @@ export default async function PaginaInicio({
           mismo" y la barra de cifras. Son una sola desde este cambio, con el
           estado del comedor dentro de la puerta que lleva a inscribirse.
         */}
+        {/* Las cifras, justo bajo la foto: lo primero que se lee después del
+            titular es cuánta gente hay detrás, no un texto sobre ella. */}
+        <SeccionCifras cifras={cifras} inscritosHoy={inscritos} locale={idioma} />
+
         <SeccionAcceso inscritosHoy={inscritos} />
 
         <SeccionProgramas />

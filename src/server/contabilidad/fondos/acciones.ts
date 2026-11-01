@@ -124,17 +124,20 @@ export async function liberarFondoRestringido(datos: {
         throw new Error(`El monto supera el saldo restringido disponible (RD$ ${saldoDisponible.toFixed(2)})`);
       }
 
-      // Buscar período contable abierto
+      // `periodo_para` resuelve (o crea) el mes de la fecha; si ese mes está
+      // cerrado la liberación se registra igual, pero sin asiento.
       const { rows: perRows } = await cliente.query<{ id: string }>(
-        `SELECT id FROM contabilidad.periodo_contable
-          WHERE $1 BETWEEN fecha_inicio AND fecha_fin AND estado = 'abierto'
-          LIMIT 1`,
+        `SELECT contabilidad.periodo_para($1::date) AS id`,
         [fecha]
+      );
+      const periodoId = perRows[0].id;
+      const { rows: estRows } = await cliente.query<{ estado: string }>(
+        `SELECT estado FROM contabilidad.periodo_contable WHERE id = $1`,
+        [periodoId]
       );
 
       let asientoId: string | null = null;
-      if (perRows.length > 0) {
-        const periodoId = perRows[0].id;
+      if (estRows[0]?.estado === "abierto") {
 
         // Buscar cuentas para liberación de fondos ASFL
         // 3.1.01.02 (Resultados Acumulados / Restringidos) y 3.1.01.01 (Operativo Liberado)

@@ -6,6 +6,13 @@
  * se encuentre estrictamente dentro de los límites provinciales de La Vega.
  */
 
+/**
+ * Rectángulo que envuelve la provincia. No es el contorno real: deja fuera
+ * parte de Valle Nuevo y mete trozos de Santiago y Monseñor Nouel, pero es la
+ * misma caja que valida la base de datos (`chk_habitudes_liceo_bounds_la_vega`
+ * y `chk_perfil_vivienda_bounds_la_vega`, migración 0045). Si se cambia aquí
+ * sin una migración, el mapa dejaría elegir puntos que Postgres rechaza.
+ */
 export const LIMITES_LA_VEGA = {
   minLat: 18.7000,
   maxLat: 19.4500,
@@ -13,6 +20,7 @@ export const LIMITES_LA_VEGA = {
   maxLng: -70.3500,
 } as const;
 
+/** Parque Duarte de Concepción de La Vega, frente a la catedral. */
 export const CENTRO_LA_VEGA = {
   lat: 19.2220,
   lng: -70.5290,
@@ -42,7 +50,7 @@ export interface MunicipioLaVega {
 export const MUNICIPIOS_LA_VEGA: MunicipioLaVega[] = [
   {
     nombre: "Concepción de La Vega",
-    centro: [19.2220, -70.5290],
+    centro: [CENTRO_LA_VEGA.lat, CENTRO_LA_VEGA.lng],
     distritos: [
       {
         nombre: "Cabecera Urbana (La Vega Centro)",
@@ -120,7 +128,9 @@ export const MUNICIPIOS_LA_VEGA: MunicipioLaVega[] = [
   },
   {
     nombre: "Jarabacoa",
-    centro: [19.1210, -70.6420],
+    // Aproximado: parque central del pueblo. El valor anterior caía ~500 m al
+    // oeste, ya fuera del casco urbano.
+    centro: [19.1190, -70.6375],
     distritos: [
       {
         nombre: "Jarabacoa Urbano",
@@ -161,7 +171,8 @@ export const MUNICIPIOS_LA_VEGA: MunicipioLaVega[] = [
   },
   {
     nombre: "Constanza",
-    centro: [18.9095, -70.7450],
+    // Aproximado: centro del pueblo (calle Luperón).
+    centro: [18.9095, -70.7445],
     distritos: [
       {
         nombre: "Constanza Urbano",
@@ -202,7 +213,9 @@ export const MUNICIPIOS_LA_VEGA: MunicipioLaVega[] = [
   },
   {
     nombre: "Jima Abajo",
-    centro: [19.1320, -70.3750],
+    // Aproximado: cabecera municipal. El valor anterior quedaba ~800 m al este,
+    // en pleno arrozal.
+    centro: [19.1330, -70.3800],
     distritos: [
       {
         nombre: "Jima Abajo Urbano",
@@ -241,4 +254,65 @@ export function estaEnLaVega(lat: number | null | undefined, lng: number | null 
     lng >= LIMITES_LA_VEGA.minLng &&
     lng <= LIMITES_LA_VEGA.maxLng
   );
+}
+
+const sinAcentos = (texto: string) =>
+  texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+/**
+ * Busca un municipio por nombre tolerando cómo se escribió en la base: "La
+ * Vega", "concepcion de la vega" y "Concepción de La Vega" son el mismo.
+ */
+export function buscarMunicipio(nombre: string | null | undefined): MunicipioLaVega | null {
+  if (!nombre) return null;
+  const buscado = sinAcentos(nombre);
+  return (
+    MUNICIPIOS_LA_VEGA.find((m) => sinAcentos(m.nombre) === buscado) ??
+    MUNICIPIOS_LA_VEGA.find(
+      (m) => sinAcentos(m.nombre).includes(buscado) || buscado.includes(sinAcentos(m.nombre)),
+    ) ??
+    null
+  );
+}
+
+/** Distancia en metros entre dos puntos (haversine; sobra precisión para una provincia). */
+export function distanciaMetros(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+): number {
+  const R = 6371000;
+  const rad = (g: number) => (g * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Municipio cuyo centro queda más cerca del punto. Es una aproximación —los
+ * municipios no son círculos—, pero acierta mucho más que fiarse de lo que
+ * diga el selector, que el usuario casi nunca cambia antes de pinchar.
+ */
+export function municipioMasCercano(lat: number, lng: number): MunicipioLaVega {
+  let mejor = MUNICIPIOS_LA_VEGA[0];
+  let menor = Infinity;
+  for (const m of MUNICIPIOS_LA_VEGA) {
+    const d = distanciaMetros({ lat, lng }, { lat: m.centro[0], lng: m.centro[1] });
+    if (d < menor) {
+      menor = d;
+      mejor = m;
+    }
+  }
+  return mejor;
+}
+
+/** Enlace de Google Maps con la ruta hasta el punto desde donde esté el usuario. */
+export function enlaceComoLlegar(lat: number, lng: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat.toFixed(6)},${lng.toFixed(6)}`;
 }

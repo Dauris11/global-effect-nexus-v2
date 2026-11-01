@@ -70,9 +70,9 @@ export async function listarPeriodosContables(ejercicio?: number): Promise<Perio
        p.anio,
        p.mes,
        p.estado,
-       COALESCE(uc.nombre || ' ' || uc.apellidos, uc.email) AS cerrado_por_nombre,
+       COALESCE(uc.nombre, uc.email) AS cerrado_por_nombre,
        p.cerrado_en::text,
-       COALESCE(ur.nombre || ' ' || ur.apellidos, ur.email) AS reabierto_por_nombre,
+       COALESCE(ur.nombre, ur.email) AS reabierto_por_nombre,
        p.reabierto_en::text,
        p.motivo_reapertura,
        (SELECT COUNT(*) FROM contabilidad.recibo r WHERE r.periodo_id = p.id AND r.estado = 'borrador') AS borradores_recibos,
@@ -131,7 +131,7 @@ export async function listarCierresAnuales(): Promise<CierreAnualItem[]> {
        ca.total_ingresos,
        ca.total_gastos,
        ca.superavit_deficit,
-       COALESCE(u.nombre || ' ' || u.apellidos, u.email) AS cerrado_por_nombre,
+       COALESCE(u.nombre, u.email) AS cerrado_por_nombre,
        ca.cerrado_en::text,
        ca.notas
      FROM contabilidad.cierre_anual ca

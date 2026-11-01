@@ -174,7 +174,6 @@ export default async function PortalEstudiante({
           icono={GraduationCap}
           insignia={t(`type.${estudiante.tipo}`)}
           titulo={t("greeting", { name: estudiante.nombre })}
-          subtitulo={t("summary")}
           kpis={[
             {
               valor:

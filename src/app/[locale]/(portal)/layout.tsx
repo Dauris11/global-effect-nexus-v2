@@ -128,6 +128,7 @@ export default async function LayoutPortal({
       <AplicadorApariencia />
       <AppShell
         rol={usuario.rol}
+        rolReal={usuario.rolReal}
         nombre={usuario.nombre}
         // La URL se firma aquí, en el servidor: el armazón es cliente y no tiene
         // por qué saber en qué bucket vive la foto.

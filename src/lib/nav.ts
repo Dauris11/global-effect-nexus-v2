@@ -27,6 +27,7 @@ import {
   Shield,
   Sparkles,
   Star,
+  TowerControl,
   UserCog,
   Users,
   Utensils,
@@ -221,6 +222,17 @@ const MENU_ADMINISTRACION: AreaNav[] = [
           },
           { etiqueta: "tasks", href: "/administrativo/tareas", icono: ListTodo },
           {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
+          },
+          {
+            etiqueta: "teamTower",
+            href: "/administrativo/torre-control/equipo",
+            icono: Users,
+            permiso: "operaciones.escribir",
+          },
+          {
             etiqueta: "projects",
             href: "/administrativo/proyectos",
             icono: FolderKanban,
@@ -277,9 +289,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         // salen del registro del departamento, igual que el menú de contabilidad.
         items: [
           {
-            etiqueta: "accounting",
+            etiqueta: "accountingHome",
             href: "/portal/contabilidad",
-            icono: DollarSign,
+            icono: Home,
             permiso: "contabilidad.leer",
           },
           ...MODULOS_CONTABLES.filter((modulo) => modulo.enAdministracion).map(itemDeModulo),
@@ -520,6 +532,11 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
+          },
         ],
       },
     ],
@@ -549,18 +566,18 @@ const MENU_HABITUDES: AreaNav[] = [
             href: "/habitudes",
             icono: BookOpen,
           },
-          {
-            etiqueta: "applicants",
-            href: "/expedientes",
-            icono: Users,
-            permiso: "expedientes.postular",
-          },
-          // El alta de un candidato es una solicitud que aprueba
-          // administración (`alta_expediente`).
+          // Postular a un candidato ES una solicitud (`alta_expediente`) que
+          // aprueba administración: no hay lista de expedientes que ver, y una
+          // entrada a `/expedientes` los devolvía a su portal sin explicación.
           {
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+          },
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
           },
         ],
       },
@@ -569,17 +586,15 @@ const MENU_HABITUDES: AreaNav[] = [
 ];
 
 /**
- * Contabilidad ve UNA sola área (§1.1 de docs/prompts/portal-contabilidad.md):
- * su departamento, con una sección por grupo de trabajo —tesorería, ingresos,
- * gastos, impuestos, activos y lo del departamento—. Las secciones salen de
- * `MODULOS_CONTABLES`, así que un módulo nuevo aparece aquí sin tocar el menú.
- * El perfil va en el menú del avatar.
+ * Menú de Contabilidad: estructurado en áreas funcionales por ciclo contable
+ * más las herramientas operativas institucionales (Calendario, Reuniones, Chat IA).
+ * Cada área se dibuja con su icono y encabezado en la barra lateral.
  */
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
-    clave: "contabilidad",
-    etiqueta: "accounting",
-    icono: DollarSign,
+    clave: "contab_general",
+    etiqueta: "contabGroups.general",
+    icono: BookOpen,
     secciones: [
       {
         items: [
@@ -588,12 +603,75 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             href: "/portal/contabilidad",
             icono: Home,
           },
+          ...modulosDeGrupo("general").map(itemDeModulo),
         ],
       },
-      ...GRUPOS_CONTABLES.map((grupo) => ({
-        etiqueta: `contabGroups.${grupo}`,
-        items: modulosDeGrupo(grupo).map(itemDeModulo),
-      })),
+    ],
+  },
+  {
+    clave: "contab_tesoreria",
+    etiqueta: "contabGroups.tesoreria",
+    icono: Landmark,
+    secciones: [
+      {
+        items: modulosDeGrupo("tesoreria").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_ingresos",
+    etiqueta: "contabGroups.ingresos",
+    icono: HandCoins,
+    secciones: [
+      {
+        items: modulosDeGrupo("ingresos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_gastos",
+    etiqueta: "contabGroups.gastos",
+    icono: ReceiptText,
+    secciones: [
+      {
+        items: modulosDeGrupo("gastos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_impuestos",
+    etiqueta: "contabGroups.impuestos",
+    icono: DollarSign,
+    secciones: [
+      {
+        items: modulosDeGrupo("impuestos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_activos",
+    etiqueta: "contabGroups.activos",
+    icono: Package,
+    secciones: [
+      {
+        items: modulosDeGrupo("activos").map(itemDeModulo),
+      },
+    ],
+  },
+  {
+    clave: "contab_gestion",
+    etiqueta: "tools",
+    icono: Sparkles,
+    secciones: [
+      {
+        items: [
+          ...modulosDeGrupo("departamento").map(itemDeModulo),
+          { etiqueta: "controlTower", href: "/administrativo/torre-control", icono: TowerControl },
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
+          { etiqueta: "chatIaAdmin", href: "/chat-ia", icono: Bot, permiso: "ia.usar" },
+        ],
+      },
     ],
   },
 ];
@@ -621,9 +699,10 @@ const MENU_COLABORADOR: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "myDay",
-            href: "/administrativo/tareas/hoy",
-            icono: ListTodo,
+            // La torre ya es «mi día»: tareas de hoy, vencidas y de la semana.
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
           },
           {
             etiqueta: "expenseReports",

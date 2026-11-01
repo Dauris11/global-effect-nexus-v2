@@ -51,8 +51,14 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "-mb-px inline-flex h-12 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-0.5 text-[15px] font-medium transition-colors hover:text-tinta",
-        "data-[state=active]:border-tinta data-[state=active]:font-semibold data-[state=active]:text-tinta",
+        "relative -mb-px inline-flex h-12 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-0.5 text-[15px] font-medium transition-colors duration-(--duracion-rapida) hover:text-tinta",
+        "data-[state=active]:font-semibold data-[state=active]:text-tinta",
+        /*
+         * La barra de la activa es un pseudo-elemento que crece desde el
+         * centro (scaleX), y no un `border-color` que aparece de golpe: es
+         * `transform`, así que no mueve nada y la GPU la anima sola.
+         */
+        "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-tinta after:scale-x-0 after:transition-transform after:duration-(--duracion-media) after:ease-salida data-[state=active]:after:scale-x-100",
         "focus-visible:ring-ring outline-none focus-visible:ring-2 rounded-t-[4px]",
         "disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
@@ -70,7 +76,7 @@ function TabsContent({
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn("flex-1 outline-none", className)}
+      className={cn("flex-1 outline-none data-[state=active]:animate-velo", className)}
       {...props}
     />
   );

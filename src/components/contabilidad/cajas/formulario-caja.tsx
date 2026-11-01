@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SELECT } from "@/components/contabilidad/comun";
+import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { MONEDAS } from "@/lib/contabilidad/formato";
 import { crearCajaAction } from "@/server/contabilidad/cajas/acciones";
 import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
@@ -31,7 +31,7 @@ export function FormularioCaja({
 
   const [codigo, setCodigo] = useState("");
   const [nombre, setNombre] = useState("");
-  const [departamento, setDepartamento] = useState("operaciones");
+  const [departamento, setDepartamento] = useState("");
   const [responsableId, setResponsableId] = useState(responsables[0]?.id ?? "");
   const [moneda, setMoneda] = useState<"DOP" | "USD">("DOP");
   const [fondoFijo, setFondoFijo] = useState("10000");
@@ -46,7 +46,7 @@ export function FormularioCaja({
     const ua = parseFloat(umbralAdjunto);
 
     if (isNaN(ff) || ff <= 0) {
-      setError("El fondo fijo debe ser un valor numérico mayor a cero.");
+      setError(t("errores.datos_invalidos"));
       setGuardando(false);
       return;
     }
@@ -67,10 +67,10 @@ export function FormularioCaja({
         setCodigo("");
         setNombre("");
       } else {
-        setError(res.error);
+        setError(t(`errores.${res.error}`));
       }
-    } catch (err: unknown) {
-      setError((err as Error).message || "Error al crear la caja.");
+    } catch {
+      setError(t("errores.error"));
     } finally {
       setGuardando(false);
     }
@@ -95,7 +95,6 @@ export function FormularioCaja({
               <Label htmlFor="codigo">{t("codigo")}</Label>
               <Input
                 id="codigo"
-                placeholder="CJ-OP-01"
                 required
                 className="uppercase font-mono"
                 value={codigo}
@@ -104,18 +103,13 @@ export function FormularioCaja({
             </div>
             <div className="space-y-1">
               <Label htmlFor="departamento">{t("departamento")}</Label>
-              <select
+              <Input
                 id="departamento"
-                className={SELECT}
+                required
+                maxLength={80}
                 value={departamento}
                 onChange={(e) => setDepartamento(e.target.value)}
-              >
-                <option value="operaciones">Operaciones</option>
-                <option value="direccion">Dirección</option>
-                <option value="academico">Académico</option>
-                <option value="habitudes">Habitudes</option>
-                <option value="comedor">Comedor</option>
-              </select>
+              />
             </div>
           </div>
 
@@ -123,7 +117,6 @@ export function FormularioCaja({
             <Label htmlFor="nombre">{t("nombre")}</Label>
             <Input
               id="nombre"
-              placeholder="Caja Chica Operaciones Sede La Vega"
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
@@ -175,7 +168,7 @@ export function FormularioCaja({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="umbralAdjunto">Umbral Req.</Label>
+              <Label htmlFor="umbralAdjunto">{t("umbralAdjunto")}</Label>
               <Input
                 id="umbralAdjunto"
                 type="number"
@@ -187,15 +180,11 @@ export function FormularioCaja({
             </div>
           </div>
 
-          {error && (
-            <div className="rounded-control bg-semaforo-alerta/15 p-2.5 text-xs text-semaforo-alerta">
-              {error}
-            </div>
-          )}
+          {error && <AvisoError>{error}</AvisoError>}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-              Cancelar
+              {t("cancelar")}
             </Button>
             <Button type="submit" disabled={guardando}>
               {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}

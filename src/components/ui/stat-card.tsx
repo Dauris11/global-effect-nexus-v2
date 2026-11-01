@@ -18,6 +18,10 @@ import { cn } from "@/lib/utils";
  *
  * La cifra va en tinta. El acento —cuando lo hay— lo lleva solo el icono: si
  * todas las cifras destacan, ninguna destaca.
+ *
+ * Movimiento: la cifra sube 8 px al llegar, un pelo después que la tarjeta, y
+ * al pasar el ratón solo el icono reacciona. La tarjeta no se eleva: no es un
+ * enlace, y elevarla prometería un clic que no existe.
  */
 export function StatCard({
   valor,
@@ -41,21 +45,30 @@ export function StatCard({
   if (variant === "centrada") {
     return (
       <Card className={cn("items-center justify-center p-5 text-center", className)}>
-        <p className={cn(STAT_CARD.valorNeutro, color)}>{valor}</p>
+        <p className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]", color)}>
+          {valor}
+        </p>
         <p className={STAT_CARD.label}>{etiqueta}</p>
       </Card>
     );
   }
 
   return (
-    <Card className={cn("flex-row items-center gap-4 p-5", className)}>
+    <Card className={cn("group/cifra flex-row items-center gap-4 p-5", className)}>
       {Icono && (
-        <span className={acento ? STAT_CARD.iconoAcento : STAT_CARD.iconoNeutro}>
+        <span
+          className={cn(
+            acento ? STAT_CARD.iconoAcento : STAT_CARD.iconoNeutro,
+            "transition-transform duration-(--duracion-media) ease-salida group-hover/cifra:scale-105",
+          )}
+        >
           <Icono className="size-5" />
         </span>
       )}
       <div className="min-w-0">
-        <p className={STAT_CARD.valorNeutro}>{valor}</p>
+        <p className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]")}>
+          {valor}
+        </p>
         <p className={cn(STAT_CARD.label, "line-clamp-2 break-words")}>{etiqueta}</p>
       </div>
     </Card>

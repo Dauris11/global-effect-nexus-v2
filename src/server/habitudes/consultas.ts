@@ -50,6 +50,8 @@ export async function listarLiceosHabitudes(): Promise<HabitudesLiceo[]> {
     latitud: number | null;
     longitud: number | null;
     total_estudiantes: number;
+    ultima_visita: string | null;
+    total_visitas: number;
   }>(
     `SELECT l.id,
             l.nombre,
@@ -65,7 +67,13 @@ export async function listarLiceosHabitudes(): Promise<HabitudesLiceo[]> {
             l.calle,
             l.latitud::float AS latitud,
             l.longitud::float AS longitud,
-            (SELECT count(*)::int FROM public.habitudes_liceo_estudiante le WHERE le.liceo_id = l.id AND le.activo = true) AS total_estudiantes
+            (SELECT count(*)::int FROM public.habitudes_liceo_estudiante le WHERE le.liceo_id = l.id AND le.activo = true) AS total_estudiantes,
+            (SELECT to_char(max(v.fecha_visita), 'YYYY-MM-DD')
+               FROM public.habitudes_visita_evidencia v
+              WHERE v.liceo_id = l.id AND v.estado <> 'borrador') AS ultima_visita,
+            (SELECT count(*)::int
+               FROM public.habitudes_visita_evidencia v
+              WHERE v.liceo_id = l.id AND v.estado <> 'borrador') AS total_visitas
        FROM public.habitudes_liceo l
       WHERE l.activo = true
       ORDER BY l.municipio ASC, l.nombre ASC`,
@@ -118,6 +126,8 @@ export async function listarLiceosHabitudes(): Promise<HabitudesLiceo[]> {
     longitud: l.longitud,
     profesoresAsignados: mapaProfesores.get(l.id) ?? [],
     totalEstudiantes: l.total_estudiantes,
+    ultimaVisita: l.ultima_visita,
+    totalVisitas: l.total_visitas,
   }));
 }
 

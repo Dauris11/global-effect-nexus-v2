@@ -51,18 +51,20 @@ export async function registrarDonacion(datos: {
     const donacionId = await enTransaccionComo<string>(await contextoDe(usuario), async (cliente) => {
       await fijarAccion(cliente, "registrar_donacion");
 
-      // Buscar período contable abierto para la fecha
+      // `periodo_para` crea el período si aún no existe; el estado se mira
+      // aparte porque un mes cerrado no debe recibir donaciones nuevas.
       const { rows: perRows } = await cliente.query<{ id: string }>(
-        `SELECT id FROM contabilidad.periodo_contable
-         WHERE $1 BETWEEN fecha_inicio AND fecha_fin AND estado = 'abierto'
-         LIMIT 1`,
+        `SELECT contabilidad.periodo_para($1::date) AS id`,
         [datos.fecha]
       );
-
-      if (perRows.length === 0) {
+      const periodoId = perRows[0].id;
+      const { rows: estRows } = await cliente.query<{ estado: string }>(
+        `SELECT estado FROM contabilidad.periodo_contable WHERE id = $1`,
+        [periodoId]
+      );
+      if (estRows[0]?.estado !== "abierto") {
         throw new Error("No hay un período contable abierto para la fecha indicada");
       }
-      const periodoId = perRows[0].id;
 
       // Obtener siguiente número
       const { rows: secRows } = await cliente.query<{ num: string }>(
@@ -70,35 +72,20 @@ export async function registrarDonacion(datos: {
       );
       const numero = Number(secRows[0].num);
 
-      // Crear asiento contable
-      const { rows: numAsientoRows } = await cliente.query<{ siguiente: string }>(
-        `SELECT contabilidad.siguiente_numero('AS')::text AS siguiente`
-      );
-      const numeroAsiento = Number(numAsientoRows[0].siguiente);
-
       const glosa = datos.clase === "efectivo"
         ? `Ingreso por donación en efectivo #${numero}`
         : `Recepción de donación en especie #${numero}: ${datos.descripcionEspecie}`;
 
-      const { rows: asientoRows } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.asiento (
-           numero, fecha, periodo_id, tipo, concepto, moneda, tasa, estado, creado_por
-         ) VALUES ($1, $2, $3, 'manual', $4, $5, $6, 'cuadrado', $7)
-         RETURNING id`,
-        [numeroAsiento, datos.fecha, periodoId, glosa, datos.moneda, tasaFinal, usuario.id]
-      );
-      const asientoId = asientoRows[0].id;
-
-      // Líneas del asiento contable
+      // El asiento se lleva en pesos (`monto_dop`): la moneda original queda
+      // en la donación, porque `asiento` no tiene moneda ni tasa.
+      let lineas: { cuenta_id: string; debe: number; haber: number; descripcion: string }[] = [];
       if (datos.clase === "efectivo") {
-        // Obtener cuenta contable del banco
         const { rows: bcoRows } = await cliente.query<{ cuenta_contable_id: string }>(
           `SELECT cuenta_contable_id FROM contabilidad.cuenta_bancaria WHERE id = $1`,
           [datos.cuentaBancariaId]
         );
         const ctaDebe = bcoRows[0]?.cuenta_contable_id;
 
-        // Cuenta de ingreso por donación
         const codigoIngreso = datos.tratamiento === "gravado" ? "4.1.01.03" : "4.1.01.01";
         const { rows: ingRows } = await cliente.query<{ id: string }>(
           `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1`,
@@ -107,12 +94,10 @@ export async function registrarDonacion(datos: {
         const ctaHaber = ingRows[0]?.id;
 
         if (ctaDebe && ctaHaber) {
-          await cliente.query(
-            `INSERT INTO contabilidad.asiento_linea (asiento_id, numero_linea, cuenta_id, descripcion, debe, haber)
-             VALUES ($1, 1, $2, 'Entrada a banco donación', $3, 0),
-                    ($1, 2, $4, 'Reconocimiento de donación', 0, $3)`,
-            [asientoId, ctaDebe, montoDop, ctaHaber]
-          );
+          lineas = [
+            { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Entrada a banco donación" },
+            { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Reconocimiento de donación" },
+          ];
         }
       } else {
         // En especie: Débito a cuenta de activo/suministro elegida o default
@@ -130,14 +115,18 @@ export async function registrarDonacion(datos: {
         const ctaHaber = espRows[0]?.id;
 
         if (ctaDebe && ctaHaber) {
-          await cliente.query(
-            `INSERT INTO contabilidad.asiento_linea (asiento_id, numero_linea, cuenta_id, descripcion, debe, haber)
-             VALUES ($1, 1, $2, 'Activo/Bienes recibidos en especie', $3, 0),
-                    ($1, 2, $4, 'Ingreso donación en especie', 0, $3)`,
-            [asientoId, ctaDebe, montoDop, ctaHaber]
-          );
+          lineas = [
+            { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Activo/Bienes recibidos en especie" },
+            { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Ingreso donación en especie" },
+          ];
         }
       }
+
+      const { rows: asientoRows } = await cliente.query<{ id: string }>(
+        `SELECT contabilidad.crear_asiento($1::date, $2, 'manual', NULL, NULL, $3::jsonb) AS id`,
+        [datos.fecha, glosa, JSON.stringify(lineas)]
+      );
+      const asientoId = asientoRows[0].id;
 
       // Insertar registro de donación
       const { rows: donRows } = await cliente.query<{ id: string }>(

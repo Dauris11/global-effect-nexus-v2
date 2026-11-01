@@ -4,11 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 import {
   CabeceraSeccion,
-  Carrusel,
   CONTENEDOR,
-  ElementoCarrusel,
   SECCION,
-  TarjetaAnuncio,
 } from "@/components/landing/piezas";
 import { Badge } from "@/components/ui/badge";
 import { fechaLarga } from "@/lib/fechas";
@@ -34,35 +31,59 @@ export async function SeccionNoticias({
   if (noticias.length === 0) return null;
 
   const t = await getTranslations("landing");
+  const [destacada, ...resto] = noticias;
 
   return (
     <section id="noticias" className={SECCION}>
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("blogTitle")} texto={t("blogEyebrow")} />
+        <CabeceraSeccion titulo={t("blogTitle")} />
 
-        <div className="mt-8">
-          <Carrusel etiqueta={t("blogTitle")}>
-            {noticias.map((noticia) => (
-              <ElementoCarrusel key={noticia.id}>
-                <TarjetaAnuncio
-                  cabecera={<Portada url={noticia.imagen_url} />}
-                  insignia={
-                    <Badge variant="neutra" className="bg-background shadow-card">
-                      {t("blogTagNews")}
-                    </Badge>
-                  }
-                  titulo={noticia.titulo}
-                  lineas={[noticia.resumen]}
-                  pie={
-                    <p className="texto-meta mt-1.5">
-                      {fechaLarga(noticia.fecha, locale)}
-                      {noticia.autor ? ` · ${noticia.autor}` : ""}
-                    </p>
-                  }
-                />
-              </ElementoCarrusel>
-            ))}
-          </Carrusel>
+        {/*
+          La más reciente, grande y con su resumen; las demás, en filas con
+          miniatura al lado. Tres tarjetas iguales decían que las tres noticias
+          pesaban lo mismo, y la de esta semana casi siempre pesa más.
+        */}
+        <div className="revelar-hijos mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
+          <article className="lg:col-span-7">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-muted">
+              <Portada url={destacada.imagen_url} />
+              <div className="absolute top-3 left-3 z-10">
+                <Badge variant="neutra" className="bg-background/95 shadow-card">
+                  {t("blogTagNews")}
+                </Badge>
+              </div>
+            </div>
+            <p className="texto-meta mt-5">
+              {fechaLarga(destacada.fecha, locale)}
+              {destacada.autor ? ` · ${destacada.autor}` : ""}
+            </p>
+            <h3 className="mt-2 text-2xl leading-tight font-semibold tracking-[-0.02em] text-balance text-tinta md:text-[28px]">
+              {destacada.titulo}
+            </h3>
+            {destacada.resumen && (
+              <p className="mt-3 line-clamp-3 max-w-2xl leading-relaxed text-tinta-2">
+                {destacada.resumen}
+              </p>
+            )}
+          </article>
+
+          {resto.length > 0 && (
+            <ul className="flex flex-col gap-6 lg:col-span-5">
+              {resto.map((noticia) => (
+                <li key={noticia.id} className="flex gap-4 border-t border-linea pt-6 first:border-t-0 first:pt-0">
+                  <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-control bg-muted md:w-32">
+                    <Portada url={noticia.imagen_url} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="texto-meta">{fechaLarga(noticia.fecha, locale)}</p>
+                    <h3 className="mt-1 line-clamp-3 text-lg leading-snug font-semibold text-tinta">
+                      {noticia.titulo}
+                    </h3>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </section>
@@ -83,7 +104,7 @@ function Portada({ url }: { url: string | null }) {
     // Sin imagen, un marcador sobrio: mejor que estirar una foto ajena.
     return (
       <div className="flex size-full items-center justify-center">
-        <Newspaper className="size-12 text-tinta-3" />
+        <Newspaper className="size-10 text-tinta-3" />
       </div>
     );
   }
@@ -94,14 +115,18 @@ function Portada({ url }: { url: string | null }) {
         src={url}
         alt=""
         fill
-        sizes="(max-width: 768px) 80vw, 400px"
-        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+        sizes="(max-width: 1024px) 100vw, 720px"
+        className="object-cover"
       />
     );
   }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={url} alt="" className="absolute inset-0 size-full object-cover" />
+    <img
+      src={url}
+      alt=""
+      className="absolute inset-0 size-full object-cover"
+    />
   );
 }

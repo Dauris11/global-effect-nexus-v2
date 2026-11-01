@@ -83,7 +83,6 @@ export default async function PaginaDashboard({
       <EncabezadoPagina
         antetitulo={tRoles(usuario.rol)}
         titulo={t("greeting", { name: usuario.nombre })}
-        subtitulo={t("subtitle")}
       />
 
       <CifrasPanel cifras={cifras} neto={neto} />
