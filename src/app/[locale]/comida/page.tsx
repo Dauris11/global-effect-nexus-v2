@@ -70,8 +70,6 @@ export default async function PaginaComida({
               </span>
             </div>
 
-            <p className="text-muted-foreground text-sm">{t("subtitle", horas)}</p>
-
             <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
               <Clock className="size-3.5 shrink-0" />
               {tLanding("panelMealsWindow", horas)}

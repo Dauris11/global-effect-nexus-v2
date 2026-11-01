@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
-import { Library, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { GestionMaterias } from "@/components/academico/gestion-materias";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   docentesAsignables,
   hayMasQueElTope,
@@ -74,19 +77,8 @@ export default async function PaginaAcademicoMaterias({
   const hayFiltro = Boolean(busqueda) || Boolean(periodoId);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Library className="size-5 text-[#2096BA]" />
-          {t("subjects.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("subjects.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("subjects.title")} />
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="min-w-48 flex-1 space-y-1.5">
@@ -151,7 +143,7 @@ export default async function PaginaAcademicoMaterias({
           materias={recortarAlTope(filas)}
           periodos={periodos}
           docentes={docentes}
-          puedeEscribir={tienePermiso(usuario.rol, "academico.escribir")}
+          puedeEscribir={usuarioTienePermiso(usuario, "academico.escribir")}
           hayMas={hayMasQueElTope(filas)}
           hayFiltro={hayFiltro}
         />

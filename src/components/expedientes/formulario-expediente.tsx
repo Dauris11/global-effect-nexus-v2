@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -83,7 +82,6 @@ export type ValoresExpediente = Partial<ExpedienteCompleto>;
 export type TextosFormulario = {
   nuevo: string;
   titulo: string;
-  subtitulo: string;
   guardar: string;
   guardando: string;
   error: string;
@@ -162,10 +160,12 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
           del navegador móvil. El `92vh` que había aquí la ignoraba, así que en
           iOS el diálogo medía más que la pantalla visible y la fila de
           Anterior/Siguiente/Guardar quedaba por debajo del borde. */}
-      <DialogContent className="overflow-y-auto sm:max-w-5xl lg:max-w-6xl">
+      <DialogContent
+        aria-describedby={undefined}
+        className="overflow-y-auto sm:max-w-5xl lg:max-w-6xl"
+      >
         <DialogHeader>
           <DialogTitle>{textos.titulo}</DialogTitle>
-          <DialogDescription>{textos.subtitulo}</DialogDescription>
         </DialogHeader>
 
         {/* El lector va FUERA del `<form>` del alta: son dos envíos distintos y
@@ -315,7 +315,6 @@ function LectorFicha({
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{textos.title}</p>
-          <p className="text-muted-foreground text-xs">{textos.subtitle}</p>
         </div>
 
         <Input
@@ -354,7 +353,7 @@ function LectorFicha({
       )}
 
       <p className="text-muted-foreground text-[11px] leading-relaxed">
-        {textos.reviewHint} {textos.replaceHint}
+        {textos.replaceHint}
       </p>
     </form>
   );
@@ -560,11 +559,6 @@ export function CamposExpediente({
 
         {/* ── Familia: tabla `familiar` (una fila por bloque) ─── */}
         <TabsContent value="family" className="mt-4 space-y-3">
-          <p className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Users className="size-3.5 shrink-0" />
-            {textos.familia.emptyHint}
-          </p>
-
           {FAMILIA_FIJA.map((parentesco) => (
             <fieldset
               key={parentesco}

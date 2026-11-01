@@ -65,7 +65,7 @@ export default async function PaginaDetalleProveedor({
   const puedeConfigurar = usuarioTienePermiso(usuario, "contabilidad.configurar");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 animate-entrada">
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/proveedores">

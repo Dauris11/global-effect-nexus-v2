@@ -135,7 +135,7 @@ export default async function PaginaActividad({
   const hayFiltro = Boolean(usuarioId || modulo || origen);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-10">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
           <ArrowLeft className="size-4" />
@@ -144,9 +144,7 @@ export default async function PaginaActividad({
       </Button>
 
       <EncabezadoPagina
-        antetitulo={t("eyebrow")}
         titulo={t("title")}
-        subtitulo={t("subtitle")}
         acciones={
           <Button asChild variant="outline">
             {/* Un enlace normal y no `Link`: es una descarga, no una navegación. */}
@@ -184,7 +182,7 @@ export default async function PaginaActividad({
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Tarjeta titulo={t("charts.byHour")} ayuda={t("charts.byHourHint")}>
+        <Tarjeta titulo={t("charts.byHour")}>
           <GraficaPorHora datos={porHora} etiqueta={t("charts.events")} />
         </Tarjeta>
         <Tarjeta titulo={t("charts.byDay")}>
@@ -216,7 +214,6 @@ export default async function PaginaActividad({
         <CardContent className="space-y-3 pt-5">
           <div>
             <p className="texto-titulo-tarjeta">{t("recent.title")}</p>
-            <p className="texto-meta">{t("recent.hint")}</p>
           </div>
 
           {conectados.length === 0 ? (
@@ -285,7 +282,7 @@ export default async function PaginaActividad({
         <Card className={TARJETA.contenido}>
           <CardContent className="pt-5">
             {linea.eventos.length === 0 ? (
-              <EstadoVacio icono={Activity} titulo={t("timeline.emptyTitle")} texto={t("timeline.emptyText")} />
+              <EstadoVacio icono={Activity} titulo={t("timeline.emptyTitle")} />
             ) : (
               <ul className="divide-linea divide-y">
                 {linea.eventos.map((e) => {
@@ -340,13 +337,6 @@ export default async function PaginaActividad({
             )}
           </div>
         )}
-
-        <p className="texto-meta">
-          {t("detailNote")}{" "}
-          <Link href="/configuracion/auditoria" className="text-marca-700 font-medium hover:underline">
-            {t("detailLink")}
-          </Link>
-        </p>
       </section>
     </div>
   );
@@ -354,11 +344,9 @@ export default async function PaginaActividad({
 
 function Tarjeta({
   titulo,
-  ayuda,
   children,
 }: {
   titulo: string;
-  ayuda?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -366,7 +354,6 @@ function Tarjeta({
       <CardContent className="space-y-2 pt-5">
         <div>
           <p className="texto-titulo-tarjeta">{titulo}</p>
-          {ayuda && <p className="texto-meta">{ayuda}</p>}
         </div>
         {children}
       </CardContent>

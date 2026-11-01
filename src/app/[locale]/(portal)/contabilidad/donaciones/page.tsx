@@ -56,12 +56,10 @@ export default async function PaginaDonaciones({
   }));
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <EncabezadoPagina
-          antetitulo={t("antetitulo")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
         />
         <div className="flex flex-wrap gap-2">
           <DialogoPromesa donantes={listaDonantes} fondos={listaFondos} />

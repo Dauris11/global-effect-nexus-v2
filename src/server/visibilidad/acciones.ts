@@ -7,6 +7,7 @@ import { requerirRol } from "@/lib/auth";
 import { enTransaccion } from "@/lib/db";
 import { FUNCION_ASISTENTE, itemsDeArea, menuDe, rutasProtegidas } from "@/lib/nav";
 import { ROLES, type Rol } from "@/lib/rbac";
+import { leerPermisosPorRol } from "@/server/configuracion/consultas-permisos";
 
 /**
  * Guarda qué ve cada rol. Solo `super_admin`, y todo cambio queda en la
@@ -36,8 +37,11 @@ export async function guardarVisibilidad(
     return { estado: "invalido" };
   }
 
+  const permisosRol = new Set(
+    (await leerPermisosPorRol()).find((r) => r.rol === rol)?.permisos ?? [],
+  );
   const permitidas = new Set([
-    ...menuDe(rol).flatMap(itemsDeArea).map((item) => item.href),
+    ...menuDe(rol, undefined, permisosRol).flatMap(itemsDeArea).map((item) => item.href),
     FUNCION_ASISTENTE,
   ]);
   const protegidas = new Set(rutasProtegidas(rol));

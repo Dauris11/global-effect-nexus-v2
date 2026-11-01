@@ -31,9 +31,6 @@ export async function SeccionCierre() {
           >
             {t("closingTitle")}
           </h2>
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-background/75">
-            {t("closingText")}
-          </p>
         </div>
 
         <Button asChild size="lg" className="group/cta shrink-0 focus-visible:ring-offset-tinta">

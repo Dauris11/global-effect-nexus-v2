@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Alta y edición de patrocinadores.
@@ -48,7 +50,7 @@ export async function guardarPatrocinador(
 ): Promise<EstadoPatrocinador> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "patrocinadores.escribir")) {
+  if (!usuarioTienePermiso(usuario, "patrocinadores.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -155,7 +157,7 @@ export async function asignarBeca(
 ): Promise<EstadoPatrocinador> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "patrocinadores.escribir")) {
+  if (!usuarioTienePermiso(usuario, "patrocinadores.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -242,7 +244,7 @@ export async function desvincularBeca(
 ): Promise<EstadoPatrocinador> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "patrocinadores.escribir")) {
+  if (!usuarioTienePermiso(usuario, "patrocinadores.escribir")) {
     return { estado: "no_permitido" };
   }
 

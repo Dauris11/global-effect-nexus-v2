@@ -8,10 +8,13 @@ import { PlanillaServicios } from "@/components/bienestar/planilla-servicios";
 import { BotonImprimir } from "@/components/comida/boton-imprimir";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import { VACIO } from "@/lib/paleta";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   planillaDelMes,
   resumenDelMes,
@@ -59,7 +62,7 @@ export default async function PaginaServiciosMensuales({
   const { mes } = await searchParams;
 
   const usuario = await requerirPermiso("operaciones.leer");
-  const puedeEscribir = tienePermiso(usuario.rol, "operaciones.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "operaciones.escribir");
 
   const meses = await ultimosDoceMeses();
 
@@ -76,23 +79,16 @@ export default async function PaginaServiciosMensuales({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase print:hidden">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-            <HeartHandshake className="size-5 text-[#2096BA] print:hidden" />
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">{elegido}</p>
-        </div>
-
-        <NextIntlClientProvider messages={mensajes}>
-          <BotonImprimir />
-        </NextIntlClientProvider>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          <NextIntlClientProvider messages={mensajes}>
+            <BotonImprimir />
+          </NextIntlClientProvider>
+        }
+      />
+      <p className="texto-meta hidden print:block">{elegido}</p>
 
       <form method="get" className="flex flex-wrap items-end gap-2 print:hidden">
         <div className="min-w-40 space-y-1.5">
@@ -164,7 +160,6 @@ export default async function PaginaServiciosMensuales({
                 <Users className="size-6" />
               </span>
               <p className={VACIO.titulo}>{t("empty")}</p>
-              <p className={VACIO.descripcion}>{t("emptyHint")}</p>
             </div>
           ) : (
             <NextIntlClientProvider messages={mensajes}>

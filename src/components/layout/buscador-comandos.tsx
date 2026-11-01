@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CornerDownLeft, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { useOcultos } from "@/components/layout/visibilidad";
+import { useOcultos, usePermisos } from "@/components/layout/visibilidad";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Link, useRouter } from "@/i18n/navigation";
 import { itemsDeArea, menuDe } from "@/lib/nav";
@@ -37,7 +37,8 @@ export function BuscadorComandos({
   const [elegido, setElegido] = useState(0);
 
   const ocultos = useOcultos();
-  const todos = menuDe(rol, ocultos).flatMap((area) =>
+  const permisos = usePermisos();
+  const todos = menuDe(rol, ocultos, permisos).flatMap((area) =>
     itemsDeArea(area).map((item) => ({ ...item, area: area.etiqueta })),
   );
   const buscado = normalizar(termino);

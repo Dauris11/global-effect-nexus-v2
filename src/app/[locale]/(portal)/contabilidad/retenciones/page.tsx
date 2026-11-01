@@ -57,12 +57,10 @@ export default async function PaginaRetenciones({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <EncabezadoPagina
-          antetitulo={t("antetitulo")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
         />
         <DialogoRetencion facturasConRetencion={facturasConRet} />
       </div>

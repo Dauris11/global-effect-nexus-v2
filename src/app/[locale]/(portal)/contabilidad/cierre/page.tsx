@@ -23,7 +23,7 @@ export default async function PaginaCierreContable() {
     ]);
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 animate-entrada">
       <VistaCierre
         ejercicioSeleccionado={anioActual}
         periodosIniciales={periodosIniciales}

@@ -8,7 +8,7 @@ export default async function PaginaEscanearInventario() {
   await requerirPermiso("inventario.auditar");
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
+    <div className="animate-entrada mx-auto flex w-full max-w-xl flex-col gap-6">
       {/* Navegación y Encabezado */}
       <div>
         <Link
@@ -26,9 +26,6 @@ export default async function PaginaEscanearInventario() {
             <h1 className="text-xl font-bold tracking-tight text-tinta sm:text-2xl">
               Escáner Móvil de Activos QR
             </h1>
-            <p className="text-xs text-tinta-2">
-              Auditoría física in situ mediante cámara móvil o subida de imagen
-            </p>
           </div>
         </div>
       </div>

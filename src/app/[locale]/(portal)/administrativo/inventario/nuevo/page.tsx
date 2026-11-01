@@ -11,7 +11,7 @@ export default async function PaginaNuevoActivo() {
   const usuarios = await usuariosAsignables();
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="animate-entrada mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <Link
           href="/administrativo/inventario"
@@ -28,9 +28,6 @@ export default async function PaginaNuevoActivo() {
             <h1 className="text-xl font-bold tracking-tight text-tinta sm:text-2xl">
               Registrar Nuevo Activo Físico
             </h1>
-            <p className="text-xs text-tinta-2">
-              El sistema generará automáticamente el código secuencial (ACT-XXXX) y su etiqueta QR única
-            </p>
           </div>
         </div>
       </div>

@@ -35,7 +35,6 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
               className="h-9 w-auto brightness-0 dark:brightness-100"
             />
             <p className="mt-4 text-sm text-tinta-2">{t("footerTagline")}</p>
-            <p className="texto-meta mt-1">{t("footerTagline2")}</p>
           </div>
 
           <Columna titulo={t("footerThisPage")}>
@@ -69,7 +68,6 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
                 {t("access_requests_title")}
               </Link>
             </li>
-            <li className="texto-meta pt-1">{t("footerAccessNote")}</li>
           </Columna>
 
           <Columna titulo={t("footerContact")}>
@@ -90,7 +88,6 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
           <p className="texto-meta">
             © {anio} {tComun("foundation")}. {t("footerRights")}
           </p>
-          <p className="texto-meta">{t("footerVersion")}</p>
         </div>
       </div>
     </footer>

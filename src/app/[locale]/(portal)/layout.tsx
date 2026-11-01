@@ -145,6 +145,7 @@ export default async function LayoutPortal({
         }))}
         sinLeer={avisos[0]?.sin_leer ?? 0}
         ocultos={visibilidad.fueraDelMenu}
+        permisos={usuario.permisos}
         cerrarSesion={cerrarSesion}
       >
         {children}

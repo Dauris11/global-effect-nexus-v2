@@ -71,11 +71,9 @@ export default async function PaginaLibros({
   const puedeExportar = filtro.vista !== "mayor" || filtro.cuenta !== null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={tc("area")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
         acciones={
           puedeExportar && (
             <Button asChild variant="secondary">
@@ -141,7 +139,7 @@ async function VistaMayor({ filtro, idioma }: { filtro: FiltroLibros; idioma: "e
   const cuenta = filtro.cuenta ? await cuentaMayor(filtro.cuenta) : null;
 
   if (!cuenta) {
-    return <EstadoVacio icono={Layers} titulo={t("vacio.mayorTitulo")} texto={t("vacio.mayorTexto")} />;
+    return <EstadoVacio icono={Layers} titulo={t("vacio.mayorTitulo")} />;
   }
 
   const [resumen, movimientos] = await Promise.all([
@@ -169,7 +167,7 @@ async function VistaMayor({ filtro, idioma }: { filtro: FiltroLibros; idioma: "e
         ]}
       />
       {movimientos.length === 0 ? (
-        <EstadoVacio icono={Layers} titulo={t("vacio.sinMovimientos")} texto={t("vacio.sinMovimientosTexto")} />
+        <EstadoVacio icono={Layers} titulo={t("vacio.sinMovimientos")} />
       ) : (
         <>
           <LibroMayor cuenta={cuenta} resumen={resumen} movimientos={movimientos} desde={filtro.desde} idioma={idioma} />
@@ -210,7 +208,7 @@ async function SinAsientos() {
     <EstadoVacio
       icono={BookOpen}
       titulo={t("vacio.titulo")}
-      texto={t("vacio.texto")}
+     
       accion={
         <Button asChild variant="secondary">
           <Link href="/contabilidad/asientos">

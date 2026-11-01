@@ -76,8 +76,8 @@ export default async function PaginaIA({
     t.has(`agentNames.${clave}`) ? t(`agentNames.${clave}`) : clave;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      <EncabezadoPagina antetitulo={t("eyebrow")} titulo={t("title")} subtitulo={t("subtitle")} />
+    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard valor={numero.format(resumen.tokens)} etiqueta={t("stats.tokens")} icono={Cpu} acento />
@@ -140,7 +140,6 @@ export default async function PaginaIA({
           <CardContent className="space-y-4 pt-5">
             <div>
               <p className="texto-titulo-tarjeta">{t("quotas.title")}</p>
-              <p className="texto-meta">{t("quotas.hint")}</p>
             </div>
 
             {listaCuotas.length > 0 && (
@@ -180,7 +179,6 @@ export default async function PaginaIA({
           <CardContent className="space-y-4 pt-5">
             <div>
               <p className="texto-titulo-tarjeta">{t("prices.title")}</p>
-              <p className="texto-meta">{t("prices.hint")}</p>
             </div>
 
             {listaPrecios.length > 0 && (
@@ -203,7 +201,6 @@ export default async function PaginaIA({
         <div className="space-y-3">
           <div>
             <p className="texto-titulo-tarjeta">{t("agents.title")}</p>
-            <p className="texto-meta">{t("agents.hint")}</p>
           </div>
           {listaAgentes.map((a) => (
             <EditorAgente

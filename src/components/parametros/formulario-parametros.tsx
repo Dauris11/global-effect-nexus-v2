@@ -48,10 +48,7 @@ export function FormularioParametros({
     <form action={accion} className="space-y-8">
       {grupos.map((grupo) => (
         <section key={grupo.clave} className="space-y-3">
-          <div>
-            <p className="texto-titulo-seccion">{t(`groups.${grupo.clave}.title`)}</p>
-            <p className="texto-meta">{t(`groups.${grupo.clave}.hint`)}</p>
-          </div>
+          <p className="texto-titulo-seccion">{t(`groups.${grupo.clave}.title`)}</p>
 
           <div className="divide-linea rounded-card border-linea divide-y border">
             {grupo.campos.map((campo) => {

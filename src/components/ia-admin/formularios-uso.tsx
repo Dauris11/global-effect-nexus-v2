@@ -153,7 +153,6 @@ export function EditorAgente({
             defaultValue={instrucciones}
             className="border-linea-fuerte bg-background w-full rounded-control border px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <p className="texto-meta mt-1">{t("agents.instructionsHint")}</p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">

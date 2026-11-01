@@ -33,7 +33,6 @@ export async function MateriasEnCurso({
         <EstadoVacio
           icono={BookOpen}
           titulo={t("subjectsEmpty")}
-          texto={t("subjectsEmptyHint")}
         />
       ) : (
         <ul>

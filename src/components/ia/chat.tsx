@@ -118,11 +118,7 @@ export function ChatIA({
     <div className="flex flex-col gap-4">
       <div className="min-h-70 space-y-3">
         {mensajes.length === 0 && !enviando && (
-          <EstadoVacio
-            icono={Bot}
-            titulo={textos.vacio}
-            texto={textos.vacioPista}
-          />
+          <EstadoVacio icono={Bot} titulo={textos.vacio} />
         )}
 
         {mensajes.map((item) => {

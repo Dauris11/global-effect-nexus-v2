@@ -73,9 +73,6 @@ export function GestionBecas({
           <p className={VACIO.titulo}>
             {hayFiltro ? t("grants.noMatches") : t("grants.empty")}
           </p>
-          <p className={VACIO.descripcion}>
-            {hayFiltro ? t("grants.noMatchesHint") : t("grants.emptyHint")}
-          </p>
         </CardContent>
       </Card>
     );
@@ -254,9 +251,6 @@ function FormularioVinculo({
     <form action={enviar} className="space-y-3 border-t pt-3">
       <div>
         <p className="text-sm font-semibold">{t("grants.form.title")}</p>
-        <p className="text-muted-foreground text-xs">
-          {t("grants.form.subtitle")}
-        </p>
       </div>
 
       <input type="hidden" name="estudiante" value={estudianteId} />
@@ -293,9 +287,6 @@ function FormularioVinculo({
             step="0.01"
             defaultValue={0}
           />
-          <p className="text-muted-foreground text-[11px]">
-            {t("grants.form.amountHint")}
-          </p>
         </div>
       </div>
 

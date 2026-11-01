@@ -102,12 +102,8 @@ export default async function PaginaGlobal360({
       .join(" · ");
 
   return (
-    <div className="space-y-8">
-      <EncabezadoPagina
-        antetitulo={t("eyebrow")}
-        titulo={t("title")}
-        subtitulo={t("description")}
-      />
+    <div className="animate-entrada space-y-8">
+      <EncabezadoPagina titulo={t("title")} />
 
       {/* El anuncio de la ventana, con fecha Y hora. Es lo que el estudiante
           viene a ver cuando le llega el aviso de la cabecera. Abierta es un

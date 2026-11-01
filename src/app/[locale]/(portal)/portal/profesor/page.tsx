@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
-import { requerirRol } from "@/lib/auth";
+import { requerirDocencia } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
@@ -66,9 +67,12 @@ export default async function PortalProfesor({
 }) {
   const { locale } = await params;
 
-  const usuario = await requerirRol(["docente", "super_admin"]);
+  const usuario = await requerirDocencia();
 
-  const docenteId = usuario.rol === "docente" ? usuario.id : null;
+  // Sin el permiso (super_admin que supervisa) ve todas las clases.
+  const docenteId = usuarioTienePermiso(usuario, "docencia.impartir")
+    ? usuario.id
+    : null;
 
   const [t, tAcad, cifras, materias, clases, entregas] =
     await Promise.all([
@@ -88,7 +92,7 @@ export default async function PortalProfesor({
   const vacio = materias.length === 0 && clases.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="animate-entrada space-y-6">
       <BannerPortal
         rol="docente"
         icono={BookOpen}
@@ -177,7 +181,6 @@ export default async function PortalProfesor({
               <BookOpen className="size-6" />
             </span>
             <p className={VACIO.titulo}>{t("classesEmpty")}</p>
-            <p className={VACIO.descripcion}>{t("classesEmptyHint")}</p>
           </CardContent>
         </Card>
       ) : (

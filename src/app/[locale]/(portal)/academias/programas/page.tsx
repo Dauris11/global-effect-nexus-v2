@@ -12,6 +12,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
 import { GestionProgramas } from "@/components/academias/gestion-programas";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
@@ -23,7 +24,9 @@ import {
   TIPOS_ACADEMIA,
 } from "@/lib/academias";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   catalogoAcademias,
   resumenAcademias,
@@ -89,19 +92,8 @@ export default async function PaginaAcademiasProgramas({
   const hayFiltro = Boolean(busqueda || tipoOk || estadoOk);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Presentation className="size-5 text-[#2096BA]" />
-          {t("programs.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("programs.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("programs.title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica
@@ -131,10 +123,6 @@ export default async function PaginaAcademiasProgramas({
           número que alguien teclea. No hay tabla de inscripción a una academia,
           así que no hay de dónde contarlos, y una cifra que parece calculada y
           no lo es acaba usándose para decidir. */}
-      <p className="text-muted-foreground text-xs">
-        {t("programs.participantsWarning")}
-      </p>
-
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="min-w-48 flex-1 space-y-1.5">
           <label
@@ -218,7 +206,7 @@ export default async function PaginaAcademiasProgramas({
       <NextIntlClientProvider messages={mensajes}>
         <GestionProgramas
           academias={academias}
-          puedeEscribir={tienePermiso(usuario.rol, "academico.escribir")}
+          puedeEscribir={usuarioTienePermiso(usuario, "academico.escribir")}
           hayFiltro={hayFiltro}
         />
       </NextIntlClientProvider>

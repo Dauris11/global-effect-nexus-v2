@@ -18,12 +18,10 @@ export default async function PaginaCentrosCosto() {
   const centros = await listarCentrosCosto();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-entrada">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <EncabezadoPagina
-          antetitulo={t("antetitulo")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
         />
         <DialogoCentroCosto />
       </div>

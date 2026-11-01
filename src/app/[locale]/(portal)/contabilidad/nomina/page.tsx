@@ -45,11 +45,9 @@ export default async function PaginaNomina() {
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
       />
 
       <VistaNomina

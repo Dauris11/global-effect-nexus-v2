@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Escrituras del calendario.
@@ -45,7 +47,7 @@ export async function guardarEvento(
 ): Promise<EstadoCalendario> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -117,7 +119,7 @@ export async function cambiarEstadoEvento(
 ): Promise<EstadoCalendario> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -154,7 +156,7 @@ export async function eliminarEvento(
 ): Promise<EstadoCalendario> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -215,7 +217,7 @@ export async function moverEntrada(
 
   try {
     if (origen === "evento") {
-      if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+      if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
         return { estado: "no_permitido" };
       }
 
@@ -243,7 +245,7 @@ export async function moverEntrada(
         hora: horaValida || null,
       });
     } else if (origen === "cita") {
-      if (!tienePermiso(usuario.rol, "solicitudes.gestionar")) {
+      if (!usuarioTienePermiso(usuario, "solicitudes.gestionar")) {
         return { estado: "no_permitido" };
       }
 
@@ -310,7 +312,7 @@ export async function moverEntrada(
       if (!reunion) return { estado: "no_encontrado" };
 
       const puedeMover =
-        tienePermiso(usuario.rol, "reuniones.gestionar") ||
+        usuarioTienePermiso(usuario, "reuniones.gestionar") ||
         reunion.organizador_usuario_id === usuario.id;
 
       if (!puedeMover) return { estado: "no_permitido" };

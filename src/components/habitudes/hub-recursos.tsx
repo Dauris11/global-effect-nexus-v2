@@ -201,7 +201,6 @@ export function HubRecursos({
           <CardContent className="space-y-2">
             <Presentation className="mx-auto size-8 text-tinta/30" />
             <p className="font-semibold text-tinta">{t("emptyResourcesTitle")}</p>
-            <p className="text-xs text-tinta/60">{t("emptyResourcesSubtitle")}</p>
           </CardContent>
         </Card>
       ) : (

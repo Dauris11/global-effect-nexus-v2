@@ -70,11 +70,9 @@ export default async function PaginaConocimiento({
   }));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-10">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
       <EncabezadoPagina
-        antetitulo={t("eyebrow")}
         titulo={t("knowledge.title")}
-        subtitulo={t("knowledge.subtitle")}
       />
 
       <Card className={TARJETA.contenido}>
@@ -90,11 +88,7 @@ export default async function PaginaConocimiento({
         <p className="texto-titulo-seccion">{t("knowledge.docs")}</p>
 
         {documentos.length === 0 ? (
-          <EstadoVacio
-            icono={BookOpen}
-            titulo={t("knowledge.emptyTitle")}
-            texto={t("knowledge.emptyText")}
-          />
+          <EstadoVacio icono={BookOpen} titulo={t("knowledge.emptyTitle")} />
         ) : (
           documentos.map((doc) => (
             <Card key={doc.documentoId} className={TARJETA.contenido}>

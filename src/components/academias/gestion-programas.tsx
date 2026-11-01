@@ -118,11 +118,6 @@ export function GestionProgramas({
             <p className={VACIO.titulo}>
               {hayFiltro ? t("programs.noMatches") : t("programs.empty")}
             </p>
-            <p className={VACIO.descripcion}>
-              {hayFiltro
-                ? t("programs.noMatchesHint")
-                : t("programs.emptyHint")}
-            </p>
           </CardContent>
         </Card>
       ) : (
@@ -384,9 +379,6 @@ function Formulario({
         <p className="text-sm font-semibold">
           {academia ? t("programs.editTitle") : t("programs.newTitle")}
         </p>
-        <p className="text-muted-foreground text-xs">
-          {t("programs.formSubtitle")}
-        </p>
       </div>
 
       <input type="hidden" name="id" value={academia?.id ?? ""} />
@@ -459,9 +451,6 @@ function Formulario({
             step={1}
             defaultValue={academia?.participantes ?? 0}
           />
-          <p className="text-muted-foreground text-[10px] leading-relaxed">
-            {t("field.participantsHint")}
-          </p>
         </div>
 
         <div className="space-y-1.5">

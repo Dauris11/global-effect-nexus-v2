@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { CalendarDays } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Calendario } from "@/components/calendario/calendario";
 import type { Entrada } from "@/components/calendario/event-manager";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
 import { claveDia, claveMes } from "@/lib/fechas";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { calendarioDelMes } from "@/server/calendario/consultas";
 
 export async function generateMetadata({
@@ -55,12 +57,18 @@ export default async function PaginaCalendario({
 
   const [t, filas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "calendar" }),
-    calendarioDelMes({ usuarioId: usuario.id, rol: usuario.rol, mes }),
+    calendarioDelMes({
+      usuarioId: usuario.id,
+      rol: usuario.rol,
+      imparteDocencia: usuarioTienePermiso(usuario, "docencia.impartir"),
+      atiendeCitas: usuarioTienePermiso(usuario, "solicitudes.gestionar"),
+      mes,
+    }),
     mensajesCliente(["calendar"]),
   ]);
 
-  const puedeCrear = tienePermiso(usuario.rol, "operaciones.escribir");
-  const puedeMoverCitas = tienePermiso(usuario.rol, "solicitudes.gestionar");
+  const puedeCrear = usuarioTienePermiso(usuario, "operaciones.escribir");
+  const puedeMoverCitas = usuarioTienePermiso(usuario, "solicitudes.gestionar");
 
   /*
    * Qué puede mover cada quien:
@@ -92,14 +100,8 @@ export default async function PaginaCalendario({
   }));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
-      {/* Un solo título. Antes eran tres apilados: el del módulo en la barra
-          superior, este con su rótulo "OPERACIONES", y el del mes que pinta el
-          propio calendario. */}
-      <h1 className="flex items-center gap-2 text-2xl font-bold">
-        <CalendarDays className="size-5 text-[#2096BA]" />
-        {t("title")}
-      </h1>
+    <div className="animate-entrada mx-auto max-w-7xl space-y-5">
+      <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
         <Calendario

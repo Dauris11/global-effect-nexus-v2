@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { KeyRound, ScrollText, Settings, ShieldCheck, UserCog, Users } from "lucide-react";
+import { ScrollText, Settings, UserCog, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
@@ -10,13 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import { menuDe, itemsDeArea } from "@/lib/nav";
 import { visibilidadDeRol } from "@/server/visibilidad/consultas";
-import { CUADRO, TARJETA } from "@/lib/paleta";
-import {
-  PERMISOS,
-  ROLES,
-  tienePermiso,
-  type Rol,
-} from "@/lib/rbac";
+import { TARJETA } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   cifrasDelSistema,
@@ -34,26 +28,7 @@ export async function generateMetadata({
   return { title: t("settings.title") };
 }
 
-/**
- * Configuración: los ajustes, las cuentas, los roles y el estado del sistema.
- *
- * Era un índice con una sola tarjeta y quedaba pendiente «usuarios, roles y
- * parámetros institucionales». Se cierran los dos primeros, y el tercero se
- * dice en voz alta en vez de fingirlo (ver el aviso del final de la pantalla):
- * **no existe ninguna tabla de parámetros institucionales**, así que un
- * formulario aquí guardaría en el aire. Cuando haga falta, es una migración.
- *
- * Las cuentas se ENUMERAN, no se gestionan. El alta, el cambio de rol y el
- * reinicio de acceso están en `/administrativo/personal`, que ya existe y lo
- * hace bien; una segunda pantalla que también cambiara roles serían dos sitios
- * donde arreglar el mismo fallo. Desde aquí se enlaza allí.
- *
- * Los roles y sus permisos salen de `rbac.ts` recorrido con `tienePermiso`, no
- * de una lista escrita a mano: es el mismo objeto que decide los accesos de
- * verdad, así que esta tabla no puede mentir. Lo que sí conviene recordar es de
- * dónde viene ese objeto —de las tablas `rol` y `rol_permiso`—: si aquí sobra o
- * falta un permiso, lo que hay que mirar es la base.
- */
+/** Las cuentas se enumeran aquí; el alta y el cambio de rol viven en `/administrativo/personal`. */
 export default async function PaginaConfiguracion({
   params,
 }: {
@@ -72,10 +47,14 @@ export default async function PaginaConfiguracion({
 
   // Los módulos que ofrece el menú de esta cuenta. Sale de `menuDe`, igual que
   // el mapa del sitio: una cifra de "módulos" escrita a mano se queda vieja.
-  const modulos = menuDe(usuario.rol, new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu)).flatMap(itemsDeArea).length;
+  const modulos = menuDe(
+    usuario.rol,
+    new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu),
+    new Set(usuario.permisos),
+  ).flatMap(itemsDeArea).length;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
       <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -164,79 +143,6 @@ export default async function PaginaConfiguracion({
           </div>
         </CardContent>
       </Card>
-
-      {/* Roles y permisos. */}
-      <Card className={TARJETA.contenido}>
-        <CardContent className="space-y-3 pt-5">
-          <div>
-            <p className="text-sm font-semibold">{t("rolesTitle")}</p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {ROLES.map((rol) => (
-              <FichaRol
-                key={rol}
-                rol={rol}
-                nombre={tRoles(rol)}
-                sinPermisos={t("noPermissions")}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-/**
- * Un rol con los permisos que tiene de verdad.
- *
- * Se calcula recorriendo `PERMISOS` con `tienePermiso`, que es la misma función
- * que decide los accesos: si esta tarjeta y el sistema no coincidieran, sería
- * porque el sistema cambió de opinión, y eso es imposible por construcción.
- */
-function FichaRol({
-  rol,
-  nombre,
-  sinPermisos,
-}: {
-  rol: Rol;
-  nombre: string;
-  sinPermisos: string;
-}) {
-  const suyos = PERMISOS.filter((permiso) => tienePermiso(rol, permiso));
-
-  return (
-    <div className="rounded-xl border p-3">
-      <div className="flex items-center gap-2">
-        <span className={cn("flex size-7 items-center justify-center rounded-lg", CUADRO.marca)}>
-          {rol === "super_admin" ? (
-            <ShieldCheck className="size-3.5" />
-          ) : (
-            <KeyRound className="size-3.5" />
-          )}
-        </span>
-
-        <div className="min-w-0">
-          <p className="text-sm font-semibold">{nombre}</p>
-          <p className="text-muted-foreground font-mono text-[11px]">{rol}</p>
-        </div>
-      </div>
-
-      {suyos.length === 0 ? (
-        <p className="text-muted-foreground mt-2 text-xs">{sinPermisos}</p>
-      ) : (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {suyos.map((permiso) => (
-            <span
-              key={permiso}
-              className="bg-muted rounded-full px-2 py-0.5 font-mono text-[10px]"
-            >
-              {permiso}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

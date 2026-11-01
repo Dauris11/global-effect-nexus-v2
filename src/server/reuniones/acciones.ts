@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import type {
   EstadoReunion,
   ModalidadReunion,
@@ -30,7 +32,7 @@ export async function agendarReunionAction(
 ): Promise<EstadoAccionReunion> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "reuniones.agendar")) {
+  if (!usuarioTienePermiso(usuario, "reuniones.agendar")) {
     return { error: "No tienes permiso para agendar reuniones." };
   }
 
@@ -176,7 +178,7 @@ export async function guardarMinutaReunionAction(
 
   // Comprobar permiso: gestor general, admin, o el propio anfitrión organizador
   const puedeGestionar =
-    tienePermiso(usuario.rol, "reuniones.gestionar") ||
+    usuarioTienePermiso(usuario, "reuniones.gestionar") ||
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {
@@ -264,7 +266,7 @@ export async function actualizarReunionAction(
   if (!reunion) return { error: "Reunión no encontrada." };
 
   const puedeGestionar =
-    tienePermiso(usuario.rol, "reuniones.gestionar") ||
+    usuarioTienePermiso(usuario, "reuniones.gestionar") ||
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {
@@ -330,7 +332,7 @@ export async function cancelarReunionAction(
   if (!reunion) return { error: "Reunión no encontrada." };
 
   const puedeGestionar =
-    tienePermiso(usuario.rol, "reuniones.gestionar") ||
+    usuarioTienePermiso(usuario, "reuniones.gestionar") ||
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {

@@ -9,7 +9,7 @@ import { ProveedorVisibilidad } from "@/components/layout/visibilidad";
 import { TopBar } from "@/components/layout/topbar";
 import { VerComo } from "@/components/layout/ver-como";
 import { usePathname } from "@/i18n/navigation";
-import type { Rol } from "@/lib/rbac";
+import type { Permiso, Rol } from "@/lib/rbac";
 
 /**
  * Armazón de las pantallas internas: barra lateral + barra superior + contenido.
@@ -34,6 +34,7 @@ export function AppShell({
   avisos,
   sinLeer,
   ocultos,
+  permisos,
   cerrarSesion,
   children,
 }: {
@@ -50,6 +51,8 @@ export function AppShell({
   sinLeer: number;
   /** Rutas que el administrador maestro ocultó para este rol. */
   ocultos: readonly string[];
+  /** Permisos efectivos de la persona: el menú los usa para mostrar lo habilitado a título personal. */
+  permisos: readonly Permiso[];
   /** Server Action; cierra la sesión de Supabase y redirige al login. */
   cerrarSesion: () => Promise<void>;
   children: React.ReactNode;
@@ -70,7 +73,7 @@ export function AppShell({
   }
 
   return (
-    <ProveedorVisibilidad ocultos={ocultos}>
+    <ProveedorVisibilidad ocultos={ocultos} permisos={permisos}>
       {/* Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
         él una tabla ancha o un titular largo estiran la columna y empujan la
         barra fuera de la pantalla en vez de desbordar dentro de su propio hueco. */}

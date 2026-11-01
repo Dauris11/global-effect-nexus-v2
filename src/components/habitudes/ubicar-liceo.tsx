@@ -55,7 +55,6 @@ export function UbicarLiceo({ liceos }: { liceos: HabitudesLiceo[] }) {
           <MapPinned className="size-5 text-marca-600" />
           {t("titulo")}
         </h3>
-        <p className="texto-meta mt-1">{t("ayuda")}</p>
       </div>
 
       <div className="space-y-1.5">

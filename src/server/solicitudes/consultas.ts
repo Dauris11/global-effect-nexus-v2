@@ -1,6 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
-import type { Rol } from "@/lib/rbac";
-import { tienePermiso } from "@/lib/rbac";
+import { usuarioTienePermiso, type Rol, type UsuarioConPermisos } from "@/lib/rbac";
 import {
   accionesPermitidas,
   type AccionSolicitud,
@@ -119,14 +118,13 @@ async function conPasos(
  * admita una acción— lo hace `accionesPermitidas`, que es la regla. Así no hay
  * dos versiones de "qué me toca": una en SQL y otra en TypeScript.
  */
-export async function solicitudesPorAtender(usuario: {
-  id: string;
-  rol: Rol;
-}): Promise<FilaSolicitud[]> {
+export async function solicitudesPorAtender(
+  usuario: UsuarioConPermisos & { id: string },
+): Promise<FilaSolicitud[]> {
   const tipos = TIPOS_SOLICITUD.filter((tipo) =>
-    tienePermiso(usuario.rol, REGLAS[tipo].revisa),
+    usuarioTienePermiso(usuario, REGLAS[tipo].revisa),
   );
-  const dirige = tienePermiso(usuario.rol, "solicitudes.direccion");
+  const dirige = usuarioTienePermiso(usuario, "solicitudes.direccion");
 
   if (tipos.length === 0 && !dirige) return [];
 

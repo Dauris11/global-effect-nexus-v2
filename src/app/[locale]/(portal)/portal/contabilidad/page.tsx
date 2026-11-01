@@ -120,9 +120,8 @@ export default async function PortalContabilidad({
   })).filter((grupo) => grupo.modulos.length > 0);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 md:space-y-10">
+    <div className="mx-auto max-w-6xl space-y-8 md:space-y-10 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
         acciones={
           <>
@@ -227,7 +226,7 @@ export default async function PortalContabilidad({
           </Link>
         </div>
         {cajasActivas.length === 0 ? (
-          <EstadoVacio icono={Wallet} titulo={t("cajasVacio")} texto={t("cajasVacioTexto")} />
+          <EstadoVacio icono={Wallet} titulo={t("cajasVacio")} />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {cajasActivas.map((caja) => (
@@ -246,7 +245,7 @@ export default async function PortalContabilidad({
           </Link>
         </div>
         {activas.length === 0 ? (
-          <EstadoVacio icono={Landmark} titulo={tc("bancos.vacio")} texto={tc("bancos.vacioTexto")} />
+          <EstadoVacio icono={Landmark} titulo={tc("bancos.vacio")} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {activas.map((cuenta) => (

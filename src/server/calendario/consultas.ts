@@ -1,7 +1,6 @@
 import { consultar } from "@/lib/db";
 import { proyectarClasesEnRango } from "@/lib/horarios";
 import type { Rol } from "@/lib/rbac";
-import { tienePermiso } from "@/lib/rbac";
 
 /**
  * Calendario de las pantallas internas: qué pasa cada día, según quién mira.
@@ -48,10 +47,16 @@ export type EntradaCalendario = {
 export async function calendarioDelMes({
   usuarioId,
   rol,
+  imparteDocencia,
+  atiendeCitas,
   mes,
 }: {
   usuarioId: string;
   rol: Rol;
+  /** `docencia.impartir`: ve sus clases aunque su rol no sea `docente`. */
+  imparteDocencia: boolean;
+  /** `solicitudes.gestionar`: atiende las citas de los demás. */
+  atiendeCitas: boolean;
   mes: string;
 }): Promise<EntradaCalendario[]> {
   const { desde, hasta } = ventanaDeRejilla(mes);
@@ -100,7 +105,7 @@ export async function calendarioDelMes({
 
   // 2. Reuniones institucionales:
   // Administradores supervisan la agenda general.
-  // Demás roles (estudiantes, docentes, colaboradores) ven ÚNICAMENTE donde están convocados o son anfitriones.
+  // Demás roles (estudiantes, docentes) ven ÚNICAMENTE donde están convocados o son anfitriones.
   const esAdmin = rol === "super_admin" || rol === "admin";
   const reuniones = await consultar<EntradaCalendario>(
     `SELECT 'reunion' AS origen,
@@ -242,7 +247,7 @@ export async function calendarioDelMes({
 
   // 4. Clases y asignaciones del Docente
   let clasesYAsignacionesDocente: EntradaCalendario[] = [];
-  if (rol === "docente") {
+  if (imparteDocencia) {
     const clasesDocenteRows = await consultar<{
       id: string;
       nombre: string;
@@ -331,7 +336,7 @@ export async function calendarioDelMes({
   // Personal con 'solicitudes.gestionar' atiende las citas solicitadas.
   // Demás usuarios ven EXCLUSIVAMENTE SUS PROPIAS CITAS / SOLICITUDES con fecha.
   let citas: EntradaCalendario[] = [];
-  if (tienePermiso(rol, "solicitudes.gestionar")) {
+  if (atiendeCitas) {
     citas = await consultar<EntradaCalendario>(
       `SELECT 'cita' AS origen,
               s.id,

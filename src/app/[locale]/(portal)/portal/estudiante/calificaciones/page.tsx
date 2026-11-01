@@ -82,11 +82,9 @@ export default async function PaginaCalificaciones({
   const notasVisibles = visibles.flatMap((periodo) => periodo.notas);
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-5xl space-y-8 md:space-y-10">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-8 md:space-y-10">
       <Cabecera
-        eyebrow={t("gradesPage.eyebrow")}
         titulo={t("gradesPage.title")}
-        descripcion={t("gradesPage.description")}
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
@@ -116,7 +114,6 @@ export default async function PaginaCalificaciones({
         <EstadoVacio
           icono={Star}
           titulo={t("gradesEmpty")}
-          texto={t("gradesEmptyHint")}
         />
       ) : (
         <>

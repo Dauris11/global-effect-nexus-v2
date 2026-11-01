@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Alta, edición y baja del catálogo académico: períodos y materias.
@@ -70,7 +72,7 @@ export async function guardarPeriodo(
 ): Promise<EstadoCatalogo> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -152,7 +154,7 @@ export async function eliminarPeriodo(
 ): Promise<EstadoCatalogo> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -215,7 +217,7 @@ export async function guardarMateria(
 ): Promise<EstadoCatalogo> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -328,7 +330,7 @@ export async function eliminarMateria(
 ): Promise<EstadoCatalogo> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 

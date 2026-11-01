@@ -18,7 +18,6 @@ export const AGENTE_POR_ROL = {
   habitudes: "agente_habitudes",
   dir_habitudes: "agente_habitudes",
   super_admin: "agente_direccion",
-  colaborador: "agente_colaborador",
   chofer: "agente_colaborador",
 } as const satisfies Record<Rol, string>;
 

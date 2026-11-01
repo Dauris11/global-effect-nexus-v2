@@ -106,9 +106,6 @@ export function FormularioSolicitud({
               </option>
             ))}
           </select>
-          <p className="text-muted-foreground text-[11px]">
-            {t(`typeHint.${tipo}` as never)}
-          </p>
         </div>
 
         <div className="space-y-1.5">

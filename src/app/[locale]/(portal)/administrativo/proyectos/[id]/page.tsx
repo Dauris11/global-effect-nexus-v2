@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { NextIntlClientProvider } from "next-intl";
 
 import { EquipoProyecto } from "@/components/operaciones/equipo-proyecto";
@@ -35,7 +37,7 @@ export default async function PaginaDetalleProyectoGantt({
 }) {
   const { id } = await params;
   const usuario = await requerirPermiso("operaciones.leer");
-  const puedeEditar = tienePermiso(usuario.rol, "operaciones.escribir");
+  const puedeEditar = usuarioTienePermiso(usuario, "operaciones.escribir");
 
   const proyecto = await proyectoParaGantt(id);
   if (!proyecto) notFound();
@@ -46,7 +48,7 @@ export default async function PaginaDetalleProyectoGantt({
     : [null, [], null];
 
   return (
-    <div className="space-y-6">
+    <div className="animate-entrada space-y-6">
       {/* Barra superior con navegación */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
@@ -58,10 +60,6 @@ export default async function PaginaDetalleProyectoGantt({
               <ArrowLeft className="size-3.5 mr-1" />
               Volver a Proyectos
             </Link>
-            <span className="text-linea">/</span>
-            <span className="texto-meta text-xs uppercase tracking-wider font-semibold">
-              Cronograma Gantt
-            </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl flex items-center gap-2.5">
             <FolderKanban className="size-6 text-marca-500" />

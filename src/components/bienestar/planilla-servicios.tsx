@@ -152,8 +152,6 @@ export function PlanillaServicios({
           </tbody>
         </table>
       </div>
-
-      <p className="text-muted-foreground text-xs print:hidden">{t("hint")}</p>
     </div>
   );
 }

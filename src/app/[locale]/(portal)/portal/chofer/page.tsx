@@ -21,7 +21,7 @@ export default async function PaginaPortalChofer() {
   const estado = await obtenerEstadoChofer(usuario.id);
 
   return (
-    <div className="animate-fade-in-up py-4">
+    <div className="animate-entrada py-4">
       <PanelChofer
         viajeActivoInicial={estado.viajeActivo}
         horarioSugerido={estado.horarioSugerido}

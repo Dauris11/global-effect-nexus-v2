@@ -39,9 +39,6 @@ export async function SeccionPatrocinadores() {
       <div className={`${CONTENEDOR} grid gap-12 lg:grid-cols-12 lg:gap-16`}>
         <div className="revelar lg:col-span-6">
           <h2 className={TITULO_SECCION}>{t("sponsorTitle")}</h2>
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-tinta-2">
-            {t("sponsorLead")}
-          </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button asChild size="lg" className="group/cta">
@@ -75,13 +72,10 @@ export async function SeccionPatrocinadores() {
               <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-tinta">
                 <garantia.icono className="size-5" />
               </span>
-              <div className="min-w-0">
+              <div className="flex min-w-0 items-center">
                 <h3 className="text-lg font-semibold tracking-[-0.01em] text-tinta">
                   {t(`sponsor_${garantia.clave}_title`)}
                 </h3>
-                <p className="mt-1 leading-relaxed text-tinta-2">
-                  {t(`sponsor_${garantia.clave}_desc`)}
-                </p>
               </div>
             </li>
           ))}

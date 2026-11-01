@@ -53,9 +53,6 @@ export async function SeccionProgramas() {
       <div className={`${CONTENEDOR} grid gap-12 lg:grid-cols-12 lg:gap-16`}>
         <div className="revelar lg:col-span-5">
           <h2 className={TITULO_SECCION}>{t("workTitle")}</h2>
-          <p className="mt-4 max-w-md text-lg leading-relaxed text-tinta-2">
-            {t("workLead")}
-          </p>
 
           {/*
             Cadena de trazabilidad: el argumento central para un patrocinador,
@@ -64,9 +61,7 @@ export async function SeccionProgramas() {
             significa algo: el dinero va de un punto al siguiente.
           */}
           <div className="mt-10">
-            <h3 className="texto-titulo-tarjeta">{t("chainTitle")}</h3>
-
-            <ol className="relative mt-5 space-y-5 before:absolute before:top-5 before:bottom-5 before:left-[21px] before:w-px before:bg-linea-fuerte">
+            <ol className="relative space-y-5 before:absolute before:top-5 before:bottom-5 before:left-[21px] before:w-px before:bg-linea-fuerte">
               {cadena.map((paso) => (
                 <li key={paso.clave} className="relative flex items-center gap-4">
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-linea bg-background text-tinta">
@@ -106,9 +101,6 @@ export async function SeccionProgramas() {
                 <span className="min-w-0 flex-1">
                   <span className="block text-xl font-semibold tracking-[-0.015em] text-tinta md:text-2xl">
                     {t(`work_${programa.clave}_title`)}
-                  </span>
-                  <span className="mt-1 block text-tinta-2">
-                    {t(`work_${programa.clave}_desc`)}
                   </span>
                 </span>
 

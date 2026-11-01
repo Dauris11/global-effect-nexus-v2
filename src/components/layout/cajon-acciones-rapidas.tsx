@@ -80,13 +80,13 @@ export function CajonAccionesRapidas({
       clave: "expense",
       href: "/administrativo/rendiciones",
       icono: Receipt,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "colaborador"],
+      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes"],
     },
     {
       clave: "today",
       href: "/administrativo/torre-control",
       icono: CheckSquare,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "colaborador"],
+      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes"],
     },
     {
       clave: "meeting",
@@ -110,7 +110,7 @@ export function CajonAccionesRapidas({
       clave: "ia",
       onClick: abrirIA,
       icono: Bot,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes", "colaborador", "chofer"],
+      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes", "chofer"],
     },
     {
       clave: "transport",

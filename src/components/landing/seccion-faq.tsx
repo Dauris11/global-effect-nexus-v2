@@ -39,7 +39,6 @@ export async function SeccionFaq() {
         <div className="revelar lg:col-span-4">
           <div className="lg:sticky lg:top-28">
             <h2 className={TITULO_SECCION}>{t("faqTitle")}</h2>
-            <p className="mt-4 leading-relaxed text-tinta-2">{t("faqLead")}</p>
             <a
               href={`mailto:${correo}`}
               className="group mt-3 inline-flex min-h-11 items-center gap-2 rounded-control font-semibold text-marca-600 transition-colors hover:text-marca-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

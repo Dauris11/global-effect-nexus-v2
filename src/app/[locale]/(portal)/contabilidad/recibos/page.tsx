@@ -65,11 +65,9 @@ export default async function PaginaRecibos({
   ).toString();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={tc("area")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
         acciones={
           <>
             {/* El 607 se elige por mes en Impuestos: aquí solo se enlaza. */}
@@ -122,7 +120,7 @@ export default async function PaginaRecibos({
         <EstadoVacio
           icono={ReceiptText}
           titulo={hayFiltro ? t("vacioFiltro") : t("vacio")}
-          texto={hayFiltro ? undefined : t("vacioTexto")}
+         
         />
       ) : (
         <>

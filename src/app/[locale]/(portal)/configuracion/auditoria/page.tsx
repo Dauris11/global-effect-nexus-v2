@@ -16,6 +16,7 @@ import { CifraAcademica } from "@/components/academico/cifra";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -149,7 +150,7 @@ export default async function PaginaAuditoria({
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
       <Button
         asChild
         variant="outline"
@@ -162,22 +163,7 @@ export default async function PaginaAuditoria({
         </Link>
       </Button>
 
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <ScrollText className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-      </div>
-
-      {/* El aviso sobre el historial clínico va en la pantalla, no solo en el
-          código: quien audita tiene que saber qué NO está viendo. */}
-      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
-        <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <p className="text-xs text-tinta-2">{t("clinicalNotice")}</p>
-      </div>
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica
@@ -330,9 +316,6 @@ export default async function PaginaAuditoria({
             </span>
             <p className={VACIO.titulo}>
               {hayFiltro ? t("noMatches") : t("empty")}
-            </p>
-            <p className={VACIO.descripcion}>
-              {hayFiltro ? t("noMatchesHint") : t("emptyHint")}
             </p>
           </CardContent>
         </Card>

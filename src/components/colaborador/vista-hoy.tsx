@@ -127,7 +127,7 @@ export function VistaHoy({
     <div className="space-y-6">
       {/* 1. Métrica Cards Táctiles */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-3.5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("pendingTasks")}
@@ -137,10 +137,9 @@ export function VistaHoy({
           <div className="mt-2 text-2xl font-bold text-tinta">
             {resumen.pendientes}
           </div>
-          <p className="mt-1 text-[11px] text-tinta/50">{t("prioritized")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-3.5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("inProgress")}
@@ -150,10 +149,9 @@ export function VistaHoy({
           <div className="mt-2 text-2xl font-bold text-tinta">
             {resumen.enProgreso}
           </div>
-          <p className="mt-1 text-[11px] text-tinta/50">{t("activeToday")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-3.5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("hoursToday")}
@@ -163,10 +161,9 @@ export function VistaHoy({
           <div className="mt-2 text-2xl font-bold text-tinta">
             {formatearHoras(resumen.minutosHoy)}
           </div>
-          <p className="mt-1 text-[11px] text-tinta/50">{t("loggedActivities")}</p>
         </div>
 
-        <div className="flex flex-col justify-between rounded-xl border border-linea-fuerte/40 bg-card p-3.5 shadow-xs">
+        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-3.5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-tinta/60 uppercase">
               {t("expensesWaiting")}
@@ -176,7 +173,6 @@ export function VistaHoy({
           <div className="mt-2 text-2xl font-bold text-tinta">
             {resumen.rendicionesPendientes}
           </div>
-          <p className="mt-1 text-[11px] text-tinta/50">{t("inReview")}</p>
         </div>
       </div>
 

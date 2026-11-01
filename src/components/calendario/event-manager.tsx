@@ -493,7 +493,6 @@ export function EventManager({
 
       <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span>{t("count", { n: visibles.length })}</span>
-        {puedeCrear || puedeMoverCitas ? <span>· {t("moveHint")}</span> : null}
         {(aviso || moviendo) && (
           <span className="font-medium text-[#187a99]">
             · {moviendo ? t("saving") : aviso}
@@ -1430,8 +1429,6 @@ function FormularioEvento({
           />
         </div>
       </div>
-
-      <p className="text-muted-foreground text-xs">{t("newEvent.timeHint")}</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">

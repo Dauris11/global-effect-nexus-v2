@@ -117,11 +117,9 @@ export default async function PaginaImpuestos({
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 md:space-y-10">
+    <div className="mx-auto max-w-5xl space-y-8 md:space-y-10 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
       />
 
       {/* Selector de Mes */}

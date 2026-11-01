@@ -47,15 +47,12 @@ const INTERVALO_MS = 6000;
 
 export function Hero({
   diapositivas,
-  entradilla,
   accion,
   etiquetaAnterior,
   etiquetaSiguiente,
   etiquetaCarrusel,
 }: {
   diapositivas: readonly Diapositiva[];
-  /** Qué es la Fundación, en una frase. Igual para todos los anuncios. */
-  entradilla: string;
   /** Botón por defecto cuando el anuncio no trae el suyo. */
   accion: { texto: string; href: string };
   etiquetaAnterior: string;
@@ -172,14 +169,7 @@ export function Hero({
               {diapositiva.titulo}
             </h1>
 
-            <p
-              className="landing-entrada mt-5 max-w-xl text-base leading-relaxed text-white/90 md:mt-6 md:text-lg"
-              style={{ "--paso": 1 } as React.CSSProperties}
-            >
-              {entradilla}
-            </p>
-
-            <div className="landing-entrada mt-7 md:mt-8" style={{ "--paso": 2 } as React.CSSProperties}>
+            <div className="landing-entrada mt-8 md:mt-10" style={{ "--paso": 1 } as React.CSSProperties}>
               <Button asChild size="lg" className="group/cta">
                 <Link href={boton.href}>
                   {boton.texto}

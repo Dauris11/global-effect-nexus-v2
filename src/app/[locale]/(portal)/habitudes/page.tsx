@@ -18,7 +18,9 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { StatCard } from "@/components/ui/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requerirRol } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   listarDocentesYEstudiantesParaAsignacion,
   listarLiceosHabitudes,
@@ -61,13 +63,11 @@ export default async function PaginaHabitudesHub({
     listarVisitasEvidenciasHabitudes(),
   ]);
 
-  const puedeSubirRecursos = tienePermiso(usuario.rol, "habitudes.recursos.subir");
-  const puedeRegistrarVisitas = tienePermiso(
-    usuario.rol,
+  const puedeSubirRecursos = usuarioTienePermiso(usuario, "habitudes.recursos.subir");
+  const puedeRegistrarVisitas = usuarioTienePermiso(usuario,
     "habitudes.evidencias.subir",
   );
-  const puedeSupervisar = tienePermiso(
-    usuario.rol,
+  const puedeSupervisar = usuarioTienePermiso(usuario,
     "habitudes.supervisar",
   );
 
@@ -79,12 +79,8 @@ export default async function PaginaHabitudesHub({
     : [[], { docentes: [], estudiantes: [] }];
 
   return (
-    <div className="space-y-6">
-      <EncabezadoPagina
-        antetitulo={t("eyebrow")}
-        titulo={t("pageTitle")}
-        subtitulo={t("pageSubtitle")}
-      />
+    <div className="animate-entrada space-y-6">
+      <EncabezadoPagina titulo={t("pageTitle")} />
 
       {/* Tarjetas de Impacto */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

@@ -451,9 +451,6 @@ export function HubReuniones({
           <h3 className="text-base font-semibold text-tinta">
             {t("empty.title")}
           </h3>
-          <p className="mt-1 text-sm text-tinta-2 max-w-sm mx-auto">
-            {t("empty.description")}
-          </p>
           <Button
             type="button"
             variant="outline"
@@ -650,16 +647,16 @@ export function HubReuniones({
         open={dialogoAgendarAbierto}
         onOpenChange={setDialogoAgendarAbierto}
       >
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          aria-describedby={undefined}
+          className="max-w-xl max-h-[90vh] overflow-y-auto"
+        >
           <form onSubmit={handleAgendar} className="space-y-4">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-xl font-bold text-tinta">
                 <CalendarPlus className="size-5 text-marca-600" />
                 {t("dialogSchedule.title")}
               </DialogTitle>
-              <DialogDescription className="text-xs text-tinta-2">
-                {t("dialogSchedule.description")}
-              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">

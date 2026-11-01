@@ -156,7 +156,6 @@ export function ListaRendiciones({
           <h3 className="mt-3 text-base font-semibold text-tinta">
             {t("noVouchersTitle")}
           </h3>
-          <p className="mt-1 text-sm text-tinta/60">{t("noVouchersSubtitle")}</p>
         </div>
       ) : (
         <div className="space-y-3">

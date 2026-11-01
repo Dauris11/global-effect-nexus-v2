@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Info, Mail, Palette, ShieldCheck, User, UserCheck } from "lucide-react";
+import { Mail, Palette, ShieldCheck, User, UserCheck } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -48,7 +48,7 @@ export default async function PaginaPerfil({
   const avatarUrl = urlDeAvatar(fila?.foto_url ?? null);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 pb-10">
+    <div className="mx-auto max-w-4xl animate-entrada space-y-8 pb-10">
       {/* Banner / Header del Perfil */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2096BA] via-[#187a99] to-[#0a6a8a] p-6 sm:p-8 text-white shadow-xl">
         <div className="absolute -right-10 -top-10 size-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
@@ -127,50 +127,11 @@ export default async function PaginaPerfil({
                 <Palette className="text-marca-500 size-4" />
                 {t("appearance.title")}
               </CardTitle>
-              <p className="texto-meta">{t("appearance.description")}</p>
             </CardHeader>
             <CardContent>
               <NextIntlClientProvider messages={mensajes}>
                 <SelectorApariencia />
               </NextIntlClientProvider>
-            </CardContent>
-          </Card>
-
-          <Card className="border-linea/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
-            <CardHeader className="border-b border-linea dark:border-slate-800/60 bg-muted/50 dark:bg-slate-900/30 pb-4">
-              <CardTitle className="text-xs font-bold tracking-wider uppercase text-muted-foreground dark:text-slate-400 flex items-center gap-2">
-                <ShieldCheck className="size-4 text-[#2096BA]" />
-                {t("readOnly")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-5 space-y-5">
-              {/* Correo */}
-              <div className="space-y-1">
-                <dt className="text-xs font-medium text-muted-foreground dark:text-slate-400 flex items-center gap-1.5">
-                  <Mail className="size-3.5 text-[#2096BA]" />
-                  {t("emailLabel")}
-                </dt>
-                <dd className="text-sm font-mono font-medium text-tinta dark:text-slate-200 break-all bg-muted/70 dark:bg-slate-900 p-2.5 rounded-xl border border-linea/60 dark:border-slate-800">
-                  {usuario.email}
-                </dd>
-              </div>
-
-              {/* Rol */}
-              <div className="space-y-1">
-                <dt className="text-xs font-medium text-muted-foreground dark:text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck className="size-3.5 text-[#2096BA]" />
-                  {t("roleLabel")}
-                </dt>
-                <dd className="text-sm font-semibold text-tinta dark:text-slate-100 bg-muted/70 dark:bg-slate-900 p-2.5 rounded-xl border border-linea/60 dark:border-slate-800">
-                  {rolTraducido}
-                </dd>
-              </div>
-
-              {/* Nota informativa */}
-              <div className="p-3 rounded-xl bg-[#2096BA]/10 border border-[#2096BA]/20 text-xs text-tinta-2 dark:text-slate-300 flex items-start gap-2.5">
-                <Info className="size-4 text-[#2096BA] shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{t("roleHint")}</span>
-              </div>
             </CardContent>
           </Card>
         </div>

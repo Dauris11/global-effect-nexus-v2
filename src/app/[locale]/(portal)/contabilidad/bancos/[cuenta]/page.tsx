@@ -69,14 +69,13 @@ export default async function PaginaLibro({
     fila.origen_tabla === "recibo" && fila.origen_id ? `/contabilidad/recibos/${fila.origen_id}` : null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <Link href="/contabilidad/bancos" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline">
         <ArrowLeft className="size-4" />
         {tc("bancos.titulo")}
       </Link>
 
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={cuenta.nombre}
         subtitulo={`${cuenta.banco} · ${enmascararCuenta(cuenta.numero)} · ${cuenta.moneda}`}
         acciones={
@@ -146,7 +145,7 @@ export default async function PaginaLibro({
       </dl>
 
       {libro.filas.length === 0 ? (
-        <EstadoVacio icono={BookOpen} titulo={t("vacio")} texto={t("vacioTexto")} />
+        <EstadoVacio icono={BookOpen} titulo={t("vacio")} />
       ) : (
         <>
           <div className="hidden overflow-x-auto rounded-card border border-linea bg-card shadow-card md:block">

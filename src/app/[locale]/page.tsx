@@ -170,7 +170,6 @@ export default async function PaginaInicio({
       <main>
         <Hero
           diapositivas={diapositivas}
-          entradilla={t("heroText")}
           accion={{ texto: t("heroCta"), href: "/login" }}
           etiquetaAnterior={t("heroPrev")}
           etiquetaSiguiente={t("heroNext")}

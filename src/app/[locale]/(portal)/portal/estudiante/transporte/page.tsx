@@ -46,11 +46,9 @@ export default async function PaginaTransporteEstudiante({
   const paradasRuta = rutas[0]?.paradas ?? [];
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
       <Cabecera
-        eyebrow={t("eyebrow")}
         titulo={t("studentTransportTitle")}
-        descripcion={t("studentTransportDesc")}
       />
 
       <Tabs defaultValue="mapa" className="space-y-5">

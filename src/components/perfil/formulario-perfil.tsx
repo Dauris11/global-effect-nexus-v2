@@ -11,7 +11,6 @@ import {
   ImagePlus,
   Loader2,
   Save,
-  Sparkles,
   User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -102,7 +101,6 @@ export function FormularioPerfil({
               setPrevia(archivo ? URL.createObjectURL(archivo) : null);
             }}
           />
-          <p className="text-muted-foreground text-xs">{t("photoHint")}</p>
         </div>
       </div>
 
@@ -178,11 +176,6 @@ export function FormularioPerfil({
             style={{ width: `${porcentajeBio}%` }}
           />
         </div>
-
-        <p className="text-muted-foreground text-xs flex items-center gap-1">
-          <Sparkles className="size-3 text-[#2096BA] shrink-0" />
-          <span>{t("bioHint")}</span>
-        </p>
       </div>
 
       {/* Alerta de estado */}

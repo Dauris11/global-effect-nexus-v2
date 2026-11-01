@@ -51,13 +51,10 @@ export function GestionCuentas({
       {abierto ? (
         <Card>
           <CardContent className="pt-5">
-            <CardTitle className="mb-1">
+            <CardTitle className="mb-4">
               <UserPlus className="size-4" />
               {t("newAccount")}
             </CardTitle>
-            <p className="text-muted-foreground mb-4 text-xs">
-              {t("newAccountHint")}
-            </p>
 
             <FormularioAlta roles={roles} alCerrar={() => setAbierto(false)} />
           </CardContent>

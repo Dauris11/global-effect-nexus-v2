@@ -68,7 +68,7 @@ export default async function PaginaRecibo({
   const tercero = recibo.tipo === "ingreso" ? recibo.tercero : recibo.beneficiario;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 animate-entrada">
       <Link
         href="/contabilidad/recibos"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline"

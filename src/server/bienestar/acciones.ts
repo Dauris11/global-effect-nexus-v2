@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Marcar el servicio comunitario y la reunión mensual.
@@ -41,7 +43,7 @@ export async function marcarServicio(
 ): Promise<EstadoServicio> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -93,7 +95,7 @@ export async function marcarServicio(
 export async function anotarRevisionDelMes(mes: string): Promise<void> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) return;
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) return;
   if (!MES.test(mes)) return;
 
   await registrar({

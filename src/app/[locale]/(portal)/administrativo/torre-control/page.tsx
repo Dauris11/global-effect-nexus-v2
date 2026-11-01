@@ -93,9 +93,8 @@ export default async function PaginaTorreControl({
     : [{ id: objetivoId, nombre }, ...personas];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="animate-entrada mx-auto max-w-6xl space-y-8">
       <EncabezadoPagina
-        antetitulo={t("eyebrow")}
         titulo={ajena ? t("titleOf", { nombre }) : t("title")}
         acciones={
           <NextIntlClientProvider messages={mensajes}>

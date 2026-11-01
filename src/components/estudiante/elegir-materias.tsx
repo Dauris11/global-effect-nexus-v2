@@ -83,11 +83,11 @@ export function ElegirMaterias({
         <p className="texto-meta font-medium">
           {t("subjectsPage.enrol.forTerm", { periodo })}
         </p>
-        <p className="max-w-2xl text-sm text-tinta-2">
-          {abierta
-            ? t("subjectsPage.enrol.hint")
-            : t("subjectsPage.enrol.windowClosedHint")}
-        </p>
+        {!abierta && (
+          <p className="max-w-2xl text-sm text-tinta-2">
+            {t("subjectsPage.enrol.windowClosedHint")}
+          </p>
+        )}
       </div>
 
       {materias.length === 0 ? (
@@ -118,13 +118,6 @@ export function ElegirMaterias({
                 {t("subjectsPage.enrol.chosenCredits", { credits: creditos })}
               </p>
             </div>
-
-            {/* Se dice en voz alta que no hay tope, en vez de dejar que alguien
-                lo suponga: la base no tiene ni cupos ni máximo de créditos, y
-                un número inventado aquí sería una norma académica inventada. */}
-            <p className="texto-meta max-w-md md:text-right">
-              {t("subjectsPage.enrol.noLimitHint")}
-            </p>
           </div>
         </>
       )}

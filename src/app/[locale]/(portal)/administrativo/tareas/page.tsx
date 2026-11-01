@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { ListTodo } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { TableroTareas } from "@/components/operaciones/tablero-tareas";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   proyectosSimples,
   tareasDelTablero,
   usuariosAsignables,
 } from "@/server/operaciones/consultas";
 
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
@@ -50,7 +52,7 @@ export default async function PaginaTareas({
   const { locale } = await params;
 
   const usuario = await requerirPermiso("operaciones.leer");
-  const puedeEscribir = tienePermiso(usuario.rol, "operaciones.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "operaciones.escribir");
 
   const [t, tareas, proyectos, personas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "admin" }),
@@ -61,25 +63,18 @@ export default async function PaginaTareas({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
-            {t("hub.link_tasks")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-            <ListTodo className="size-5 text-marca-500" />
-            {t("tasks.title")}
-          </h1>
-        </div>
-
-        <Link
-          href="/administrativo/tareas/hoy"
-          className="inline-flex min-h-[40px] items-center rounded-lg border border-marca-500/30 bg-marca-50 px-3.5 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
-        >
-          {t("hub.link_my_day")}
-        </Link>
-      </div>
+    <div className="animate-entrada mx-auto max-w-6xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("tasks.title")}
+        acciones={
+      <Link
+        href="/administrativo/tareas/hoy"
+        className="inline-flex min-h-[44px] items-center rounded-control border border-marca-500/30 bg-marca-50 px-3.5 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
+      >
+        {t("hub.link_my_day")}
+      </Link>
+        }
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         <TableroTareas

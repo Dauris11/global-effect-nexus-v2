@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Eye, EyeOff, Lock, UserCog } from "lucide-react";
+import { ArrowLeft, UserCog } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -17,6 +17,7 @@ import { requerirRol } from "@/lib/auth";
 import { FUNCION_ASISTENTE, itemsDeArea, menuDe, rutasProtegidas } from "@/lib/nav";
 import { ROLES, type Rol } from "@/lib/rbac";
 import { resumenDeVisibilidad, visibilidadDeRol } from "@/server/visibilidad/consultas";
+import { leerPermisosPorRol } from "@/server/configuracion/consultas-permisos";
 
 export async function generateMetadata({
   params,
@@ -55,20 +56,24 @@ export default async function PaginaVisibilidad({
     ? (consulta.rol as Rol)
     : "admin";
 
-  const [t, tRoles, resumen, actual, mensajes] = await Promise.all([
+  const [t, tRoles, resumen, actual, mensajes, permisosPorRol] = await Promise.all([
     getTranslations({ locale, namespace: "visibilidad" }),
     getTranslations({ locale, namespace: "roles" }),
     resumenDeVisibilidad(),
     visibilidadDeRol(rol),
     mensajesCliente(["visibilidad"]),
+    leerPermisosPorRol(),
   ]);
+  const permisosRol = new Set(
+    permisosPorRol.find((r) => r.rol === rol)?.permisos ?? [],
+  );
 
   const protegidas = new Set(rutasProtegidas(rol));
   const estadoDe = (clave: string) =>
     actual.bloqueadas.has(clave) ? "bloqueado" : actual.ocultas.has(clave) ? "oculto" : "visible";
 
   const grupos: GrupoVisibilidad[] = [
-    ...menuDe(rol).map((area) => ({
+    ...menuDe(rol, undefined, permisosRol).map((area) => ({
       clave: area.clave,
       etiqueta: area.etiqueta,
       items: itemsDeArea(area).map((item) => ({
@@ -97,7 +102,7 @@ export default async function PaginaVisibilidad({
   const cuenta = (r: string) => resumen.find((f) => f.rol === r);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 pb-10">
+    <div className="animate-entrada mx-auto max-w-4xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
           <ArrowLeft className="size-4" />
@@ -105,19 +110,7 @@ export default async function PaginaVisibilidad({
         </Link>
       </Button>
 
-      <EncabezadoPagina antetitulo={t("eyebrow")} titulo={t("title")} subtitulo={t("subtitle")} />
-
-      <div className="bg-muted rounded-card space-y-1.5 p-4 text-sm">
-        <p className="flex items-center gap-2"><Eye className="size-4 shrink-0" />{t("hints.visible")}</p>
-        <p className="flex items-center gap-2"><EyeOff className="size-4 shrink-0" />{t("hints.oculto")}</p>
-        <p className="flex items-center gap-2"><Lock className="size-4 shrink-0" />{t("hints.bloqueado")}</p>
-        <p className="texto-meta pt-1">
-          {t("permissionsNote")}{" "}
-          <Link href="/configuracion/permisos" className="text-marca-700 font-medium hover:underline">
-            {t("permissionsLink")}
-          </Link>
-        </p>
-      </div>
+      <EncabezadoPagina titulo={t("title")} />
 
       <FilaChips etiqueta={t("pickRole")}>
         {ROLES_EDITABLES.map((r) => (

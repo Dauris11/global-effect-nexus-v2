@@ -12,7 +12,9 @@ import {
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   balanceDelMes,
   cifrasPanel,
@@ -59,10 +61,9 @@ export default async function PaginaDashboard({
   const idioma: Locale = locale === "en" ? "en" : "es";
 
   const usuario = await requerirRol(["admin", "super_admin"]);
-  const verFinanzas = tienePermiso(usuario.rol, "finanzas.leer");
+  const verFinanzas = usuarioTienePermiso(usuario, "finanzas.leer");
 
   const t = await getTranslations({ locale, namespace: "dashboard" });
-  const tRoles = await getTranslations({ locale, namespace: "roles" });
 
   const [cifras, tareas, prioridades, proyectos, eventos] = await Promise.all([
     cifrasPanel(),
@@ -79,9 +80,8 @@ export default async function PaginaDashboard({
   const neto = balance ? balance.ingresos - balance.egresos : null;
 
   return (
-    <div className="animate-fade-in-up space-y-8 md:space-y-12">
+    <div className="animate-entrada space-y-8 md:space-y-12">
       <EncabezadoPagina
-        antetitulo={tRoles(usuario.rol)}
         titulo={t("greeting", { name: usuario.nombre })}
       />
 

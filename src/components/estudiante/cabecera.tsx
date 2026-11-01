@@ -10,9 +10,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
  * habría sido tocar archivos de otros sin ganar nada.
  */
 export function Cabecera({
-  eyebrow,
   titulo,
-  descripcion,
   acciones,
 }: {
   /**
@@ -23,17 +21,17 @@ export function Cabecera({
   icono?: React.ComponentType<{ className?: string }>;
   /** @deprecated Igual que `icono`: un módulo ya no tiene color propio. */
   color?: string;
-  eyebrow: string;
+  /** @deprecated Repetía el módulo: ya no se pinta. */
+  eyebrow?: string;
   titulo: string;
-  descripcion: string;
+  /** @deprecated Una pantalla limpia no explica qué es: ya no se pinta. */
+  descripcion?: string;
   /** Botones a la derecha del título (abajo en el móvil). */
   acciones?: React.ReactNode;
 }) {
   return (
     <EncabezadoPagina
-      antetitulo={eyebrow}
       titulo={titulo}
-      subtitulo={descripcion}
       acciones={acciones}
     />
   );

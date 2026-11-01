@@ -39,7 +39,7 @@ export function SeccionCatalogo({
   }, [busqueda, cuentas]);
 
   if (cuentas.length === 0) {
-    return <EstadoVacio icono={BookOpen} titulo={t("vacioTitulo")} texto={t("vacioTexto")} />;
+    return <EstadoVacio icono={BookOpen} titulo={t("vacioTitulo")} />;
   }
 
   const acciones = (cuenta: CuentaCatalogo) =>

@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
-import { Bot, Lock, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { ChatIA } from "@/components/ia/chat";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import type { Locale } from "@/i18n/routing";
 import { requerirUsuario } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { MAXIMO_CARACTERES_PREGUNTA } from "@/lib/ia";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { preguntarAlAsistenteInterno } from "@/server/ia/acciones-interno";
 import {
   conversacionInterna,
@@ -56,7 +59,7 @@ export default async function PaginaChatIA({
   const usuario = await requerirUsuario();
   const t = await getTranslations({ locale, namespace: "aiChat" });
 
-  if (!tienePermiso(usuario.rol, "ia.usar")) {
+  if (!usuarioTienePermiso(usuario, "ia.usar")) {
     return (
       <Card className="mx-auto max-w-xl">
         <CardContent className="pt-5">
@@ -66,9 +69,6 @@ export default async function PaginaChatIA({
             </span>
             <div>
               <p className="text-sm font-bold">{t("forbidden")}</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {t("forbiddenHint")}
-              </p>
             </div>
           </div>
         </CardContent>
@@ -82,21 +82,8 @@ export default async function PaginaChatIA({
     : [];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Bot className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-      </div>
-
-      <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">
-        <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <p className="text-xs text-tinta-2">{t("privacy")}</p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-3xl space-y-6">
+      <EncabezadoPagina titulo={t("title")} />
 
       <Card>
         <CardContent className="pt-5">

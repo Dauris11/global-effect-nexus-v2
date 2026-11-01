@@ -58,7 +58,7 @@ export async function SeccionPeriodos({
     });
 
   if (periodos.length === 0) {
-    return <EstadoVacio icono={CalendarRange} titulo={t("vacioTitulo")} texto={t("vacioTexto")} />;
+    return <EstadoVacio icono={CalendarRange} titulo={t("vacioTitulo")} />;
   }
 
   const accion = (p: Periodo) =>

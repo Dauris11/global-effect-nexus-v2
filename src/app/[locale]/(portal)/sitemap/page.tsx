@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-// `Map` de lucide se importa con otro nombre: tal cual, tapa el `Map` de
-// JavaScript y el `new Map()` de más abajo deja de compilar.
 import {
   Check,
   Globe,
   Layers,
   Lock,
-  Map as IconoMapa,
   Users,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -14,12 +11,20 @@ import { getTranslations } from "next-intl/server";
 import { CifraAcademica } from "@/components/academico/cifra";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import { itemsDeArea, menuDe } from "@/lib/nav";
 import { CUADRO, TARJETA } from "@/lib/paleta";
-import { PORTAL_POR_ROL, ROLES, tienePermiso, type Rol } from "@/lib/rbac";
+import {
+  PORTAL_POR_ROL,
+  ROLES,
+  tienePermiso,
+  type Rol,
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+import { leerPermisosPorRol } from "@/server/configuracion/consultas-permisos";
 
 export async function generateMetadata({
   params,
@@ -90,7 +95,15 @@ export default async function PaginaSitemap({
 
   // El menú de cada rol, con el filtro de permisos de ESE rol: es lo que ese
   // rol ve de verdad al entrar, no el catálogo entero.
-  const menus = ROLES.map((rol) => ({ rol, areas: menuDe(rol) }));
+  const permisosPorRol = await leerPermisosPorRol();
+  const menus = ROLES.map((rol) => ({
+    rol,
+    areas: menuDe(
+      rol,
+      undefined,
+      new Set(permisosPorRol.find((r) => r.rol === rol)?.permisos ?? []),
+    ),
+  }));
 
   // Cuántos menús de rol nombran cada ruta. Un módulo en más de uno es
   // compartido, y eso es una propiedad del sistema, no una lista que mantener.
@@ -110,16 +123,8 @@ export default async function PaginaSitemap({
     .sort((a, b) => b[1].roles.length - a[1].roles.length);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <IconoMapa className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-3">
         <CifraAcademica
@@ -140,8 +145,6 @@ export default async function PaginaSitemap({
         />
       </div>
 
-      <p className="text-muted-foreground text-xs">{t("sourceHint")}</p>
-
       {/* Zona pública. Va primero porque es por donde entra todo el mundo. */}
       <Card className={TARJETA.contenido}>
         <CardContent className="space-y-3 pt-5">
@@ -151,9 +154,6 @@ export default async function PaginaSitemap({
             </span>
             <div>
               <p className="text-sm font-semibold">{t("public.title")}</p>
-              <p className="text-muted-foreground text-xs">
-                {t("public.hint")}
-              </p>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export default async function PaginaSitemap({
                       // SU rol, no con el rol del bloque: el bloque describe el
                       // menú de otro, y la marca dice si tú entras ahí.
                       const puedo =
-                        !item.permiso || tienePermiso(usuario.rol, item.permiso);
+                        !item.permiso || usuarioTienePermiso(usuario, item.permiso);
 
                       return (
                         <li key={`${area.clave}-${item.href}`}>
@@ -252,7 +252,6 @@ export default async function PaginaSitemap({
         <CardContent className="space-y-3 pt-5">
           <div>
             <p className="text-sm font-semibold">{t("shared.title")}</p>
-            <p className="text-muted-foreground text-xs">{t("shared.hint")}</p>
           </div>
 
           <ul className="space-y-1.5">

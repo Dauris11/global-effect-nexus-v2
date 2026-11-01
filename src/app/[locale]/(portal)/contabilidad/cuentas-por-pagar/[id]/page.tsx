@@ -52,7 +52,7 @@ export default async function PaginaDetalleCxp({
   const vencida = cxp.dias_vencida > 0 && cxp.estado !== "pagada" && cxp.estado !== "anulada";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/cuentas-por-pagar">
@@ -62,7 +62,6 @@ export default async function PaginaDetalleCxp({
         </Button>
 
         <EncabezadoPagina
-          antetitulo={t("titulo")}
           titulo={cxp.tercero}
           subtitulo={`${cxp.concepto} · ${
             cxp.origen === "factura"

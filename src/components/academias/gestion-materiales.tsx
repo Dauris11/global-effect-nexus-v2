@@ -141,9 +141,6 @@ export function GestionMateriales({
               <Presentation className="size-6" />
             </span>
             <p className={VACIO.titulo}>{t("materials.noPrograms")}</p>
-            <p className={VACIO.descripcion}>
-              {t("materials.noProgramsHint")}
-            </p>
           </CardContent>
         </Card>
       ) : materiales.length === 0 ? (
@@ -154,11 +151,6 @@ export function GestionMateriales({
             </span>
             <p className={VACIO.titulo}>
               {hayFiltro ? t("materials.noMatches") : t("materials.empty")}
-            </p>
-            <p className={VACIO.descripcion}>
-              {hayFiltro
-                ? t("materials.noMatchesHint")
-                : t("materials.emptyHint")}
             </p>
           </CardContent>
         </Card>
@@ -413,9 +405,6 @@ function Formulario({
       <div>
         <p className="text-sm font-semibold">
           {material ? t("materials.editTitle") : t("materials.newTitle")}
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {t("materials.formSubtitle")}
         </p>
       </div>
 

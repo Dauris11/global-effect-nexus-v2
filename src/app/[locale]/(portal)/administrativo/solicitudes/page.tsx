@@ -7,10 +7,13 @@ import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicit
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { REGLAS, revisaAlgo, tiposQuePuedeCrear } from "@/lib/solicitudes";
 import { redirigir } from "@/i18n/navigation";
 import {
@@ -59,8 +62,8 @@ export default async function PaginaSolicitudes({
     redirigir("/portal/estudiante/solicitudes", locale);
   }
 
-  const revisa = revisaAlgo(usuario.rol);
-  const tipos = tiposQuePuedeCrear(usuario.rol);
+  const revisa = revisaAlgo(usuario);
+  const tipos = tiposQuePuedeCrear(usuario);
   const conEstudiante = tipos.some((tipo) => REGLAS[tipo].estudiante !== "no");
 
   const [t, porAtender, mias, resueltas, estudiantes, mensajes] = await Promise.all([
@@ -69,25 +72,14 @@ export default async function PaginaSolicitudes({
     solicitudesDe(usuario),
     revisa ? resueltasPor(usuario) : Promise.resolve([]),
     conEstudiante
-      ? estudiantesParaSolicitud(!tienePermiso(usuario.rol, "expedientes.leer"))
+      ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
       : Promise.resolve([]),
     mensajesCliente(["requests"]),
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("staffEyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Inbox className="size-5 text-[#2096BA]" />
-          {t("staffTitle")}
-        </h1>
-        <p className="text-muted-foreground mt-1 max-w-2xl text-sm">
-          {t("staffDescription")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("staffTitle")} />
 
       <NextIntlClientProvider messages={mensajes}>
         {revisa && (
@@ -102,7 +94,7 @@ export default async function PaginaSolicitudes({
         )}
 
         {tipos.length > 0 && (
-          <Card className="rounded-xl border-linea/80 shadow-xs dark:border-slate-800">
+          <Card className="rounded-card border-linea shadow-card">
             <CardContent className="space-y-4 pt-5">
               <CardTitle>
                 <Send className="size-4" />
@@ -157,17 +149,17 @@ function Bloque({
   return (
     <section className="space-y-3">
       <h2 className="flex items-center gap-2 text-sm font-bold">
-        <Icono className="size-4 text-[#187a99]" />
+        <Icono className="size-4 text-marca-600" />
         {titulo}
         {contar && solicitudes.length > 0 && (
-          <Badge className="bg-[#171A1D] text-[10px] text-white">
+          <Badge className="bg-tinta text-[10px] text-background">
             {solicitudes.length}
           </Badge>
         )}
       </h2>
 
       {solicitudes.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed border-linea px-4 py-6 text-center text-sm dark:border-slate-800">
+        <p className="text-muted-foreground rounded-card border border-dashed border-linea px-4 py-6 text-center text-sm">
           {vacio}
         </p>
       ) : (

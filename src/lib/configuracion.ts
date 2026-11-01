@@ -1,4 +1,10 @@
-import { tienePermiso, ROLES, type Permiso, type Rol } from "@/lib/rbac";
+import {
+  ROLES,
+  usuarioTienePermiso,
+  type Permiso,
+  type Rol,
+  type UsuarioConPermisos,
+} from "@/lib/rbac";
 
 /**
  * Las pantallas de configuración, en el orden de la barra de iconos.
@@ -33,12 +39,13 @@ export const AJUSTES = [
 
 export type ClaveAjuste = (typeof AJUSTES)[number]["clave"];
 
-export function ajustesDeRol(rol: Rol) {
+export function ajustesDeUsuario(usuario: UsuarioConPermisos) {
+  const rol = usuario.rol;
   return AJUSTES.filter((ajuste) => {
     const roles: readonly Rol[] | undefined = "roles" in ajuste ? ajuste.roles : undefined;
     const maestro = "soloMaestro" in ajuste && ajuste.soloMaestro;
 
     if (maestro && rol !== "super_admin") return false;
-    return roles?.includes(rol) || tienePermiso(rol, ajuste.permiso);
+    return roles?.includes(rol) || usuarioTienePermiso(usuario, ajuste.permiso);
   });
 }

@@ -114,9 +114,7 @@ export function TableroTareas({
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-muted-foreground text-sm">{t("tasks.description")}</p>
-
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {puedeEscribir && !nueva && (
           <Button
             type="button"
@@ -327,7 +325,6 @@ function FormularioTarea({
     <form action={enviar} className="space-y-3">
       <div>
         <p className="text-sm font-semibold">{t("newTask.title")}</p>
-        <p className="text-muted-foreground text-xs">{t("newTask.subtitle")}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -396,9 +393,6 @@ function FormularioTarea({
 
       <fieldset className="space-y-1.5">
         <legend className="text-sm font-medium">{t("task.assignees")}</legend>
-        <p className="text-muted-foreground text-xs">
-          {t("newTask.assigneesHint")}
-        </p>
 
         {/* Casillas nativas: mandan varios `asignado` en el mismo envío sin una
             línea de JavaScript, y el servidor los lee con `getAll`. */}

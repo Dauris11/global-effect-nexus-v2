@@ -27,11 +27,12 @@ import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
 import {
   aprobada,
-  consejoDeIndice,
   GPA_PRUEBA_ACADEMICA,
   promedio,
 } from "@/lib/notas";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import {
   condicionEnLaFundacion,
@@ -149,7 +150,7 @@ export default async function PortalEstudiante({
     },
     // El chat solo se ofrece a quien tiene el permiso: su pantalla lo
     // comprueba igual, pero un acceso que lleva a "no disponible" sobra.
-    ...(tienePermiso(usuario.rol, "ia.usar")
+    ...(usuarioTienePermiso(usuario, "ia.usar")
       ? [
           {
             href: "/portal/estudiante/chat",
@@ -162,14 +163,13 @@ export default async function PortalEstudiante({
   ];
 
   return (
-    <div className="animate-fade-in-up space-y-10 md:space-y-12">
+    <div className="animate-entrada space-y-10 md:space-y-12">
       <div className="space-y-4">
         <BannerPortal
           rol="estudiante"
           icono={GraduationCap}
           insignia={t(`type.${estudiante.tipo}`)}
           titulo={t("greeting", { name: estudiante.nombre })}
-          subtitulo={t("termUpdateHint")}
           kpis={[
             {
               valor:
@@ -198,11 +198,7 @@ export default async function PortalEstudiante({
               {t("gpaHint.nota-critica")}
             </p>
           </div>
-        ) : (
-          <p className="texto-meta">
-            {t(`gpaHint.${consejoDeIndice(indice)}`)}
-          </p>
-        )}
+        ) : null}
       </div>
 
       <TarjetaProximo

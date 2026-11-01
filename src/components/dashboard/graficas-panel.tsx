@@ -9,7 +9,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -68,7 +67,6 @@ export function GraficasPanel({
               <DollarSign className="size-4" />
               {t("financeTitle")}
             </CardTitle>
-            <CardDescription>{t("financeSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
             <GraficaFlujo

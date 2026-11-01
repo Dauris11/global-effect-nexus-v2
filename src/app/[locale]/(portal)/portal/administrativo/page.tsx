@@ -121,21 +121,19 @@ export default async function PortalAdministrativo({
     { clave: "users", valor: cifras.usuarios },
   ];
 
-  const areas = menuDe(usuario.rol, new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu));
+  const areas = menuDe(
+    usuario.rol,
+    new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu),
+    new Set(usuario.permisos),
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="animate-entrada space-y-6">
       <BannerPortal
         rol={usuario.rol}
         icono={Shield}
         titulo={t("greeting", { name: usuario.nombre })}
-        insignia={t("eyebrow")}
-        kpis={[
-          { valor: String(cifras.estudiantes), etiqueta: t("kpi.students") },
-          { valor: String(cifras.tareas_abiertas), etiqueta: t("kpi.tasks") },
-          { valor: String(cifras.proyectos), etiqueta: t("kpi.projects") },
-          { valor: usd(cifras.aporte_mensual), etiqueta: t("kpi.giving") },
-        ]}
+        kpis={[]}
       />
 
       {/* ── 1. Lo que espera una decisión ─────────────────────────── */}
@@ -154,9 +152,6 @@ export default async function PortalAdministrativo({
           {avisos.length === 0 ? (
             <div className="py-6 text-center">
               <p className="text-sm font-semibold">{t("pending.none")}</p>
-              <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-                {t("pending.noneHint")}
-              </p>
             </div>
           ) : (
             <ul className="divide-y">

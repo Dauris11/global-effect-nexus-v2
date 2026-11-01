@@ -143,7 +143,7 @@ export async function crearSolicitudInterna(
   const usuario = await requerirUsuario();
 
   const tipo = String(datos.get("tipo") ?? "");
-  const permitidos: readonly string[] = tiposQuePuedeCrear(usuario.rol);
+  const permitidos: readonly string[] = tiposQuePuedeCrear(usuario);
 
   if (!permitidos.includes(tipo)) return { estado: "no_permitido" };
 

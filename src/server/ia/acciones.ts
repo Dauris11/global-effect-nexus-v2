@@ -7,7 +7,9 @@ import {
   MAXIMO_CARACTERES_PREGUNTA,
   type EstadoChat,
 } from "@/lib/ia";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { conversarComo } from "@/server/ia/agente";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import {
@@ -50,7 +52,7 @@ export async function preguntarAlAsistente(
 ): Promise<EstadoChat> {
   const usuario = await requerirRol(["estudiante"]);
 
-  if (!tienePermiso(usuario.rol, "ia.usar")) return { estado: "sin_permiso" };
+  if (!usuarioTienePermiso(usuario, "ia.usar")) return { estado: "sin_permiso" };
 
   const estudiante = await estudianteDeUsuario(usuario.id);
 

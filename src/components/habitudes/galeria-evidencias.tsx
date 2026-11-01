@@ -94,7 +94,6 @@ export function GaleriaEvidencias({
           <CardContent className="space-y-2">
             <Building2 className="mx-auto size-8 text-tinta/30" />
             <p className="font-semibold text-tinta">{t("emptyVisitsTitle")}</p>
-            <p className="text-xs text-tinta/60">{t("emptyVisitsSubtitle")}</p>
           </CardContent>
         </Card>
       ) : (

@@ -12,7 +12,9 @@ import {
   FAMILIA_FIJA,
   GENEROS,
 } from "@/lib/expedientes";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { subirAvatar } from "@/lib/supabase/almacen";
 import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { leerDocumentoDeIdentidad } from "@/server/ia/ocr";
@@ -56,7 +58,7 @@ export async function actualizarExpediente(
 ): Promise<EstadoExpediente> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "expedientes.escribir")) {
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -348,7 +350,7 @@ export async function crearExpediente(
 ): Promise<EstadoExpediente> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "expedientes.escribir")) {
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -599,7 +601,7 @@ export async function eliminarExpediente(
 ): Promise<EstadoEliminarExpediente> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "expedientes.eliminar")) {
+  if (!usuarioTienePermiso(usuario, "expedientes.eliminar")) {
     return { estado: "no_permitido" };
   }
 
@@ -743,7 +745,7 @@ export async function leerFichaEscaneada(
 ): Promise<EstadoLectura> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "expedientes.escribir")) {
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) {
     return { estado: "no_permitido" };
   }
 

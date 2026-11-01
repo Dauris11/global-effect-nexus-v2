@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   ESTADOS_RENDICION,
   ESTADOS_TAREA_COLABORADOR,
@@ -44,7 +46,7 @@ export async function cambiarEstadoTareaColaboradorAction(
                  OR $2 = true
                  OR EXISTS (SELECT 1 FROM public.tarea_asignado ta
                              WHERE ta.tarea_id = t.id AND ta.usuario_id = $3))`,
-        [id, tienePermiso(usuario.rol, "operaciones.escribir"), usuario.id],
+        [id, usuarioTienePermiso(usuario, "operaciones.escribir"), usuario.id],
       );
 
       if (permisos.length === 0) {

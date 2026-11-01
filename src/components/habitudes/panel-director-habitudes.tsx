@@ -171,7 +171,6 @@ export function PanelDirectorHabitudes({
               <Building2 className="size-5 text-marca-600" />
               {tMapa("redLiceos.titulo")}
             </h3>
-            <p className="texto-meta mt-1">{tMapa("redLiceos.subtitulo")}</p>
           </div>
           <span className="texto-meta">
             {tMapa("redLiceos.geolocalizados", { n: geolocalizados, total: liceos.length })}
@@ -196,9 +195,6 @@ export function PanelDirectorHabitudes({
               <Users className="size-4 text-marca-500" />
               {tDir("monitoreoTitulo")}
             </h3>
-            <p className="text-xs text-muted-foreground">
-              {tDir("monitoreoDescripcion")}
-            </p>
           </div>
           <Badge variant="outline" className="text-xs">
             {tDir("facilitadoresActivos", { n: profesores.length })}
@@ -278,9 +274,6 @@ export function PanelDirectorHabitudes({
               <UserPlus className="size-4 text-marca-500" />
               {tDir("asignacionesTitulo")}
             </h3>
-            <p className="text-xs text-muted-foreground">
-              {tDir("asignacionesDescripcion")}
-            </p>
           </div>
 
           <div className="flex rounded-control bg-muted p-1 text-xs">

@@ -26,11 +26,9 @@ export default async function PaginaCalculadoras({
   const t = await getTranslations({ locale, namespace: "contab.calculadoras" });
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
       />
 
       <SuiteCalculadoras />

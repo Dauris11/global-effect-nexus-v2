@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { HubReuniones } from "@/components/reuniones/hub-reuniones";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   listarCandidatosParticipantes,
   listarReuniones,
@@ -41,8 +43,8 @@ export default async function PaginaReuniones({
   const { agendar } = await searchParams;
 
   const usuario = await requerirUsuario();
-  const puedeLeer = tienePermiso(usuario.rol, "reuniones.leer");
-  const puedeGestionar = tienePermiso(usuario.rol, "reuniones.gestionar");
+  const puedeLeer = usuarioTienePermiso(usuario, "reuniones.leer");
+  const puedeGestionar = usuarioTienePermiso(usuario, "reuniones.gestionar");
 
   if (!puedeLeer) {
     return (
@@ -61,20 +63,8 @@ export default async function PaginaReuniones({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex flex-col gap-1 border-b border-linea pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-marca-600">
-            <Users className="size-5" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-tinta-2">
-              {t("eyebrow")}
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
-            {t("title")}
-          </h1>
-        </div>
-      </div>
+    <div className="animate-entrada mx-auto max-w-7xl space-y-6">
+      <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
         <HubReuniones

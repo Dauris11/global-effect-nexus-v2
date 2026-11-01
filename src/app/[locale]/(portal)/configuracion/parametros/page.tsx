@@ -70,7 +70,7 @@ export default async function PaginaParametros({
   })).filter((g) => g.campos.length > 0);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pb-10">
+    <div className="animate-entrada mx-auto max-w-3xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
           <ArrowLeft className="size-4" />
@@ -78,18 +78,11 @@ export default async function PaginaParametros({
         </Link>
       </Button>
 
-      <EncabezadoPagina antetitulo={t("eyebrow")} titulo={t("title")} subtitulo={t("subtitle")} />
+      <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
         <FormularioParametros grupos={grupos} />
       </NextIntlClientProvider>
-
-      <p className="texto-meta">
-        {t("fiscalNote")}{" "}
-        <Link href="/contabilidad/configuracion" className="text-marca-700 font-medium hover:underline">
-          {t("fiscalLink")}
-        </Link>
-      </p>
     </div>
   );
 }

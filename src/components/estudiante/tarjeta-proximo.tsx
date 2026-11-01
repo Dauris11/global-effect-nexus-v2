@@ -46,7 +46,6 @@ export async function TarjetaProximo({
         <EstadoVacio
           icono={CalendarClock}
           titulo={t("next.empty")}
-          texto={t("next.emptyHint")}
           className="py-10"
         />
       ) : (

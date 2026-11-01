@@ -51,7 +51,6 @@ export function MatriculaCuatrimestral360({
             ? t("chooseForTanda", { n: tandaAbierta })
             : t("catalogStudentTitle")}
         </h2>
-        <p className="texto-meta">{t("allRequired")}</p>
       </div>
 
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

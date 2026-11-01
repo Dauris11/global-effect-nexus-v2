@@ -13,7 +13,9 @@ import {
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   borrarDocumento,
   enlaceDeDocumento,
@@ -72,7 +74,7 @@ export async function guardarAcademia(
 ): Promise<EstadoAcademias> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -190,7 +192,7 @@ export async function eliminarAcademia(
 ): Promise<EstadoAcademias> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -248,7 +250,7 @@ export async function guardarMaterial(
 ): Promise<EstadoAcademias> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -405,7 +407,7 @@ export async function eliminarMaterial(
 ): Promise<EstadoAcademias> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.escribir")) {
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -497,7 +499,7 @@ export async function eliminarMaterial(
 export async function descargarMaterial(datos: FormData): Promise<void> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "academico.leer")) return;
+  if (!usuarioTienePermiso(usuario, "academico.leer")) return;
 
   const id = String(datos.get("id") ?? "").trim();
 

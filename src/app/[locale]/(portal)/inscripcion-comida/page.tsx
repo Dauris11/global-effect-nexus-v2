@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { ChevronLeft, ChevronRight, Clock, UtensilsCrossed } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  UtensilsCrossed,
+} from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -7,7 +12,8 @@ import { CifraAcademica } from "@/components/academico/cifra";
 import { BotonImprimir } from "@/components/comida/boton-imprimir";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -15,10 +21,7 @@ import { requerirPermiso } from "@/lib/auth";
 import { fechaLarga } from "@/lib/fechas";
 import { CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
-import {
-  comensalesDelDia,
-  resumenDelComedor,
-} from "@/server/comida/consultas";
+import { comensalesDelDia, resumenDelComedor } from "@/server/comida/consultas";
 
 /** `YYYY-MM-DD`, que es lo que la URL puede traer y `date` acepta. */
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -89,43 +92,34 @@ export default async function PaginaListaComida({
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase print:hidden">
-            {t("title")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-            <UtensilsCrossed className="size-5 text-[#2096BA] print:hidden" />
-            {t("adminTitle")}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {fechaLarga(dia, idioma)}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* El estado de la recepción solo tiene sentido mirando HOY: para un
+    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("adminTitle")}
+        acciones={
+          <>
+            {/* El estado de la recepción solo tiene sentido mirando HOY: para un
               día pasado, "cerrado" no informa de nada. */}
-          {dia === resumen.hoy && (
-            <Badge
-              className={cn(
-                "text-[10px] print:hidden",
-                resumen.abierto
-                  ? "bg-[#2096BA]/15 text-[#187a99]"
-                  : "bg-[#171A1D] text-white",
-              )}
-            >
-              <Clock className="size-3" />
-              {resumen.abierto ? t("open") : t("closed")}
-            </Badge>
-          )}
+            {dia === resumen.hoy && (
+              <Badge
+                className={cn(
+                  "text-[10px] print:hidden",
+                  resumen.abierto
+                    ? "bg-[#2096BA]/15 text-[#187a99]"
+                    : "bg-[#171A1D] text-white",
+                )}
+              >
+                <Clock className="size-3" />
+                {resumen.abierto ? t("open") : t("closed")}
+              </Badge>
+            )}
 
-          <NextIntlClientProvider messages={mensajes}>
-            <BotonImprimir />
-          </NextIntlClientProvider>
-        </div>
-      </div>
+            <NextIntlClientProvider messages={mensajes}>
+              <BotonImprimir />
+            </NextIntlClientProvider>
+          </>
+        }
+      />
+      <p className="texto-meta">{fechaLarga(dia, idioma)}</p>
 
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Button asChild variant="outline" size="sm">
@@ -170,14 +164,6 @@ export default async function PaginaListaComida({
 
       <Card className="print:border-0 print:shadow-none">
         <CardContent className="pt-5">
-          <CardTitle className="mb-3">
-            <UtensilsCrossed className="size-4 print:hidden" />
-            {t("adminTitle")}
-            <Badge className="ml-1 bg-[#2096BA]/15 text-[10px] text-[#187a99] print:hidden">
-              {resumen.total}
-            </Badge>
-          </CardTitle>
-
           {comensales.length === 0 ? (
             <div className={VACIO.contenedor}>
               <span className={cn(VACIO.icono, "print:hidden")}>

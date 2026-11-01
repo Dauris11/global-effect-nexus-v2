@@ -45,7 +45,7 @@ export default async function PaginaTransportePublico({
 
   return (
     <div className="min-h-dvh bg-muted/30 px-4 py-8 dark:bg-background">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="animate-entrada mx-auto max-w-4xl space-y-6">
         {/* Barra superior de navegación rápida */}
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" asChild className="gap-2 text-xs">
@@ -75,9 +75,6 @@ export default async function PaginaTransportePublico({
                   <h1 className="texto-titulo-seccion">
                     {t("publicTransportTitle")}
                   </h1>
-                  <p className="text-xs text-tinta-2">
-                    {t("publicTransportDesc")}
-                  </p>
                 </div>
               </div>
 
@@ -126,9 +123,6 @@ export default async function PaginaTransportePublico({
                 <Clock className="size-4 text-marca-500" />
                 {t("officialSchedulesTitle")}
               </h3>
-              <p className="text-xs text-tinta-2">
-                {t("officialSchedulesSubtitle")}
-              </p>
             </div>
 
             <ul className="mt-4 divide-y divide-linea">

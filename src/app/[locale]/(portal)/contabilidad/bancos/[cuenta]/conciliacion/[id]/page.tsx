@@ -74,7 +74,7 @@ export default async function PaginaConciliacion({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <Link href={`/contabilidad/bancos/${c.cuenta_id}/conciliacion`} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline">
         <ArrowLeft className="size-4" />
         {c.cuenta}

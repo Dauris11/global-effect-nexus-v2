@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
-import type { Permiso, Rol } from "@/lib/rbac";
+import type { Permiso, Rol, UsuarioConPermisos } from "@/lib/rbac";
 
 /**
  * Qué es una herramienta del agente.
@@ -17,7 +17,7 @@ import type { Permiso, Rol } from "@/lib/rbac";
  */
 export type Nivel = "automatica" | "confirmacion";
 
-export type UsuarioHerramienta = { id: string; rol: Rol; nombre: string };
+export type UsuarioHerramienta = UsuarioConPermisos & { id: string; nombre: string };
 
 export type ResultadoHerramienta = {
   ok: boolean;

@@ -42,6 +42,13 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
 8. Psicología ya no existe (migración `0030`, oct 2026): no reintroducirla.
 9. Los cursos técnicos ya no existen (migración `0047`, oct 2026): no
    reintroducirlos. Solo hay becados y Global Effect 360.
+10. Roles definitivos (migración `0065`): `super_admin`, `admin`, `docente`,
+    `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes`, `chofer`.
+    `colaborador` ya no existe: no reintroducirlo. Para decidir qué puede una
+    PERSONA usa `usuarioTienePermiso(usuario, …)` (rol en `rol_permiso` +
+    excepciones de `usuario_permiso`), nunca `tienePermiso(rol, …)`, que es
+    solo el reparto de fábrica. Las funciones fuera del rol (p. ej. dar clases
+    de 360) se controlan por permiso (`docencia.impartir`), no por `rol ===`.
 
 ## Qué leer según la tarea
 

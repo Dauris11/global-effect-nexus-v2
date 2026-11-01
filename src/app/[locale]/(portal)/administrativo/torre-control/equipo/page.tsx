@@ -46,9 +46,8 @@ export default async function PaginaTorreEquipo({
     personas.reduce((s, p) => s + f(p), 0);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="animate-entrada mx-auto max-w-6xl space-y-8">
       <EncabezadoPagina
-        antetitulo={t("eyebrow")}
         titulo={t("teamTitle")}
         acciones={
           <div className="flex flex-wrap gap-2">

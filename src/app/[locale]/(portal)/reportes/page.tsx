@@ -22,6 +22,7 @@ import {
   GraficaFlujo,
 } from "@/components/dashboard/graficas";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import { montoUsd } from "@/lib/finanzas";
@@ -34,7 +35,11 @@ import {
   SERIE,
   TINTA,
 } from "@/lib/paleta";
-import { tieneAlgunPermiso, tienePermiso, type Permiso } from "@/lib/rbac";
+import {
+  type Permiso,
+  usuarioTieneAlgunPermiso,
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { periodosSimples, resumenDeNotas } from "@/server/academico/consultas";
 import {
@@ -132,14 +137,13 @@ export default async function PaginaReportes({
   const t = await getTranslations({ locale, namespace: "reports" });
 
   const permitidas = VISTAS.filter((opcion) =>
-    tienePermiso(usuario.rol, opcion.permiso),
+    usuarioTienePermiso(usuario, opcion.permiso),
   );
 
   // Ni una de las tres: se dice y se acaba. Es el caso de `habitudes`, que no
   // tiene ninguno de los tres permisos y tampoco esta entrada en su menú.
   if (
-    !tieneAlgunPermiso(
-      usuario.rol,
+    !usuarioTieneAlgunPermiso(usuario,
       VISTAS.map((opcion) => opcion.permiso),
     )
   ) {
@@ -152,9 +156,6 @@ export default async function PaginaReportes({
             </span>
             <div>
               <p className="text-sm font-bold">{t("forbidden")}</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {t("forbiddenHint")}
-              </p>
             </div>
           </div>
         </CardContent>
@@ -169,16 +170,8 @@ export default async function PaginaReportes({
     permitidas[0].clave;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <BarChart3 className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("title")} />
 
       {/* Las pestañas, como enlaces. Solo se dibujan las que el rol puede ver:
           una pestaña que al pulsarla dice "no tienes permiso" es una promesa
@@ -264,7 +257,7 @@ async function Operaciones({ locale }: { locale: string }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel titulo={t("ops.byState")} pista={t("ops.byStateHint")}>
+        <Panel titulo={t("ops.byState")}>
           <GraficaAnillo
             datos={porEstado.map((fila, indice) => ({
               nombre: ta(`projectStatus.${fila.estado}` as never),
@@ -277,7 +270,7 @@ async function Operaciones({ locale }: { locale: string }) {
           />
         </Panel>
 
-        <Panel titulo={t("ops.tasks")} pista={t("ops.tasksHint")}>
+        <Panel titulo={t("ops.tasks")}>
           <GraficaBarras
             datos={tareas.map((fila) => ({
               nombre: ta(`taskStatus.${fila.estado}` as never),
@@ -288,7 +281,7 @@ async function Operaciones({ locale }: { locale: string }) {
         </Panel>
       </div>
 
-      <Panel titulo={t("ops.progress")} pista={t("ops.progressHint")}>
+      <Panel titulo={t("ops.progress")}>
         <GraficaBarras
           datos={conTareas.map((fila) => ({
             nombre: fila.nombre,
@@ -391,7 +384,6 @@ async function Academico({
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
           titulo={t("academic.distribution")}
-          pista={t("academic.distributionHint")}
         >
           <GraficaBarras
             datos={BANDAS.map((banda) => ({
@@ -406,7 +398,7 @@ async function Academico({
         {/* Ocupa el sitio del promedio por tipo de evaluación: esa gráfica
             leía `calificacion`, que se fue con los cursos técnicos, y la nota
             de 360 es una sola por materia, sin tipos que comparar. */}
-        <Panel titulo={t("academic.bySubject360")} pista={t("academic.bySubject360Hint")}>
+        <Panel titulo={t("academic.bySubject360")}>
           <GraficaBarras
             datos={porMateria.map((fila) => ({
               nombre: fila.clave,
@@ -481,9 +473,7 @@ async function Finanzas({ locale }: { locale: string }) {
         />
       </div>
 
-      <p className="text-muted-foreground text-xs">{t("finance.allTimeHint")}</p>
-
-      <Panel titulo={t("finance.flow")} pista={t("finance.flowHint")}>
+      <Panel titulo={t("finance.flow")}>
         <GraficaFlujo
           datos={flujo}
           etiquetas={{
@@ -497,7 +487,6 @@ async function Finanzas({ locale }: { locale: string }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
           titulo={t("finance.incomeByCategory")}
-          pista={t("finance.categoryHint")}
         >
           <GraficaBarras
             datos={categorias
@@ -513,7 +502,6 @@ async function Finanzas({ locale }: { locale: string }) {
 
         <Panel
           titulo={t("finance.expenseByCategory")}
-          pista={t("finance.categoryHint")}
         >
           {/* Los egresos en el negro de la marca, no en rojo: `MOVIMIENTO` y
               `FINANZAS` de `paleta.ts` ya fijan que lo que sale va en tinta. */}
@@ -533,14 +521,12 @@ async function Finanzas({ locale }: { locale: string }) {
   );
 }
 
-/** Tarjeta de una gráfica: su título, su pista y la gráfica. */
+/** Tarjeta de una gráfica: su título y la gráfica. */
 function Panel({
   titulo,
-  pista,
   children,
 }: {
   titulo: string;
-  pista: string;
   children: React.ReactNode;
 }) {
   return (
@@ -548,7 +534,6 @@ function Panel({
       <CardContent className="pt-5">
         <div className="mb-3">
           <p className="text-sm font-semibold">{titulo}</p>
-          <p className="text-muted-foreground text-xs">{pista}</p>
         </div>
 
         {children}

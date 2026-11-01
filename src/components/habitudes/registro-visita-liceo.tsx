@@ -152,9 +152,6 @@ export function RegistroVisitaLiceo({
           <Camera className="size-5 text-marca-600" />
           <span>{t("registerVisitTitle")}</span>
         </CardTitle>
-        <p className="text-xs text-tinta/60">
-          {t("registerVisitSubtitle")}
-        </p>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-6">
@@ -295,9 +292,6 @@ export function RegistroVisitaLiceo({
                 </span>
                 <span className="text-xs font-semibold text-tinta">
                   {t("takePhotoOrUpload")}
-                </span>
-                <span className="text-[11px] text-tinta/60">
-                  {t("photoCaptureHint")}
                 </span>
               </label>
 

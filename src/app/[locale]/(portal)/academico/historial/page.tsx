@@ -13,6 +13,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
 import { Badge } from "@/components/ui/badge";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,12 +21,13 @@ import { Link } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import { colorDeLetra, COLOR_INDICE, consejoDeIndice, esLetra } from "@/lib/notas";
 import { ANIMACION, CUADRO, VACIO } from "@/lib/paleta";
-import { tieneAlgunPermiso } from "@/lib/rbac";
+import {
+  usuarioTieneAlgunPermiso,
+} from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import {
   cuatrimestresDelHistorial,
   type FilaHistorial,
-  hayMasHistorialQueElTope,
   historialPorEstudiante,
   type MateriaDelHistorial,
   materiasDelHistorial,
@@ -78,7 +80,7 @@ export default async function PaginaAcademicoHistorial({
   const usuario = await requerirUsuario();
   const t = await getTranslations({ locale, namespace: "academic" });
 
-  const puedeEntrar = tieneAlgunPermiso(usuario.rol, [
+  const puedeEntrar = usuarioTieneAlgunPermiso(usuario, [
     "calificaciones.registrar",
     "academico.escribir",
     "expedientes.leer",
@@ -88,9 +90,6 @@ export default async function PaginaAcademicoHistorial({
     return (
       <div className="mx-auto max-w-2xl py-12 text-center">
         <p className="text-sm font-semibold">{t("forbidden")}</p>
-        <p className="text-muted-foreground mx-auto mt-1.5 max-w-md text-xs leading-relaxed">
-          {t("history.forbiddenHint")}
-        </p>
       </div>
     );
   }
@@ -124,19 +123,8 @@ export default async function PaginaAcademicoHistorial({
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <BarChart3 className="size-5 text-[#2096BA]" />
-          {t("history.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("history.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("history.title")} />
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="min-w-48 flex-1 space-y-1.5">
@@ -242,9 +230,6 @@ export default async function PaginaAcademicoHistorial({
                 <p className={VACIO.titulo}>
                   {hayFiltro ? t("noMatches") : t("history.empty")}
                 </p>
-                <p className={VACIO.descripcion}>
-                  {hayFiltro ? t("noMatchesHint") : t("history.emptyHint")}
-                </p>
               </div>
             ) : (
               <>
@@ -266,11 +251,6 @@ export default async function PaginaAcademicoHistorial({
                   ))}
                 </ul>
 
-                {hayMasHistorialQueElTope(filas) && (
-                  <p className="text-muted-foreground mt-3 text-center text-xs">
-                    {t("history.limitHint")}
-                  </p>
-                )}
               </>
             )}
           </CardContent>

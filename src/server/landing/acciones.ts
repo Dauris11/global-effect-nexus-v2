@@ -5,7 +5,9 @@ import { revalidatePath, updateTag } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirRol } from "@/lib/auth";
 import { consultar, consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { TAG_LANDING } from "@/server/landing/consultas";
 
 /**
@@ -299,7 +301,7 @@ export async function eliminarAnuncio(
 async function comprobarPermiso(): Promise<EstadoAnuncio | null> {
   const usuario = await requerirRol(["admin", "super_admin"]);
 
-  return tienePermiso(usuario.rol, "landing.administrar")
+  return usuarioTienePermiso(usuario, "landing.administrar")
     ? null
     : { estado: "no_permitido" };
 }

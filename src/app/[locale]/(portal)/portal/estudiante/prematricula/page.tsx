@@ -115,12 +115,8 @@ export default async function PaginaMisMaterias({
   };
 
   return (
-    <div className="space-y-8">
-      <EncabezadoPagina
-        antetitulo={t("subjectsPage.eyebrow")}
-        titulo={t("subjectsPage.title")}
-        subtitulo={t("subjectsPage.description")}
-      />
+    <div className="animate-entrada space-y-8">
+      <EncabezadoPagina titulo={t("subjectsPage.title")} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
@@ -167,7 +163,6 @@ export default async function PaginaMisMaterias({
           <EstadoVacio
             icono={BookOpen}
             titulo={t("subjectsPage.empty")}
-            texto={t("subjectsPage.emptyHint")}
           />
         ) : (
           periodos.map((periodo) => (

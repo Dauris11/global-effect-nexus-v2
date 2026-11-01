@@ -15,6 +15,8 @@ import { FormularioExpediente } from "@/components/expedientes/formulario-expedi
 import { PrevisualizarExpediente } from "@/components/expedientes/previsualizar-expediente";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -30,7 +32,7 @@ import {
   CASA_PROPIA,
   ENVIO_CORREO,
 } from "@/lib/expedientes";
-import { tienePermiso } from "@/lib/rbac";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
 import {
@@ -102,7 +104,7 @@ export default async function PaginaExpedientes({
   const idioma: Locale = locale === "en" ? "en" : "es";
 
   const usuario = await requerirPermiso("expedientes.leer");
-  const puedeEscribir = tienePermiso(usuario.rol, "expedientes.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "expedientes.escribir");
   const t = await getTranslations({ locale, namespace: "records" });
 
   // Un valor desconocido en la URL se ignora: llega de un enlace que puede
@@ -126,131 +128,127 @@ export default async function PaginaExpedientes({
   const rutaBusqueda = idioma === "en" ? "/en/expedientes" : "/expedientes";
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
-        </div>
-
-        {puedeEscribir && (
-        <FormularioExpediente
-          textos={{
-            nuevo: t("new"),
-            titulo: t("form.title"),
-            subtitulo: t("form.subtitle"),
-            guardar: t("form.save"),
-            guardando: t("form.saving"),
-            error: t("form.error"),
-            faltaNombre: t("form.requiredHint"),
-            cancelar: t("form.cancel"),
-            progreso: SECCIONES.map((_, indice) =>
-              t("form.progress", {
-                current: indice + 1,
-                total: SECCIONES.length,
-              }),
-            ),
-            siguiente: t("form.next"),
-            anterior: t("form.previous"),
-            opcional: t("field.optional"),
-            pestanas: Object.fromEntries(
-              SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),
-            ),
-            campos: {
-              name: t("field.name"),
-              idCard: t("field.idCard"),
-              email: t("field.email"),
-              phone: t("field.phone"),
-              birthDate: t("field.birthDate"),
-              birthPlace: t("field.birthPlace"),
-              nationality: t("field.nationality"),
-              gender: t("field.gender"),
-              sexDocument: t("field.sexDocument"),
-              religion: t("field.religion"),
-              status: t("field.status"),
-              program: t("field.program"),
-              whereStudies: t("field.whereStudies"),
-              university: t("field.university"),
-              entryDate: t("field.entryDate"),
-              school: t("field.school"),
-              schoolDirector: t("field.schoolDirector"),
-              facilitator: t("field.facilitator"),
-              habitudesStory: t("field.habitudesStory"),
-              livesWith: t("field.livesWith"),
-              whyLivesWith: t("field.whyLivesWith"),
-              siblings: t("field.siblings"),
-              ownHouse: t("field.ownHouse"),
-              houseType: t("field.houseType"),
-              bathroom: t("field.bathroom"),
-              rooms: t("field.rooms"),
-              beds: t("field.beds"),
-              whoSleeps: t("field.whoSleeps"),
-              address: t("field.address"),
-              community: t("field.community"),
-              city: t("field.city"),
-              illnesses: t("field.illnesses"),
-              allergies: t("field.allergies"),
-              emergencyName: t("field.emergencyName"),
-              emergencyPhone: t("field.emergencyPhone"),
-              lifeStory: t("field.lifeStory"),
-              familySituation: t("field.familySituation"),
-              economicSituation: t("field.economicSituation"),
-              scholarshipReason: t("field.scholarshipReason"),
-              academicGoals: t("field.academicGoals"),
-              sponsorEmail: t("field.sponsorEmail"),
-              monthlyMeeting: t("field.monthlyMeeting"),
-              warnings: t("field.warnings"),
-              pendingRequests: t("field.pendingRequests"),
-              notes: t("field.notes"),
-            },
-            familia: {
-              name: t("family.name"),
-              age: t("family.age"),
-              phone: t("family.phone"),
-              occupation: t("family.occupation"),
-              emptyHint: t("family.emptyHint"),
-            },
-            parentescos: Object.fromEntries(
-              PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
-            ),
-            estados: Object.fromEntries(
-              ESTADOS_ESTUDIANTE.map((clave) => [clave, t(`status.${clave}`)]),
-            ),
-            generos: Object.fromEntries(
-              GENEROS.map((clave) => [clave, t(`gender.${clave}`)]),
-            ),
-            casa: Object.fromEntries(
-              CASA_PROPIA.map((clave) => [clave, t(`house.${clave}`)]),
-            ),
-            bano: Object.fromEntries(
-              BANO.map((clave) => [clave, t(`bathroom.${clave}`)]),
-            ),
-            seguimiento: Object.fromEntries(
-              [...new Set([...ENVIO_CORREO, ...ASISTIO_REUNION])].map(
-                (clave) => [clave, t(`followUp.${clave}`)],
-              ),
-            ),
-            ocr: {
-              title: t("ocr.title"),
-              subtitle: t("ocr.subtitle"),
-              upload: t("ocr.upload"),
-              processing: t("ocr.processing"),
-              extracted: t("ocr.extracted"),
-              confidence: t("ocr.confidence"),
-              reviewHint: t("ocr.reviewHint"),
-              replaceHint: t("ocr.replaceHint"),
-              notFound: t("ocr.notFound"),
-              unsupported: t("ocr.unsupported"),
-              fileTooLarge: t("ocr.fileTooLarge"),
-              noKey: t("ocr.noKey"),
-              error: t("ocr.error"),
-            },
-          }}
-        />
-        )}
-      </div>
+    <div className="animate-entrada space-y-6">
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          puedeEscribir && (
+            <FormularioExpediente
+              textos={{
+                nuevo: t("new"),
+                titulo: t("form.title"),
+                guardar: t("form.save"),
+                guardando: t("form.saving"),
+                error: t("form.error"),
+                faltaNombre: t("form.requiredHint"),
+                cancelar: t("form.cancel"),
+                progreso: SECCIONES.map((_, indice) =>
+                  t("form.progress", {
+                    current: indice + 1,
+                    total: SECCIONES.length,
+                  }),
+                ),
+                siguiente: t("form.next"),
+                anterior: t("form.previous"),
+                opcional: t("field.optional"),
+                pestanas: Object.fromEntries(
+                  SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),
+                ),
+                campos: {
+                  name: t("field.name"),
+                  idCard: t("field.idCard"),
+                  email: t("field.email"),
+                  phone: t("field.phone"),
+                  birthDate: t("field.birthDate"),
+                  birthPlace: t("field.birthPlace"),
+                  nationality: t("field.nationality"),
+                  gender: t("field.gender"),
+                  sexDocument: t("field.sexDocument"),
+                  religion: t("field.religion"),
+                  status: t("field.status"),
+                  program: t("field.program"),
+                  whereStudies: t("field.whereStudies"),
+                  university: t("field.university"),
+                  entryDate: t("field.entryDate"),
+                  school: t("field.school"),
+                  schoolDirector: t("field.schoolDirector"),
+                  facilitator: t("field.facilitator"),
+                  habitudesStory: t("field.habitudesStory"),
+                  livesWith: t("field.livesWith"),
+                  whyLivesWith: t("field.whyLivesWith"),
+                  siblings: t("field.siblings"),
+                  ownHouse: t("field.ownHouse"),
+                  houseType: t("field.houseType"),
+                  bathroom: t("field.bathroom"),
+                  rooms: t("field.rooms"),
+                  beds: t("field.beds"),
+                  whoSleeps: t("field.whoSleeps"),
+                  address: t("field.address"),
+                  community: t("field.community"),
+                  city: t("field.city"),
+                  illnesses: t("field.illnesses"),
+                  allergies: t("field.allergies"),
+                  emergencyName: t("field.emergencyName"),
+                  emergencyPhone: t("field.emergencyPhone"),
+                  lifeStory: t("field.lifeStory"),
+                  familySituation: t("field.familySituation"),
+                  economicSituation: t("field.economicSituation"),
+                  scholarshipReason: t("field.scholarshipReason"),
+                  academicGoals: t("field.academicGoals"),
+                  sponsorEmail: t("field.sponsorEmail"),
+                  monthlyMeeting: t("field.monthlyMeeting"),
+                  warnings: t("field.warnings"),
+                  pendingRequests: t("field.pendingRequests"),
+                  notes: t("field.notes"),
+                },
+                familia: {
+                  name: t("family.name"),
+                  age: t("family.age"),
+                  phone: t("family.phone"),
+                  occupation: t("family.occupation"),
+                },
+                parentescos: Object.fromEntries(
+                  PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
+                ),
+                estados: Object.fromEntries(
+                  ESTADOS_ESTUDIANTE.map((clave) => [
+                    clave,
+                    t(`status.${clave}`),
+                  ]),
+                ),
+                generos: Object.fromEntries(
+                  GENEROS.map((clave) => [clave, t(`gender.${clave}`)]),
+                ),
+                casa: Object.fromEntries(
+                  CASA_PROPIA.map((clave) => [clave, t(`house.${clave}`)]),
+                ),
+                bano: Object.fromEntries(
+                  BANO.map((clave) => [clave, t(`bathroom.${clave}`)]),
+                ),
+                seguimiento: Object.fromEntries(
+                  [...new Set([...ENVIO_CORREO, ...ASISTIO_REUNION])].map(
+                    (clave) => [clave, t(`followUp.${clave}`)],
+                  ),
+                ),
+                ocr: {
+                  title: t("ocr.title"),
+                  upload: t("ocr.upload"),
+                  processing: t("ocr.processing"),
+                  extracted: t("ocr.extracted"),
+                  confidence: t("ocr.confidence"),
+                  reviewHint: t("ocr.reviewHint"),
+                  replaceHint: t("ocr.replaceHint"),
+                  notFound: t("ocr.notFound"),
+                  unsupported: t("ocr.unsupported"),
+                  fileTooLarge: t("ocr.fileTooLarge"),
+                  noKey: t("ocr.noKey"),
+                  error: t("ocr.error"),
+                },
+              }}
+            />
+          )
+        }
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Cifra valor={cifras.total} etiqueta={t("stats.total")} />
@@ -323,23 +321,10 @@ export default async function PaginaExpedientes({
       </div>
 
       {filas.length === 0 ? (
-        <Card>
-          <CardContent className="pt-5">
-            <div className="py-8 text-center">
-              <span className="bg-muted text-muted-foreground mx-auto flex size-12 items-center justify-center rounded-2xl">
-                <Users className="size-6" />
-              </span>
-              <p className="mt-3 text-sm font-semibold">
-                {busqueda || estado ? t("noMatches") : t("empty")}
-              </p>
-              <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-                {busqueda || estado
-                  ? t("noMatchesHint")
-                  : t("emptyHint")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EstadoVacio
+          icono={Users}
+          titulo={busqueda || estado ? t("noMatches") : t("empty")}
+        />
       ) : (
         <>
           {/* Vista y paginación van arriba, no al final: es lo primero que se
@@ -369,16 +354,29 @@ export default async function PaginaExpedientes({
               {totalPaginas > 1 && (
                 <div className="flex items-center gap-2">
                   <PaginaBoton
-                    href={enlace({ estado, busqueda, vista, pagina: pagina - 1 })}
+                    href={enlace({
+                      estado,
+                      busqueda,
+                      vista,
+                      pagina: pagina - 1,
+                    })}
                     deshabilitado={pagina <= 1}
                     icono={ChevronLeft}
                     etiqueta={t("pagination.previous")}
                   />
                   <span className="text-muted-foreground text-xs whitespace-nowrap">
-                    {t("pagination.page", { current: pagina, total: totalPaginas })}
+                    {t("pagination.page", {
+                      current: pagina,
+                      total: totalPaginas,
+                    })}
                   </span>
                   <PaginaBoton
-                    href={enlace({ estado, busqueda, vista, pagina: pagina + 1 })}
+                    href={enlace({
+                      estado,
+                      busqueda,
+                      vista,
+                      pagina: pagina + 1,
+                    })}
                     deshabilitado={pagina >= totalPaginas}
                     icono={ChevronRight}
                     etiqueta={t("pagination.next")}

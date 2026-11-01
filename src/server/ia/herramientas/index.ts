@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
-import { tienePermiso, type Rol } from "@/lib/rbac";
+import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 
 import { HERRAMIENTAS_CONTABILIDAD } from "./contabilidad";
 import { HERRAMIENTAS_GENERALES } from "./generales";
@@ -15,9 +15,11 @@ import type { Herramienta } from "./tipos";
  */
 export const HERRAMIENTAS: readonly Herramienta[] = [...HERRAMIENTAS_GENERALES, ...HERRAMIENTAS_CONTABILIDAD];
 
-export function herramientasVisibles(rol: Rol): Herramienta[] {
+export function herramientasVisibles(usuario: UsuarioConPermisos): Herramienta[] {
   return HERRAMIENTAS.filter(
-    (h) => h.roles.includes(rol) && (!h.permiso || tienePermiso(rol, h.permiso)),
+    (h) =>
+      h.roles.includes(usuario.rol) &&
+      (!h.permiso || usuarioTienePermiso(usuario, h.permiso)),
   );
 }
 

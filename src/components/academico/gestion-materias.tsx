@@ -67,7 +67,6 @@ export function GestionMaterias({
   periodos,
   docentes,
   puedeEscribir,
-  hayMas,
   hayFiltro,
 }: {
   materias: readonly MateriaGestionada[];
@@ -146,9 +145,6 @@ export function GestionMaterias({
               <p className={VACIO.titulo}>
                 {hayFiltro ? t("noMatches") : t("subjects.empty")}
               </p>
-              <p className={VACIO.descripcion}>
-                {hayFiltro ? t("noMatchesHint") : t("subjects.emptyHint")}
-              </p>
             </div>
           ) : (
             <>
@@ -173,11 +169,6 @@ export function GestionMaterias({
                 ))}
               </ul>
 
-              {hayMas && (
-                <p className="text-muted-foreground mt-3 text-center text-xs">
-                  {t("limitHint")}
-                </p>
-              )}
             </>
           )}
         </CardContent>
@@ -332,9 +323,6 @@ function FormularioMateria({
         <p className="text-sm font-semibold">
           {materia ? t("editSubject.title") : t("newSubject.title")}
         </p>
-        <p className="text-muted-foreground text-xs">
-          {materia ? t("editSubject.subtitle") : t("newSubject.subtitle")}
-        </p>
       </div>
 
       <input type="hidden" name="id" value={materia?.id ?? ""} />
@@ -445,9 +433,6 @@ function FormularioMateria({
               }
               maxLength={120}
             />
-            <p className="text-muted-foreground text-[11px]">
-              {t("teacherPicker.externalHint")}
-            </p>
           </div>
         )}
 

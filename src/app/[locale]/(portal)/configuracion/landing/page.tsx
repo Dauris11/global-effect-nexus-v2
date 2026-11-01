@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ExternalLink, Megaphone } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { AnunciosHero } from "@/components/configuracion/anuncios-hero";
 import { Button } from "@/components/ui/button";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
@@ -53,30 +54,20 @@ export default async function PaginaAnunciosLanding({
   ]);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-            <Megaphone className="size-5 text-[#2096BA]" />
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-            {t("desc")}
-          </p>
-        </div>
-
-        {/* Enlace a la portada, que es donde se comprueba el resultado. En
-            pestaña nueva para no perder el panel al ir a mirar. */}
-        <Button asChild variant="outline" size="sm">
-          <Link href="/" target="_blank" rel="noreferrer">
-            <ExternalLink className="size-3.5" />
-            {t("openHome")}
-          </Link>
-        </Button>
-      </div>
+    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          /* Enlace a la portada, que es donde se comprueba el resultado. En
+             pestaña nueva para no perder el panel al ir a mirar. */
+          <Button asChild variant="outline" size="sm">
+            <Link href="/" target="_blank" rel="noreferrer">
+              <ExternalLink className="size-3.5" />
+              {t("openHome")}
+            </Link>
+          </Button>
+        }
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         <AnunciosHero anuncios={anuncios} />

@@ -25,8 +25,13 @@ import {
   XCircle,
 } from "lucide-react";
 
-import type { Permiso, Rol } from "@/lib/rbac";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTieneAlgunPermiso,
+  usuarioTienePermiso,
+  type Permiso,
+  type Rol,
+  type UsuarioConPermisos,
+} from "@/lib/rbac";
 
 /** Lo que pide el estudiante desde su portal. */
 export const TRAMITES_ESTUDIANTE = [
@@ -213,13 +218,16 @@ export function esEstadoSolicitud(valor: unknown): valor is EstadoSolicitud {
  * El estudiante no pide ninguna: sus trámites van por su portal, con su ficha
  * sacada de la sesión. El gasto lo puede pedir todo el personal.
  */
-export function tiposQuePuedeCrear(rol: Rol): AprobacionInterna[] {
-  if (rol === "estudiante") return [];
+export function tiposQuePuedeCrear(
+  usuario: UsuarioConPermisos,
+): AprobacionInterna[] {
+  if (usuario.rol === "estudiante") return [];
 
   return APROBACIONES_INTERNAS.filter((tipo) => {
     const { crea } = REGLAS[tipo];
 
-    return crea.length === 0 || crea.some((permiso) => tienePermiso(rol, permiso));
+    return crea.length === 0 ||
+      crea.some((permiso) => usuarioTienePermiso(usuario, permiso));
   });
 }
 
@@ -264,13 +272,13 @@ export type SolicitudParaFlujo = {
  */
 export function accionesPermitidas(
   solicitud: SolicitudParaFlujo,
-  usuario: { id: string; rol: Rol },
+  usuario: UsuarioConPermisos & { id: string },
 ): AccionSolicitud[] {
   if (!esTipoSolicitud(solicitud.tipo)) return [];
 
   const propia = solicitud.solicitante_id === usuario.id;
-  const revisa = !propia && tienePermiso(usuario.rol, REGLAS[solicitud.tipo].revisa);
-  const dirige = !propia && tienePermiso(usuario.rol, "solicitudes.direccion");
+  const revisa = !propia && usuarioTienePermiso(usuario, REGLAS[solicitud.tipo].revisa);
+  const dirige = !propia && usuarioTienePermiso(usuario, "solicitudes.direccion");
 
   switch (solicitud.estado) {
     case "enviada":
@@ -316,12 +324,12 @@ export function estadoTrasAccion(
 /**
  * Si la persona revisa ALGO, es decir, si la bandeja le enseña "por atender".
  */
-export function revisaAlgo(rol: Rol): boolean {
-  return (
-    tienePermiso(rol, "solicitudes.gestionar") ||
-    tienePermiso(rol, "solicitudes.direccion") ||
-    tienePermiso(rol, "contabilidad.aprobar")
-  );
+export function revisaAlgo(usuario: UsuarioConPermisos): boolean {
+  return usuarioTieneAlgunPermiso(usuario, [
+    "solicitudes.gestionar",
+    "solicitudes.direccion",
+    "contabilidad.aprobar",
+  ]);
 }
 
 /**

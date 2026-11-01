@@ -85,7 +85,6 @@ export function MatrizProyectosRoles({
             {t("matrixTitle")}
           </CardTitle>
         </div>
-        <p className="text-xs text-tinta/60">{t("matrixSubtitle")}</p>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

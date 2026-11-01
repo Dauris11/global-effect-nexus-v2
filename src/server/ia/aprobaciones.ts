@@ -2,7 +2,9 @@
 
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { miConsumo, type Consumo } from "@/server/ia/agente";
 import { actualizarAccion } from "@/server/ia/cadena";
 import { buscarHerramienta } from "@/server/ia/herramientas";
@@ -58,7 +60,7 @@ export async function aprobarAccionIA(accionId: string): Promise<ResultadoAccion
   if (
     !herramienta ||
     !herramienta.roles.includes(usuario.rol) ||
-    (herramienta.permiso && !tienePermiso(usuario.rol, herramienta.permiso))
+    (herramienta.permiso && !usuarioTienePermiso(usuario, herramienta.permiso))
   ) {
     return { ok: false, error: "permiso" };
   }
@@ -75,7 +77,7 @@ export async function aprobarAccionIA(accionId: string): Promise<ResultadoAccion
 
   try {
     const resultado = await herramienta.ejecutar(
-      { id: usuario.id, rol: usuario.rol, nombre: usuario.nombre },
+      usuario,
       accion.argumentos ?? {},
       { agente: accion.agente_clave },
     );
@@ -129,7 +131,7 @@ export async function deshacerAccionIA(accionId: string): Promise<ResultadoAccio
 
   if (
     !herramienta?.deshacer ||
-    (herramienta.permiso && !tienePermiso(usuario.rol, herramienta.permiso))
+    (herramienta.permiso && !usuarioTienePermiso(usuario, herramienta.permiso))
   ) {
     return { ok: false, error: "permiso" };
   }
@@ -145,7 +147,7 @@ export async function deshacerAccionIA(accionId: string): Promise<ResultadoAccio
 
   const deshecho = await herramienta
     .deshacer(
-      { id: usuario.id, rol: usuario.rol, nombre: usuario.nombre },
+      usuario,
       {
         entidad_tipo: accion.entidad_tipo,
         entidad_id: accion.entidad_id,

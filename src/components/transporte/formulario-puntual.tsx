@@ -65,7 +65,6 @@ export function FormularioPuntual({
     <Card className="p-5">
       <div className="border-b border-linea pb-3">
         <h3 className="texto-titulo-tarjeta">{t("quickEnrollTitle")}</h3>
-        <p className="texto-meta">{t("quickEnrollSubtitle")}</p>
       </div>
 
       {completado ? (

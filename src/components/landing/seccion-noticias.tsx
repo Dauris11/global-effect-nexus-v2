@@ -7,7 +7,6 @@ import {
   CONTENEDOR,
   SECCION,
 } from "@/components/landing/piezas";
-import { Badge } from "@/components/ui/badge";
 import { fechaLarga } from "@/lib/fechas";
 import type { Locale } from "@/i18n/routing";
 import type { NoticiaPublica } from "@/server/landing/consultas";
@@ -47,11 +46,6 @@ export async function SeccionNoticias({
           <article className="lg:col-span-7">
             <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-muted">
               <Portada url={destacada.imagen_url} />
-              <div className="absolute top-3 left-3 z-10">
-                <Badge variant="neutra" className="bg-background/95 shadow-card">
-                  {t("blogTagNews")}
-                </Badge>
-              </div>
             </div>
             <p className="texto-meta mt-5">
               {fechaLarga(destacada.fecha, locale)}

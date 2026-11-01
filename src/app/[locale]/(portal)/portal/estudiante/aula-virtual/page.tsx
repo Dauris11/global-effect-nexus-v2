@@ -4,7 +4,6 @@ import {
   Check,
   ClipboardCheck,
   Clock,
-  Info,
   ListTodo,
   TriangleAlert,
 } from "lucide-react";
@@ -139,12 +138,8 @@ export default async function PaginaAulaVirtual({
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-      <div className="space-y-8">
-        <EncabezadoPagina
-          antetitulo={t("classroom.eyebrow")}
-          titulo={t("classroom.title")}
-          subtitulo={t("classroom.description")}
-        />
+      <div className="animate-entrada space-y-8">
+        <EncabezadoPagina titulo={t("classroom.title")} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
@@ -159,11 +154,6 @@ export default async function PaginaAulaVirtual({
             />
           ))}
         </div>
-
-        <p className="flex items-start gap-3 rounded-control bg-marca-50 p-4 text-sm text-marca-700">
-          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-          {t("classroom.uploadHint")}
-        </p>
 
         <section className="space-y-6">
           <h2 className="texto-titulo-seccion">{t("classroom.assignmentsTitle")}</h2>
@@ -192,13 +182,11 @@ export default async function PaginaAulaVirtual({
             <EstadoVacio
               icono={ClipboardCheck}
               titulo={t("classroom.assignmentsEmpty")}
-              texto={t("classroom.assignmentsEmptyHint")}
             />
           ) : visibles.length === 0 ? (
             <EstadoVacio
               icono={ListTodo}
               titulo={t("classroom.filterEmpty")}
-              texto={t("classroom.filterEmptyHint")}
             />
           ) : (
             <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">

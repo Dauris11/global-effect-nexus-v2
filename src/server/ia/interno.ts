@@ -1,7 +1,7 @@
 import { consultar, consultarUna } from "@/lib/db";
 import type { TurnoIA } from "@/lib/ia";
 import { UMBRAL_BANDA } from "@/lib/notas";
-import { tienePermiso, type Rol } from "@/lib/rbac";
+import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 import { resumenDeNotas } from "@/server/academico/consultas";
 import { cifrasPanel, eventosProximos } from "@/server/dashboard/consultas";
 import { resumenDelMesEnCurso } from "@/server/finanzas/consultas";
@@ -148,12 +148,12 @@ export async function guardarMensajeInterno(
  * permiso: ver la regla 1 de la cabecera.
  */
 export async function instruccionesInternas(
-  usuario: { nombre: string; rol: Rol },
+  usuario: UsuarioConPermisos & { nombre: string },
   idioma: "es" | "en",
 ): Promise<string> {
-  const verFinanzas = tienePermiso(usuario.rol, "finanzas.leer");
-  const verAcademico = tienePermiso(usuario.rol, "academico.leer");
-  const verOperaciones = tienePermiso(usuario.rol, "operaciones.leer");
+  const verFinanzas = usuarioTienePermiso(usuario, "finanzas.leer");
+  const verAcademico = usuarioTienePermiso(usuario, "academico.leer");
+  const verOperaciones = usuarioTienePermiso(usuario, "operaciones.leer");
 
   // Lo que no se puede enseñar, NO SE CONSULTA. Es la misma regla del panel
   // general: pedirlo y luego no pintarlo deja el dato en la memoria del

@@ -144,8 +144,8 @@ export default async function PaginaMiDia({
     metricas.conSugerencia > 0 ? Math.round((metricas.aceptadasSinCorregir / metricas.conSugerencia) * 100) : null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      <EncabezadoPagina antetitulo={t("eyebrow")} titulo={t("title")} subtitulo={t("subtitle")} />
+    <div className="mx-auto max-w-5xl space-y-8 pb-10 animate-entrada">
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard valor={items.length} etiqueta={t("stats.toReview")} icono={Inbox} acento />
@@ -165,7 +165,7 @@ export default async function PaginaMiDia({
         <Card className={TARJETA.contenido}>
           <CardContent className="pt-5">
             {items.length === 0 ? (
-              <EstadoVacio icono={Inbox} titulo={t("queue.emptyTitle")} texto={t("queue.emptyText")} />
+              <EstadoVacio icono={Inbox} titulo={t("queue.emptyTitle")} />
             ) : (
               <NextIntlClientProvider messages={mensajes}>
                 <ListaPorRevisar items={items} aprobables={aprobables} nivel={regla.nivel} formatoMonto={formatoMonto} />

@@ -5,20 +5,20 @@ import {
   ClipboardList,
   GanttChartSquare,
   GraduationCap,
-  Info,
   Search,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { requerirUsuario } from "@/lib/auth";
 import { fechaCorta } from "@/lib/fechas";
 import { ALERTA_RIESGO, ANIMACION, VACIO } from "@/lib/paleta";
-import { tieneAlgunPermiso, tienePermiso } from "@/lib/rbac";
+import { usuarioTieneAlgunPermiso, usuarioTienePermiso } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import {
   type Barra,
@@ -80,7 +80,11 @@ export default async function PaginaGantt({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ periodo?: string; tramo?: string; f?: string | string[] }>;
+  searchParams: Promise<{
+    periodo?: string;
+    tramo?: string;
+    f?: string | string[];
+  }>;
 }) {
   const { locale } = await params;
   const { periodo, tramo, f } = await searchParams;
@@ -90,7 +94,7 @@ export default async function PaginaGantt({
   const t = await getTranslations({ locale, namespace: "calendar" });
 
   if (
-    !tieneAlgunPermiso(usuario.rol, [
+    !usuarioTieneAlgunPermiso(usuario, [
       "operaciones.leer",
       "academico.escribir",
       "calificaciones.registrar",
@@ -108,11 +112,11 @@ export default async function PaginaGantt({
 
   // Qué familias puede ver este rol. Lo académico y lo de operaciones son dos
   // ámbitos distintos y no todos los que entran llevan los dos.
-  const veAcademico = tieneAlgunPermiso(usuario.rol, [
+  const veAcademico = usuarioTieneAlgunPermiso(usuario, [
     "academico.escribir",
     "calificaciones.registrar",
   ]);
-  const veOperaciones = tienePermiso(usuario.rol, "operaciones.leer");
+  const veOperaciones = usuarioTienePermiso(usuario, "operaciones.leer");
 
   const permitidas: Familia[] = [
     ...(veAcademico ? (["academico", "tareas", "clases360"] as Familia[]) : []),
@@ -136,8 +140,12 @@ export default async function PaginaGantt({
 
   // En modo "todo" se pide con los límites abiertos y el tramo se ajusta luego a
   // lo que haya salido. Así no hay ninguna ventana inventada.
-  const desde = todo ? TRAMO_ABIERTO.desde : (ventana?.inicio ?? TRAMO_ABIERTO.desde);
-  const hasta = todo ? TRAMO_ABIERTO.hasta : (ventana?.fin ?? TRAMO_ABIERTO.hasta);
+  const desde = todo
+    ? TRAMO_ABIERTO.desde
+    : (ventana?.inicio ?? TRAMO_ABIERTO.desde);
+  const hasta = todo
+    ? TRAMO_ABIERTO.hasta
+    : (ventana?.fin ?? TRAMO_ABIERTO.hasta);
 
   const cargar = async (familia: Familia) => {
     if (!familias.includes(familia)) return { barras: [], sinFechas: 0 };
@@ -159,7 +167,11 @@ export default async function PaginaGantt({
   const secciones = [
     { familia: "academico" as const, icono: CalendarRange, datos: academico },
     { familia: "tareas" as const, icono: ClipboardList, datos: tareas },
-    { familia: "operaciones" as const, icono: GanttChartSquare, datos: operaciones },
+    {
+      familia: "operaciones" as const,
+      icono: GanttChartSquare,
+      datos: operaciones,
+    },
     { familia: "clases360" as const, icono: GraduationCap, datos: clases360 },
   ].filter((seccion) => familias.includes(seccion.familia));
 
@@ -178,7 +190,10 @@ export default async function PaginaGantt({
    * para calcularlo: una fecha al revés estiraría el eje entero.
    */
   const inicio = todo
-    ? sanas.reduce((min, b) => (b.inicio < min ? b.inicio : min), sanas[0]?.inicio ?? "")
+    ? sanas.reduce(
+        (min, b) => (b.inicio < min ? b.inicio : min),
+        sanas[0]?.inicio ?? "",
+      )
     : (ventana?.inicio ?? "");
   const fin = todo
     ? sanas.reduce((max, b) => (b.fin > max ? b.fin : max), sanas[0]?.fin ?? "")
@@ -189,19 +204,8 @@ export default async function PaginaGantt({
   const posicionHoy = hayTramo ? porcentaje(hoy, inicio, fin) : null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("title")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <GanttChartSquare className="size-5 text-[#2096BA]" />
-          {t("gantt.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("gantt.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-6xl space-y-6">
+      <EncabezadoPagina titulo={t("gantt.title")} />
 
       <form method="get" className="space-y-3">
         <div className="flex flex-wrap items-end gap-2">
@@ -285,9 +289,6 @@ export default async function PaginaGantt({
             <p className={VACIO.titulo}>
               {todo ? t("gantt.nothing") : t("gantt.empty")}
             </p>
-            <p className={VACIO.descripcion}>
-              {todo ? t("gantt.nothingHint") : t("gantt.emptyHint")}
-            </p>
 
             {!todo && (
               <Button asChild variant="outline" className="mt-4">
@@ -360,7 +361,9 @@ export default async function PaginaGantt({
                            `clase360`, `tarea`, `examen` y `proyecto`. Las
                            produce el SQL como literales, no la base, así que la
                            lista no puede crecer sin tocar este archivo. */
-                        etiquetaDe={(clase) => t(`gantt.kind.${clase}` as never)}
+                        etiquetaDe={(clase) =>
+                          t(`gantt.kind.${clase}` as never)
+                        }
                       />
                     ))}
                   </div>
@@ -369,39 +372,32 @@ export default async function PaginaGantt({
             </CardContent>
           </Card>
 
-          {/* Lo que el dibujo no puede enseñar se dice con palabras, en vez de
+          {/* Los avisos de datos incompletos se dicen con palabras, en vez de
               dejar que alguien deduzca que no existe. */}
-          <Card>
-            <CardContent className="space-y-2 pt-5">
-              <p className="text-muted-foreground flex items-start gap-2 text-xs">
-                <Info className="mt-0.5 size-3.5 shrink-0" />
-                {t("gantt.inheritedHint")}
-              </p>
-              <p className="text-muted-foreground flex items-start gap-2 text-xs">
-                <Info className="mt-0.5 size-3.5 shrink-0" />
-                {t("gantt.derivedHint")}
-              </p>
+          {(sinFechas > 0 || incoherentes > 0) && (
+            <Card>
+              <CardContent className="space-y-2 pt-5">
+                {sinFechas > 0 && (
+                  <p className={ALERTA_RIESGO.contenedor}>
+                    <AlertCircle className={ALERTA_RIESGO.icono} />
+                    <span className={ALERTA_RIESGO.texto}>
+                      {t("gantt.noDates", { count: sinFechas })}
+                    </span>
+                  </p>
+                )}
 
-              {sinFechas > 0 && (
-                <p className={ALERTA_RIESGO.contenedor}>
-                  <AlertCircle className={ALERTA_RIESGO.icono} />
-                  <span className={ALERTA_RIESGO.texto}>
-                    {t("gantt.noDates", { count: sinFechas })}
-                  </span>
-                </p>
-              )}
-
-              {incoherentes > 0 && (
-                <p className={ALERTA_RIESGO.contenedor}>
-                  <AlertCircle className={ALERTA_RIESGO.icono} />
-                  <span className={ALERTA_RIESGO.texto}>
-                    {t("gantt.inverted", { count: incoherentes })}{" "}
-                    {t("gantt.invertedHint")}
-                  </span>
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                {incoherentes > 0 && (
+                  <p className={ALERTA_RIESGO.contenedor}>
+                    <AlertCircle className={ALERTA_RIESGO.icono} />
+                    <span className={ALERTA_RIESGO.texto}>
+                      {t("gantt.inverted", { count: incoherentes })}{" "}
+                      {t("gantt.invertedHint")}
+                    </span>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>
@@ -479,13 +475,18 @@ function FilaBarra({
 }) {
   const roto = esIncoherente(barra);
 
-  const izquierda = porcentaje(roto ? barra.fin : barra.inicio, inicio, fin) ?? 0;
+  const izquierda =
+    porcentaje(roto ? barra.fin : barra.inicio, inicio, fin) ?? 0;
   const derecha = porcentaje(roto ? barra.fin : barra.fin, inicio, fin) ?? 0;
   const ancho = Math.max(derecha - izquierda, 0.6);
 
-  const cerrada = ["completado", "completada", "finalizado", "inactiva", "aprobada"].includes(
-    barra.estado,
-  );
+  const cerrada = [
+    "completado",
+    "completada",
+    "finalizado",
+    "inactiva",
+    "aprobada",
+  ].includes(barra.estado);
 
   return (
     <li className="group grid grid-cols-[minmax(0,14rem)_1fr] items-center gap-3">
@@ -527,11 +528,7 @@ function FilaBarra({
 }
 
 /** Dónde cae una fecha dentro del tramo, en 0–100. `null` si se sale. */
-function porcentaje(
-  fecha: string,
-  inicio: string,
-  fin: string,
-): number | null {
+function porcentaje(fecha: string, inicio: string, fin: string): number | null {
   const desde = Date.parse(inicio);
   const hasta = Date.parse(fin);
   const punto = Date.parse(fecha);

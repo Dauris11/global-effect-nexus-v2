@@ -48,11 +48,9 @@ export default async function PaginaCxp({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("titulo")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
         acciones={
           <Button asChild size="sm" variant="outline">
             <a href="/api/contabilidad/exportar/cxp" download>

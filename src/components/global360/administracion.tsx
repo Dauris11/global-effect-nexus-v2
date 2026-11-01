@@ -146,8 +146,6 @@ export function Administracion360({
             )}
           </div>
 
-          <p className="texto-meta">{t("allRequired")}</p>
-
           {editando === "nueva" && (
             <FormularioMateria alTerminar={() => setEditando(null)} />
           )}

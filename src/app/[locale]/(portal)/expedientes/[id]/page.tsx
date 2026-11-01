@@ -7,6 +7,7 @@ import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente
 import { FormularioEdicionExpediente } from "@/components/expedientes/formulario-edicion-expediente";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
@@ -22,7 +23,9 @@ import {
   visualDeEstado,
 } from "@/lib/expedientes";
 import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
@@ -75,7 +78,7 @@ export default async function PaginaExpediente({
 
   if (!expediente) {
     return (
-      <div className="space-y-6">
+      <div className="animate-entrada space-y-6">
         <Button
           asChild
           variant="outline"
@@ -88,21 +91,7 @@ export default async function PaginaExpediente({
           </Link>
         </Button>
 
-        <Card>
-          <CardContent className="pt-5">
-            <div className="py-8 text-center">
-              <span className="bg-muted text-muted-foreground mx-auto flex size-12 items-center justify-center rounded-2xl">
-                <FileQuestion className="size-6" />
-              </span>
-              <p className="mt-3 text-sm font-semibold">
-                {t("detail.notFound")}
-              </p>
-              <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-                {t("detail.notFoundHint")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EstadoVacio icono={FileQuestion} titulo={t("detail.notFound")} />
       </div>
     );
   }
@@ -174,12 +163,12 @@ export default async function PaginaExpediente({
 
   const indiceAcumulado = promedio(notas.map((nota) => nota.gpa));
 
-  const puedeEditar = tienePermiso(usuario.rol, "expedientes.escribir");
-  const puedeEliminar = tienePermiso(usuario.rol, "expedientes.eliminar");
+  const puedeEditar = usuarioTienePermiso(usuario, "expedientes.escribir");
+  const puedeEliminar = usuarioTienePermiso(usuario, "expedientes.eliminar");
   const visualEstado = visualDeEstado(expediente.estado);
 
   return (
-    <div className="space-y-6">
+    <div className="animate-entrada space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Button
           asChild
@@ -220,15 +209,11 @@ export default async function PaginaExpediente({
       </div>
 
       <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-
         {/* El estado, junto al nombre. Vivía solo como desplegable dentro de
             una de las seis pestañas, así que para saber si alguien está activo
             o suspendido había que ir a buscarlo: el dato que más condiciona
             cómo se lee la ficha era el más escondido de todos. */}
-        <div className="mt-1 flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="text-2xl font-bold">{expediente.nombre}</h1>
 
           <Badge className={cn("gap-1", visualEstado.insignia)}>
@@ -236,10 +221,6 @@ export default async function PaginaExpediente({
             {t(`status.${expediente.estado}`)}
           </Badge>
         </div>
-
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {puedeEditar ? t("form.subtitleEdit") : t("form.readOnlyNote")}
-        </p>
       </div>
 
       {/* La tendencia académica, antes de la ficha: es la respuesta a "cómo va"
@@ -293,7 +274,6 @@ export default async function PaginaExpediente({
         textos={{
           nuevo: t("new"),
           titulo: t("form.titleEdit"),
-          subtitulo: t("form.subtitleEdit"),
           guardar: t("form.saveEdit"),
           guardando: t("form.saving"),
           faltaNombre: t("form.requiredHint"),

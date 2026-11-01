@@ -36,8 +36,8 @@ export default async function PaginaNuevoRecibo({
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <EncabezadoPagina antetitulo={tc("area")} titulo={t("tituloNuevo")} subtitulo={t("subtitulo")} />
+    <div className="mx-auto max-w-3xl space-y-6 animate-entrada">
+      <EncabezadoPagina titulo={t("tituloNuevo")} />
       <Card className="p-5 md:p-6">
         <NextIntlClientProvider messages={mensajes}>
           <FormularioRecibo opciones={opciones} hoy={claveDia()} />

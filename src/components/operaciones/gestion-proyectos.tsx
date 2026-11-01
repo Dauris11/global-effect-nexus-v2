@@ -67,11 +67,7 @@ export function GestionProyectos({
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-muted-foreground text-sm">
-          {t("projects.description")}
-        </p>
-
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {puedeEscribir && editando !== "nuevo" && (
           <Button
             type="button"
@@ -100,7 +96,6 @@ export function GestionProyectos({
               <FolderOpen className="size-6" />
             </span>
             <p className={VACIO.titulo}>{t("projects.empty")}</p>
-            <p className={VACIO.descripcion}>{t("projects.emptyHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -265,9 +260,6 @@ function FormularioProyecto({
         <p className="text-sm font-semibold">
           {proyecto ? t("editProject.title") : t("newProject.title")}
         </p>
-        <p className="text-muted-foreground text-xs">
-          {proyecto ? t("editProject.subtitle") : t("newProject.subtitle")}
-        </p>
       </div>
 
       <input type="hidden" name="id" value={proyecto?.id ?? ""} />
@@ -344,12 +336,6 @@ function FormularioProyecto({
           rows={2}
         />
       </div>
-
-      {/* El avance no es un campo: se cuenta desde las tareas. Se dice aquí
-          para que nadie lo busque en el formulario. */}
-      <p className="text-muted-foreground text-[11px]">
-        {t("newProject.progressHint")}
-      </p>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className={ALERTA_RIESGO.contenedor}>

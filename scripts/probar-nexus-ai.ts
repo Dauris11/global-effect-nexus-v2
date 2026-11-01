@@ -38,7 +38,7 @@ const claves = new Set(agentes.map((a) => a.clave));
 prueba("cada rol tiene su agente en ai_agente", ROLES.every((r) => claves.has(agenteDeRol(r))));
 
 // ── 2. Visibilidad de herramientas por rol ────────────────────────────────────
-const nombres = (rol: (typeof ROLES)[number]) => herramientasVisibles(rol).map((h) => h.nombre);
+const nombres = (rol: (typeof ROLES)[number]) => herramientasVisibles({ rol }).map((h) => h.nombre);
 prueba("el estudiante solo ve herramientas de lectura/conocimiento", nombres("estudiante").join() === "buscar_conocimiento");
 prueba("el admin ve crear_tarea", nombres("admin").includes("crear_tarea"));
 prueba("contabilidad ve sus herramientas y el docente no", nombres("contabilidad").includes("comprobantes_pendientes") && !nombres("docente").includes("comprobantes_pendientes"));

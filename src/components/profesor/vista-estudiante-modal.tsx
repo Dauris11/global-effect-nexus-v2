@@ -47,9 +47,6 @@ export function VistaEstudianteModal({
                 <DialogTitle className="text-lg font-bold text-tinta">
                   {t("previewStudentViewTitle")}
                 </DialogTitle>
-                <p className="text-xs text-tinta/60">
-                  {t("previewStudentViewSubtitle")}
-                </p>
               </div>
             </div>
 

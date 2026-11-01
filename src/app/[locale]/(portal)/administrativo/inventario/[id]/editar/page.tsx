@@ -25,7 +25,7 @@ export default async function PaginaEditarActivo({ params }: PaginaEditarActivoP
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="animate-entrada mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <Link
           href={`/administrativo/inventario/${activo.id}`}
@@ -42,9 +42,6 @@ export default async function PaginaEditarActivo({ params }: PaginaEditarActivoP
             <h1 className="text-xl font-bold tracking-tight text-tinta sm:text-2xl">
               Editar Activo {activo.codigo}
             </h1>
-            <p className="text-xs text-tinta-2">
-              Los cambios de custodio, estado o ubicación física quedarán registrados en la bitácora de trazabilidad
-            </p>
           </div>
         </div>
       </div>

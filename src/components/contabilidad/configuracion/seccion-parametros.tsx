@@ -144,7 +144,7 @@ export async function SeccionParametros({
     formato.dateTime(new Date(`${iso}T00:00:00Z`), { dateStyle: "medium", timeZone: "UTC" });
 
   if (parametros.length === 0) {
-    return <EstadoVacio icono={Scale} titulo={t("vacioTitulo")} texto={t("vacioTexto")} />;
+    return <EstadoVacio icono={Scale} titulo={t("vacioTitulo")} />;
   }
 
   const grupos = [...GRUPOS, "otros"].map((grupo) => ({

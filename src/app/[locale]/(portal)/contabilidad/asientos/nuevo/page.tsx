@@ -36,8 +36,8 @@ export default async function PaginaNuevoAsiento({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina antetitulo={tc("area")} titulo={t("titulo")} subtitulo={t("subtitulo")} />
+    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
+      <EncabezadoPagina titulo={t("titulo")} />
       <Card className="p-5 md:p-6">
         <NextIntlClientProvider messages={mensajes}>
           <FormularioAsiento cuentas={cuentas} hoy={claveDia()} />

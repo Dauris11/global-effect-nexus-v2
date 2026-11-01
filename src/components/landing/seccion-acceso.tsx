@@ -15,7 +15,6 @@ import { parametros } from "@/server/parametros/consultas";
 
 import { EstadoComedor } from "@/components/landing/estado-comedor";
 import { CabeceraSeccion, CONTENEDOR } from "@/components/landing/piezas";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -63,22 +62,16 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
                 className="group flex h-full flex-col justify-between rounded-card border border-linea bg-card p-6 shadow-card transition-[translate,box-shadow,border-color,scale] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.99] md:p-7"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-muted text-tinta transition-colors duration-200 group-hover:bg-marca-500 group-hover:text-white">
-                      <puerta.icono className="size-6" />
-                    </span>
-                    <Badge variant="neutra">{t(`access_${puerta.clave}_tag`)}</Badge>
-                  </div>
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-muted text-tinta transition-colors duration-200 group-hover:bg-marca-500 group-hover:text-white">
+                    <puerta.icono className="size-6" />
+                  </span>
 
                   <h3 className="mt-6 text-xl font-semibold tracking-[-0.015em] text-tinta">
                     {t(`access_${puerta.clave}_title`)}
                   </h3>
-                  <p className="mt-2 leading-relaxed text-tinta-2">
-                    {t(`access_${puerta.clave}_desc`)}
-                  </p>
 
                   {puerta.clave === "meals" && (
-                    <div>
+                    <div className="mt-4">
                       <EstadoComedor
                         aperturaMin={aMinutos(p["comedor.apertura"])}
                         cierreMin={aMinutos(p["comedor.cierre"])}

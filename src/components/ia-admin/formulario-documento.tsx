@@ -53,7 +53,6 @@ export function FormularioDocumento({
 
       <fieldset>
         <legend className="text-sm font-medium">{t("knowledge.agents")}</legend>
-        <p className="texto-meta">{t("knowledge.agentsHint")}</p>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
           {agentes.map((agente) => (
             <label key={agente.clave} className="flex min-h-11 items-center gap-2 text-[15px]">
@@ -73,7 +72,6 @@ export function FormularioDocumento({
           rows={10}
           className="border-linea-fuerte bg-background w-full rounded-control border px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
-        <p className="texto-meta mt-1">{t("knowledge.textHint")}</p>
       </div>
 
       <div className="flex items-center gap-3">

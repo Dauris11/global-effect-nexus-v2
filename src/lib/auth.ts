@@ -3,11 +3,12 @@ import { cache } from "react";
 import { getLocale } from "next-intl/server";
 
 import { redirigir } from "@/i18n/navigation";
-import { consultarUna } from "@/lib/db";
+import { consultar, consultarUna } from "@/lib/db";
 import {
   esPermiso,
   esRol,
   PORTAL_POR_ROL,
+  permisosEfectivos,
   usuarioTienePermiso,
   type ExcepcionPermiso,
   type Permiso,
@@ -54,6 +55,10 @@ export type UsuarioSesion = {
    * `registrar` y sin `aprobar` tiene el mismo rol que quien aprueba.
    */
   excepciones: ExcepcionPermiso[];
+  /** Permisos del rol efectivo según `rol_permiso` (editables por el super_admin). */
+  permisosRol: Permiso[];
+  /** Rol más excepciones, ya resuelto: lo que el menú puede mostrar. */
+  permisos: Permiso[];
 };
 
 type FilaUsuario = {
@@ -65,6 +70,7 @@ type FilaUsuario = {
   rol_nombre: string;
   foto_url: string | null;
   excepciones: { permiso: string; concedido: boolean }[];
+  permisos_rol: string[];
 };
 
 /**
@@ -111,7 +117,14 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
                 FROM usuario_permiso up
                 JOIN permiso p ON p.id = up.permiso_id
                WHERE up.usuario_id = u.id
-            ), '[]'::json) AS excepciones
+            ), '[]'::json) AS excepciones,
+            -- Lo mismo para el reparto del rol: la base manda, no el código.
+            coalesce((
+              SELECT json_agg(p.codigo)
+                FROM rol_permiso rp
+                JOIN permiso p ON p.id = rp.permiso_id
+               WHERE rp.rol_id = u.rol_id
+            ), '[]'::json) AS permisos_rol
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE u.auth_user_id = $1`,
@@ -123,6 +136,7 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
   const rolReal = fila.rol_nombre;
   let rol: Rol = rolReal;
   let excepciones = fila.excepciones;
+  let permisosRol = fila.permisos_rol;
 
   if (rolReal === "super_admin") {
     const verComo = (await cookies()).get(COOKIE_VER_COMO)?.value;
@@ -132,8 +146,14 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
       // Las excepciones son de la cuenta del administrador, no del rol que se
       // está mirando: mezclarlas enseñaría una pantalla que nadie de ese rol ve.
       excepciones = [];
+      permisosRol = await permisosDeRol(verComo);
     }
   }
+
+  const permisosRolValidos = permisosRol.filter(esPermiso);
+  const excepcionesValidas = excepciones.flatMap((e) =>
+    esPermiso(e.permiso) ? [{ permiso: e.permiso, concedido: e.concedido }] : [],
+  );
 
   return {
     id: fila.id,
@@ -144,10 +164,27 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
     rolReal,
     authUserId: user.id,
     fotoUrl: fila.foto_url,
-    excepciones: excepciones.flatMap((e) =>
-      esPermiso(e.permiso) ? [{ permiso: e.permiso, concedido: e.concedido }] : [],
-    ),
+    excepciones: excepcionesValidas,
+    permisosRol: permisosRolValidos,
+    permisos: permisosEfectivos({
+      rol,
+      excepciones: excepcionesValidas,
+      permisosRol: permisosRolValidos,
+    }),
   };
+}
+
+/** Permisos que `rol_permiso` concede a un rol (para «ver como»). */
+async function permisosDeRol(rol: Rol): Promise<string[]> {
+  const filas = await consultar<{ codigo: string }>(
+    `SELECT p.codigo
+       FROM rol_permiso rp
+       JOIN permiso p ON p.id = rp.permiso_id
+       JOIN rol r ON r.id = rp.rol_id
+      WHERE r.nombre = $1`,
+    [rol],
+  );
+  return filas.map((f) => f.codigo);
 }
 
 /**
@@ -185,6 +222,25 @@ export async function requerirPermiso(
   const usuario = await requerirUsuario();
 
   if (!usuarioTienePermiso(usuario, permiso)) {
+    redirigir(PORTAL_POR_ROL[usuario.rol], await getLocale());
+  }
+
+  return usuario;
+}
+
+/**
+ * Exige poder dar clases de Global Effect 360: el permiso `docencia.impartir`
+ * (nativo de `docente`, concedible a título personal a otro rol) o ser
+ * `super_admin`, que supervisa. Comprueba el permiso y no el rol porque un
+ * profesor de Habitudes puede dar una clase de 360 sin dejar de ser de Habitudes.
+ */
+export async function requerirDocencia(): Promise<UsuarioSesion> {
+  const usuario = await requerirUsuario();
+
+  if (
+    usuario.rol !== "super_admin" &&
+    !usuarioTienePermiso(usuario, "docencia.impartir")
+  ) {
     redirigir(PORTAL_POR_ROL[usuario.rol], await getLocale());
   }
 

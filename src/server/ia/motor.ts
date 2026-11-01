@@ -2,7 +2,9 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import type { UsoIA } from "@/lib/ia";
 import type { EventoTurno } from "@/lib/ia-eventos";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { actualizarAccion, registrarAccion } from "@/server/ia/cadena";
 import {
   definiciones,
@@ -91,7 +93,7 @@ export async function ejecutarTurno({
   maximoTokens: number;
   emitir: (evento: EventoTurno) => void;
 }): Promise<ResultadoTurno | { error: "rechazada" | "fallo" }> {
-  const visibles = herramientasVisibles(usuario.rol);
+  const visibles = herramientasVisibles(usuario);
   const mensajes: Anthropic.MessageParam[] = turnos.map((t) => ({
     role: t.rol,
     content: t.contenido,
@@ -193,7 +195,7 @@ async function atender({
 
   // Una herramienta que el rol no tiene: se rechaza y se anota. Que un modelo la
   // pida es una señal (inyección de instrucciones, o un prompt mal armado).
-  if (!herramienta || (herramienta.permiso && !tienePermiso(usuario.rol, herramienta.permiso))) {
+  if (!herramienta || (herramienta.permiso && !usuarioTienePermiso(usuario, herramienta.permiso))) {
     await registrarAccion({
       usuarioId: usuario.id,
       agente,

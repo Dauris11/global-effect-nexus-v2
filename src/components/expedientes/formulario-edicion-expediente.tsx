@@ -186,10 +186,6 @@ export function FormularioEdicionExpediente({
               {textos.verExpediente}
             </p>
           )}
-
-          {editando && (
-            <p className="text-muted-foreground text-xs">{textos.campos.photoHint}</p>
-          )}
         </div>
       </div>
 

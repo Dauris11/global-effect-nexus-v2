@@ -391,7 +391,7 @@ export function WidgetFlotanteIA({
     }
 
     // Personal operativo y Habitudes: lo que el asistente puede hacer por ellos.
-    if (usuario.rol === "colaborador" || usuario.rol === "habitudes" || usuario.rol === "dir_habitudes") {
+    if (usuario.rol === "habitudes" || usuario.rol === "dir_habitudes") {
       return [
         t("sugerencias.generalTareas"),
         t("sugerencias.generalAgenda"),
@@ -437,7 +437,6 @@ export function WidgetFlotanteIA({
     super_admin: t("rolSuperAdmin"),
     habitudes: t("rolHabitudes"),
     dir_habitudes: t("rolDirHabitudes"),
-    colaborador: t("rolColaborador"),
     chofer: t("rolChofer"),
   }[usuario.rol];
 
@@ -588,9 +587,6 @@ export function WidgetFlotanteIA({
                 <h3 className="text-sm font-semibold text-tinta">
                   {t("sinMensajes")}
                 </h3>
-                <p className="mt-1 text-xs text-tinta-3 max-w-[260px]">
-                  {t("sinMensajesPista")}
-                </p>
 
                 {/* Sugerencias en estado vacío */}
                 <div className="mt-5 w-full space-y-1.5">

@@ -9,7 +9,9 @@ import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { MAXIMO_CARACTERES_PREGUNTA } from "@/lib/ia";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { preguntarAlAsistente } from "@/server/ia/acciones";
 import {
   conversacionDelEstudiante,
@@ -51,7 +53,7 @@ export default async function PaginaChatEstudiante({
   const usuario = await requerirRol(["estudiante"]);
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  if (!tienePermiso(usuario.rol, "ia.usar")) {
+  if (!usuarioTienePermiso(usuario, "ia.usar")) {
     return (
       <EstadoVacio
         icono={ShieldAlert}
@@ -68,11 +70,9 @@ export default async function PaginaChatEstudiante({
     : [];
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-3xl space-y-6">
+    <div className="animate-entrada mx-auto max-w-3xl space-y-6">
       <Cabecera
-        eyebrow={t("chat.eyebrow")}
         titulo={t("chat.title")}
-        descripcion={t("chat.description")}
       />
 
       {/* Aviso estándar del sistema (docs/09-sistema-visual.md §5): azul

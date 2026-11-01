@@ -36,9 +36,8 @@ export default async function PaginaEditarProveedor({
   if (!proveedor) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={tp("titulo")}
         titulo={t("tituloEditar", { nombre: proveedor.nombre })}
       />
 

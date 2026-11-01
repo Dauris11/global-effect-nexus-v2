@@ -6,7 +6,9 @@ import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
 import { NOTA_APROBADA } from "@/lib/notas";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Gestión de las clases de Global Effect 360: tareas, revisión de entregas y
@@ -45,9 +47,9 @@ export async function publicarTarea(
 ): Promise<EstadoAcademico> {
   const usuario = await requerirUsuario();
 
-  const puedeTodo = tienePermiso(usuario.rol, "academico.escribir");
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
 
-  if (!puedeTodo && usuario.rol !== "docente") {
+  if (!puedeTodo && !usuarioTienePermiso(usuario, "docencia.impartir")) {
     return { estado: "no_permitido" };
   }
 
@@ -124,10 +126,14 @@ export async function revisarEntrega(
 ): Promise<EstadoAcademico> {
   const usuario = await requerirUsuario();
 
-  const puedeTodo = tienePermiso(usuario.rol, "academico.escribir");
-  const puedeCalificar = tienePermiso(usuario.rol, "calificaciones.registrar");
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+  const puedeCalificar = usuarioTienePermiso(usuario, "calificaciones.registrar");
 
-  if (!puedeTodo && !puedeCalificar && usuario.rol !== "docente") {
+  if (
+    !puedeTodo &&
+    !puedeCalificar &&
+    !usuarioTienePermiso(usuario, "docencia.impartir")
+  ) {
     return { estado: "no_permitido" };
   }
 
@@ -203,7 +209,7 @@ export async function calificarInscripcion360(
 ): Promise<EstadoAcademico> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "calificaciones.registrar")) {
+  if (!usuarioTienePermiso(usuario, "calificaciones.registrar")) {
     return { estado: "no_permitido" };
   }
 
@@ -232,7 +238,7 @@ export async function calificarInscripcion360(
           AND i.estado <> 'retirada'
           AND ($4::uuid IS NULL OR m.docente_id = $4)
       RETURNING i.id`,
-      [id, valor, estado, usuario.rol === "docente" ? usuario.id : null],
+      [id, valor, estado, usuarioTienePermiso(usuario, "docencia.impartir") ? usuario.id : null],
     );
 
     if (!calificada) return { estado: "no_encontrado" };

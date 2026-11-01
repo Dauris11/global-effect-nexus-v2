@@ -75,11 +75,9 @@ export default async function PaginaCalendario({
   const dias = agruparPorDia(entradas);
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-4xl space-y-8">
+    <div className="animate-entrada mx-auto max-w-4xl space-y-8">
       <Cabecera
-        eyebrow={t("agenda.eyebrow")}
         titulo={t("agenda.title")}
-        descripcion={t("agenda.description")}
       />
 
       {/* Los meses son enlaces: el mes vive en la URL y la página es de

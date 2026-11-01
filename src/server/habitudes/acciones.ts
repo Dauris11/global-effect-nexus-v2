@@ -6,7 +6,9 @@ import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
 import { estaEnLaVega } from "@/lib/la-vega-geografia";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 export type AccionHabitudesResultado = {
   ok: boolean;
@@ -22,7 +24,7 @@ export async function subirRecursoHabitudesAction(
 ): Promise<AccionHabitudesResultado> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "habitudes.recursos.subir")) {
+  if (!usuarioTienePermiso(usuario, "habitudes.recursos.subir")) {
     return { ok: false, mensaje: "No tienes permiso para subir recursos a Habitudes." };
   }
 
@@ -96,7 +98,7 @@ export async function registrarVisitaLiceoAction(
 ): Promise<AccionHabitudesResultado> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "habitudes.evidencias.subir")) {
+  if (!usuarioTienePermiso(usuario, "habitudes.evidencias.subir")) {
     return { ok: false, mensaje: "No tienes permiso para registrar visitas a liceos." };
   }
 
@@ -334,7 +336,7 @@ export async function guardarUbicacionViviendaEstudianteAction({
 }): Promise<AccionHabitudesResultado> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "expedientes.escribir")) {
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) {
     return { ok: false, mensaje: "No tienes permiso para actualizar expedientes de estudiantes." };
   }
 

@@ -18,7 +18,7 @@ export function SelectorApariencia() {
 
   return (
     <div className="space-y-6">
-      <Grupo titulo={t("theme")} ayuda={t("themeHint")}>
+      <Grupo titulo={t("theme")}>
         {TEMAS.map((valor) => (
           <Opcion
             key={valor}
@@ -32,7 +32,7 @@ export function SelectorApariencia() {
         ))}
       </Grupo>
 
-      <Grupo titulo={t("sidebar")} ayuda={t("sidebarHint")}>
+      <Grupo titulo={t("sidebar")}>
         {BARRAS.map((valor) => (
           <Opcion
             key={valor}
@@ -51,17 +51,14 @@ export function SelectorApariencia() {
 
 function Grupo({
   titulo,
-  ayuda,
   children,
 }: {
   titulo: string;
-  ayuda: string;
   children: React.ReactNode;
 }) {
   return (
     <fieldset>
       <legend className="text-sm font-medium">{titulo}</legend>
-      <p className="texto-meta mt-0.5">{ayuda}</p>
       <div className="mt-3 grid grid-cols-2 gap-3">{children}</div>
     </fieldset>
   );

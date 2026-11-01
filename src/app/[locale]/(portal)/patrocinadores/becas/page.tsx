@@ -6,11 +6,14 @@ import { getTranslations } from "next-intl/server";
 import { CifraAcademica } from "@/components/academico/cifra";
 import { GestionBecas } from "@/components/patrocinadores/gestion-becas";
 import { Button } from "@/components/ui/button";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   becadosConPatrocinio,
   patrocinadoresActivos,
@@ -51,7 +54,7 @@ export default async function PaginaBecas({
   const { q } = await searchParams;
 
   const usuario = await requerirPermiso("patrocinadores.leer");
-  const puedeEscribir = tienePermiso(usuario.rol, "patrocinadores.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "patrocinadores.escribir");
 
   const busqueda = (q ?? "").trim().slice(0, 80);
 
@@ -65,19 +68,8 @@ export default async function PaginaBecas({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("grants.eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <GraduationCap className="size-5 text-[#2096BA]" />
-          {t("grants.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("grants.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("grants.title")} />
 
       {/* Las cifras NO respetan la búsqueda, a propósito: son el estado del
           programa de becas entero. Un "sin asignar: 0" que en realidad
@@ -110,8 +102,6 @@ export default async function PaginaBecas({
           icono={HandCoins}
         />
       </div>
-
-      <p className="text-muted-foreground text-xs">{t("grants.committedHint")}</p>
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="min-w-48 flex-1 space-y-1.5">

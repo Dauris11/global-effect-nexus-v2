@@ -37,14 +37,13 @@ export default async function PaginaCajas({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
         acciones={puedeCrear ? <FormularioCaja responsables={responsables} /> : undefined}
       />
       {cajas.length === 0 ? (
-        <EstadoVacio icono={Wallet} titulo={t("vacio")} texto={t("vacioTexto")} />
+        <EstadoVacio icono={Wallet} titulo={t("vacio")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cajas.map((caja) => (

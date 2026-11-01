@@ -36,7 +36,6 @@ export async function NotasRecientes({
         <EstadoVacio
           icono={Star}
           titulo={t("gradesEmpty")}
-          texto={t("gradesEmptyHint")}
         />
       ) : (
         <div>

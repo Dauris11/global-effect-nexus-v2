@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Receipt } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { FormularioRendicionGasto } from "@/components/colaborador/formulario-rendicion-gasto";
 import { ListaRendiciones } from "@/components/colaborador/lista-rendiciones";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   misRendiciones,
   programasParaRendicion,
@@ -41,7 +43,7 @@ export default async function PaginaRendiciones({
   const { locale } = await params;
   const usuario = await requerirUsuario();
 
-  const puedeRevisar = tienePermiso(usuario.rol, "rendicion.revisar");
+  const puedeRevisar = usuarioTienePermiso(usuario, "rendicion.revisar");
 
   const [t, programas, rendiciones, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "rendicion" }),
@@ -51,35 +53,28 @@ export default async function PaginaRendiciones({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-tinta">
-            <Receipt className="size-6 text-marca-500" />
-            {t("heading")}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("heading")}
+        acciones={
+      <div className="flex items-center gap-2">
+        <Link
+          href="/administrativo/tareas/hoy"
+          className="inline-flex min-h-[44px] items-center rounded-control border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+        >
+          {t("backToToday")}
+        </Link>
+        {puedeRevisar && (
           <Link
-            href="/administrativo/tareas/hoy"
-            className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+            href="/portal/contabilidad/gastos"
+            className="inline-flex min-h-[44px] items-center rounded-control border border-marca-700/30 bg-marca-50 px-3 text-xs font-semibold text-marca-700 hover:bg-marca-100 active:scale-95"
           >
-            {t("backToToday")}
+            {t("viewAccountingHub")}
           </Link>
-          {puedeRevisar && (
-            <Link
-              href="/portal/contabilidad/gastos"
-              className="inline-flex min-h-[40px] items-center rounded-lg border border-marca-700/30 bg-marca-50 px-3 text-xs font-semibold text-marca-700 hover:bg-marca-100 active:scale-95"
-            >
-              {t("viewAccountingHub")}
-            </Link>
-          )}
-        </div>
+        )}
       </div>
+        }
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         <div className="space-y-6">

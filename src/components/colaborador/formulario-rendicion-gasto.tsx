@@ -139,7 +139,6 @@ export function FormularioRendicionGasto({
           <Receipt className="size-5 text-marca-500" />
           {t("formTitle")}
         </CardTitle>
-        <p className="text-xs text-tinta/60">{t("formSubtitle")}</p>
       </CardHeader>
       <CardContent>
         {mensaje && (

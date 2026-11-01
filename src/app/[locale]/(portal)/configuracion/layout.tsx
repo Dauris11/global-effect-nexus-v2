@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { BarraAjustes } from "@/components/configuracion/barra-ajustes";
 import { requerirUsuario } from "@/lib/auth";
-import { ajustesDeRol } from "@/lib/configuracion";
+import { ajustesDeUsuario } from "@/lib/configuracion";
 
 /**
  * Todas las pantallas de configuración llevan a la izquierda el mismo menú de
@@ -15,7 +15,7 @@ export default async function LayoutConfiguracion({
   children: React.ReactNode;
 }) {
   const [usuario, t] = await Promise.all([requerirUsuario(), getTranslations("settings.nav")]);
-  const ajustes = ajustesDeRol(usuario.rol).map(({ clave, href }) => ({
+  const ajustes = ajustesDeUsuario(usuario).map(({ clave, href }) => ({
     clave,
     href,
     etiqueta: t(clave),

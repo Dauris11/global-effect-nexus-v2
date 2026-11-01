@@ -107,10 +107,9 @@ export function GestionClases360({
               {clases.length}
             </Badge>
           </CardTitle>
-          <p className="text-tinta-3 mb-3 text-xs">{t("catalogHint")}</p>
 
           {clases.length === 0 ? (
-            <EstadoVacio icono={Sparkles} titulo={t("empty")} texto={t("emptyHint")} />
+            <EstadoVacio icono={Sparkles} titulo={t("empty")} />
           ) : (
             <ul className="divide-linea divide-y">
               {clases.map((clase) => (
@@ -529,8 +528,6 @@ function FormularioTarea({
         />
         <span className="text-tinta-2 text-xs">{t("taskAllowLate")}</span>
       </label>
-
-      <p className="text-tinta-3 text-xs">{t("taskDueHint")}</p>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className="text-destructive text-xs">

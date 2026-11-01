@@ -95,9 +95,6 @@ export function GestionPatrocinadores({
             <p className={VACIO.titulo}>
               {hayFiltro ? t("noMatches") : t("empty")}
             </p>
-            <p className={VACIO.descripcion}>
-              {hayFiltro ? t("noMatchesHint") : t("emptyHint")}
-            </p>
           </CardContent>
         </Card>
       ) : (
@@ -263,9 +260,6 @@ function Formulario({
       <div>
         <p className="text-sm font-semibold">
           {patrocinador ? t("form.editTitle") : t("form.newTitle")}
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {patrocinador ? t("form.editSubtitle") : t("form.newSubtitle")}
         </p>
       </div>
 

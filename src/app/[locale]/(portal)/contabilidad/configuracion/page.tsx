@@ -53,11 +53,10 @@ export default async function PaginaConfiguracionContable({
   const puedeCerrar = usuarioTienePermiso(usuario, "contabilidad.cerrar_periodo");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={t("antetitulo")}
         titulo={t("titulo")}
-        subtitulo={puedeConfigurar || puedeCerrar ? t("subtitulo") : t("subtituloLectura")}
+        subtitulo={puedeConfigurar || puedeCerrar ? undefined : t("subtituloLectura")}
       />
       <PestanasConfig activa={pestana} />
       <Seccion pestana={pestana} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />
@@ -87,7 +86,7 @@ async function Seccion({
       if (!datos) {
         // La 0048 siembra la fila; sin ella falta una migración, no un dato.
         const t = await getTranslations("contab.config.entidad");
-        return <EstadoVacio icono={Building2} titulo={t("vacioTitulo")} texto={t("vacioTexto")} />;
+        return <EstadoVacio icono={Building2} titulo={t("vacioTitulo")} />;
       }
       return <SeccionEntidad entidad={datos} puedeEditar={puedeConfigurar} />;
     }

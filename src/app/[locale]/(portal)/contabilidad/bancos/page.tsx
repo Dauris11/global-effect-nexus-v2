@@ -56,9 +56,7 @@ export default async function PaginaBancos({
     <NextIntlClientProvider messages={mensajes}>
       <div className="mx-auto max-w-5xl space-y-8">
         <EncabezadoPagina
-          antetitulo={tc("area")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
           acciones={
             usuarioTienePermiso(usuario, "contabilidad.aprobar") && activas.length > 1 ? (
               <DialogoTransferencia
@@ -70,7 +68,7 @@ export default async function PaginaBancos({
         />
 
         {cuentas.length === 0 ? (
-          <EstadoVacio icono={Landmark} titulo={t("vacio")} texto={t("vacioTexto")} />
+          <EstadoVacio icono={Landmark} titulo={t("vacio")} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {cuentas.map((cuenta) => (

@@ -54,7 +54,7 @@ export default async function PaginaRecurrentes({
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <Link
         href="/contabilidad/asientos"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline"
@@ -63,10 +63,10 @@ export default async function PaginaRecurrentes({
         {t("volver")}
       </Link>
 
-      <EncabezadoPagina antetitulo={tc("area")} titulo={t("titulo")} subtitulo={t("subtitulo")} acciones={nueva} />
+      <EncabezadoPagina titulo={t("titulo")} acciones={nueva} />
 
       {plantillas.length === 0 ? (
-        <EstadoVacio icono={Repeat} titulo={t("vacio")} texto={t("vacioTexto")} accion={nueva || undefined} />
+        <EstadoVacio icono={Repeat} titulo={t("vacio")} accion={nueva || undefined} />
       ) : (
         <NextIntlClientProvider messages={mensajes}>
           <ListaPlantillas plantillas={plantillas} puedeOperar={opera} idioma={idioma} />

@@ -180,7 +180,22 @@ export async function docentesAsignables(): Promise<DocenteAsignable[]> {
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE u.activo
-        AND r.nombre IN ('docente', 'admin', 'super_admin')
+        AND (
+          r.nombre IN ('admin', 'super_admin')
+          -- Quien imparte por permiso: el del rol, salvo que una excepción
+          -- personal lo conceda o lo retire (un profesor de Habitudes al que
+          -- se le habilitó la docencia aparece aquí sin ser docente).
+          OR COALESCE(
+               (SELECT up.concedido
+                  FROM usuario_permiso up
+                  JOIN permiso p ON p.id = up.permiso_id
+                 WHERE up.usuario_id = u.id AND p.codigo = 'docencia.impartir'),
+               EXISTS (SELECT 1
+                         FROM rol_permiso rp
+                         JOIN permiso p ON p.id = rp.permiso_id
+                        WHERE rp.rol_id = u.rol_id AND p.codigo = 'docencia.impartir')
+             )
+        )
       ORDER BY u.nombre`,
   );
 }

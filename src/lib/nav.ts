@@ -692,43 +692,6 @@ function itemDeModulo(modulo: ModuloContable): ItemNav {
 }
 
 /**
- * Menú del personal operativo (colaborador: choferes, mantenimiento, etc.).
- * Diseñado específicamente para uso móvil / PWA con accesos directos:
- * "Mi Día" (tareas de hoy), rendición de comprobantes con foto y solicitudes.
- */
-const MENU_COLABORADOR: AreaNav[] = [
-  {
-    clave: "colaborador",
-    etiqueta: "operations",
-    icono: Wrench,
-    secciones: [
-      {
-        items: [
-          {
-            // La torre ya es «mi día»: tareas de hoy, vencidas y de la semana.
-            etiqueta: "controlTower",
-            href: "/administrativo/torre-control",
-            icono: TowerControl,
-          },
-          {
-            etiqueta: "expenseReports",
-            href: "/administrativo/rendiciones",
-            icono: ReceiptText,
-            permiso: "rendicion.enviar",
-          },
-          {
-            etiqueta: "requests",
-            href: "/administrativo/solicitudes",
-            icono: Inbox,
-            permiso: "solicitudes.gestionar",
-          },
-        ],
-      },
-    ],
-  },
-];
-
-/**
  * Menú exclusivo del chofer institucional: cabina de mando móvil y directa.
  */
 const MENU_CHOFER: AreaNav[] = [
@@ -751,6 +714,30 @@ const MENU_CHOFER: AreaNav[] = [
   },
 ];
 
+/**
+ * Lo que se suma al menú cuando a una persona se le habilita una función que
+ * su rol no trae. Hoy, la docencia: un profesor de Habitudes al que se le dio
+ * `docencia.impartir` ve su portal de profesor y sus clases de 360 sin dejar
+ * de ser de Habitudes.
+ */
+const AREA_DOCENCIA: AreaNav = {
+  clave: "docencia",
+  etiqueta: "teacherPortal",
+  icono: BookOpen,
+  secciones: [
+    {
+      items: [
+        { etiqueta: "teacherPortal", href: "/portal/profesor", icono: BookOpen },
+        { etiqueta: "classes360", href: "/academico/clases-360", icono: Sparkles },
+      ],
+    },
+  ],
+};
+
+const AREAS_POR_CAPACIDAD: readonly { permiso: Permiso; area: AreaNav }[] = [
+  { permiso: "docencia.impartir", area: AREA_DOCENCIA },
+];
+
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   super_admin: MENU_ADMINISTRACION,
   admin: MENU_ADMINISTRACION,
@@ -759,7 +746,6 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   contabilidad: MENU_CONTABILIDAD,
   habitudes: MENU_HABITUDES,
   dir_habitudes: MENU_HABITUDES,
-  colaborador: MENU_COLABORADOR,
   chofer: MENU_CHOFER,
 };
 
@@ -768,8 +754,27 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
  * desaparecen, y las áreas que se quedan sin ninguna sección tampoco llegan al
  * raíl: un icono que abre un panel vacío es peor que no tener el icono.
  */
-export function menuDe(rol: Rol, ocultos?: ReadonlySet<string>): AreaNav[] {
-  return MENU_POR_ROL[rol]
+export function menuDe(
+  rol: Rol,
+  ocultos?: ReadonlySet<string>,
+  /**
+   * Permisos efectivos de la persona (rol + excepciones). Sin ellos se usa el
+   * reparto de fábrica del rol, que es lo que necesitan los catálogos por rol.
+   */
+  permisos?: ReadonlySet<Permiso>,
+): AreaNav[] {
+  const puede = (permiso: Permiso) =>
+    permisos ? permisos.has(permiso) : tienePermiso(rol, permiso);
+
+  const base = MENU_POR_ROL[rol];
+  const hrefsBase = new Set(base.flatMap(itemsDeArea).map((item) => item.href));
+  const habilitadas = AREAS_POR_CAPACIDAD.filter(
+    ({ permiso, area }) =>
+      permisos?.has(permiso) &&
+      area.secciones.flatMap((s) => s.items).some((i) => !hrefsBase.has(i.href)),
+  ).map(({ area }) => area);
+
+  return [...base, ...habilitadas]
     .map((area) => ({
       ...area,
       secciones: area.secciones
@@ -777,7 +782,7 @@ export function menuDe(rol: Rol, ocultos?: ReadonlySet<string>): AreaNav[] {
           ...seccion,
           items: seccion.items.filter(
             (item) =>
-              (!item.permiso || tienePermiso(rol, item.permiso)) &&
+              (!item.permiso || puede(item.permiso)) &&
               // Lo que el administrador maestro ocultó para este rol (ver
               // `/configuracion/visibilidad`). El permiso sigue mandando: ocultar
               // no da acceso a nada, solo quita la entrada.

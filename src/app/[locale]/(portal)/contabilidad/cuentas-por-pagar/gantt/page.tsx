@@ -96,7 +96,7 @@ export default async function PaginaGanttCxp({
   const finStr = new Date(maxMs).toISOString().slice(0, 10);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/cuentas-por-pagar">
@@ -106,9 +106,7 @@ export default async function PaginaGanttCxp({
         </Button>
 
         <EncabezadoPagina
-          antetitulo={t("titulo")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
           acciones={
             <div className="flex items-center gap-2">
               <span className="text-xs text-tinta-2 font-medium">{t("agrupar")}:</span>

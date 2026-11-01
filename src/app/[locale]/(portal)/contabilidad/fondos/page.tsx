@@ -27,12 +27,10 @@ export default async function PaginaFondos() {
   const donantes = terceros.map((t) => ({ id: t.id, nombre: t.nombreRazonSocial }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-entrada">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <EncabezadoPagina
-          antetitulo={t("antetitulo")}
           titulo={t("titulo")}
-          subtitulo={t("subtitulo")}
         />
         <div className="flex gap-2">
           <DialogoLiberarFondo fondos={fondos} />

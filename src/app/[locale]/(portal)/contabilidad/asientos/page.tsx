@@ -56,11 +56,9 @@ export default async function PaginaAsientos({
   const escribe = usuarioTienePermiso(usuario, "contabilidad.asiento_manual");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
       <EncabezadoPagina
-        antetitulo={tc("area")}
         titulo={t("titulo")}
-        subtitulo={t("subtitulo")}
         acciones={
           <>
             <Button asChild variant="secondary">
@@ -87,7 +85,7 @@ export default async function PaginaAsientos({
         <EstadoVacio
           icono={NotebookPen}
           titulo={hayFiltro ? t("vacioFiltro") : t("vacio")}
-          texto={hayFiltro ? undefined : t("vacioTexto")}
+         
         />
       ) : (
         <>

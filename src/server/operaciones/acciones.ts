@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 
 /**
  * Operaciones: crear tareas, moverlas por el tablero y gestionar proyectos.
@@ -69,7 +71,7 @@ export async function crearTarea(
 ): Promise<EstadoOperaciones> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -180,7 +182,7 @@ export async function moverTarea(
 ): Promise<EstadoOperaciones> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -241,7 +243,7 @@ export async function reprogramarTarea(
 ): Promise<EstadoOperaciones> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 
@@ -294,7 +296,7 @@ export async function guardarProyecto(
 ): Promise<EstadoOperaciones> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "operaciones.escribir")) {
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
     return { estado: "no_permitido" };
   }
 

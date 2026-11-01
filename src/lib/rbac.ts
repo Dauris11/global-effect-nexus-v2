@@ -11,9 +11,14 @@
  * (`/portal/profesor`, `/portal/administrativo`) porque son URLs públicas ya
  * documentadas.
  *
- * Hasta octubre de 2026 había un séptimo rol, `psicologo`. La Fundación cerró
- * el departamento, la 0030 movió sus cuentas a `admin` y borró el rol: si
- * aparece en algún documento viejo, ya no existe.
+ * Roles que ya no existen: `psicologo` (la 0030 movió sus cuentas a `admin`) y
+ * `colaborador` (la 0065 hizo lo mismo). Si aparecen en un documento viejo,
+ * no los reintroduzcas.
+ *
+ * El reparto de permisos por rol de este archivo es el de FÁBRICA. En marcha
+ * manda `rol_permiso`, que el super_admin edita en `/configuracion/permisos`
+ * y que la sesión trae en `permisosRol`; estas constantes solo sirven de
+ * valor inicial y de respaldo.
  */
 
 export const ROLES = [
@@ -28,8 +33,6 @@ export const ROLES = [
   "habitudes",
   // Director de Habitudes (DH): supervisión pedagógica, monitoreo de profesores y liceos en La Vega
   "dir_habitudes",
-  // Personal operativo y de apoyo esencial (mantenimiento, cocina, auxiliares)
-  "colaborador",
   // Chofer institucional: operador exclusivo de rutas y seguimiento del transporte
   "chofer",
 ] as const;
@@ -69,6 +72,9 @@ export const PERMISOS = [
   "contabilidad.leer",
   "contabilidad.nomina",
   "contabilidad.registrar",
+  // Permiso de capacidad: habilita la docencia de Global Effect 360 a quien
+  // no es `docente` (p. ej. un profesor de Habitudes que da una clase de 360).
+  "docencia.impartir",
   "expedientes.eliminar",
   "expedientes.escribir",
   "expedientes.leer",
@@ -115,7 +121,6 @@ export const PORTAL_POR_ROL: Record<Rol, string> = {
   contabilidad: "/portal/contabilidad",
   habitudes: "/habitudes",
   dir_habitudes: "/habitudes",
-  colaborador: "/portal/colaborador",
   chofer: "/portal/chofer",
 };
 
@@ -151,10 +156,45 @@ export const ESTILO_POR_ROL: Record<
   contabilidad: MARCA,
   habitudes: MARCA,
   dir_habitudes: MARCA,
-  colaborador: MARCA,
   chofer: MARCA,
 };
 
+
+/**
+ * Cómo se agrupan los permisos en la pantalla de permisos: por el prefijo del
+ * código, en seis módulos. Vive aquí, junto al catálogo, para que un permiso
+ * nuevo caiga en un grupo y no quede huérfano.
+ */
+export const GRUPOS_PERMISOS = {
+  academic: ["academico", "calificaciones", "docencia"],
+  accounting: ["contabilidad", "finanzas", "rendicion"],
+  habitudes: ["habitudes"],
+  records: ["expedientes", "solicitudes"],
+  operations: [
+    "inventario",
+    "operaciones",
+    "patrocinadores",
+    "proyectos",
+    "reuniones",
+    "transporte",
+  ],
+  platform: ["ia", "landing", "usuarios"],
+} as const;
+
+export type GrupoPermiso = keyof typeof GRUPOS_PERMISOS;
+
+export function grupoDePermiso(permiso: Permiso): GrupoPermiso {
+  const prefijo = permiso.split(".")[0];
+  const grupo = (Object.keys(GRUPOS_PERMISOS) as GrupoPermiso[]).find((g) =>
+    (GRUPOS_PERMISOS[g] as readonly string[]).includes(prefijo),
+  );
+  return grupo ?? "platform";
+}
+
+/** Clave de traducción de un permiso: next-intl no admite puntos en las claves. */
+export function clavePermiso(permiso: Permiso): string {
+  return permiso.replaceAll(".", "_");
+}
 
 export function esPermiso(valor: unknown): valor is Permiso {
   return typeof valor === "string" && (PERMISOS as readonly string[]).includes(valor);
@@ -288,6 +328,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   docente: [
     "academico.leer",
     "calificaciones.registrar",
+    "docencia.impartir",
     "habitudes.evidencias.subir",
     "habitudes.recursos.leer",
     "habitudes.recursos.subir",
@@ -302,12 +343,6 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "ia.usar",
     "reuniones.agendar",
     "reuniones.leer",
-  ],
-  colaborador: [
-    "ia.usar",
-    "rendicion.enviar",
-    "reuniones.leer",
-    "solicitudes.gestionar",
   ],
   chofer: [
     "transporte.operar",
@@ -336,13 +371,12 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   ],
 };
 
+/**
+ * Reparto de FÁBRICA de un rol. Para decidir qué puede una PERSONA usa
+ * `usuarioTienePermiso`: este ignora lo que el super_admin cambió en la base.
+ */
 export function tienePermiso(rol: Rol, permiso: Permiso): boolean {
   return PERMISOS_POR_ROL[rol].includes(permiso);
-}
-
-/** Comprueba varios permisos a la vez; basta con uno para pasar. */
-export function tieneAlgunPermiso(rol: Rol, permisos: readonly Permiso[]): boolean {
-  return permisos.some((permiso) => tienePermiso(rol, permiso));
 }
 
 /**
@@ -363,11 +397,36 @@ export type ExcepcionPermiso = {
  * por rol sigue siendo correcto para todo lo que no tiene excepciones;
  * contabilidad y `requerirPermiso` usan esta.
  */
+export type UsuarioConPermisos = {
+  rol: Rol;
+  /** La sesión siempre las trae; un usuario parcial (scripts) no tiene. */
+  excepciones?: readonly ExcepcionPermiso[];
+  /** Lo que `rol_permiso` concede al rol; sin él se usa el reparto de fábrica. */
+  permisosRol?: readonly Permiso[];
+};
+
 export function usuarioTienePermiso(
-  usuario: { rol: Rol; excepciones: readonly ExcepcionPermiso[] },
+  usuario: UsuarioConPermisos,
   permiso: Permiso,
 ): boolean {
-  const excepcion = usuario.excepciones.find((e) => e.permiso === permiso);
+  const excepcion = usuario.excepciones?.find((e) => e.permiso === permiso);
   if (excepcion !== undefined) return excepcion.concedido;
-  return tienePermiso(usuario.rol, permiso);
+  return (usuario.permisosRol ?? PERMISOS_POR_ROL[usuario.rol]).includes(permiso);
+}
+
+/** Basta con uno de los permisos para pasar. */
+export function usuarioTieneAlgunPermiso(
+  usuario: UsuarioConPermisos,
+  permisos: readonly Permiso[],
+): boolean {
+  return permisos.some((permiso) => usuarioTienePermiso(usuario, permiso));
+}
+
+/**
+ * Todo lo que la persona puede, ya resuelto: rol más excepciones. Viaja al
+ * armazón del navegador para que el menú muestre también lo que se le
+ * habilitó a título personal, no solo lo de su rol.
+ */
+export function permisosEfectivos(usuario: UsuarioConPermisos): Permiso[] {
+  return PERMISOS.filter((permiso) => usuarioTienePermiso(usuario, permiso));
 }

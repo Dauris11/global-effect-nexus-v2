@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { CalendarDays } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { GestionPeriodos } from "@/components/academico/gestion-periodos";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { periodosGestionados } from "@/server/academico/consultas";
 
 export async function generateMetadata({
@@ -55,24 +57,13 @@ export default async function PaginaAcademicoPeriodos({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <CalendarDays className="size-5 text-[#2096BA]" />
-          {t("terms.title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("terms.description")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("terms.title")} />
 
       <NextIntlClientProvider messages={mensajes}>
         <GestionPeriodos
           periodos={periodos}
-          puedeEscribir={tienePermiso(usuario.rol, "academico.escribir")}
+          puedeEscribir={usuarioTienePermiso(usuario, "academico.escribir")}
         />
       </NextIntlClientProvider>
     </div>

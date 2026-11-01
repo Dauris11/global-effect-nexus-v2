@@ -64,13 +64,13 @@ const claveA = `/__prueba/${Date.now()}/a`;
 const claveB = `/__prueba/${Date.now()}/b`;
 
 try {
-  await consultar("INSERT INTO public.visibilidad_menu (rol, clave, estado) VALUES ('colaborador', $1, 'oculto'), ('colaborador', $2, 'bloqueado')", [claveA, claveB]);
-  const v = await visibilidadDeRol("colaborador");
+  await consultar("INSERT INTO public.visibilidad_menu (rol, clave, estado) VALUES ('chofer', $1, 'oculto'), ('chofer', $2, 'bloqueado')", [claveA, claveB]);
+  const v = await visibilidadDeRol("chofer");
   prueba("visibilidadDeRol separa ocultas y bloqueadas", v.ocultas.has(claveA) && v.bloqueadas.has(claveB) && !v.bloqueadas.has(claveA));
   prueba("fueraDelMenu une las dos", v.fueraDelMenu.includes(claveA) && v.fueraDelMenu.includes(claveB));
   const otro = await visibilidadDeRol("docente");
   prueba("lo de un rol no se filtra a otro", !otro.fueraDelMenu.includes(claveA));
-  const rechazo = await consultar("INSERT INTO public.visibilidad_menu (rol, clave, estado) VALUES ('colaborador', $1, 'inventado') RETURNING 1", [`${claveA}x`]).then(() => false, () => true);
+  const rechazo = await consultar("INSERT INTO public.visibilidad_menu (rol, clave, estado) VALUES ('chofer', $1, 'inventado') RETURNING 1", [`${claveA}x`]).then(() => false, () => true);
   prueba("la base rechaza un estado inventado", rechazo);
 } finally {
   await consultar("DELETE FROM public.visibilidad_menu WHERE clave LIKE '/__prueba/%'");

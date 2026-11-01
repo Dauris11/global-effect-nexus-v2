@@ -128,7 +128,6 @@ export function GestionPeriodos({
                 <CalendarDays className="size-6" />
               </span>
               <p className={VACIO.titulo}>{t("terms.empty")}</p>
-              <p className={VACIO.descripcion}>{t("terms.emptyHint")}</p>
             </div>
           ) : (
             <ul className="mt-3 divide-y">
@@ -286,9 +285,6 @@ function FormularioPeriodo({
         <p className="text-sm font-semibold">
           {periodo ? t("editTerm.title") : t("newTerm.title")}
         </p>
-        <p className="text-muted-foreground text-xs">
-          {periodo ? t("editTerm.subtitle") : t("newTerm.subtitle")}
-        </p>
       </div>
 
       <input type="hidden" name="id" value={periodo?.id ?? ""} />
@@ -357,8 +353,6 @@ function FormularioPeriodo({
           </select>
         </div>
       </div>
-
-      <p className="text-muted-foreground text-xs">{t("newTerm.nameHint")}</p>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
         <p role="alert" className={ALERTA_RIESGO.contenedor}>

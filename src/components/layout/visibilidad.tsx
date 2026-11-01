@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useMemo } from "react";
 
+import type { Permiso } from "@/lib/rbac";
+
 /**
  * Las rutas que el administrador maestro ocultó para el rol de quien mira.
  *
@@ -12,17 +14,33 @@ import { createContext, useContext, useMemo } from "react";
  */
 const Contexto = createContext<ReadonlySet<string>>(new Set());
 
+/** Lo que la persona puede hacer, ya resuelto (rol + habilitaciones personales). */
+const ContextoPermisos = createContext<ReadonlySet<Permiso> | undefined>(undefined);
+
 export function ProveedorVisibilidad({
   ocultos,
+  permisos,
   children,
 }: {
   ocultos: readonly string[];
+  permisos: readonly Permiso[];
   children: React.ReactNode;
 }) {
   // Un `Set` nuevo en cada render haría repintar a todos los consumidores.
   const conjunto = useMemo(() => new Set(ocultos), [ocultos]);
+  const conjuntoPermisos = useMemo(() => new Set(permisos), [permisos]);
 
-  return <Contexto.Provider value={conjunto}>{children}</Contexto.Provider>;
+  return (
+    <Contexto.Provider value={conjunto}>
+      <ContextoPermisos.Provider value={conjuntoPermisos}>
+        {children}
+      </ContextoPermisos.Provider>
+    </Contexto.Provider>
+  );
+}
+
+export function usePermisos(): ReadonlySet<Permiso> | undefined {
+  return useContext(ContextoPermisos);
 }
 
 export function useOcultos(): ReadonlySet<string> {

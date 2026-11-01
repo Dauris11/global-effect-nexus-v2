@@ -64,7 +64,7 @@ export default async function PaginaConciliaciones({
     : `${hoy.slice(0, 7)}-01`;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
       <Link href={`/contabilidad/bancos/${cuenta.id}`} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline">
         <ArrowLeft className="size-4" />
         {cuenta.nombre}
@@ -73,7 +73,7 @@ export default async function PaginaConciliaciones({
       <EncabezadoPagina antetitulo={cuenta.nombre} titulo={t("titulo")} />
 
       {conciliaciones.length === 0 ? (
-        <EstadoVacio icono={Scale} titulo={t("vacio")} texto={t("vacioTexto")} />
+        <EstadoVacio icono={Scale} titulo={t("vacio")} />
       ) : (
         <ul className="space-y-3">
           {conciliaciones.map((c) => (

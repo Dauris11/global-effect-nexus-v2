@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { FolderKanban, ShieldCheck } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { MatrizProyectosRoles } from "@/components/operaciones/matriz-proyectos-roles";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
@@ -42,25 +42,18 @@ export default async function PaginaProyectosRoles({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
-            {t("rolesEyebrow")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-tinta">
-            <ShieldCheck className="size-6 text-marca-500" />
-            {t("rolesHeading")}
-          </h1>
-        </div>
-
-        <Link
-          href="/administrativo/proyectos"
-          className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
-        >
-          {t("backToProjects")}
-        </Link>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("rolesHeading")}
+        acciones={
+      <Link
+        href="/administrativo/proyectos"
+        className="inline-flex min-h-[44px] items-center rounded-control border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+      >
+        {t("backToProjects")}
+      </Link>
+        }
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         <MatrizProyectosRoles proyectosIniciales={matriz} />

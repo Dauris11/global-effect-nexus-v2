@@ -63,7 +63,6 @@ export function TandasPeriodo360({
         <h2 className="texto-titulo-seccion">
           {t("tandasTitle", { periodo: ventana.periodo })}
         </h2>
-        <p className="texto-meta">{t("tandaRule")}</p>
       </div>
 
       <ul className="grid gap-4 sm:grid-cols-2">

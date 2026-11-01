@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { UserCog } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { GestionCuentas } from "@/components/personal/gestion-cuentas";
 import { Card, CardContent } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import { CUADRO } from "@/lib/paleta";
@@ -58,19 +58,8 @@ export default async function PaginaPersonal({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-[#2096BA] uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <UserCog className="size-5 text-[#2096BA]" />
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("inviteHint")}
-        </p>
-      </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Cifra valor={cifras.total} etiqueta={t("stats.total")} />

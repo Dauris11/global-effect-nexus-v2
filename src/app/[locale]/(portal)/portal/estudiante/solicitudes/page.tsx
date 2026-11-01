@@ -53,11 +53,9 @@ export default async function PaginaSolicitudesEstudiante({
   ]);
 
   return (
-    <div className="animate-fade-in-up mx-auto max-w-4xl space-y-10">
+    <div className="animate-entrada mx-auto max-w-4xl space-y-10">
       <Cabecera
-        eyebrow={t("studentEyebrow")}
         titulo={t("studentTitle")}
-        descripcion={t("studentDescription")}
       />
 
       <NextIntlClientProvider messages={mensajes}>

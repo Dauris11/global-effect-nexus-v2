@@ -64,7 +64,7 @@ export default async function PaginaAsiento({
     esRevertible(asiento.tipo, asiento.origen_tabla, asiento.estado);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 animate-entrada">
       <Link
         href="/contabilidad/asientos"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline"

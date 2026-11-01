@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { CheckSquare } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { VistaHoy } from "@/components/colaborador/vista-hoy";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
@@ -52,33 +52,26 @@ export default async function PaginaLoQueMeTocaHoy({
     ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-tinta">
-            <CheckSquare className="size-6 text-marca-500" />
-            {t("heading")}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/administrativo/tareas"
-            className="inline-flex min-h-[40px] items-center rounded-lg border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
-          >
-            {t("viewGeneralBoard")}
-          </Link>
-          <Link
-            href="/administrativo/rendiciones"
-            className="inline-flex min-h-[40px] items-center rounded-lg border border-marca-500/30 bg-marca-50 px-3 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
-          >
-            {t("submitExpense")}
-          </Link>
-        </div>
+    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+      <EncabezadoPagina
+        titulo={t("heading")}
+        acciones={
+      <div className="flex items-center gap-2">
+        <Link
+          href="/administrativo/tareas"
+          className="inline-flex min-h-[44px] items-center rounded-control border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
+        >
+          {t("viewGeneralBoard")}
+        </Link>
+        <Link
+          href="/administrativo/rendiciones"
+          className="inline-flex min-h-[44px] items-center rounded-control border border-marca-500/30 bg-marca-50 px-3 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
+        >
+          {t("submitExpense")}
+        </Link>
       </div>
+        }
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         <VistaHoy

@@ -6,7 +6,9 @@ import { GestionClases360 } from "@/components/academico/gestion-clases-360";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import {
   cifrasDocente,
@@ -52,8 +54,8 @@ export default async function PaginaClases360({
 
   const usuario = await requerirUsuario();
 
-  const puedeTodo = tienePermiso(usuario.rol, "academico.escribir");
-  const esDocente = usuario.rol === "docente";
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+  const esDocente = usuarioTienePermiso(usuario, "docencia.impartir");
 
   const t = await getTranslations({ locale, namespace: "academic.classes360" });
 
@@ -115,7 +117,7 @@ export default async function PaginaClases360({
           clases={clases}
           inscritosPorClase={Object.fromEntries(porClase)}
           entregas={entregas}
-          puedeCalificar={tienePermiso(usuario.rol, "calificaciones.registrar")}
+          puedeCalificar={usuarioTienePermiso(usuario, "calificaciones.registrar")}
         />
       </NextIntlClientProvider>
     </div>

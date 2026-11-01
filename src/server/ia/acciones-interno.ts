@@ -7,7 +7,9 @@ import {
   MAXIMO_CARACTERES_PREGUNTA,
   type EstadoChat,
 } from "@/lib/ia";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import { conversarComo } from "@/server/ia/agente";
 import {
   asegurarConversacionInterna,
@@ -46,7 +48,7 @@ export async function preguntarAlAsistenteInterno(
 ): Promise<EstadoChat> {
   const usuario = await requerirUsuario();
 
-  if (!tienePermiso(usuario.rol, "ia.usar")) return { estado: "sin_permiso" };
+  if (!usuarioTienePermiso(usuario, "ia.usar")) return { estado: "sin_permiso" };
 
   const pregunta = String(datos.get("pregunta") ?? "").trim();
 

@@ -20,7 +20,9 @@ import { EtiquetaQrImprimible } from "@/components/inventario/etiqueta-qr-imprim
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import type { EstadoActivo } from "@/lib/inventario";
-import { tienePermiso } from "@/lib/rbac";
+import {
+  usuarioTienePermiso,
+} from "@/lib/rbac";
 import {
   obtenerActivoPorId,
   obtenerHistorialActivo,
@@ -43,7 +45,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
     notFound();
   }
 
-  const puedeEscribir = tienePermiso(usuario.rol, "inventario.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "inventario.escribir");
 
   const formatoMoneda = (val: number | null) => {
     if (val === null || val === undefined) return "—";
@@ -101,7 +103,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-entrada flex flex-col gap-6">
       {/* Navegación y Encabezado */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
