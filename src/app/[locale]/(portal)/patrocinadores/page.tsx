@@ -89,9 +89,6 @@ export default async function PaginaPatrocinadores({
           <HandCoins className="size-5 text-[#2096BA]" />
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -91,9 +91,6 @@ export default async function PaginaChatIA({
           <Bot className="size-5 text-[#2096BA]" />
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
       </div>
 
       <div className="flex items-start gap-3 rounded-xl border border-linea bg-muted p-4">

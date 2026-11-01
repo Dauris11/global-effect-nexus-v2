@@ -105,7 +105,6 @@ export default async function PaginaPerfil({
                 <User className="size-4 text-[#2096BA]" />
                 {t("title")}
               </CardTitle>
-              <p className="text-xs text-muted-foreground">{t("description")}</p>
             </CardHeader>
             <CardContent className="pt-6">
               <NextIntlClientProvider messages={mensajes}>

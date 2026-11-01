@@ -133,9 +133,6 @@ export default async function PaginaExpedientes({
             {t("eyebrow")}
           </p>
           <h1 className="mt-1 text-2xl font-bold">{t("title")}</h1>
-          <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-            {t("description")}
-          </p>
         </div>
 
         {puedeEscribir && (

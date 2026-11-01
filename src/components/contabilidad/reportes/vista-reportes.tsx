@@ -109,9 +109,6 @@ export function VistaReportes({
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {t("titulo")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-            {t("subtitulo")}
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

@@ -493,7 +493,6 @@ export function WidgetFlotanteIA({
                     {etiquetaRol}
                   </span>
                 </div>
-                <p className="text-[11px] text-tinta-3">{t("subtitulo")}</p>
               </div>
             </div>
 

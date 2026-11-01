@@ -63,9 +63,6 @@ export default async function PaginaPrematricula({
           <Sparkles className="size-5 text-marca-500" />
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
       </div>
 
       <NextIntlClientProvider messages={mensajes}>
