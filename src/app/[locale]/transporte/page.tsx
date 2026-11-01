@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
+import { inscribirPuntualDiaria } from "@/server/transporte/acciones";
 import {
   listarHorariosTransporte,
   listarRutasConParadas,
@@ -118,7 +119,7 @@ export default async function PaginaTransportePublico({
         {/* Grid de Formulario de Anotarse Rápido + Horarios Diarios */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Formulario rápido para hoy */}
-          <FormularioPuntual horarios={horarios} paradas={paradasRuta} />
+          <FormularioPuntual horarios={horarios} paradas={paradasRuta} enviar={inscribirPuntualDiaria} />
 
           {/* Horarios fijos de la ruta */}
           <Card className="p-5">

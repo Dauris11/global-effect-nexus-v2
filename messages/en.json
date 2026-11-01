@@ -5618,6 +5618,16 @@
     }
   },
   "transport": {
+    "guestsTab": "Guests",
+    "addGuest": "Add another person",
+    "myGuests": "My guests",
+    "noGuests": "You haven't added anyone yet",
+    "removeGuest": "Remove",
+    "dateLabel": "Date",
+    "sameStopError": "Pickup and drop-off must be different",
+    "guestLimitError": "You reached the daily guest limit",
+    "enrollError": "Could not add. Try again",
+    "addPassenger": "Add passenger",
     "driverPortalTitle": "Driver Cockpit",
     "studentTransportTitle": "Institutional Transportation",
     "studentTransportDesc": "Routes, real-time tracking and your weekly transport schedule.",

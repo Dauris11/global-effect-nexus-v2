@@ -5618,6 +5618,16 @@
     }
   },
   "transport": {
+    "guestsTab": "Invitados",
+    "addGuest": "Anotar a otra persona",
+    "myGuests": "Mis invitados",
+    "noGuests": "Aún no has anotado a nadie",
+    "removeGuest": "Quitar",
+    "dateLabel": "Fecha",
+    "sameStopError": "El origen y el destino deben ser distintos",
+    "guestLimitError": "Llegaste al máximo de invitados por día",
+    "enrollError": "No se pudo anotar. Intenta de nuevo",
+    "addPassenger": "Anotar pasajero",
     "driverPortalTitle": "Cabina del Chofer",
     "studentTransportTitle": "Transporte Institucional",
     "studentTransportDesc": "Rutas, seguimiento en tiempo real y tu horario semanal de transporte.",

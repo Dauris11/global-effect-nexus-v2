@@ -10,6 +10,7 @@ import {
   Navigation,
   Play,
   Square,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -32,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormularioPuntual } from "@/components/transporte/formulario-puntual";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type {
@@ -47,6 +49,7 @@ import {
   finalizarViaje,
   iniciarViaje,
   cargarPasajerosHorario,
+  inscribirPasajeroAsistido,
   reportarIncidencia,
 } from "@/server/transporte/acciones";
 
@@ -56,12 +59,14 @@ export function PanelChofer({
   horariosDisponibles,
   pasajerosIniciales,
   paradasIniciales = [],
+  hoy,
 }: {
   viajeActivoInicial: TransporteViaje | null;
   horarioSugerido: TransporteHorario | null;
   horariosDisponibles: TransporteHorario[];
   pasajerosIniciales: PasajeroViaje[];
   paradasIniciales?: TransporteParada[];
+  hoy: string;
 }) {
   const t = useTranslations("transport");
 
@@ -77,6 +82,7 @@ export function PanelChofer({
   const [errorGps, setErrorGps] = useState<string | null>(null);
 
   const [dialogoIncidenciaAbierto, setDialogoIncidenciaAbierto] = useState(false);
+  const [dialogoPasajeroAbierto, setDialogoPasajeroAbierto] = useState(false);
   const [tipoIncidencia, setTipoIncidencia] =
     useState<TipoIncidenciaTransporte>("averia_mecanica");
   const [descripcionIncidencia, setDescripcionIncidencia] = useState("");
@@ -411,9 +417,20 @@ export function PanelChofer({
             <Users className="size-4 text-marca-500" />
             {t("expectedPassengers")}
           </h3>
-          <span className="text-xs font-semibold text-tinta-2">
-            {t("passengerCount", { count: pasajeros.length })}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-tinta-2">
+              {t("passengerCount", { count: pasajeros.length })}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDialogoPasajeroAbierto(true)}
+            >
+              <UserPlus className="size-4" />
+              {t("addPassenger")}
+            </Button>
+          </div>
         </div>
 
         {pasajeros.length === 0 ? (
@@ -439,6 +456,27 @@ export function PanelChofer({
           </ul>
         )}
       </Card>
+
+      {/* Anotar a quien no tiene internet: lo pidió por teléfono o en persona. */}
+      <Dialog open={dialogoPasajeroAbierto} onOpenChange={setDialogoPasajeroAbierto}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("addPassenger")}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("addPassenger")}
+            </DialogDescription>
+          </DialogHeader>
+          <FormularioPuntual
+            sinTarjeta
+            conFecha
+            hoy={hoy}
+            horarios={horariosDisponibles}
+            paradas={paradas}
+            enviar={inscribirPasajeroAsistido}
+            alTerminar={() => manejarCambioHorario(horarioSeleccionadoId)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Diálogo Rápido de Reporte de Avería o Incidencia */}
       <Dialog

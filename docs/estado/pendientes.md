@@ -5,6 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Transporte, etapa 1: nombres cortos, invitados e inscripción asistida (1 nov 2026, migración `0066`):**
+      - **Nombres de viaje:** los cuatro turnos pasan a `Mañana`, `Mediodía`, `Tarde` y `Noche`; el selector muestra `nombre · hora`.
+      - **Invitados:** nueva pestaña "Invitados" en el portal del estudiante (`inscribirInvitado`, `quitarInvitado`, `invitadosDeUsuario`): anota a otra persona en un viaje de hoy o de otro día, ve a quién anotó y la quita. Tope de 8 por día.
+      - **Inscripción asistida:** botón "Anotar pasajero" en la cabina del chofer (`inscribirPasajeroAsistido`, permiso `transporte.operar`, que también tiene administración) para quien no tiene internet y lo pidió por teléfono o en persona.
+      - **Una sola validación** (`registrarInscripcionDiaria`) para las tres vías (`publica`, `estudiante`, `asistida`, columna `via` + `inscrito_por`); origen y destino deben ser distintos, en la acción y como `CHECK` en la base (`NOT VALID`, no toca filas viejas). `FormularioPuntual` recibe la acción por prop.
+      - **Recomendación de mapa/API y Google Workspace:** `docs/referencia/mapas-y-google-workspace.md`.
+      - **Pendiente:** aplicar `npm run db:migrate`; límite de frecuencia por IP en `/api/transporte/posicion` y *Wake Lock* en la cabina; inicio de sesión con Google para el personal; marcar la vivienda del estudiante en el mapa.
+
 - [x] **Línea de tiempo rediseñada y unificada (1 nov 2026):**
       - **Un solo componente** (`components/linea-tiempo/linea-tiempo.tsx`, tipos y aritmética de días en `lib/linea-tiempo.ts`) para las tres líneas de tiempo: panorama (`/calendario/gantt`), detalle de proyecto y vencimientos de cuentas por pagar. Se borra `visualizador-gantt.tsx`.
       - **Función:** además de ver qué corre a la vez, se editan fechas arrastrando (mover el cuerpo, estirar los extremos); con teclado, flechas ±1 día y Mayús+flechas para el fin. Optimista con reversión si el servidor rechaza. `moverBarra` (`server/calendario/acciones-gantt.ts`) decide por clase: `proyecto` y `tarea` con `operaciones.escribir`, `periodo` con `academico.escribir`; la tarea mueve también su evento del calendario; audita. Materias, clases 360 y entregas no se mueven (heredan o se deducen).

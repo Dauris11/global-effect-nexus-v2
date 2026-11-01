@@ -10,6 +10,7 @@ import {
   SQL_HOY_RD,
   type PasajeroViaje,
   type TipoIncidenciaTransporte,
+  type ViaInscripcion,
 } from "@/lib/transporte";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { obtenerPasajerosHorario } from "./consultas";
@@ -56,6 +57,7 @@ export async function guardarInscripcionRecurrente(
       UUID.test(i.horarioId) &&
       UUID.test(i.paradaAbordajeId) &&
       UUID.test(i.paradaDestinoId) &&
+      i.paradaAbordajeId !== i.paradaDestinoId &&
       Number.isInteger(i.diaSemana) &&
       i.diaSemana >= 1 &&
       i.diaSemana <= 6,
@@ -105,19 +107,29 @@ export async function guardarInscripcionRecurrente(
   }
 }
 
-/**
- * Anotación para un día concreto. Es la única acción de transporte sin sesión
- * (puerta pública `/transporte`), así que valida todo lo que recibe: sin
- * login no hay a quién pedirle cuentas.
- */
-export async function inscribirPuntualDiaria(datos: {
+type DatosInscripcion = {
   horarioId: string;
   nombre: string;
   matriculaOTelefono?: string;
   paradaAbordajeId: string;
   paradaDestinoId: string;
   fecha?: string;
-}): Promise<{ ok: boolean; mensaje?: string }> {
+};
+
+/** Máximo de personas que un estudiante puede inscribir por día. */
+const TOPE_INVITADOS_POR_DIA = 8;
+
+/**
+ * Valida y guarda una inscripción de un día. Las tres vías (puerta pública,
+ * estudiante e inscripción asistida) pasan por aquí, así que validan igual:
+ * sin sesión no hay a quién pedirle cuentas, y con sesión tampoco se confía
+ * en lo que llega del navegador.
+ */
+async function registrarInscripcionDiaria(
+  datos: DatosInscripcion,
+  via: ViaInscripcion,
+  autorId: string | null,
+): Promise<{ ok: boolean; mensaje?: string }> {
   const nombre = datos.nombre.trim();
   const contacto = datos.matriculaOTelefono?.trim() || null;
   const hoy = fechaHoyRD();
@@ -134,11 +146,26 @@ export async function inscribirPuntualDiaria(datos: {
     return { ok: false, mensaje: "datos_invalidos" };
   }
 
-  // Solo hoy o futuro: una fecha pasada no sirve de nada y ensucia la lista.
+  // Subir y bajar en la misma parada no es un viaje.
+  if (datos.paradaAbordajeId === datos.paradaDestinoId) {
+    return { ok: false, mensaje: "paradas_iguales" };
+  }
+
+  // Solo hoy o futuro: una fecha pasada no sirve y ensucia la lista.
   const fecha = datos.fecha && datos.fecha >= hoy ? datos.fecha : hoy;
 
   try {
-    await enTransaccion(async (cliente) => {
+    const resultado = await enTransaccion(async (cliente) => {
+      if (via === "estudiante" && autorId) {
+        const { rows } = await cliente.query<{ n: number }>(
+          `SELECT count(*)::int AS n
+             FROM transporte_inscripcion_diaria
+            WHERE inscrito_por = $1 AND via = 'estudiante' AND fecha = $2::date`,
+          [autorId, fecha],
+        );
+        if ((rows[0]?.n ?? 0) >= TOPE_INVITADOS_POR_DIA) return "tope" as const;
+      }
+
       // Si el contacto coincide con un estudiante, el registro queda enlazado a él.
       let estudianteId: string | null = null;
       if (contacto) {
@@ -151,8 +178,9 @@ export async function inscribirPuntualDiaria(datos: {
 
       await cliente.query(
         `INSERT INTO transporte_inscripcion_diaria
-           (fecha, horario_id, estudiante_id, nombre_beneficiario, matricula_o_telefono, parada_abordaje_id, parada_destino_id)
-         VALUES ($1::date, $2, $3, $4, $5, $6, $7)`,
+           (fecha, horario_id, estudiante_id, nombre_beneficiario, matricula_o_telefono,
+            parada_abordaje_id, parada_destino_id, inscrito_por, via)
+         VALUES ($1::date, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           fecha,
           datos.horarioId,
@@ -161,17 +189,91 @@ export async function inscribirPuntualDiaria(datos: {
           contacto,
           datos.paradaAbordajeId,
           datos.paradaDestinoId,
+          autorId,
+          via,
         ],
       );
+      return "ok" as const;
     });
+
+    if (resultado === "tope") return { ok: false, mensaje: "tope_invitados" };
 
     revalidatePath("/transporte");
     revalidatePath("/portal/chofer");
+    revalidatePath("/portal/estudiante/transporte");
     return { ok: true };
   } catch (error) {
-    console.error("[transporte] Error al registrar inscripción puntual:", error);
+    console.error("[transporte] Error al registrar inscripción:", error);
     return { ok: false, mensaje: "error_servidor" };
   }
+}
+
+/** Puerta pública `/transporte`: la única acción sin sesión. */
+export async function inscribirPuntualDiaria(
+  datos: DatosInscripcion,
+): Promise<{ ok: boolean; mensaje?: string }> {
+  return registrarInscripcionDiaria(datos, "publica", null);
+}
+
+/**
+ * El estudiante inscribe a otra persona (un familiar, un compañero). Queda
+ * anotado a su nombre para que pueda verla y quitarla.
+ */
+export async function inscribirInvitado(
+  datos: DatosInscripcion,
+): Promise<{ ok: boolean; mensaje?: string }> {
+  const usuario = await requerirUsuario();
+  const res = await registrarInscripcionDiaria(datos, "estudiante", usuario.id);
+
+  if (res.ok) {
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "transporte.invitado_inscrito",
+      entidad: "transporte_inscripcion_diaria",
+      datos: { horarioId: datos.horarioId, fecha: datos.fecha ?? null },
+    });
+  }
+  return res;
+}
+
+/**
+ * El chofer o administración anota a quien no tiene internet y lo pidió por
+ * teléfono o en persona. Solo quien opera o gestiona el transporte.
+ */
+export async function inscribirPasajeroAsistido(
+  datos: DatosInscripcion,
+): Promise<{ ok: boolean; mensaje?: string }> {
+  const usuario = await requerirPermiso("transporte.operar");
+  const res = await registrarInscripcionDiaria(datos, "asistida", usuario.id);
+
+  if (res.ok) {
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "transporte.pasajero_asistido",
+      entidad: "transporte_inscripcion_diaria",
+      datos: { horarioId: datos.horarioId, fecha: datos.fecha ?? null },
+    });
+  }
+  return res;
+}
+
+/** El estudiante quita a un invitado suyo; no puede tocar los de otros. */
+export async function quitarInvitado(
+  inscripcionId: string,
+): Promise<{ ok: boolean }> {
+  const usuario = await requerirUsuario();
+  if (!UUID.test(inscripcionId)) return { ok: false };
+
+  const fila = await consultarUna<{ id: string }>(
+    `DELETE FROM transporte_inscripcion_diaria
+      WHERE id = $1 AND inscrito_por = $2 AND via = 'estudiante'
+    RETURNING id`,
+    [inscripcionId, usuario.id],
+  );
+  if (!fila) return { ok: false };
+
+  refrescarTransporte();
+  return { ok: true };
 }
 
 /**

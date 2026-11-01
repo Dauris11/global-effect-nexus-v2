@@ -98,6 +98,19 @@ export type TransporteIncidencia = {
   creado_en: string;
 };
 
+export type ViaInscripcion = "publica" | "estudiante" | "asistida";
+
+/** Una persona que el estudiante inscribió, para que pueda ver y quitar a sus invitados. */
+export type InvitadoInscrito = {
+  id: string;
+  fecha: string;
+  nombre: string;
+  horario_nombre: string;
+  hora_salida: string;
+  parada_abordaje_nombre: string;
+  parada_destino_nombre: string;
+};
+
 export type PasajeroViaje = {
   id: string;
   nombre: string;

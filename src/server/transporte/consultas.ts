@@ -2,6 +2,7 @@ import { consultar, consultarUna } from "@/lib/db";
 import {
   minutosActualesRD,
   SQL_HOY_RD,
+  type InvitadoInscrito,
   type PasajeroViaje,
   type TransporteHorario,
   type TransporteIncidencia,
@@ -334,5 +335,32 @@ export async function obtenerPasajerosHorario(
        ) sin_repetidos
       ORDER BY nombre ASC`,
     [horarioId, fecha ?? null],
+  );
+}
+
+/**
+ * Las personas que este usuario inscribió, de hoy en adelante. Sirve para que
+ * el estudiante vea a quién anotó y pueda quitarlo si cambia el plan.
+ */
+export async function invitadosDeUsuario(
+  usuarioId: string,
+): Promise<InvitadoInscrito[]> {
+  return consultar<InvitadoInscrito>(
+    `SELECT d.id::text AS id,
+            to_char(d.fecha, 'YYYY-MM-DD') AS fecha,
+            d.nombre_beneficiario AS nombre,
+            h.nombre AS horario_nombre,
+            to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
+            pa.nombre AS parada_abordaje_nombre,
+            pd.nombre AS parada_destino_nombre
+       FROM transporte_inscripcion_diaria d
+       JOIN transporte_horario h ON h.id = d.horario_id
+       JOIN transporte_parada pa ON pa.id = d.parada_abordaje_id
+       JOIN transporte_parada pd ON pd.id = d.parada_destino_id
+      WHERE d.inscrito_por = $1
+        AND d.via = 'estudiante'
+        AND d.fecha >= ${SQL_HOY_RD}
+      ORDER BY d.fecha, h.hora_salida, d.nombre_beneficiario`,
+    [usuarioId],
   );
 }

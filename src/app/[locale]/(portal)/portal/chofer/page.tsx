@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { PanelChofer } from "@/components/transporte/panel-chofer";
 import { requerirPermiso } from "@/lib/auth";
+import { fechaHoyRD } from "@/lib/transporte";
 import { obtenerEstadoChofer } from "@/server/transporte/consultas";
 
 export async function generateMetadata({
@@ -34,6 +35,7 @@ export default async function PaginaPortalChofer() {
         horariosDisponibles={estado.horariosDisponibles}
         pasajerosIniciales={estado.pasajerosHoy}
         paradasIniciales={estado.paradasDisponibles}
+        hoy={fechaHoyRD()}
       />
     </div>
     </NextIntlClientProvider>
