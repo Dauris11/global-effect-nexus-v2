@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { TransporteHorario, TransporteParada } from "@/lib/transporte";
-import { inscribirPuntualDiariaAction } from "@/server/transporte/acciones";
+import { inscribirPuntualDiaria } from "@/server/transporte/acciones";
 
 export function FormularioPuntual({
   horarios,
@@ -44,7 +45,7 @@ export function FormularioPuntual({
     }
 
     iniciarTransicion(async () => {
-      const res = await inscribirPuntualDiariaAction({
+      const res = await inscribirPuntualDiaria({
         nombre,
         matriculaOTelefono,
         horarioId,
@@ -61,19 +62,15 @@ export function FormularioPuntual({
   };
 
   return (
-    <Card className="border-linea p-5 shadow-sm">
+    <Card className="p-5">
       <div className="border-b border-linea pb-3">
-        <h3 className="text-base font-bold text-tinta">
-          {t("quickEnrollTitle")}
-        </h3>
-        <p className="text-xs text-tinta-2">
-          {t("quickEnrollSubtitle")}
-        </p>
+        <h3 className="texto-titulo-tarjeta">{t("quickEnrollTitle")}</h3>
+        <p className="texto-meta">{t("quickEnrollSubtitle")}</p>
       </div>
 
       {completado ? (
         <div className="py-6 text-center space-y-2">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#1E9E6A]/10 text-[#1E9E6A]">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-marca-50 text-marca-600">
             <Check className="size-6" />
           </div>
           <p className="font-bold text-sm text-tinta">{t("enrollmentSuccess")}</p>
@@ -82,44 +79,44 @@ export function FormularioPuntual({
             variant="outline"
             size="sm"
             onClick={() => setCompletado(false)}
-            className="mt-3 text-xs"
+            className="mt-3"
           >
             {t("enrollAnother")}
           </Button>
         </div>
       ) : (
-        <form onSubmit={manejarEnvio} className="mt-4 space-y-3.5 text-xs">
-          <div className="space-y-1">
-            <label className="font-semibold text-tinta">
+        <form onSubmit={manejarEnvio} className="mt-4 space-y-4 text-sm">
+          <div className="space-y-1.5">
+            <Label>
               {t("fullNameLabel")} *
-            </label>
+            </Label>
             <Input
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder={t("fullNamePlaceholder")}
-              className="text-xs"
+             
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-semibold text-tinta">
+          <div className="space-y-1.5">
+            <Label>
               {t("idOrPhoneLabel")}
-            </label>
+            </Label>
             <Input
               value={matriculaOTelefono}
               onChange={(e) => setMatriculaOTelefono(e.target.value)}
               placeholder={t("idOrPhonePlaceholder")}
-              className="text-xs"
+             
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-semibold text-tinta">
+          <div className="space-y-1.5">
+            <Label>
               {t("tripShift")} *
-            </label>
+            </Label>
             <Select value={horarioId} onValueChange={setHorarioId}>
-              <SelectTrigger className="text-xs">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -133,15 +130,15 @@ export function FormularioPuntual({
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <div className="space-y-1">
-              <label className="font-semibold text-tinta">
+            <div className="space-y-1.5">
+              <Label>
                 {t("pickupStop")} *
-              </label>
+              </Label>
               <Select
                 value={paradaAbordajeId}
                 onValueChange={setParadaAbordajeId}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,15 +151,15 @@ export function FormularioPuntual({
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <label className="font-semibold text-tinta">
+            <div className="space-y-1.5">
+              <Label>
                 {t("dropoffStop")} *
-              </label>
+              </Label>
               <Select
                 value={paradaDestinoId}
                 onValueChange={setParadaDestinoId}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,7 +176,7 @@ export function FormularioPuntual({
           <Button
             type="submit"
             disabled={cargando || !nombre.trim()}
-            className="w-full gap-2 font-semibold shadow-sm"
+            className="w-full gap-2 font-semibold"
           >
             <Send className="size-4" />
             {t("submitQuickEnroll")}

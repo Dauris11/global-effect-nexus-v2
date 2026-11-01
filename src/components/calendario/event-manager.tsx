@@ -117,12 +117,12 @@ type Vista = "mes" | "semana" | "dia" | "lista";
  * y turquesa institucional tenue con borde para clases regulares.
  */
 const COLOR_ORIGEN = {
-  cita: "bg-[#0a6a8a] text-white",
-  tarea: "bg-[#171A1D] text-white",
-  evento: "bg-[#2096BA] text-white",
-  asignacion: "bg-[#5FB8D4] text-[#171A1D]",
-  reunion: "bg-[#187a99] text-white",
-  clase: "bg-[#2096BA]/20 text-[#0a6a8a] border border-[#2096BA]/40",
+  cita: "bg-marca-700 text-white",
+  tarea: "bg-tinta text-white",
+  evento: "bg-marca-500 text-white",
+  asignacion: "bg-marca-300 text-tinta",
+  reunion: "bg-marca-600 text-white",
+  clase: "bg-marca-500/20 text-marca-700 border border-marca-500/40",
 } as const;
 
 /** Del origen a su clave en `calendar.origin.*`. */

@@ -108,6 +108,33 @@ export type PasajeroViaje = {
   presente: boolean;
 };
 
+/**
+ * "Hoy" en hora dominicana, como fragmento SQL constante (no lleva valores).
+ * La BD corre en UTC: con `CURRENT_DATE` el turno de las 8 PM (00:00 UTC)
+ * caería en el día siguiente y se perdería su lista de pasajeros.
+ */
+export const SQL_HOY_RD = "(now() AT TIME ZONE 'America/Santo_Domingo')::date";
+
+/** Minutos desde medianoche en La Vega; el servidor puede estar en otra zona. */
+export function minutosActualesRD(ahora: Date = new Date()): number {
+  const partes = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Santo_Domingo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(ahora);
+  const valor = (tipo: string) =>
+    Number(partes.find((p) => p.type === tipo)?.value ?? 0);
+  return valor("hour") * 60 + valor("minute");
+}
+
+/** Fecha de hoy (YYYY-MM-DD) en La Vega, para validar lo que llega del cliente. */
+export function fechaHoyRD(ahora: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santo_Domingo",
+  }).format(ahora);
+}
+
 export const DIAS_SEMANA_TRANSPORTE = [
   { dia: 1, llave: "monday" },
   { dia: 2, llave: "tuesday" },

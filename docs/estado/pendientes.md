@@ -5,6 +5,17 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Revisión y corrección de los commits del 1 nov 2026 contra el plan (transporte, calendario, portal del estudiante):**
+      - **Nombres:** las acciones de `src/server/transporte/acciones.ts` pierden el sufijo inglés `Action` y quedan como verbos en español (`iniciarViaje`, `finalizarViaje`, `reportarIncidencia`, `actualizarPosicionViaje`, `actualizarParadaViaje`, `guardarInscripcionRecurrente`, `inscribirPuntualDiaria`, `cargarPasajerosHorario`), como `solicitudes` y `comida`.
+      - **Capa servidor:** el SELECT del viaje estaba copiado 5 veces; ahora hay una sola fuente (`SELECT_VIAJE`) y `obtenerViajePorId`. La ruta `/api/transporte/posicion` ya no lleva SQL ni expone `chofer_id`. `obtenerPasajerosHorario` dejó de interpolar SQL (regla 3): la fecha viaja como parámetro.
+      - **Zona horaria:** la BD corre en UTC y `CURRENT_DATE` mandaba el turno de las 8 PM al día siguiente (sin pasajeros ni viaje de "hoy"). Ahora `SQL_HOY_RD`, `minutosActualesRD()` y `fechaHoyRD()` (`src/lib/transporte.ts`) usan `America/Santo_Domingo`; el turno sugerido tampoco depende de la zona del servidor.
+      - **Control de acceso:** `reportarIncidencia`, `finalizarViaje`, `actualizarParadaViaje` y `actualizarPosicionViaje` solo operan sobre viajes del chofer que llama (antes cualquiera con `transporte.operar` podía marcar averiado el viaje de otro) y auditan solo si hubo cambio. `/portal/chofer` usa `requerirPermiso("transporte.operar")`.
+      - **Puerta pública:** `inscribirPuntualDiaria` valida uuids, longitudes y fecha (nunca pasada) antes de insertar.
+      - **Diseño:** un error ya no es rojo (`bg-tinta text-background` con `AlertCircle`); sin `rounded-lg/xl/md` ni `shadow-sm/md` (`rounded-control/card`, `shadow-card/elevada`); fuera los emoji (🚐, ⏱️); hex del marcador, la polilínea y los popups salen de `paleta.ts`; los popups de Leaflet escapan el HTML; `<label>` crudos pasan a `Label`; el éxito del formulario público va en marca, no en semáforo. `COLOR_ORIGEN` del calendario usa tokens.
+      - **Pantallas:** `loading.tsx` para `/portal/chofer`, `/portal/estudiante/transporte` y `/transporte`.
+      - **Limpieza:** se borra `AvisoSinFicha` (quedó sin usos al desacoplar el portal del expediente) y la entrada duplicada de transporte en este archivo.
+      - **Pendiente:** `panel-chofer.tsx` (~500 líneas) conviene partirlo en `components/transporte/` (cabecera de mando, lista de pasajeros, diálogo de incidencia); la puerta pública `/transporte` no tiene límite de frecuencia por IP; `event-manager.tsx` aún trae hex de commits anteriores (días "hoy", chips) que `audit:ui` exceptúa.
+
 - [x] **Sistema de Transporte Institucional en Tiempo Real y Cabina del Chofer (1 nov 2026, migración `0064`):**
       - **Migración `0064_sistema_transporte_institucional.sql`:**
         - Tablas creadas: `transporte_ruta`, `transporte_parada`, `transporte_horario`, `transporte_inscripcion_recurrente`, `transporte_inscripcion_diaria`, `transporte_viaje` y `transporte_incidencia`.
@@ -15,6 +26,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Portal Minimalista del Chofer (`/portal/chofer`):**
         - Operación táctil móvil con una sola mano: botón gigante "INICIAR VIAJE" y "FINALIZAR VIAJE".
         - Transmisión continua de geolocalización en segundo plano con `navigator.geolocation.watchPosition` (latitud, longitud, rumbo y velocidad).
+        - Respaldo de paradas manuales (`actualizarParadaViaje`) y aviso visual si el GPS se corta o se deniega el permiso.
         - Botón de emergencia "Reportar avería / problema" con modal rápido (Avería mecánica, Tránsito, Desvío, Accidente) que despacha alertas inmediatas a los estudiantes inscritos en ese viaje.
       - **Portal del Estudiante (`/portal/estudiante/transporte`):**
         - Pestaña "Dónde viene la guagua": mapa interactivo en vivo con el autobús animado en 3D (`iconoGuagua3D`), orientación de rumbo (`heading`), pulso en ruta y parada aproximada con cálculo de tiempo estimado.
@@ -23,7 +35,7 @@ módulo) — esto es solo la cola de pendientes concretos.
         - Acceso público sin login previo (similar a `/comida`) con mapa en vivo, información de próximos turnos e inscripción puntual para viajes del día.
         - Enlace integrado en el pie de página institucional (`src/components/landing/footer.tsx`).
       - **API de Rastreo (`/api/transporte/posicion`):** Sondeo periódico liviano en vivo cada 4 segundos durante viajes en curso.
-      - **Calidad:** 4,816 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (194/194 páginas).
+      - **Calidad:** 4,828 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (194/194 páginas).
 
 - [x] **Aislamiento Estricto de Agendas y Calendarios por Rol y Proyección de Clases Semanales (1 nov 2026):**
       - **Aislamiento Estricto y Privacidad por Rol:**
@@ -37,7 +49,7 @@ módulo) — esto es solo la cola de pendientes concretos.
         - En `agendaDelEstudiante`, se proyectan las clases de la semana en el mes seleccionado y se integran con vencimientos de asignaciones, citas y reuniones.
         - En `mesesConAgenda`, se expanden los meses cubiertos por los periodos con materias inscritas para permitir seleccionar los meses del ciclo lectivo.
       - **Interfaz de Usuario y Tokens de Marca (`src/components/calendario/event-manager.tsx`, `src/components/estudiante/dia-agenda.tsx`):**
-        - Color y token institucional para `clase`: `bg-[#2096BA]/20 text-[#0a6a8a] border border-[#2096BA]/40` en EventManager y badge `t("agenda.classBadge")` con icono `BookOpen`.
+        - Color de `clase` con tokens de marca (`bg-marca-500/20 text-marca-700 border-marca-500/40`) en EventManager y badge `t("agenda.classBadge")` con icono `BookOpen`.
         - Filtro por origen en el calendario con opción de "Clase" y "Reunión institucional".
       - **Calidad:** 4,737 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (187/187 páginas).
 
@@ -1354,24 +1366,3 @@ módulo) — esto es solo la cola de pendientes concretos.
       "Editar" (este último abre la ficha ya en modo edición vía
       `?editar=1`). Es distinto de la ficha completa: no tiene familia,
       vivienda, salud ni situación, solo lo que cabe en la tarjeta.
-
-- [x] **Sistema de Transporte Institucional en Tiempo Real (1 nov 2026, migración `0064`):**
-      - **Modelo de datos y paradas (`0064_sistema_transporte_institucional.sql`):**
-        - Tablas creadas: `transporte_ruta`, `transporte_parada`, `transporte_horario`, `transporte_inscripcion_recurrente`, `transporte_inscripcion_diaria`, `transporte_viaje` y `transporte_incidencia`.
-        - Sembrado de 4 turnos fijos diarios (06:00 AM, 12:00 PM, 06:00 PM, 08:00 PM) y circuito geográfico La Vega $\leftrightarrow$ Cruce de Controba $\leftrightarrow$ Rincón $\leftrightarrow$ Jima Abajo $\leftrightarrow$ La Ceivita $\leftrightarrow$ El Ranchito $\leftrightarrow$ Sabana Rey $\leftrightarrow$ La Vega.
-      - **Nuevo Rol de Chofer y Portal Operativo (`/portal/chofer`):**
-        - Rol `chofer` con permisos `transporte.operar` y `transporte.gestionar`.
-        - Mando táctil mobile-first simplificado con botones gigantes de inicio y culminación de viaje.
-        - Transmisión continua por Geolocation API con rumbo, velocidad y posición con throttling a 4s.
-        - Respaldo de puntos de control de paradas manuales y alertas visuales en caso de corte o denegación de permisos de GPS.
-        - Reporte rápido de incidencias y averías mecánicas con disparo inmediato de notificaciones push/campana a los estudiantes convocados.
-      - **Portal del Estudiante (`/portal/estudiante/transporte`):**
-        - Matriz semanal recurrente Lunes a Sábado con selección de turnos, parada de abordaje y destino, y función de copiado rápido a todos los días para no tener que anotarse a diario.
-        - Mapa Leaflet con teselas CARTO (modo claro/oscuro) y marcador 3D animado de la guagua institucional (`iconoGuagua3D`) con rotación en grados según el rumbo, indicador de velocidad y halo de pulso.
-      - **Acceso Público Rápido (`/transporte`):**
-        - Registro diario puntual sin login obligatorio (estilo módulo de comida) y seguimiento en vivo de la posición del autobús para estudiantes y beneficiarios de la comunidad.
-      - **Calidad y Cumplimiento:**
-        - Cero colores fuera de marca (`npm run audit:ui`).
-        - 4,828 claves simétricas en español e inglés (`npm run i18n:check`).
-        - Cero errores ni advertencias de ESLint (`npm run lint`).
-        - Compilación Next.js 16 y chequeo estricto de tipos de TypeScript exitosos (`npm run build`).

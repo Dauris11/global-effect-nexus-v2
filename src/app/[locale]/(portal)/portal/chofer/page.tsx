@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { PanelChofer } from "@/components/transporte/panel-chofer";
-import { requerirRol } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import { obtenerEstadoChofer } from "@/server/transporte/consultas";
 
 export async function generateMetadata({
@@ -17,7 +17,7 @@ export async function generateMetadata({
 }
 
 export default async function PaginaPortalChofer() {
-  const usuario = await requerirRol(["chofer", "admin", "super_admin"]);
+  const usuario = await requerirPermiso("transporte.operar");
   const estado = await obtenerEstadoChofer(usuario.id);
 
   return (

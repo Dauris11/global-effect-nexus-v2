@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,7 +28,7 @@ import {
   type TransporteInscripcionRecurrente,
   type TransporteParada,
 } from "@/lib/transporte";
-import { guardarInscripcionRecurrenteAction } from "@/server/transporte/acciones";
+import { guardarInscripcionRecurrente } from "@/server/transporte/acciones";
 
 interface HorarioDiaEstado {
   activo: boolean;
@@ -113,7 +114,7 @@ export function FormularioRecurrente({
       }));
 
     iniciarTransicion(async () => {
-      const res = await guardarInscripcionRecurrenteAction(datosParaGuardar);
+      const res = await guardarInscripcionRecurrente(datosParaGuardar);
       if (res.ok) {
         setGuardadoExitoso(true);
         setTimeout(() => setGuardadoExitoso(false), 4000);
@@ -125,18 +126,14 @@ export function FormularioRecurrente({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-bold text-tinta">
-            {t("weeklyScheduleTitle")}
-          </h3>
-          <p className="text-xs text-tinta-2">
-            {t("weeklyScheduleSubtitle")}
-          </p>
+          <h3 className="texto-titulo-tarjeta">{t("weeklyScheduleTitle")}</h3>
+          <p className="texto-meta">{t("weeklyScheduleSubtitle")}</p>
         </div>
 
         <Button
           onClick={manejarGuardar}
           disabled={cargando}
-          className="gap-2 font-semibold shadow-sm"
+          className="gap-2 font-semibold"
         >
           {guardadoExitoso ? (
             <>
@@ -161,9 +158,10 @@ export function FormularioRecurrente({
           return (
             <Card
               key={dia}
-              className={`border-linea p-4 transition-all ${
-                config.activo ? "bg-card shadow-sm" : "bg-muted/40 opacity-70"
-              }`}
+              className={cn(
+                "p-4 transition-all",
+                !config.activo && "bg-muted/40 opacity-70 shadow-none",
+              )}
             >
               <div className="flex items-center justify-between border-b border-linea/60 pb-3">
                 <div className="flex items-center gap-2">
@@ -183,13 +181,13 @@ export function FormularioRecurrente({
                       actualizarDia(dia, { activo: !config.activo })
                     }
                     className={cn(
-                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca-500",
+                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer after:absolute after:-inset-3 after:content-[''] items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca-500",
                       config.activo ? "bg-marca-500" : "bg-muted-foreground/30",
                     )}
                   >
                     <span
                       className={cn(
-                        "pointer-events-none block size-4 rounded-full bg-white shadow-md ring-0 transition-transform",
+                        "pointer-events-none block size-4 rounded-full bg-background shadow-card ring-0 transition-transform",
                         config.activo ? "translate-x-4" : "translate-x-0",
                       )}
                     />
@@ -210,19 +208,19 @@ export function FormularioRecurrente({
               </div>
 
               {config.activo ? (
-                <div className="mt-3 space-y-2.5 text-xs">
+                <div className="mt-3 space-y-3 text-sm">
                   {/* Selector de Viaje */}
                   <div className="space-y-1">
-                    <label className="font-medium text-tinta-2">
+                    <Label>
                       {t("tripShift")}
-                    </label>
+                    </Label>
                     <Select
                       value={config.horarioId}
                       onValueChange={(horarioId) =>
                         actualizarDia(dia, { horarioId })
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -237,17 +235,17 @@ export function FormularioRecurrente({
 
                   {/* Parada de Abordaje */}
                   <div className="space-y-1">
-                    <label className="flex items-center gap-1 font-medium text-tinta-2">
+                    <Label className="gap-1">
                       <MapPin className="size-3 text-marca-500" />
                       {t("pickupStop")}
-                    </label>
+                    </Label>
                     <Select
                       value={config.paradaAbordajeId}
                       onValueChange={(paradaAbordajeId) =>
                         actualizarDia(dia, { paradaAbordajeId })
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -262,17 +260,17 @@ export function FormularioRecurrente({
 
                   {/* Parada de Destino */}
                   <div className="space-y-1">
-                    <label className="flex items-center gap-1 font-medium text-tinta-2">
+                    <Label className="gap-1">
                       <MapPin className="size-3 text-marca-700" />
                       {t("dropoffStop")}
-                    </label>
+                    </Label>
                     <Select
                       value={config.paradaDestinoId}
                       onValueChange={(paradaDestinoId) =>
                         actualizarDia(dia, { paradaDestinoId })
                       }
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -286,7 +284,7 @@ export function FormularioRecurrente({
                   </div>
                 </div>
               ) : (
-                <div className="py-6 text-center text-xs text-tinta-3">
+                <div className="py-6 text-center texto-meta">
                   {t("noTripThisDay")}
                 </div>
               )}

@@ -3,18 +3,28 @@
 import { useEffect, useRef, useState } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { AlertTriangle, Clock, MapPin, Navigation } from "lucide-react";
+import { AlertCircle, Bus, Clock, MapPin, Navigation } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { BOUNDS_LEAFLET_LA_VEGA, CENTRO_LA_VEGA } from "@/lib/la-vega-geografia";
+import { AZUL, AZUL_OSCURO, TINTA, BLANCO } from "@/lib/paleta";
 import type { TransporteParada, TransporteViaje } from "@/lib/transporte";
 import { iconoGuagua3D } from "./marcador-guagua-3d";
 
 export interface PropsMapaTransporte {
   viajeInicial: (TransporteViaje & { paradas: TransporteParada[] }) | null;
   paradas: TransporteParada[];
+}
+
+/** Leaflet pinta los popups como HTML: todo texto de la BD pasa por aquí. */
+function escapar(texto: string): string {
+  return texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export function MapaTransporteCliente({
@@ -79,7 +89,7 @@ export function MapaTransporteCliente({
     }
 
     const polyline = L.polyline(coordenadasRuta, {
-      color: "#2096BA",
+      color: AZUL,
       weight: 4,
       opacity: 0.8,
       dashArray: "6, 8",
@@ -94,15 +104,15 @@ export function MapaTransporteCliente({
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #FFFFFF;
-          border: 2px solid #2096BA;
-          color: #0A6A8A;
+          background: ${BLANCO};
+          border: 2px solid ${AZUL};
+          color: ${AZUL_OSCURO};
           font-size: 11px;
           font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 4px rgba(23, 26, 29, 0.2);
+          box-shadow: 0 2px 4px color-mix(in srgb, ${TINTA} 20%, transparent);
         ">
           ${parada.orden}
         </div>
@@ -119,8 +129,8 @@ export function MapaTransporteCliente({
 
       marker.bindPopup(`
         <div style="font-family: inherit;">
-          <strong style="color: #0A6A8A; font-size: 13px;">${parada.orden}. ${parada.nombre}</strong>
-          ${parada.referencia ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: #171A1D; opacity: 0.75;">${parada.referencia}</p>` : ""}
+          <strong style="color: ${AZUL_OSCURO}; font-size: 13px;">${parada.orden}. ${escapar(parada.nombre)}</strong>
+          ${parada.referencia ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: ${TINTA}; opacity: 0.75;">${escapar(parada.referencia)}</p>` : ""}
           <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 600;">
             ${t("popup.estimated", { minutes: parada.minutos_estimados })}
           </p>
@@ -162,8 +172,8 @@ export function MapaTransporteCliente({
 
       marcador.bindPopup(`
         <div style="font-family: inherit;">
-          <strong style="color: #2096BA; font-size: 14px;">🚐 ${t("popup.title")}</strong>
-          <p style="margin: 3px 0 0 0; font-size: 12px;"><strong>${t("popup.driver")}:</strong> ${viaje?.chofer_nombre ?? t("popup.assigned")}</p>
+          <strong style="color: ${AZUL}; font-size: 14px;">${t("popup.title")}</strong>
+          <p style="margin: 3px 0 0 0; font-size: 12px;"><strong>${t("popup.driver")}:</strong> ${escapar(viaje?.chofer_nombre ?? t("popup.assigned"))}</p>
           <p style="margin: 2px 0 0 0; font-size: 12px;"><strong>${t("popup.status")}:</strong> ${t(`status.${viaje?.estado ?? "programado"}`)}</p>
         </div>
       `);
@@ -203,18 +213,18 @@ export function MapaTransporteCliente({
       {incidenciaActiva && (
         <div
           role="alert"
-          className="flex items-center gap-3 rounded-lg border border-[#B4342B]/30 bg-[#B4342B]/10 p-4 text-[#B4342B] animate-pulse"
+          className="flex items-center gap-3 rounded-card bg-tinta p-4 text-background"
         >
-          <AlertTriangle className="size-5 shrink-0" />
+          <AlertCircle className="size-5 shrink-0" />
           <div className="text-sm">
             <p className="font-semibold">{t("breakdownAlert")}</p>
-            <p className="text-xs opacity-90">{incidenciaActiva.descripcion}</p>
+            <p className="text-background/80">{incidenciaActiva.descripcion}</p>
           </div>
         </div>
       )}
 
       {/* Contenedor del Mapa Leaflet */}
-      <div className="relative overflow-hidden rounded-xl border border-linea shadow-sm">
+      <div className="relative overflow-hidden rounded-card border border-linea shadow-card">
         <div
           ref={contenedorRef}
           className="mapa-la-vega h-[min(480px,65svh)] min-h-[320px] w-full"
@@ -222,7 +232,7 @@ export function MapaTransporteCliente({
 
         {/* Tarjeta flotante con estado del transporte en la esquina superior */}
         <div className="pointer-events-none absolute top-3 left-3 z-[400] max-w-xs">
-          <Card className="pointer-events-auto border-linea/60 bg-card/95 p-3 shadow-md backdrop-blur-sm">
+          <Card className="pointer-events-auto border-linea/60 bg-card/95 p-3 shadow-elevada backdrop-blur-sm">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 text-xs font-semibold text-tinta">
                 <Navigation className="size-3.5 text-marca-500" />

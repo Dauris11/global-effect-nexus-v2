@@ -1,5 +1,6 @@
 import * as L from "leaflet";
 
+import { AZUL, AZUL_OSCURO, BLANCO, SEMAFORO, TINTA } from "@/lib/paleta";
 import type { EstadoViaje } from "@/lib/transporte";
 
 /**
@@ -11,17 +12,19 @@ export function iconoGuagua3D({
   rumbo = 0,
   estado = "en_curso",
   velocidadKmh = 0,
-  etiquetaParada = "Parada",
+  etiquetaParada,
 }: {
   rumbo?: number;
   estado?: EstadoViaje;
   velocidadKmh?: number;
-  etiquetaParada?: string;
+  /** Texto cuando está detenida; llega traducido, aquí no hay literales. */
+  etiquetaParada: string;
 }): L.DivIcon {
   const esAveriado = estado === "averiado";
 
-  const colorChasis = esAveriado ? "#B4342B" : "#2096BA";
-  const colorBorde = esAveriado ? "#171A1D" : "#0A6A8A";
+  // Averiada = estado de la entidad: usa el rojo del semáforo; el resto, marca.
+  const colorChasis = esAveriado ? SEMAFORO.alerta : AZUL;
+  const colorBorde = esAveriado ? TINTA : AZUL_OSCURO;
   const textoVelocidad =
     velocidadKmh > 0 ? `${Math.round(velocidadKmh)} km/h` : etiquetaParada;
 
@@ -33,7 +36,7 @@ export function iconoGuagua3D({
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: ${esAveriado ? "rgba(180, 52, 43, 0.25)" : "rgba(32, 150, 186, 0.25)"};
+        background: color-mix(in srgb, ${colorChasis} 25%, transparent);
         animation: guaguaOnda 2s infinite ease-out;
         pointer-events: none;
       "></div>
@@ -55,7 +58,7 @@ export function iconoGuagua3D({
           bottom: -4px;
           width: 28px;
           height: 14px;
-          background: rgba(23, 26, 29, 0.35);
+          background: color-mix(in srgb, ${TINTA} 35%, transparent);
           border-radius: 50%;
           filter: blur(3px);
           transform: perspective(300px) rotateX(40deg);
@@ -69,7 +72,7 @@ export function iconoGuagua3D({
           background: ${colorChasis};
           border: 2px solid ${colorBorde};
           border-radius: 7px;
-          box-shadow: 0 8px 16px -2px rgba(23, 26, 29, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.35);
+          box-shadow: 0 8px 16px -2px color-mix(in srgb, ${TINTA} 40%, transparent), inset 0 2px 4px color-mix(in srgb, ${BLANCO} 35%, transparent);
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -81,16 +84,16 @@ export function iconoGuagua3D({
           <div style="
             width: 18px;
             height: 7px;
-            background: #171A1D;
+            background: ${TINTA};
             border-radius: 3px 3px 1px 1px;
-            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 1px 2px color-mix(in srgb, ${BLANCO} 40%, transparent);
           "></div>
 
           <!-- Techo institucional con logo GE -->
           <div style="
             font-size: 8px;
             font-weight: 800;
-            color: #FFFFFF;
+            color: ${BLANCO};
             letter-spacing: -0.5px;
             user-select: none;
             opacity: 0.95;
@@ -104,8 +107,8 @@ export function iconoGuagua3D({
             justify-content: space-between;
             width: 18px;
           ">
-            <span style="width: 4px; height: 3px; background: #B4342B; border-radius: 1px;"></span>
-            <span style="width: 4px; height: 3px; background: #B4342B; border-radius: 1px;"></span>
+            <span style="width: 4px; height: 3px; background: ${SEMAFORO.alerta}; border-radius: 1px;"></span>
+            <span style="width: 4px; height: 3px; background: ${SEMAFORO.alerta}; border-radius: 1px;"></span>
           </div>
         </div>
 
@@ -118,8 +121,8 @@ export function iconoGuagua3D({
           display: flex;
           justify-content: space-between;
         ">
-          <span style="width: 4px; height: 4px; background: #FFFFFF; border-radius: 50%; box-shadow: 0 -4px 6px #FFFFFF;"></span>
-          <span style="width: 4px; height: 4px; background: #FFFFFF; border-radius: 50%; box-shadow: 0 -4px 6px #FFFFFF;"></span>
+          <span style="width: 4px; height: 4px; background: ${BLANCO}; border-radius: 50%; box-shadow: 0 -4px 6px ${BLANCO};"></span>
+          <span style="width: 4px; height: 4px; background: ${BLANCO}; border-radius: 50%; box-shadow: 0 -4px 6px ${BLANCO};"></span>
         </div>
       </div>
 
@@ -127,13 +130,13 @@ export function iconoGuagua3D({
       <div style="
         position: absolute;
         top: -10px;
-        background: #171A1D;
-        color: #FFFFFF;
+        background: ${TINTA};
+        color: ${BLANCO};
         font-size: 9px;
         font-weight: 700;
         padding: 1px 5px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid color-mix(in srgb, ${BLANCO} 20%, transparent);
         white-space: nowrap;
         pointer-events: none;
       ">

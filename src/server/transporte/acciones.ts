@@ -5,20 +5,45 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import type { PasajeroViaje, TipoIncidenciaTransporte } from "@/lib/transporte";
+import {
+  fechaHoyRD,
+  SQL_HOY_RD,
+  type PasajeroViaje,
+  type TipoIncidenciaTransporte,
+} from "@/lib/transporte";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { obtenerPasajerosHorario } from "./consultas";
 
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const TIPOS_INCIDENCIA: readonly TipoIncidenciaTransporte[] = [
+  "averia_mecanica",
+  "transito_pesado",
+  "desvio_ruta",
+  "accidente",
+  "otro",
+];
+
+/** Refresca todas las pantallas que muestran el estado del transporte. */
+function refrescarTransporte() {
+  revalidatePath("/portal/chofer");
+  revalidatePath("/portal/estudiante/transporte");
+  revalidatePath("/transporte");
+}
+
 /**
- * Guarda o actualiza la configuración semanal recurrente de transporte del estudiante.
- * Se guarda una sola vez para que el estudiante no tenga que anotarse todos los días.
+ * Guarda la configuración semanal recurrente del estudiante. Se hace una sola
+ * vez para que no tenga que anotarse todos los días.
  */
-export async function guardarInscripcionRecurrenteAction(inscripciones: {
-  horarioId: string;
-  diaSemana: number;
-  paradaAbordajeId: string;
-  paradaDestinoId: string;
-}[]): Promise<{ ok: boolean; mensaje?: string }> {
+export async function guardarInscripcionRecurrente(
+  inscripciones: {
+    horarioId: string;
+    diaSemana: number;
+    paradaAbordajeId: string;
+    paradaDestinoId: string;
+  }[],
+): Promise<{ ok: boolean; mensaje?: string }> {
   const usuario = await requerirUsuario();
   const estudiante = await estudianteDeUsuario(usuario.id);
 
@@ -26,20 +51,25 @@ export async function guardarInscripcionRecurrenteAction(inscripciones: {
     return { ok: false, mensaje: "estudiante_no_enlazado" };
   }
 
+  const validas = inscripciones.filter(
+    (i) =>
+      UUID.test(i.horarioId) &&
+      UUID.test(i.paradaAbordajeId) &&
+      UUID.test(i.paradaDestinoId) &&
+      Number.isInteger(i.diaSemana) &&
+      i.diaSemana >= 1 &&
+      i.diaSemana <= 6,
+  );
+
   try {
     await enTransaccion(async (cliente) => {
-      // Desactivar inscripciones previas del estudiante
+      // Reemplazo completo: lo que el estudiante ve en pantalla es lo que queda.
       await cliente.query(
         `DELETE FROM transporte_inscripcion_recurrente WHERE estudiante_id = $1`,
         [estudiante.id],
       );
 
-      // Insertar las nuevas selecciones
-      for (const item of inscripciones) {
-        if (!item.horarioId || !item.paradaAbordajeId || !item.paradaDestinoId) {
-          continue;
-        }
-
+      for (const item of validas) {
         await cliente.query(
           `INSERT INTO transporte_inscripcion_recurrente
              (estudiante_id, horario_id, dia_semana, parada_abordaje_id, parada_destino_id)
@@ -64,12 +94,10 @@ export async function guardarInscripcionRecurrenteAction(inscripciones: {
       usuarioId: usuario.id,
       accion: "transporte.horario_recurrente_guardado",
       entidad: "transporte_inscripcion_recurrente",
-      datos: { cantidad: inscripciones.length },
+      datos: { cantidad: validas.length },
     });
 
-    revalidatePath("/portal/estudiante/transporte");
-    revalidatePath("/transporte");
-
+    refrescarTransporte();
     return { ok: true };
   } catch (error) {
     console.error("[transporte] Error al guardar horario recurrente:", error);
@@ -78,10 +106,11 @@ export async function guardarInscripcionRecurrenteAction(inscripciones: {
 }
 
 /**
- * Registro puntual diario para el transporte (usado tanto en la puerta pública sin login
- * como para viajes esporádicos).
+ * Anotación para un día concreto. Es la única acción de transporte sin sesión
+ * (puerta pública `/transporte`), así que valida todo lo que recibe: sin
+ * login no hay a quién pedirle cuentas.
  */
-export async function inscribirPuntualDiariaAction(datos: {
+export async function inscribirPuntualDiaria(datos: {
   horarioId: string;
   nombre: string;
   matriculaOTelefono?: string;
@@ -89,16 +118,33 @@ export async function inscribirPuntualDiariaAction(datos: {
   paradaDestinoId: string;
   fecha?: string;
 }): Promise<{ ok: boolean; mensaje?: string }> {
-  try {
-    const fecha = datos.fecha ?? new Date().toISOString().slice(0, 10);
+  const nombre = datos.nombre.trim();
+  const contacto = datos.matriculaOTelefono?.trim() || null;
+  const hoy = fechaHoyRD();
 
+  if (
+    nombre.length < 2 ||
+    nombre.length > 120 ||
+    (contacto && contacto.length > 40) ||
+    !UUID.test(datos.horarioId) ||
+    !UUID.test(datos.paradaAbordajeId) ||
+    !UUID.test(datos.paradaDestinoId) ||
+    (datos.fecha && !FECHA.test(datos.fecha))
+  ) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
+
+  // Solo hoy o futuro: una fecha pasada no sirve de nada y ensucia la lista.
+  const fecha = datos.fecha && datos.fecha >= hoy ? datos.fecha : hoy;
+
+  try {
     await enTransaccion(async (cliente) => {
-      // Intentar vincular a estudiante si coincide la matrícula
+      // Si el contacto coincide con un estudiante, el registro queda enlazado a él.
       let estudianteId: string | null = null;
-      if (datos.matriculaOTelefono) {
+      if (contacto) {
         const est = await cliente.query<{ id: string }>(
           `SELECT id FROM estudiante WHERE cedula = $1 OR telefono = $1 LIMIT 1`,
-          [datos.matriculaOTelefono.trim()],
+          [contacto],
         );
         estudianteId = est.rows[0]?.id ?? null;
       }
@@ -111,8 +157,8 @@ export async function inscribirPuntualDiariaAction(datos: {
           fecha,
           datos.horarioId,
           estudianteId,
-          datos.nombre.trim(),
-          datos.matriculaOTelefono?.trim() || null,
+          nombre,
+          contacto,
           datos.paradaAbordajeId,
           datos.paradaDestinoId,
         ],
@@ -121,7 +167,6 @@ export async function inscribirPuntualDiariaAction(datos: {
 
     revalidatePath("/transporte");
     revalidatePath("/portal/chofer");
-
     return { ok: true };
   } catch (error) {
     console.error("[transporte] Error al registrar inscripción puntual:", error);
@@ -130,34 +175,35 @@ export async function inscribirPuntualDiariaAction(datos: {
 }
 
 /**
- * El chofer inicia el viaje del turno correspondiente.
- * Pone el viaje en estado 'en_curso' y comienza a transmitir su señal.
+ * El chofer inicia el viaje de su turno. Si ya tiene uno en curso hoy lo
+ * retoma en lugar de abrir otro, para que recargar la página no duplique viajes.
  */
-export async function iniciarViajeAction(datos: {
+export async function iniciarViaje(datos: {
   horarioId: string;
   lat?: number;
   lng?: number;
 }): Promise<{ ok: boolean; viajeId?: string; mensaje?: string }> {
   const usuario = await requerirPermiso("transporte.operar");
 
+  if (!UUID.test(datos.horarioId)) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
+
   try {
     const viaje = await enTransaccion(async (cliente) => {
-      // Si ya hay un viaje 'en_curso' de este chofer hoy, lo reactiva o toma
       const existente = await cliente.query<{ id: string }>(
         `SELECT id FROM transporte_viaje
-          WHERE chofer_id = $1 AND fecha = CURRENT_DATE AND estado = 'en_curso'
+          WHERE chofer_id = $1 AND fecha = ${SQL_HOY_RD} AND estado = 'en_curso'
           LIMIT 1`,
         [usuario.id],
       );
 
-      if (existente.rows[0]?.id) {
-        return existente.rows[0];
-      }
+      if (existente.rows[0]?.id) return existente.rows[0];
 
       const res = await cliente.query<{ id: string }>(
         `INSERT INTO transporte_viaje
            (horario_id, chofer_id, fecha, estado, lat_actual, lng_actual, iniciado_en)
-         VALUES ($1, $2, CURRENT_DATE, 'en_curso', $3, $4, now())
+         VALUES ($1, $2, ${SQL_HOY_RD}, 'en_curso', $3, $4, now())
          RETURNING id`,
         [datos.horarioId, usuario.id, datos.lat ?? null, datos.lng ?? null],
       );
@@ -173,10 +219,7 @@ export async function iniciarViajeAction(datos: {
       datos: { horarioId: datos.horarioId },
     });
 
-    revalidatePath("/portal/chofer");
-    revalidatePath("/portal/estudiante/transporte");
-    revalidatePath("/transporte");
-
+    refrescarTransporte();
     return { ok: true, viajeId: viaje.id };
   } catch (error) {
     console.error("[transporte] Error al iniciar viaje:", error);
@@ -185,9 +228,10 @@ export async function iniciarViajeAction(datos: {
 }
 
 /**
- * Transmisión continua de posición GPS enviada desde el dispositivo del chofer.
+ * Posición GPS que transmite el dispositivo del chofer. Solo actualiza viajes
+ * propios: el `chofer_id` en el WHERE impide mover la guagua de otro.
  */
-export async function actualizarPosicionViajeAction(datos: {
+export async function actualizarPosicionViaje(datos: {
   viajeId: string;
   lat: number;
   lng: number;
@@ -197,8 +241,18 @@ export async function actualizarPosicionViajeAction(datos: {
 }): Promise<{ ok: boolean }> {
   const usuario = await requerirPermiso("transporte.operar");
 
+  if (
+    !UUID.test(datos.viajeId) ||
+    !Number.isFinite(datos.lat) ||
+    !Number.isFinite(datos.lng) ||
+    Math.abs(datos.lat) > 90 ||
+    Math.abs(datos.lng) > 180
+  ) {
+    return { ok: false };
+  }
+
   try {
-    await consultarUna(
+    const fila = await consultarUna<{ id: string }>(
       `UPDATE transporte_viaje
           SET lat_actual = $2,
               lng_actual = $3,
@@ -206,7 +260,8 @@ export async function actualizarPosicionViajeAction(datos: {
               velocidad_kmh = COALESCE($5, velocidad_kmh),
               parada_actual_id = COALESCE($6, parada_actual_id),
               actualizado_en = now()
-        WHERE id = $1 AND chofer_id = $7`,
+        WHERE id = $1 AND chofer_id = $7
+        RETURNING id`,
       [
         datos.viajeId,
         datos.lat,
@@ -218,7 +273,7 @@ export async function actualizarPosicionViajeAction(datos: {
       ],
     );
 
-    return { ok: true };
+    return { ok: Boolean(fila) };
   } catch (error) {
     console.error("[transporte] Error al actualizar posición GPS:", error);
     return { ok: false };
@@ -226,22 +281,31 @@ export async function actualizarPosicionViajeAction(datos: {
 }
 
 /**
- * El chofer culmina el viaje.
+ * El chofer termina su viaje. Solo se audita si el viaje era suyo y seguía
+ * abierto; antes quedaba registro aunque el UPDATE no tocara ninguna fila.
  */
-export async function finalizarViajeAction(datos: {
+export async function finalizarViaje(datos: {
   viajeId: string;
 }): Promise<{ ok: boolean; mensaje?: string }> {
   const usuario = await requerirPermiso("transporte.operar");
 
+  if (!UUID.test(datos.viajeId)) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
+
   try {
-    await consultarUna(
+    const fila = await consultarUna<{ id: string }>(
       `UPDATE transporte_viaje
           SET estado = 'completado',
               finalizado_en = now(),
               actualizado_en = now()
-        WHERE id = $1 AND chofer_id = $2`,
+        WHERE id = $1 AND chofer_id = $2
+          AND estado IN ('en_curso', 'averiado')
+        RETURNING id`,
       [datos.viajeId, usuario.id],
     );
+
+    if (!fila) return { ok: false, mensaje: "viaje_no_encontrado" };
 
     await registrar({
       usuarioId: usuario.id,
@@ -250,10 +314,7 @@ export async function finalizarViajeAction(datos: {
       entidadId: datos.viajeId,
     });
 
-    revalidatePath("/portal/chofer");
-    revalidatePath("/portal/estudiante/transporte");
-    revalidatePath("/transporte");
-
+    refrescarTransporte();
     return { ok: true };
   } catch (error) {
     console.error("[transporte] Error al finalizar viaje:", error);
@@ -262,10 +323,10 @@ export async function finalizarViajeAction(datos: {
 }
 
 /**
- * Reporte de problema o avería mecánica por parte del chofer.
- * Notifica de inmediato a los estudiantes inscritos en ese viaje.
+ * Avería o problema en ruta. Avisa de inmediato a los estudiantes convocados
+ * hoy a ese turno. El viaje tiene que ser del chofer que reporta.
  */
-export async function reportarIncidenciaAction(datos: {
+export async function reportarIncidencia(datos: {
   viajeId: string;
   tipo: TipoIncidenciaTransporte;
   descripcion: string;
@@ -273,10 +334,26 @@ export async function reportarIncidenciaAction(datos: {
   lng?: number;
 }): Promise<{ ok: boolean; mensaje?: string }> {
   const usuario = await requerirPermiso("transporte.operar");
+  const descripcion = datos.descripcion.trim();
+
+  if (
+    !UUID.test(datos.viajeId) ||
+    !TIPOS_INCIDENCIA.includes(datos.tipo) ||
+    descripcion.length === 0 ||
+    descripcion.length > 500
+  ) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
 
   try {
-    await enTransaccion(async (cliente) => {
-      // 1. Registrar la incidencia
+    const registrada = await enTransaccion(async (cliente) => {
+      const viaje = await cliente.query<{ horario_id: string }>(
+        `SELECT horario_id FROM transporte_viaje WHERE id = $1 AND chofer_id = $2`,
+        [datos.viajeId, usuario.id],
+      );
+      const horarioId = viaje.rows[0]?.horario_id;
+      if (!horarioId) return false;
+
       await cliente.query(
         `INSERT INTO transporte_incidencia
            (viaje_id, chofer_id, tipo, descripcion, lat, lng)
@@ -285,13 +362,12 @@ export async function reportarIncidenciaAction(datos: {
           datos.viajeId,
           usuario.id,
           datos.tipo,
-          datos.descripcion.trim(),
+          descripcion,
           datos.lat ?? null,
           datos.lng ?? null,
         ],
       );
 
-      // 2. Si es avería mecánica, marcar el viaje como averiado
       if (datos.tipo === "averia_mecanica") {
         await cliente.query(
           `UPDATE transporte_viaje
@@ -301,34 +377,27 @@ export async function reportarIncidenciaAction(datos: {
         );
       }
 
-      // 3. Notificar a los estudiantes convocados a este viaje
-      const viajeRes = await cliente.query<{ horario_id: string }>(
-        `SELECT horario_id FROM transporte_viaje WHERE id = $1`,
-        [datos.viajeId],
+      const titulo =
+        datos.tipo === "averia_mecanica"
+          ? "Aviso de transporte: avería técnica"
+          : "Aviso de transporte: incidencia en ruta";
+
+      await cliente.query(
+        `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT DISTINCT e.usuario_id, $1, $2, 'alerta', '/portal/estudiante/transporte'
+           FROM transporte_inscripcion_recurrente r
+           JOIN estudiante e ON e.id = r.estudiante_id
+          WHERE r.horario_id = $3
+            AND r.activo = true
+            AND r.dia_semana = EXTRACT(ISODOW FROM ${SQL_HOY_RD})::smallint
+            AND e.usuario_id IS NOT NULL`,
+        [titulo, descripcion, horarioId],
       );
-      const horarioId = viajeRes.rows[0]?.horario_id;
 
-      if (horarioId) {
-        const titulo =
-          datos.tipo === "averia_mecanica"
-            ? "Aviso de Transporte: Avería técnica"
-            : "Aviso de Transporte: Incidencia en ruta";
-
-        const mensaje = datos.descripcion.trim();
-
-        await cliente.query(
-          `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-           SELECT DISTINCT e.usuario_id, $1, $2, 'alerta', '/portal/estudiante/transporte'
-             FROM transporte_inscripcion_recurrente r
-             JOIN estudiante e ON e.id = r.estudiante_id
-            WHERE r.horario_id = $3
-              AND r.activo = true
-              AND r.dia_semana = EXTRACT(ISODOW FROM CURRENT_DATE)::smallint
-              AND e.usuario_id IS NOT NULL`,
-          [titulo, mensaje, horarioId],
-        );
-      }
+      return true;
     });
+
+    if (!registrada) return { ok: false, mensaje: "viaje_no_encontrado" };
 
     await registrar({
       usuarioId: usuario.id,
@@ -337,10 +406,7 @@ export async function reportarIncidenciaAction(datos: {
       datos: { viajeId: datos.viajeId, tipo: datos.tipo },
     });
 
-    revalidatePath("/portal/chofer");
-    revalidatePath("/portal/estudiante/transporte");
-    revalidatePath("/transporte");
-
+    refrescarTransporte();
     return { ok: true };
   } catch (error) {
     console.error("[transporte] Error al reportar incidencia:", error);
@@ -349,17 +415,21 @@ export async function reportarIncidenciaAction(datos: {
 }
 
 /**
- * Actualiza manualmente la parada actual o próxima alcanzada por la guagua.
- * Muy útil como respaldo en zonas rurales donde el GPS o la cobertura móvil fluctúan.
+ * Marca a mano la parada actual. Respaldo para zonas rurales donde el GPS o
+ * la cobertura se cortan.
  */
-export async function actualizarParadaActualViajeAction(datos: {
+export async function actualizarParadaViaje(datos: {
   viajeId: string;
   paradaId: string;
 }): Promise<{ ok: boolean; mensaje?: string }> {
   const usuario = await requerirPermiso("transporte.operar");
 
+  if (!UUID.test(datos.viajeId) || !UUID.test(datos.paradaId)) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
+
   try {
-    await consultarUna(
+    const fila = await consultarUna<{ id: string }>(
       `UPDATE transporte_viaje v
           SET parada_actual_id = p.id,
               lat_actual = COALESCE(v.lat_actual, p.lat),
@@ -368,14 +438,14 @@ export async function actualizarParadaActualViajeAction(datos: {
          FROM transporte_parada p
         WHERE v.id = $1
           AND v.chofer_id = $2
-          AND p.id = $3`,
+          AND p.id = $3
+        RETURNING v.id`,
       [datos.viajeId, usuario.id, datos.paradaId],
     );
 
-    revalidatePath("/portal/chofer");
-    revalidatePath("/portal/estudiante/transporte");
-    revalidatePath("/transporte");
+    if (!fila) return { ok: false, mensaje: "viaje_no_encontrado" };
 
+    refrescarTransporte();
     return { ok: true };
   } catch (error) {
     console.error("[transporte] Error al actualizar parada actual:", error);
@@ -384,12 +454,14 @@ export async function actualizarParadaActualViajeAction(datos: {
 }
 
 /**
- * Carga dinámica de la lista de pasajeros convocados para un horario específico.
+ * Pasajeros de un turno para el chofer cuando cambia de horario en pantalla.
  */
-export async function obtenerPasajerosHorarioAction(
+export async function cargarPasajerosHorario(
   horarioId: string,
 ): Promise<{ ok: boolean; pasajeros: PasajeroViaje[] }> {
   await requerirPermiso("transporte.operar");
+
+  if (!UUID.test(horarioId)) return { ok: false, pasajeros: [] };
 
   try {
     const pasajeros = await obtenerPasajerosHorario(horarioId);
@@ -399,4 +471,3 @@ export async function obtenerPasajerosHorarioAction(
     return { ok: false, pasajeros: [] };
   }
 }
-

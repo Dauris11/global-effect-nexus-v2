@@ -1,16 +1,78 @@
 import { consultar, consultarUna } from "@/lib/db";
-import type {
-  PasajeroViaje,
-  TransporteHorario,
-  TransporteIncidencia,
-  TransporteInscripcionRecurrente,
-  TransporteParada,
-  TransporteRuta,
-  TransporteViaje,
+import {
+  minutosActualesRD,
+  SQL_HOY_RD,
+  type PasajeroViaje,
+  type TransporteHorario,
+  type TransporteIncidencia,
+  type TransporteInscripcionRecurrente,
+  type TransporteParada,
+  type TransporteRuta,
+  type TransporteViaje,
 } from "@/lib/transporte";
 
 /**
- * Consulta todas las rutas de transporte activas con sus paradas geográficas ordenadas.
+ * Columnas del viaje con su horario, chofer y parada actual. Una sola fuente:
+ * antes el mismo SELECT estaba copiado cinco veces y se desalineaba.
+ */
+const SELECT_VIAJE = `
+  SELECT v.id,
+         v.horario_id,
+         h.nombre AS horario_nombre,
+         to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
+         v.chofer_id,
+         u.nombre AS chofer_nombre,
+         to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
+         v.estado,
+         v.lat_actual::float AS lat_actual,
+         v.lng_actual::float AS lng_actual,
+         v.rumbo::float AS rumbo,
+         v.velocidad_kmh::float AS velocidad_kmh,
+         v.parada_actual_id,
+         p.nombre AS parada_actual_nombre,
+         to_char(v.iniciado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS iniciado_en,
+         to_char(v.finalizado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS finalizado_en
+    FROM transporte_viaje v
+    JOIN transporte_horario h ON h.id = v.horario_id
+    JOIN usuario u ON u.id = v.chofer_id
+    LEFT JOIN transporte_parada p ON p.id = v.parada_actual_id`;
+
+const SELECT_PARADA = `
+  SELECT p.id, p.ruta_id, p.orden, p.nombre, p.referencia,
+         p.lat::float AS lat, p.lng::float AS lng, p.minutos_estimados
+    FROM transporte_parada p`;
+
+/** Incidencias de un viaje, la más reciente primero. */
+async function incidenciasDelViaje(
+  viajeId: string,
+): Promise<TransporteIncidencia[]> {
+  return consultar<TransporteIncidencia>(
+    `SELECT i.id, i.viaje_id, i.chofer_id, u.nombre AS chofer_nombre,
+            i.tipo, i.descripcion, i.lat::float AS lat, i.lng::float AS lng,
+            to_char(i.creado_en AT TIME ZONE 'America/Santo_Domingo', 'HH24:MI') AS creado_en
+       FROM transporte_incidencia i
+       JOIN usuario u ON u.id = i.chofer_id
+      WHERE i.viaje_id = $1
+      ORDER BY i.creado_en DESC`,
+    [viajeId],
+  );
+}
+
+/** Paradas de la ruta que recorre un horario, en orden de paso. */
+async function paradasDelHorario(
+  horarioId: string,
+): Promise<TransporteParada[]> {
+  return consultar<TransporteParada>(
+    `${SELECT_PARADA}
+       JOIN transporte_horario h ON h.ruta_id = p.ruta_id
+      WHERE h.id = $1
+      ORDER BY p.orden ASC`,
+    [horarioId],
+  );
+}
+
+/**
+ * Todas las rutas activas con sus paradas ordenadas.
  */
 export async function listarRutasConParadas(): Promise<
   (TransporteRuta & { paradas: TransporteParada[] })[]
@@ -25,10 +87,8 @@ export async function listarRutasConParadas(): Promise<
   if (rutas.length === 0) return [];
 
   const paradas = await consultar<TransporteParada>(
-    `SELECT id, ruta_id, orden, nombre, referencia,
-            lat::float AS lat, lng::float AS lng, minutos_estimados
-       FROM transporte_parada
-      ORDER BY ruta_id, orden ASC`,
+    `${SELECT_PARADA}
+      ORDER BY p.ruta_id, p.orden ASC`,
   );
 
   return rutas.map((ruta) => ({
@@ -38,7 +98,7 @@ export async function listarRutasConParadas(): Promise<
 }
 
 /**
- * Obtiene los 4 horarios oficiales fijos de transporte con su ruta asociada.
+ * Los horarios oficiales fijos de transporte con su ruta.
  */
 export async function listarHorariosTransporte(): Promise<TransporteHorario[]> {
   return consultar<TransporteHorario>(
@@ -59,132 +119,59 @@ export async function listarHorariosTransporte(): Promise<TransporteHorario[]> {
 }
 
 /**
- * Obtiene el viaje actualmente en curso o el más reciente del día de hoy.
- * Útil para la vista en vivo de los estudiantes y la puerta pública.
+ * Un viaje por id, con incidencias y paradas. La API de rastreo y la vista en
+ * vivo comparten esta consulta para que el mapa lea siempre lo mismo.
  */
-export async function obtenerViajeEnVivo(
-  viajeId?: string,
+export async function obtenerViajePorId(
+  viajeId: string,
 ): Promise<(TransporteViaje & { paradas: TransporteParada[] }) | null> {
-  let viaje: TransporteViaje | null = null;
-
-  if (viajeId) {
-    viaje = await consultarUna<TransporteViaje>(
-      `SELECT v.id,
-              v.horario_id,
-              h.nombre AS horario_nombre,
-              to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
-              v.chofer_id,
-              u.nombre AS chofer_nombre,
-              to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
-              v.estado,
-              v.lat_actual::float AS lat_actual,
-              v.lng_actual::float AS lng_actual,
-              v.rumbo::float AS rumbo,
-              v.velocidad_kmh::float AS velocidad_kmh,
-              v.parada_actual_id,
-              p.nombre AS parada_actual_nombre,
-              to_char(v.iniciado_en, 'YYYY-MM-DD HH24:MI') AS iniciado_en,
-              to_char(v.finalizado_en, 'YYYY-MM-DD HH24:MI') AS finalizado_en
-         FROM transporte_viaje v
-         JOIN transporte_horario h ON h.id = v.horario_id
-         JOIN usuario u ON u.id = v.chofer_id
-         LEFT JOIN transporte_parada p ON p.id = v.parada_actual_id
-        WHERE v.id = $1`,
-      [viajeId],
-    );
-  } else {
-    // Buscar primero si hay un viaje 'en_curso' o 'averiado' hoy
-    viaje = await consultarUna<TransporteViaje>(
-      `SELECT v.id,
-              v.horario_id,
-              h.nombre AS horario_nombre,
-              to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
-              v.chofer_id,
-              u.nombre AS chofer_nombre,
-              to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
-              v.estado,
-              v.lat_actual::float AS lat_actual,
-              v.lng_actual::float AS lng_actual,
-              v.rumbo::float AS rumbo,
-              v.velocidad_kmh::float AS velocidad_kmh,
-              v.parada_actual_id,
-              p.nombre AS parada_actual_nombre,
-              to_char(v.iniciado_en, 'YYYY-MM-DD HH24:MI') AS iniciado_en,
-              to_char(v.finalizado_en, 'YYYY-MM-DD HH24:MI') AS finalizado_en
-         FROM transporte_viaje v
-         JOIN transporte_horario h ON h.id = v.horario_id
-         JOIN usuario u ON u.id = v.chofer_id
-         LEFT JOIN transporte_parada p ON p.id = v.parada_actual_id
-        WHERE v.fecha = CURRENT_DATE
-          AND v.estado IN ('en_curso', 'averiado')
-        ORDER BY v.iniciado_en DESC NULLS LAST
-        LIMIT 1`,
-    );
-
-    // Si no hay viaje en curso, buscar el último de hoy o el programado más próximo
-    if (!viaje) {
-      viaje = await consultarUna<TransporteViaje>(
-        `SELECT v.id,
-                v.horario_id,
-                h.nombre AS horario_nombre,
-                to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
-                v.chofer_id,
-                u.nombre AS chofer_nombre,
-                to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
-                v.estado,
-                v.lat_actual::float AS lat_actual,
-                v.lng_actual::float AS lng_actual,
-                v.rumbo::float AS rumbo,
-                v.velocidad_kmh::float AS velocidad_kmh,
-                v.parada_actual_id,
-                p.nombre AS parada_actual_nombre,
-                to_char(v.iniciado_en, 'YYYY-MM-DD HH24:MI') AS iniciado_en,
-                to_char(v.finalizado_en, 'YYYY-MM-DD HH24:MI') AS finalizado_en
-           FROM transporte_viaje v
-           JOIN transporte_horario h ON h.id = v.horario_id
-           JOIN usuario u ON u.id = v.chofer_id
-           LEFT JOIN transporte_parada p ON p.id = v.parada_actual_id
-          WHERE v.fecha = CURRENT_DATE
-          ORDER BY v.actualizado_en DESC
-          LIMIT 1`,
-      );
-    }
-  }
-
+  const viaje = await consultarUna<TransporteViaje>(
+    `${SELECT_VIAJE} WHERE v.id = $1`,
+    [viajeId],
+  );
   if (!viaje) return null;
 
-  // Cargar incidencias registradas en este viaje
-  const incidencias = await consultar<TransporteIncidencia>(
-    `SELECT i.id, i.viaje_id, i.chofer_id, u.nombre AS chofer_nombre,
-            i.tipo, i.descripcion, i.lat::float AS lat, i.lng::float AS lng,
-            to_char(i.creado_en, 'HH24:MI') AS creado_en
-       FROM transporte_incidencia i
-       JOIN usuario u ON u.id = i.chofer_id
-      WHERE i.viaje_id = $1
-      ORDER BY i.creado_en DESC`,
-    [viaje.id],
-  );
-  viaje.incidencias = incidencias;
+  const [incidencias, paradas] = await Promise.all([
+    incidenciasDelViaje(viaje.id),
+    paradasDelHorario(viaje.horario_id),
+  ]);
 
-  // Cargar paradas de la ruta del horario
-  const paradas = await consultar<TransporteParada>(
-    `SELECT p.id, p.ruta_id, p.orden, p.nombre, p.referencia,
-            p.lat::float AS lat, p.lng::float AS lng, p.minutos_estimados
-       FROM transporte_parada p
-       JOIN transporte_horario h ON h.ruta_id = p.ruta_id
-      WHERE h.id = $1
-      ORDER BY p.orden ASC`,
-    [viaje.horario_id],
-  );
-
-  return {
-    ...viaje,
-    paradas,
-  };
+  return { ...viaje, incidencias, paradas };
 }
 
 /**
- * Consulta la inscripción recurrente semanal de un estudiante.
+ * El viaje que se está haciendo hoy (en curso o averiado) o, si no hay,
+ * el último movimiento del día. Alimenta la vista en vivo y la puerta pública.
+ */
+export async function obtenerViajeEnVivo(): Promise<
+  (TransporteViaje & { paradas: TransporteParada[] }) | null
+> {
+  const activo = await consultarUna<{ id: string }>(
+    `SELECT v.id
+       FROM transporte_viaje v
+      WHERE v.fecha = ${SQL_HOY_RD}
+        AND v.estado IN ('en_curso', 'averiado')
+      ORDER BY v.iniciado_en DESC NULLS LAST
+      LIMIT 1`,
+  );
+
+  const id =
+    activo?.id ??
+    (
+      await consultarUna<{ id: string }>(
+        `SELECT v.id
+           FROM transporte_viaje v
+          WHERE v.fecha = ${SQL_HOY_RD}
+          ORDER BY v.actualizado_en DESC
+          LIMIT 1`,
+      )
+    )?.id;
+
+  return id ? obtenerViajePorId(id) : null;
+}
+
+/**
+ * La inscripción semanal recurrente de un estudiante.
  */
 export async function obtenerInscripcionesRecurrentesEstudiante(
   estudianteId: string | null,
@@ -216,8 +203,32 @@ export async function obtenerInscripcionesRecurrentesEstudiante(
 }
 
 /**
- * Resumen del estado actual para el portal del chofer.
- * Detecta el viaje en curso o sugiere el próximo viaje según la hora del día.
+ * Turno que toca según la hora de La Vega: los cortes quedan entre salidas
+ * (antes de las 10:00 → 06:00; hasta las 15:00 → 12:00; hasta las 19:15 → 18:00;
+ * después → 20:00) para que el chofer vea sugerido el turno que va a salir.
+ */
+function horarioSegunHora(
+  horarios: TransporteHorario[],
+  minutos: number,
+): TransporteHorario | null {
+  const turnos = [
+    { hasta: 10 * 60, codigo: "VIAJE_06AM" },
+    { hasta: 15 * 60, codigo: "VIAJE_12M" },
+    { hasta: 19 * 60 + 15, codigo: "VIAJE_06PM" },
+    { hasta: Infinity, codigo: "VIAJE_08PM" },
+  ];
+  const indice = turnos.findIndex((t) => minutos < t.hasta);
+
+  return (
+    horarios.find((h) => h.codigo === turnos[indice].codigo) ??
+    horarios[indice] ??
+    null
+  );
+}
+
+/**
+ * Estado del chofer para su portal: viaje en curso, turno sugerido,
+ * pasajeros y paradas del turno.
  */
 export async function obtenerEstadoChofer(choferId: string): Promise<{
   viajeActivo: TransporteViaje | null;
@@ -226,110 +237,35 @@ export async function obtenerEstadoChofer(choferId: string): Promise<{
   pasajerosHoy: PasajeroViaje[];
   paradasDisponibles: TransporteParada[];
 }> {
-  // 1. Viaje activo en curso del chofer
-  const viajeActivo = await consultarUna<TransporteViaje>(
-    `SELECT v.id,
-            v.horario_id,
-            h.nombre AS horario_nombre,
-            to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
-            v.chofer_id,
-            u.nombre AS chofer_nombre,
-            to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
-            v.estado,
-            v.lat_actual::float AS lat_actual,
-            v.lng_actual::float AS lng_actual,
-            v.rumbo::float AS rumbo,
-            v.velocidad_kmh::float AS velocidad_kmh,
-            v.parada_actual_id,
-            p.nombre AS parada_actual_nombre,
-            to_char(v.iniciado_en, 'YYYY-MM-DD HH24:MI') AS iniciado_en,
-            to_char(v.finalizado_en, 'YYYY-MM-DD HH24:MI') AS finalizado_en
-       FROM transporte_viaje v
-       JOIN transporte_horario h ON h.id = v.horario_id
-       JOIN usuario u ON u.id = v.chofer_id
-       LEFT JOIN transporte_parada p ON p.id = v.parada_actual_id
-      WHERE v.chofer_id = $1
-        AND v.fecha = CURRENT_DATE
-        AND v.estado IN ('en_curso', 'averiado')
-      ORDER BY v.iniciado_en DESC
-      LIMIT 1`,
-    [choferId],
-  );
+  const [viajeActivo, horariosDisponibles] = await Promise.all([
+    consultarUna<TransporteViaje>(
+      `${SELECT_VIAJE}
+        WHERE v.chofer_id = $1
+          AND v.fecha = ${SQL_HOY_RD}
+          AND v.estado IN ('en_curso', 'averiado')
+        ORDER BY v.iniciado_en DESC
+        LIMIT 1`,
+      [choferId],
+    ),
+    listarHorariosTransporte(),
+  ]);
 
   if (viajeActivo) {
-    const incidencias = await consultar<TransporteIncidencia>(
-      `SELECT i.id, i.viaje_id, i.chofer_id, u.nombre AS chofer_nombre,
-              i.tipo, i.descripcion, i.lat::float AS lat, i.lng::float AS lng,
-              to_char(i.creado_en, 'HH24:MI') AS creado_en
-         FROM transporte_incidencia i
-         JOIN usuario u ON u.id = i.chofer_id
-        WHERE i.viaje_id = $1
-        ORDER BY i.creado_en DESC`,
-      [viajeActivo.id],
-    );
-    viajeActivo.incidencias = incidencias;
+    viajeActivo.incidencias = await incidenciasDelViaje(viajeActivo.id);
   }
 
-  // 2. Horarios disponibles
-  const horariosDisponibles = await listarHorariosTransporte();
+  const horarioSugerido = viajeActivo
+    ? (horariosDisponibles.find((h) => h.id === viajeActivo.horario_id) ?? null)
+    : horarioSegunHora(horariosDisponibles, minutosActualesRD());
 
-  // 3. Determinar horario sugerido basado en la hora actual
-  // 06:00, 12:00, 18:00, 20:00
-  const ahora = new Date();
-  const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
+  const horarioId = viajeActivo?.horario_id ?? horarioSugerido?.id ?? null;
 
-  let horarioSugerido: TransporteHorario | null = null;
-  if (viajeActivo) {
-    horarioSugerido =
-      horariosDisponibles.find((h) => h.id === viajeActivo.horario_id) ?? null;
-  } else {
-    // Si es antes de las 10:00 AM -> Viaje 1 (06:00 AM)
-    // Entre 10:00 AM y 03:00 PM -> Viaje 2 (12:00 PM)
-    // Entre 03:00 PM y 07:15 PM -> Viaje 3 (06:00 PM)
-    // Después de 07:15 PM -> Viaje 4 (08:00 PM)
-    if (horaActual < 10 * 60) {
-      horarioSugerido =
-        horariosDisponibles.find((h) => h.codigo === "VIAJE_06AM") ??
-        horariosDisponibles[0] ??
-        null;
-    } else if (horaActual < 15 * 60) {
-      horarioSugerido =
-        horariosDisponibles.find((h) => h.codigo === "VIAJE_12M") ??
-        horariosDisponibles[1] ??
-        null;
-    } else if (horaActual < 19 * 60 + 15) {
-      horarioSugerido =
-        horariosDisponibles.find((h) => h.codigo === "VIAJE_06PM") ??
-        horariosDisponibles[2] ??
-        null;
-    } else {
-      horarioSugerido =
-        horariosDisponibles.find((h) => h.codigo === "VIAJE_08PM") ??
-        horariosDisponibles[3] ??
-        null;
-    }
-  }
-
-  // 4. Pasajeros y paradas de hoy para el horario sugerido/activo
-  const horarioIdParaPasajeros =
-    viajeActivo?.horario_id ?? horarioSugerido?.id ?? null;
-
-  let pasajerosHoy: PasajeroViaje[] = [];
-  let paradasDisponibles: TransporteParada[] = [];
-
-  if (horarioIdParaPasajeros) {
-    pasajerosHoy = await obtenerPasajerosHorario(horarioIdParaPasajeros);
-
-    paradasDisponibles = await consultar<TransporteParada>(
-      `SELECT p.id, p.ruta_id, p.orden, p.nombre, p.referencia,
-              p.lat::float AS lat, p.lng::float AS lng, p.minutos_estimados
-         FROM transporte_parada p
-         JOIN transporte_horario h ON h.ruta_id = p.ruta_id
-        WHERE h.id = $1
-        ORDER BY p.orden ASC`,
-      [horarioIdParaPasajeros],
-    );
-  }
+  const [pasajerosHoy, paradasDisponibles] = horarioId
+    ? await Promise.all([
+        obtenerPasajerosHorario(horarioId),
+        paradasDelHorario(horarioId),
+      ])
+    : [[], []];
 
   return {
     viajeActivo,
@@ -341,71 +277,62 @@ export async function obtenerEstadoChofer(choferId: string): Promise<{
 }
 
 /**
- * Retorna la lista de pasajeros convocados para un viaje y horario en una fecha.
- * Cruza los inscritos recurrentes del día de la semana con los inscritos diarios puntuales.
+ * Pasajeros convocados a un horario en una fecha (hoy por defecto): los
+ * recurrentes del día de la semana más los puntuales de ese día, sin repetir
+ * a quien está en ambas listas.
  */
 export async function obtenerPasajerosHorario(
   horarioId: string,
   fecha?: string,
 ): Promise<PasajeroViaje[]> {
-  const fechaConsulta = fecha ?? "CURRENT_DATE";
-
+  // $2 nulo = hoy en La Vega; así la fecha viaja siempre como parámetro.
   return consultar<PasajeroViaje>(
-    `SELECT id,
-            nombre,
-            matricula_o_telefono,
-            tipo,
-            parada_abordaje_nombre,
-            parada_destino_nombre,
-            presente
+    `WITH dia AS (
+       SELECT COALESCE($2::date, ${SQL_HOY_RD}) AS fecha
+     ),
+     combinados AS (
+       SELECT r.id::text AS id,
+              COALESCE(r.estudiante_id::text, r.id::text) AS clave_dedup,
+              e.nombre,
+              COALESCE(e.cedula, e.telefono) AS matricula_o_telefono,
+              'recurrente' AS tipo,
+              pa.nombre AS parada_abordaje_nombre,
+              pd.nombre AS parada_destino_nombre,
+              false AS presente
+         FROM transporte_inscripcion_recurrente r
+         JOIN estudiante e ON e.id = r.estudiante_id
+         JOIN transporte_parada pa ON pa.id = r.parada_abordaje_id
+         JOIN transporte_parada pd ON pd.id = r.parada_destino_id
+         CROSS JOIN dia
+        WHERE r.horario_id = $1
+          AND r.activo = true
+          AND r.dia_semana = EXTRACT(ISODOW FROM dia.fecha)::smallint
+
+       UNION ALL
+
+       SELECT d.id::text,
+              COALESCE(d.estudiante_id::text, d.id::text),
+              d.nombre_beneficiario,
+              d.matricula_o_telefono,
+              'diaria',
+              pa.nombre,
+              pd.nombre,
+              d.presente
+         FROM transporte_inscripcion_diaria d
+         JOIN transporte_parada pa ON pa.id = d.parada_abordaje_id
+         JOIN transporte_parada pd ON pd.id = d.parada_destino_id
+         CROSS JOIN dia
+        WHERE d.horario_id = $1
+          AND d.fecha = dia.fecha
+     )
+     SELECT id, nombre, matricula_o_telefono, tipo,
+            parada_abordaje_nombre, parada_destino_nombre, presente
        FROM (
-         SELECT DISTINCT ON (clave_dedup)
-                id,
-                nombre,
-                matricula_o_telefono,
-                tipo,
-                parada_abordaje_nombre,
-                parada_destino_nombre,
-                presente
-           FROM (
-             -- Pasajeros recurrentes semanales
-             SELECT r.id::text AS id,
-                    COALESCE(r.estudiante_id::text, r.id::text) AS clave_dedup,
-                    e.nombre,
-                    COALESCE(e.cedula, e.telefono) AS matricula_o_telefono,
-                    'recurrente' AS tipo,
-                    pa.nombre AS parada_abordaje_nombre,
-                    pd.nombre AS parada_destino_nombre,
-                    false AS presente
-               FROM transporte_inscripcion_recurrente r
-               JOIN estudiante e ON e.id = r.estudiante_id
-               JOIN transporte_parada pa ON pa.id = r.parada_abordaje_id
-               JOIN transporte_parada pd ON pd.id = r.parada_destino_id
-              WHERE r.horario_id = $1
-                AND r.activo = true
-                AND r.dia_semana = EXTRACT(ISODOW FROM ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"})::smallint
-
-             UNION ALL
-
-             -- Pasajeros puntuales diarios (con o sin login)
-             SELECT d.id::text AS id,
-                    COALESCE(d.estudiante_id::text, d.id::text) AS clave_dedup,
-                    d.nombre_beneficiario AS nombre,
-                    d.matricula_o_telefono,
-                    'diaria' AS tipo,
-                    pa.nombre AS parada_abordaje_nombre,
-                    pd.nombre AS parada_destino_nombre,
-                    d.presente
-               FROM transporte_inscripcion_diaria d
-               JOIN transporte_parada pa ON pa.id = d.parada_abordaje_id
-               JOIN transporte_parada pd ON pd.id = d.parada_destino_id
-              WHERE d.horario_id = $1
-                AND d.fecha = ${fechaConsulta === "CURRENT_DATE" ? "CURRENT_DATE" : "$2::date"}
-           ) combinados
+         SELECT DISTINCT ON (clave_dedup) *
+           FROM combinados
           ORDER BY clave_dedup, tipo ASC
-       ) deduplicados
+       ) sin_repetidos
       ORDER BY nombre ASC`,
-    fechaConsulta === "CURRENT_DATE" ? [horarioId] : [horarioId, fecha],
+    [horarioId, fecha ?? null],
   );
 }
-

@@ -64,15 +64,15 @@ export default async function PaginaTransportePublico({
         </div>
 
         {/* Cabecera Principal */}
-        <Card className="border-linea shadow-sm">
+        <Card>
           <CardContent className="p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3.5">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-marca-500/15 text-marca-600">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600">
                   <Bus className="size-6" />
                 </span>
                 <div>
-                  <h1 className="text-xl font-bold text-tinta">
+                  <h1 className="texto-titulo-seccion">
                     {t("publicTransportTitle")}
                   </h1>
                   <p className="text-xs text-tinta-2">
@@ -120,9 +120,9 @@ export default async function PaginaTransportePublico({
           <FormularioPuntual horarios={horarios} paradas={paradasRuta} />
 
           {/* Horarios fijos de la ruta */}
-          <Card className="border-linea p-5 shadow-sm">
+          <Card className="p-5">
             <div className="border-b border-linea pb-3">
-              <h3 className="flex items-center gap-2 text-base font-bold text-tinta">
+              <h3 className="texto-titulo-tarjeta flex items-center gap-2">
                 <Clock className="size-4 text-marca-500" />
                 {t("officialSchedulesTitle")}
               </h3>
@@ -138,7 +138,7 @@ export default async function PaginaTransportePublico({
                     <p className="font-semibold text-tinta">{h.nombre}</p>
                     <p className="text-tinta-3">{h.ruta_nombre}</p>
                   </div>
-                  <span className="font-bold text-marca-600 bg-marca-500/10 px-2.5 py-1 rounded-md">
+                  <span className="rounded-full bg-marca-50 px-3 py-1 font-semibold text-marca-700">
                     {h.hora_salida}
                   </span>
                 </li>

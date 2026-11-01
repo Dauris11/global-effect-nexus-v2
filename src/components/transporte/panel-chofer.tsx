@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
+  AlertCircle,
   AlertTriangle,
   Bus,
-  CheckCircle2,
   Clock,
   MapPin,
   Navigation,
@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   PasajeroViaje,
@@ -41,12 +42,12 @@ import type {
   TransporteViaje,
 } from "@/lib/transporte";
 import {
-  actualizarParadaActualViajeAction,
-  actualizarPosicionViajeAction,
-  finalizarViajeAction,
-  iniciarViajeAction,
-  obtenerPasajerosHorarioAction,
-  reportarIncidenciaAction,
+  actualizarParadaViaje,
+  actualizarPosicionViaje,
+  finalizarViaje,
+  iniciarViaje,
+  cargarPasajerosHorario,
+  reportarIncidencia,
 } from "@/server/transporte/acciones";
 
 export function PanelChofer({
@@ -102,7 +103,7 @@ export function PanelChofer({
     }
 
     if (!("geolocation" in navigator)) {
-      console.warn("Geolocalización no soportada en este navegador.");
+      // Sin API de geolocalización el chofer sigue operando con paradas manuales.
       return;
     }
 
@@ -120,7 +121,7 @@ export function PanelChofer({
         const ahora = Date.now();
         if (ahora - ultimaTransmisionRef.current >= 4000) {
           ultimaTransmisionRef.current = ahora;
-          actualizarPosicionViajeAction({
+          actualizarPosicionViaje({
             viajeId: viajeActivo.id,
             lat,
             lng,
@@ -157,7 +158,7 @@ export function PanelChofer({
     if (!horarioSeleccionadoId) return;
 
     iniciarTransicion(async () => {
-      const res = await iniciarViajeAction({
+      const res = await iniciarViaje({
         horarioId: horarioSeleccionadoId,
         lat: posicionGps?.lat,
         lng: posicionGps?.lng,
@@ -194,7 +195,7 @@ export function PanelChofer({
     if (!viajeActivo) return;
 
     iniciarTransicion(async () => {
-      const res = await finalizarViajeAction({ viajeId: viajeActivo.id });
+      const res = await finalizarViaje({ viajeId: viajeActivo.id });
       if (res.ok) {
         setViajeActivo(null);
       }
@@ -206,7 +207,7 @@ export function PanelChofer({
     if (!viajeActivo || !descripcionIncidencia.trim()) return;
 
     iniciarTransicion(async () => {
-      const res = await reportarIncidenciaAction({
+      const res = await reportarIncidencia({
         viajeId: viajeActivo.id,
         tipo: tipoIncidencia,
         descripcion: descripcionIncidencia,
@@ -227,7 +228,7 @@ export function PanelChofer({
   const manejarCambioHorario = (id: string) => {
     setHorarioSeleccionadoId(id);
     iniciarTransicion(async () => {
-      const res = await obtenerPasajerosHorarioAction(id);
+      const res = await cargarPasajerosHorario(id);
       if (res.ok) {
         setPasajeros(res.pasajeros);
       }
@@ -247,7 +248,7 @@ export function PanelChofer({
         : null,
     );
     iniciarTransicion(async () => {
-      await actualizarParadaActualViajeAction({
+      await actualizarParadaViaje({
         viajeId: viajeActivo.id,
         paradaId,
       });
@@ -260,26 +261,25 @@ export function PanelChofer({
       {errorGps && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-[#B4342B]/30 bg-[#B4342B]/10 p-3.5 text-xs text-[#B4342B]"
+          className="flex items-start gap-3 rounded-card bg-tinta p-4 text-sm text-background"
         >
-          <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+          <AlertCircle className="mt-0.5 size-5 shrink-0" />
           <div>
             <p className="font-semibold">{t("gpsErrorTitle")}</p>
-            <p className="mt-0.5 opacity-90">{errorGps}</p>
+            <p className="mt-0.5 text-background/80">{errorGps}</p>
           </div>
         </div>
       )}
 
       {/* Cabecera del Chofer */}
-      <Card className="border-linea p-5 shadow-sm">
+      <Card className="p-5">
         <div className="flex items-center justify-between gap-3 border-b border-linea pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-marca-500/15 text-marca-600">
+            <span className="flex size-10 items-center justify-center rounded-control bg-marca-50 text-marca-600">
               <Bus className="size-5" />
             </span>
             <div>
-              <h2 className="text-base font-bold text-tinta">{t("driverCockpit")}</h2>
-              <p className="text-xs text-tinta-2">{t("driverSubtitle")}</p>
+              <h2 className="texto-titulo-tarjeta">{t("driverCockpit")}</h2>
             </div>
           </div>
 
@@ -300,9 +300,9 @@ export function PanelChofer({
         <div className="mt-4 space-y-3">
           {!viajeActivo ? (
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-tinta-2">
+              <Label>
                 {t("selectTrip")}
-              </label>
+              </Label>
               <Select
                 value={horarioSeleccionadoId}
                 onValueChange={manejarCambioHorario}
@@ -322,7 +322,7 @@ export function PanelChofer({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="rounded-lg bg-muted/60 p-3.5 text-sm">
+              <div className="rounded-control bg-muted/60 p-3.5 text-sm">
                 <p className="font-semibold text-tinta">{viajeActivo.horario_nombre}</p>
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-tinta-2">
                   <span className="flex items-center gap-1">
@@ -339,9 +339,9 @@ export function PanelChofer({
 
               {paradas.length > 0 && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-tinta-2">
+                  <Label>
                     {t("manualStopSelectorLabel")}
-                  </label>
+                  </Label>
                   <Select
                     value={viajeActivo.parada_actual_id ?? undefined}
                     onValueChange={manejarCambioParadaManual}
@@ -371,7 +371,7 @@ export function PanelChofer({
               size="lg"
               onClick={manejarIniciarViaje}
               disabled={cargando || !horarioSeleccionadoId}
-              className="h-16 w-full text-base font-bold shadow-md"
+              className="h-16 w-full text-base font-semibold"
             >
               <Play className="mr-2 size-5 fill-current" />
               {t("startTrip")}
@@ -405,7 +405,7 @@ export function PanelChofer({
       </Card>
 
       {/* Lista de Pasajeros de Hoy */}
-      <Card className="border-linea p-5 shadow-sm">
+      <Card className="p-5">
         <div className="flex items-center justify-between border-b border-linea pb-3">
           <h3 className="flex items-center gap-2 text-sm font-bold text-tinta">
             <Users className="size-4 text-marca-500" />
@@ -447,7 +447,7 @@ export function PanelChofer({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[#B4342B]">
+            <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="size-5" />
               {t("reportIncidentTitle")}
             </DialogTitle>
@@ -480,9 +480,9 @@ export function PanelChofer({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-tinta">
+              <Label>
                 {t("incidentDetailsLabel")}
-              </label>
+              </Label>
               <Textarea
                 rows={3}
                 value={descripcionIncidencia}
