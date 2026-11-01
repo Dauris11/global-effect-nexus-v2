@@ -343,7 +343,7 @@ export function PanelChofer({
                     {t("manualStopSelectorLabel")}
                   </label>
                   <Select
-                    value={viajeActivo.parada_actual_id ?? ""}
+                    value={viajeActivo.parada_actual_id ?? undefined}
                     onValueChange={manejarCambioParadaManual}
                     disabled={cargando}
                   >

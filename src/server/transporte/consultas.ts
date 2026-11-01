@@ -372,7 +372,7 @@ export async function obtenerPasajerosHorario(
              SELECT r.id::text AS id,
                     COALESCE(r.estudiante_id::text, r.id::text) AS clave_dedup,
                     e.nombre,
-                    e.matricula AS matricula_o_telefono,
+                    COALESCE(e.cedula, e.telefono) AS matricula_o_telefono,
                     'recurrente' AS tipo,
                     pa.nombre AS parada_abordaje_nombre,
                     pd.nombre AS parada_destino_nombre,

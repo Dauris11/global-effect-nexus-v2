@@ -97,7 +97,7 @@ export async function inscribirPuntualDiariaAction(datos: {
       let estudianteId: string | null = null;
       if (datos.matriculaOTelefono) {
         const est = await cliente.query<{ id: string }>(
-          `SELECT id FROM estudiante WHERE matricula = $1 OR telefono = $1 LIMIT 1`,
+          `SELECT id FROM estudiante WHERE cedula = $1 OR telefono = $1 LIMIT 1`,
           [datos.matriculaOTelefono.trim()],
         );
         estudianteId = est.rows[0]?.id ?? null;
