@@ -622,7 +622,8 @@
       "task": "Tarea",
       "assignment": "Entrega de clase",
       "appointment": "Cita con administración",
-      "meeting": "Reunión institucional"
+      "meeting": "Reunión institucional",
+      "class": "Clase"
     },
     "eventType": {
       "academico": "Académico",
@@ -1498,6 +1499,10 @@
       "emptyHint": "Cuando se publique un evento o tus docentes pongan una fecha de entrega, lo verás aquí.",
       "today": "Hoy",
       "allDay": "Todo el día",
+      "regularClass": "Clase regular",
+      "classBadge": "Clase",
+      "meetingDefault": "Reunión",
+      "meetingBadge": "Reunión",
       "eventType": {
         "academico": "Académico",
         "administrativo": "Administrativo",

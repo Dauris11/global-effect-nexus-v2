@@ -1,4 +1,5 @@
 import { consultar } from "@/lib/db";
+import { proyectarClasesEnRango } from "@/lib/horarios";
 import type { Rol } from "@/lib/rbac";
 import { tienePermiso } from "@/lib/rbac";
 
@@ -11,16 +12,17 @@ import { tienePermiso } from "@/lib/rbac";
  *
  *   · `evento`     — actos institucionales. Los ve todo el equipo.
  *   · `tarea`      — solo las asignadas a QUIEN mira, con fecha límite.
- *   · `asignacion` — solo si es docente: lo que vence en SUS clases.
- *   · `solicitud`  — las citas que los estudiantes piden a administración,
- *     solo para quien tiene `solicitudes.gestionar`, que es quien las atiende.
+ *   · `asignacion` — tareas y exámenes que vencen en sus materias.
+ *   · `clase`      — clases regulares proyectadas en sus días de semana según horario.
+ *   · `cita`       — citas agendadas por ese usuario (o atendidas por el personal).
+ *   · `reunion`    — reuniones donde el usuario es organizador o participante convocado.
  *
  * El día lo compone la base con `to_char`, no Node: así el mes que se pinta no
  * depende de la zona horaria del proceso.
  */
 
 export type EntradaCalendario = {
-  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion";
+  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion" | "clase";
   id: string;
   titulo: string;
   /** Tipo del evento, proyecto de la tarea o estado de la cita. */
@@ -54,6 +56,7 @@ export async function calendarioDelMes({
 }): Promise<EntradaCalendario[]> {
   const { desde, hasta } = ventanaDeRejilla(mes);
 
+  // 1. Eventos institucionales (públicos de la Fundación) y tareas asignadas a este usuario
   const institucional = await consultar<EntradaCalendario>(
     `SELECT 'evento' AS origen,
             e.id,
@@ -95,6 +98,9 @@ export async function calendarioDelMes({
     [usuarioId, desde, hasta],
   );
 
+  // 2. Reuniones institucionales:
+  // Administradores supervisan la agenda general.
+  // Demás roles (estudiantes, docentes, colaboradores) ven ÚNICAMENTE donde están convocados o son anfitriones.
   const esAdmin = rol === "super_admin" || rol === "admin";
   const reuniones = await consultar<EntradaCalendario>(
     `SELECT 'reunion' AS origen,
@@ -118,6 +124,13 @@ export async function calendarioDelMes({
             SELECT 1 FROM reunion_participante rp
              WHERE rp.reunion_id = r.id AND rp.usuario_id = $1
           )
+          OR EXISTS (
+            SELECT 1 FROM estudiante e
+             WHERE e.usuario_id = $1
+               AND (r.estudiante_id = e.id OR EXISTS (
+                 SELECT 1 FROM reunion_participante rpe WHERE rpe.reunion_id = r.id AND rpe.estudiante_id = e.id
+               ))
+          )
         )
       ORDER BY r.fecha, r.hora_inicio`,
     [usuarioId, desde, hasta, esAdmin],
@@ -125,11 +138,170 @@ export async function calendarioDelMes({
 
   const baseConReuniones = [...institucional, ...reuniones];
 
-  /*
-   * LO QUE VENCE EN SUS CLASES, solo para el docente.
-   */
+  // 3. Clases y asignaciones del Estudiante
+  let clasesYAsignacionesEstudiante: EntradaCalendario[] = [];
+  if (rol === "estudiante") {
+    // A. Clases inscritas proyectadas en sus días de la semana durante el cuatrimestre
+    const clasesRows = await consultar<{
+      id: string;
+      nombre: string;
+      codigo: string | null;
+      horario: string | null;
+      aula: string | null;
+      profesor: string | null;
+      fecha_inicio: string;
+      fecha_fin: string;
+    }>(
+      `SELECT m.id, m.nombre, m.codigo, m.horario, m.aula, m.profesor_nombre AS profesor,
+              p.fecha_inicio::text AS fecha_inicio, p.fecha_fin::text AS fecha_fin
+         FROM inscripcion i
+         JOIN materia m ON m.id = i.materia_id
+         JOIN periodo p ON p.id = i.periodo_id
+         JOIN estudiante e ON e.id = i.estudiante_id
+        WHERE e.usuario_id = $1
+          AND i.estado = 'activa'
+          AND m.horario IS NOT NULL
+
+        UNION ALL
+
+       SELECT m360.id, m360.nombre, m360.codigo, m360.horario, m360.aula, u.nombre AS profesor,
+              p.fecha_inicio::text AS fecha_inicio, p.fecha_fin::text AS fecha_fin
+         FROM inscripcion_360 i360
+         JOIN materia_360 m360 ON m360.id = i360.materia_id
+         JOIN periodo p ON p.id = i360.periodo_id
+         JOIN estudiante e ON e.id = i360.estudiante_id
+         LEFT JOIN usuario u ON u.id = m360.docente_id
+        WHERE e.usuario_id = $1
+          AND i360.estado IN ('cursando', 'prematriculada')
+          AND m360.horario IS NOT NULL`,
+      [usuarioId],
+    );
+
+    const proyectadas = proyectarClasesEnRango({
+      clases: clasesRows.map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        codigo: c.codigo,
+        horario: c.horario,
+        aula: c.aula,
+        profesor: c.profesor,
+        fechaInicio: c.fecha_inicio,
+        fechaFin: c.fecha_fin,
+      })),
+      desde,
+      hasta,
+    });
+
+    const entradasClases: EntradaCalendario[] = proyectadas.map((cp) => ({
+      origen: "clase",
+      id: cp.id,
+      titulo: cp.titulo,
+      detalle: cp.detalle,
+      dia: cp.dia,
+      hora: cp.hora,
+      hora_fin: cp.horaFin,
+      estado: "activa",
+      ubicacion: cp.ubicacion,
+      descripcion: null,
+      prioridad: "media",
+    }));
+
+    // B. Asignaciones que vencen en sus materias inscritas
+    const asignacionesEstudiante = await consultar<EntradaCalendario>(
+      `SELECT 'asignacion' AS origen,
+              a.id,
+              a.titulo,
+              coalesce(m.nombre, m360.nombre, 'Asignatura') AS detalle,
+              to_char(a.fecha_vencimiento, 'YYYY-MM-DD') AS dia,
+              to_char(a.fecha_vencimiento, 'HH24:MI') AS hora,
+              coalesce(ee.estado::text, 'pendiente') AS estado,
+              NULL AS ubicacion,
+              NULL AS hora_fin,
+              a.descripcion,
+              (CASE WHEN a.tipo = 'examen' THEN 'alta' ELSE 'media' END)::text AS prioridad
+         FROM asignacion a
+         LEFT JOIN materia m ON m.id = a.materia_id
+         LEFT JOIN materia_360 m360 ON m360.id = a.materia_360_id
+         JOIN estudiante e ON e.usuario_id = $1
+         LEFT JOIN entrega_estudiante ee
+           ON ee.asignacion_id = a.id
+          AND ee.estudiante_id = e.id
+        WHERE a.fecha_vencimiento IS NOT NULL
+          AND a.fecha_vencimiento::date BETWEEN $2::date AND $3::date
+          AND (
+            a.materia_id IN (SELECT i.materia_id FROM inscripcion i WHERE i.estudiante_id = e.id AND i.estado = 'activa')
+            OR
+            a.materia_360_id IN (SELECT i360.materia_id FROM inscripcion_360 i360 WHERE i360.estudiante_id = e.id AND i360.estado IN ('cursando', 'prematriculada'))
+          )
+        ORDER BY a.fecha_vencimiento`,
+      [usuarioId, desde, hasta],
+    );
+
+    clasesYAsignacionesEstudiante = [...entradasClases, ...asignacionesEstudiante];
+  }
+
+  // 4. Clases y asignaciones del Docente
+  let clasesYAsignacionesDocente: EntradaCalendario[] = [];
   if (rol === "docente") {
-    const clases = await consultar<EntradaCalendario>(
+    const clasesDocenteRows = await consultar<{
+      id: string;
+      nombre: string;
+      codigo: string | null;
+      horario: string | null;
+      aula: string | null;
+      fecha_inicio: string;
+      fecha_fin: string;
+    }>(
+      `SELECT m.id, m.nombre, m.codigo, m.horario, m.aula,
+              p.fecha_inicio::text AS fecha_inicio, p.fecha_fin::text AS fecha_fin
+         FROM materia m
+         JOIN periodo p ON p.id = m.periodo_id
+        WHERE m.profesor_usuario_id = $1
+          AND m.estado = 'activa'
+          AND m.horario IS NOT NULL
+
+        UNION ALL
+
+       SELECT m360.id, m360.nombre, m360.codigo, m360.horario, m360.aula,
+              p.fecha_inicio::text AS fecha_inicio, p.fecha_fin::text AS fecha_fin
+         FROM materia_360 m360
+         JOIN periodo p ON p.estado = 'activo'
+        WHERE m360.docente_id = $1
+          AND m360.activa = true
+          AND m360.horario IS NOT NULL`,
+      [usuarioId],
+    );
+
+    const proyectadasDoc = proyectarClasesEnRango({
+      clases: clasesDocenteRows.map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        codigo: c.codigo,
+        horario: c.horario,
+        aula: c.aula,
+        profesor: null,
+        fechaInicio: c.fecha_inicio,
+        fechaFin: c.fecha_fin,
+      })),
+      desde,
+      hasta,
+    });
+
+    const entradasClasesDoc: EntradaCalendario[] = proyectadasDoc.map((cp) => ({
+      origen: "clase",
+      id: cp.id,
+      titulo: cp.titulo,
+      detalle: cp.detalle,
+      dia: cp.dia,
+      hora: cp.hora,
+      hora_fin: cp.horaFin,
+      estado: "activa",
+      ubicacion: cp.ubicacion,
+      descripcion: null,
+      prioridad: "media",
+    }));
+
+    const asignacionesDocente = await consultar<EntradaCalendario>(
       `SELECT 'asignacion' AS origen,
               a.id,
               a.titulo,
@@ -152,39 +324,64 @@ export async function calendarioDelMes({
       [usuarioId, desde, hasta],
     );
 
-    return ordenar([...baseConReuniones, ...clases]);
+    clasesYAsignacionesDocente = [...entradasClasesDoc, ...asignacionesDocente];
   }
 
-  // Las citas con administración, solo para quien las atiende. Para
-  // cualquier otro rol esta consulta no se lanza.
-  if (!tienePermiso(rol, "solicitudes.gestionar")) return ordenar(baseConReuniones);
+  // 5. Citas con administración:
+  // Personal con 'solicitudes.gestionar' atiende las citas solicitadas.
+  // Demás usuarios ven EXCLUSIVAMENTE SUS PROPIAS CITAS / SOLICITUDES con fecha.
+  let citas: EntradaCalendario[] = [];
+  if (tienePermiso(rol, "solicitudes.gestionar")) {
+    citas = await consultar<EntradaCalendario>(
+      `SELECT 'cita' AS origen,
+              s.id,
+              coalesce(e.nombre, s.titulo) AS titulo,
+              s.estado AS detalle,
+              to_char(s.fecha_requerida, 'YYYY-MM-DD') AS dia,
+              s.hora_preferida AS hora,
+              s.estado,
+              NULL AS ubicacion,
+              NULL AS hora_fin,
+              s.titulo || coalesce(' — ' || s.detalle, '') AS descripcion,
+              (CASE WHEN s.estado = 'aprobada' THEN 'alta' ELSE 'media' END)::text AS prioridad
+         FROM solicitud s
+         LEFT JOIN estudiante e ON e.id = s.estudiante_id
+        WHERE s.tipo = 'cita_administracion'
+          AND s.estado IN ('enviada', 'en_revision', 'aprobada')
+          AND s.fecha_requerida BETWEEN $1::date AND $2::date
+        ORDER BY s.fecha_requerida, s.hora_preferida NULLS FIRST`,
+      [desde, hasta],
+    );
+  } else {
+    citas = await consultar<EntradaCalendario>(
+      `SELECT 'cita' AS origen,
+              s.id,
+              s.titulo,
+              s.tipo AS detalle,
+              to_char(s.fecha_requerida, 'YYYY-MM-DD') AS dia,
+              s.hora_preferida AS hora,
+              s.estado,
+              NULL AS ubicacion,
+              NULL AS hora_fin,
+              s.titulo || coalesce(' — ' || s.detalle, '') AS descripcion,
+              (CASE WHEN s.estado = 'aprobada' THEN 'alta' ELSE 'media' END)::text AS prioridad
+         FROM solicitud s
+         LEFT JOIN estudiante e ON e.usuario_id = $1
+        WHERE (s.solicitante_id = $1 OR (e.id IS NOT NULL AND s.estudiante_id = e.id))
+          AND s.fecha_requerida IS NOT NULL
+          AND s.estado NOT IN ('rechazada', 'cancelada')
+          AND s.fecha_requerida BETWEEN $2::date AND $3::date
+        ORDER BY s.fecha_requerida, s.hora_preferida NULLS FIRST`,
+      [usuarioId, desde, hasta],
+    );
+  }
 
-  /*
-   * Las citas son solicitudes `cita_administracion` (0031) que siguen vivas:
-   * pedidas, en revisión o ya aprobadas.
-   */
-  const citas = await consultar<EntradaCalendario>(
-    `SELECT 'cita' AS origen,
-            s.id,
-            coalesce(e.nombre, s.titulo) AS titulo,
-            s.estado AS detalle,
-            to_char(s.fecha_requerida, 'YYYY-MM-DD') AS dia,
-            s.hora_preferida AS hora,
-            s.estado,
-            NULL AS ubicacion,
-            NULL AS hora_fin,
-            s.titulo || coalesce(' — ' || s.detalle, '') AS descripcion,
-            (CASE WHEN s.estado = 'aprobada' THEN 'alta' ELSE 'media' END)::text AS prioridad
-       FROM solicitud s
-       LEFT JOIN estudiante e ON e.id = s.estudiante_id
-      WHERE s.tipo = 'cita_administracion'
-        AND s.estado IN ('enviada', 'en_revision', 'aprobada')
-        AND s.fecha_requerida BETWEEN $1::date AND $2::date
-      ORDER BY s.fecha_requerida, s.hora_preferida NULLS FIRST`,
-    [desde, hasta],
-  );
-
-  return ordenar([...baseConReuniones, ...citas]);
+  return ordenar([
+    ...baseConReuniones,
+    ...clasesYAsignacionesEstudiante,
+    ...clasesYAsignacionesDocente,
+    ...citas,
+  ]);
 }
 
 /**

@@ -5,6 +5,22 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Aislamiento Estricto de Agendas y Calendarios por Rol y Proyección de Clases Semanales (1 nov 2026):**
+      - **Aislamiento Estricto y Privacidad por Rol:**
+        - Garantizado que cada usuario (estudiante, docente, colaborador, personal) vea en su agenda y calendario ÚNICAMENTE lo que le compete a él: sus propias clases, sus trámites/citas solicitadas (`solicitante_id` o `estudiante_id`), y las reuniones institucionales donde es organizador o participante convocado (`reunion_participante`), sin fuga de eventos de otros usuarios.
+        - En `/reuniones` (`src/server/reuniones/consultas.ts`), la consulta resuelve participantes cruzando `usuario_id` y `estudiante.usuario_id`, garantizando que convocatorias hechas a la ficha de estudiante aparezcan en su portal.
+      - **Proyección de Clases Semanales (`src/lib/horarios.ts`):**
+        - Motor de análisis e interpretación de cadenas de horarios en español (ej. "Viernes 08:00 - 10:00", "Lunes y Miércoles 14:00 - 16:00", etc.).
+        - Proyección periódica `proyectarClasesEnRango`: genera las instancias exactas en los días de la semana correspondientes acotadas estrictamente a los límites del período académico activo (`fecha_inicio` y `fecha_fin`).
+      - **Integración en Calendario Institucional (`src/server/calendario/consultas.ts`) y Portal del Estudiante (`src/server/estudiantes/agenda.ts`):**
+        - Se integró el origen `clase` en `calendarioDelMes` para estudiantes y docentes con sus materias inscritas (regulares y 360).
+        - En `agendaDelEstudiante`, se proyectan las clases de la semana en el mes seleccionado y se integran con vencimientos de asignaciones, citas y reuniones.
+        - En `mesesConAgenda`, se expanden los meses cubiertos por los periodos con materias inscritas para permitir seleccionar los meses del ciclo lectivo.
+      - **Interfaz de Usuario y Tokens de Marca (`src/components/calendario/event-manager.tsx`, `src/components/estudiante/dia-agenda.tsx`):**
+        - Color y token institucional para `clase`: `bg-[#2096BA]/20 text-[#0a6a8a] border border-[#2096BA]/40` en EventManager y badge `t("agenda.classBadge")` con icono `BookOpen`.
+        - Filtro por origen en el calendario con opción de "Clase" y "Reunión institucional".
+      - **Calidad:** 4,737 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (187/187 páginas).
+
 - [x] **Independencia del Portal del Estudiante del Expediente Administrativo (1 nov 2026):**
       - **Restricción de Acceso:** Confirmado y blindado que el rol `estudiante` NO tiene acceso a su propio expediente administrativo ni a la ruta `/expedientes` (solo manejado por personal administrativo; no posee el permiso `expedientes.leer`).
       - **Desacoplamiento Total del Portal:**

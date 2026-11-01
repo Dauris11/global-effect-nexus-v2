@@ -622,7 +622,8 @@
       "task": "Task",
       "assignment": "Class deadline",
       "appointment": "Administration appointment",
-      "meeting": "Institutional meeting"
+      "meeting": "Institutional meeting",
+      "class": "Class"
     },
     "eventType": {
       "academico": "Academic",
@@ -1498,6 +1499,10 @@
       "emptyHint": "Once an event is published or your teachers set a due date, you will see it here.",
       "today": "Today",
       "allDay": "All day",
+      "regularClass": "Regular class",
+      "classBadge": "Class",
+      "meetingDefault": "Meeting",
+      "meetingBadge": "Meeting",
       "eventType": {
         "academico": "Academic",
         "administrativo": "Administrative",

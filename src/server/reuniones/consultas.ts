@@ -105,6 +105,13 @@ export async function listarReuniones({
           WHERE rp.reunion_id = r.id
             AND (rp.usuario_id = $${posUsuario} OR rp.estudiante_id = $${posEst})
         )
+        OR EXISTS (
+          SELECT 1 FROM estudiante e
+          WHERE e.usuario_id = $${posUsuario}
+            AND (r.estudiante_id = e.id OR EXISTS (
+              SELECT 1 FROM reunion_participante rpe WHERE rpe.reunion_id = r.id AND rpe.estudiante_id = e.id
+            ))
+        )
       )`;
     } else {
       sql += ` AND (
@@ -112,6 +119,13 @@ export async function listarReuniones({
         OR EXISTS (
           SELECT 1 FROM reunion_participante rp
           WHERE rp.reunion_id = r.id AND rp.usuario_id = $${posUsuario}
+        )
+        OR EXISTS (
+          SELECT 1 FROM estudiante e
+          WHERE e.usuario_id = $${posUsuario}
+            AND (r.estudiante_id = e.id OR EXISTS (
+              SELECT 1 FROM reunion_participante rpe WHERE rpe.reunion_id = r.id AND rpe.estudiante_id = e.id
+            ))
         )
       )`;
     }

@@ -90,7 +90,7 @@ import {
  */
 
 export type Entrada = {
-  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion";
+  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion" | "clase";
   id: string;
   titulo: string;
   detalle: string | null;
@@ -113,7 +113,8 @@ type Vista = "mes" | "semana" | "dia" | "lista";
  * El color lo da el origen, no una elección.
  *
  * Azul oscuro para las citas con administración, negro para lo que tiene fecha límite, azul de la
- * casa para lo institucional, azul medio para reuniones y azul claro para lo que vence en una clase.
+ * casa para lo institucional, azul medio para reuniones, azul claro para lo que vence en una clase
+ * y turquesa institucional tenue con borde para clases regulares.
  */
 const COLOR_ORIGEN = {
   cita: "bg-[#0a6a8a] text-white",
@@ -121,6 +122,7 @@ const COLOR_ORIGEN = {
   evento: "bg-[#2096BA] text-white",
   asignacion: "bg-[#5FB8D4] text-[#171A1D]",
   reunion: "bg-[#187a99] text-white",
+  clase: "bg-[#2096BA]/20 text-[#0a6a8a] border border-[#2096BA]/40",
 } as const;
 
 /** Del origen a su clave en `calendar.origin.*`. */
@@ -130,6 +132,7 @@ const LLAVE_ORIGEN = {
   cita: "appointment",
   asignacion: "assignment",
   reunion: "meeting",
+  clase: "class",
 } as const;
 
 const TIPOS_EVENTO = [
@@ -428,6 +431,8 @@ export function EventManager({
               ["tarea", t("origin.task")],
               ["asignacion", t("origin.assignment")],
               ["cita", t("origin.appointment")],
+              ["reunion", t("origin.meeting")],
+              ["clase", t("origin.class")],
             ]}
             elegidas={origenes}
             onCambiar={setOrigenes}
