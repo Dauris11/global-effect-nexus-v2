@@ -178,9 +178,6 @@ export default async function PaginaReportes({
           <BarChart3 className="size-5 text-[#2096BA]" />
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
       </div>
 
       {/* Las pestañas, como enlaces. Solo se dibujan las que el rol puede ver:

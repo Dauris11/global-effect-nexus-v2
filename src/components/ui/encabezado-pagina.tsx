@@ -7,10 +7,13 @@ import { cn } from "@/lib/utils";
  *
  * El título vive aquí, dentro de la página, y no en la barra superior: allí
  * acababa en `text-xs` en el teléfono, que es ilegible.
+ *
+ * `subtitulo` se acepta y no se pinta: el panel interno va sin subtítulos
+ * (decisión de oct 2026), y quitarlo aquí evita tocar las cincuenta pantallas
+ * que lo pasan. Si vuelve, basta con restaurar el párrafo.
  */
 export function EncabezadoPagina({
   titulo,
-  subtitulo,
   antetitulo,
   acciones,
   className,
@@ -32,9 +35,6 @@ export function EncabezadoPagina({
       <div className="min-w-0">
         {antetitulo && <p className="texto-meta mb-1 font-medium">{antetitulo}</p>}
         <h1 className="texto-titulo-pagina">{titulo}</h1>
-        {subtitulo && (
-          <p className="mt-1.5 max-w-2xl text-[15px] text-tinta-2">{subtitulo}</p>
-        )}
       </div>
       {acciones && (
         <div className="flex shrink-0 flex-wrap items-center gap-2">{acciones}</div>

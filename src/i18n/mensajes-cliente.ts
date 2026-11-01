@@ -35,6 +35,10 @@ const ESPACIOS_BASE = [
   "habitudes",
   // Espacio de la agenda institucional de reuniones
   "reuniones",
+  // Control «ver como» del administrador maestro, en la barra superior.
+  "verComo",
+  // Cajón de accesos rápidos de la barra inferior del móvil.
+  "accesoRapido",
 ] as const;
 
 /**

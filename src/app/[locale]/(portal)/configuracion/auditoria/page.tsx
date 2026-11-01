@@ -170,9 +170,6 @@ export default async function PaginaAuditoria({
           <ScrollText className="size-5 text-[#2096BA]" />
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {t("description")}
-        </p>
       </div>
 
       {/* El aviso sobre el historial clínico va en la pantalla, no solo en el

@@ -73,9 +73,6 @@ export default async function PaginaReuniones({
           <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
             {t("title")}
           </h1>
-          <p className="text-sm text-tinta-2 max-w-2xl">
-            {t("description")}
-          </p>
         </div>
       </div>
 
