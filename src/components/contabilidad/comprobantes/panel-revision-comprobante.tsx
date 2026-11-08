@@ -5,16 +5,12 @@ import {
   AlertCircle,
   Building,
   CheckCircle2,
-  Clock,
   ExternalLink,
-  Eye,
-  FileText,
-  Filter,
   Receipt,
   Search,
-  User,
   XCircle,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +26,7 @@ export function PanelRevisionComprobante({
   comprobantes: ComprobanteRecibidoFila[];
   proyectos?: { id: string; nombre: string }[];
 }) {
+  const t = useTranslations("contab.comprobantesRecibidos");
   const [seleccionado, setSeleccionado] = useState<ComprobanteRecibidoFila | null>(
     comprobantes[0] ?? null,
   );
@@ -79,7 +76,7 @@ export function PanelRevisionComprobante({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 size-4 text-tinta-3" />
             <Input
-              placeholder="Buscar por concepto, proveedor o chofer…"
+              placeholder={t("searchPlaceholder")}
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               className="pl-9"
@@ -88,13 +85,13 @@ export function PanelRevisionComprobante({
           <select
             value={filtroEstado}
             onChange={(e) => setFiltroEstado(e.target.value)}
-            className="rounded-lg border border-linea bg-superficie px-3 text-sm text-tinta"
+            className="rounded-control border border-linea bg-card px-3 text-sm text-tinta outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="todos">Todos</option>
-            <option value="recibido">Por validar</option>
-            <option value="validado">Validados</option>
-            <option value="observado">Observados</option>
-            <option value="rechazado">Rechazados</option>
+            <option value="todos">{t("filterAll")}</option>
+            <option value="recibido">{t("stats.pending")}</option>
+            <option value="validado">{t("stats.validated")}</option>
+            <option value="observado">{t("stats.observed")}</option>
+            <option value="rechazado">{t("stats.rejected")}</option>
           </select>
         </div>
 
@@ -102,7 +99,7 @@ export function PanelRevisionComprobante({
           {filtrados.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-tinta-3">
-                No hay comprobantes que coincidan con el filtro.
+                {t("empty")}
               </CardContent>
             </Card>
           ) : (
@@ -116,27 +113,27 @@ export function PanelRevisionComprobante({
                     setObservacion(comp.observaciones || "");
                     setProyectoId(comp.proyecto_id || "");
                   }}
-                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                  className={`cursor-pointer rounded-control border p-4 transition-all ${
                     esActivo
                       ? "border-marca-500 bg-marca-50/20 shadow-xs"
-                      : "border-linea bg-superficie hover:border-marca-300"
+                      : "border-linea bg-card hover:border-marca-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-tinta-3">
-                      FOLIO #{comp.folio}
+                      {t("folio", { folio: comp.folio })}
                     </span>
                     <Badge
                       variant={
                         comp.estado === "validado"
                           ? "marca"
                           : comp.estado === "rechazado"
-                            ? "solida"
+                            ? "destructive"
                             : "neutra"
                       }
                       className="text-xs capitalize"
                     >
-                      {comp.estado}
+                      {t(`stats.${comp.estado === "recibido" ? "pending" : comp.estado === "validado" ? "validated" : comp.estado === "observado" ? "observed" : comp.estado === "rechazado" ? "rejected" : "posted"}`)}
                     </Badge>
                   </div>
                   <p className="mt-1 font-semibold text-tinta line-clamp-1">
@@ -163,10 +160,10 @@ export function PanelRevisionComprobante({
       {/* Columna derecha: Detalle, previsualización y acciones */}
       <div className="lg:col-span-7">
         {seleccionado ? (
-          <div className="space-y-4 rounded-2xl border border-linea bg-superficie p-6 shadow-card">
+          <div className="space-y-4 rounded-card border border-linea bg-card p-6 shadow-card">
             <div className="flex items-center justify-between border-b border-linea pb-4">
               <div>
-                <span className="texto-meta text-xs">Comprobante de Gasto</span>
+                <span className="texto-meta text-xs">{t("detailTitle")}</span>
                 <h2 className="text-xl font-bold text-tinta">
                   {seleccionado.concepto}
                 </h2>
@@ -177,13 +174,13 @@ export function PanelRevisionComprobante({
                 }
                 className="text-sm capitalize"
               >
-                {seleccionado.estado}
+                {t(`stats.${seleccionado.estado === "recibido" ? "pending" : seleccionado.estado === "validado" ? "validated" : seleccionado.estado === "observado" ? "observed" : seleccionado.estado === "rechazado" ? "rejected" : "posted"}`)}
               </Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
               <div>
-                <p className="texto-meta text-xs">Monto Total</p>
+                <p className="texto-meta text-xs">{t("amount")}</p>
                 <p className="font-mono text-base font-bold text-tinta">
                   {seleccionado.moneda}{" "}
                   {Number(seleccionado.monto).toLocaleString("es-DO", {
@@ -192,39 +189,39 @@ export function PanelRevisionComprobante({
                 </p>
               </div>
               <div>
-                <p className="texto-meta text-xs">Enviado por</p>
+                <p className="texto-meta text-xs">{t("sender")}</p>
                 <p className="font-medium text-tinta">{seleccionado.remitente_nombre}</p>
               </div>
               <div>
-                <p className="texto-meta text-xs">Fecha</p>
+                <p className="texto-meta text-xs">{t("date")}</p>
                 <p className="text-tinta">{seleccionado.fecha_comprobante}</p>
               </div>
               <div>
-                <p className="texto-meta text-xs">Proveedor</p>
-                <p className="text-tinta">{seleccionado.proveedor_nombre || "No especificado"}</p>
+                <p className="texto-meta text-xs">{t("vendor")}</p>
+                <p className="text-tinta">{seleccionado.proveedor_nombre || t("unspecified")}</p>
               </div>
               <div>
-                <p className="texto-meta text-xs">RNC / Cédula</p>
+                <p className="texto-meta text-xs">{t("rnc")}</p>
                 <p className="font-mono text-tinta">{seleccionado.proveedor_rnc || "—"}</p>
               </div>
               <div>
-                <p className="texto-meta text-xs">NCF</p>
+                <p className="texto-meta text-xs">{t("ncf")}</p>
                 <p className="font-mono text-tinta">{seleccionado.ncf || "—"}</p>
               </div>
             </div>
 
             {/* Vinculación de Programa / Proyecto */}
-            <div className="rounded-xl border border-linea bg-muted/30 p-3.5 space-y-1.5">
+            <div className="rounded-control border border-linea bg-muted/30 p-3.5 space-y-1.5">
               <label className="text-xs font-semibold text-tinta flex items-center gap-1.5">
                 <Building className="size-3.5 text-marca-600" />
-                Vincular a Programa o Proyecto de la Fundación
+                {t("linkProject")}
               </label>
               <select
                 value={proyectoId}
                 onChange={(e) => setProyectoId(e.target.value)}
-                className="w-full rounded-lg border border-linea bg-superficie p-2 text-sm text-tinta"
+                className="w-full rounded-control border border-linea bg-card p-2 text-sm text-tinta outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">— Sin programa asignado (Gasto general) —</option>
+                <option value="">{t("noProject")}</option>
                 {proyectos.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.nombre}
@@ -233,15 +230,15 @@ export function PanelRevisionComprobante({
               </select>
               {seleccionado.proyecto_nombre && (
                 <p className="texto-meta text-xs">
-                  Asignado actualmente a: <span className="font-semibold text-tinta">{seleccionado.proyecto_nombre}</span>
+                  {t("assignedTo", { project: seleccionado.proyecto_nombre })}
                 </p>
               )}
             </div>
 
             {/* Previsualización del comprobante / imagen */}
-            <div className="rounded-xl border border-linea bg-muted/30 p-4">
+            <div className="rounded-control border border-linea bg-muted/30 p-4">
               <p className="texto-meta mb-2 text-xs font-semibold uppercase">
-                Foto / Documento Adjunto
+                {t("attachment")}
               </p>
               {seleccionado.archivo_url ? (
                 <div className="flex flex-col items-center justify-center space-y-2">
@@ -249,15 +246,15 @@ export function PanelRevisionComprobante({
                     href={seleccionado.archivo_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-marca-600 underline flex items-center gap-1"
+                    className="text-sm text-marca-600 underline flex items-center gap-1 font-medium"
                   >
-                    Ver archivo original <ExternalLink className="size-3.5" />
+                    {t("viewOriginal")} <ExternalLink className="size-3.5" />
                   </a>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-xs text-tinta-3">
                   <Receipt className="size-4" />
-                  <span>Comprobante registrado sin archivo escaneado.</span>
+                  <span>{t("noAttachment")}</span>
                 </div>
               )}
             </div>
@@ -265,13 +262,13 @@ export function PanelRevisionComprobante({
             {/* Observaciones o correcciones */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-tinta">
-                Notas / Observación para el empleado
+                {t("notesLabel")}
               </label>
               <textarea
                 value={observacion}
                 onChange={(e) => setObservacion(e.target.value)}
-                placeholder="Indica si falta el NCF, si es válido para reembolso o el motivo de rechazo…"
-                className="w-full rounded-xl border border-linea p-3 text-sm focus:border-marca-500 focus:outline-none"
+                placeholder={t("notesPlaceholder")}
+                className="w-full rounded-control border border-linea p-3 text-sm focus:border-marca-500 focus:outline-none"
                 rows={2}
               />
             </div>
@@ -285,8 +282,8 @@ export function PanelRevisionComprobante({
                 onClick={() => handleValidar("observado")}
                 className="text-tinta-2 hover:bg-muted"
               >
-                <AlertCircle className="size-4 mr-1 text-alerta-600" />
-                Marcar Observado
+                <AlertCircle className="size-4 mr-1 text-tinta-2" />
+                {t("markObserved")}
               </Button>
               <Button
                 variant="outline"
@@ -296,7 +293,7 @@ export function PanelRevisionComprobante({
                 className="text-tinta"
               >
                 <XCircle className="size-4 mr-1" />
-                Rechazar
+                {t("reject")}
               </Button>
               <Button
                 variant="default"
@@ -305,14 +302,14 @@ export function PanelRevisionComprobante({
                 onClick={() => handleValidar("validado")}
               >
                 <CheckCircle2 className="size-4 mr-1" />
-                Aprobar y Validar
+                {t("approveAndValidate")}
               </Button>
             </div>
           </div>
         ) : (
           <Card>
             <CardContent className="py-16 text-center text-sm text-tinta-3">
-              Selecciona un comprobante de la lista para revisarlo.
+              {t("noSelection")}
             </CardContent>
           </Card>
         )}

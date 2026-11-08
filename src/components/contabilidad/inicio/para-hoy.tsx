@@ -13,7 +13,8 @@ export type ClavePendiente =
   | "arqueos"
   | "conciliaciones"
   | "comprobantes"
-  | "cajasBajas";
+  | "cajasBajas"
+  | "compras";
 
 export type PendienteVisible = {
   clave: ClavePendiente;

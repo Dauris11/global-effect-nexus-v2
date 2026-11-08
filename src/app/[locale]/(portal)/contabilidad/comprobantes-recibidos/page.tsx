@@ -1,46 +1,44 @@
 import type { Metadata } from "next";
-import {
-  AlertCircle,
-  Camera,
-  CheckCircle2,
-  Clock,
-  Eye,
-  FileText,
-  Filter,
-  Inbox,
-  Receipt,
-  Search,
-} from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
 import { programasParaRendicion } from "@/server/colaborador/consultas";
 import { listarComprobantesRecibidos } from "@/server/contabilidad/comprobantes/recibidos-consultas";
 import { PanelRevisionComprobante } from "@/components/contabilidad/comprobantes/panel-revision-comprobante";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return { title: "Bandeja de Comprobantes Recibidos · Contabilidad" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "contab.comprobantesRecibidos" });
+  return { title: t("titulo") };
 }
 
 export default async function ComprobantesRecibidosPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ estado?: string; q?: string }>;
 }) {
   await requerirRol(["contabilidad", "super_admin", "admin"]);
-  const params = await searchParams;
+  const { locale } = await params;
+  const filtros = await searchParams;
 
-  const [comprobantes, proyectos] = await Promise.all([
+  const [t, comprobantes, proyectos, mensajes] = await Promise.all([
+    getTranslations({ locale, namespace: "contab.comprobantesRecibidos" }),
     listarComprobantesRecibidos({
-      estado: params.estado,
-      busqueda: params.q,
+      estado: filtros.estado,
+      busqueda: filtros.q,
       limite: 100,
     }),
     programasParaRendicion(),
+    mensajesCliente(["contab"]),
   ]);
 
   const conteoPorEstado = {
@@ -53,44 +51,35 @@ export default async function ComprobantesRecibidosPage({
 
   return (
     <div className="space-y-6 animate-entrada">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="texto-meta text-xs uppercase tracking-wider text-marca-600 font-semibold">
-              Recepción en Vivo
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
-            Bandeja de Comprobantes Recibidos
-          </h1>
-          <p className="texto-meta mt-1">
-            Facturas y recibos capturados desde el chat por choferes y personal de campo en tiempo real.
-          </p>
-        </div>
-      </div>
+      <EncabezadoPagina
+        antetitulo={t("eyebrow")}
+        titulo={t("titulo")}
+      />
 
       {/* Métricas rápidas de la bandeja */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-linea bg-superficie p-4">
-          <p className="texto-meta text-xs">Por Validar</p>
-          <p className="text-2xl font-bold text-alerta-600">{conteoPorEstado.recibido}</p>
+        <div className="rounded-control border border-linea bg-card p-4 shadow-card">
+          <p className="texto-meta text-xs">{t("stats.pending")}</p>
+          <p className="text-2xl font-bold text-tinta">{conteoPorEstado.recibido}</p>
         </div>
-        <div className="rounded-xl border border-linea bg-superficie p-4">
-          <p className="texto-meta text-xs">Validados</p>
-          <p className="text-2xl font-bold text-exito-600">{conteoPorEstado.validado}</p>
+        <div className="rounded-control border border-linea bg-card p-4 shadow-card">
+          <p className="texto-meta text-xs">{t("stats.validated")}</p>
+          <p className="text-2xl font-bold text-marca-600">{conteoPorEstado.validado}</p>
         </div>
-        <div className="rounded-xl border border-linea bg-superficie p-4">
-          <p className="texto-meta text-xs">Observados</p>
+        <div className="rounded-control border border-linea bg-card p-4 shadow-card">
+          <p className="texto-meta text-xs">{t("stats.observed")}</p>
           <p className="text-2xl font-bold text-tinta-2">{conteoPorEstado.observado}</p>
         </div>
-        <div className="rounded-xl border border-linea bg-superficie p-4">
-          <p className="texto-meta text-xs">Contabilizados</p>
-          <p className="text-2xl font-bold text-marca-600">{conteoPorEstado.contabilizado}</p>
+        <div className="rounded-control border border-linea bg-card p-4 shadow-card">
+          <p className="texto-meta text-xs">{t("stats.posted")}</p>
+          <p className="text-2xl font-bold text-marca-700">{conteoPorEstado.contabilizado}</p>
         </div>
       </div>
 
       {/* Lista interactiva de comprobantes con panel de revisión */}
-      <PanelRevisionComprobante comprobantes={comprobantes} proyectos={proyectos} />
+      <NextIntlClientProvider messages={mensajes}>
+        <PanelRevisionComprobante comprobantes={comprobantes} proyectos={proyectos} />
+      </NextIntlClientProvider>
     </div>
   );
 }

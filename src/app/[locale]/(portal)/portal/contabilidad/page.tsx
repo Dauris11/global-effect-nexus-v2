@@ -101,6 +101,9 @@ export default async function PortalContabilidad({
   const todos: PendienteVisible[] = [
     { clave: "cxpVencidas", cuantos: pendientes.cxp_vencidas, href: "/contabilidad/cuentas-por-pagar", urgente: true },
     { clave: "cxpSemana", cuantos: pendientes.cxp_semana, href: "/contabilidad/cuentas-por-pagar" },
+    ...(puede("contabilidad.aprobar")
+      ? [{ clave: "compras" as const, cuantos: pendientes.compras_pendientes, href: "/administrativo/solicitudes", urgente: true }]
+      : []),
     { clave: "comprobantes", cuantos: pendientes.comprobantes_por_validar, href: "/contabilidad/comprobantes-recibidos" },
     { clave: "cajasBajas", cuantos: pendientes.cajas_bajas, href: "/contabilidad/cajas", urgente: true },
     { clave: "arqueos", cuantos: pendientes.arqueos_abiertos, href: "/contabilidad/cajas" },

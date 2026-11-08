@@ -2766,8 +2766,9 @@
         "rendiciones": "{count, plural, =1 {rendición de gastos por revisar} other {rendiciones de gastos por revisar}}",
         "arqueos": "{count, plural, =1 {arqueo de caja abierto} other {arqueos de caja abiertos}}",
         "conciliaciones": "{count, plural, =1 {conciliación bancaria abierta} other {conciliaciones bancarias abiertas}}",
-          "comprobantes": "{count, plural, =1 {comprobante por validar} other {comprobantes por validar}}",
-          "cajasBajas": "{count, plural, =1 {caja chica bajo el 25 %} other {cajas chicas bajo el 25 %}}"
+        "comprobantes": "{count, plural, =1 {comprobante por validar} other {comprobantes por validar}}",
+        "cajasBajas": "{count, plural, =1 {caja chica bajo el 25 %} other {cajas chicas bajo el 25 %}}",
+        "compras": "{count, plural, =1 {solicitud de compra o gasto por aprobar} other {solicitudes de compra o gasto por aprobar}}"
       },
         "periodo": {
           "etiqueta": "Periodo",
@@ -2789,6 +2790,42 @@
         "alertaFondos": "Liquidez justa: revisa si hace falta solicitar fondos.",
         "fondosOk": "Liquidez suficiente para los compromisos.",
         "pendientes": "Pendientes"
+    },
+    "comprobantesRecibidos": {
+      "titulo": "Bandeja de comprobantes recibidos",
+      "eyebrow": "Recepción en vivo",
+      "descripcion": "Facturas y recibos capturados desde el chat por choferes y personal de campo en tiempo real.",
+      "stats": {
+        "pending": "Por validar",
+        "validated": "Validados",
+        "observed": "Observados",
+        "rejected": "Rechazados",
+        "posted": "Contabilizados"
+      },
+      "searchPlaceholder": "Buscar por concepto, proveedor o remitente…",
+      "filterAll": "Todos",
+      "empty": "No hay comprobantes que coincidan con el filtro.",
+      "noSelection": "Selecciona un comprobante de la lista para revisarlo.",
+      "folio": "Folio #{folio}",
+      "detailTitle": "Comprobante de gasto",
+      "amount": "Monto total",
+      "sender": "Enviado por",
+      "date": "Fecha",
+      "vendor": "Proveedor",
+      "unspecified": "No especificado",
+      "rnc": "RNC / Cédula",
+      "ncf": "NCF",
+      "linkProject": "Vincular a programa o proyecto de la Fundación",
+      "noProject": "— Sin programa asignado (Gasto general) —",
+      "assignedTo": "Asignado actualmente a: {project}",
+      "attachment": "Foto / Documento adjunto",
+      "viewOriginal": "Ver archivo original",
+      "noAttachment": "Comprobante registrado sin archivo escaneado.",
+      "notesLabel": "Notas / Observación para el empleado",
+      "notesPlaceholder": "Indica si falta el NCF, si es válido para reembolso o el motivo de rechazo…",
+      "markObserved": "Marcar observado",
+      "reject": "Rechazar",
+      "approveAndValidate": "Aprobar y validar"
     },
     "bancos": {
       "titulo": "Bancos",

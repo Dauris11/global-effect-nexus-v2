@@ -2766,8 +2766,9 @@
         "rendiciones": "{count, plural, =1 {expense report to review} other {expense reports to review}}",
         "arqueos": "{count, plural, =1 {open cash count} other {open cash counts}}",
         "conciliaciones": "{count, plural, =1 {open bank reconciliation} other {open bank reconciliations}}",
-          "comprobantes": "{count, plural, =1 {receipt to validate} other {receipts to validate}}",
-          "cajasBajas": "{count, plural, =1 {petty cash below 25%} other {petty cash funds below 25%}}"
+        "comprobantes": "{count, plural, =1 {receipt to validate} other {receipts to validate}}",
+        "cajasBajas": "{count, plural, =1 {petty cash below 25%} other {petty cash funds below 25%}}",
+        "compras": "{count, plural, =1 {purchase or expense request to approve} other {purchase or expense requests to approve}}"
       },
         "periodo": {
           "etiqueta": "Period",
@@ -2789,6 +2790,42 @@
         "alertaFondos": "Tight liquidity: check whether to request funds.",
         "fondosOk": "Enough liquidity for current commitments.",
         "pendientes": "To do"
+    },
+    "comprobantesRecibidos": {
+      "titulo": "Received receipts inbox",
+      "eyebrow": "Live reception",
+      "descripcion": "Invoices and receipts captured from the chat by drivers and field staff in real time.",
+      "stats": {
+        "pending": "To validate",
+        "validated": "Validated",
+        "observed": "Observed",
+        "rejected": "Rejected",
+        "posted": "Posted"
+      },
+      "searchPlaceholder": "Search by concept, vendor, or driver…",
+      "filterAll": "All",
+      "empty": "No receipts match the filter.",
+      "noSelection": "Select a receipt from the list to review.",
+      "folio": "Folio #{folio}",
+      "detailTitle": "Expense receipt",
+      "amount": "Total amount",
+      "sender": "Sent by",
+      "date": "Date",
+      "vendor": "Vendor",
+      "unspecified": "Not specified",
+      "rnc": "Tax ID / National ID",
+      "ncf": "NCF",
+      "linkProject": "Link to Foundation program or project",
+      "noProject": "— No program assigned (General expense) —",
+      "assignedTo": "Currently assigned to: {project}",
+      "attachment": "Photo / Attached document",
+      "viewOriginal": "View original file",
+      "noAttachment": "Receipt recorded without scanned file.",
+      "notesLabel": "Notes / Observation for the employee",
+      "notesPlaceholder": "Indicate if NCF is missing, if valid for reimbursement, or rejection reason…",
+      "markObserved": "Mark as observed",
+      "reject": "Reject",
+      "approveAndValidate": "Approve and validate"
     },
     "bancos": {
       "titulo": "Banks",

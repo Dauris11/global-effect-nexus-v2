@@ -27,6 +27,9 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Rol `contabilidad`:**
         - Agrupación por par de cuentas en depreciación de activos fijos (`0071`).
         - Creación automática de Cuentas por Pagar (CxP) para solicitudes de tipo `compra` aprobadas (`0072`).
+        - Integración de solicitudes de compra pendientes en la sección "Para hoy" (`/portal/contabilidad`) con acceso directo a `/administrativo/solicitudes`.
+        - Localización i18n completa de `/contabilidad/comprobantes-recibidos` y su panel de revisión (36 nuevas claves simétricas en `messages/es.json` y `messages/en.json`).
+        - Limpieza de colores fuera de paleta institucional en revisión de comprobantes fiscales.
       - **Calidad institucional:**
         - 100% páginas estáticas/dinámicas compiladas (194/194 en `npm run build`).
         - Cero advertencias ni errores en `npm run lint`.

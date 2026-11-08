@@ -22,6 +22,7 @@ export type PendientesContables = {
   conciliaciones_abiertas: number;
   comprobantes_por_validar: number;
   cajas_bajas: number;
+  compras_pendientes: number;
 };
 
 export type FlujoMes = { mes: string; ingresos: number; egresos: number };
@@ -124,7 +125,9 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
             (SELECT count(*)::int FROM contabilidad.comprobante_recibido
               WHERE estado IN ('recibido', 'observado')) AS comprobantes_por_validar,
             (SELECT count(*)::int FROM contabilidad.caja
-              WHERE estado = 'activa' AND saldo_actual < fondo_fijo * $1) AS cajas_bajas`,
+              WHERE estado = 'activa' AND saldo_actual < fondo_fijo * $1) AS cajas_bajas,
+            (SELECT count(*)::int FROM public.solicitud
+              WHERE tipo IN ('compra', 'gasto') AND estado IN ('pendiente', 'en_revision')) AS compras_pendientes`,
     [UMBRAL_CAJA_BAJA],
   );
 
@@ -139,6 +142,7 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
       conciliaciones_abiertas: 0,
       comprobantes_por_validar: 0,
       cajas_bajas: 0,
+      compras_pendientes: 0,
     }
   );
 }
