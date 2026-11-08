@@ -5,10 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { HubReuniones } from "@/components/reuniones/hub-reuniones";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
-import { requerirUsuario } from "@/lib/auth";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
+import { requerirPermiso } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   listarCandidatosParticipantes,
   listarReuniones,
@@ -42,23 +40,14 @@ export default async function PaginaReuniones({
   const { locale } = await params;
   const { agendar } = await searchParams;
 
-  const usuario = await requerirUsuario();
-  const puedeLeer = usuarioTienePermiso(usuario, "reuniones.leer");
+  const usuario = await requerirPermiso("reuniones.leer");
   const puedeGestionar = usuarioTienePermiso(usuario, "reuniones.gestionar");
-
-  if (!puedeLeer) {
-    return (
-      <div className="mx-auto max-w-4xl p-8 text-center text-tinta-2">
-        No tienes permiso para consultar las reuniones institucionales.
-      </div>
-    );
-  }
 
   const [t, reuniones, candidatos, metricas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "reuniones" }),
     listarReuniones({ usuarioId: usuario.id, rol: usuario.rol }),
     listarCandidatosParticipantes(),
-    metricasReuniones(),
+    metricasReuniones({ usuarioId: usuario.id, rol: usuario.rol }),
     mensajesCliente(["reuniones"]),
   ]);
 

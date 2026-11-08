@@ -485,7 +485,10 @@
       "description": "Iniciativas en curso y su avance real.",
       "new": "Nuevo proyecto",
       "empty": "Todavía no hay proyectos",
-      "emptyHint": "Crea el primero para agrupar las tareas del equipo."
+      "emptyHint": "Crea el primero para agrupar las tareas del equipo.",
+      "backToProjects": "Volver a Proyectos",
+      "notFound": "Proyecto no encontrado",
+      "leader": "Líder: {nombre}"
     },
     "board": {
       "empty": "Sin tareas",

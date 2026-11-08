@@ -8,9 +8,61 @@ import type {
 import type { Rol } from "@/lib/rbac";
 
 /**
- * Métricas globales del módulo de reuniones institucionales.
+ * Métricas del módulo de reuniones institucionales acotadas al usuario.
+ *
+ * Administradores ven el total institucional. Los demás roles ven las
+ * métricas de las reuniones en las que participan u organizan.
  */
-export async function metricasReuniones(): Promise<MetricasReuniones> {
+export async function metricasReuniones(filtro?: {
+  usuarioId?: string;
+  rol?: Rol;
+  estudianteId?: string | null;
+}): Promise<MetricasReuniones> {
+  const esAdmin = filtro?.rol === "super_admin" || filtro?.rol === "admin";
+  const parametros: unknown[] = [];
+  let whereCond = "";
+
+  if (!esAdmin && filtro?.usuarioId) {
+    parametros.push(filtro.usuarioId);
+    const posUsuario = parametros.length;
+
+    if (filtro.estudianteId) {
+      parametros.push(filtro.estudianteId);
+      const posEst = parametros.length;
+      whereCond = `WHERE (
+        r.organizador_usuario_id = $${posUsuario}
+        OR r.estudiante_id = $${posEst}
+        OR EXISTS (
+          SELECT 1 FROM reunion_participante rp
+          WHERE rp.reunion_id = r.id
+            AND (rp.usuario_id = $${posUsuario} OR rp.estudiante_id = $${posEst})
+        )
+        OR EXISTS (
+          SELECT 1 FROM estudiante e
+          WHERE e.usuario_id = $${posUsuario}
+            AND (r.estudiante_id = e.id OR EXISTS (
+              SELECT 1 FROM reunion_participante rpe WHERE rpe.reunion_id = r.id AND rpe.estudiante_id = e.id
+            ))
+        )
+      )`;
+    } else {
+      whereCond = `WHERE (
+        r.organizador_usuario_id = $${posUsuario}
+        OR EXISTS (
+          SELECT 1 FROM reunion_participante rp
+          WHERE rp.reunion_id = r.id AND rp.usuario_id = $${posUsuario}
+        )
+        OR EXISTS (
+          SELECT 1 FROM estudiante e
+          WHERE e.usuario_id = $${posUsuario}
+            AND (r.estudiante_id = e.id OR EXISTS (
+              SELECT 1 FROM reunion_participante rpe WHERE rpe.reunion_id = r.id AND rpe.estudiante_id = e.id
+            ))
+        )
+      )`;
+    }
+  }
+
   const metrica = await consultarUna<{
     total_reuniones: string;
     programadas: string;
@@ -19,13 +71,19 @@ export async function metricasReuniones(): Promise<MetricasReuniones> {
   }>(
     `SELECT
        count(*)::text AS total_reuniones,
-       count(*) FILTER (WHERE estado = 'programada')::text AS programadas,
+       count(*) FILTER (WHERE r.estado = 'programada')::text AS programadas,
        count(*) FILTER (
-         WHERE estado = 'realizada'
-           AND to_char(fecha, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
+         WHERE r.estado = 'realizada'
+           AND to_char(r.fecha, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
        )::text AS realizadas_mes,
-       (SELECT count(*)::text FROM reunion_participante) AS total_participantes
-     FROM reunion`
+       (
+         SELECT count(*)::text
+         FROM reunion_participante rp
+         ${whereCond ? `JOIN reunion r ON r.id = rp.reunion_id ${whereCond}` : ""}
+       ) AS total_participantes
+     FROM reunion r
+     ${whereCond}`,
+    parametros
   );
 
   return {

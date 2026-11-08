@@ -485,7 +485,10 @@
       "description": "Ongoing initiatives and their real progress.",
       "new": "New project",
       "empty": "No projects yet",
-      "emptyHint": "Create the first one to group the team's tasks."
+      "emptyHint": "Create the first one to group the team's tasks.",
+      "backToProjects": "Back to Projects",
+      "notFound": "Project not found",
+      "leader": "Lead: {nombre}"
     },
     "board": {
       "empty": "No tasks",

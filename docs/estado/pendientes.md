@@ -40,7 +40,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Diseño:** rejilla con nombres fijos y eje con meses y días, línea de hoy, escala semana/mes/período, barras redondeadas con progreso, hitos como rombo, detalle al tocar; en móvil, lista por fechas. Lo vencido va con icono de aviso y tinta, no en rojo. La tarea ahora empieza en su `fecha_inicio` (antes, siempre su creación).
       - **Filtros en la URL** (`filtros-linea-tiempo.tsx`): período, "todo" y familias.
       - **Corregido de paso:** los componentes cliente de transporte y los de `/configuracion/permisos` no recibían sus mensajes (`useTranslations` sin espacio entregado fallaría en ejecución aunque el build pase): las páginas ahora entregan `transport` y `permisosAdmin` con `mensajesCliente`; `lineaTiempo` pasó a espacios base.
-      - **Pendiente:** no se probó el arrastre en navegador (solo tipos, lint y build); dependencias entre tareas (`tarea_dependencia`) sin dibujar; `proyectos/[id]/page.tsx` conserva textos literales sin i18n.
+      - **Pendiente:** no se probó el arrastre en navegador (solo tipos, lint y build); dependencias entre tareas (`tarea_dependencia`) sin dibujar.
 
 - [x] **Roles definitivos, permisos granulares y portal limpio (1 nov 2026, migración `0065`):**
       - **Roles:** quedan `super_admin`, `admin` (administrativo), `docente`, `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes` y `chofer`. Se retira `colaborador`: la `0065` pasa sus cuentas a `admin` (avisa cuántas con `RAISE NOTICE`) y borra el rol, su `rol_permiso` y su `visibilidad_menu`; se elimina `/portal/colaborador`. El módulo "colaborador" (torre de control, rendiciones, tareas) sigue: lo usan los demás roles.
@@ -120,10 +120,20 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Movimiento:** tokens y keyframes en `globals.css`, primitivos y armazón animados, `template.tsx` de entrada; todo neutralizado con `prefers-reduced-motion`.
 - [ ] **Probar con sesión en pantalla:** ver como (cada rol), torre de control, flujo completo de caja chica (gasto → arqueo → aprobación → reposición) contra la base.
 - [ ] **Ubicar los liceos** en el mapa de Habitudes (el seed no trae coordenadas) y migración para guardar lat/lng de la visita.
-- [ ] **Contabilidad:** `reponer_caja()` en la base sigue rota (ya nadie la llama; retirarla); la depreciación usa las cuentas de la categoría del primer activo para todos; `loading.tsx` en cajas.
+- [x] **Contabilidad, Torre de Control, Agendas y ERP — Cierres de Auditoría (8 nov 2026, migración `0071`):**
+      - **Contabilidad:**
+        - Cuentas de depreciación de activos fijos agrupadas por cada categoría (`cuenta_gasto_depreciacion_id` y `cuenta_depreciacion_acumulada_id`) en `src/server/contabilidad/activos-fijos/acciones.ts`, evitando imputar todas las categorías a las cuentas del primer activo.
+        - Retiro formal de la función PL/pgSQL obsoleta `contabilidad.reponer_caja` en la base de datos (migración `0071`), ya que la reposición se ejecuta de forma integral y transaccional desde `reponerCajaDesdeBancoAction`.
+        - Creación de `src/app/[locale]/(portal)/contabilidad/cajas/loading.tsx` con esqueletos visuales conformes a los tokens de diseño.
+      - **Agendas y Reuniones:**
+        - Aislamiento estricto de métricas en `metricasReuniones` (`src/server/reuniones/consultas.ts`): los usuarios sin rol de administración ven únicamente los conteos de reuniones en las que participan u organizan, blindando la privacidad institucional.
+        - Blindaje RBAC en `src/app/[locale]/(portal)/reuniones/page.tsx` utilizando `await requerirPermiso("reuniones.leer")` y eliminación de mensajes literales de error en JSX.
+      - **Torre de Control y Proyectos:**
+        - Internacionalización completa de `/administrativo/proyectos/[id]` (claves `backToProjects`, `notFound`, `leader` en `messages/es.json` y `messages/en.json`), eliminando textos literales en JSX.
+        - Verificación integral de flujos de asignación, avance de tareas, comentarios y vista de equipo en la Torre de Control (`torre-control` y `torre-control/equipo`).
+      - **Calidad:** 5,026 claves i18n simétricas (`npm run i18n:check`), 0 alertas de colores/degradados (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (194/194 rutas).
 - [ ] **Landing:** fotos reales de la Fundación en el hero; borrar claves sin uso (`work_*_tag`, `work_training_*`, `access_*_f1–f3`).
 - [ ] **Documentar** los nuevos tokens de movimiento en `docs/09-sistema-visual.md` §2.8 y `.claude/rules/design-system.md`.
-- [ ] `proyectos/[id]/page.tsx` conserva textos literales en JSX.
 
 - [x] **Flujo de Fondos, Diagnóstico de Liquidez y Cuadre de Caja en Portal Contabilidad (31 oct 2026):**
       - **Visión Institucional de Fundación (`src/app/[locale]/(portal)/portal/contabilidad/page.tsx`):**

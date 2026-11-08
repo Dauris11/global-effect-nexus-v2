@@ -116,10 +116,6 @@ export async function ejecutarDepreciacionMensual(
       throw new Error("No hay activos pendientes de depreciación para este período.");
     }
 
-    // Cuentas para asiento
-    const ctaGastoDeprec = activos[0].cuenta_gasto_depreciacion_id;
-    const ctaAcumDeprec = activos[0].cuenta_depreciacion_acumulada_id;
-
     let totalDepreciado = 0;
     type LineaDeprec = {
       activoId: string;
@@ -130,6 +126,12 @@ export async function ejecutarDepreciacionMensual(
       nuevosMeses: number;
     };
     const lineasCalculadas: LineaDeprec[] = [];
+
+    // Agrupar monto depreciado por par de cuentas contables de cada categoría
+    const acumuladoPorCuentas = new Map<
+      string,
+      { ctaGasto: string; ctaAcum: string; monto: number }
+    >();
 
     for (const act of activos) {
       const costo = Number(act.costo_adquisicion);
@@ -145,7 +147,6 @@ export async function ejecutarDepreciacionMensual(
 
       if (cuotaEfectiva > 0) {
         const nuevoValorLibros = Math.round((valorLibros - cuotaEfectiva) * 100) / 100;
-        const nuevaDeprecAcum = Math.round((deprecPrevia + cuotaEfectiva) * 100) / 100;
         const esTotal = nuevoValorLibros <= residual;
 
         lineasCalculadas.push({
@@ -158,10 +159,43 @@ export async function ejecutarDepreciacionMensual(
         });
 
         totalDepreciado += cuotaEfectiva;
+
+        const clave = `${act.cuenta_gasto_depreciacion_id}:${act.cuenta_depreciacion_acumulada_id}`;
+        const prev = acumuladoPorCuentas.get(clave) ?? {
+          ctaGasto: act.cuenta_gasto_depreciacion_id,
+          ctaAcum: act.cuenta_depreciacion_acumulada_id,
+          monto: 0,
+        };
+        prev.monto = Math.round((prev.monto + cuotaEfectiva) * 100) / 100;
+        acumuladoPorCuentas.set(clave, prev);
       }
     }
 
     totalDepreciado = Math.round(totalDepreciado * 100) / 100;
+
+    // Líneas de asiento contable desglosadas por las cuentas de cada categoría
+    const lineasAsiento: {
+      cuenta_id: string;
+      debe: number;
+      haber: number;
+      descripcion: string;
+    }[] = [];
+
+    for (const { ctaGasto, ctaAcum, monto } of acumuladoPorCuentas.values()) {
+      if (monto <= 0) continue;
+      lineasAsiento.push({
+        cuenta_id: ctaGasto,
+        debe: monto,
+        haber: 0,
+        descripcion: `Gasto depreciación activos período ${mes}/${anio}`,
+      });
+      lineasAsiento.push({
+        cuenta_id: ctaAcum,
+        debe: 0,
+        haber: monto,
+        descripcion: `Depreciación acumulada activos período ${mes}/${anio}`,
+      });
+    }
 
     // `crear_asiento` asigna número y período; armar la cabecera a
     // mano duplicaba esa lógica con columnas que la tabla no tiene.
@@ -170,20 +204,7 @@ export async function ejecutarDepreciacionMensual(
       [
         fechaAsiento,
         `Depreciación mensual de activos fijos ${mes}/${anio}`,
-        JSON.stringify([
-          {
-            cuenta_id: ctaGastoDeprec,
-            debe: totalDepreciado,
-            haber: 0,
-            descripcion: `Gasto depreciación activos período ${mes}/${anio}`,
-          },
-          {
-            cuenta_id: ctaAcumDeprec,
-            debe: 0,
-            haber: totalDepreciado,
-            descripcion: `Depreciación acumulada activos período ${mes}/${anio}`,
-          },
-        ]),
+        JSON.stringify(lineasAsiento),
       ],
     );
     const asientoId = asRows[0].id;

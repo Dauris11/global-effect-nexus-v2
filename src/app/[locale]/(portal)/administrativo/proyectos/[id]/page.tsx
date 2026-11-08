@@ -25,11 +25,12 @@ import { equipoDeProyecto } from "@/server/operaciones/torre-consultas";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "admin" });
   const proyecto = await proyectoParaGantt(id);
-  if (!proyecto) return { title: "Proyecto no encontrado" };
+  if (!proyecto) return { title: t("projects.notFound") };
 
   return { title: `Gantt: ${proyecto.nombre} · Global Effect Nexus` };
 }
@@ -37,9 +38,9 @@ export async function generateMetadata({
 export default async function PaginaDetalleProyectoGantt({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const usuario = await requerirPermiso("operaciones.leer");
   const puedeEditar = usuarioTienePermiso(usuario, "operaciones.escribir");
 
@@ -51,9 +52,10 @@ export default async function PaginaDetalleProyectoGantt({
     ? await Promise.all([equipoDeProyecto(id), usuariosAsignables(), mensajesCliente(["torre"])])
     : [null, [], null];
 
-  const [tc, tl, hoy] = await Promise.all([
-    getTranslations("calendar"),
-    getTranslations("lineaTiempo"),
+  const [t, tc, tl, hoy] = await Promise.all([
+    getTranslations({ locale, namespace: "admin" }),
+    getTranslations({ locale, namespace: "calendar" }),
+    getTranslations({ locale, namespace: "lineaTiempo" }),
     hoyEnLaBase(),
   ]);
 
@@ -95,7 +97,7 @@ export default async function PaginaDetalleProyectoGantt({
               className="inline-flex items-center text-xs font-semibold text-marca-600 hover:underline"
             >
               <ArrowLeft className="size-3.5 mr-1" />
-              Volver a Proyectos
+              {t("projects.backToProjects")}
             </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl flex items-center gap-2.5">
@@ -113,7 +115,7 @@ export default async function PaginaDetalleProyectoGantt({
           </Badge>
           {proyecto.responsable && (
             <Badge variant="marca" className="text-xs">
-              Líder: {proyecto.responsable}
+              {t("projects.leader", { nombre: proyecto.responsable })}
             </Badge>
           )}
         </div>
