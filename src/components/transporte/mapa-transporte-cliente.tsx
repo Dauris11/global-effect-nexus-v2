@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "../mapa/mapa.css";
 import { AlertCircle, Bus, Clock, MapPin, Navigation } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -53,21 +54,30 @@ export function MapaTransporteCliente({
       zoomControl: true,
     });
 
-    const esOscuro = document.documentElement.classList.contains("dark");
-    const urlTeselas = esOscuro
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+    const obtenerUrlTeselas = () =>
+      document.documentElement.classList.contains("dark")
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
-    L.tileLayer(urlTeselas, {
+    const teselas = L.tileLayer(obtenerUrlTeselas(), {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
       subdomains: "abcd",
       maxZoom: 19,
     }).addTo(mapa);
 
+    const observador = new MutationObserver(() => {
+      teselas.setUrl(obtenerUrlTeselas());
+    });
+    observador.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     mapaRef.current = mapa;
 
     return () => {
+      observador.disconnect();
       mapa.remove();
       mapaRef.current = null;
     };
@@ -104,15 +114,15 @@ export function MapaTransporteCliente({
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: ${BLANCO};
-          border: 2px solid ${AZUL};
-          color: ${AZUL_OSCURO};
+          background: var(--card, #ffffff);
+          border: 2px solid var(--color-marca-500, #2096BA);
+          color: var(--color-marca-600, #0a6a8a);
           font-size: 11px;
           font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 4px color-mix(in srgb, ${TINTA} 20%, transparent);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         ">
           ${parada.orden}
         </div>
@@ -128,10 +138,12 @@ export function MapaTransporteCliente({
       }).addTo(mapa);
 
       marker.bindPopup(`
-        <div style="font-family: inherit;">
-          <strong style="color: ${AZUL_OSCURO}; font-size: 13px;">${parada.orden}. ${escapar(parada.nombre)}</strong>
-          ${parada.referencia ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: ${TINTA}; opacity: 0.75;">${escapar(parada.referencia)}</p>` : ""}
-          <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 600;">
+        <div class="space-y-1 font-sans text-xs">
+          <strong class="block text-sm font-semibold text-marca-600 dark:text-marca-300">
+            ${parada.orden}. ${escapar(parada.nombre)}
+          </strong>
+          ${parada.referencia ? `<p class="text-tinta-2">${escapar(parada.referencia)}</p>` : ""}
+          <p class="pt-0.5 font-medium text-tinta">
             ${t("popup.estimated", { minutes: parada.minutos_estimados })}
           </p>
         </div>
@@ -171,10 +183,16 @@ export function MapaTransporteCliente({
       }).addTo(mapa);
 
       marcador.bindPopup(`
-        <div style="font-family: inherit;">
-          <strong style="color: ${AZUL}; font-size: 14px;">${t("popup.title")}</strong>
-          <p style="margin: 3px 0 0 0; font-size: 12px;"><strong>${t("popup.driver")}:</strong> ${escapar(viaje?.chofer_nombre ?? t("popup.assigned"))}</p>
-          <p style="margin: 2px 0 0 0; font-size: 12px;"><strong>${t("popup.status")}:</strong> ${t(`status.${viaje?.estado ?? "programado"}`)}</p>
+        <div class="space-y-1 font-sans text-xs">
+          <strong class="block text-sm font-semibold text-marca-600 dark:text-marca-300">
+            ${t("popup.title")}
+          </strong>
+          <p class="text-tinta">
+            <span class="font-semibold">${t("popup.driver")}:</span> ${escapar(viaje?.chofer_nombre ?? t("popup.assigned"))}
+          </p>
+          <p class="text-tinta">
+            <span class="font-semibold">${t("popup.status")}:</span> ${t(`status.${viaje?.estado ?? "programado"}`)}
+          </p>
         </div>
       `);
 

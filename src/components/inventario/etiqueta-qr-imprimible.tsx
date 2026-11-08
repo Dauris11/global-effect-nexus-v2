@@ -60,7 +60,7 @@ export function EtiquetaQrImprimible({
       {/* Contenedor de la etiqueta con estilo corporativo */}
       <div
         id="etiqueta-imprimible"
-        className="w-full max-w-[340px] rounded-xl border-2 border-linea bg-white p-4 text-tinta shadow-sm print:max-w-none print:border-black print:p-6 print:shadow-none"
+        className="w-full max-w-[340px] rounded-card border-2 border-linea bg-card p-4 text-tinta shadow-card print:max-w-none print:border-black print:p-6 print:shadow-none"
       >
         <div className="flex items-center justify-between border-b border-linea pb-2 print:border-black">
           <div>

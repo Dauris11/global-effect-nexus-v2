@@ -35,6 +35,11 @@ módulo) — esto es solo la cola de pendientes concretos.
         - Interactividad directa en tarjetas de la bandeja: clic en tarea redirige a su tablero (`/administrativo/tareas`), clic en reunión realiza scroll automático a su tarjeta (#reunion-id) en la agenda institucional (`/reuniones`).
         - Normalización en consulta de pendientes institucionales (`pendientesDeLaFundacion`): conteo de tareas abiertas urgentes y vencidas incluyendo `'por_hacer'` y `'en_revision'`, sincronizando con el modelo real de tareas y la torre.
         - Entrada directa a Permisos (`/configuracion/permisos`) incorporada en el menú lateral bajo Configuración para administradores con `usuarios.administrar`.
+      - **Mapas, contraste visual y blindaje de archivos:**
+        - Carga de estilos de mapa (`mapa.css`) en transporte en tiempo real, con observador de mutaciones (`MutationObserver`) para alternar teselas claras y oscuras de CARTO al cambiar de tema.
+        - Rediseño de popups y marcadores de paradas de guagua con alto contraste y legibilidad tanto en tema claro como oscuro.
+        - Validación estricta en servidor de formatos admitidos (.pdf, .png, .jpg, .pptx, .docx, .xlsx, .zip) y límite de capacidad (20 MB) en recursos pedagógicos de Habitudes.
+        - Unificación de tokens de diseño (`rounded-card`, `bg-card`, `shadow-card`) en etiquetas patrimoniales QR de inventario.
       - **Calidad institucional:**
         - 100% páginas estáticas/dinámicas compiladas (194/194 en `npm run build`).
         - Cero advertencias ni errores en `npm run lint`.

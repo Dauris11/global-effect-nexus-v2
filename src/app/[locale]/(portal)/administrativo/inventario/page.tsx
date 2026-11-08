@@ -2,7 +2,7 @@ import { CheckCircle2, Clock, DollarSign, Package, QrCode } from "lucide-react";
 
 import { TablaActivos } from "@/components/inventario/tabla-activos";
 import { Link } from "@/i18n/navigation";
-import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";

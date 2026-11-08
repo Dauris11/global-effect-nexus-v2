@@ -9,7 +9,7 @@ import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
-import { subirMaterial } from "@/lib/supabase/almacen";
+import { MAXIMO_MATERIAL, subirMaterial } from "@/lib/supabase/almacen";
 
 export type AccionHabitudesResultado = {
   ok: boolean;
@@ -44,6 +44,14 @@ export async function subirRecursoHabitudesAction(
   let urlFinal = archivoUrl;
 
   if (archivo && archivo instanceof File && archivo.size > 0) {
+    if (archivo.size > MAXIMO_MATERIAL) {
+      return { ok: false, mensaje: "El archivo supera el tamaño máximo permitido de 20 MB." };
+    }
+    const extension = archivoNombre.split(".").pop()?.toLowerCase() ?? "";
+    const formatosValidos = ["pdf", "png", "jpg", "jpeg", "pptx", "docx", "xlsx", "zip"];
+    if (!formatosValidos.includes(extension)) {
+      return { ok: false, mensaje: "Formato de archivo no admitido (.pdf, .png, .jpg, .pptx, .docx, .xlsx, .zip)." };
+    }
     const nombreLimpio = archivoNombre.replace(/[^a-zA-Z0-9._-]/g, "_");
     const ruta = `habitudes/${categoria}/${Date.now()}_${nombreLimpio}`;
     const subida = await subirMaterial(ruta, archivo);
