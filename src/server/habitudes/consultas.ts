@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import type {
   HabitudesLiceo,
   HabitudesRecurso,
@@ -235,7 +236,16 @@ export async function listarRecursosHabitudes(
      ORDER BY r.creado_en DESC
   `;
 
-  return consultar<HabitudesRecurso>(query, params);
+  const filas = await consultar<HabitudesRecurso>(query, params);
+  return Promise.all(
+    filas.map(async (r) => {
+      if (r.archivo_url && !r.archivo_url.startsWith("http")) {
+        const firmado = await enlaceDeDocumento(r.archivo_url);
+        return { ...r, archivo_url: firmado ?? r.archivo_url };
+      }
+      return r;
+    }),
+  );
 }
 
 /**

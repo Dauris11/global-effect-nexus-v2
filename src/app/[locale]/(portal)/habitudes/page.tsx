@@ -6,6 +6,7 @@ import {
   FolderGit2,
   GraduationCap,
   Sparkles,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -14,9 +15,11 @@ import { GaleriaEvidencias } from "@/components/habitudes/galeria-evidencias";
 import { HubRecursos } from "@/components/habitudes/hub-recursos";
 import { PanelDirectorHabitudes } from "@/components/habitudes/panel-director-habitudes";
 import { RegistroVisitaLiceo } from "@/components/habitudes/registro-visita-liceo";
+import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { StatCard } from "@/components/ui/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import {
   usuarioTienePermiso,
@@ -70,6 +73,7 @@ export default async function PaginaHabitudesHub({
   const puedeSupervisar = usuarioTienePermiso(usuario,
     "habitudes.supervisar",
   );
+  const puedePostular = usuarioTienePermiso(usuario, "expedientes.postular");
 
   const [profesoresMonitoreo, datosAsignacion] = puedeSupervisar
     ? await Promise.all([
@@ -80,7 +84,19 @@ export default async function PaginaHabitudesHub({
 
   return (
     <div className="animate-entrada space-y-6">
-      <EncabezadoPagina titulo={t("pageTitle")} />
+      <EncabezadoPagina
+        titulo={t("pageTitle")}
+        acciones={
+          puedePostular ? (
+            <Button asChild size="sm" className="gap-1.5 active:scale-95">
+              <Link href="/administrativo/solicitudes?tipo=alta_expediente">
+                <UserPlus className="size-4" />
+                <span>{t("nominateCandidate")}</span>
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Tarjetas de Impacto */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

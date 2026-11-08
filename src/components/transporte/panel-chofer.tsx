@@ -9,6 +9,7 @@ import {
   MapPin,
   Navigation,
   Play,
+  Receipt,
   Square,
   UserPlus,
   Users,
@@ -18,6 +19,7 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 import {
   Dialog,
   DialogContent,
@@ -444,6 +446,21 @@ export function PanelChofer({
               </Button>
             </>
           )}
+        </div>
+
+        {/* Acceso directo a reportar gasto de mantenimiento o compra de repuesto */}
+        <div className="border-t border-linea pt-3 mt-4">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="w-full justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+          >
+            <Link href="/administrativo/solicitudes?tipo=compra">
+              <Receipt className="size-3.5" />
+              <span>{t("requestMaintenanceOrPurchase")}</span>
+            </Link>
+          </Button>
         </div>
       </Card>
 

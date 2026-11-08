@@ -17,9 +17,12 @@ módulo) — esto es solo la cola de pendientes concretos.
         - Insignias de estado de reunión traducidas y tokens de diseño unificados en formularios de solicitud.
       - **Roles `habitudes` y `dir_habitudes`:**
         - Geolocalización de evidencia en visitas a liceos con botón "Detectar más cercano" (`distanciaMetros`) en `registro-visita-liceo.tsx`.
+        - Botón de acción directa "Postular candidato a beca" (`UserPlus`) en la cabecera del Hub para crear solicitudes de `alta_expediente` al instante.
+        - Subida real de archivos pedagógicos (diapositivas, manuales, dinámicas) a Supabase Storage (`subirMaterial`) y generación de URLs privadas firmadas (`enlaceDeDocumento`).
         - Limpieza de tokens en tabs de supervisión (`text-marca-500`).
       - **Rol `chofer`:**
         - Bloqueo de suspensión de pantalla con Screen Wake Lock API (`navigator.wakeLock.request`) para dispositivos móviles en ruta activa.
+        - Acceso directo "Reportar gasto / compra de repuesto" desde la cabina para imprevistos de ruta y mantenimiento (`/administrativo/solicitudes?tipo=compra`).
         - Asistencia de abordaje y reporte de incidencias en tiempo real.
       - **Rol `contabilidad`:**
         - Agrupación por par de cuentas en depreciación de activos fijos (`0071`).

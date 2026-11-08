@@ -105,13 +105,10 @@ export function HubRecursos({
     const tamanoMb = (archivoSeleccionado.size / (1024 * 1024)).toFixed(2);
     const ext = archivoSeleccionado.name.split(".").pop()?.toLowerCase() ?? "bin";
 
+    formData.set("archivo", archivoSeleccionado);
     formData.set("archivo_nombre", archivoSeleccionado.name);
     formData.set("formato", ext);
     formData.set("tamano_mb", tamanoMb);
-    formData.set(
-      "archivo_url",
-      `https://storage.globaleffect.org/habitudes/${formData.get("categoria")}/${Date.now()}_${archivoSeleccionado.name}`,
-    );
 
     startTransition(async () => {
       const res = await subirRecursoHabitudesAction(formData);

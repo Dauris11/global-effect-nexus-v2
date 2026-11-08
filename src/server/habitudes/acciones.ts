@@ -9,6 +9,7 @@ import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
+import { subirMaterial } from "@/lib/supabase/almacen";
 
 export type AccionHabitudesResultado = {
   ok: boolean;
@@ -39,9 +40,21 @@ export async function subirRecursoHabitudesAction(
   if (!titulo) return { ok: false, mensaje: "El título del recurso es obligatorio." };
   if (!archivoNombre) return { ok: false, mensaje: "Debes adjuntar un archivo válido." };
 
-  const urlFinal =
-    archivoUrl ||
-    `https://storage.globaleffect.org/habitudes/${categoria}/${Date.now()}_${archivoNombre}`;
+  const archivo = datos.get("archivo");
+  let urlFinal = archivoUrl;
+
+  if (archivo && archivo instanceof File && archivo.size > 0) {
+    const nombreLimpio = archivoNombre.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const ruta = `habitudes/${categoria}/${Date.now()}_${nombreLimpio}`;
+    const subida = await subirMaterial(ruta, archivo);
+    if (subida.ok) {
+      urlFinal = subida.ruta;
+    }
+  }
+
+  if (!urlFinal) {
+    urlFinal = `https://storage.globaleffect.org/habitudes/${categoria}/${Date.now()}_${archivoNombre}`;
+  }
 
   try {
     const res = await consultarUna<{ id: string }>(
