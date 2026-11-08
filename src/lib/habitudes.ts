@@ -114,6 +114,8 @@ export interface HabitudesVisitaEvidencia {
   fotos_urls: string[];
   estado: EstadoVisita;
   creado_en: string;
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 export interface MetricasHabitudes {

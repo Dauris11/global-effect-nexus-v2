@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Image as ImageIcon,
   Loader2,
+  LocateFixed,
   MapPin,
   Sparkles,
   Users,
@@ -25,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UbicacionVisita } from "@/components/habitudes/ubicacion-visita";
 import type { HabitudesLiceo, HabitudesVisitaEvidencia } from "@/lib/habitudes";
+import { distanciaMetros } from "@/lib/la-vega-geografia";
 import { cn } from "@/lib/utils";
 import { registrarVisitaLiceoAction } from "@/server/habitudes/acciones";
 
@@ -40,6 +42,8 @@ export function RegistroVisitaLiceo({
   const t = useTranslations("habitudes");
 
   const [liceoId, setLiceoId] = useState<string>(liceos[0]?.id ?? "");
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(null);
+  const [detectando, setDetectando] = useState(false);
   const [tema, setTema] = useState<string>("");
   const [tanda, setTanda] = useState<string>("matutina");
   const [estudiantes, setEstudiantes] = useState<number>(35);
@@ -50,6 +54,39 @@ export function RegistroVisitaLiceo({
   const [isPending, startTransition] = useTransition();
 
   const liceoSeleccionado = liceos.find((l) => l.id === liceoId);
+
+  const detectarLiceoCercano = () => {
+    if (!("geolocation" in navigator)) return;
+    setDetectando(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setDetectando(false);
+        const pos = { lat: coords.latitude, lng: coords.longitude };
+        setCoordenadas(pos);
+
+        let mejorLiceo: HabitudesLiceo | null = null;
+        let menorDistancia = Infinity;
+
+        for (const lic of liceos) {
+          if (lic.latitud != null && lic.longitud != null) {
+            const d = distanciaMetros(pos, { lat: lic.latitud, lng: lic.longitud });
+            if (d < menorDistancia) {
+              menorDistancia = d;
+              mejorLiceo = lic;
+            }
+          }
+        }
+
+        if (mejorLiceo) {
+          setLiceoId(mejorLiceo.id);
+        }
+      },
+      () => {
+        setDetectando(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
+  };
 
   const presetsTemas = [
     t("presetTopicThermostat"),
@@ -101,6 +138,10 @@ export function RegistroVisitaLiceo({
     formData.set("tanda", tanda);
     formData.set("estudiantes_impactados", String(estudiantes));
     formData.set("observaciones", observaciones.trim());
+    if (coordenadas) {
+      formData.set("latitud", String(coordenadas.lat));
+      formData.set("longitud", String(coordenadas.lng));
+    }
     // Rutas persistibles simuladas a partir de las imágenes capturadas
     const urlsSimuladas = fotosLocales.map(
       (_, i) =>
@@ -130,6 +171,8 @@ export function RegistroVisitaLiceo({
             fotos_urls: urlsSimuladas,
             estado: "completada",
             creado_en: new Date().toISOString(),
+            latitud: coordenadas?.lat ?? (liceoSel.latitud ? Number(liceoSel.latitud) : null),
+            longitud: coordenadas?.lng ?? (liceoSel.longitud ? Number(liceoSel.longitud) : null),
           });
         }
         // Limpiar formulario tras éxito
@@ -137,6 +180,7 @@ export function RegistroVisitaLiceo({
           setTema("");
           setObservaciones("");
           setFotosLocales([]);
+          setCoordenadas(null);
           setMensajeExito(null);
         }, 1500);
       } else {
@@ -158,9 +202,26 @@ export function RegistroVisitaLiceo({
         <form onSubmit={manejarEnvio} className="space-y-5">
           {/* 1. Centro Educativo */}
           <div className="space-y-1.5">
-            <Label htmlFor="liceo_id" className="text-xs font-semibold">
-              {t("highSchoolLabel")}
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="liceo_id" className="text-xs font-semibold">
+                {t("highSchoolLabel")}
+              </Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={detectarLiceoCercano}
+                disabled={detectando}
+                className="h-7 gap-1 px-2 text-xs text-marca-700 hover:text-marca-800"
+              >
+                {detectando ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <LocateFixed className="size-3.5" />
+                )}
+                <span>{detectando ? t("detectingLocation") : t("detectNearestSchool")}</span>
+              </Button>
+            </div>
             <div className="relative">
               <select
                 id="liceo_id"

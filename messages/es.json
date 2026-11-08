@@ -5399,6 +5399,8 @@
     "registerVisitTitle": "Registrar Visita a Liceo con Fotos",
     "registerVisitSubtitle": "Reporte in situ de charlas y talleres impartidos en centros de educación secundaria de La Vega.",
     "highSchoolLabel": "Centro Educativo / Liceo",
+    "detectNearestSchool": "Detectar más cercano",
+    "detectingLocation": "Buscando...",
     "topicLabel": "Tema o Módulo de Habitudes Impartido",
     "quickSuggestions": "Temas frecuentes",
     "topicPlaceholder": "Ej. El Termostato del Carácter",

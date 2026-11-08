@@ -267,7 +267,9 @@ export async function listarVisitasEvidenciasHabitudes(
            v.observaciones,
            v.fotos_urls,
            v.estado,
-           v.creado_en::text AS creado_en
+           v.creado_en::text AS creado_en,
+           v.latitud::float8 AS latitud,
+           v.longitud::float8 AS longitud
       FROM public.habitudes_visita_evidencia v
       JOIN public.habitudes_liceo l ON l.id = v.liceo_id
       JOIN public.usuario u ON u.id = v.facilitador_id

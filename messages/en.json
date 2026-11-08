@@ -5399,6 +5399,8 @@
     "registerVisitTitle": "Log High School Visit with Photos",
     "registerVisitSubtitle": "On-site reporting of workshops conducted across secondary schools in La Vega.",
     "highSchoolLabel": "High School / Educational Center",
+    "detectNearestSchool": "Detect nearest",
+    "detectingLocation": "Searching...",
     "topicLabel": "Habitudes Topic or Module Taught",
     "quickSuggestions": "Frequent topics",
     "topicPlaceholder": "E.g. Character Thermostat",

@@ -109,6 +109,10 @@ export async function registrarVisitaLiceoAction(
   const estudiantes = parseInt(String(datos.get("estudiantes_impactados") ?? "0"), 10) || 0;
   const observaciones = String(datos.get("observaciones") ?? "").trim().slice(0, 1200);
   const fotosRaw = String(datos.get("fotos_urls") ?? "").trim();
+  const latitudRaw = datos.get("latitud");
+  const longitudRaw = datos.get("longitud");
+  const latitud = latitudRaw ? parseFloat(String(latitudRaw)) : null;
+  const longitud = longitudRaw ? parseFloat(String(longitudRaw)) : null;
 
   if (!liceoId) return { ok: false, mensaje: "Debes seleccionar el centro educativo visitado." };
   if (!temaImpartido) return { ok: false, mensaje: "Indica el tema o módulo de Habitudes impartido." };
@@ -121,10 +125,10 @@ export async function registrarVisitaLiceoAction(
   try {
     const res = await consultarUna<{ id: string }>(
       `INSERT INTO public.habitudes_visita_evidencia (
-         liceo_id, facilitador_id, fecha_visita, tema_impartido, tanda, estudiantes_impactados, observaciones, fotos_urls, estado
-       ) VALUES ($1, $2, $3::date, $4, $5, $6, NULLIF($7, ''), $8, 'completada')
+         liceo_id, facilitador_id, fecha_visita, tema_impartido, tanda, estudiantes_impactados, observaciones, fotos_urls, estado, latitud, longitud
+       ) VALUES ($1, $2, $3::date, $4, $5, $6, NULLIF($7, ''), $8, 'completada', $9, $10)
        RETURNING id`,
-      [liceoId, usuario.id, fechaVisita, temaImpartido, tanda, estudiantes, observaciones, fotosUrls],
+      [liceoId, usuario.id, fechaVisita, temaImpartido, tanda, estudiantes, observaciones, fotosUrls, latitud, longitud],
     );
 
     if (!res) return { ok: false, mensaje: "No se pudo registrar la visita." };

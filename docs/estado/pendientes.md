@@ -32,7 +32,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Inscripción asistida:** botón "Anotar pasajero" en la cabina del chofer (`inscribirPasajeroAsistido`, permiso `transporte.operar`, que también tiene administración) para quien no tiene internet y lo pidió por teléfono o en persona.
       - **Una sola validación** (`registrarInscripcionDiaria`) para las tres vías (`publica`, `estudiante`, `asistida`, columna `via` + `inscrito_por`); origen y destino deben ser distintos, en la acción y como `CHECK` en la base (`NOT VALID`, no toca filas viejas). `FormularioPuntual` recibe la acción por prop.
       - **Recomendación de mapa/API y Google Workspace:** `docs/referencia/mapas-y-google-workspace.md`.
-      - **Pendiente:** aplicar `npm run db:migrate`; límite de frecuencia por IP en `/api/transporte/posicion` y *Wake Lock* en la cabina; inicio de sesión con Google para el personal; marcar la vivienda del estudiante en el mapa.
+      - **Pendiente:** aplicar `npm run db:migrate`; límite de frecuencia por IP en `/api/transporte/posicion`; inicio de sesión con Google para el personal; marcar la vivienda del estudiante en el mapa.
 
 - [x] **Línea de tiempo rediseñada y unificada (1 nov 2026):**
       - **Un solo componente** (`components/linea-tiempo/linea-tiempo.tsx`, tipos y aritmética de días en `lib/linea-tiempo.ts`) para las tres líneas de tiempo: panorama (`/calendario/gantt`), detalle de proyecto y vencimientos de cuentas por pagar. Se borra `visualizador-gantt.tsx`.
@@ -119,7 +119,11 @@ módulo) — esto es solo la cola de pendientes concretos.
       - **Landing:** hero, cifras públicas reales, programas (sin formación técnica), noticias, FAQ y cierre rediseñados; revelado al scroll con `animation-timeline`.
       - **Movimiento:** tokens y keyframes en `globals.css`, primitivos y armazón animados, `template.tsx` de entrada; todo neutralizado con `prefers-reduced-motion`.
 - [ ] **Probar con sesión en pantalla:** ver como (cada rol), torre de control, flujo completo de caja chica (gasto → arqueo → aprobación → reposición) contra la base.
-- [ ] **Ubicar los liceos** en el mapa de Habitudes (el seed no trae coordenadas) y migración para guardar lat/lng de la visita.
+- [x] **Geolocalización en Habitudes, Wake Lock en Transporte y CxP para Compras (8 nov 2026, migración `0072`):**
+      - **Transporte y Cabina del Chofer:** Implementación de *Screen Wake Lock API* en [`panel-chofer.tsx`](src/components/transporte/panel-chofer.tsx) para mantener encendida la pantalla del smartphone del chofer durante los viajes en curso sin suspensión automática ni toques manuales en el soporte del vehículo.
+      - **Habitudes y Liceos de La Vega:** Migración `0072` agrega columnas `latitud` y `longitud` a `habitudes_visita_evidencia`. Se incorporó el botón "Detectar más cercano" en [`registro-visita-liceo.tsx`](src/components/habitudes/registro-visita-liceo.tsx) con cálculo de distancia geodésica (`distanciaMetros`), auto-selección del liceo más próximo y almacenamiento de las coordenadas exactas de la visita.
+      - **Contabilidad y Compras:** Actualización de `contabilidad.crear_cxp_desde_solicitud` en la base de datos y en [`src/server/solicitudes/acciones.ts`](src/server/solicitudes/acciones.ts) para generar automáticamente la Cuenta por Pagar (`CxP`) al aprobar una solicitud de compra con cotización.
+      - **Calidad:** 5,028 claves i18n simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`), `npm run lint` y `npm run build` en verde al 100% (194/194 rutas).
 - [x] **Contabilidad, Torre de Control, Agendas y ERP — Cierres de Auditoría (8 nov 2026, migración `0071`):**
       - **Contabilidad:**
         - Cuentas de depreciación de activos fijos agrupadas por cada categoría (`cuenta_gasto_depreciacion_id` y `cuenta_depreciacion_acumulada_id`) en `src/server/contabilidad/activos-fijos/acciones.ts`, evitando imputar todas las categorías a las cuentas del primer activo.

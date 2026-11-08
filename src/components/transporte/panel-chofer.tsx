@@ -159,6 +159,43 @@ export function PanelChofer({
     };
   }, [viajeActivo, t]);
 
+  // Screen Wake Lock API: Mantiene la pantalla encendida en el soporte del vehículo durante el viaje
+  useEffect(() => {
+    if (!viajeActivo || viajeActivo.estado !== "en_curso") return;
+    if (typeof window === "undefined" || !("wakeLock" in navigator)) return;
+
+    let bloqueo: WakeLockSentinel | null = null;
+    let cancelado = false;
+
+    async function solicitarBloqueo() {
+      try {
+        if (!cancelado && "wakeLock" in navigator && document.visibilityState === "visible") {
+          bloqueo = await navigator.wakeLock.request("screen");
+        }
+      } catch {
+        // En navegadores con ahorro de batería activo o permisos restringidos puede fallar sin bloquear la app
+      }
+    }
+
+    solicitarBloqueo();
+
+    const alCambiarVisibilidad = () => {
+      if (document.visibilityState === "visible" && (!bloqueo || bloqueo.released)) {
+        solicitarBloqueo();
+      }
+    };
+
+    document.addEventListener("visibilitychange", alCambiarVisibilidad);
+
+    return () => {
+      cancelado = true;
+      document.removeEventListener("visibilitychange", alCambiarVisibilidad);
+      if (bloqueo && !bloqueo.released) {
+        bloqueo.release().catch(() => {});
+      }
+    };
+  }, [viajeActivo]);
+
   // Acción: Iniciar viaje
   const manejarIniciarViaje = () => {
     if (!horarioSeleccionadoId) return;
