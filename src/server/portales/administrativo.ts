@@ -38,10 +38,10 @@ export type PendientesFundacion = {
 export async function pendientesDeLaFundacion(): Promise<PendientesFundacion> {
   const fila = await consultarUna<PendientesFundacion>(
     `SELECT (SELECT count(*)::int FROM tarea
-              WHERE estado IN ('pendiente', 'en_progreso')
+              WHERE estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')
                 AND prioridad IN ('urgente', 'alta')) AS tareas_urgentes,
             (SELECT count(*)::int FROM tarea
-              WHERE estado IN ('pendiente', 'en_progreso')
+              WHERE estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')
                 AND fecha_limite IS NOT NULL
                 AND fecha_limite < CURRENT_DATE) AS tareas_vencidas,
             (SELECT count(*)::int FROM entrega_estudiante

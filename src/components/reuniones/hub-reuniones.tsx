@@ -471,8 +471,9 @@ export function HubReuniones({
             return (
               <Card
                 key={r.id}
+                id={`reunion-${r.id}`}
                 className={cn(
-                  "border-linea bg-card transition-all hover:border-marca-600/40 hover:shadow-sm flex flex-col justify-between",
+                  "scroll-mt-16 border-linea bg-card transition-all hover:border-marca-600/40 hover:shadow-sm flex flex-col justify-between",
                   r.estado === "cancelada" && "opacity-60 bg-muted/30"
                 )}
               >

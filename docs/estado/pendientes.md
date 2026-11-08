@@ -30,11 +30,16 @@ módulo) — esto es solo la cola de pendientes concretos.
         - Integración de solicitudes de compra pendientes en la sección "Para hoy" (`/portal/contabilidad`) con acceso directo a `/administrativo/solicitudes`.
         - Localización i18n completa de `/contabilidad/comprobantes-recibidos` y su panel de revisión (36 nuevas claves simétricas en `messages/es.json` y `messages/en.json`).
         - Limpieza de colores fuera de paleta institucional en revisión de comprobantes fiscales.
+      - **Roles `admin` y `super_admin`:**
+        - Acciones de cabina en `EncabezadoPagina` de `/bandeja`: accesos directos de un clic a Torre de Control (`/administrativo/torre-control`), Línea de Tiempo Gantt (`/calendario/gantt`) y Agendar Reunión (`/reuniones?agendar=true`).
+        - Interactividad directa en tarjetas de la bandeja: clic en tarea redirige a su tablero (`/administrativo/tareas`), clic en reunión realiza scroll automático a su tarjeta (#reunion-id) en la agenda institucional (`/reuniones`).
+        - Normalización en consulta de pendientes institucionales (`pendientesDeLaFundacion`): conteo de tareas abiertas urgentes y vencidas incluyendo `'por_hacer'` y `'en_revision'`, sincronizando con el modelo real de tareas y la torre.
+        - Entrada directa a Permisos (`/configuracion/permisos`) incorporada en el menú lateral bajo Configuración para administradores con `usuarios.administrar`.
       - **Calidad institucional:**
         - 100% páginas estáticas/dinámicas compiladas (194/194 en `npm run build`).
         - Cero advertencias ni errores en `npm run lint`.
         - Cero colores fuera de norma en `npm run audit:ui`.
-        - 5,036 claves simétricas y validadas en `npm run i18n:check`.
+        - 5,072 claves simétricas y validadas en `npm run i18n:check`.
         - 95/95 pruebas de contabilidad aprobadas en `npm run test:contabilidad`.
 
 - [x] **Etapa 4 (B): solicitudes de compra a contabilidad con cotización (1 nov 2026, migración `0070`):**

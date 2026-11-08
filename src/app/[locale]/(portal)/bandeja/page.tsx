@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CalendarPlus, GanttChartSquare, TowerControl } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { GraficasBandeja } from "@/components/bandeja/graficas-bandeja";
@@ -10,7 +11,9 @@ import {
 } from "@/components/bandeja/proyectos-bandeja";
 import { ReunionesBandeja } from "@/components/bandeja/reuniones-bandeja";
 import { TareasBandeja } from "@/components/bandeja/tareas-bandeja";
+import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
 import { cargarBandeja } from "@/server/bandeja/consultas";
@@ -51,10 +54,11 @@ export default async function PaginaBandeja({
 
   const usuario = await requerirRol(["admin", "super_admin"]);
 
-  const [t, tPrioridad, tEstado, datos] = await Promise.all([
+  const [t, tPrioridad, tEstado, tNav, datos] = await Promise.all([
     getTranslations({ locale, namespace: "bandeja" }),
     getTranslations({ locale, namespace: "torre.priority" }),
     getTranslations({ locale, namespace: "torre.status" }),
+    getTranslations({ locale, namespace: "nav" }),
     cargarBandeja(usuario),
   ]);
 
@@ -63,7 +67,31 @@ export default async function PaginaBandeja({
 
   return (
     <div className="animate-entrada space-y-6 md:space-y-8">
-      <EncabezadoPagina titulo={t("greeting", { name: usuario.nombre })} />
+      <EncabezadoPagina
+        titulo={t("greeting", { name: usuario.nombre })}
+        acciones={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/administrativo/torre-control">
+                <TowerControl className="size-4" />
+                {tNav("controlTower")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/calendario/gantt">
+                <GanttChartSquare className="size-4" />
+                {tNav("timeline")}
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/reuniones?agendar=true">
+                <CalendarPlus className="size-4" />
+                {tNav("meetings")}
+              </Link>
+            </Button>
+          </div>
+        }
+      />
 
       {datos.pendientes && <PendientesBandeja pendientes={datos.pendientes} />}
 

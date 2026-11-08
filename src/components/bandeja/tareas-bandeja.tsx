@@ -5,6 +5,7 @@ import { TarjetaBandeja } from "@/components/bandeja/tarjeta-bandeja";
 import { Badge } from "@/components/ui/badge";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
 import { PRIORIDAD } from "@/lib/paleta";
@@ -56,15 +57,20 @@ export function TareasBandeja({
                 className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", PRIORIDAD[tarea.prioridad].punto)}
               />
 
-              <div className="min-w-0 flex-1 space-y-1">
-                <p className="truncate text-sm font-semibold text-tinta">{tarea.titulo}</p>
+              <Link
+                href="/administrativo/tareas"
+                className="group min-w-0 flex-1 space-y-1 rounded-control p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <p className="truncate text-sm font-semibold text-tinta transition-colors group-hover:text-marca-600">
+                  {tarea.titulo}
+                </p>
                 <FilaDatos>
                   <Dato icono={CalendarClock}>
                     {tarea.fecha_limite ? fechaCorta(tarea.fecha_limite, idioma) : t("tasks.noDate")}
                   </Dato>
                   <Dato icono={FolderKanban}>{tarea.proyecto_nombre ?? t("tasks.noProject")}</Dato>
                 </FilaDatos>
-              </div>
+              </Link>
 
               <div className="flex shrink-0 flex-col items-end gap-1">
                 {tarea.vencida && (

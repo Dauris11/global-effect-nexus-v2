@@ -339,6 +339,12 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         items: [
           { etiqueta: "settings", href: "/configuracion", icono: Settings },
+          {
+            etiqueta: "permissions",
+            href: "/configuracion/permisos",
+            icono: UserCog,
+            permiso: "usuarios.administrar",
+          },
           // La cara pública del sistema. Va con su permiso, que es el que la
           // migración 0015 creó para esto: `admin` y `super_admin` lo tienen,
           // y si alguna vez se le quita a uno, la entrada desaparece con él.
