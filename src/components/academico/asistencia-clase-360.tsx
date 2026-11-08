@@ -64,7 +64,9 @@ export function AsistenciaClase360({
 }) {
   const t = useTranslations("academic.classes360");
   const idioma = useLocale() as Locale;
-  const [abierta, setAbierta] = useState<string | null>(null);
+  const hoy = new Date().toISOString().slice(0, 10);
+  const sesionHoy = sesiones.find((s) => s.fecha === hoy);
+  const [abierta, setAbierta] = useState<string | null>(sesionHoy?.id ?? null);
   const [formulario, setFormulario] = useState<SesionClase360 | "nueva" | null>(null);
   const [error, setError] = useState<EstadoSesion360 | null>(null);
   const [borrando, iniciarBorrado] = useTransition();

@@ -64,6 +64,8 @@ export function GestionClases360({
   asistencia,
   puedeProgramar,
   periodosDeTarea,
+  claseInicialId = null,
+  seccionInicial = null,
 }: {
   clases: readonly Clase360[];
   asistencia: AsistenciaDeClases;
@@ -75,11 +77,21 @@ export function GestionClases360({
   entregas: readonly (EntregaPorRevisar & { enlace: string | null })[];
   /** `calificaciones.registrar`: coordinación ve las notas pero no las pone. */
   puedeCalificar: boolean;
+  claseInicialId?: string | null;
+  seccionInicial?: "asistencia" | "alumnos" | "tarea" | null;
 }) {
   const t = useTranslations("academic.classes360");
-  const [abierto, setAbierto] = useState<string | null>(null);
-  const [tareaEn, setTareaEn] = useState<string | null>(null);
-  const [asistenciaEn, setAsistenciaEn] = useState<string | null>(null);
+  const [abierto, setAbierto] = useState<string | null>(
+    seccionInicial === "alumnos" || (!seccionInicial && claseInicialId)
+      ? claseInicialId
+      : null,
+  );
+  const [tareaEn, setTareaEn] = useState<string | null>(
+    seccionInicial === "tarea" ? claseInicialId : null,
+  );
+  const [asistenciaEn, setAsistenciaEn] = useState<string | null>(
+    seccionInicial === "asistencia" ? claseInicialId : null,
+  );
 
   return (
     <div className="space-y-6">
@@ -126,7 +138,7 @@ export function GestionClases360({
           ) : (
             <ul className="divide-linea divide-y">
               {clases.map((clase) => (
-                <li key={clase.id} className="py-3">
+                <li key={clase.id} id={`clase-${clase.id}`} className="scroll-mt-16 py-3">
                   <div className="flex flex-wrap items-start gap-3">
                     <span
                       className={cn(

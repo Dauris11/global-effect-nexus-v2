@@ -1637,7 +1637,11 @@
     "enrolledCount": "{count, plural, =1 {# inscrito} other {# inscritos}}",
     "classesTitle": "Mis clases de Global Effect 360",
     "classesEmpty": "Todavía no tienes clases asignadas",
-    "classesEmptyHint": "La coordinación te asigna las clases de 360 desde Prematrícula. Si crees que falta alguna, avísale."
+    "classesEmptyHint": "La coordinación te asigna las clases de 360 desde Prematrícula. Si crees que falta alguna, avísale.",
+    "manageClass": "Gestionar clase",
+    "takeAttendance": "Asistencia",
+    "viewSubject": "Ver materia",
+    "reviewSubmission": "Calificar"
   },
   "modules": {
     "academicSubjects": {

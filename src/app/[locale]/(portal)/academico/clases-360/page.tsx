@@ -50,10 +50,13 @@ export async function generateMetadata({
  */
 export default async function PaginaClases360({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ clase?: string; accion?: "asistencia" | "alumnos" | "tarea" }>;
 }) {
   const { locale } = await params;
+  const { clase: claseInicialId, accion: seccionInicial } = (await searchParams) ?? {};
 
   const usuario = await requerirUsuario();
 
@@ -129,6 +132,8 @@ export default async function PaginaClases360({
           periodosDeTarea={periodosDeTarea}
           puedeProgramar={puedeTodo}
           puedeCalificar={usuarioTienePermiso(usuario, "calificaciones.registrar")}
+          claseInicialId={claseInicialId ?? null}
+          seccionInicial={seccionInicial ?? null}
         />
       </NextIntlClientProvider>
     </div>

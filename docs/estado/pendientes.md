@@ -5,6 +5,32 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Optimización integral de roles y flujos de trabajo dedicados (8 nov 2026):**
+      - **Rol `docente`:**
+        - Enlace directo desde el portal `/portal/profesor` a la clase específica en `/academico/clases-360?clase=...&accion=...#clase-...` para pasar asistencia o ver alumnos sin fricción ni búsquedas manuales.
+        - Auto-apertura de la sesión de asistencia del día de hoy (`sesionHoy`) al abrir la asistencia de una clase.
+        - Enlace directo a cada materia universitaria en el catálogo desde el portal docente.
+        - Enlace de calificación directa en cada entrega pendiente (`reviewSubmission`).
+        - Sustitución de colores hexadecimales crudos en badges por `INSIGNIA_SEMAFORO.dentro` y `INSIGNIA_SEMAFORO.alerta`.
+      - **Rol `estudiante`:**
+        - Accesos directos a Global Effect 360 y Transporte en Vivo en el inicio del portal.
+        - Insignias de estado de reunión traducidas y tokens de diseño unificados en formularios de solicitud.
+      - **Roles `habitudes` y `dir_habitudes`:**
+        - Geolocalización de evidencia en visitas a liceos con botón "Detectar más cercano" (`distanciaMetros`) en `registro-visita-liceo.tsx`.
+        - Limpieza de tokens en tabs de supervisión (`text-marca-500`).
+      - **Rol `chofer`:**
+        - Bloqueo de suspensión de pantalla con Screen Wake Lock API (`navigator.wakeLock.request`) para dispositivos móviles en ruta activa.
+        - Asistencia de abordaje y reporte de incidencias en tiempo real.
+      - **Rol `contabilidad`:**
+        - Agrupación por par de cuentas en depreciación de activos fijos (`0071`).
+        - Creación automática de Cuentas por Pagar (CxP) para solicitudes de tipo `compra` aprobadas (`0072`).
+      - **Calidad institucional:**
+        - 100% páginas estáticas/dinámicas compiladas (194/194 en `npm run build`).
+        - Cero advertencias ni errores en `npm run lint`.
+        - Cero colores fuera de norma en `npm run audit:ui`.
+        - 5,036 claves simétricas y validadas en `npm run i18n:check`.
+        - 95/95 pruebas de contabilidad aprobadas en `npm run test:contabilidad`.
+
 - [x] **Etapa 4 (B): solicitudes de compra a contabilidad con cotización (1 nov 2026, migración `0070`):**
       - Tipo `compra` para todos los roles, cotización obligatoria (pdf/png/jpg/docx, 10 MB, validada en servidor), descarga protegida, contabilidad aprueba o rechaza (motivo obligatorio), estado y línea de tiempo visibles para ambos, menús de contabilidad y chofer con "Solicitudes".
       - **Migración `0070` aplicada** en la base real (1 nov 2026). Falta recorrido manual en navegador: enviar una compra con cotización, rechazarla con comentario y bajar el archivo.

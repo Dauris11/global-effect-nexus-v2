@@ -1637,7 +1637,11 @@
     "enrolledCount": "{count, plural, =1 {# enrolled} other {# enrolled}}",
     "classesTitle": "My Global Effect 360 classes",
     "classesEmpty": "You don't have any classes yet",
-    "classesEmptyHint": "Coordination assigns 360 classes to you from Pre-enrolment. If one seems to be missing, let them know."
+    "classesEmptyHint": "Coordination assigns 360 classes to you from Pre-enrolment. If one seems to be missing, let them know.",
+    "manageClass": "Manage class",
+    "takeAttendance": "Attendance",
+    "viewSubject": "View subject",
+    "reviewSubmission": "Grade"
   },
   "modules": {
     "academicSubjects": {

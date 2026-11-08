@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { FilaEntregaDocente } from "@/lib/moodle";
+import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { calificarEntregaMoodleAction } from "@/server/moodle/acciones";
 
@@ -131,12 +132,10 @@ export function EvaluadorEntregasMoodle({
                     variant="outline"
                     className={cn(
                       "text-xs font-semibold",
-                      entrega.estado === "calificado" &&
-                        "border-transparent bg-[#1E9E6A]/10 text-[#1E9E6A]",
+                      entrega.estado === "calificado" && INSIGNIA_SEMAFORO.dentro,
                       entrega.estado === "entregado" &&
                         "border-transparent bg-marca-50 text-marca-600",
-                      entrega.estado === "tarde" &&
-                        "border-transparent bg-[#B4342B]/10 text-[#B4342B]",
+                      entrega.estado === "tarde" && INSIGNIA_SEMAFORO.alerta,
                       entrega.estado === "pendiente" &&
                         "border-transparent bg-muted text-tinta/70",
                     )}
@@ -148,7 +147,12 @@ export function EvaluadorEntregasMoodle({
                   </Badge>
 
                   {entrega.es_tarde && (
-                    <span className="inline-flex items-center gap-1 rounded bg-[#B4342B]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[#B4342B]">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold",
+                        INSIGNIA_SEMAFORO.alerta,
+                      )}
+                    >
                       <Clock className="size-3" />
                       {t("lateBadge")}
                     </span>

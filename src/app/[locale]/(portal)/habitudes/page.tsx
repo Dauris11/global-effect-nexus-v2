@@ -112,7 +112,7 @@ export default async function PaginaHabitudesHub({
         <TabsList className={`grid w-full ${puedeSupervisar ? "grid-cols-2 sm:grid-cols-4 max-w-2xl" : "grid-cols-3 max-w-xl"}`}>
           {puedeSupervisar && (
             <TabsTrigger value="supervision" className="gap-2">
-              <Sparkles className="size-4 text-[#2096BA]" />
+              <Sparkles className="size-4 text-marca-500" />
               <span className="hidden sm:inline">{t("tabSupervision")}</span>
               <span className="sm:hidden">{t("tabSupervisionShort")}</span>
             </TabsTrigger>
