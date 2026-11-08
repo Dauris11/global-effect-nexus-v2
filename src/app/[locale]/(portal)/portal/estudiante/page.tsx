@@ -3,10 +3,12 @@ import {
   AlertCircle,
   BookOpen,
   Bot,
+  Bus,
   CalendarDays,
   GraduationCap,
   Inbox,
   MonitorPlay,
+  Sparkles,
   Star,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -131,10 +133,22 @@ export default async function PortalEstudiante({
       texto: t("gradesSubDesc"),
     },
     {
+      href: "/portal/estudiante/global-360",
+      icono: Sparkles,
+      titulo: t("global360Title"),
+      texto: t("global360Desc"),
+    },
+    {
       href: "/portal/estudiante/prematricula",
       icono: BookOpen,
       titulo: t("mySubjectsTitle"),
       texto: t("mySubjectsDesc"),
+    },
+    {
+      href: "/portal/estudiante/transporte",
+      icono: Bus,
+      titulo: t("transportTitle"),
+      texto: t("transportDesc"),
     },
     {
       href: "/portal/estudiante/calendario",

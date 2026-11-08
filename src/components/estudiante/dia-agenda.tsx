@@ -37,9 +37,10 @@ export async function DiaAgenda({
   esHoy: boolean;
   locale: Locale;
 }) {
-  const [t, tSolicitud] = await Promise.all([
+  const [t, tSolicitud, tReunion] = await Promise.all([
     getTranslations("studentPortal"),
     getTranslations("requests"),
+    getTranslations("reuniones"),
   ]);
 
   return (
@@ -114,7 +115,9 @@ export async function DiaAgenda({
 
                 {entrada.origen === "reunion" && (
                   <Badge variant="marca">
-                    {entrada.estado}
+                    {tReunion.has(`status.${entrada.estado}` as never)
+                      ? tReunion(`status.${entrada.estado}` as never)
+                      : entrada.estado}
                   </Badge>
                 )}
 

@@ -25,7 +25,7 @@ import type { EstudianteOpcion } from "@/server/solicitudes/consultas";
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
 const SELECT =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm dark:bg-slate-950";
+  "border-linea-fuerte focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-control border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm text-tinta";
 
 /** Estados de expediente que todavía están en el embudo. */
 const EMBUDO = ["reclutado", "postulado", "academia_liderazgo", "standby_tecnico"];
@@ -81,7 +81,7 @@ export function FormularioSolicitud({
       {estado.estado === "ok" && (
         <p
           role="status"
-          className="flex items-center gap-2 rounded-lg bg-[#2096BA]/15 px-3 py-2 text-xs font-medium text-[#187a99]"
+          className="flex items-center gap-2 rounded-control bg-marca-500/15 px-3 py-2 text-xs font-medium text-marca-700"
         >
           <CheckCircle2 className="size-4 shrink-0" />
           {t("form.success")}

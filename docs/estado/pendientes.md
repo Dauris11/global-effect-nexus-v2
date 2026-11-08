@@ -8,7 +8,7 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [x] **Etapa 4 (B): solicitudes de compra a contabilidad con cotización (1 nov 2026, migración `0070`):**
       - Tipo `compra` para todos los roles, cotización obligatoria (pdf/png/jpg/docx, 10 MB, validada en servidor), descarga protegida, contabilidad aprueba o rechaza (motivo obligatorio), estado y línea de tiempo visibles para ambos, menús de contabilidad y chofer con "Solicitudes".
       - **Migración `0070` aplicada** en la base real (1 nov 2026). Falta recorrido manual en navegador: enviar una compra con cotización, rechazarla con comentario y bajar el archivo.
-      - **Pendiente:** reemplazar cotización, vista de contabilidad filtrada por estado, trigger que exija adjunto en `compra`, generar cuenta por pagar al llegar la factura.
+      - **Pendiente:** reemplazar cotización, vista de contabilidad filtrada por estado, trigger que exija adjunto en `compra`.
 
 - [x] **Etapa 3: Global Effect 360 como portal estudiantil completo (1 nov 2026, migraciones `0067`–`0069`):**
       - **Entrega real:** archivo subido en servidor, inscripción verificada, formatos cerrados (sin `zip`), respuesta escrita, la revisión se anula al re-entregar; calificación acotada a la clase del docente (detalle de la auditoría en `bitacora-tesis.md`).
