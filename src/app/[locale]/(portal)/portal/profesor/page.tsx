@@ -76,6 +76,10 @@ export default async function PortalProfesor({
     ? usuario.id
     : null;
 
+  // `/academico/materias` pide `academico.leer`. Quien imparte por permiso sin
+  // ser docente (Habitudes) no lo tiene: el enlace le rebotaba a su portal.
+  const veMaterias = usuarioTienePermiso(usuario, "academico.leer");
+
   await iniciarInscripcionesVigentes();
 
   const [t, tAcad, cifras, materias, clases, entregas] =
@@ -168,13 +172,17 @@ export default async function PortalProfesor({
             titulo: t("shortcuts.classes360.label"),
             texto: t("shortcuts.classes360.hint"),
           },
-          {
-            href: "/academico/materias",
-            icono: Library,
-            color: CUADRO.marca,
-            titulo: t("shortcuts.subjects.label"),
-            texto: t("shortcuts.subjects.hint"),
-          },
+          ...(veMaterias
+            ? [
+                {
+                  href: "/academico/materias",
+                  icono: Library,
+                  color: CUADRO.marca,
+                  titulo: t("shortcuts.subjects.label"),
+                  texto: t("shortcuts.subjects.hint"),
+                },
+              ]
+            : []),
           {
             href: "/calendario",
             icono: CalendarDays,
@@ -312,11 +320,13 @@ export default async function PortalProfesor({
                           </p>
                         </div>
 
-                        <Button asChild size="sm" variant="ghost" className="h-7 shrink-0 text-xs text-marca-600 hover:text-marca-700">
-                          <Link href={`/academico/materias?q=${encodeURIComponent(materia.codigo || materia.nombre)}`}>
-                            {t("viewSubject")}
-                          </Link>
-                        </Button>
+                        {veMaterias && (
+                          <Button asChild size="sm" variant="ghost" className="h-7 shrink-0 text-xs text-marca-600 hover:text-marca-700">
+                            <Link href={`/academico/materias?q=${encodeURIComponent(materia.codigo || materia.nombre)}`}>
+                              {t("viewSubject")}
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                     </li>
                   ))}

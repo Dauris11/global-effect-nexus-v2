@@ -298,6 +298,10 @@ export async function listarCandidatosParticipantes(): Promise<CandidatoParticip
        FROM usuario u
        LEFT JOIN rol r ON r.id = u.rol_id
        WHERE u.activo = true
+         -- El estudiante se convoca por su ficha (lista de abajo): por su
+         -- cuenta salía dos veces y, elegido así, la reunión no quedaba
+         -- ligada a su expediente.
+         AND coalesce(r.nombre, '') <> 'estudiante'
        ORDER BY u.nombre ASC`
     ),
     consultar<{ id: string; nombre: string; email: string }>(

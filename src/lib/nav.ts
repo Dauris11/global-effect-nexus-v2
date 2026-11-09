@@ -548,12 +548,11 @@ const MENU_DOCENTE: AreaNav[] = [
 /**
  * Menú del programa Habitudes.
  *
- * Dos entradas, y es todo lo que puede hacer este rol: postular candidatos y
- * pedir a administración que los dé de alta. En cuanto el estudiante pasa a
- * activo, el expediente es de administración y esta cuenta deja de verlo.
- *
- * No lleva calendario ni panel propio: la pantalla de expedientes ES su portal,
- * y por eso `PORTAL_POR_ROL` lo manda ahí al entrar.
+ * Su trabajo es el hub de Habitudes y postular candidatos (una solicitud que
+ * aprueba administración). En cuanto el estudiante pasa a activo, el
+ * expediente es de administración y esta cuenta deja de verlo. Lleva además
+ * su torre, el calendario y las reuniones, porque ahí le llega lo que otros
+ * roles le asignan o le convocan.
  */
 const MENU_HABITUDES: AreaNav[] = [
   {
@@ -580,6 +579,16 @@ const MENU_HABITUDES: AreaNav[] = [
             etiqueta: "controlTower",
             href: "/administrativo/torre-control",
             icono: TowerControl,
+          },
+          // Tienen `reuniones.agendar`/`leer` (y el director, `gestionar`),
+          // pero sin estas entradas una reunión a la que los convocaban solo
+          // se encontraba escribiendo la dirección a mano.
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          {
+            etiqueta: "meetings",
+            href: "/reuniones",
+            icono: Users,
+            permiso: "reuniones.leer",
           },
         ],
       },
@@ -718,6 +727,14 @@ const MENU_CHOFER: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
+          // Al chofer también se le asignan tareas y se le convoca: sin la
+          // torre y el calendario, lo asignado no tenía por dónde llegarle.
+          {
+            etiqueta: "controlTower",
+            href: "/administrativo/torre-control",
+            icono: TowerControl,
+          },
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
         ],
       },
     ],
@@ -912,8 +929,13 @@ const ETIQUETA_CORTA: Record<string, string> = {
  * teléfono. El perfil sigue a un toque, en el menú del avatar de la barra de
  * arriba.
  */
-export function pestanasMoviles(rol: Rol, ocultos?: ReadonlySet<string>): PestanaMovil[] {
-  const items = menuDe(rol, ocultos).flatMap(itemsDeArea);
+export function pestanasMoviles(
+  rol: Rol,
+  ocultos?: ReadonlySet<string>,
+  /** Permisos efectivos: sin ellos las pestañas seguían el reparto de fábrica. */
+  permisos?: ReadonlySet<Permiso>,
+): PestanaMovil[] {
+  const items = menuDe(rol, ocultos, permisos).flatMap(itemsDeArea);
   // Un objeto y no un `Map`: en este archivo `Map` es el icono de lucide.
   const porHref: Record<string, ItemNav> = Object.fromEntries(
     items.map((item) => [item.href, item]),

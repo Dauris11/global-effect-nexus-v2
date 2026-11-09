@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { fechaCorta } from "@/lib/fechas";
+import { ALERTA_RIESGO } from "@/lib/paleta";
 import type {
   BitacoraEntrada,
   EstadoTareaColaborador,
@@ -64,6 +65,15 @@ export function VistaHoy({
   const t = useTranslations("colaborador");
 
   const [tareas, setTareas] = useState(tareasIniciales);
+  // La lista es local para el avance optimista, pero tiene que seguir a lo que
+  // trae el servidor: sin esto la tarea rápida recién creada no aparecía hasta
+  // recargar a mano.
+  const [tareasPrevias, setTareasPrevias] = useState(tareasIniciales);
+  if (tareasPrevias !== tareasIniciales) {
+    setTareasPrevias(tareasIniciales);
+    setTareas(tareasIniciales);
+  }
+  const [fallo, setFallo] = useState(false);
   const [filtro, setFiltro] = useState<"todas" | EstadoTareaColaborador>("todas");
   const [dialogoNuevaAbierto, setDialogoNuevaAbierto] = useState(false);
   const [dialogoBitacoraAbierto, setDialogoBitacoraAbierto] = useState(false);
@@ -89,6 +99,7 @@ export function VistaHoy({
   const avanzarEstado = (tarea: TareaColaborador) => {
     const proximo = siguienteEstado(tarea.estado);
     setTareaActualizandoId(tarea.id);
+    setFallo(false);
 
     // Optimista
     setTareas((prev) =>
@@ -100,6 +111,7 @@ export function VistaHoy({
     startTransition(async () => {
       const res = await cambiarEstadoTareaColaboradorAction(tarea.id, proximo);
       if (!res.ok) {
+        setFallo(true);
         // Revertir
         setTareas((prev) =>
           prev.map((item) =>
@@ -125,6 +137,9 @@ export function VistaHoy({
 
   return (
     <div className="space-y-6">
+      {fallo && !dialogoNuevaAbierto && !dialogoBitacoraAbierto && (
+        <AvisoFallo texto={t("saveError")} />
+      )}
       {/* 1. Métrica Cards Táctiles */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-3.5 shadow-card">
@@ -229,7 +244,7 @@ export function VistaHoy({
 
         <div className="flex items-center gap-2">
           {/* Diálogo Registrar Tarea Rápida */}
-          <Dialog open={dialogoNuevaAbierto} onOpenChange={setDialogoNuevaAbierto}>
+          <Dialog open={dialogoNuevaAbierto} onOpenChange={(abierto) => { setFallo(false); setDialogoNuevaAbierto(abierto); }}>
             <DialogTrigger asChild>
               <Button
                 variant="default"
@@ -250,9 +265,12 @@ export function VistaHoy({
               <form
                 action={async (datos) => {
                   startTransition(async () => {
+                    setFallo(false);
                     const res = await crearTareaRapidaColaboradorAction(datos);
                     if (res.ok) {
                       setDialogoNuevaAbierto(false);
+                    } else {
+                      setFallo(true);
                     }
                   });
                 }}
@@ -314,6 +332,7 @@ export function VistaHoy({
                   </select>
                 </div>
 
+                {fallo && <AvisoFallo texto={t("saveError")} />}
                 <div className="flex justify-end gap-2 pt-2">
                   <Button
                     type="button"
@@ -336,7 +355,7 @@ export function VistaHoy({
           </Dialog>
 
           {/* Diálogo Bitácora */}
-          <Dialog open={dialogoBitacoraAbierto} onOpenChange={setDialogoBitacoraAbierto}>
+          <Dialog open={dialogoBitacoraAbierto} onOpenChange={(abierto) => { setFallo(false); setDialogoBitacoraAbierto(abierto); }}>
             <DialogTrigger asChild>
               <Button
                 variant="outline"
@@ -357,9 +376,12 @@ export function VistaHoy({
               <form
                 action={async (datos) => {
                   startTransition(async () => {
+                    setFallo(false);
                     const res = await registrarBitacoraDiariaAction(datos);
                     if (res.ok) {
                       setDialogoBitacoraAbierto(false);
+                    } else {
+                      setFallo(true);
                     }
                   });
                 }}
@@ -409,6 +431,7 @@ export function VistaHoy({
                   </div>
                 </div>
 
+                {fallo && <AvisoFallo texto={t("saveError")} />}
                 <div className="flex justify-end gap-2 pt-2">
                   <Button
                     type="button"
@@ -594,5 +617,15 @@ export function VistaHoy({
         </Card>
       )}
     </div>
+  );
+}
+
+/** Un error no es rojo: tinta y su icono (docs/09-sistema-visual.md). */
+function AvisoFallo({ texto }: { texto: string }) {
+  return (
+    <p role="alert" className={ALERTA_RIESGO.contenedor}>
+      <AlertCircle className={ALERTA_RIESGO.icono} />
+      <span className={ALERTA_RIESGO.texto}>{texto}</span>
+    </p>
   );
 }

@@ -28,11 +28,14 @@ export const ESTADOS_RENDICION = [
 
 export type EstadoRendicion = (typeof ESTADOS_RENDICION)[number];
 
+// Debe coincidir con el CHECK de `proyecto_rol` (migración 0075).
 export const ROLES_ASIGNABLES_PROYECTO = [
   "admin",
   "docente",
   "contabilidad",
   "habitudes",
+  "dir_habitudes",
+  "chofer",
 ] as const;
 
 export type RolAsignableProyecto = (typeof ROLES_ASIGNABLES_PROYECTO)[number];

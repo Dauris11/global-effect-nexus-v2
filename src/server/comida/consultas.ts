@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { SQL_HORA_RD, SQL_HOY_RD } from "@/lib/fecha-rd";
 import { parametros } from "@/server/parametros/consultas";
 
 /**
@@ -17,10 +18,10 @@ export async function estadoComedor(): Promise<{
   // El horario sale de los parámetros institucionales (`/configuracion/parametros`).
   const p = await parametros();
   const fila = await consultarUna<{ abierto: boolean; inscritos: number }>(
-    `SELECT CURRENT_TIME >= $1::time AND CURRENT_TIME < $2::time AS abierto,
+    `SELECT ${SQL_HORA_RD} >= $1::time AND ${SQL_HORA_RD} < $2::time AS abierto,
             (SELECT count(*)::int
                FROM inscripcion_comida
-              WHERE fecha = CURRENT_DATE) AS inscritos`,
+              WHERE fecha = ${SQL_HOY_RD}) AS inscritos`,
     [p["comedor.apertura"], p["comedor.cierre"]],
   );
 
@@ -71,7 +72,7 @@ export async function comensalesDelDia(
             confirmado,
             (hora_inscripcion::time < $2::time) AS a_tiempo
        FROM inscripcion_comida
-      WHERE fecha = coalesce($1::date, CURRENT_DATE)
+      WHERE fecha = coalesce($1::date, ${SQL_HOY_RD})
       ORDER BY hora_inscripcion, nombre`,
     [fecha, p["comedor.cierre"]],
   );
@@ -90,7 +91,7 @@ export type ResumenComedor = {
 /**
  * Las cifras del día y si la recepción sigue abierta.
  *
- * `coalesce($1::date, CURRENT_DATE)` y no un valor por omisión en TypeScript:
+ * `coalesce($1::date, hoy en La Vega)` y no un valor por omisión en TypeScript:
  * "hoy" lo decide la base, igual que la hora de corte. Con `new Date()` en el
  * proceso, un servidor en otra zona horaria enseñaría la lista del día
  * equivocado a primera hora de la mañana, que es justo cuando se usa.
@@ -103,11 +104,11 @@ export async function resumenDelComedor(
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE hora_inscripcion::time <  $3::time)::int AS a_tiempo,
             count(*) FILTER (WHERE hora_inscripcion::time >= $3::time)::int AS tarde,
-            (SELECT CURRENT_TIME >= $2::time AND CURRENT_TIME < $3::time
-                    AND coalesce($1::date, CURRENT_DATE) = CURRENT_DATE) AS abierto,
-            (SELECT CURRENT_DATE::text) AS hoy
+            (SELECT ${SQL_HORA_RD} >= $2::time AND ${SQL_HORA_RD} < $3::time
+                    AND coalesce($1::date, ${SQL_HOY_RD}) = ${SQL_HOY_RD}) AS abierto,
+            (SELECT ${SQL_HOY_RD}::text) AS hoy
        FROM inscripcion_comida
-      WHERE fecha = coalesce($1::date, CURRENT_DATE)`,
+      WHERE fecha = coalesce($1::date, ${SQL_HOY_RD})`,
     [fecha, p["comedor.apertura"], p["comedor.cierre"]],
   );
 

@@ -436,8 +436,8 @@ export async function guardarVentana(
           WHERE periodo_id = $1
             AND ronda <> $4
             AND activa
-            AND abre < $3::timestamptz
-            AND cierra > $2::timestamptz
+            AND abre < ($3::timestamp AT TIME ZONE 'America/Santo_Domingo')
+            AND cierra > ($2::timestamp AT TIME ZONE 'America/Santo_Domingo')
           LIMIT 1`,
         [periodoId, abre, cierra, ronda],
       );
@@ -451,8 +451,14 @@ export async function guardarVentana(
       );
 
       const { rows } = await cliente.query<{ id: string }>(
+        // `datetime-local` no trae zona y la sesión de la base va en UTC: sin
+        // esto, "abre a las 08:00" abría a las 04:00 en La Vega.
         `INSERT INTO ventana_prematricula (periodo_id, abre, cierra, mensaje, ronda)
-         VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+         VALUES ($1,
+                 $2::timestamp AT TIME ZONE 'America/Santo_Domingo',
+                 $3::timestamp AT TIME ZONE 'America/Santo_Domingo',
+                 $4, $5)
+         RETURNING id`,
         [periodoId, abre, cierra, mensaje, ronda],
       );
 

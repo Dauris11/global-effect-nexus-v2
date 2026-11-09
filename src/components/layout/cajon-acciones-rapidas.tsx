@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
-import type { Rol } from "@/lib/rbac";
+import { usePermisos } from "@/components/layout/visibilidad";
+import { tienePermiso, type Permiso, type Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
 interface CajonAccionesRapidasProps {
@@ -40,6 +41,7 @@ export function CajonAccionesRapidas({
   rol,
 }: CajonAccionesRapidasProps) {
   const t = useTranslations("accesoRapido");
+  const permisos = usePermisos();
 
   // Cerrar al presionar la tecla Escape
   useEffect(() => {
@@ -68,37 +70,45 @@ export function CajonAccionesRapidas({
     href?: string;
     onClick?: () => void;
     icono: typeof Bot;
-    roles: Rol[];
+    /**
+     * Lo que exige la pantalla o la acción de destino. Se decide por permiso
+     * efectivo (rol + excepciones), no por rol: con la lista de roles el
+     * cajón ofrecía atajos que rebotaban y escondía los habilitados a título
+     * personal.
+     */
+    permiso?: Permiso;
+    /** Solo para destinos sin permiso propio, que se abren por rol. */
+    roles?: Rol[];
   }[] = [
     {
       clave: "scan",
       href: "/administrativo/inventario/escanear",
       icono: Camera,
-      roles: ["super_admin", "admin", "contabilidad"],
+      permiso: "inventario.auditar",
     },
     {
       clave: "expense",
       href: "/administrativo/rendiciones",
       icono: Receipt,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes"],
+      permiso: "rendicion.enviar",
     },
     {
       clave: "today",
       href: "/administrativo/torre-control",
       icono: CheckSquare,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes"],
+      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "chofer"],
     },
     {
       clave: "meeting",
       href: "/reuniones?agendar=true",
       icono: Users,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes"],
+      permiso: "reuniones.agendar",
     },
     {
       clave: "inventory",
       href: "/administrativo/inventario",
       icono: Package,
-      roles: ["super_admin", "admin", "contabilidad"],
+      permiso: "inventario.leer",
     },
     {
       clave: "habitudes",
@@ -110,17 +120,21 @@ export function CajonAccionesRapidas({
       clave: "ia",
       onClick: abrirIA,
       icono: Bot,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "estudiante", "habitudes", "dir_habitudes", "chofer"],
+      permiso: "ia.usar",
     },
     {
       clave: "transport",
       href: "/portal/chofer",
       icono: Bus,
-      roles: ["super_admin", "admin", "chofer"],
+      permiso: "transporte.operar",
     },
   ];
 
-  const accionesPermitidas = ACCIONES.filter((a) => a.roles.includes(rol));
+  const puede = (permiso: Permiso) =>
+    permisos ? permisos.has(permiso) : tienePermiso(rol, permiso);
+  const accionesPermitidas = ACCIONES.filter((a) =>
+    a.permiso ? puede(a.permiso) : (a.roles?.includes(rol) ?? false),
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">

@@ -5,7 +5,7 @@ import { ArrowLeft, CalendarDays, FolderKanban, Layers, ListTodo } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requerirPermiso } from "@/lib/auth";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -20,7 +20,9 @@ import { hoyEnLaBase } from "@/server/calendario/gantt";
 import { esIncoherente, tramoDe, type SeccionTiempo } from "@/lib/linea-tiempo";
 import { usuariosAsignables } from "@/server/operaciones/consultas";
 import { proyectoParaGantt } from "@/server/operaciones/gantt-consultas";
-import { equipoDeProyecto } from "@/server/operaciones/torre-consultas";
+import { equipoDeProyecto, participaEnProyecto } from "@/server/operaciones/torre-consultas";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function generateMetadata({
   params,
@@ -41,7 +43,18 @@ export default async function PaginaDetalleProyectoGantt({
   params: Promise<{ id: string; locale: string }>;
 }) {
   const { id, locale } = await params;
-  const usuario = await requerirPermiso("operaciones.leer");
+  if (!UUID.test(id)) notFound();
+
+  // Coordinación entra con `operaciones.leer`. Quien participa en el proyecto
+  // entra aunque su rol no lo tenga: su torre y el aviso de «te sumaron» lo
+  // mandan aquí, y sin esto Habitudes, contabilidad o el chofer rebotaban a su
+  // portal. Sin ninguna de las dos, `requerirPermiso` lo devuelve a su portal.
+  const sesion = await requerirUsuario();
+  const verOperaciones = usuarioTienePermiso(sesion, "operaciones.leer");
+  const usuario =
+    verOperaciones || (await participaEnProyecto(sesion.id, id))
+      ? sesion
+      : await requerirPermiso("operaciones.leer");
   const puedeEditar = usuarioTienePermiso(usuario, "operaciones.escribir");
 
   const proyecto = await proyectoParaGantt(id);
@@ -52,8 +65,9 @@ export default async function PaginaDetalleProyectoGantt({
     ? await Promise.all([equipoDeProyecto(id), usuariosAsignables(), mensajesCliente(["torre"])])
     : [null, [], null];
 
-  const [t, tc, tl, hoy] = await Promise.all([
+  const [t, tNav, tc, tl, hoy] = await Promise.all([
     getTranslations({ locale, namespace: "admin" }),
+    getTranslations({ locale, namespace: "nav" }),
     getTranslations({ locale, namespace: "calendar" }),
     getTranslations({ locale, namespace: "lineaTiempo" }),
     hoyEnLaBase(),
@@ -93,11 +107,11 @@ export default async function PaginaDetalleProyectoGantt({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Link
-              href="/administrativo/proyectos"
+              href={verOperaciones ? "/administrativo/proyectos" : "/administrativo/torre-control"}
               className="inline-flex items-center text-xs font-semibold text-marca-600 hover:underline"
             >
               <ArrowLeft className="size-3.5 mr-1" />
-              {t("projects.backToProjects")}
+              {verOperaciones ? t("projects.backToProjects") : tNav("controlTower")}
             </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-tinta sm:text-3xl flex items-center gap-2.5">

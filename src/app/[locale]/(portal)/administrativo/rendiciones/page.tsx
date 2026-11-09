@@ -44,6 +44,9 @@ export default async function PaginaRendiciones({
   const usuario = await requerirUsuario();
 
   const puedeRevisar = usuarioTienePermiso(usuario, "rendicion.revisar");
+  // `admin` revisa rendiciones pero no entra en contabilidad: el atajo solo
+  // se ofrece a quien la puerta va a dejar pasar.
+  const veContabilidad = usuarioTienePermiso(usuario, "contabilidad.leer");
 
   const [t, programas, rendiciones, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "rendicion" }),
@@ -64,9 +67,9 @@ export default async function PaginaRendiciones({
         >
           {t("backToToday")}
         </Link>
-        {puedeRevisar && (
+        {veContabilidad && (
           <Link
-            href="/portal/contabilidad/gastos"
+            href="/portal/contabilidad"
             className="inline-flex min-h-[44px] items-center rounded-control border border-marca-700/30 bg-marca-50 px-3 text-xs font-semibold text-marca-700 hover:bg-marca-100 active:scale-95"
           >
             {t("viewAccountingHub")}

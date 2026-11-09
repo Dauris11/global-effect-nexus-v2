@@ -126,8 +126,12 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
               WHERE estado IN ('recibido', 'observado')) AS comprobantes_por_validar,
             (SELECT count(*)::int FROM contabilidad.caja
               WHERE estado = 'activa' AND saldo_actual < fondo_fijo * $1) AS cajas_bajas,
+            -- Los mismos estados que la bandeja de solicitudes trae para quien
+            -- aprueba en contabilidad. 'pendiente' no es un estado de
+            -- solicitud: con él las compras recién enviadas nunca se contaban.
             (SELECT count(*)::int FROM public.solicitud
-              WHERE tipo IN ('compra', 'gasto') AND estado IN ('pendiente', 'en_revision')) AS compras_pendientes`,
+              WHERE tipo IN ('compra', 'gasto')
+                AND estado IN ('enviada', 'en_revision', 'aprobada')) AS compras_pendientes`,
     [UMBRAL_CAJA_BAJA],
   );
 

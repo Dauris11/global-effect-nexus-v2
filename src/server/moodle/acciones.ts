@@ -206,8 +206,11 @@ export async function entregarTareaMoodleAction(
       datos: { titulo: asignacion.titulo, conArchivo: hayArchivo, conTexto: Boolean(texto), estado: estadoFinal },
     });
 
-    revalidatePath("/portal/estudiante/aula-virtual");
-    revalidatePath("/portal/profesor");
+    // Con el segmento `[locale]`: "/portal/..." a secas no coincide con
+    // ninguna ruta y no refrescaba nada. La bandeja del docente es clases-360.
+    revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+    revalidatePath("/[locale]/portal/profesor", "page");
+    revalidatePath("/[locale]/academico/clases-360", "page");
 
     return { ok: true, mensaje: vencida ? "entregada_tarde" : "entregada" };
   } catch (error) {
@@ -305,8 +308,9 @@ export async function calificarEntregaMoodleAction(
       datos: { calificacion, tieneFeedback: !!comentarioProfesor },
     });
 
-    revalidatePath("/portal/profesor");
-    revalidatePath("/portal/estudiante/aula-virtual");
+    revalidatePath("/[locale]/portal/profesor", "page");
+    revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+    revalidatePath("/[locale]/academico/clases-360", "page");
 
     return { ok: true, mensaje: "Calificación y feedback guardados exitosamente." };
   } catch (error) {

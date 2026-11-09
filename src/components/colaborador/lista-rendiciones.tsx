@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "@/i18n/navigation";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import type { EstadoRendicion, RendicionGastoItem } from "@/lib/torre-control";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ export function ListaRendiciones({
   puedeRevisar,
 }: ListaRendicionesProps) {
   const t = useTranslations("rendicion");
+  const router = useRouter();
 
   const [filtro, setFiltro] = useState<string>("todas");
   const [rendicionSeleccionada, setRendicionSeleccionada] =
@@ -53,17 +55,29 @@ export function ListaRendiciones({
   const [modalRevisarAbierto, setModalRevisarAbierto] = useState(false);
   const [motivoRechazo, setMotivoRechazo] = useState("");
   const [isPending, startTransition] = useTransition();
+  // Antes el resultado se ignoraba: un rechazo sin motivo o un fallo dejaban
+  // el botón "sin hacer nada". Ahora el porqué se enseña.
+  const [errorRevision, setErrorRevision] = useState<string | null>(null);
 
   const filtradas = rendiciones.filter((item) => {
     if (filtro === "todas") return true;
     return item.estado === filtro;
   });
 
-  const ejecutarRevision = (estado: EstadoRendicion) => {
-    if (!rendicionSeleccionada) return;
+  const ejecutarRevision = (
+    estado: EstadoRendicion,
+    rendicion: RendicionGastoItem | null = rendicionSeleccionada,
+  ) => {
+    if (!rendicion) return;
+    setErrorRevision(null);
+
+    if (estado === "rechazada" && !motivoRechazo.trim()) {
+      setErrorRevision(t("reviewError.falta_motivo"));
+      return;
+    }
 
     const datos = new FormData();
-    datos.set("id", rendicionSeleccionada.id);
+    datos.set("id", rendicion.id);
     datos.set("estado", estado);
     if (estado === "rechazada") {
       datos.set("motivo_rechazo", motivoRechazo);
@@ -75,7 +89,17 @@ export function ListaRendiciones({
         setModalRevisarAbierto(false);
         setRendicionSeleccionada(null);
         setMotivoRechazo("");
+        router.refresh();
+        return;
       }
+
+      const clave = res.mensaje ?? "error";
+      setErrorRevision(
+        t.has(`reviewError.${clave}` as never)
+          ? t(`reviewError.${clave}` as never)
+          : t("reviewError.error"),
+      );
+      if (clave === "ya_cambio") router.refresh();
     });
   };
 
@@ -122,6 +146,16 @@ export function ListaRendiciones({
 
   return (
     <div className="space-y-4">
+      {errorRevision && !modalRevisarAbierto && (
+        <p
+          role="alert"
+          className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
+        >
+          <AlertCircle className="size-3.5 shrink-0" />
+          {errorRevision}
+        </p>
+      )}
+
       {/* Filtros Táctiles */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         {(
@@ -204,21 +238,33 @@ export function ListaRendiciones({
                     {r.fecha_comprobante}
                   </span>
                   {r.motivo_rechazo && (
-                    <span className="text-[#B4342B] font-medium">
-                      Motivo rechazo: {r.motivo_rechazo}
+                    <span className="font-medium text-tinta">
+                      {t("rejectReasonLabel", { motivo: r.motivo_rechazo })}
                     </span>
+                  )}
+                  {r.comprobante_url && (
+                    <a
+                      href={`/api/rendiciones/${r.id}/comprobante`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 font-medium text-marca-600 hover:underline"
+                    >
+                      <ExternalLink className="size-3" />
+                      {t("viewReceipt")}
+                    </a>
                   )}
                 </div>
               </div>
 
               {/* Acciones */}
               <div className="flex items-center gap-2 pt-2 sm:pt-0">
-                {puedeRevisar && r.estado === "enviada" && (
+                {puedeRevisar && (r.estado === "enviada" || r.estado === "en_revision") && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="min-h-[42px] border-marca-500 text-marca-600 hover:bg-marca-50 active:scale-95"
                     onClick={() => {
+                      setErrorRevision(null);
                       setRendicionSeleccionada(r);
                       setModalRevisarAbierto(true);
                     }}
@@ -233,10 +279,8 @@ export function ListaRendiciones({
                     size="sm"
                     variant="outline"
                     className="min-h-[42px] border-marca-700 text-marca-700 hover:bg-marca-50 active:scale-95"
-                    onClick={() => {
-                      setRendicionSeleccionada(r);
-                      ejecutarRevision("contabilizada");
-                    }}
+                    disabled={isPending}
+                    onClick={() => ejecutarRevision("contabilizada", r)}
                   >
                     <FileCheck className="mr-1.5 size-4" />
                     {t("postToAccounting")}
@@ -297,6 +341,16 @@ export function ListaRendiciones({
                   className="mt-1"
                 />
               </div>
+
+              {errorRevision && (
+                <p
+                  role="alert"
+                  className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
+                >
+                  <AlertCircle className="size-3.5 shrink-0" />
+                  {errorRevision}
+                </p>
+              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button

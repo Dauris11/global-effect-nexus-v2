@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { PoolClient } from "pg";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
@@ -19,6 +20,40 @@ export type EstadoAccionReunion = {
   reunionId?: string;
   error?: string;
 };
+
+/**
+ * Avisa en la campana a los convocados de una reunión, salvo a quien actúa.
+ *
+ * Antes la reunión solo aparecía si el convocado entraba por su cuenta a
+ * `/reuniones` o al calendario: a un docente que citaba a un estudiante o a
+ * contabilidad no le llegaba nada a nadie. Al estudiante se le llega por su
+ * cuenta (`estudiante.usuario_id`). El enlace va a `/reuniones` si su rol
+ * puede leerlas y si no al calendario, que es de todos.
+ */
+async function avisarConvocados(
+  cliente: PoolClient,
+  reunionId: string,
+  excepto: string,
+  titulo: string,
+  mensaje: string,
+) {
+  await cliente.query(
+    `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+     SELECT DISTINCT u.id, $3, $4, 'reunion',
+            CASE WHEN EXISTS (
+                   SELECT 1 FROM rol_permiso rp
+                     JOIN permiso p ON p.id = rp.permiso_id
+                    WHERE rp.rol_id = u.rol_id AND p.codigo = 'reuniones.leer')
+                 THEN '/reuniones' ELSE '/calendario' END
+       FROM reunion_participante rp
+       LEFT JOIN estudiante e ON e.id = rp.estudiante_id
+       JOIN usuario u ON u.id = coalesce(rp.usuario_id, e.usuario_id)
+      WHERE rp.reunion_id = $1
+        AND u.id <> $2
+        AND u.activo`,
+    [reunionId, excepto, titulo, mensaje],
+  );
+}
 
 /**
  * Agenda una nueva reunión institucional o tutoría.
@@ -51,6 +86,7 @@ export async function agendarReunionAction(
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { error: "Fecha inválida (YYYY-MM-DD)." };
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaInicio)) return { error: "Hora de inicio inválida (HH:MM)." };
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaFin)) return { error: "Hora de fin inválida (HH:MM)." };
+  if (horaFin <= horaInicio) return { error: "La hora de fin debe ser posterior a la de inicio." };
 
   let participantesIds: { id: string; tipo: "personal" | "estudiante" }[] = [];
   try {
@@ -119,6 +155,14 @@ export async function agendarReunionAction(
           [nuevaReunion.id, usuarioPartId, estudiantePartId]
         );
       }
+
+      await avisarConvocados(
+        cliente,
+        nuevaReunion.id,
+        usuario.id,
+        titulo,
+        `${fecha} ${horaInicio}–${horaFin}`,
+      );
 
       return nuevaReunion;
     });
@@ -327,7 +371,14 @@ export async function cancelarReunionAction(
     id: string;
     organizador_usuario_id: string;
     descripcion: string | null;
-  }>("SELECT id, organizador_usuario_id, descripcion FROM reunion WHERE id = $1", [reunionId]);
+    titulo: string;
+    fecha: string;
+  }>(
+    `SELECT id, organizador_usuario_id, descripcion, titulo,
+            to_char(fecha, 'YYYY-MM-DD') AS fecha
+       FROM reunion WHERE id = $1`,
+    [reunionId],
+  );
 
   if (!reunion) return { error: "Reunión no encontrada." };
 
@@ -347,14 +398,25 @@ export async function cancelarReunionAction(
     .join("\n\n");
 
   try {
-    await consultarUna(
-      `UPDATE reunion
-          SET estado = 'cancelada',
-              descripcion = $2,
-              actualizado_en = now()
-        WHERE id = $1`,
-      [reunionId, descActualizada]
-    );
+    // La cancelación y el aviso van juntos: un convocado que no se entera de
+    // que se canceló se presenta a una reunión que no existe.
+    await enTransaccion(async (cliente) => {
+      await cliente.query(
+        `UPDATE reunion
+            SET estado = 'cancelada',
+                descripcion = $2,
+                actualizado_en = now()
+          WHERE id = $1`,
+        [reunionId, descActualizada]
+      );
+      await avisarConvocados(
+        cliente,
+        reunionId,
+        usuario.id,
+        `[CANCELADA] ${reunion.titulo}`,
+        motivo || reunion.fecha,
+      );
+    });
 
     await registrar({
       usuarioId: usuario.id,

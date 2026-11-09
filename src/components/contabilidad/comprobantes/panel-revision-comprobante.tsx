@@ -16,17 +16,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "@/i18n/navigation";
 import type { ComprobanteRecibidoFila } from "@/server/contabilidad/comprobantes/recibidos-consultas";
 import { validarComprobanteRecibido } from "@/server/contabilidad/comprobantes/recibidos-acciones";
 
 export function PanelRevisionComprobante({
   comprobantes,
   proyectos = [],
+  puedeValidar = false,
 }: {
   comprobantes: ComprobanteRecibidoFila[];
   proyectos?: { id: string; nombre: string }[];
+  /** `contabilidad.registrar`: quien solo consulta no ve botones que fallarían. */
+  puedeValidar?: boolean;
 }) {
   const t = useTranslations("contab.comprobantesRecibidos");
+  const router = useRouter();
+  const [errorGuardar, setErrorGuardar] = useState(false);
   const [seleccionado, setSeleccionado] = useState<ComprobanteRecibidoFila | null>(
     comprobantes[0] ?? null,
   );
@@ -49,6 +55,7 @@ export function PanelRevisionComprobante({
   const handleValidar = async (nuevoEstado: "validado" | "observado" | "rechazado") => {
     if (!seleccionado) return;
     setGuardando(true);
+    setErrorGuardar(false);
     try {
       const res = await validarComprobanteRecibido({
         id: seleccionado.id,
@@ -57,12 +64,20 @@ export function PanelRevisionComprobante({
         observaciones: observacion || undefined,
       });
       if (res.ok) {
-        seleccionado.estado = nuevoEstado;
-        seleccionado.proyecto_id = proyectoId || null;
         const proyObj = proyectos.find((p) => p.id === proyectoId);
-        seleccionado.proyecto_nombre = proyObj ? proyObj.nombre : null;
+        setSeleccionado({
+          ...seleccionado,
+          estado: nuevoEstado,
+          proyecto_id: proyectoId || null,
+          proyecto_nombre: proyObj ? proyObj.nombre : null,
+        });
         setObservacion("");
+        router.refresh();
+      } else {
+        setErrorGuardar(true);
       }
+    } catch {
+      setErrorGuardar(true);
     } finally {
       setGuardando(false);
     }
@@ -273,7 +288,18 @@ export function PanelRevisionComprobante({
               />
             </div>
 
+            {errorGuardar && (
+              <p
+                role="alert"
+                className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
+              >
+                <AlertCircle className="size-3.5 shrink-0" />
+                {t("saveError")}
+              </p>
+            )}
+
             {/* Botones de acción */}
+            {puedeValidar && (
             <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-linea">
               <Button
                 variant="outline"
@@ -305,6 +331,7 @@ export function PanelRevisionComprobante({
                 {t("approveAndValidate")}
               </Button>
             </div>
+            )}
           </div>
         ) : (
           <Card>

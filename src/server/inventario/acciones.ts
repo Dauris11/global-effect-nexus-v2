@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
-import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
 import type { CategoriaActivo, EstadoActivo } from "@/lib/inventario";
 import { obtenerActivoPorCodigo } from "@/server/inventario/consultas";
@@ -264,6 +264,8 @@ export async function eliminarActivoAction(id: string) {
  * Busca un activo por código (o ID) desde un componente cliente de forma segura.
  */
 export async function buscarActivoPorCodigoAction(codigo: string) {
-  await requerirUsuario();
+  // Con solo sesión, cualquier estudiante podía leer fichas patrimoniales
+  // (valor, custodio) invocando la acción directamente.
+  await requerirPermiso("inventario.leer");
   return await obtenerActivoPorCodigo(codigo);
 }

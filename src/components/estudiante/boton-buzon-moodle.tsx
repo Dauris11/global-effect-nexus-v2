@@ -45,7 +45,7 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
     instrucciones_entrega: fila.instrucciones_entrega ?? null,
     materia_nombre: fila.materia,
     materia_codigo: fila.materia_codigo,
-    docente_nombre: fila.docente_nombre ?? "Profesor Titular",
+    docente_nombre: fila.docente_nombre ?? null,
     vencida: fila.vencida,
     entrega_id: fila.entrega_id ?? null,
     entrega_estado: (fila.estado_entrega ?? "pendiente") as
@@ -85,7 +85,7 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
         {fila.estado_entrega === "calificado" ? (
           <>
             <Award className="size-4 text-marca-600" />
-            <span>Ver Calificación</span>
+            <span>{t("viewGrade")}</span>
           </>
         ) : yaEntregada ? (
           <>
@@ -95,7 +95,7 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
         ) : (
           <>
             <FolderUp className="size-4" />
-            <span>Buzón de Entrega</span>
+            <span>{t("dropboxButton")}</span>
           </>
         )}
       </Button>

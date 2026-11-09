@@ -16,7 +16,12 @@
  */
 
 /** Los estados del tablero, en el orden de las columnas. */
-export const COLUMNAS = ["pendiente", "en_progreso", "completada"] as const;
+export const COLUMNAS = [
+  "por_hacer",
+  "en_progreso",
+  "en_revision",
+  "completada",
+] as const;
 
 export type Columna = (typeof COLUMNAS)[number];
 
@@ -24,3 +29,6 @@ export type Columna = (typeof COLUMNAS)[number];
 export function esColumna(valor: string): valor is Columna {
   return (COLUMNAS as readonly string[]).includes(valor);
 }
+
+/** Estados de una tarea que siguen abiertos (todo menos completada/cancelada). */
+export const ESTADOS_TAREA_ABIERTA = ["por_hacer", "en_progreso", "en_revision"] as const;

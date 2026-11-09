@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import {
+  AlertCircle,
   CalendarClock,
   CalendarPlus,
   Eye,
@@ -495,12 +496,15 @@ function BotonSimple({
   etiqueta: string;
   icono: React.ComponentType<{ className?: string }>;
 }) {
-  const [, enviar, enviando] = useActionState<EstadoAdmin360, FormData>(accion, {
+  const t = useTranslations("global360");
+  const [estado, enviar, enviando] = useActionState<EstadoAdmin360, FormData>(accion, {
     estado: "inicial",
   });
+  // Sin esto, un fallo dejaba el botón igual que antes y parecía no hacer nada.
+  const fallo = estado.estado !== "inicial" && estado.estado !== "ok";
 
   return (
-    <form action={enviar}>
+    <form action={enviar} className="flex items-center gap-1">
       {Object.entries(campos).map(([nombre, valor]) => (
         <input key={nombre} type="hidden" name={nombre} value={valor} />
       ))}
@@ -519,6 +523,13 @@ function BotonSimple({
           <Icono className="size-3.5" />
         )}
       </Button>
+
+      {fallo && (
+        <span role="alert" className="text-tinta flex items-center gap-1 text-xs">
+          <AlertCircle className="size-3.5 shrink-0" aria-hidden />
+          {t("errGeneric")}
+        </span>
+      )}
     </form>
   );
 }

@@ -2,14 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requerirUsuario } from "@/lib/auth";
+import { requerirUsuario, type UsuarioSesion } from "@/lib/auth";
 import { consultar, consultarUna } from "@/lib/db";
 import { fechaConHora } from "@/lib/fechas";
 import {
   MAXIMO_CARACTERES_PREGUNTA,
   type TurnoIA,
 } from "@/lib/ia";
-import { tienePermiso, type Rol } from "@/lib/rbac";
+import {
+  usuarioTieneAlgunPermiso,
+  usuarioTienePermiso,
+  type Permiso,
+  type Rol,
+} from "@/lib/rbac";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { conversarComo } from "@/server/ia/agente";
 import { reglamentoActual } from "@/server/ia/reglamento";
@@ -60,9 +65,21 @@ type DefinicionAccion = {
   etiqueta: string;
   descripcion: string;
   ruta: string;
-  rolesPermitidos: Rol[];
-  permisoRequerido?: string;
+  /** La misma regla que la guardia de la página: ofrecer una pantalla que
+   * redirige al abrirla es un botón que «no hace nada». */
+  puede: (usuario: UsuarioSesion) => boolean;
 };
+
+const conPermiso = (permiso: Permiso) => (usuario: UsuarioSesion) =>
+  usuarioTienePermiso(usuario, permiso);
+const conAlguno = (...permisos: Permiso[]) => (usuario: UsuarioSesion) =>
+  usuarioTieneAlgunPermiso(usuario, permisos);
+const soloRoles = (...roles: Rol[]) => (usuario: UsuarioSesion) =>
+  roles.includes(usuario.rol);
+/** Calco de `requerirDocencia`. */
+const daClases = (usuario: UsuarioSesion) =>
+  usuario.rol === "super_admin" || usuarioTienePermiso(usuario, "docencia.impartir");
+const cualquiera = () => true;
 
 const CATALOGO_ACCIONES: DefinicionAccion[] = [
   // Contabilidad
@@ -71,21 +88,21 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Mi día",
     descripcion: "Tu cola de decisiones de hoy: comprobantes por revisar, vencimientos y señales.",
     ruta: "/contabilidad/mi-dia",
-    rolesPermitidos: ["contabilidad", "admin", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
   {
     identificadores: ["actividad del equipo", "quien hizo que", "resguardo de actividades"],
     etiqueta: "Actividad del equipo",
     descripcion: "Quién hizo qué y a qué hora, con gráficas y línea de tiempo.",
     ruta: "/configuracion/actividad",
-    rolesPermitidos: ["super_admin"],
+    puede: soloRoles("super_admin"),
   },
   {
     identificadores: ["visibilidad", "que ve cada rol", "ocultar modulos"],
     etiqueta: "Qué ve cada rol",
     descripcion: "Oculta o bloquea módulos para los demás roles.",
     ruta: "/configuracion/visibilidad",
-    rolesPermitidos: ["super_admin"],
+    puede: soloRoles("super_admin"),
   },
   {
     identificadores: [
@@ -99,7 +116,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Cuentas por Pagar",
     descripcion: "Consulta de facturas pendientes de pago y análisis de vencimientos a 30/60/90 días.",
     ruta: "/contabilidad/cuentas-por-pagar",
-    rolesPermitidos: ["contabilidad", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
   {
     identificadores: [
@@ -112,7 +129,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Proveedores",
     descripcion: "Directorio de proveedores registrados, RNC/Cédula y condiciones de pago.",
     ruta: "/contabilidad/proveedores",
-    rolesPermitidos: ["contabilidad", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
   {
     identificadores: [
@@ -126,7 +143,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Recibos de Pago",
     descripcion: "Historial de recibos emitidos, comprobantes firmados y transacciones contabilizadas.",
     ruta: "/contabilidad/recibos",
-    rolesPermitidos: ["contabilidad", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
   {
     identificadores: [
@@ -141,7 +158,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Cuentas Bancarias",
     descripcion: "Gestión de cuentas en DOP y USD, balances disponibles y conciliación bancaria.",
     ruta: "/contabilidad/bancos",
-    rolesPermitidos: ["contabilidad", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
   {
     identificadores: [
@@ -152,7 +169,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Portal de Contabilidad",
     descripcion: "Vista principal del departamento financiero y métricas del mes.",
     ruta: "/portal/contabilidad",
-    rolesPermitidos: ["contabilidad", "super_admin"],
+    puede: conPermiso("contabilidad.leer"),
   },
 
   // Académico & Docente
@@ -165,7 +182,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Materias Académicas",
     descripcion: "Catálogo de asignaturas registradas, créditos y códigos de aula.",
     ruta: "/academico/materias",
-    rolesPermitidos: ["docente", "admin", "super_admin"],
+    puede: conPermiso("academico.leer"),
   },
   {
     // Las notas finales de 360 se ponen aquí, así que "calificaciones" y
@@ -182,7 +199,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Clases de Global Effect 360",
     descripcion: "Materias de Global Effect 360: docentes, inscritos, tareas y nota final.",
     ruta: "/academico/clases-360",
-    rolesPermitidos: ["docente", "admin", "super_admin"],
+    puede: conAlguno("academico.escribir", "docencia.impartir"),
   },
   {
     identificadores: [
@@ -193,7 +210,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Portal Docente",
     descripcion: "Panel de control del profesor con sus clases activas y pendientes.",
     ruta: "/portal/profesor",
-    rolesPermitidos: ["docente"],
+    puede: daClases,
   },
 
   // Operaciones & Administrativo
@@ -207,7 +224,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Tablero de Tareas",
     descripcion: "Gestión operativa de tareas institucionales y asignaciones del equipo.",
     ruta: "/administrativo/tareas",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: conPermiso("operaciones.leer"),
   },
   {
     identificadores: [
@@ -218,7 +235,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Proyectos de Operaciones",
     descripcion: "Seguimiento y avance de los proyectos comunitarios e institucionales.",
     ruta: "/administrativo/proyectos",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: conPermiso("operaciones.leer"),
   },
   {
     identificadores: [
@@ -230,7 +247,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Bandeja de Solicitudes",
     descripcion: "Trámites, permisos, reembolsos y solicitudes del personal y estudiantes.",
     ruta: "/administrativo/solicitudes",
-    rolesPermitidos: ["admin", "super_admin", "contabilidad", "docente", "habitudes"],
+    puede: cualquiera,
   },
   {
     identificadores: [
@@ -243,7 +260,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Gestión de Personal",
     descripcion: "Administración de cuentas de usuario, roles y permisos del personal.",
     ruta: "/administrativo/personal",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: conPermiso("usuarios.administrar"),
   },
   {
     identificadores: [
@@ -256,7 +273,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Expedientes de Estudiantes",
     descripcion: "Fichas de postulantes y becados universitarios.",
     ruta: "/expedientes",
-    rolesPermitidos: ["admin", "super_admin", "habitudes"],
+    puede: conPermiso("expedientes.leer"),
   },
   {
     identificadores: [
@@ -268,7 +285,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Cronograma Gantt",
     descripcion: "Línea de tiempo de proyectos, materias y eventos institucionales.",
     ruta: "/calendario/gantt",
-    rolesPermitidos: ["admin", "super_admin", "docente"],
+    puede: cualquiera,
   },
   {
     identificadores: [
@@ -280,7 +297,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Calendario Institucional",
     descripcion: "Calendario de actividades, reuniones, evaluaciones y entregas.",
     ruta: "/calendario",
-    rolesPermitidos: ["admin", "super_admin", "docente"],
+    puede: cualquiera,
   },
   {
     identificadores: [
@@ -291,7 +308,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Reportes Institucionales",
     descripcion: "Informes de gestión, métricas financieras y avance operativo.",
     ruta: "/reportes",
-    rolesPermitidos: ["admin", "super_admin", "contabilidad"],
+    puede: cualquiera,
   },
   {
     identificadores: [
@@ -305,7 +322,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Bandeja",
     descripcion: "Bandeja con tareas, proyectos, reuniones, notificaciones y gráficas.",
     ruta: "/bandeja",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: soloRoles("admin", "super_admin"),
   },
   {
     identificadores: [
@@ -317,7 +334,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Registro de Auditoría",
     descripcion: "Bitácora inmutable de acciones realizadas en el sistema.",
     ruta: "/configuracion/auditoria",
-    rolesPermitidos: ["super_admin", "admin"],
+    puede: soloRoles("super_admin"),
   },
   {
     identificadores: [
@@ -327,7 +344,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Configuración del Sistema",
     descripcion: "Parámetros institucionales y preferencias de la plataforma.",
     ruta: "/configuracion",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: soloRoles("admin", "super_admin"),
   },
   {
     identificadores: [
@@ -338,7 +355,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Anuncios de Portada",
     descripcion: "Gestión de noticias y avisos en la página principal pública.",
     ruta: "/configuracion/landing",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: conPermiso("landing.administrar"),
   },
   {
     identificadores: [
@@ -349,7 +366,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Patrocinadores",
     descripcion: "Relación con patrocinadores y asignación de becas a estudiantes.",
     ruta: "/patrocinadores",
-    rolesPermitidos: ["admin", "super_admin"],
+    puede: conPermiso("patrocinadores.leer"),
   },
 ];
 
@@ -358,7 +375,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
  */
 function interpretarAccion(
   comando: string,
-  rol: Rol,
+  usuario: UsuarioSesion,
 ): AccionSugerida | null {
   const normalizado = comando
     .toLowerCase()
@@ -375,7 +392,7 @@ function interpretarAccion(
 
   // Recorrer las acciones que el rol tiene permitido ver
   for (const item of CATALOGO_ACCIONES) {
-    if (!item.rolesPermitidos.includes(rol)) continue;
+    if (!item.puede(usuario)) continue;
 
     for (const id of item.identificadores) {
       const idNorm = id
@@ -474,7 +491,7 @@ export async function enviarMensajeWidget({
   // Si estamos en modo ACCIONES:
   let accionDetectada: AccionSugerida | null = null;
   if (modoEfectivo === "acciones") {
-    accionDetectada = interpretarAccion(texto, usuario.rol);
+    accionDetectada = interpretarAccion(texto, usuario);
   }
 
   let respuestaTexto = "";
@@ -604,7 +621,7 @@ export async function sugerirNavegacion(
 ): Promise<AccionSugerida | null> {
   const usuario = await requerirUsuario();
 
-  return interpretarAccion(comando.slice(0, MAXIMO_CARACTERES_PREGUNTA), usuario.rol);
+  return interpretarAccion(comando.slice(0, MAXIMO_CARACTERES_PREGUNTA), usuario);
 }
 
 /**

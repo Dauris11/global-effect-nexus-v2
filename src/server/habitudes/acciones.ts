@@ -10,6 +10,7 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { MAXIMO_MATERIAL, subirMaterial } from "@/lib/supabase/almacen";
+import { fechaHoyRD } from "@/lib/transporte";
 
 export type AccionHabitudesResultado = {
   ok: boolean;
@@ -55,14 +56,15 @@ export async function subirRecursoHabitudesAction(
     const nombreLimpio = archivoNombre.replace(/[^a-zA-Z0-9._-]/g, "_");
     const ruta = `habitudes/${categoria}/${Date.now()}_${nombreLimpio}`;
     const subida = await subirMaterial(ruta, archivo);
-    if (subida.ok) {
-      urlFinal = subida.ruta;
+    // Antes, si el almacén rechazaba el archivo, se guardaba una URL inventada
+    // y el recurso aparecía en el Hub con un enlace que no descargaba nada.
+    if (!subida.ok) {
+      return { ok: false, mensaje: "No se pudo subir el archivo al almacén. Inténtalo de nuevo." };
     }
+    urlFinal = subida.ruta;
   }
 
-  if (!urlFinal) {
-    urlFinal = `https://storage.globaleffect.org/habitudes/${categoria}/${Date.now()}_${archivoNombre}`;
-  }
+  if (!urlFinal) return { ok: false, mensaje: "Debes adjuntar un archivo válido." };
 
   try {
     const res = await consultarUna<{ id: string }>(
@@ -97,6 +99,8 @@ export async function subirRecursoHabitudesAction(
 export async function incrementarDescargaRecursoAction(
   recursoId: string,
 ): Promise<{ ok: boolean }> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "habitudes.recursos.leer")) return { ok: false };
   try {
     await consultarUna(
       `UPDATE public.habitudes_recurso
@@ -111,6 +115,10 @@ export async function incrementarDescargaRecursoAction(
   }
 }
 
+// Lo que admite el bucket `documentos` para imágenes (ver TIPOS_MATERIAL).
+const TIPOS_FOTO_VISITA = ["image/jpeg", "image/png"];
+const MAXIMO_FOTOS_VISITA = 8;
+
 /**
  * Registra una visita presencial a un liceo con fotografías de evidencia.
  */
@@ -124,7 +132,9 @@ export async function registrarVisitaLiceoAction(
   }
 
   const liceoId = String(datos.get("liceo_id") ?? "").trim();
-  const fechaVisita = String(datos.get("fecha_visita") ?? "").trim() || new Date().toISOString().slice(0, 10);
+  // "Hoy" en La Vega: con la fecha UTC, una visita de la tanda nocturna caía
+  // en el día siguiente.
+  const fechaVisita = String(datos.get("fecha_visita") ?? "").trim() || fechaHoyRD();
   const temaImpartido = String(datos.get("tema_impartido") ?? "").trim().slice(0, 180);
   const tanda = String(datos.get("tanda") ?? "matutina");
   const estudiantes = parseInt(String(datos.get("estudiantes_impactados") ?? "0"), 10) || 0;
@@ -140,8 +150,37 @@ export async function registrarVisitaLiceoAction(
   if (estudiantes <= 0) return { ok: false, mensaje: "Indica la cantidad estimada de estudiantes asistentes." };
 
   const fotosUrls = fotosRaw
-    ? fotosRaw.split(",").map((u) => u.trim()).filter(Boolean)
+    ? fotosRaw.split(",").map((u) => u.trim()).filter((u) => u.startsWith("https://"))
     : [];
+
+  // Las fotos viajan como archivos y se guardan en el bucket privado: antes el
+  // cliente mandaba URLs inventadas y quien auditaba veía imágenes rotas.
+  const fotos = datos
+    .getAll("fotos")
+    .filter((f): f is File => f instanceof File && f.size > 0);
+  if (fotos.length > MAXIMO_FOTOS_VISITA) {
+    return { ok: false, mensaje: `Puedes adjuntar hasta ${MAXIMO_FOTOS_VISITA} fotos por visita.` };
+  }
+  for (const foto of fotos) {
+    if (!TIPOS_FOTO_VISITA.includes(foto.type)) {
+      return { ok: false, mensaje: "Las evidencias deben ser fotos JPG o PNG." };
+    }
+    if (foto.size > MAXIMO_MATERIAL) {
+      return { ok: false, mensaje: "Una de las fotos supera el tamaño máximo de 20 MB." };
+    }
+  }
+  const lote = Date.now();
+  for (const [indice, foto] of fotos.entries()) {
+    const extension = foto.type === "image/png" ? "png" : "jpg";
+    const subida = await subirMaterial(
+      `habitudes/evidencias/${usuario.id}/${lote}_${indice + 1}.${extension}`,
+      foto,
+    );
+    if (!subida.ok) {
+      return { ok: false, mensaje: "No se pudieron subir las fotos de evidencia. Inténtalo de nuevo." };
+    }
+    fotosUrls.push(subida.ruta);
+  }
 
   try {
     const res = await consultarUna<{ id: string }>(
@@ -171,6 +210,44 @@ export async function registrarVisitaLiceoAction(
   } catch (err) {
     console.error("[habitudes] Error al registrar visita:", err);
     return { ok: false, mensaje: "Error de servidor al guardar la visita." };
+  }
+}
+
+/**
+ * Da por auditada una visita: la dirección de Habitudes revisa la evidencia
+ * que subió el facilitador. Sin esta acción el estado `auditada` existía en la
+ * base pero nadie podía ponerlo.
+ */
+export async function auditarVisitaHabitudesAction(
+  visitaId: string,
+): Promise<AccionHabitudesResultado> {
+  const usuario = await requerirPermiso("habitudes.evidencias.auditar");
+
+  try {
+    const fila = await consultarUna<{ id: string; facilitador_id: string }>(
+      `UPDATE public.habitudes_visita_evidencia
+          SET estado = 'auditada'
+        WHERE id = $1
+          AND estado = 'completada'
+       RETURNING id, facilitador_id`,
+      [visitaId],
+    );
+
+    if (!fila) return { ok: false, mensaje: "La visita ya estaba auditada o no existe." };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "habitudes.visita.auditada",
+      entidad: "habitudes_visita_evidencia",
+      entidadId: fila.id,
+      datos: { facilitadorId: fila.facilitador_id },
+    });
+
+    revalidatePath("/habitudes");
+    return { ok: true, id: fila.id };
+  } catch (err) {
+    console.error("[habitudes] Error al auditar visita:", err);
+    return { ok: false, mensaje: "Error de servidor al auditar la visita." };
   }
 }
 

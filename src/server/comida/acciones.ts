@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { consultarUna } from "@/lib/db";
+import { SQL_HORA_RD, SQL_HOY_RD } from "@/lib/fecha-rd";
 import { aMinutos } from "@/lib/parametros";
 import { parametros } from "@/server/parametros/consultas";
 
@@ -38,8 +39,8 @@ export async function inscribirseAComida(
    * corra el proceso.
    */
   const ahora = await consultarUna<{ minutos: number }>(
-    `SELECT (EXTRACT(HOUR FROM CURRENT_TIME) * 60
-             + EXTRACT(MINUTE FROM CURRENT_TIME))::int AS minutos`,
+    `SELECT (EXTRACT(HOUR FROM ${SQL_HORA_RD}) * 60
+             + EXTRACT(MINUTE FROM ${SQL_HORA_RD}))::int AS minutos`,
   );
 
   const minutos = ahora?.minutos ?? 0;
@@ -61,8 +62,10 @@ export async function inscribirseAComida(
    * devolver fila es exactamente la señal de que ya estaba inscrito.
    */
   const fila = await consultarUna<{ id: string }>(
-    `INSERT INTO inscripcion_comida (nombre)
-     VALUES ($1)
+    // Fecha y hora explícitas en hora de La Vega: los valores por defecto de
+    // la tabla usan la zona de la sesión (UTC) y marcaban "tarde" a todos.
+    `INSERT INTO inscripcion_comida (nombre, fecha, hora_inscripcion)
+     VALUES ($1, ${SQL_HOY_RD}, to_char(${SQL_HORA_RD}, 'HH24:MI:SS'))
      ON CONFLICT (nombre, fecha) DO NOTHING
      RETURNING id`,
     [nombre],

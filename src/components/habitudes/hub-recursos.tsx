@@ -56,7 +56,15 @@ export function HubRecursos({
 }: HubRecursosProps) {
   const t = useTranslations("habitudes");
 
-  const [recursos, setRecursos] = useState(recursosIniciales);
+  // La lista sale de las props: al subir, la acción revalida /habitudes y el
+  // recurso llega ya con su enlace firmado. Solo el conteo de descargas se
+  // adelanta en el cliente.
+  const [descargasExtra, setDescargasExtra] = useState<Record<string, number>>({});
+  const recursos = recursosIniciales.map((r) =>
+    descargasExtra[r.id]
+      ? { ...r, descargas_conteo: r.descargas_conteo + descargasExtra[r.id] }
+      : r,
+  );
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>("todas");
   const [busqueda, setBusqueda] = useState<string>("");
   const [modalSubirAbierto, setModalSubirAbierto] = useState<boolean>(false);
@@ -81,14 +89,8 @@ export function HubRecursos({
 
   const manejarDescarga = (recurso: HabitudesRecurso) => {
     // Actualización optimista de conteo
-    setRecursos((prev) =>
-      prev.map((r) =>
-        r.id === recurso.id
-          ? { ...r, descargas_conteo: r.descargas_conteo + 1 }
-          : r,
-      ),
-    );
-    incrementarDescargaRecursoAction(recurso.id);
+    setDescargasExtra((prev) => ({ ...prev, [recurso.id]: (prev[recurso.id] ?? 0) + 1 }));
+    void incrementarDescargaRecursoAction(recurso.id);
   };
 
   const manejarEnvioRecurso = (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,22 +116,6 @@ export function HubRecursos({
       const res = await subirRecursoHabitudesAction(formData);
       if (res.ok) {
         setMensajeExito(res.mensaje ?? t("resourceUploadedSuccess"));
-        // Agregar optimista
-        const nuevoRecurso: HabitudesRecurso = {
-          id: res.id ?? `temp-${Date.now()}`,
-          titulo: String(formData.get("titulo")),
-          descripcion: String(formData.get("descripcion") || null),
-          categoria: formData.get("categoria") as CategoriaHabitudes,
-          formato: ext,
-          archivo_url: String(formData.get("archivo_url")),
-          archivo_nombre: archivoSeleccionado.name,
-          tamano_mb: parseFloat(tamanoMb),
-          subido_por_id: null,
-          subido_por_nombre: "Tú",
-          descargas_conteo: 0,
-          creado_en: new Date().toISOString(),
-        };
-        setRecursos((prev) => [nuevoRecurso, ...prev]);
         setTimeout(() => {
           setModalSubirAbierto(false);
           setMensajeExito(null);

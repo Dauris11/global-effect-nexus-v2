@@ -117,6 +117,19 @@ export async function entregasDeAsignacionDocente(
 }
 
 /**
+ * El cupo es de UN período, como lo cuenta `prematricular`: con ventana
+ * vigente, el de su período. Contando todos, la pantalla daba por llena (y
+ * desactivaba el botón de) una clase que el servidor sí admitía. Sin ventana no
+ * hay botón y la cifra cuenta lo que está en curso.
+ */
+const FILTRO_PERIODO_DEL_CUPO = `
+  coalesce(i.periodo_id = (SELECT v.periodo_id
+                             FROM public.ventana_prematricula v
+                            WHERE v.activa AND v.cierra > now()
+                            ORDER BY v.abre
+                            LIMIT 1), true)`;
+
+/**
  * Catálogo de Global Effect 360 para la matrícula: cupos, horario, docente y lo
  * que este estudiante ya tiene de cada materia.
  *
@@ -140,7 +153,8 @@ export async function catalogoMatricula360(
              (SELECT count(*)::int
                 FROM public.inscripcion_360 i
                WHERE i.materia_id = m.id
-                 AND i.estado IN ('prematriculada', 'cursando')) AS cupo_ocupado,
+                 AND i.estado IN ('prematriculada', 'cursando')
+                 AND ${FILTRO_PERIODO_DEL_CUPO}) AS cupo_ocupado,
              u.nombre AS docente_nombre,
              false AS inscrita,
              NULL::uuid AS inscripcion_id,
@@ -169,7 +183,8 @@ export async function catalogoMatricula360(
            (SELECT count(*)::int
               FROM public.inscripcion_360 i
              WHERE i.materia_id = m.id
-               AND i.estado IN ('prematriculada', 'cursando')) AS cupo_ocupado,
+               AND i.estado IN ('prematriculada', 'cursando')
+               AND ${FILTRO_PERIODO_DEL_CUPO}) AS cupo_ocupado,
            u.nombre AS docente_nombre,
            (i_actual.id IS NOT NULL) AS inscrita,
            i_actual.id AS inscripcion_id,

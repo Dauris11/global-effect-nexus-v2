@@ -19,7 +19,7 @@ import {
   Upload,
   User,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "@/i18n/navigation";
 import type { AsignacionMoodleDetalle } from "@/lib/moodle";
 import { cn } from "@/lib/utils";
 import { entregarTareaMoodleAction } from "@/server/moodle/acciones";
@@ -41,6 +42,8 @@ export function BuzonTareaMoodle({
   esVistaPrevia = false,
 }: BuzonTareaMoodleProps) {
   const t = useTranslations("moodle");
+  const locale = useLocale();
+  const router = useRouter();
 
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
   const [textoRespuesta, setTextoRespuesta] = useState("");
@@ -100,7 +103,9 @@ export function BuzonTareaMoodle({
       return;
     }
 
-    if (!archivoSeleccionado && !textoRespuesta.trim() && !asignacion.entrega_archivo_url) {
+    // `entrega_archivo_url` no viaja al navegador (el bucket es privado); lo
+    // que dice si ya hay algo entregado es que exista la fila de la entrega.
+    if (!archivoSeleccionado && !textoRespuesta.trim() && !asignacion.entrega_id) {
       setErrorValidacion(t("errorFileRequired"));
       return;
     }
@@ -119,6 +124,9 @@ export function BuzonTareaMoodle({
       if (res.ok) {
         setMensajeExito(texto);
         setEditandoEntrega(false);
+        // La tarjeta y las cifras del aula son del servidor: sin esto seguían
+        // diciendo "pendiente" hasta recargar a mano.
+        router.refresh();
       } else {
         setErrorValidacion(texto);
       }
@@ -149,7 +157,7 @@ export function BuzonTareaMoodle({
               ) : asignacion.fecha_vencimiento ? (
                 <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs text-tinta/80">
                   <Clock className="size-3.5 text-marca-500" />
-                  {t("dueUntil")}: {asignacion.fecha_vencimiento}
+                  {t("dueUntil")}: {fechaHoraRD(asignacion.fecha_vencimiento, locale)}
                 </span>
               ) : null}
 
@@ -410,13 +418,13 @@ export function BuzonTareaMoodle({
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-tinta">
-                      {asignacion.entrega_archivo_nombre ?? "Archivo entregado"}
+                      {asignacion.entrega_archivo_nombre ?? t("deliveredFileFallback")}
                     </p>
                     <p className="text-xs text-tinta/60">
                       {asignacion.entrega_archivo_tamano_mb
                         ? `${asignacion.entrega_archivo_tamano_mb} MB`
                         : ""}{" "}
-                      • {t("deliveredOn")}: {asignacion.entrega_fecha}
+                      • {t("deliveredOn")}: {fechaHoraRD(asignacion.entrega_fecha, locale)}
                     </p>
                   </div>
                 </div>
@@ -461,4 +469,20 @@ export function BuzonTareaMoodle({
       </Card>
     </div>
   );
+}
+
+/**
+ * Fecha y hora en la zona de La Vega. Llegan en ISO (UTC) y pintarlas tal cual
+ * enseñaba "2026-11-11T03:59:00.000Z" para una tarea que vence a las 23:59.
+ */
+function fechaHoraRD(valor: string | null, locale: string): string {
+  if (!valor) return "—";
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return valor;
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Santo_Domingo",
+  }).format(fecha);
 }

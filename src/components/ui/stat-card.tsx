@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
+import { CifraContador } from "@/components/ui/cifra-contador";
 import { STAT_CARD } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
  * todas las cifras destacan, ninguna destaca.
  *
  * Movimiento: la cifra sube 8 px al llegar, un pelo después que la tarjeta, y
+ * si es un número cuenta hasta su valor (`CifraContador`);
  * al pasar el ratón solo el icono reacciona. La tarjeta no se eleva: no es un
  * enlace, y elevarla prometería un clic que no existe.
  */
@@ -45,9 +47,7 @@ export function StatCard({
   if (variant === "centrada") {
     return (
       <Card className={cn("items-center justify-center p-5 text-center", className)}>
-        <p className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]", color)}>
-          {valor}
-        </p>
+        <Valor valor={valor} className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]", color)} />
         <p className={STAT_CARD.label}>{etiqueta}</p>
       </Card>
     );
@@ -66,11 +66,18 @@ export function StatCard({
         </span>
       )}
       <div className="min-w-0">
-        <p className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]")}>
-          {valor}
-        </p>
+        <Valor valor={valor} className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]")} />
         <p className={cn(STAT_CARD.label, "line-clamp-2 break-words")}>{etiqueta}</p>
       </div>
     </Card>
+  );
+}
+
+/** Un número cuenta; un texto ya formateado («RD$ 1,200», «3/5») se pinta tal cual. */
+function Valor({ valor, className }: { valor: string | number; className: string }) {
+  return typeof valor === "number" && Number.isFinite(valor) ? (
+    <CifraContador valor={valor} className={className} />
+  ) : (
+    <p className={className}>{valor}</p>
   );
 }

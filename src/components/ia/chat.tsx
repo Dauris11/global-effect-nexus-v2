@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { AlertCircle, Bot, Info, Send, Sparkles, User } from "lucide-react";
+import { AlertCircle, Info, Send, Sparkles } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import { AiOrb } from "@/components/ui/ai-orb";
 import { Button } from "@/components/ui/button";
-import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Textarea } from "@/components/ui/textarea";
 import type { EstadoChat } from "@/lib/ia";
 import { cn } from "@/lib/utils";
@@ -84,6 +85,7 @@ export function ChatIA({
     { estado: "inicial" },
   );
 
+  const reducido = useReducedMotion() ?? false;
   const formulario = useRef<HTMLFormElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
   const finalDeLista = useRef<HTMLDivElement>(null);
@@ -118,26 +120,23 @@ export function ChatIA({
     <div className="flex flex-col gap-4">
       <div className="min-h-70 space-y-3">
         {mensajes.length === 0 && !enviando && (
-          <EstadoVacio icono={Bot} titulo={textos.vacio} />
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <AiOrb estado="idle" tamano="lg" />
+            <p className="texto-titulo-tarjeta text-tinta mt-4">{textos.vacio}</p>
+          </div>
         )}
 
         {mensajes.map((item) => {
           const mio = item.rol === "user";
 
           return (
-            <div
+            <motion.div
               key={item.id}
-              className={cn("flex gap-3", mio && "flex-row-reverse")}
+              initial={reducido ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              className={cn("flex", mio ? "justify-end" : "justify-start")}
             >
-              <span
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full",
-                  mio ? "bg-muted text-tinta-2" : "bg-marca-50 text-marca-600",
-                )}
-              >
-                {mio ? <User className="size-4" /> : <Bot className="size-4" />}
-              </span>
-
               {/* Lo mío en tinta y lo del asistente en gris, como en
                   cualquier mensajería: el acento se queda para el botón. */}
               <div
@@ -161,23 +160,26 @@ export function ChatIA({
                   {item.hora}
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
 
-        {enviando && (
-          <div className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600">
-              <Bot className="size-4" />
-            </span>
-            <div
-              role="status"
-              className="animate-soft-pulse flex items-center rounded-card bg-muted px-4 py-2.5"
+        <AnimatePresence>
+          {enviando && (
+            <motion.div
+              key="pensando"
+              initial={reducido ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-3"
             >
-              <p className="text-sm text-tinta-2">{textos.pensando}</p>
-            </div>
-          </div>
-        )}
+              <AiOrb estado="thinking" tamano="md" />
+              <p role="status" className="text-tinta-2 text-sm">
+                {textos.pensando}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div ref={finalDeLista} />
       </div>

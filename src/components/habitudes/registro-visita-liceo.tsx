@@ -30,6 +30,8 @@ import { distanciaMetros } from "@/lib/la-vega-geografia";
 import { cn } from "@/lib/utils";
 import { registrarVisitaLiceoAction } from "@/server/habitudes/acciones";
 
+const LIMITE_FOTOS_BYTES = 11 * 1024 * 1024;
+
 interface RegistroVisitaLiceoProps {
   liceos: HabitudesLiceo[];
   onVisitaCreada?: (nuevaVisita: HabitudesVisitaEvidencia) => void;
@@ -49,6 +51,7 @@ export function RegistroVisitaLiceo({
   const [estudiantes, setEstudiantes] = useState<number>(35);
   const [observaciones, setObservaciones] = useState<string>("");
   const [fotosLocales, setFotosLocales] = useState<string[]>([]);
+  const [archivosFotos, setArchivosFotos] = useState<File[]>([]);
   const [errorValidacion, setErrorValidacion] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -100,18 +103,17 @@ export function RegistroVisitaLiceo({
     const archivos = e.target.files;
     if (!archivos || archivos.length === 0) return;
 
-    const nuevasUrls: string[] = [];
-    for (let i = 0; i < archivos.length; i++) {
-      const archivo = archivos[i];
-      // URL de objeto para previsualización inmediata en el móvil
-      const url = URL.createObjectURL(archivo);
-      nuevasUrls.push(url);
-    }
-    setFotosLocales((prev) => [...prev, ...nuevasUrls]);
+    const nuevos = Array.from(archivos);
+    // URL de objeto para previsualización inmediata en el móvil; el archivo
+    // en sí es lo que se sube.
+    setFotosLocales((prev) => [...prev, ...nuevos.map((a) => URL.createObjectURL(a))]);
+    setArchivosFotos((prev) => [...prev, ...nuevos]);
+    e.target.value = "";
   };
 
   const eliminarFoto = (indice: number) => {
     setFotosLocales((prev) => prev.filter((_, idx) => idx !== indice));
+    setArchivosFotos((prev) => prev.filter((_, idx) => idx !== indice));
   };
 
   const manejarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,12 +144,15 @@ export function RegistroVisitaLiceo({
       formData.set("latitud", String(coordenadas.lat));
       formData.set("longitud", String(coordenadas.lng));
     }
-    // Rutas persistibles simuladas a partir de las imágenes capturadas
-    const urlsSimuladas = fotosLocales.map(
-      (_, i) =>
-        `https://storage.globaleffect.org/habitudes/evidencias/${Date.now()}_evidencia_${i + 1}.jpg`,
-    );
-    formData.set("fotos_urls", urlsSimuladas.join(","));
+    // La acción de servidor admite 12 MB por envío: pasado eso falla antes
+    // de llegar a la validación, sin decir por qué.
+    const totalFotos = archivosFotos.reduce((suma, f) => suma + f.size, 0);
+    if (totalFotos > LIMITE_FOTOS_BYTES) {
+      setErrorValidacion(t("errPhotosTooLarge"));
+      return;
+    }
+    formData.delete("fotos");
+    for (const foto of archivosFotos) formData.append("fotos", foto);
 
     startTransition(async () => {
       const res = await registrarVisitaLiceoAction(formData);
@@ -168,7 +173,7 @@ export function RegistroVisitaLiceo({
             tanda: tanda as any,
             estudiantes_impactados: estudiantes,
             observaciones: observaciones || null,
-            fotos_urls: urlsSimuladas,
+            fotos_urls: fotosLocales,
             estado: "completada",
             creado_en: new Date().toISOString(),
             latitud: coordenadas?.lat ?? (liceoSel.latitud ? Number(liceoSel.latitud) : null),
@@ -180,6 +185,7 @@ export function RegistroVisitaLiceo({
           setTema("");
           setObservaciones("");
           setFotosLocales([]);
+          setArchivosFotos([]);
           setCoordenadas(null);
           setMensajeExito(null);
         }, 1500);
@@ -342,7 +348,7 @@ export function RegistroVisitaLiceo({
               <label className="flex flex-col items-center justify-center cursor-pointer gap-2">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png"
                   capture="environment"
                   multiple
                   onChange={agregarFotos}

@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   ExternalLink,
   GraduationCap,
+  Info,
   Loader2,
   Plus,
   Save,
@@ -75,7 +76,10 @@ export function GestionClases360({
   puedeProgramar: boolean;
   inscritosPorClase: Record<string, InscritoEn360[]>;
   entregas: readonly (EntregaPorRevisar & { enlace: string | null })[];
-  /** `calificaciones.registrar`: coordinación ve las notas pero no las pone. */
+  /**
+   * `calificaciones.registrar` o `docencia.impartir`: coordinación ve las notas
+   * pero no las pone.
+   */
   puedeCalificar: boolean;
   claseInicialId?: string | null;
   seccionInicial?: "asistencia" | "alumnos" | "tarea" | null;
@@ -405,6 +409,20 @@ function FormularioTarea({
     { estado: "inicial" },
   );
 
+  // Sin inscritos no hay período donde publicar y el botón queda inactivo: se
+  // dice por qué, o parece que no funciona.
+  if (periodos.length === 0) {
+    return (
+      <p
+        role="status"
+        className="border-linea text-tinta-2 mt-3 flex items-center gap-2 border-t pt-3 text-xs"
+      >
+        <Info className="size-4 shrink-0" aria-hidden />
+        {t("errNoPeriod")}
+      </p>
+    );
+  }
+
   return (
     <form action={enviar} className="border-linea mt-3 space-y-3 border-t pt-3">
       <input type="hidden" name="materia" value={materiaId} />
@@ -484,7 +502,7 @@ function FormularioTarea({
           <Input
             id={`t-formatos-${materiaId}`}
             name="formatos_permitidos"
-            defaultValue="pdf, docx, zip"
+            defaultValue="pdf, docx, jpg, png"
           />
         </div>
 

@@ -1,5 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
-import { usuarioTienePermiso, type Rol, type UsuarioConPermisos } from "@/lib/rbac";
+import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 import {
   accionesPermitidas,
   type AccionSolicitud,
@@ -50,6 +50,7 @@ export type FilaSolicitud = {
   fecha_requerida: string | null;
   hora_preferida: string | null;
   requiere_direccion: boolean;
+  aprobo_primer_nivel: string | null;
   responsable: string | null;
   respuesta: string | null;
   creada: string;
@@ -61,10 +62,26 @@ export type FilaSolicitud = {
   acciones: AccionSolicitud[];
 };
 
+/**
+ * La persona con sus permisos de sesión. Con solo `{ id, rol }` las reglas
+ * caían al reparto de fábrica y no a `rol_permiso` + `usuario_permiso`.
+ */
+type ConPermisos = UsuarioConPermisos & { id: string };
+
 type FilaBase = Omit<FilaSolicitud, "pasos" | "acciones" | "cotizacion"> & {
   cotizacion_nombre: string | null;
   cotizacion_formato: string | null;
 };
+
+/**
+ * Quién dio el primer visto bueno de lo que está en dirección. Dirección no
+ * puede ser la misma persona: el segundo nivel existe para que lo vean dos.
+ */
+const APROBO_PRIMER_NIVEL = `(SELECT p.usuario_id
+     FROM solicitud_paso p
+    WHERE p.solicitud_id = s.id AND p.estado_nuevo = 'pendiente_direccion'
+    ORDER BY p.created_at DESC
+    LIMIT 1) AS aprobo_primer_nivel`;
 
 const COLUMNAS = `
   s.id,
@@ -81,6 +98,7 @@ const COLUMNAS = `
   to_char(s.fecha_requerida, 'YYYY-MM-DD') AS fecha_requerida,
   s.hora_preferida,
   s.requiere_direccion,
+  ${APROBO_PRIMER_NIVEL},
   re.nombre AS responsable,
   s.respuesta,
   s.created_at::text AS creada,
@@ -98,7 +116,7 @@ const ORIGEN = `
 /** La línea de tiempo de varias solicitudes en una sola consulta. */
 async function conPasos(
   filas: FilaBase[],
-  usuario: { id: string; rol: Rol },
+  usuario: ConPermisos,
 ): Promise<FilaSolicitud[]> {
   if (filas.length === 0) return [];
 
@@ -137,7 +155,7 @@ async function conPasos(
  * dos versiones de "qué me toca": una en SQL y otra en TypeScript.
  */
 export async function solicitudesPorAtender(
-  usuario: UsuarioConPermisos & { id: string },
+  usuario: ConPermisos,
 ): Promise<FilaSolicitud[]> {
   const tipos = TIPOS_SOLICITUD.filter((tipo) =>
     usuarioTienePermiso(usuario, REGLAS[tipo].revisa),
@@ -168,18 +186,12 @@ export async function solicitudesPorAtender(
 }
 
 /** Cuántas esperan a esta persona, para el portal y el resumen. */
-export async function cuantasPorAtender(usuario: {
-  id: string;
-  rol: Rol;
-}): Promise<number> {
+export async function cuantasPorAtender(usuario: ConPermisos): Promise<number> {
   return (await solicitudesPorAtender(usuario)).length;
 }
 
 /** Lo que pidió esta persona, de lo más reciente a lo más viejo. */
-export async function solicitudesDe(usuario: {
-  id: string;
-  rol: Rol;
-}): Promise<FilaSolicitud[]> {
+export async function solicitudesDe(usuario: ConPermisos): Promise<FilaSolicitud[]> {
   const filas = await consultar<FilaBase>(
     `SELECT ${COLUMNAS}
        ${ORIGEN}
@@ -198,7 +210,7 @@ export async function solicitudesDe(usuario: {
  * nadie puede volver a mirar qué se decidió.
  */
 export async function resueltasPor(
-  usuario: { id: string; rol: Rol },
+  usuario: ConPermisos,
   limite = 30,
 ): Promise<FilaSolicitud[]> {
   const filas = await consultar<FilaBase>(
@@ -226,11 +238,12 @@ export async function solicitudParaFlujo(id: string) {
     titulo: string;
     solicitante_id: string | null;
     requiere_direccion: boolean;
+    aprobo_primer_nivel: string | null;
   }>(
-    `SELECT id, folio::int AS folio, tipo, estado, titulo, solicitante_id,
-            requiere_direccion
-       FROM solicitud
-      WHERE id = $1`,
+    `SELECT s.id, s.folio::int AS folio, s.tipo, s.estado, s.titulo,
+            s.solicitante_id, s.requiere_direccion, ${APROBO_PRIMER_NIVEL}
+       FROM solicitud s
+      WHERE s.id = $1`,
     [id],
   );
 }

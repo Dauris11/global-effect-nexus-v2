@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
+  AlertCircle,
+  BadgeCheck,
   Building2,
+  Loader2,
   Calendar,
   CheckCircle2,
   Clock,
@@ -27,19 +30,38 @@ import {
 } from "@/components/ui/dialog";
 import type { HabitudesLiceo, HabitudesVisitaEvidencia } from "@/lib/habitudes";
 import { cn } from "@/lib/utils";
+import { auditarVisitaHabitudesAction } from "@/server/habitudes/acciones";
 
 interface GaleriaEvidenciasProps {
   visitasIniciales: HabitudesVisitaEvidencia[];
   liceos: HabitudesLiceo[];
+  puedeAuditar?: boolean;
 }
 
 export function GaleriaEvidencias({
   visitasIniciales,
   liceos,
+  puedeAuditar = false,
 }: GaleriaEvidenciasProps) {
   const t = useTranslations("habitudes");
 
-  const [visitas, setVisitas] = useState(visitasIniciales);
+  // Se lee de las props, no de un estado inicializado con ellas: así la
+  // visita recién registrada (o recién auditada) aparece al revalidar la
+  // página sin tener que recargarla.
+  const visitas = visitasIniciales;
+  const [auditando, startAuditar] = useTransition();
+  const [visitaEnCurso, setVisitaEnCurso] = useState<string | null>(null);
+  const [errorAuditoria, setErrorAuditoria] = useState<string | null>(null);
+
+  const auditar = (visitaId: string) => {
+    setErrorAuditoria(null);
+    setVisitaEnCurso(visitaId);
+    startAuditar(async () => {
+      const res = await auditarVisitaHabitudesAction(visitaId);
+      if (!res.ok) setErrorAuditoria(res.mensaje ?? t("auditError"));
+      setVisitaEnCurso(null);
+    });
+  };
   const [liceoFiltro, setLiceoFiltro] = useState<string>("todos");
   const [fotoModal, setFotoModal] = useState<{ url: string; titulo: string } | null>(
     null,
@@ -87,6 +109,13 @@ export function GaleriaEvidencias({
           );
         })}
       </div>
+
+      {errorAuditoria && (
+        <p role="alert" className="flex items-center gap-2 rounded-control bg-tinta p-3 text-sm text-background">
+          <AlertCircle className="size-4 shrink-0" />
+          {errorAuditoria}
+        </p>
+      )}
 
       {/* Lista de Visitas con Galería */}
       {visitasFiltradas.length === 0 ? (
@@ -144,10 +173,36 @@ export function GaleriaEvidencias({
                   )}
                 </div>
 
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-marca-50 px-3 py-1 text-xs font-semibold text-marca-700">
-                  <CheckCircle2 className="size-3.5" />
-                  {t("statusCompleted")}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  {visita.estado === "auditada" ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-marca-500 px-3 py-1 text-xs font-semibold text-white">
+                      <BadgeCheck className="size-3.5" />
+                      {t("statusAudited")}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-marca-50 px-3 py-1 text-xs font-semibold text-marca-700">
+                      <CheckCircle2 className="size-3.5" />
+                      {t("statusCompleted")}
+                    </span>
+                  )}
+                  {puedeAuditar && visita.estado === "completada" && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={auditando}
+                      onClick={() => auditar(visita.id)}
+                      className="min-h-11 gap-1.5"
+                    >
+                      {auditando && visitaEnCurso === visita.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <BadgeCheck className="size-4" />
+                      )}
+                      {t("auditVisitButton")}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Mosaico de Fotografías de Evidencia */}

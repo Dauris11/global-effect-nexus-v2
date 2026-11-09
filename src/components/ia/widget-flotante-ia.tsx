@@ -1,27 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  AlertCircle,
-  ArrowUpRight,
-  Bot,
-  Check,
-  HelpCircle,
-  Loader2,
-  Lock,
-  Mic,
-  MicOff,
-  RotateCcw,
-  Send,
-  Sparkles,
-  User,
-  X,
-  Zap,
-} from "lucide-react";
+import { AlertCircle, HelpCircle, Lock, Mic, MicOff, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
+import {
+  estadoEnVivo,
+  MensajeIA,
+  PasosYTarjetas,
+  type MensajeLocal,
+  type PasoVisible,
+} from "@/components/ia/mensaje-ia";
 import { MedidorConsumo, type ConsumoVisible } from "@/components/ia/medidor-consumo";
-import { TarjetaAccionIA, type TarjetaAccion } from "@/components/ia/tarjeta-accion";
+import type { TarjetaAccion } from "@/components/ia/tarjeta-accion";
+import { AiOrb, type EstadoOrbe } from "@/components/ui/ai-orb";
 import { useRouter } from "@/i18n/navigation";
 import { leerFlujo } from "@/lib/ia-eventos";
 import type { Rol } from "@/lib/rbac";
@@ -37,17 +30,18 @@ import {
 } from "@/server/ia/asistente-global";
 import { miConsumoIA } from "@/server/ia/aprobaciones";
 
-/** Un paso de herramienta que el agente dio mientras respondía. */
-type PasoVisible = {
-  id: string;
-  herramienta: string;
-  estado: "ejecutando" | "ok" | "error";
-  resumen: string;
-};
-
-type MensajeLocal = MensajeWidget & {
-  pasos?: PasoVisible[];
-  tarjetas?: TarjetaAccion[];
+/** Estado del orbe → clave de `widgetIA.orbe` (next-intl no admite guiones raros en claves). */
+const CLAVE_ORBE: Record<EstadoOrbe, string> = {
+  idle: "listo",
+  listening: "escuchando",
+  thinking: "pensando",
+  reasoning: "razonando",
+  "tool-call": "usandoHerramienta",
+  "tool-result": "leyendoResultado",
+  streaming: "escribiendo",
+  "waiting-approval": "esperandoAprobacion",
+  error: "error",
+  done: "hecho",
 };
 
 /** Error del servidor → clave de `widgetIA`. Lo que no esté, es genérico. */
@@ -95,6 +89,7 @@ export function WidgetFlotanteIA({
 }) {
   const t = useTranslations("widgetIA");
   const router = useRouter();
+  const reducido = useReducedMotion() ?? false;
 
   const esEstudiante = usuario.rol === "estudiante";
 
@@ -364,7 +359,8 @@ export function WidgetFlotanteIA({
     router.push(accion.ruta);
   };
 
-  // Sugerencias dinámicas según rol y modo
+  // Sugerencias según rol y modo. Solo se ofrece lo que el rol puede hacer:
+  // una sugerencia que acaba en «no tienes permiso» es otro botón que no sirve.
   const obtenerSugerencias = (): string[] => {
     if (esEstudiante) {
       return [
@@ -390,34 +386,30 @@ export function WidgetFlotanteIA({
           ];
     }
 
-    // Personal operativo y Habitudes: lo que el asistente puede hacer por ellos.
+    if (usuario.rol === "chofer") {
+      return modo === "acciones"
+        ? [t("sugerencias.generalSolicitudes"), t("sugerencias.generalCalendario")]
+        : [t("sugerencias.generalTareas"), t("sugerencias.generalAgenda")];
+    }
+
     if (usuario.rol === "habitudes" || usuario.rol === "dir_habitudes") {
-      return [
-        t("sugerencias.generalTareas"),
-        t("sugerencias.generalAgenda"),
-        t("sugerencias.generalCrearTarea"),
-      ];
+      return modo === "acciones"
+        ? [t("sugerencias.generalCrearTarea"), t("sugerencias.generalSolicitudes")]
+        : [t("sugerencias.generalTareas"), t("sugerencias.generalAgenda")];
     }
 
     if (usuario.rol === "docente") {
       return modo === "acciones"
-        ? [
-            t("sugerencias.docenteCalificaciones"),
-            t("sugerencias.docenteMaterias"),
-          ]
-        : [
-            t("sugerencias.docenteEscala"),
-            t("sugerencias.docenteCalificaciones"),
-          ];
+        ? [t("sugerencias.docenteCalificaciones"), t("sugerencias.docenteMaterias")]
+        : [t("sugerencias.docenteEscala"), t("sugerencias.docenteCalificaciones")];
     }
 
-    // Admin / Super Admin
     return modo === "acciones"
       ? [
           t("sugerencias.generalCrearTarea"),
           t("sugerencias.adminDashboard"),
           t("sugerencias.adminTareas"),
-          t("sugerencias.adminAuditoria"),
+          ...(usuario.rol === "super_admin" ? [t("sugerencias.adminAuditoria")] : []),
         ]
       : [
           t("sugerencias.generalTareas"),
@@ -428,7 +420,6 @@ export function WidgetFlotanteIA({
 
   const sugerencias = obtenerSugerencias();
 
-  // Etiqueta del rol para el encabezado
   const etiquetaRol = {
     estudiante: t("rolEstudiante"),
     contabilidad: t("rolContabilidad"),
@@ -440,419 +431,292 @@ export function WidgetFlotanteIA({
     chofer: t("rolChofer"),
   }[usuario.rol];
 
+  // Un solo estado para el orbe: lo que el agente hace AHORA. Es lo que ve
+  // quien espera, y lo que anuncia el lector de pantalla (aria-live).
+  const estadoOrbe: EstadoOrbe = errorAlerta
+    ? "error"
+    : grabandoVoz
+      ? "listening"
+      : enviando
+        ? estadoEnVivo(enVivo)
+        : textoEntrada.trim()
+          ? "listening"
+          : mensajes.length > 0
+            ? "done"
+            : "idle";
+  const textoOrbe = t(`orbe.${CLAVE_ORBE[estadoOrbe]}`);
+
+  const transicionPanel = reducido
+    ? { duration: 0 }
+    : { type: "spring" as const, stiffness: 380, damping: 30 };
+
   return (
     <>
-      {/* Botón Flotante (Trigger) - siempre presente, no obstruye */}
-      <div className="fixed bottom-20 right-4 z-50 md:bottom-6 md:right-6">
-        <button
-          type="button"
-          onClick={toggleAbierto}
-          aria-label={t("botonFlotante")}
-          aria-expanded={abierto}
-          className={cn(
-            "relative flex size-14 items-center justify-center rounded-full text-white shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca-500",
-            "bg-marca-500 hover:bg-marca-600",
-          )}
-        >
+      <motion.button
+        type="button"
+        onClick={toggleAbierto}
+        aria-label={t("botonFlotante")}
+        aria-expanded={abierto}
+        whileHover={reducido ? undefined : { scale: 1.06 }}
+        whileTap={reducido ? undefined : { scale: 0.94 }}
+        className="border-linea bg-card shadow-elevada focus-visible:ring-ring fixed right-4 bottom-20 z-50 flex size-14 items-center justify-center rounded-full border outline-none focus-visible:ring-2 md:right-6 md:bottom-6"
+      >
+        <AnimatePresence mode="wait" initial={false}>
           {abierto ? (
-            <X className="size-6 transition-transform duration-200" />
+            <motion.span
+              key="cerrar"
+              initial={{ opacity: 0, rotate: -90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 90 }}
+              transition={{ duration: reducido ? 0 : 0.15 }}
+            >
+              <X className="text-tinta size-6" />
+            </motion.span>
           ) : (
-            <>
-              <Sparkles className="size-6 transition-transform duration-200" />
-              {/* Indicador de pulso activo */}
-              <span className="absolute top-0 right-0 flex size-3.5 -mt-0.5 -mr-0.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-marca-300 opacity-75" />
-                <span className="relative inline-flex size-3.5 rounded-full border-2 border-white bg-marca-400" />
-              </span>
-            </>
+            <motion.span
+              key="orbe"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.6 }}
+              transition={{ duration: reducido ? 0 : 0.15 }}
+              className="flex"
+            >
+              <AiOrb estado={enviando ? estadoOrbe : "idle"} tamano="md" />
+            </motion.span>
           )}
-        </button>
-      </div>
+        </AnimatePresence>
+      </motion.button>
 
-      {/* Ventana Pop-up Flotante */}
-      {abierto && (
-        <div
-          role="dialog"
-          aria-label={t("titulo")}
-          className={cn(
-            "fixed bottom-20 right-4 z-50 flex h-[580px] max-h-[calc(100vh-7rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-linea-fuerte bg-background/95 shadow-2xl backdrop-blur-md transition-all duration-200 sm:w-[430px] md:bottom-22 md:right-6",
-          )}
-        >
-          {/* Encabezado */}
-          <div className="flex items-center justify-between border-b border-linea px-4 py-3 bg-muted/40">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-full bg-marca-50 text-marca-600">
-                <Bot className="size-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-sm font-semibold text-tinta">
-                    {t("titulo")}
-                  </h2>
-                  <span className="inline-flex items-center rounded-full bg-marca-50 px-2 py-0.5 text-[11px] font-medium text-marca-700">
+      <AnimatePresence>
+        {abierto && (
+          <motion.div
+            key="panel"
+            role="dialog"
+            aria-label={t("titulo")}
+            initial={reducido ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reducido ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.97 }}
+            transition={transicionPanel}
+            style={{ transformOrigin: "bottom right" }}
+            className="border-linea bg-background shadow-elevada fixed right-4 bottom-36 z-50 flex h-[600px] max-h-[calc(100dvh-10rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-hoja border sm:w-[420px] md:right-6 md:bottom-24 md:max-h-[calc(100dvh-8rem)]"
+          >
+            <div className="border-linea flex items-center gap-3 border-b px-4 py-3">
+              <AiOrb estado={estadoOrbe} tamano="md" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-tinta text-sm font-semibold">{t("titulo")}</h2>
+                  <span className="bg-muted text-tinta-2 rounded-full px-2 py-0.5 text-[11px] font-medium">
                     {etiquetaRol}
                   </span>
                 </div>
+                <p aria-live="polite" className="texto-meta truncate">
+                  {textoOrbe}
+                </p>
               </div>
-            </div>
-
-            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={handleLimpiar}
-                title={t("limpiar")}
                 aria-label={t("limpiar")}
-                className="flex size-8 items-center justify-center rounded-lg text-tinta-3 hover:bg-muted hover:text-tinta transition-colors"
+                title={t("limpiar")}
+                className="text-tinta-3 hover:bg-muted hover:text-tinta focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2"
               >
                 <RotateCcw className="size-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setAbierto(false)}
-                title={t("cerrar")}
                 aria-label={t("cerrar")}
-                className="flex size-8 items-center justify-center rounded-lg text-tinta-3 hover:bg-muted hover:text-tinta transition-colors"
+                title={t("cerrar")}
+                className="text-tinta-3 hover:bg-muted hover:text-tinta focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2"
               >
                 <X className="size-4" />
               </button>
             </div>
-          </div>
 
-          {consumo && <MedidorConsumo consumo={consumo} />}
+            {consumo && <MedidorConsumo consumo={consumo} />}
 
-          {/* Selector de Modo: Consultas vs Acciones */}
-          <div className="border-b border-linea bg-background px-3 py-2">
-            <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-xs">
-              <button
-                type="button"
-                onClick={() => setModo("consultas")}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 rounded-lg py-1.5 font-medium transition-all duration-150",
-                  modo === "consultas"
-                    ? "bg-background text-tinta shadow-sm"
-                    : "text-tinta-3 hover:text-tinta",
-                )}
-              >
-                <HelpCircle className="size-3.5" />
-                {t("modoConsultas")}
-              </button>
+            <div className="border-linea border-b px-3 py-2">
+              <div role="tablist" aria-label={t("modo")} className="bg-muted grid grid-cols-2 gap-1 rounded-full p-1 text-sm">
+                {(["consultas", "acciones"] as const).map((opcion) => {
+                  const bloqueado = opcion === "acciones" && esEstudiante;
+                  const activo = modo === opcion;
+                  const Icono = opcion === "consultas" ? HelpCircle : bloqueado ? Lock : Zap;
 
-              <button
-                type="button"
-                disabled={esEstudiante}
-                onClick={() => {
-                  if (!esEstudiante) setModo("acciones");
-                }}
-                title={
-                  esEstudiante
-                    ? t("modoAccionesRestringidoDesc")
-                    : t("modoAccionesDesc")
-                }
-                className={cn(
-                  "flex items-center justify-center gap-1.5 rounded-lg py-1.5 font-medium transition-all duration-150",
-                  modo === "acciones"
-                    ? "bg-background text-tinta shadow-sm"
-                    : "text-tinta-3 hover:text-tinta",
-                  esEstudiante && "cursor-not-allowed opacity-60",
-                )}
-              >
-                {esEstudiante ? (
-                  <Lock className="size-3.5 text-tinta-3" />
-                ) : (
-                  <Zap className="size-3.5 text-marca-600" />
-                )}
-                {t("modoAcciones")}
-              </button>
-            </div>
-
-            {/* Aviso para estudiantes */}
-            {esEstudiante && (
-              <p className="mt-1.5 text-center text-[11px] text-tinta-3">
-                {t("modoAccionesRestringido")}
-              </p>
-            )}
-          </div>
-
-          {/* Área de Conversación */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm">
-            {cargandoHistorial ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-xs text-tinta-3">{t("pensando")}</p>
-              </div>
-            ) : mensajes.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center px-4 py-6">
-                <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-marca-50 text-marca-600">
-                  <Bot className="size-6" />
-                </div>
-                <h3 className="text-sm font-semibold text-tinta">
-                  {t("sinMensajes")}
-                </h3>
-
-                {/* Sugerencias en estado vacío */}
-                <div className="mt-5 w-full space-y-1.5">
-                  <p className="text-left text-[11px] font-medium text-tinta-3 uppercase tracking-wider">
-                    {t("sugerenciasTitulo")}
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {sugerencias.map((sug) => (
-                      <button
-                        key={sug}
-                        type="button"
-                        onClick={() => handleEnviar(undefined, sug)}
-                        className="flex items-center gap-2 rounded-xl border border-linea bg-card/60 px-3 py-2 text-left text-xs text-tinta-2 hover:border-marca-400 hover:bg-marca-50/40 hover:text-tinta transition-all"
-                      >
-                        <Sparkles className="size-3.5 shrink-0 text-marca-600" />
-                        <span className="line-clamp-1">{sug}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              mensajes.map((m) => {
-                const esMio = m.rol === "user";
-
-                return (
-                  <div
-                    key={m.id}
-                    className={cn(
-                      "flex gap-2.5",
-                      esMio ? "flex-row-reverse" : "flex-row",
-                    )}
-                  >
-                    <span
+                  return (
+                    <button
+                      key={opcion}
+                      type="button"
+                      role="tab"
+                      aria-selected={activo}
+                      disabled={bloqueado}
+                      onClick={() => setModo(opcion)}
+                      title={
+                        opcion === "consultas"
+                          ? t("modoConsultasDesc")
+                          : bloqueado
+                            ? t("modoAccionesRestringidoDesc")
+                            : t("modoAccionesDesc")
+                      }
                       className={cn(
-                        "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                        esMio
-                          ? "bg-tinta text-background"
-                          : "bg-marca-50 text-marca-600",
+                        "focus-visible:ring-ring relative flex min-h-9 items-center justify-center gap-1.5 rounded-full font-medium outline-none focus-visible:ring-2",
+                        activo ? "text-tinta" : "text-tinta-3 hover:text-tinta",
+                        bloqueado && "cursor-not-allowed opacity-60",
                       )}
                     >
-                      {esMio ? (
-                        <User className="size-3.5" />
-                      ) : (
-                        <Bot className="size-3.5" />
+                      {activo && (
+                        <motion.span
+                          layoutId="pildora-modo-ia"
+                          transition={transicionPanel}
+                          className="bg-card shadow-card absolute inset-0 rounded-full"
+                        />
                       )}
-                    </span>
-
-                    <div
-                      className={cn(
-                        "max-w-[82%] rounded-2xl px-3.5 py-2.5",
-                        esMio
-                          ? "bg-tinta text-background"
-                          : "bg-muted/70 text-tinta border border-linea",
-                      )}
-                    >
-                      {m.contenido && (
-                        <p className="break-words whitespace-pre-wrap text-[13.5px] leading-relaxed">
-                          {m.contenido}
-                        </p>
-                      )}
-
-                      <PasosYTarjetas pasos={m.pasos} tarjetas={m.tarjetas} />
-
-                      {/* Tarjeta interactiva de acción ejecutable */}
-                      {m.accion && (
-                        <div className="mt-3 rounded-xl border border-marca-300/40 bg-marca-50/60 p-2.5 text-tinta">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[11px] font-semibold text-marca-800">
-                              {t("accionIdentificada")}
-                            </span>
-                            <span className="text-[11px] text-tinta-3">
-                              {m.accion.etiqueta}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => ejecutarNavegacion(m.accion!)}
-                            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-marca-600 py-1.5 text-xs font-medium text-white hover:bg-marca-700 active:scale-98 transition-all"
-                          >
-                            <span>{t("abrirPantalla")}</span>
-                            <ArrowUpRight className="size-3.5" />
-                          </button>
-                        </div>
-                      )}
-
-                      <p
-                        className={cn(
-                          "mt-1 text-[10px]",
-                          esMio ? "text-background/70" : "text-tinta-3",
-                        )}
-                      >
-                        {m.hora}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-
-            {/* Respuesta en curso: el texto aparece a medida que se escribe. */}
-            {enviando && (
-              <div className="flex gap-2.5">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600">
-                  <Bot className="size-3.5" />
-                </span>
-                <div className="max-w-[82%] rounded-2xl border border-linea bg-muted/60 px-3.5 py-2.5 text-xs text-tinta-2">
-                  {enVivo?.contenido ? (
-                    <p className="break-words whitespace-pre-wrap text-[13.5px] leading-relaxed text-tinta">
-                      {enVivo.contenido}
-                    </p>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <span className="size-1.5 animate-ping rounded-full bg-marca-600" />
-                      <span>{t("pensando")}</span>
-                    </div>
-                  )}
-
-                  <PasosYTarjetas pasos={enVivo?.pasos} tarjetas={enVivo?.tarjetas} />
-                </div>
+                      <Icono className={cn("relative size-4", activo && opcion === "acciones" && "text-marca-600")} />
+                      <span className="relative">
+                        {opcion === "consultas" ? t("modoConsultas") : t("modoAcciones")}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            )}
 
-            <div ref={finalMensajesRef} />
-          </div>
-
-          {/* Banner de alerta de error */}
-          {errorAlerta && (
-            <div className="flex items-center gap-2 border-t border-linea bg-tinta px-3 py-2 text-xs text-background">
-              <AlertCircle className="size-4 shrink-0 text-marca-300" />
-              <span className="flex-1">{errorAlerta}</span>
-              <button
-                type="button"
-                onClick={() => setErrorAlerta(null)}
-                className="text-background/70 hover:text-background"
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* Banner de grabación de voz en tiempo real */}
-          {grabandoVoz && (
-            <div className="flex items-center justify-between border-t border-linea bg-marca-50 px-3 py-2 text-xs text-marca-800">
-              <div className="flex items-center gap-2">
-                <span className="relative flex size-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-marca-500 opacity-75" />
-                  <span className="relative inline-flex size-2.5 rounded-full bg-marca-600" />
-                </span>
-                <span className="font-medium">{t("escuchando")}</span>
-              </div>
-              <button
-                type="button"
-                onClick={toggleGrabacionVoz}
-                className="font-semibold text-marca-800 underline hover:text-marca-950"
-              >
-                {t("detenerVoz")}
-              </button>
-            </div>
-          )}
-
-          {/* Formulario de Entrada */}
-          <form
-            onSubmit={(e) => void handleEnviar(e)}
-            className="border-t border-linea bg-background p-3"
-          >
-            <div className="relative flex items-center rounded-xl border border-linea-fuerte bg-muted/30 focus-within:border-marca-500 focus-within:ring-1 focus-within:ring-marca-500">
-              {/* Botón de Micrófono / Comando de Voz */}
-              <button
-                type="button"
-                onClick={toggleGrabacionVoz}
-                title={
-                  soportaVoz
-                    ? grabandoVoz
-                      ? t("detenerVoz")
-                      : t("iniciarVoz")
-                    : t("vozNoSoportada")
-                }
-                aria-label={t("iniciarVoz")}
-                className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors ml-1",
-                  grabandoVoz
-                    ? "bg-marca-100 text-marca-700 animate-pulse"
-                    : "text-tinta-3 hover:bg-muted hover:text-tinta",
-                )}
-              >
-                {grabandoVoz ? (
-                  <MicOff className="size-4" />
-                ) : (
-                  <Mic className="size-4" />
-                )}
-              </button>
-
-              {/* Campo de texto */}
-              <textarea
-                ref={textareaRef}
-                value={textoEntrada}
-                onChange={(e) => setTextoEntrada(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    void handleEnviar();
-                  }
-                }}
-                rows={1}
-                placeholder={
-                  modo === "acciones"
-                    ? t("placeholderAcciones")
-                    : t("placeholderConsultas")
-                }
-                className="max-h-24 min-h-[38px] flex-1 resize-none bg-transparent px-2.5 py-2 text-xs text-tinta placeholder:text-tinta-3 focus:outline-none"
-              />
-
-              {/* Botón de Enviar */}
-              <button
-                type="submit"
-                disabled={enviando || !textoEntrada.trim()}
-                title={t("enviar")}
-                aria-label={t("enviar")}
-                className={cn(
-                  "mr-1 flex size-8 shrink-0 items-center justify-center rounded-lg transition-all",
-                  textoEntrada.trim() && !enviando
-                    ? "bg-marca-600 text-white hover:bg-marca-700 active:scale-95"
-                    : "text-tinta-3 cursor-not-allowed opacity-40",
-                )}
-              >
-                <Send className="size-3.5" />
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </>
-  );
-}
-
-/** Lo que hizo el agente (pasos) y lo que propone (tarjetas de aprobación). */
-function PasosYTarjetas({
-  pasos,
-  tarjetas,
-}: {
-  pasos?: PasoVisible[];
-  tarjetas?: TarjetaAccion[];
-}) {
-  return (
-    <>
-      {pasos && pasos.length > 0 && (
-        <ul className="mt-2 space-y-1">
-          {pasos.map((paso) => (
-            <li key={paso.id} className="text-tinta-2 flex items-center gap-1.5 text-[11px]">
-              {paso.estado === "ejecutando" ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : paso.estado === "ok" ? (
-                <Check className="text-marca-600 size-3" />
-              ) : (
-                <AlertCircle className="size-3" />
+              {esEstudiante && (
+                <p className="texto-meta mt-1.5 text-center">{t("modoAccionesRestringido")}</p>
               )}
-              <span className="truncate">{paso.resumen}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
 
-      {tarjetas?.map((tarjeta) => (
-        <TarjetaAccionIA key={tarjeta.accionId} {...tarjeta} />
-      ))}
+            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+              {cargandoHistorial ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3">
+                  <AiOrb estado="thinking" tamano="lg" />
+                </div>
+              ) : mensajes.length === 0 && !enviando ? (
+                <div className="flex h-full flex-col items-center justify-center px-2 text-center">
+                  <AiOrb estado={estadoOrbe} tamano="lg" etiqueta={textoOrbe} />
+                  <h3 className="texto-titulo-tarjeta text-tinta mt-4">{t("sinMensajes")}</h3>
+
+                  <ul className="mt-5 flex w-full flex-col gap-2">
+                    {sugerencias.map((sugerencia, indice) => (
+                      <motion.li
+                        key={`${modo}-${sugerencia}`}
+                        initial={reducido ? false : { opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: reducido ? 0 : 0.04 * indice }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => void handleEnviar(undefined, sugerencia)}
+                          className="border-linea text-tinta-2 hover:border-tinta hover:text-tinta focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 rounded-control border px-3 text-left text-sm outline-none transition-colors focus-visible:ring-2 active:scale-[0.99]"
+                        >
+                          <Sparkles className="text-marca-600 size-4 shrink-0" />
+                          <span className="line-clamp-1">{sugerencia}</span>
+                        </button>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                mensajes.map((m) => (
+                  <MensajeIA key={m.id} mensaje={m} alNavegar={ejecutarNavegacion} />
+                ))
+              )}
+
+              <AnimatePresence>
+                {enviando && (
+                  <motion.div
+                    key="en-vivo"
+                    initial={reducido ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-start gap-2.5"
+                  >
+                    <AiOrb estado={estadoOrbe} tamano="md" className="mt-0.5" />
+                    <div className="bg-muted text-tinta max-w-[86%] min-w-0 rounded-card px-3.5 py-2.5">
+                      {enVivo?.contenido ? (
+                        <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+                          {enVivo.contenido}
+                        </p>
+                      ) : (
+                        <p className="text-tinta-2 text-sm">{textoOrbe}</p>
+                      )}
+                      <PasosYTarjetas pasos={enVivo?.pasos} tarjetas={enVivo?.tarjetas} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div ref={finalMensajesRef} />
+            </div>
+
+            <AnimatePresence>
+              {errorAlerta && (
+                <motion.div
+                  role="alert"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-tinta text-background flex items-center gap-2 overflow-hidden px-4 py-2 text-sm"
+                >
+                  <AlertCircle className="size-4 shrink-0" />
+                  <span className="flex-1">{errorAlerta}</span>
+                  <button
+                    type="button"
+                    onClick={() => setErrorAlerta(null)}
+                    aria-label={t("cerrar")}
+                    className="text-background/70 hover:text-background flex size-9 items-center justify-center"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <form onSubmit={(e) => void handleEnviar(e)} className="border-linea border-t p-3">
+              <div className="border-linea-fuerte focus-within:border-marca-500 focus-within:ring-marca-500 flex items-end gap-1 rounded-card border p-1 focus-within:ring-1">
+                <button
+                  type="button"
+                  onClick={toggleGrabacionVoz}
+                  aria-pressed={grabandoVoz}
+                  aria-label={grabandoVoz ? t("detenerVoz") : t("iniciarVoz")}
+                  title={soportaVoz ? (grabandoVoz ? t("detenerVoz") : t("iniciarVoz")) : t("vozNoSoportada")}
+                  className={cn(
+                    "focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2",
+                    grabandoVoz ? "bg-marca-50 text-marca-700" : "text-tinta-3 hover:bg-muted hover:text-tinta",
+                  )}
+                >
+                  {grabandoVoz ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+                </button>
+
+                <textarea
+                  ref={textareaRef}
+                  value={textoEntrada}
+                  onChange={(e) => setTextoEntrada(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleEnviar();
+                    }
+                  }}
+                  rows={1}
+                  aria-label={modo === "acciones" ? t("placeholderAcciones") : t("placeholderConsultas")}
+                  placeholder={modo === "acciones" ? t("placeholderAcciones") : t("placeholderConsultas")}
+                  className="text-tinta placeholder:text-tinta-3 max-h-28 min-h-11 flex-1 resize-none bg-transparent px-1.5 py-2.5 text-sm focus:outline-none"
+                />
+
+                <motion.button
+                  type="submit"
+                  disabled={enviando || !textoEntrada.trim()}
+                  aria-label={t("enviar")}
+                  title={t("enviar")}
+                  whileTap={reducido ? undefined : { scale: 0.9 }}
+                  className="bg-marca-500 hover:bg-marca-600 focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full text-white outline-none transition-colors focus-visible:ring-2 disabled:opacity-40"
+                >
+                  <Send className="size-4" />
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

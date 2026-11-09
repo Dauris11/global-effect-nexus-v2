@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
+  AlertCircle,
   CalendarDays,
   Check,
   Copy,
@@ -49,6 +50,7 @@ export function FormularioRecurrente({
   const t = useTranslations("transport");
   const [cargando, iniciarTransicion] = useTransition();
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Inicializar estado de Lunes (1) a Sábado (6)
   const [dias, setDias] = useState<Record<number, HorarioDiaEstado>>(() => {
@@ -113,11 +115,20 @@ export function FormularioRecurrente({
         paradaDestinoId: config.paradaDestinoId,
       }));
 
+    setError(null);
     iniciarTransicion(async () => {
       const res = await guardarInscripcionRecurrente(datosParaGuardar);
       if (res.ok) {
         setGuardadoExitoso(true);
         setTimeout(() => setGuardadoExitoso(false), 4000);
+      } else {
+        setError(
+          res.mensaje === "paradas_iguales"
+            ? t("sameStopError")
+            : res.mensaje === "estudiante_no_enlazado"
+              ? t("studentNotLinkedError")
+              : t("actionError"),
+        );
       }
     });
   };
@@ -147,6 +158,16 @@ export function FormularioRecurrente({
           )}
         </Button>
       </div>
+
+      {error && (
+        <p
+          role="alert"
+          className="flex items-center gap-2 rounded-control bg-tinta p-3 text-sm text-background"
+        >
+          <AlertCircle className="size-4 shrink-0" />
+          {error}
+        </p>
+      )}
 
       {/* Tarjetas por día de la semana */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

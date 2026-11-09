@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { enviarRendicionGastoAction } from "@/server/colaborador/acciones";
 
@@ -36,12 +37,15 @@ export function FormularioRendicionGasto({
   onExito,
 }: FormularioRendicionGastoProps) {
   const t = useTranslations("rendicion");
+  const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
   const [escaneandoOcr, setEscaneandoOcr] = useState(false);
   const [ocrCompletado, setOcrCompletado] = useState(false);
   const [archivoNombre, setArchivoNombre] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // El archivo en sí, no su vista previa: la URL `blob:` solo vive en este
+  // navegador y contabilidad no podía abrirla.
+  const [archivo, setArchivo] = useState<File | null>(null);
 
   // Campos del formulario
   const [proveedorNombre, setProveedorNombre] = useState("");
@@ -62,8 +66,7 @@ export function FormularioRendicionGasto({
   // Simulación inteligente de OCR con extracción de comprobantes dominicanos
   const procesarArchivoOcr = (file: File) => {
     setArchivoNombre(file.name);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    setArchivo(file);
 
     setEscaneandoOcr(true);
     setOcrCompletado(false);
@@ -107,7 +110,9 @@ export function FormularioRendicionGasto({
     formData.set("monto_total", montoTotal);
     formData.set("monto_itbis", montoItbis);
     formData.set("concepto", concepto);
-    formData.set("comprobante_url", previewUrl || "");
+    if (archivo) {
+      formData.set("comprobante", archivo);
+    }
     if (ocrData) {
       formData.set("ocr_data", JSON.stringify(ocrData));
     }
@@ -115,7 +120,7 @@ export function FormularioRendicionGasto({
     startTransition(async () => {
       const res = await enviarRendicionGastoAction(formData);
       if (res.ok) {
-        setMensaje({ tipo: "ok", texto: res.mensaje || t("submitSuccess") });
+        setMensaje({ tipo: "ok", texto: t("submitSuccess") });
         // Limpiar
         setProveedorNombre("");
         setProveedorRnc("");
@@ -123,9 +128,12 @@ export function FormularioRendicionGasto({
         setMontoTotal("");
         setMontoItbis("");
         setConcepto("");
-        setPreviewUrl(null);
+        setArchivo(null);
+        setArchivoNombre(null);
         setOcrCompletado(false);
         if (onExito) onExito();
+        // La lista de abajo es del servidor: sin esto no aparecía lo enviado.
+        router.refresh();
       } else {
         setMensaje({ tipo: "error", texto: res.mensaje || t("submitError") });
       }
@@ -165,7 +173,7 @@ export function FormularioRendicionGasto({
             <input
               type="file"
               id="archivo-factura"
-              accept="image/*,application/pdf"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
               capture="environment"
               className="hidden"
               onChange={(e) => {

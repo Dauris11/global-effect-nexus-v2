@@ -15,7 +15,12 @@ import { claveDia } from "@/lib/fechas";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
-import { REGLAS, revisaAlgo, tiposQuePuedeCrear } from "@/lib/solicitudes";
+import {
+  esTipoSolicitud,
+  REGLAS,
+  revisaAlgo,
+  tiposQuePuedeCrear,
+} from "@/lib/solicitudes";
 import { redirigir } from "@/i18n/navigation";
 import {
   estudiantesParaSolicitud,
@@ -53,10 +58,12 @@ export async function generateMetadata({
  */
 export default async function PaginaSolicitudes({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tipo?: string }>;
 }) {
-  const { locale } = await params;
+  const [{ locale }, { tipo: tipoPedido }] = await Promise.all([params, searchParams]);
 
   const usuario = await requerirUsuario();
   if (usuario.rol === "estudiante") {
@@ -117,6 +124,7 @@ export default async function PaginaSolicitudes({
                 tipos={tipos}
                 estudiantes={estudiantes}
                 minimoFecha={claveDia()}
+                tipoInicial={esTipoSolicitud(tipoPedido) ? tipoPedido : undefined}
               />
             </CardContent>
           </Card>

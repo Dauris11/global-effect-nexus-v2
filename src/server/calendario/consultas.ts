@@ -34,6 +34,8 @@ export type EntradaCalendario = {
   hora_fin: string | null;
   descripcion: string | null;
   prioridad: string | null;
+  /** Solo en las reuniones: decide si quien mira puede moverla. */
+  organizador_id?: string | null;
 };
 
 /**
@@ -96,7 +98,7 @@ export async function calendarioDelMes({
        LEFT JOIN proyecto  p  ON p.id = t.proyecto_id
       WHERE ta.usuario_id = $1
         AND t.fecha_limite IS NOT NULL
-        AND t.estado IN ('pendiente', 'en_progreso')
+        AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision')
         AND t.fecha_limite BETWEEN $2::date AND $3::date
 
       ORDER BY dia, hora NULLS FIRST`,
@@ -118,7 +120,8 @@ export async function calendarioDelMes({
             r.lugar_o_enlace AS ubicacion,
             to_char(r.hora_fin, 'HH24:MI') AS hora_fin,
             r.descripcion,
-            (CASE WHEN r.estado = 'programada' THEN 'alta' ELSE 'media' END)::text AS prioridad
+            (CASE WHEN r.estado = 'programada' THEN 'alta' ELSE 'media' END)::text AS prioridad,
+            r.organizador_usuario_id AS organizador_id
        FROM reunion r
       WHERE r.estado <> 'cancelada'
         AND r.fecha BETWEEN $2::date AND $3::date

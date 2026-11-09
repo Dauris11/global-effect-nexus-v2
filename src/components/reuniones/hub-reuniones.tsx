@@ -42,6 +42,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "@/i18n/navigation";
+import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import type {
   CandidatoParticipante,
@@ -62,6 +64,7 @@ export function HubReuniones({
   metricas,
   usuarioActualId,
   puedeGestionar,
+  puedeAgendar,
   abrirAgendarAlCargar = false,
 }: {
   reunionesIniciales: Reunion[];
@@ -69,16 +72,28 @@ export function HubReuniones({
   metricas: MetricasReuniones;
   usuarioActualId: string;
   puedeGestionar: boolean;
+  puedeAgendar: boolean;
   abrirAgendarAlCargar?: boolean;
 }) {
   const t = useTranslations("reuniones");
+  const router = useRouter();
   const [reuniones, setReuniones] = useState<Reunion[]>(reunionesIniciales);
+  // La lista local sigue a la del servidor: tras agendar se refresca la página
+  // y la reunión llega con sus participantes reales (los ids que luego usa la
+  // minuta para el pase de asistencia).
+  const [reunionesPrevias, setReunionesPrevias] = useState(reunionesIniciales);
+  if (reunionesPrevias !== reunionesIniciales) {
+    setReunionesPrevias(reunionesIniciales);
+    setReuniones(reunionesIniciales);
+  }
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
   const [filtroEstado, setFiltroEstado] = useState<string>("todas");
   const [busqueda, setBusqueda] = useState<string>("");
 
   // Modales
-  const [dialogoAgendarAbierto, setDialogoAgendarAbierto] = useState(abrirAgendarAlCargar);
+  const [dialogoAgendarAbierto, setDialogoAgendarAbierto] = useState(
+    abrirAgendarAlCargar && puedeAgendar,
+  );
   const [reunionParaMinuta, setReunionParaMinuta] = useState<Reunion | null>(null);
   const [reunionParaCancelar, setReunionParaCancelar] = useState<Reunion | null>(null);
 
@@ -152,8 +167,10 @@ export function HubReuniones({
     setReunionParaMinuta(reunion);
     setTextoMinuta(reunion.conclusiones_o_minuta ?? "");
     const mapa: Record<string, string> = {};
+    // Lo ya registrado se respeta; lo pendiente o confirmado se propone como asistió.
     for (const p of reunion.participantes ?? []) {
-      mapa[p.id] = p.asistencia === "asistio" ? "asistio" : "asistio";
+      mapa[p.id] =
+        p.asistencia === "ausente" || p.asistencia === "justificada" ? p.asistencia : "asistio";
     }
     setAsistencias(mapa);
   }
@@ -197,41 +214,7 @@ export function HubReuniones({
         setDescripcion("");
         setLugarOEnlace("");
         setParticipantesSeleccionados([]);
-        // Insertar visualmente la reunión programada
-        const nueva: Reunion = {
-          id: res.reunionId ?? crypto.randomUUID(),
-          folio: reuniones.length + 1,
-          titulo,
-          descripcion,
-          tipo,
-          modalidad,
-          lugar_o_enlace: lugarOEnlace,
-          fecha,
-          hora_inicio: horaInicio,
-          hora_fin: horaFin,
-          organizador_usuario_id: usuarioActualId,
-          organizador_nombre: "Tú",
-          organizador_email: "",
-          estudiante_id: primerEstudiante?.id ?? null,
-          estudiante_nombre: primerEstudiante?.nombre ?? null,
-          estado: "programada",
-          conclusiones_o_minuta: null,
-          participantes: participantesSeleccionados.map((p) => ({
-            id: p.id,
-            reunion_id: res.reunionId ?? "",
-            usuario_id: p.tipo === "personal" ? p.id : null,
-            estudiante_id: p.tipo === "estudiante" ? p.id : null,
-            rol_en_reunion: "participante",
-            asistencia: "pendiente",
-            nota: null,
-            nombre: p.nombre,
-            email: p.email,
-            tipo_participante: p.tipo,
-          })),
-          creado_en: new Date().toISOString(),
-          actualizado_en: new Date().toISOString(),
-        };
-        setReuniones((prev) => [nueva, ...prev]);
+        router.refresh();
       }
     });
   }
@@ -432,14 +415,19 @@ export function HubReuniones({
           </Select>
         </div>
 
+        {puedeAgendar && (
         <Button
           type="button"
-          onClick={() => setDialogoAgendarAbierto(true)}
+          onClick={() => {
+              setMensajeError(null);
+              setDialogoAgendarAbierto(true);
+            }}
           className="h-11 min-h-[44px] gap-2 bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all shadow-xs shrink-0"
         >
           <CalendarPlus className="size-4.5" />
           <span>{t("actions.scheduleNew")}</span>
         </Button>
+        )}
       </div>
 
       {/* Lista de tarjetas de reuniones */}
@@ -451,15 +439,20 @@ export function HubReuniones({
           <h3 className="text-base font-semibold text-tinta">
             {t("empty.title")}
           </h3>
+          {puedeAgendar && (
           <Button
             type="button"
             variant="outline"
-            onClick={() => setDialogoAgendarAbierto(true)}
+            onClick={() => {
+              setMensajeError(null);
+              setDialogoAgendarAbierto(true);
+            }}
             className="mt-4 gap-2 border-linea min-h-[44px] active:scale-95"
           >
             <CalendarPlus className="size-4" />
             {t("actions.scheduleNew")}
           </Button>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -613,7 +606,10 @@ export function HubReuniones({
                         type="button"
                         size="sm"
                         variant="outline"
-                        onClick={() => abrirModalMinuta(r)}
+                        onClick={() => {
+                          setMensajeError(null);
+                          abrirModalMinuta(r);
+                        }}
                         className="h-9 min-h-[36px] gap-1.5 text-xs border-linea active:scale-95"
                       >
                         <FileText className="size-3.5 text-marca-600" />
@@ -628,7 +624,10 @@ export function HubReuniones({
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => setReunionParaCancelar(r)}
+                        onClick={() => {
+                          setMensajeError(null);
+                          setReunionParaCancelar(r);
+                        }}
                         className="h-9 min-h-[36px] gap-1.5 text-xs text-tinta-2 hover:text-tinta active:scale-95"
                       >
                         <Ban className="size-3.5" />
@@ -871,6 +870,14 @@ export function HubReuniones({
               </div>
             </div>
 
+            {/* El banner de arriba queda tapado por el diálogo: el error se
+                repite aquí para que el botón no parezca no hacer nada. */}
+            {mensajeError && (
+              <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                <AlertCircle className={ALERTA_RIESGO.icono} />
+                <span className={ALERTA_RIESGO.texto}>{mensajeError}</span>
+              </p>
+            )}
             <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
               <Button
                 type="button"
@@ -989,6 +996,14 @@ export function HubReuniones({
               </div>
             </div>
 
+            {/* El banner de arriba queda tapado por el diálogo: el error se
+                repite aquí para que el botón no parezca no hacer nada. */}
+            {mensajeError && (
+              <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                <AlertCircle className={ALERTA_RIESGO.icono} />
+                <span className={ALERTA_RIESGO.texto}>{mensajeError}</span>
+              </p>
+            )}
             <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
               <Button
                 type="button"
@@ -1045,6 +1060,14 @@ export function HubReuniones({
               />
             </div>
 
+            {/* El banner de arriba queda tapado por el diálogo: el error se
+                repite aquí para que el botón no parezca no hacer nada. */}
+            {mensajeError && (
+              <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                <AlertCircle className={ALERTA_RIESGO.icono} />
+                <span className={ALERTA_RIESGO.texto}>{mensajeError}</span>
+              </p>
+            )}
             <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
               <Button
                 type="button"

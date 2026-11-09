@@ -88,7 +88,7 @@ const misTareas: Herramienta = {
     properties: {
       estado: {
         type: "string",
-        enum: ["pendiente", "por_hacer", "en_progreso", "en_revision", "completada"],
+        enum: ["por_hacer", "en_progreso", "en_revision", "completada"],
         description: "Filtra por estado. Opcional.",
       },
     },

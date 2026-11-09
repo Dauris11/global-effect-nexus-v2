@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { redirigir } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import { FUNCION_ASISTENTE, rutasProtegidas } from "@/lib/nav";
-import { PORTAL_POR_ROL } from "@/lib/rbac";
+import { PORTAL_POR_ROL, usuarioTienePermiso } from "@/lib/rbac";
 import { SCRIPT_APARIENCIA } from "@/lib/apariencia";
 import { fechaConHora } from "@/lib/fechas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
@@ -63,7 +63,11 @@ export default async function LayoutPortal({
     }
   }
 
-  const asistenteVisible = !visibilidad.fueraDelMenu.includes(FUNCION_ASISTENTE);
+  // Sin `ia.usar` el servidor rechaza cada mensaje: ofrecer el botón sería
+  // ofrecer algo que no funciona.
+  const asistenteVisible =
+    !visibilidad.fueraDelMenu.includes(FUNCION_ASISTENTE) &&
+    usuarioTienePermiso(usuario, "ia.usar");
 
   /*
    * Si el estudiante tiene expediente detrás. Sin él (usuario aún no enlazado)

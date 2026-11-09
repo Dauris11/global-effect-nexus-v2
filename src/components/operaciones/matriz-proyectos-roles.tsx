@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
+  AlertCircle,
   Check,
   CheckCircle2,
   FolderKanban,
@@ -19,6 +20,7 @@ import {
   ROLES_ASIGNABLES_PROYECTO,
   type RolAsignableProyecto,
 } from "@/lib/torre-control";
+import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { guardarAsignacionProyectosRolesAction } from "@/server/colaborador/acciones";
 
@@ -26,21 +28,17 @@ interface MatrizProyectosRolesProps {
   proyectosIniciales: ProyectoAsignadoRol[];
 }
 
-const ETIQUETAS_ROL: Record<RolAsignableProyecto, { nombre: string; color: string }> = {
-  admin: { nombre: "Administración", color: "bg-marca-50 text-marca-600" },
-  docente: { nombre: "Docencia / Facilitador", color: "bg-marca-50 text-marca-700" },
-  contabilidad: { nombre: "Contabilidad", color: "bg-marca-100 text-marca-700" },
-  habitudes: { nombre: "Liderazgo Habitudes", color: "bg-marca-200 text-marca-700" },
-};
-
 export function MatrizProyectosRoles({
   proyectosIniciales,
 }: MatrizProyectosRolesProps) {
   const t = useTranslations("colaborador");
+  const tRol = useTranslations("roles");
 
   const [proyectos, setProyectos] = useState(proyectosIniciales);
   const [proyectoGuardandoId, setProyectoGuardandoId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Sin esto un fallo solo deshacía la casilla y parecía que el clic no hacía nada.
+  const [fallo, setFallo] = useState(false);
 
   const toggleRol = (proyectoId: string, rol: RolAsignableProyecto) => {
     const proyecto = proyectos.find((p) => p.proyecto_id === proyectoId);
@@ -58,6 +56,7 @@ export function MatrizProyectosRoles({
       ),
     );
     setProyectoGuardandoId(proyectoId);
+    setFallo(false);
 
     startTransition(async () => {
       const res = await guardarAsignacionProyectosRolesAction(
@@ -65,6 +64,7 @@ export function MatrizProyectosRoles({
         nuevosRoles,
       );
       if (!res.ok) {
+        setFallo(true);
         // Revertir
         setProyectos((prev) =>
           prev.map((p) =>
@@ -87,6 +87,12 @@ export function MatrizProyectosRoles({
         </div>
       </CardHeader>
       <CardContent>
+        {fallo && (
+          <p role="alert" className={cn(ALERTA_RIESGO.contenedor, "mb-3")}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>{t("saveError")}</span>
+          </p>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
@@ -99,7 +105,7 @@ export function MatrizProyectosRoles({
                     key={rol}
                     className="py-3 px-3 text-center font-semibold text-tinta"
                   >
-                    {ETIQUETAS_ROL[rol].nombre}
+                    {tRol(rol)}
                   </th>
                 ))}
               </tr>

@@ -48,7 +48,7 @@ export async function equipo(): Promise<PersonaDelEquipo[]> {
                FROM tarea_asignado ta
                JOIN tarea t ON t.id = ta.tarea_id
               WHERE ta.usuario_id = u.id
-                AND t.estado IN ('pendiente', 'en_progreso')) AS tareas_abiertas
+                AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision')) AS tareas_abiertas
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE r.nombre <> 'estudiante'

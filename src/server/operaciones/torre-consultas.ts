@@ -156,6 +156,32 @@ export async function personaTorre(usuarioId: string): Promise<PersonaTorre | nu
   );
 }
 
+/**
+ * Si la persona lidera el proyecto, es miembro o tiene alguna tarea en él: la
+ * misma regla que `proyectosDeUsuario`. Abre la ficha del proyecto a quien no
+ * tiene `operaciones.leer`, porque la torre y el aviso de «te sumaron a un
+ * proyecto» lo mandan ahí.
+ */
+export async function participaEnProyecto(
+  usuarioId: string,
+  proyectoId: string,
+): Promise<boolean> {
+  const fila = await consultarUna<{ participa: boolean }>(
+    `SELECT EXISTS (
+       SELECT 1 FROM proyecto p
+        WHERE p.id = $2
+          AND (p.responsable_id = $1
+               OR EXISTS (SELECT 1 FROM proyecto_miembro m
+                           WHERE m.proyecto_id = p.id AND m.usuario_id = $1)
+               OR EXISTS (SELECT 1 FROM tarea t
+                            JOIN tarea_asignado ta ON ta.tarea_id = t.id AND ta.usuario_id = $1
+                           WHERE t.proyecto_id = p.id))
+     ) AS participa`,
+    [usuarioId, proyectoId],
+  );
+  return fila?.participa ?? false;
+}
+
 /** Si alguien tiene al menos una tarea asignada: decide si un estudiante entra. */
 export async function tieneTareasAsignadas(usuarioId: string): Promise<boolean> {
   const fila = await consultarUna<{ hay: boolean }>(

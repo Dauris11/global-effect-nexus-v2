@@ -12,7 +12,7 @@ import { flujoMensual, type MesFinanciero } from "@/server/finanzas/consultas";
  */
 
 /** Estados de una tarea que siguen abiertos. */
-const ABIERTAS = ["pendiente", "en_progreso"];
+const ABIERTAS = ["por_hacer", "en_progreso", "en_revision"];
 
 export type CifrasPanel = {
   universitarios: number;

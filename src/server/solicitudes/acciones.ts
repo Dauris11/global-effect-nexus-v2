@@ -7,7 +7,7 @@ import { registrar } from "@/lib/auditoria";
 import { requerirRol, requerirUsuario } from "@/lib/auth";
 import { enTransaccion, fijarContexto } from "@/lib/db";
 import { contextoDe } from "@/server/contabilidad/sesion";
-import type { Permiso } from "@/lib/rbac";
+import { usuarioTienePermiso, type Permiso } from "@/lib/rbac";
 import { borrarDocumento, subirMaterial } from "@/lib/supabase/almacen";
 import {
   accionesPermitidas,
@@ -160,27 +160,64 @@ export async function crearSolicitudInterna(
   }
 
   const regla = REGLAS[tipoValido];
-  const estudianteId = String(datos.get("estudiante") ?? "").trim();
+  const estudianteElegido = String(datos.get("estudiante") ?? "").trim();
+  // Habitudes postula a gente que todavía no existe en el sistema y no tiene
+  // `expedientes.escribir` para crearla: sin esto el desplegable salía vacío
+  // y la postulación no llegaba nunca a administración.
+  const candidatoNuevo =
+    tipoValido === "alta_expediente" && !esUuid(estudianteElegido)
+      ? String(datos.get("candidato") ?? "").trim().slice(0, MAXIMO_TITULO)
+      : "";
 
-  if (regla.estudiante === "obligatorio" && !esUuid(estudianteId)) {
+  if (
+    regla.estudiante === "obligatorio" &&
+    !esUuid(estudianteElegido) &&
+    !candidatoNuevo
+  ) {
     return { estado: "invalido" };
   }
 
+  // Quien no lee expedientes solo puede nombrar candidatos del embudo, la
+  // misma lista que `estudiantesParaSolicitud` le enseña.
+  const soloEmbudo = !usuarioTienePermiso(usuario, "expedientes.leer");
+
   try {
     const resultado = await enTransaccion(async (cliente) => {
-      if (regla.estudiante !== "no" && esUuid(estudianteId)) {
+      let estudianteId: string | null =
+        regla.estudiante !== "no" && esUuid(estudianteElegido) ? estudianteElegido : null;
+
+      if (estudianteId) {
         const existe = await cliente.query(
-          `SELECT 1 FROM estudiante WHERE id = $1`,
-          [estudianteId],
+          `SELECT 1 FROM estudiante
+            WHERE id = $1
+              AND (NOT $2 OR estado IN ('reclutado', 'postulado', 'academia_liderazgo', 'standby_tecnico'))`,
+          [estudianteId, soloEmbudo],
         );
         if (!existe.rowCount) return "invalido" as const;
+      } else if (candidatoNuevo) {
+        // Ficha mínima en el embudo, con sus tres perfiles vacíos por la misma
+        // razón que en `crearExpediente`. El resto lo completa administración
+        // al revisar la postulación.
+        const nuevo = await cliente.query<{ id: string }>(
+          `INSERT INTO estudiante (nombre, estado)
+           VALUES ($1, 'postulado'::estado_estudiante)
+           RETURNING id`,
+          [candidatoNuevo],
+        );
+        estudianteId = nuevo.rows[0].id;
+        await cliente.query(`INSERT INTO perfil_vivienda (estudiante_id) VALUES ($1)`, [estudianteId]);
+        await cliente.query(`INSERT INTO perfil_salud (estudiante_id) VALUES ($1)`, [estudianteId]);
+        await cliente.query(
+          `INSERT INTO perfil_socioeconomico (estudiante_id) VALUES ($1)`,
+          [estudianteId],
+        );
       }
 
       await insertarSolicitud(cliente, {
         tipo: tipoValido,
         ...campos,
         solicitanteId: usuario.id,
-        estudianteId: regla.estudiante !== "no" && esUuid(estudianteId) ? estudianteId : null,
+        estudianteId,
         requiereDireccion: regla.direccion(campos.monto),
       });
 
@@ -508,7 +545,14 @@ async function insertarSolicitud(
   return creada.id;
 }
 
-/** Aviso a todas las cuentas activas cuyo rol tiene el permiso, menos a quien actúa. */
+/**
+ * Aviso a todas las cuentas activas que tienen el permiso, menos a quien actúa.
+ *
+ * Cuenta el rol Y las excepciones de `usuario_permiso`, igual que
+ * `usuarioTienePermiso`: si no, a quien se le concede revisar a título
+ * personal le salía la solicitud en la bandeja pero nunca le llegaba el aviso,
+ * y a quien se le revoca le seguían llegando avisos de algo que no puede tocar.
+ */
 async function avisarA(
   cliente: PoolClient,
   permiso: Permiso,
@@ -520,9 +564,14 @@ async function avisarA(
     `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
      SELECT u.id, $2, $3, 'solicitud', '/administrativo/solicitudes'
        FROM usuario u
-       JOIN rol_permiso rp ON rp.rol_id = u.rol_id
-       JOIN permiso p      ON p.id = rp.permiso_id
-      WHERE p.codigo = $1 AND u.activo AND u.id <> $4`,
+       JOIN permiso p ON p.codigo = $1
+      WHERE u.activo
+        AND u.id <> $4
+        AND coalesce(
+              (SELECT up.concedido FROM usuario_permiso up
+                WHERE up.usuario_id = u.id AND up.permiso_id = p.id),
+              EXISTS (SELECT 1 FROM rol_permiso rp
+                       WHERE rp.rol_id = u.rol_id AND rp.permiso_id = p.id))`,
     [permiso, titulo, mensaje, excepto],
   );
 }

@@ -225,8 +225,9 @@ export const REGLAS: Record<TipoSolicitud, ReglaTipo> = {
     estudiante: "no",
     monto: "obligatorio",
     fecha: "no",
-    // Contabilidad aprueba o rechaza y ahí termina: la compra no compromete
-    // una partida (no crea cuenta por pagar), así que no hay segundo nivel.
+    // Contabilidad aprueba o rechaza y ahí termina, sin segundo nivel: quien
+    // decide ya es quien sabe si hay partida. Al aprobarla nace su cuenta por
+    // pagar (0072), igual que la de un gasto.
     direccion: NUNCA,
   },
 };
@@ -309,6 +310,8 @@ export type SolicitudParaFlujo = {
   estado: string;
   solicitante_id: string | null;
   requiere_direccion: boolean;
+  /** Quien la pasó a dirección: no puede dar también el segundo visto bueno. */
+  aprobo_primer_nivel?: string | null;
 };
 
 /**
@@ -332,7 +335,10 @@ export function accionesPermitidas(
 
   const propia = solicitud.solicitante_id === usuario.id;
   const revisa = !propia && usuarioTienePermiso(usuario, REGLAS[solicitud.tipo].revisa);
-  const dirige = !propia && usuarioTienePermiso(usuario, "solicitudes.direccion");
+  const dirige =
+    !propia &&
+    solicitud.aprobo_primer_nivel !== usuario.id &&
+    usuarioTienePermiso(usuario, "solicitudes.direccion");
 
   switch (solicitud.estado) {
     case "enviada":

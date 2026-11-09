@@ -25,6 +25,7 @@ const USUARIOS = [
   { email: "habitudes@globaleffect.org",     nombre: "Laura Fermín",                rol: "habitudes" },
   { email: "director.habitudes@globaleffect.org", nombre: "Director Habitudes La Vega", rol: "dir_habitudes" },
   { email: "contabilidad@globaleffect.org",  nombre: "Ana Santana",                 rol: "contabilidad" },
+  { email: "chofer@globaleffect.org",        nombre: "Chofer Institucional",        rol: "chofer" },
 ];
 
 const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;

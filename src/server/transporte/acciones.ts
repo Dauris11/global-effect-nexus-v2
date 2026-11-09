@@ -52,16 +52,25 @@ export async function guardarInscripcionRecurrente(
     return { ok: false, mensaje: "estudiante_no_enlazado" };
   }
 
+  // Un día con la misma parada de subida y bajada se rechaza entero en vez de
+  // descartarse en silencio: antes el estudiante veía "guardado" y ese día
+  // desaparecía de su horario y de la lista del chofer.
+  if (inscripciones.some((i) => i.paradaAbordajeId === i.paradaDestinoId)) {
+    return { ok: false, mensaje: "paradas_iguales" };
+  }
+
   const validas = inscripciones.filter(
     (i) =>
       UUID.test(i.horarioId) &&
       UUID.test(i.paradaAbordajeId) &&
       UUID.test(i.paradaDestinoId) &&
-      i.paradaAbordajeId !== i.paradaDestinoId &&
       Number.isInteger(i.diaSemana) &&
       i.diaSemana >= 1 &&
       i.diaSemana <= 6,
   );
+  if (validas.length !== inscripciones.length) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
 
   try {
     await enTransaccion(async (cliente) => {
@@ -284,7 +293,7 @@ export async function iniciarViaje(datos: {
   horarioId: string;
   lat?: number;
   lng?: number;
-}): Promise<{ ok: boolean; viajeId?: string; mensaje?: string }> {
+}): Promise<{ ok: boolean; viajeId?: string; horarioId?: string; mensaje?: string }> {
   const usuario = await requerirPermiso("transporte.operar");
 
   if (!UUID.test(datos.horarioId)) {
@@ -293,8 +302,8 @@ export async function iniciarViaje(datos: {
 
   try {
     const viaje = await enTransaccion(async (cliente) => {
-      const existente = await cliente.query<{ id: string }>(
-        `SELECT id FROM transporte_viaje
+      const existente = await cliente.query<{ id: string; horario_id: string }>(
+        `SELECT id, horario_id FROM transporte_viaje
           WHERE chofer_id = $1 AND fecha = ${SQL_HOY_RD} AND estado = 'en_curso'
           LIMIT 1`,
         [usuario.id],
@@ -302,11 +311,11 @@ export async function iniciarViaje(datos: {
 
       if (existente.rows[0]?.id) return existente.rows[0];
 
-      const res = await cliente.query<{ id: string }>(
+      const res = await cliente.query<{ id: string; horario_id: string }>(
         `INSERT INTO transporte_viaje
            (horario_id, chofer_id, fecha, estado, lat_actual, lng_actual, iniciado_en)
          VALUES ($1, $2, ${SQL_HOY_RD}, 'en_curso', $3, $4, now())
-         RETURNING id`,
+         RETURNING id, horario_id`,
         [datos.horarioId, usuario.id, datos.lat ?? null, datos.lng ?? null],
       );
 
@@ -322,7 +331,9 @@ export async function iniciarViaje(datos: {
     });
 
     refrescarTransporte();
-    return { ok: true, viajeId: viaje.id };
+    // El horario real del viaje: si ya había uno abierto se retoma ese, que
+    // puede no ser el turno elegido en pantalla.
+    return { ok: true, viajeId: viaje.id, horarioId: viaje.horario_id };
   } catch (error) {
     console.error("[transporte] Error al iniciar viaje:", error);
     return { ok: false, mensaje: "error_servidor" };
@@ -486,13 +497,30 @@ export async function reportarIncidencia(datos: {
 
       await cliente.query(
         `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-         SELECT DISTINCT e.usuario_id, $1, $2, 'alerta', '/portal/estudiante/transporte'
-           FROM transporte_inscripcion_recurrente r
-           JOIN estudiante e ON e.id = r.estudiante_id
-          WHERE r.horario_id = $3
-            AND r.activo = true
-            AND r.dia_semana = EXTRACT(ISODOW FROM ${SQL_HOY_RD})::smallint
-            AND e.usuario_id IS NOT NULL`,
+         SELECT DISTINCT convocados.usuario_id, $1, $2, 'alerta', '/portal/estudiante/transporte'
+           FROM (
+             SELECT e.usuario_id
+               FROM transporte_inscripcion_recurrente r
+               JOIN estudiante e ON e.id = r.estudiante_id
+              WHERE r.horario_id = $3
+                AND r.activo = true
+                AND r.dia_semana = EXTRACT(ISODOW FROM ${SQL_HOY_RD})::smallint
+             -- Los anotados solo para hoy también van en la guagua: antes la
+             -- alerta llegaba únicamente a los de horario semanal.
+             UNION
+             SELECT e.usuario_id
+               FROM transporte_inscripcion_diaria d
+               JOIN estudiante e ON e.id = d.estudiante_id
+              WHERE d.horario_id = $3
+                AND d.fecha = ${SQL_HOY_RD}
+             UNION
+             SELECT d.inscrito_por
+               FROM transporte_inscripcion_diaria d
+              WHERE d.horario_id = $3
+                AND d.fecha = ${SQL_HOY_RD}
+                AND d.via = 'estudiante'
+           ) convocados
+          WHERE convocados.usuario_id IS NOT NULL`,
         [titulo, descripcion, horarioId],
       );
 

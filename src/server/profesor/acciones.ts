@@ -59,8 +59,13 @@ export async function publicarTarea(
   const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 900);
   const tipo = String(datos.get("tipo") ?? "tarea");
   const vence = String(datos.get("vence") ?? "").trim();
+  if (vence && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(vence)) {
+    return { estado: "invalido" };
+  }
   const limiteMb = Math.max(1, Math.min(100, Number(datos.get("limite_mb") || 15)));
-  const formatosRaw = String(datos.get("formatos_permitidos") || "pdf, docx, zip");
+  // Solo formatos que la entrega sabe guardar (`FORMATOS_ENTREGA` de
+  // moodle/acciones): un `zip` por defecto anunciaba una subida que siempre fallaba.
+  const formatosRaw = String(datos.get("formatos_permitidos") || "pdf, docx, jpg, png");
   const formatosPermitidos = formatosRaw
     .split(",")
     .map((f) => f.trim().replace(/^\./, "").toLowerCase())
@@ -91,7 +96,8 @@ export async function publicarTarea(
          periodo_id, peso
        )
        SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
-              NULLIF($4, '')::timestamptz, $5,
+              -- datetime-local no trae zona: la hora es la de La Vega, no UTC.
+              NULLIF($4, '')::timestamp AT TIME ZONE 'America/Santo_Domingo', $5,
               $8, $9, $10, $11, NULLIF($12, ''),
               $13, $14
          FROM materia_360 m
@@ -227,9 +233,12 @@ export async function revisarEntrega(
  * `reprobada`, y `aprobada` es lo que cuenta como "materia dada" en el avance
  * del programa. Borrar la nota la devuelve a `cursando`.
  *
- * Pide `calificaciones.registrar` —`docente` y `super_admin`— y no
- * `academico.escribir`: coordinación monta el programa pero no pone notas, y eso
- * está así en `rbac.ts` a propósito. El docente, además, solo en sus clases.
+ * Pide `calificaciones.registrar` —`docente` y `super_admin`— o
+ * `docencia.impartir`, y no `academico.escribir`: coordinación monta el
+ * programa pero no pone notas, y eso está así en `rbac.ts` a propósito. Quien
+ * da una clase por permiso (un profesor de Habitudes) la cierra igual que un
+ * docente: sin esto podía poner tareas y revisarlas pero nunca la nota final.
+ * Fuera de `academico.escribir`, siempre solo en sus clases.
  */
 export async function calificarInscripcion360(
   _previo: EstadoAcademico,
@@ -237,7 +246,10 @@ export async function calificarInscripcion360(
 ): Promise<EstadoAcademico> {
   const usuario = await requerirUsuario();
 
-  if (!usuarioTienePermiso(usuario, "calificaciones.registrar")) {
+  if (
+    !usuarioTienePermiso(usuario, "calificaciones.registrar") &&
+    !usuarioTienePermiso(usuario, "docencia.impartir")
+  ) {
     return { estado: "no_permitido" };
   }
 
@@ -310,6 +322,8 @@ function refrescar() {
   revalidatePath("/[locale]/portal/profesor", "page");
   revalidatePath("/[locale]/portal/estudiante/global-360", "page");
   revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+  revalidatePath("/[locale]/portal/estudiante/calificaciones", "page");
+  revalidatePath("/[locale]/portal/estudiante", "page");
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

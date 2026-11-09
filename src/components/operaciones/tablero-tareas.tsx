@@ -147,7 +147,7 @@ export function TableroTareas({
         </Card>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNAS.map((columna) => {
           const dentro = tareas.filter((tarea) => estadoDe(tarea) === columna);
 
@@ -167,7 +167,7 @@ export function TableroTareas({
                 <p className="text-xs font-semibold uppercase">
                   {t(`taskStatus.${columna}`)}
                 </p>
-                <Badge className="bg-[#2096BA]/15 text-[10px] text-[#187a99]">
+                <Badge className="bg-marca-50 text-marca-700 text-[10px]">
                   {dentro.length}
                 </Badge>
               </div>

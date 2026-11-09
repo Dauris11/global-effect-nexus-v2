@@ -50,7 +50,6 @@ const PRIORIDADES = ["baja", "media", "alta", "urgente"];
 const VISIBILIDADES = ["todos", "asignados"];
 const ESTADOS_TAREA = [
   "por_hacer",
-  "pendiente",
   "en_progreso",
   "en_revision",
   "completada",
@@ -99,8 +98,8 @@ export async function crearTarea(
     const creada = await enTransaccion(async (cliente) => {
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO tarea
-                (titulo, descripcion, proyecto_id, visibilidad, prioridad, fecha_limite)
-         VALUES ($1, NULLIF($2, ''), NULLIF($3, '')::uuid, $4, $5, NULLIF($6, '')::date)
+                (titulo, descripcion, proyecto_id, visibilidad, prioridad, fecha_limite, estado)
+         VALUES ($1, NULLIF($2, ''), NULLIF($3, '')::uuid, $4, $5, NULLIF($6, '')::date, 'por_hacer')
          RETURNING id`,
         [titulo, descripcion, proyectoId, visibilidadOk, prioridadOk, limite],
       );
@@ -124,11 +123,12 @@ export async function crearTarea(
           [tareaId, asignados],
         );
 
-        // Un aviso por persona, con el enlace al tablero. `notificacion`
-        // llevaba creada desde la 0009 sin que nadie escribiera en ella.
+        // Un aviso por persona. Lleva a la torre y no al tablero: el tablero
+        // pide `operaciones.leer`, y a Habitudes, contabilidad o el chofer el
+        // aviso los devolvía a su portal sin ver la tarea. La torre es de todos.
         await cliente.query(
           `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-           SELECT u.id, $2, $3, 'tarea', '/administrativo/tareas'
+           SELECT u.id, $2, $3, 'tarea', '/administrativo/torre-control'
              FROM usuario u
             WHERE u.id = ANY($1::uuid[]) AND u.activo`,
           [asignados, titulo, descripcion || titulo],

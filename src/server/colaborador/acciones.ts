@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
+import type { PoolClient } from "pg";
+
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
+import { borrarDocumento, subirMaterial } from "@/lib/supabase/almacen";
+import { otrosConPermiso } from "@/server/contabilidad/sesion";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -190,8 +194,23 @@ export async function registrarBitacoraDiariaAction(
   }
 }
 
+/** Formatos admitidos para la foto o el PDF del comprobante de una rendición. */
+const FORMATOS_COMPROBANTE: Record<string, string> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+
+const MAXIMO_COMPROBANTE_BYTES = 10 * 1024 * 1024;
+
 /**
  * Registra una rendición de gastos con foto/comprobante u OCR.
+ *
+ * El comprobante viaja como archivo y se guarda en el bucket privado: antes
+ * se guardaba la URL `blob:` de la vista previa, que solo existe en el
+ * navegador de quien la subió, así que contabilidad nunca veía la factura.
  */
 export async function enviarRendicionGastoAction(
   datos: FormData,
@@ -206,7 +225,7 @@ export async function enviarRendicionGastoAction(
   const montoTotal = parseFloat(String(datos.get("monto_total") ?? "0"));
   const montoItbis = parseFloat(String(datos.get("monto_itbis") ?? "0"));
   const concepto = String(datos.get("concepto") ?? "").trim();
-  const comprobanteUrl = String(datos.get("comprobante_url") ?? "").trim() || null;
+  const archivo = datos.get("comprobante");
   const ocrRaw = String(datos.get("ocr_data") ?? "").trim();
 
   if (!proveedorNombre) {
@@ -233,8 +252,29 @@ export async function enviarRendicionGastoAction(
     }
   }
 
+  // El archivo es opcional (hay gastos sin papel), pero si llega se valida
+  // entero aquí: el `accept` del input es solo una ayuda del navegador.
+  let ruta: string | null = null;
+  if (archivo instanceof File && archivo.size > 0) {
+    const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
+    const tipoEsperado = FORMATOS_COMPROBANTE[extension];
+    if (!tipoEsperado || (archivo.type && archivo.type !== tipoEsperado)) {
+      return { ok: false, mensaje: "El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF." };
+    }
+    if (archivo.size > MAXIMO_COMPROBANTE_BYTES) {
+      return { ok: false, mensaje: "El comprobante no puede pasar de 10 MB." };
+    }
+
+    const formato = extension === "jpeg" ? "jpg" : extension;
+    ruta = `rendiciones/${crypto.randomUUID()}.${formato}`;
+    const subida = await subirMaterial(ruta, archivo);
+    if (!subida.ok) {
+      return { ok: false, mensaje: "No se pudo subir el comprobante." };
+    }
+  }
+
   try {
-    const rendicionId = await enTransaccion(async (cliente) => {
+    const { id: rendicionId, codigo } = await enTransaccion(async (cliente) => {
       const codigoRes = await cliente.query<{ codigo: string }>(
         `SELECT public.siguiente_codigo_rendicion() AS codigo`,
       );
@@ -258,12 +298,20 @@ export async function enviarRendicionGastoAction(
           montoTotal,
           isNaN(montoItbis) ? 0 : montoItbis,
           concepto,
-          comprobanteUrl,
+          ruta,
           ocrJson ? JSON.stringify(ocrJson) : null,
         ],
       );
 
-      return rows[0].id;
+      // Sin este aviso la rendición solo existía para quien abría la
+      // pantalla por su cuenta: nadie de contabilidad se enteraba.
+      await avisarRevisoresRendicion(
+        cliente,
+        `${codigo} · ${proveedorNombre}`,
+        usuario.id,
+      );
+
+      return { id: rows[0].id, codigo };
     });
 
     await registrar({
@@ -271,17 +319,30 @@ export async function enviarRendicionGastoAction(
       accion: "rendicion.creada",
       entidad: "rendicion_gasto",
       entidadId: rendicionId,
-      datos: { proveedorNombre, montoTotal, ncf },
+      datos: { proveedorNombre, montoTotal, ncf, codigo },
     });
 
-    revalidatePath("/administrativo/rendiciones");
-    revalidatePath("/portal/contabilidad/gastos");
-    return { ok: true, mensaje: "Rendición de gasto enviada correctamente a revisión contable." };
+    refrescarRendiciones();
+    return { ok: true };
   } catch (error) {
+    await borrarDocumento(ruta);
     console.error("[rendicion] Error al enviar rendición de gasto:", error);
     return { ok: false, mensaje: "Error al registrar la rendición de gasto." };
   }
 }
+
+/**
+ * Desde qué estados se llega a cada uno. Sin esto, un doble clic o dos
+ * revisores a la vez podían "aprobar" algo ya contabilizado o devolver a
+ * rechazada lo que ya estaba asentado.
+ */
+const ORIGEN_RENDICION: Record<EstadoRendicion, readonly EstadoRendicion[]> = {
+  enviada: [],
+  en_revision: ["enviada"],
+  aprobada: ["enviada", "en_revision"],
+  rechazada: ["enviada", "en_revision"],
+  contabilizada: ["aprobada"],
+};
 
 /**
  * Revisa una rendición de gasto: aprobar, rechazar o marcar contabilizada.
@@ -295,27 +356,71 @@ export async function revisarRendicionGastoAction(
   const motivoRechazo = String(datos.get("motivo_rechazo") ?? "").trim() || null;
 
   if (!ESTADOS_RENDICION.includes(nuevoEstado as EstadoRendicion)) {
-    return { ok: false, mensaje: "Estado de rendición inválido." };
+    return { ok: false, mensaje: "invalido" };
   }
 
   if (nuevoEstado === "rechazada" && !motivoRechazo) {
-    return { ok: false, mensaje: "Debe indicar el motivo del rechazo." };
+    return { ok: false, mensaje: "falta_motivo" };
   }
 
+  const origen = ORIGEN_RENDICION[nuevoEstado as EstadoRendicion];
+
   try {
-    const actualizada = await consultarUna<{ id: string; codigo: string }>(
-      `UPDATE public.rendicion_gasto
-          SET estado = $2,
-              motivo_rechazo = CASE WHEN $2 = 'rechazada' THEN $3 ELSE NULL END,
-              revisado_por = $4,
-              revisado_en = now()
-        WHERE id = $1
-        RETURNING id, codigo`,
-      [id, nuevoEstado, motivoRechazo, usuario.id],
+    const actual = await consultarUna<{ empleado_id: string }>(
+      `SELECT empleado_id FROM public.rendicion_gasto WHERE id = $1`,
+      [id],
     );
+    if (!actual) return { ok: false, mensaje: "no_encontrada" };
+
+    // Quien rinde no aprueba su propio gasto, salvo que no haya nadie más
+    // con el permiso (la misma salida que usa contabilidad, §2.2).
+    if (
+      actual.empleado_id === usuario.id &&
+      (await otrosConPermiso(usuario.id, "rendicion.revisar")) > 0
+    ) {
+      return { ok: false, mensaje: "propia" };
+    }
+
+    const actualizada = await enTransaccion(async (cliente) => {
+      const { rows } = await cliente.query<{
+        id: string;
+        codigo: string;
+        empleado_id: string;
+        proveedor_nombre: string;
+      }>(
+        `UPDATE public.rendicion_gasto
+            SET estado = $2,
+                motivo_rechazo = CASE WHEN $2 = 'rechazada' THEN $3 ELSE NULL END,
+                revisado_por = $4,
+                revisado_en = now()
+          WHERE id = $1 AND estado = ANY($5::text[])
+          RETURNING id, codigo, empleado_id, proveedor_nombre`,
+        [id, nuevoEstado, motivoRechazo, usuario.id, origen],
+      );
+
+      const fila = rows[0];
+      if (!fila) return null;
+
+      // Quien rindió se entera de la decisión sin tener que ir a mirar.
+      if (fila.empleado_id !== usuario.id) {
+        await cliente.query(
+          `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+           SELECT u.id, $2, $3, 'info', '/administrativo/rendiciones'
+             FROM public.usuario u
+            WHERE u.id = $1 AND u.activo`,
+          [
+            fila.empleado_id,
+            `${fila.codigo} · ${fila.proveedor_nombre}`,
+            motivoRechazo && nuevoEstado === "rechazada" ? motivoRechazo : nuevoEstado,
+          ],
+        );
+      }
+
+      return fila;
+    });
 
     if (!actualizada) {
-      return { ok: false, mensaje: "La rendición especificada no existe." };
+      return { ok: false, mensaje: "ya_cambio" };
     }
 
     await registrar({
@@ -326,13 +431,45 @@ export async function revisarRendicionGastoAction(
       datos: { nuevoEstado, motivoRechazo, codigo: actualizada.codigo },
     });
 
-    revalidatePath("/administrativo/rendiciones");
-    revalidatePath("/portal/contabilidad/gastos");
-    return { ok: true, mensaje: `Rendición ${actualizada.codigo} actualizada a ${nuevoEstado}.` };
+    refrescarRendiciones();
+    return { ok: true };
   } catch (error) {
     console.error("[rendicion] Error al revisar rendición:", error);
-    return { ok: false, mensaje: "Error al actualizar la rendición de gasto." };
+    return { ok: false, mensaje: "error" };
   }
+}
+
+/**
+ * Aviso a quien revisa rendiciones, contando su rol y sus excepciones de
+ * `usuario_permiso` (una concesión personal también recibe el aviso; una
+ * revocación personal deja de recibirlo).
+ */
+async function avisarRevisoresRendicion(
+  cliente: PoolClient,
+  titulo: string,
+  excepto: string,
+) {
+  await cliente.query(
+    `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+     SELECT u.id, $1, 'enviada', 'info', '/administrativo/rendiciones'
+       FROM public.usuario u
+       JOIN public.permiso p ON p.codigo = 'rendicion.revisar'
+      WHERE u.activo
+        AND u.id <> $2
+        AND coalesce(
+              (SELECT up.concedido FROM public.usuario_permiso up
+                WHERE up.usuario_id = u.id AND up.permiso_id = p.id),
+              EXISTS (SELECT 1 FROM public.rol_permiso rp
+                       WHERE rp.rol_id = u.rol_id AND rp.permiso_id = p.id))`,
+    [titulo, excepto],
+  );
+}
+
+function refrescarRendiciones() {
+  revalidatePath("/[locale]/administrativo/rendiciones", "page");
+  revalidatePath("/[locale]/portal/contabilidad", "page");
+  // La campana vive en el armazón.
+  revalidatePath("/[locale]", "layout");
 }
 
 /**

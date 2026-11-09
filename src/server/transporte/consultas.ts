@@ -73,16 +73,23 @@ async function paradasDelHorario(
 }
 
 /**
- * Todas las rutas activas con sus paradas ordenadas.
+ * Todas las rutas activas con sus paradas ordenadas. Primero las que tienen
+ * turnos: las páginas toman `rutas[0]` para el mapa y los formularios, y por
+ * orden alfabético salía la ruta inversa, que no tiene horarios; el estudiante
+ * se inscribía con paradas de una ruta que la guagua no recorre.
  */
 export async function listarRutasConParadas(): Promise<
   (TransporteRuta & { paradas: TransporteParada[] })[]
 > {
   const rutas = await consultar<TransporteRuta>(
-    `SELECT id, codigo, nombre, descripcion, sentido, activo
-       FROM transporte_ruta
-      WHERE activo = true
-      ORDER BY nombre`,
+    `SELECT r.id, r.codigo, r.nombre, r.descripcion, r.sentido, r.activo
+       FROM transporte_ruta r
+      WHERE r.activo = true
+      ORDER BY EXISTS (
+                 SELECT 1 FROM transporte_horario h
+                  WHERE h.ruta_id = r.id AND h.activo = true
+               ) DESC,
+               r.nombre`,
   );
 
   if (rutas.length === 0) return [];

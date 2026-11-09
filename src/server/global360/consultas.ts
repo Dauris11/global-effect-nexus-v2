@@ -164,8 +164,10 @@ export async function ventanaVigente(): Promise<Ventana | null> {
     `SELECT v.id,
             v.periodo_id,
             p.nombre AS periodo,
-            v.abre::text  AS abre,
-            v.cierra::text AS cierra,
+            -- Hora de La Vega, que es en la que se escribió: las pantallas
+            -- cortan el texto (fecha y HH:MI) sin convertir zonas.
+            to_char(v.abre AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS abre,
+            to_char(v.cierra AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS cierra,
             v.mensaje,
             v.ronda,
             (now() >= v.abre AND now() < v.cierra) AS abierta
@@ -184,8 +186,10 @@ export async function ventanas(): Promise<Ventana[]> {
     `SELECT v.id,
             v.periodo_id,
             p.nombre AS periodo,
-            v.abre::text  AS abre,
-            v.cierra::text AS cierra,
+            -- Hora de La Vega, que es en la que se escribió: las pantallas
+            -- cortan el texto (fecha y HH:MI) sin convertir zonas.
+            to_char(v.abre AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS abre,
+            to_char(v.cierra AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS cierra,
             v.mensaje,
             v.ronda,
             (v.activa AND now() >= v.abre AND now() < v.cierra) AS abierta

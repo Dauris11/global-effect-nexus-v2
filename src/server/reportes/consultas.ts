@@ -107,7 +107,7 @@ export async function cifrasDeOperaciones(): Promise<CifrasOperaciones> {
             (SELECT count(*)::int FROM proyecto WHERE estado = 'en_curso') AS en_curso,
             (SELECT count(*)::int FROM proyecto WHERE estado = 'completado') AS completados,
             (SELECT count(*)::int FROM tarea
-              WHERE estado IN ('pendiente', 'en_progreso')) AS tareas_abiertas`,
+              WHERE estado IN ('por_hacer', 'en_progreso', 'en_revision')) AS tareas_abiertas`,
   );
 
   return (

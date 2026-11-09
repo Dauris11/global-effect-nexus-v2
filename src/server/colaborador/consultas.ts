@@ -1,4 +1,4 @@
-import { consultar } from "@/lib/db";
+import { consultar, consultarUna } from "@/lib/db";
 import type {
   BitacoraEntrada,
   ProyectoAsignadoRol,
@@ -288,4 +288,14 @@ export async function matrizProyectosRoles(): Promise<ProyectoAsignadoRol[]> {
       .filter((a) => a.proyecto_id === p.id)
       .map((a) => a.rol),
   }));
+}
+
+/** El comprobante de una rendición, para decidir si se puede entregar el archivo. */
+export async function comprobanteDeRendicion(rendicionId: string) {
+  return consultarUna<{ ruta: string | null; empleado_id: string }>(
+    `SELECT comprobante_url AS ruta, empleado_id
+       FROM public.rendicion_gasto
+      WHERE id = $1`,
+    [rendicionId],
+  );
 }

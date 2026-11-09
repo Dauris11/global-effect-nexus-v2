@@ -69,12 +69,16 @@ export default async function PaginaCalendario({
 
   const puedeCrear = usuarioTienePermiso(usuario, "operaciones.escribir");
   const puedeMoverCitas = usuarioTienePermiso(usuario, "solicitudes.gestionar");
+  const gestionaReuniones = usuarioTienePermiso(usuario, "reuniones.gestionar");
 
   /*
    * Qué puede mover cada quien:
    *
    *   · un evento, si tiene `operaciones.escribir`
    *   · una cita con administración, si tiene `solicitudes.gestionar`
+   *   · una reunión, si la organizó o tiene `reuniones.gestionar` (la misma
+   *     regla que `moverEntrada`; antes se ofrecía a todo convocado y el
+   *     servidor la rechazaba al soltarla)
    *   · una tarea, nunca: su fecha límite la fija quien la asignó
    */
   const entradas: Entrada[] = filas.map((fila) => ({
@@ -95,7 +99,7 @@ export default async function PaginaCalendario({
         : fila.origen === "cita"
           ? puedeMoverCitas
           : fila.origen === "reunion"
-            ? true
+            ? gestionaReuniones || fila.organizador_id === usuario.id
             : false,
   }));
 

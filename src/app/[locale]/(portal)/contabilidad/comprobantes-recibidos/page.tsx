@@ -4,7 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
-import { requerirRol } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { programasParaRendicion } from "@/server/colaborador/consultas";
 import { listarComprobantesRecibidos } from "@/server/contabilidad/comprobantes/recibidos-consultas";
 import { PanelRevisionComprobante } from "@/components/contabilidad/comprobantes/panel-revision-comprobante";
@@ -26,7 +27,10 @@ export default async function ComprobantesRecibidosPage({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ estado?: string; q?: string }>;
 }) {
-  await requerirRol(["contabilidad", "super_admin", "admin"]);
+  // Por permiso y no por rol: antes entraban `admin` y `super_admin` por nombre
+  // de rol y sus botones chocaban con `contabilidad.registrar`, que no tienen.
+  const usuario = await requerirPermiso("contabilidad.leer");
+  const puedeValidar = usuarioTienePermiso(usuario, "contabilidad.registrar");
   const { locale } = await params;
   const filtros = await searchParams;
 
@@ -78,7 +82,11 @@ export default async function ComprobantesRecibidosPage({
 
       {/* Lista interactiva de comprobantes con panel de revisión */}
       <NextIntlClientProvider messages={mensajes}>
-        <PanelRevisionComprobante comprobantes={comprobantes} proyectos={proyectos} />
+        <PanelRevisionComprobante
+          comprobantes={comprobantes}
+          proyectos={proyectos}
+          puedeValidar={puedeValidar}
+        />
       </NextIntlClientProvider>
     </div>
   );

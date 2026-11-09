@@ -287,7 +287,20 @@ export async function listarVisitasEvidenciasHabitudes(
      ORDER BY v.fecha_visita DESC, v.creado_en DESC
   `;
 
-  return consultar<HabitudesVisitaEvidencia>(query, params);
+  const filas = await consultar<HabitudesVisitaEvidencia>(query, params);
+  // Las fotos guardan la ruta del bucket privado; se firman al leer, igual que
+  // los recursos. Las que no se pueden firmar se omiten: mejor eso que una
+  // miniatura rota.
+  return Promise.all(
+    filas.map(async (v) => {
+      const fotos = await Promise.all(
+        (v.fotos_urls ?? []).map((foto) =>
+          foto.startsWith("http") ? Promise.resolve(foto) : enlaceDeDocumento(foto),
+        ),
+      );
+      return { ...v, fotos_urls: fotos.filter((f): f is string => Boolean(f)) };
+    }),
+  );
 }
 
 /**

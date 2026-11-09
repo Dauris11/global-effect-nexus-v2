@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 
 import { consultar, consultarUna } from "@/lib/db";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
 
 /**
  * Datos públicos de la página de inicio.
@@ -153,7 +154,7 @@ export const noticiasPublicas = unstable_cache(
 export const inscritosComidaHoy = unstable_cache(
   async (): Promise<number> => {
     const fila = await consultarUna<{ n: number }>(
-      `SELECT count(*)::int AS n FROM inscripcion_comida WHERE fecha = CURRENT_DATE`,
+      `SELECT count(*)::int AS n FROM inscripcion_comida WHERE fecha = ${SQL_HOY_RD}`,
     );
 
     return fila?.n ?? 0;

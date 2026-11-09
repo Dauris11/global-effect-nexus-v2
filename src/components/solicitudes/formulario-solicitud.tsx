@@ -43,6 +43,7 @@ export function FormularioSolicitud({
   tipos,
   estudiantes = [],
   minimoFecha,
+  tipoInicial,
 }: {
   origen: "estudiante" | "personal";
   /** Los tipos que esta persona puede pedir, ya filtrados en el servidor. */
@@ -50,9 +51,16 @@ export function FormularioSolicitud({
   estudiantes?: readonly EstudianteOpcion[];
   /** Hoy, `YYYY-MM-DD`, calculado en el servidor. */
   minimoFecha: string;
+  /** El que viene en `?tipo=` (atajos de Habitudes y del chofer), si se puede pedir. */
+  tipoInicial?: TipoSolicitud;
 }) {
   const t = useTranslations("requests");
-  const [tipo, setTipo] = useState<TipoSolicitud | undefined>(tipos[0]);
+  const [tipo, setTipo] = useState<TipoSolicitud | undefined>(
+    tipoInicial && tipos.includes(tipoInicial) ? tipoInicial : tipos[0],
+  );
+  // Nombre de un candidato que aún no tiene ficha: con él el alta no exige
+  // elegir a alguien del desplegable.
+  const [candidato, setCandidato] = useState("");
   const [estado, enviar, enviando] = useActionState<
     EstadoFormularioSolicitud,
     FormData
@@ -129,11 +137,14 @@ export function FormularioSolicitud({
             <select
               id="estudiante"
               name="estudiante"
-              required={regla.estudiante === "obligatorio"}
+              required={
+                regla.estudiante === "obligatorio" &&
+                !(tipo === "alta_expediente" && candidato.trim())
+              }
               defaultValue=""
               className={SELECT}
             >
-              <option value="" disabled>
+              <option value="" disabled={tipo !== "alta_expediente"}>
                 {t("form.studentPlaceholder")}
               </option>
               {opciones.map((estudiante) => (
@@ -142,6 +153,22 @@ export function FormularioSolicitud({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {origen === "personal" && tipo === "alta_expediente" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="candidato" className="text-xs font-medium">
+              {t("form.newCandidate")}
+            </Label>
+            <Input
+              id="candidato"
+              name="candidato"
+              value={candidato}
+              onChange={(evento) => setCandidato(evento.target.value)}
+              maxLength={MAXIMO_TITULO}
+              placeholder={t("form.newCandidatePlaceholder")}
+            />
           </div>
         )}
 

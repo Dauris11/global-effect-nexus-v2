@@ -42,6 +42,7 @@ export default async function PaginaReuniones({
 
   const usuario = await requerirPermiso("reuniones.leer");
   const puedeGestionar = usuarioTienePermiso(usuario, "reuniones.gestionar");
+  const puedeAgendar = usuarioTienePermiso(usuario, "reuniones.agendar");
 
   const [t, reuniones, candidatos, metricas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "reuniones" }),
@@ -62,6 +63,7 @@ export default async function PaginaReuniones({
           metricas={metricas}
           usuarioActualId={usuario.id}
           puedeGestionar={puedeGestionar}
+          puedeAgendar={puedeAgendar}
           abrirAgendarAlCargar={agendar === "true"}
         />
       </NextIntlClientProvider>

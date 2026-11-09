@@ -82,6 +82,11 @@ export function PanelChofer({
   const [pasajeros, setPasajeros] = useState<PasajeroViaje[]>(pasajerosIniciales);
   const [paradas] = useState<TransporteParada[]>(paradasIniciales);
   const [errorGps, setErrorGps] = useState<string | null>(null);
+  // Antes un fallo del servidor (viaje ya cerrado, sesión caída) no decía
+  // nada y el botón parecía no hacer nada.
+  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+  const mensajeError = (codigo?: string) =>
+    codigo === "viaje_no_encontrado" ? t("tripNotFoundError") : t("actionError");
 
   const [dialogoIncidenciaAbierto, setDialogoIncidenciaAbierto] = useState(false);
   const [dialogoPasajeroAbierto, setDialogoPasajeroAbierto] = useState(false);
@@ -201,6 +206,7 @@ export function PanelChofer({
   // Acción: Iniciar viaje
   const manejarIniciarViaje = () => {
     if (!horarioSeleccionadoId) return;
+    setErrorAccion(null);
 
     iniciarTransicion(async () => {
       const res = await iniciarViaje({
@@ -210,18 +216,17 @@ export function PanelChofer({
       });
 
       if (res.ok && res.viajeId) {
+        const horarioViaje = res.horarioId ?? horarioSeleccionadoId;
+        const horario = horariosDisponibles.find((h) => h.id === horarioViaje);
+        if (horarioViaje !== horarioSeleccionadoId) manejarCambioHorario(horarioViaje);
         setViajeActivo({
           id: res.viajeId,
-          horario_id: horarioSeleccionadoId,
-          horario_nombre:
-            horariosDisponibles.find((h) => h.id === horarioSeleccionadoId)
-              ?.nombre ?? "",
-          hora_salida:
-            horariosDisponibles.find((h) => h.id === horarioSeleccionadoId)
-              ?.hora_salida ?? "",
+          horario_id: horarioViaje,
+          horario_nombre: horario?.nombre ?? "",
+          hora_salida: horario?.hora_salida ?? "",
           chofer_id: "",
           chofer_nombre: "",
-          fecha: new Date().toISOString().slice(0, 10),
+          fecha: hoy,
           estado: "en_curso",
           lat_actual: posicionGps?.lat ?? null,
           lng_actual: posicionGps?.lng ?? null,
@@ -231,6 +236,8 @@ export function PanelChofer({
           iniciado_en: new Date().toISOString(),
           finalizado_en: null,
         });
+      } else {
+        setErrorAccion(mensajeError(res.mensaje));
       }
     });
   };
@@ -239,10 +246,16 @@ export function PanelChofer({
   const manejarFinalizarViaje = () => {
     if (!viajeActivo) return;
 
+    setErrorAccion(null);
     iniciarTransicion(async () => {
       const res = await finalizarViaje({ viajeId: viajeActivo.id });
       if (res.ok) {
         setViajeActivo(null);
+      } else if (res.mensaje === "viaje_no_encontrado") {
+        // Ya estaba cerrado (otra pestaña, otro dispositivo): se suelta igual.
+        setViajeActivo(null);
+      } else {
+        setErrorAccion(mensajeError(res.mensaje));
       }
     });
   };
@@ -266,6 +279,9 @@ export function PanelChofer({
         if (tipoIncidencia === "averia_mecanica") {
           setViajeActivo((prev) => (prev ? { ...prev, estado: "averiado" } : null));
         }
+      } else {
+        setErrorAccion(mensajeError(res.mensaje));
+        setDialogoIncidenciaAbierto(false);
       }
     });
   };
@@ -293,10 +309,11 @@ export function PanelChofer({
         : null,
     );
     iniciarTransicion(async () => {
-      await actualizarParadaViaje({
+      const res = await actualizarParadaViaje({
         viajeId: viajeActivo.id,
         paradaId,
       });
+      if (!res.ok) setErrorAccion(mensajeError(res.mensaje));
     });
   };
 
@@ -313,6 +330,16 @@ export function PanelChofer({
             <p className="font-semibold">{t("gpsErrorTitle")}</p>
             <p className="mt-0.5 text-background/80">{errorGps}</p>
           </div>
+        </div>
+      )}
+
+      {errorAccion && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-card bg-tinta p-4 text-sm text-background"
+        >
+          <AlertCircle className="mt-0.5 size-5 shrink-0" />
+          <p>{errorAccion}</p>
         </div>
       )}
 

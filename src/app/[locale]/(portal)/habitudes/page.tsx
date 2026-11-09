@@ -181,7 +181,11 @@ export default async function PaginaHabitudesHub({
 
         {/* Tab 3: Galería y Auditoría de Evidencias */}
         <TabsContent value="evidencias" className="space-y-4">
-          <GaleriaEvidencias visitasIniciales={visitas} liceos={liceos} />
+          <GaleriaEvidencias
+            visitasIniciales={visitas}
+            liceos={liceos}
+            puedeAuditar={usuarioTienePermiso(usuario, "habitudes.evidencias.auditar")}
+          />
         </TabsContent>
       </Tabs>
     </div>

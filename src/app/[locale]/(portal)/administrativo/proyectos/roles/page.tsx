@@ -38,7 +38,7 @@ export default async function PaginaProyectosRoles({
   const [t, matriz, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "colaborador" }),
     matrizProyectosRoles(),
-    mensajesCliente(["colaborador", "admin"]),
+    mensajesCliente(["colaborador", "admin", "roles"]),
   ]);
 
   return (

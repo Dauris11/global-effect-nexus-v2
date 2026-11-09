@@ -88,6 +88,8 @@ export async function asistenciaDeClases360(
       [docenteId],
     ),
     consultar<PeriodoDeClase360 & { materia_id: string }>(
+      // Con DISTINCT, Postgres exige ordenar por algo que esté en el SELECT;
+      // `to_char` en ISO ordena igual que la fecha y evita el 500 de la página.
       `SELECT DISTINCT i.materia_id, p.id, p.nombre,
               to_char(p.fecha_inicio, 'YYYY-MM-DD') AS fecha_inicio,
               to_char(p.fecha_fin, 'YYYY-MM-DD') AS fecha_fin
@@ -96,7 +98,7 @@ export async function asistenciaDeClases360(
          JOIN periodo p ON p.id = i.periodo_id
         WHERE i.estado <> 'retirada'
           AND ($1::uuid IS NULL OR m.docente_id = $1)
-        ORDER BY p.fecha_inicio DESC`,
+        ORDER BY fecha_inicio DESC`,
       [docenteId],
     ),
   ]);

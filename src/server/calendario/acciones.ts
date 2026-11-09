@@ -281,11 +281,17 @@ export async function moverEntrada(
           [cita.id, cita.estado, cuando, usuario.id],
         );
 
+        // El enlace depende de quién pidió la cita: el personal también pide
+        // citas y no puede abrir el portal del estudiante.
         if (cita.solicitante_id) {
           await cliente.query(
             `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-             SELECT u.id, $2, $3, 'solicitud', '/portal/estudiante/solicitudes'
+             SELECT u.id, $2, $3, 'solicitud',
+                    CASE WHEN r.nombre = 'estudiante'
+                         THEN '/portal/estudiante/solicitudes'
+                         ELSE '/administrativo/solicitudes' END
                FROM usuario u
+               JOIN rol r ON r.id = u.rol_id
               WHERE u.id = $1 AND u.activo`,
             [cita.solicitante_id, `#${cita.folio} · ${cita.titulo}`, cuando],
           );
