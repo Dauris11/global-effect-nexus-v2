@@ -5,8 +5,6 @@ import {
   AlertCircle,
   Camera,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   ImagePlus,
   Loader2,
@@ -16,16 +14,16 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { actualizarExpediente, type EstadoExpediente } from "@/server/expedientes/acciones";
 import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
-import {
-  CamposExpediente,
-  SECCIONES,
-  type TextosFormulario,
-} from "./formulario-expediente";
+import { CamposExpediente, type TextosFormulario } from "./formulario-expediente";
 
 /**
  * Edición del expediente: la ficha completa, precargada y con guardado real.
@@ -36,7 +34,9 @@ import {
  * encima de un campo por accidente. `key={modo}` en `CamposExpediente` fuerza
  * un remonte al cambiar de modo, que es también cómo "Cancelar" descarta lo
  * que se haya tecleado: los campos vuelven a nacer con el valor original de
- * `expediente`, no con lo que había en pantalla.
+ * `expediente`, no con lo que había en pantalla. El remonte es solo de los
+ * campos: el `FormularioGuiado` de fuera conserva el paso en el que se estaba,
+ * así que pasar de ver a editar no devuelve a la primera sección.
  *
  * `puedeEditar` llega ya resuelto por la página: es `false` cuando quien mira
  * el expediente no tiene `expedientes.escribir`.
@@ -77,17 +77,10 @@ export function FormularioEdicionExpediente({
   );
 
   const [editando, setEditando] = useState(editarInicial);
-  const [seccion, setSeccion] = useState<string>(SECCIONES[0]);
   const [previa, setPrevia] = useState<string | null>(null);
 
-  const indice = SECCIONES.indexOf(seccion as (typeof SECCIONES)[number]);
   const inicial = expediente.nombre.trim().charAt(0).toUpperCase() || "?";
   const soloLectura = !editando;
-
-  const ir = (paso: number) => {
-    const siguiente = SECCIONES[indice + paso];
-    if (siguiente) setSeccion(siguiente);
-  };
 
   const salirDeEdicion = () => {
     setEditando(false);
@@ -189,46 +182,13 @@ export function FormularioEdicionExpediente({
         </div>
       </div>
 
-      {/* La navegación entre secciones va ARRIBA de los campos.
-          Abajo obligaba a recorrer la sección entera para descubrir que había
-          otra —y con seis secciones, quien abre la ficha para mirar un dato
-          concreto no quiere leerlas todas por el camino—. Guardar y cancelar
-          se quedan al pie: eso no es navegar, es cerrar el trabajo. */}
-      <div className="flex flex-wrap items-center gap-3 border-b pb-4">
-        <p className="text-muted-foreground text-xs">{textos.progreso[indice]}</p>
-
-        <div className="ml-auto flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => ir(-1)}
-            disabled={indice === 0}
-            className="transition-transform active:scale-95"
-          >
-            <ChevronLeft className="size-4" />
-            {textos.anterior}
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => ir(1)}
-            disabled={indice === SECCIONES.length - 1}
-            className="transition-transform active:scale-95"
-          >
-            {textos.siguiente}
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
-      </div>
-
+      {/* La elección Normal/Guiado y el "paso N de 6" van ARRIBA de los
+          campos, puestos por `FormularioGuiado`: quien abre la ficha para
+          mirar un dato concreto ve de entrada cuántas secciones hay. */}
+      <FormularioGuiado>
       <CamposExpediente
         key={editando ? "editando" : "viendo"}
         textos={textos}
-        seccion={seccion}
-        onSeccionChange={setSeccion}
         valores={expediente}
         soloLectura={soloLectura}
       />
@@ -251,7 +211,9 @@ export function FormularioEdicionExpediente({
           <span>
             {estado.estado === "ok"
               ? textos.savedEdit
-              : estado.estado === "foto_invalida"
+              : estado.estado === "invalido"
+                ? textos.faltaNombre
+                : estado.estado === "foto_invalida"
                 ? textos.photoInvalid
                 : estado.estado === "foto_grande"
                   ? textos.photoTooLarge
@@ -262,11 +224,13 @@ export function FormularioEdicionExpediente({
         </div>
       )}
 
-      {/* El pie solo aparece si se está editando: cuando la ficha está en modo
-          vista no hay nada que guardar ni que cancelar, y una barra vacía solo
-          añadía un borde al final de la página. */}
+      {/* Guardar y Cancelar solo aparecen si se está editando: en modo vista no
+          hay nada que guardar ni que cancelar, y una barra vacía solo añadía un
+          borde al final de la página. En guiado, Anterior/Siguiente sí están
+          también en la vista, para poder recorrer la ficha sección a sección. */}
+      <AccionesFormulario>
       {editando && (
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-4">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Button
             type="button"
             variant="outline"
@@ -293,6 +257,8 @@ export function FormularioEdicionExpediente({
           </Button>
         </div>
       )}
+      </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

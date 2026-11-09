@@ -17,6 +17,11 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -168,6 +173,10 @@ export function FormularioRendicionGasto({
         )}
 
         <form onSubmit={manejarEnvio} className="space-y-4">
+          <FormularioGuiado>
+          {/* La foto va en el primer paso porque el OCR rellena los campos del
+              proveedor que vienen justo después: subirla primero ahorra teclear. */}
+          <PasoFormulario titulo={t("pasos.comprobante")}>
           {/* Zona de Carga con Cámara u OCR */}
           <div className="rounded-xl border-2 border-dashed border-marca-500/30 bg-marca-50 p-4 text-center">
             <input
@@ -259,6 +268,11 @@ export function FormularioRendicionGasto({
               />
             </div>
 
+          </div>
+          </PasoFormulario>
+
+          <PasoFormulario titulo={t("pasos.montos")}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="monto_total">{t("totalAmount")} (RD$)</Label>
               <Input
@@ -289,6 +303,9 @@ export function FormularioRendicionGasto({
             </div>
           </div>
 
+          </PasoFormulario>
+
+          <PasoFormulario titulo={t("pasos.destino")}>
           <div>
             <Label htmlFor="programa_id">{t("assignProgram")}</Label>
             <select
@@ -319,6 +336,9 @@ export function FormularioRendicionGasto({
             />
           </div>
 
+          </PasoFormulario>
+
+          <AccionesFormulario>
           <div className="flex justify-end pt-2">
             <Button
               type="submit"
@@ -333,6 +353,8 @@ export function FormularioRendicionGasto({
               {t("submitVoucher")}
             </Button>
           </div>
+          </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </CardContent>
     </Card>

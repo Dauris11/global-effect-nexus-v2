@@ -149,6 +149,7 @@ escribe; si hace falta, es un aviso (§5), no un subtítulo.
 | Pestañas | Subrayadas: texto `tinta-2`, activa tinta semibold con barra de 2 px. |
 | Barra lateral | Blanca, borde derecho `linea`. Ítem `h-11 rounded-control`; activo = fondo `sidebar-accent`, texto tinta semibold, icono `marca-500`. |
 | Barra inferior (móvil) | Fija, `h-16` + área segura, 5 destinos con icono y etiqueta, activo en `marca-500`. |
+| Formulario guiado | Todo formulario de captura con ≥ 5 campos en 2+ grupos usa `FormularioGuiado` + `PasoFormulario` + `AccionesFormulario` (`ui/formulario-guiado.tsx`): la persona elige **Normal** (todo a la vista) o **Guiado** (un paso a la vez); la preferencia se guarda en el navegador y también se cambia en Mi perfil → Apariencia. Filtros, confirmaciones y formularios cortos no lo llevan. |
 
 ## 4. Patrones de pantalla
 

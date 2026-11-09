@@ -32,6 +32,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -659,242 +664,249 @@ export function HubReuniones({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="reu-titulo" className="text-xs font-semibold">
-                  {t("dialogSchedule.subject")} *
-                </Label>
-                <Input
-                  id="reu-titulo"
-                  required
-                  placeholder={t("dialogSchedule.subjectPlaceholder")}
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  className="h-10 border-linea"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormularioGuiado>
+              <PasoFormulario titulo={t("pasos.reunion")} className="space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">
-                    {t("dialogSchedule.type")}
-                  </Label>
-                  <Select
-                    value={tipo}
-                    onValueChange={(v) => setTipo(v as TipoReunion)}
-                  >
-                    <SelectTrigger className="h-10 border-linea">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="coordinacion">{t("types.coordinacion")}</SelectItem>
-                      <SelectItem value="tutoria">{t("types.tutoria")}</SelectItem>
-                      <SelectItem value="seguimiento_estudiante">{t("types.seguimiento_estudiante")}</SelectItem>
-                      <SelectItem value="departamental">{t("types.departamental")}</SelectItem>
-                      <SelectItem value="direccion">{t("types.direccion")}</SelectItem>
-                      <SelectItem value="general">{t("types.general")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">
-                    {t("dialogSchedule.modality")}
-                  </Label>
-                  <Select
-                    value={modalidad}
-                    onValueChange={(v) => setModalidad(v as ModalidadReunion)}
-                  >
-                    <SelectTrigger className="h-10 border-linea">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="presencial">{t("modality.presencial")}</SelectItem>
-                      <SelectItem value="virtual">{t("modality.virtual")}</SelectItem>
-                      <SelectItem value="hibrida">{t("modality.hibrida")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <Label htmlFor="reu-fecha" className="text-xs font-semibold">
-                    {t("dialogSchedule.date")} *
+                  <Label htmlFor="reu-titulo" className="text-xs font-semibold">
+                    {t("dialogSchedule.subject")} *
                   </Label>
                   <Input
-                    id="reu-fecha"
-                    type="date"
+                    id="reu-titulo"
                     required
-                    value={fecha}
-                    onChange={(e) => setFecha(e.target.value)}
-                    className="h-10 border-linea text-xs"
+                    placeholder={t("dialogSchedule.subjectPlaceholder")}
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    className="h-10 border-linea"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="reu-hora-inicio" className="text-xs font-semibold">
-                    {t("dialogSchedule.startTime")} *
-                  </Label>
-                  <Input
-                    id="reu-hora-inicio"
-                    type="time"
-                    required
-                    value={horaInicio}
-                    onChange={(e) => setHoraInicio(e.target.value)}
-                    className="h-10 border-linea text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="reu-hora-fin" className="text-xs font-semibold">
-                    {t("dialogSchedule.endTime")} *
-                  </Label>
-                  <Input
-                    id="reu-hora-fin"
-                    type="time"
-                    required
-                    value={horaFin}
-                    onChange={(e) => setHoraFin(e.target.value)}
-                    className="h-10 border-linea text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="reu-lugar" className="text-xs font-semibold">
-                  {modalidad === "virtual"
-                    ? t("dialogSchedule.linkVirtual")
-                    : t("dialogSchedule.roomOrLink")}
-                </Label>
-                <Input
-                  id="reu-lugar"
-                  placeholder={
-                    modalidad === "virtual"
-                      ? "https://meet.google.com/..."
-                      : t("dialogSchedule.roomPlaceholder")
-                  }
-                  value={lugarOEnlace}
-                  onChange={(e) => setLugarOEnlace(e.target.value)}
-                  className="h-10 border-linea"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="reu-desc" className="text-xs font-semibold">
-                  {t("dialogSchedule.descriptionLabel")}
-                </Label>
-                <Textarea
-                  id="reu-desc"
-                  rows={2}
-                  placeholder={t("dialogSchedule.descPlaceholder")}
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  className="border-linea text-xs resize-none"
-                />
-              </div>
-
-              {/* Selector de Participantes */}
-              <div className="space-y-2 border-t border-linea pt-2">
-                <Label className="text-xs font-semibold">
-                  {t("dialogSchedule.inviteParticipants")}
-                </Label>
-
-                {/* Seleccionados */}
-                {participantesSeleccionados.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 p-2 rounded-lg bg-muted/40 border border-linea">
-                    {participantesSeleccionados.map((p) => (
-                      <span
-                        key={p.id}
-                        className="inline-flex items-center gap-1 rounded-md bg-marca-50 text-marca-800 border border-marca-600/30 px-2 py-0.5 text-xs font-medium"
-                      >
-                        {p.tipo === "estudiante" && (
-                          <GraduationCap className="size-3 text-marca-600" />
-                        )}
-                        <span>{p.nombre}</span>
-                        <button
-                          type="button"
-                          onClick={() => toggleParticipante(p)}
-                          className="hover:text-marca-900"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </span>
-                    ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">
+                      {t("dialogSchedule.type")}
+                    </Label>
+                    <Select
+                      value={tipo}
+                      onValueChange={(v) => setTipo(v as TipoReunion)}
+                    >
+                      <SelectTrigger className="h-10 border-linea">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="coordinacion">{t("types.coordinacion")}</SelectItem>
+                        <SelectItem value="tutoria">{t("types.tutoria")}</SelectItem>
+                        <SelectItem value="seguimiento_estudiante">{t("types.seguimiento_estudiante")}</SelectItem>
+                        <SelectItem value="departamental">{t("types.departamental")}</SelectItem>
+                        <SelectItem value="direccion">{t("types.direccion")}</SelectItem>
+                        <SelectItem value="general">{t("types.general")}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
 
-                {/* Buscador de candidatos */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-2.5 size-3.5 text-tinta-2" />
-                  <Input
-                    type="text"
-                    placeholder={t("dialogSchedule.searchAttendeesPlaceholder")}
-                    value={busquedaCandidato}
-                    onChange={(e) => setBusquedaCandidato(e.target.value)}
-                    className="pl-8 h-9 text-xs border-linea"
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold">
+                      {t("dialogSchedule.modality")}
+                    </Label>
+                    <Select
+                      value={modalidad}
+                      onValueChange={(v) => setModalidad(v as ModalidadReunion)}
+                    >
+                      <SelectTrigger className="h-10 border-linea">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="presencial">{t("modality.presencial")}</SelectItem>
+                        <SelectItem value="virtual">{t("modality.virtual")}</SelectItem>
+                        <SelectItem value="hibrida">{t("modality.hibrida")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="reu-desc" className="text-xs font-semibold">
+                    {t("dialogSchedule.descriptionLabel")}
+                  </Label>
+                  <Textarea
+                    id="reu-desc"
+                    rows={2}
+                    placeholder={t("dialogSchedule.descPlaceholder")}
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    className="border-linea text-xs resize-none"
                   />
                 </div>
+              </PasoFormulario>
 
-                <div className="max-h-36 overflow-y-auto rounded-md border border-linea divide-y divide-linea">
-                  {candidatosFiltrados.map((c) => {
-                    const seleccionado = participantesSeleccionados.some(
-                      (p) => p.id === c.id
-                    );
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => toggleParticipante(c)}
-                        className={cn(
-                          "w-full flex items-center justify-between p-2 text-left text-xs transition-colors hover:bg-muted/60",
-                          seleccionado && "bg-marca-50/70 text-marca-900 font-medium"
-                        )}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          {c.tipo === "estudiante" ? (
-                            <GraduationCap className="size-3.5 text-marca-600 shrink-0" />
-                          ) : (
-                            <Users className="size-3.5 text-tinta-2 shrink-0" />
-                          )}
-                          <span className="truncate">{c.nombre}</span>
-                          <span className="text-tinta-2 text-[10px]">({c.detalle_rol})</span>
-                        </div>
-                        {seleccionado && (
-                          <CheckCircle2 className="size-3.5 text-marca-600 shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
+              <PasoFormulario titulo={t("pasos.cuandoDonde")} className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="reu-fecha" className="text-xs font-semibold">
+                      {t("dialogSchedule.date")} *
+                    </Label>
+                    <Input
+                      id="reu-fecha"
+                      type="date"
+                      required
+                      value={fecha}
+                      onChange={(e) => setFecha(e.target.value)}
+                      className="h-10 border-linea text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="reu-hora-inicio" className="text-xs font-semibold">
+                      {t("dialogSchedule.startTime")} *
+                    </Label>
+                    <Input
+                      id="reu-hora-inicio"
+                      type="time"
+                      required
+                      value={horaInicio}
+                      onChange={(e) => setHoraInicio(e.target.value)}
+                      className="h-10 border-linea text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="reu-hora-fin" className="text-xs font-semibold">
+                      {t("dialogSchedule.endTime")} *
+                    </Label>
+                    <Input
+                      id="reu-hora-fin"
+                      type="time"
+                      required
+                      value={horaFin}
+                      onChange={(e) => setHoraFin(e.target.value)}
+                      className="h-10 border-linea text-xs"
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* El banner de arriba queda tapado por el diálogo: el error se
-                repite aquí para que el botón no parezca no hacer nada. */}
-            {mensajeError && (
-              <p role="alert" className={ALERTA_RIESGO.contenedor}>
-                <AlertCircle className={ALERTA_RIESGO.icono} />
-                <span className={ALERTA_RIESGO.texto}>{mensajeError}</span>
-              </p>
-            )}
-            <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDialogoAgendarAbierto(false)}
-                className="h-10 min-h-[44px] active:scale-95"
-              >
-                {t("actions.cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
-              >
-                {isPending ? t("actions.saving") : t("actions.confirmSchedule")}
-              </Button>
-            </DialogFooter>
+                <div className="space-y-1">
+                  <Label htmlFor="reu-lugar" className="text-xs font-semibold">
+                    {modalidad === "virtual"
+                      ? t("dialogSchedule.linkVirtual")
+                      : t("dialogSchedule.roomOrLink")}
+                  </Label>
+                  <Input
+                    id="reu-lugar"
+                    placeholder={
+                      modalidad === "virtual"
+                        ? "https://meet.google.com/..."
+                        : t("dialogSchedule.roomPlaceholder")
+                    }
+                    value={lugarOEnlace}
+                    onChange={(e) => setLugarOEnlace(e.target.value)}
+                    className="h-10 border-linea"
+                  />
+                </div>
+              </PasoFormulario>
+
+              <PasoFormulario titulo={t("pasos.participantes")}>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold">
+                    {t("dialogSchedule.inviteParticipants")}
+                  </Label>
+
+                  {/* Seleccionados */}
+                  {participantesSeleccionados.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 p-2 rounded-lg bg-muted/40 border border-linea">
+                      {participantesSeleccionados.map((p) => (
+                        <span
+                          key={p.id}
+                          className="inline-flex items-center gap-1 rounded-md bg-marca-50 text-marca-800 border border-marca-600/30 px-2 py-0.5 text-xs font-medium"
+                        >
+                          {p.tipo === "estudiante" && (
+                            <GraduationCap className="size-3 text-marca-600" />
+                          )}
+                          <span>{p.nombre}</span>
+                          <button
+                            type="button"
+                            onClick={() => toggleParticipante(p)}
+                            className="hover:text-marca-900"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Buscador de candidatos */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 size-3.5 text-tinta-2" />
+                    <Input
+                      type="text"
+                      placeholder={t("dialogSchedule.searchAttendeesPlaceholder")}
+                      value={busquedaCandidato}
+                      onChange={(e) => setBusquedaCandidato(e.target.value)}
+                      className="pl-8 h-9 text-xs border-linea"
+                    />
+                  </div>
+
+                  <div className="max-h-36 overflow-y-auto rounded-md border border-linea divide-y divide-linea">
+                    {candidatosFiltrados.map((c) => {
+                      const seleccionado = participantesSeleccionados.some(
+                        (p) => p.id === c.id
+                      );
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => toggleParticipante(c)}
+                          className={cn(
+                            "w-full flex items-center justify-between p-2 text-left text-xs transition-colors hover:bg-muted/60",
+                            seleccionado && "bg-marca-50/70 text-marca-900 font-medium"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {c.tipo === "estudiante" ? (
+                              <GraduationCap className="size-3.5 text-marca-600 shrink-0" />
+                            ) : (
+                              <Users className="size-3.5 text-tinta-2 shrink-0" />
+                            )}
+                            <span className="truncate">{c.nombre}</span>
+                            <span className="text-tinta-2 text-[10px]">({c.detalle_rol})</span>
+                          </div>
+                          {seleccionado && (
+                            <CheckCircle2 className="size-3.5 text-marca-600 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </PasoFormulario>
+
+              {/* El banner de arriba queda tapado por el diálogo: el error se
+                  repite aquí para que el botón no parezca no hacer nada. */}
+              {mensajeError && (
+                <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                  <AlertCircle className={ALERTA_RIESGO.icono} />
+                  <span className={ALERTA_RIESGO.texto}>{mensajeError}</span>
+                </p>
+              )}
+              <AccionesFormulario>
+                <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDialogoAgendarAbierto(false)}
+                    className="h-10 min-h-[44px] active:scale-95"
+                  >
+                    {t("actions.cancel")}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isPending}
+                    className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
+                  >
+                    {isPending ? t("actions.saving") : t("actions.confirmSchedule")}
+                  </Button>
+                </DialogFooter>
+              </AccionesFormulario>
+            </FormularioGuiado>
           </form>
         </DialogContent>
       </Dialog>

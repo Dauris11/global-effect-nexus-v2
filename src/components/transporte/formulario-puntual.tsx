@@ -6,6 +6,11 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -134,84 +139,92 @@ export function FormularioPuntual({
     </div>
   ) : (
     <form onSubmit={manejarEnvio} className="space-y-4 text-sm">
-      <div className="space-y-1.5">
-        <Label htmlFor="nombre-pasajero">{t("fullNameLabel")}</Label>
-        <Input
-          id="nombre-pasajero"
-          required
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          placeholder={t("fullNamePlaceholder")}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="contacto-pasajero">{t("idOrPhoneLabel")}</Label>
-        <Input
-          id="contacto-pasajero"
-          value={contacto}
-          onChange={(e) => setContacto(e.target.value)}
-          placeholder={t("idOrPhonePlaceholder")}
-        />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {selector(
-          "viaje-pasajero",
-          t("tripShift"),
-          horarioId,
-          setHorarioId,
-          horarios.map((h) => ({ id: h.id, texto: `${h.nombre} · ${h.hora_salida}` })),
-        )}
-        {conFecha && (
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.pasajero")}>
           <div className="space-y-1.5">
-            <Label htmlFor="fecha-pasajero">{t("dateLabel")}</Label>
+            <Label htmlFor="nombre-pasajero">{t("fullNameLabel")}</Label>
             <Input
-              id="fecha-pasajero"
-              type="date"
-              min={hoy}
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
+              id="nombre-pasajero"
+              required
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder={t("fullNamePlaceholder")}
             />
           </div>
-        )}
-      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {selector(
-          "origen-pasajero",
-          t("pickupStop"),
-          origenId,
-          setOrigenId,
-          paradas.map((p) => ({ id: p.id, texto: `${p.orden}. ${p.nombre}` })),
-        )}
-        {selector(
-          "destino-pasajero",
-          t("dropoffStop"),
-          destinoId,
-          setDestinoId,
-          paradas.map((p) => ({ id: p.id, texto: `${p.orden}. ${p.nombre}` })),
-        )}
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="contacto-pasajero">{t("idOrPhoneLabel")}</Label>
+            <Input
+              id="contacto-pasajero"
+              value={contacto}
+              onChange={(e) => setContacto(e.target.value)}
+              placeholder={t("idOrPhonePlaceholder")}
+            />
+          </div>
+        </PasoFormulario>
 
-      {(mismasParadas || error) && (
-        <p
-          role="alert"
-          className="flex items-center gap-3 rounded-card bg-tinta p-3 text-sm text-background"
-        >
-          <AlertCircle className="size-4 shrink-0" />
-          {error ?? t("sameStopError")}
-        </p>
-      )}
+        <PasoFormulario titulo={t("pasos.viaje")}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {selector(
+              "viaje-pasajero",
+              t("tripShift"),
+              horarioId,
+              setHorarioId,
+              horarios.map((h) => ({ id: h.id, texto: `${h.nombre} · ${h.hora_salida}` })),
+            )}
+            {conFecha && (
+              <div className="space-y-1.5">
+                <Label htmlFor="fecha-pasajero">{t("dateLabel")}</Label>
+                <Input
+                  id="fecha-pasajero"
+                  type="date"
+                  min={hoy}
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
-      <Button
-        type="submit"
-        disabled={cargando || !nombre.trim() || mismasParadas}
-        className="w-full gap-2 font-semibold"
-      >
-        <Send className="size-4" />
-        {t("submitQuickEnroll")}
-      </Button>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {selector(
+              "origen-pasajero",
+              t("pickupStop"),
+              origenId,
+              setOrigenId,
+              paradas.map((p) => ({ id: p.id, texto: `${p.orden}. ${p.nombre}` })),
+            )}
+            {selector(
+              "destino-pasajero",
+              t("dropoffStop"),
+              destinoId,
+              setDestinoId,
+              paradas.map((p) => ({ id: p.id, texto: `${p.orden}. ${p.nombre}` })),
+            )}
+          </div>
+
+          {(mismasParadas || error) && (
+            <p
+              role="alert"
+              className="flex items-center gap-3 rounded-card bg-tinta p-3 text-sm text-background"
+            >
+              <AlertCircle className="size-4 shrink-0" />
+              {error ?? t("sameStopError")}
+            </p>
+          )}
+        </PasoFormulario>
+
+        <AccionesFormulario>
+          <Button
+            type="submit"
+            disabled={cargando || !nombre.trim() || mismasParadas}
+            className="w-full gap-2 font-semibold"
+          >
+            <Send className="size-4" />
+            {t("submitQuickEnroll")}
+          </Button>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 

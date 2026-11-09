@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,190 +101,202 @@ export function DialogoNuevoEmpleado({
             </div>
           )}
 
-          <div className="grid gap-4 py-4 text-sm">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="emp-tercero">{t("tercero")}</Label>
-                <Select value={terceroId} onValueChange={setTerceroId} required>
-                  <SelectTrigger id="emp-tercero">
-                    <SelectValue placeholder={t("seleccionarTercero")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {terceros.map((tc) => (
-                      <SelectItem key={tc.id} value={tc.id}>
-                        {tc.nombre} ({tc.identificacion})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <FormularioGuiado className="py-4">
+            <div className="grid gap-4 text-sm">
+              <PasoFormulario titulo={t("pasos.puesto")}>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-tercero">{t("tercero")}</Label>
+                    <Select value={terceroId} onValueChange={setTerceroId} required>
+                      <SelectTrigger id="emp-tercero">
+                        <SelectValue placeholder={t("seleccionarTercero")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {terceros.map((tc) => (
+                          <SelectItem key={tc.id} value={tc.id}>
+                            {tc.nombre} ({tc.identificacion})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="emp-centro">{t("centroCosto")}</Label>
-                <Select value={centroCostoId} onValueChange={setCentroCostoId} required>
-                  <SelectTrigger id="emp-centro">
-                    <SelectValue placeholder={t("seleccionarCentro")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {centrosCosto.map((cc) => (
-                      <SelectItem key={cc.id} value={cc.id}>
-                        {cc.codigo} — {cc.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-centro">{t("centroCosto")}</Label>
+                    <Select value={centroCostoId} onValueChange={setCentroCostoId} required>
+                      <SelectTrigger id="emp-centro">
+                        <SelectValue placeholder={t("seleccionarCentro")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {centrosCosto.map((cc) => (
+                          <SelectItem key={cc.id} value={cc.id}>
+                            {cc.codigo} — {cc.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-cod">{t("codigo")}</Label>
+                    <Input
+                      id="emp-cod"
+                      value={codigoEmpleado}
+                      onChange={(e) => setCodigoEmpleado(e.target.value)}
+                      placeholder="EMP-001"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-cargo">{t("cargo")}</Label>
+                    <Input
+                      id="emp-cargo"
+                      value={cargo}
+                      onChange={(e) => setCargo(e.target.value)}
+                      placeholder="Coordinador Pedagógico"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-depto">{t("departamento")}</Label>
+                    <Input
+                      id="emp-depto"
+                      value={departamento}
+                      onChange={(e) => setDepartamento(e.target.value)}
+                      placeholder="Operaciones"
+                      required
+                    />
+                  </div>
+                </div>
+              </PasoFormulario>
+
+              <PasoFormulario titulo={t("pasos.contrato")}>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-ingreso">{t("fechaIngreso")}</Label>
+                    <Input
+                      id="emp-ingreso"
+                      type="date"
+                      value={fechaIngreso}
+                      onChange={(e) => setFechaIngreso(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-tipo-contrato">{t("tipoContrato")}</Label>
+                    <Select
+                      value={tipoContrato}
+                      onValueChange={(val: "indefinido" | "fijo" | "proyecto" | "pasantia") =>
+                        setTipoContrato(val)
+                      }
+                    >
+                      <SelectTrigger id="emp-tipo-contrato">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indefinido">{t("indefinido")}</SelectItem>
+                        <SelectItem value="fijo">{t("fijo")}</SelectItem>
+                        <SelectItem value="proyecto">{t("proyecto")}</SelectItem>
+                        <SelectItem value="pasantia">{t("pasantia")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-salario">{t("salarioBase")}</Label>
+                    <Input
+                      id="emp-salario"
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={salarioBase}
+                      onChange={(e) => setSalarioBase(e.target.value)}
+                      placeholder="35000.00"
+                      required
+                    />
+                  </div>
+                </div>
+              </PasoFormulario>
+
+              <PasoFormulario titulo={t("pasos.pago")}>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-banco">{t("banco")}</Label>
+                    <Input
+                      id="emp-banco"
+                      value={bancoNombre}
+                      onChange={(e) => setBancoNombre(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-cuenta">{t("cuentaBancaria")}</Label>
+                    <Input
+                      id="emp-cuenta"
+                      value={bancoCuenta}
+                      onChange={(e) => setBancoCuenta(e.target.value)}
+                      placeholder="100-XXXXX-X"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="emp-tipo-cuenta">{t("tipoCuenta")}</Label>
+                    <Select
+                      value={bancoTipoCuenta}
+                      onValueChange={(val: "ahorros" | "corriente") => setBancoTipoCuenta(val)}
+                    >
+                      <SelectTrigger id="emp-tipo-cuenta">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ahorros">{t("ahorros")}</SelectItem>
+                        <SelectItem value="corriente">{t("corriente")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cotizaTss}
+                      onChange={(e) => setCotizaTss(e.target.checked)}
+                      className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+                    />
+                    <span>{t("cotizaTss")}</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={aplicaIsr}
+                      onChange={(e) => setAplicaIsr(e.target.checked)}
+                      className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+                    />
+                    <span>{t("aplicaIsr")}</span>
+                  </label>
+                </div>
+              </PasoFormulario>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="emp-cod">{t("codigo")}</Label>
-                <Input
-                  id="emp-cod"
-                  value={codigoEmpleado}
-                  onChange={(e) => setCodigoEmpleado(e.target.value)}
-                  placeholder="EMP-001"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-cargo">{t("cargo")}</Label>
-                <Input
-                  id="emp-cargo"
-                  value={cargo}
-                  onChange={(e) => setCargo(e.target.value)}
-                  placeholder="Coordinador Pedagógico"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-depto">{t("departamento")}</Label>
-                <Input
-                  id="emp-depto"
-                  value={departamento}
-                  onChange={(e) => setDepartamento(e.target.value)}
-                  placeholder="Operaciones"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="emp-ingreso">{t("fechaIngreso")}</Label>
-                <Input
-                  id="emp-ingreso"
-                  type="date"
-                  value={fechaIngreso}
-                  onChange={(e) => setFechaIngreso(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-tipo-contrato">{t("tipoContrato")}</Label>
-                <Select
-                  value={tipoContrato}
-                  onValueChange={(val: "indefinido" | "fijo" | "proyecto" | "pasantia") =>
-                    setTipoContrato(val)
-                  }
+            <AccionesFormulario>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={cargando || !terceroId || !centroCostoId || !salarioBase}
+                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
                 >
-                  <SelectTrigger id="emp-tipo-contrato">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="indefinido">{t("indefinido")}</SelectItem>
-                    <SelectItem value="fijo">{t("fijo")}</SelectItem>
-                    <SelectItem value="proyecto">{t("proyecto")}</SelectItem>
-                    <SelectItem value="pasantia">{t("pasantia")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-salario">{t("salarioBase")}</Label>
-                <Input
-                  id="emp-salario"
-                  type="number"
-                  step="0.01"
-                  min="1"
-                  value={salarioBase}
-                  onChange={(e) => setSalarioBase(e.target.value)}
-                  placeholder="35000.00"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="emp-banco">{t("banco")}</Label>
-                <Input
-                  id="emp-banco"
-                  value={bancoNombre}
-                  onChange={(e) => setBancoNombre(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-cuenta">{t("cuentaBancaria")}</Label>
-                <Input
-                  id="emp-cuenta"
-                  value={bancoCuenta}
-                  onChange={(e) => setBancoCuenta(e.target.value)}
-                  placeholder="100-XXXXX-X"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="emp-tipo-cuenta">{t("tipoCuenta")}</Label>
-                <Select
-                  value={bancoTipoCuenta}
-                  onValueChange={(val: "ahorros" | "corriente") => setBancoTipoCuenta(val)}
-                >
-                  <SelectTrigger id="emp-tipo-cuenta">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ahorros">{t("ahorros")}</SelectItem>
-                    <SelectItem value="corriente">{t("corriente")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex gap-6 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={cotizaTss}
-                  onChange={(e) => setCotizaTss(e.target.checked)}
-                  className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
-                />
-                <span>{t("cotizaTss")}</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={aplicaIsr}
-                  onChange={(e) => setAplicaIsr(e.target.checked)}
-                  className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
-                />
-                <span>{t("aplicaIsr")}</span>
-              </label>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
-              {t("cancelar")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={cargando || !terceroId || !centroCostoId || !salarioBase}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
-            >
-              {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("guardarEmpleado")}
-            </Button>
-          </DialogFooter>
+                  {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t("guardarEmpleado")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

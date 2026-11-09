@@ -451,6 +451,64 @@ SQL de las consultas nuevas; falta el recorrido manual en navegador.
 
 ---
 
+## 9 nov 2026 — Datos de demostración en todos los estados
+
+**Qué se hizo.** Dos scripts idempotentes, `seed-demo-estados.mjs` (esquema
+público) y `seed-demo-contabilidad.mjs`, que dejan al menos una fila por cada
+valor de estado de cada entidad y trabajo pendiente para los ocho roles.
+
+**Decisiones y motivo.**
+- *Ids deterministas* (hash de una clave fija) en lugar de borrar-y-recrear:
+  permite repetir el script sin duplicar y sin tocar datos ajenos.
+- *Sin asientos fabricados.* Un asiento escrito a mano puede descuadrar el
+  libro (hay un trigger de cuadre) o romper la cadena de hash de la bitácora.
+  Los documentos aprobados quedan sin `asiento_id`; se comprobó después que la
+  cadena sigue íntegra (1362 eslabones, 0 rotos).
+- *Numeración por `contabilidad.siguiente_numero`* solo para filas nuevas, para
+  que repetir el seed no consuma números de la secuencia.
+- Las columnas generadas (`total`, `saldo`…) se descartan leyendo el catálogo,
+  no a mano.
+
+**Alternativas descartadas.** Reutilizar las acciones de `src/server` (cubren
+las reglas de negocio pero exigen sesión y no corren desde un script de Node);
+datos solo con SQL plano (frágil ante cambios de columnas).
+
+**Limitaciones.** Falta pagos, nómina y conciliación en estados intermedios.
+La base es la de Supabase real del proyecto, no un entorno aparte.
+
+---
+
+## 9 nov 2026 — Formularios Normal / Guiado y portada del expediente
+
+**Qué se hizo.** Una pieza común, `FormularioGuiado`, que deja a cada persona
+llenar los formularios largos con todo a la vista o paso a paso, aplicada a
+unos 45 formularios. Y una portada del expediente con la foto, la cuenta del
+portal vinculada, las materias de la universidad, las clases de 360 y las
+tareas que dejan los docentes en el aula virtual.
+
+**Decisiones y motivo.**
+- *Los pasos ocultos siguen montados* (atributo `hidden`), así el envío es el
+  mismo en los dos modos y ningún formulario cambió su lógica de guardado.
+- *Se valida al pulsar Siguiente*: un campo obligatorio escondido no se puede
+  señalar, así que solo se avanza con el paso en regla.
+- *Preferencia en el navegador*, como la apariencia: es costumbre de quien usa
+  esa pantalla y abre ya en el modo correcto. Por defecto, normal.
+- *Solo formularios de ≥ 5 campos en 2+ grupos*: en un filtro o una
+  confirmación, un asistente es un clic más sin ganancia.
+- *Portada*: la foto vivía solo dentro del formulario de edición; el vínculo
+  con la cuenta se muestra porque sin él el portal del estudiante no ve sus
+  materias ni sus tareas.
+
+**Alternativas descartadas.** Un asistente separado por formulario (duplica
+campos y lógica); desmontar los pasos ocultos (rompe el `FormData` y lo
+escrito en campos no controlados); guardar la preferencia en la base (una
+consulta más por formulario para algo del aparato).
+
+**Limitaciones.** No se probó en navegador con sesión iniciada; queda la
+prueba manual listada en `pendientes.md`.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

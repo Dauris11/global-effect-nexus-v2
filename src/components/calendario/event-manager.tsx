@@ -33,6 +33,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -1385,106 +1390,112 @@ function FormularioEvento({
     >
       <input type="hidden" name="id" value={entrada?.id ?? ""} />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="ev-titulo">{t("event.title")}</Label>
-        <Input
-          id="ev-titulo"
-          name="titulo"
-          defaultValue={entrada?.titulo}
-          placeholder={t("newEvent.titlePlaceholder")}
-          required
-          maxLength={160}
-        />
-      </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.evento")}>
+          <div className="space-y-1.5">
+            <Label htmlFor="ev-titulo">{t("event.title")}</Label>
+            <Input
+              id="ev-titulo"
+              name="titulo"
+              defaultValue={entrada?.titulo}
+              placeholder={t("newEvent.titlePlaceholder")}
+              required
+              maxLength={160}
+            />
+          </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="ev-fecha">{t("event.date")}</Label>
-          <Input
-            id="ev-fecha"
-            name="fecha"
-            type="date"
-            defaultValue={entrada?.dia ?? dia}
-            required
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ev-tipo">{t("event.type")}</Label>
+            <select
+              id="ev-tipo"
+              name="tipo"
+              defaultValue={entrada?.detalle ?? "otro"}
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            >
+              {TIPOS_EVENTO.map((tipo) => (
+                <option key={tipo} value={tipo}>
+                  {t(`eventType.${tipo}`)}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="ev-inicio">{t("event.start")}</Label>
-          <Input
-            id="ev-inicio"
-            name="hora_inicio"
-            type="time"
-            defaultValue={entrada?.hora?.slice(0, 5) ?? ""}
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ev-desc">{t("event.description")}</Label>
+            <Textarea
+              id="ev-desc"
+              name="descripcion"
+              defaultValue={entrada?.descripcion ?? ""}
+              maxLength={600}
+              rows={2}
+            />
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="ev-fin">{t("event.end")}</Label>
-          <Input
-            id="ev-fin"
-            name="hora_fin"
-            type="time"
-            defaultValue={entrada?.horaFin?.slice(0, 5) ?? ""}
-          />
-        </div>
-      </div>
+        <PasoFormulario titulo={t("pasos.cuandoDonde")}>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="ev-fecha">{t("event.date")}</Label>
+              <Input
+                id="ev-fecha"
+                name="fecha"
+                type="date"
+                defaultValue={entrada?.dia ?? dia}
+                required
+              />
+            </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="ev-tipo">{t("event.type")}</Label>
-          <select
-            id="ev-tipo"
-            name="tipo"
-            defaultValue={entrada?.detalle ?? "otro"}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-          >
-            {TIPOS_EVENTO.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {t(`eventType.${tipo}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ev-inicio">{t("event.start")}</Label>
+              <Input
+                id="ev-inicio"
+                name="hora_inicio"
+                type="time"
+                defaultValue={entrada?.hora?.slice(0, 5) ?? ""}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="ev-lugar">{t("event.place")}</Label>
-          <Input
-            id="ev-lugar"
-            name="ubicacion"
-            defaultValue={entrada?.ubicacion ?? ""}
-            maxLength={160}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ev-fin">{t("event.end")}</Label>
+              <Input
+                id="ev-fin"
+                name="hora_fin"
+                type="time"
+                defaultValue={entrada?.horaFin?.slice(0, 5) ?? ""}
+              />
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="ev-desc">{t("event.description")}</Label>
-        <Textarea
-          id="ev-desc"
-          name="descripcion"
-          defaultValue={entrada?.descripcion ?? ""}
-          maxLength={600}
-          rows={2}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ev-lugar">{t("event.place")}</Label>
+            <Input
+              id="ev-lugar"
+              name="ubicacion"
+              defaultValue={entrada?.ubicacion ?? ""}
+              maxLength={160}
+            />
+          </div>
+        </PasoFormulario>
 
-      {error && (
-        <p role="alert" className="text-destructive text-xs">
-          {t("newEvent.error")}
-        </p>
-      )}
+        {error && (
+          <p role="alert" className="text-destructive text-xs">
+            {t("newEvent.error")}
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={guardando}>
-          <CalendarDays className="size-3.5" />
-          {guardando ? t("saving") : t("saveEvent")}
-        </Button>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={guardando}>
+              <CalendarDays className="size-3.5" />
+              {guardando ? t("saving") : t("saveEvent")}
+            </Button>
 
-        <Button type="button" variant="ghost" size="sm" onClick={onTerminar}>
-          {t("newEvent.cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={onTerminar}>
+              {t("newEvent.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

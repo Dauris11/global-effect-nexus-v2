@@ -81,6 +81,14 @@
         "ayudaLectura": "Punto registrado en la provincia de La Vega.",
         "ayudaEdicion": "Toca el mapa, arrastra la chincheta o usa tu ubicación para marcar el hogar del estudiante."
       }
+    },
+    "formularioGuiado": {
+      "modo": "Cómo quieres llenar este formulario",
+      "normal": "Normal",
+      "guiado": "Guiado",
+      "paso": "Paso {actual} de {total}: {titulo}",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente"
     }
   },
   "home": {
@@ -577,6 +585,20 @@
       "en_curso": "En curso",
       "completado": "Completado",
       "pausado": "Pausado"
+    },
+    "pasos": {
+      "tarea": "Tarea",
+      "plan": "Proyecto y plazo",
+      "responsables": "Responsables",
+      "proyecto": "Proyecto",
+      "fechas": "Fechas"
+    },
+    "activoFormulario": {
+      "pasos": {
+        "identificacion": "Identificación y ubicación",
+        "control": "Custodia y valor",
+        "detalle": "Foto y notas"
+      }
     }
   },
   "calendar": {
@@ -717,7 +739,11 @@
     "filterAgendaAppointments": "Citas",
     "filterAgendaEvents": "Eventos",
     "due": "Vence",
-    "scheduled": "Fecha"
+    "scheduled": "Fecha",
+    "pasos": {
+      "evento": "Evento",
+      "cuandoDonde": "Cuándo y dónde"
+    }
   },
   "staff": {
     "eyebrow": "Operaciones",
@@ -865,7 +891,8 @@
       "notOwner": "Solo lectura: tu rol puede consultar este expediente, pero no editarlo.",
       "readOnlyNote": "Vista de solo lectura.",
       "photoInvalid": "La foto debe ser JPG, PNG o WEBP.",
-      "photoTooLarge": "La foto pesa más de 2 MB."
+      "photoTooLarge": "La foto pesa más de 2 MB.",
+      "faltaNombreSeccion": "Falta el nombre del joven, en la sección de identidad."
     },
     "tab": {
       "identity": "Identidad",
@@ -1027,6 +1054,46 @@
     "bathroom": {
       "dentro": "Dentro de la casa",
       "fuera": "Fuera de la casa"
+    },
+    "portada": {
+      "fotoDe": "Foto de {nombre}",
+      "cuenta": "Entra al portal con {email}",
+      "sinCuenta": "Sin cuenta del portal: no ve sus materias ni sus tareas",
+      "vincular": "Vincular cuenta",
+      "cambiar": "Cambiar cuenta",
+      "tituloDialogo": "Cuenta del portal del estudiante",
+      "cuentaLabel": "Cuenta",
+      "elegir": "Elige una cuenta de estudiante",
+      "sinCuentasLibres": "No hay cuentas de estudiante libres. Crea primero la cuenta en Personal y cuentas.",
+      "desvincular": "Desvincular",
+      "guardar": "Guardar",
+      "error": "No se pudo guardar el vínculo. Inténtalo otra vez.",
+      "errorOcupada": "Esa cuenta ya está vinculada a otro expediente o no es de estudiante.",
+      "universidadTitulo": "Materias de la universidad",
+      "universidadVacia": "Todavía no tiene materias universitarias inscritas.",
+      "creditos": "{n, plural, one {# crédito} other {# créditos}}",
+      "estadoMateria": {
+        "activa": "Cursando",
+        "aprobada": "Aprobada",
+        "reprobada": "Reprobada",
+        "retirada": "Retirada"
+      },
+      "tareasTitulo": "Tareas del aula virtual",
+      "tareasVacia": "Sus docentes todavía no le han dejado tareas ni exámenes.",
+      "resumen": "{pendientes} por entregar · {entregadas} entregadas · {calificadas} calificadas · {vencidas} vencidas",
+      "vencida": "Vencida",
+      "estadoEntrega": {
+        "pendiente": "Por entregar",
+        "entregado": "Entregada",
+        "calificado": "Calificada",
+        "tarde": "Entregada tarde"
+      },
+      "origen": {
+        "g360": "Global Effect 360",
+        "universidad": "Universidad"
+      },
+      "nota": "Nota: {nota} de {maximo}",
+      "masTareas": "{n, plural, one {Y # tarea más en su aula virtual} other {Y # tareas más en su aula virtual}}"
     }
   },
   "academic": {
@@ -1162,7 +1229,12 @@
       "taskRubric": "Instrucciones de entrega y rúbrica",
       "taskRubricPlaceholder": "Escribe los criterios de evaluación, estructura requerida del informe o pautas del proyecto...",
       "taskAllowLate": "Permitir entregas tardías (quedan marcadas con aviso de retraso)",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "pasos": {
+        "tarea": "Tarea",
+        "evaluacion": "Evaluación",
+        "entrega": "Entrega"
+      }
     },
     "termKind": {
       "label": "Duración",
@@ -1355,6 +1427,10 @@
     "editTerm": {
       "title": "Editar período",
       "subtitle": "Cambiar el estado es lo que pone en marcha un cuatrimestre o lo cierra."
+    },
+    "pasos": {
+      "materia": "Materia",
+      "docencia": "Docente y horario"
     }
   },
   "studentPortal": {
@@ -1818,6 +1894,11 @@
       "sidebars": {
         "estandar": "Estándar",
         "negra": "Negra"
+      },
+      "forms": "Formularios",
+      "formModes": {
+        "normal": "Normal: todo a la vista",
+        "guiado": "Guiado: un paso a la vez"
       }
     }
   },
@@ -1909,7 +1990,13 @@
     "fieldTanda": "Tanda",
     "fieldTandaPlaceholder": "Elige la tanda",
     "errTanda": "Elige la tanda 1 o la 2.",
-    "errOverlap": "Ya hay otra ventana de este período abierta en esas fechas."
+    "errOverlap": "Ya hay otra ventana de este período abierta en esas fechas.",
+    "pasos": {
+      "materia": "Materia",
+      "clase": "Docente y horario",
+      "tanda": "Período y tanda",
+      "fechas": "Fechas y aviso"
+    }
   },
   "bandeja": {
     "title": "Bandeja",
@@ -2085,7 +2172,12 @@
       }
     },
     "forbidden": "No tienes acceso a patrocinadores",
-    "forbiddenHint": "Hace falta el permiso «patrocinadores.leer». Pídelo a la coordinación."
+    "forbiddenHint": "Hace falta el permiso «patrocinadores.leer». Pídelo a la coordinación.",
+    "pasos": {
+      "patrocinador": "Patrocinador",
+      "contacto": "Contacto",
+      "aporte": "Aporte y notas"
+    }
   },
   "finance": {
     "eyebrow": "Finanzas",
@@ -2281,6 +2373,12 @@
       "fileInvalid": "Ese tipo de archivo no se admite. Usa PDF, imagen, presentación o documento.",
       "fileTooBig": "El archivo pasa de 20 MB. Súbelo a otro sitio y pon aquí el enlace.",
       "error": "No se pudo completar. Inténtalo otra vez."
+    },
+    "pasos": {
+      "programa": "Programa",
+      "ejecucion": "Facilitador y fechas",
+      "material": "Material",
+      "contenido": "Enlace o archivo"
     }
   },
   "sitemap": {
@@ -2657,6 +2755,10 @@
         "invalido": "La acción no es válida.",
         "error": "No se pudo guardar el paso. Inténtalo de nuevo."
       }
+    },
+    "pasos": {
+      "solicitud": "Solicitud",
+      "detalles": "Detalles"
     }
   },
   "contab": {
@@ -2859,7 +2961,11 @@
         "concepto": "Concepto",
         "referencia": "Referencia",
         "guardar": "Registrar transferencia",
-        "ok": "Transferencia registrada."
+        "ok": "Transferencia registrada.",
+        "pasos": {
+          "cuentas": "Cuentas y monto",
+          "detalle": "Detalle"
+        }
       },
       "tasaForm": {
         "titulo": "Registrar tasa",
@@ -2926,7 +3032,10 @@
         "separador": "Separador decimal",
         "punto": "Punto (1,234.56)",
         "coma": "Coma (1.234,56)",
-        "guardar": "Importar y proponer emparejamientos"
+        "guardar": "Importar y proponer emparejamientos",
+        "pasos": {
+          "archivo": "Archivo y periodo"
+        }
       },
       "estadoCuenta": "Estado de cuenta del banco",
       "propuesta": "Propuesta",
@@ -3018,7 +3127,12 @@
       "referenciaAyuda": "Número de transferencia, de depósito o del documento.",
       "notas": "Notas",
       "guardar": "Guardar borrador",
-      "cancelar": "Cancelar"
+      "cancelar": "Cancelar",
+      "pasos": {
+        "datos": "Datos del recibo",
+        "clasificacion": "Clasificación",
+        "detalle": "Detalle"
+      }
     },
     "detalle": {
       "volver": "Recibos",
@@ -3120,7 +3234,12 @@
       "ninguna": "Ninguna",
       "estado": "Estado",
       "guardar": "Guardar proveedor",
-      "cancelar": "Cancelar"
+      "cancelar": "Cancelar",
+      "pasos": {
+        "identificacion": "Identificación",
+        "contacto": "Contacto",
+        "condiciones": "Condiciones"
+      }
     },
     "proveedor": {
       "volver": "Proveedores",
@@ -3180,7 +3299,12 @@
       "ocrExito": "Comprobante leído con éxito ({confianza}% de certeza). Revisa los campos sugeridos.",
       "ocrError": "No se pudo leer el archivo: {error}",
       "guardar": "Guardar borrador",
-      "cancelar": "Cancelar"
+      "cancelar": "Cancelar",
+      "pasos": {
+        "comprobante": "Comprobante",
+        "montos": "Montos",
+        "asignacion": "Asignación"
+      }
     },
     "cajas": {
       "titulo": "Cajas Chicas y Arqueos",
@@ -3313,6 +3437,12 @@
         "codigo_repetido": "Ya existe una caja con ese código.",
         "periodo_cerrado": "El periodo contable de esa fecha está cerrado.",
         "error": "No se pudo guardar. Inténtalo de nuevo."
+      },
+      "pasos": {
+        "movimiento": "Movimiento",
+        "soporte": "Clasificación y soporte",
+        "datos": "Datos de la caja",
+        "fondo": "Fondo fijo"
       }
     },
     "exportar": {
@@ -3395,7 +3525,13 @@
       "pago": "PG-{numero} · {fecha} · {cuenta}",
       "comprobante": "Comprobante {numero}",
       "ok": "Guardado.",
-      "exportarExcel": "Exportar a Excel"
+      "exportarExcel": "Exportar a Excel",
+      "pasos": {
+        "programacion": "Fecha y cuenta",
+        "clasificacion": "Clasificación",
+        "monto": "Monto",
+        "medio": "Forma de pago"
+      }
     },
     "gantt": {
       "titulo": "Vencimientos",
@@ -3599,7 +3735,12 @@
         "emisionNo": "La Fundación no emite comprobantes",
         "emisionTexto": "Los números de comprobante que se emiten fuera del sistema se registran a mano en cada documento. Esta opción no se cambia desde aquí.",
         "vacioTitulo": "Falta la ficha de la Fundación",
-        "vacioTexto": "La crea la migración 0048. Avisa al equipo técnico para que la aplique."
+        "vacioTexto": "La crea la migración 0048. Avisa al equipo técnico para que la aplique.",
+        "pasos": {
+          "identidad": "Identidad fiscal",
+          "ejercicio": "Ejercicio contable",
+          "contacto": "Contacto"
+        }
       },
       "parametros": {
         "explicacion": "Cada parámetro tiene fecha de vigencia. Un cambio no edita el valor anterior: crea una vigencia nueva y cierra la anterior, para que los meses pasados se sigan calculando con la cifra de entonces.",
@@ -3875,7 +4016,11 @@
         "concepto": "Concepto",
         "guardar": "Guardar asiento",
         "cancelar": "Cancelar",
-        "ayudaEnvio": "Para guardar: concepto, al menos dos líneas con cuenta, cada una con debe o haber (no los dos), y débitos iguales a créditos."
+        "ayudaEnvio": "Para guardar: concepto, al menos dos líneas con cuenta, cada una con debe o haber (no los dos), y débitos iguales a créditos.",
+        "pasos": {
+          "datos": "Datos del asiento",
+          "lineas": "Líneas"
+        }
       },
       "editor": {
         "titulo": "Líneas",
@@ -3928,7 +4073,11 @@
           "dia": "Día del mes",
           "diaAyuda": "Si el mes no tiene ese día, el asiento cae el último día del mes.",
           "concepto": "Concepto del asiento",
-          "guardar": "Guardar plantilla"
+          "guardar": "Guardar plantilla",
+          "pasos": {
+            "datos": "Datos de la plantilla",
+            "lineas": "Líneas"
+          }
         }
       },
       "error": {
@@ -4005,7 +4154,14 @@
       "observadoBajoRevision": "Observado (Requiere seguimiento)",
       "rechazadoRiesgoAlto": "Rechazado (Riesgo Inaceptable)",
       "observacionesOficial": "Observaciones del oficial de cumplimiento",
-      "guardarDictamen": "Guardar Dictamen"
+      "guardarDictamen": "Guardar Dictamen",
+      "pasos": {
+        "identificacion": "Identificación",
+        "contacto": "Contacto",
+        "clasificacion": "Clasificación",
+        "verificacion": "Verificación",
+        "dictamen": "Dictamen"
+      }
     },
     "donaciones": {
       "antetitulo": "Contabilidad",
@@ -4062,7 +4218,14 @@
       "unica": "Única",
       "numeroCuotas": "Número de cuotas",
       "fechaInicioCobro": "Fecha inicio de cobro",
-      "generarCalendario": "Generar promesa y cuotas"
+      "generarCalendario": "Generar promesa y cuotas",
+      "pasos": {
+        "donante": "Donante",
+        "montos": "Monto",
+        "destino": "Destino",
+        "compromiso": "Compromiso",
+        "calendario": "Calendario de cobro"
+      }
     },
     "compras": {
       "antetitulo": "Contabilidad",
@@ -4101,7 +4264,12 @@
       "rechazada": "Rechazada",
       "aprobar": "Aprobar",
       "rechazar": "Rechazar",
-      "indicarMotivoRechazo": "Indica el motivo del rechazo:"
+      "indicarMotivoRechazo": "Indica el motivo del rechazo:",
+      "pasos": {
+        "datos": "Datos generales",
+        "lineas": "Artículos",
+        "justificacion": "Justificación"
+      }
     },
     "retenciones": {
       "antetitulo": "Contabilidad",
@@ -4257,7 +4425,11 @@
       "confirmarLiberacion": "Confirmar liberación",
       "procesando": "Procesando...",
       "guardar": "Guardar fondo",
-      "cancelar": "Cancelar"
+      "cancelar": "Cancelar",
+      "pasos": {
+        "datos": "Datos del fondo",
+        "restriccion": "Restricción del donante"
+      }
     },
     "presupuesto": {
       "antetitulo": "Contabilidad",
@@ -4391,7 +4563,14 @@
       "cesantia": "Auxilio de Cesantía",
       "vacaciones": "Vacaciones no disfrutadas",
       "regalia": "Regalía Pascual (Salario de Navidad)",
-      "totalLiquidacion": "Total prestaciones laborales"
+      "totalLiquidacion": "Total prestaciones laborales",
+      "pasos": {
+        "puesto": "Puesto",
+        "contrato": "Contrato",
+        "pago": "Pago y retenciones",
+        "periodo": "Periodo",
+        "fechas": "Fechas"
+      }
     },
     "activosFijos": {
       "antetitulo": "Contabilidad",
@@ -4433,7 +4612,12 @@
       "tasaAnual": "Tasa anual",
       "cuentaActivo": "Cuenta de activo",
       "totalAmortizado": "Total amortizado",
-      "asientoGenerado": "Asiento contable"
+      "asientoGenerado": "Asiento contable",
+      "pasos": {
+        "identificacion": "Identificación",
+        "adquisicion": "Adquisición",
+        "origen": "Origen y enlace"
+      }
     },
     "inventarioContable": {
       "antetitulo": "Contabilidad",
@@ -4488,7 +4672,13 @@
       "iniciarConteo": "Generar planilla de conteo",
       "diferencia": "Diferencia",
       "impacto": "Impacto monetario",
-      "aplicarAjustes": "Aplicar ajustes y generar asiento"
+      "aplicarAjustes": "Aplicar ajustes y generar asiento",
+      "pasos": {
+        "movimiento": "Movimiento",
+        "cantidades": "Cantidad y destino",
+        "articulo": "Artículo",
+        "cuentas": "Cuentas contables"
+      }
     },
     "reportesFinancieros": {
       "antetitulo": "Contabilidad",
@@ -4769,6 +4959,11 @@
       "disable": "Desactivar",
       "enable": "Activar",
       "delete": "Eliminar"
+    },
+    "pasos": {
+      "documento": "Documento",
+      "agentes": "Agentes",
+      "contenido": "Contenido"
     }
   },
   "miDia": {
@@ -5306,7 +5501,11 @@
     "rolesEyebrow": "GOBERNANZA SUPERADMIN",
     "rolesHeading": "Asignación de Proyectos por Rol",
     "backToProjects": "Volver a Proyectos",
-    "saveError": "No se pudo guardar. Inténtalo de nuevo."
+    "saveError": "No se pudo guardar. Inténtalo de nuevo.",
+    "pasos": {
+      "tarea": "Tarea",
+      "planificacion": "Planificación"
+    }
   },
   "rendicion": {
     "pageTitle": "Rendición de Gastos y Facturas con OCR",
@@ -5360,6 +5559,11 @@
       "propia": "No puedes revisar tu propia rendición: la revisa otra persona.",
       "ya_cambio": "Otra persona ya la movió. Recarga para ver su estado.",
       "error": "No se pudo actualizar la rendición. Inténtalo de nuevo."
+    },
+    "pasos": {
+      "comprobante": "Comprobante y proveedor",
+      "montos": "Montos",
+      "destino": "Programa y concepto"
     }
   },
   "moodle": {
@@ -5550,6 +5754,11 @@
       "errProfesor": "Error al asignar.",
       "okEstudiante": "Estudiante vinculado con éxito.",
       "errEstudiante": "Error al vincular estudiante."
+    },
+    "pasosVisita": {
+      "lugar": "Centro educativo",
+      "sesion": "Sesión impartida",
+      "evidencia": "Evidencias y observaciones"
     }
   },
   "reuniones": {
@@ -5642,6 +5851,11 @@
     "empty": {
       "title": "No hay reuniones en esta vista",
       "description": "Utiliza el botón 'Agendar Reunión' para convocar la primera sesión."
+    },
+    "pasos": {
+      "reunion": "Reunión",
+      "cuandoDonde": "Cuándo y dónde",
+      "participantes": "Participantes"
     }
   },
   "verComo": {
@@ -5767,6 +5981,12 @@
       "members": "Miembros",
       "save": "Guardar equipo",
       "saved": "Equipo guardado"
+    },
+    "pasos": {
+      "tarea": "Tarea",
+      "fechas": "Fechas y esfuerzo",
+      "responsables": "Responsables",
+      "plan": "Proyecto y plazo"
     }
   },
   "accesoRapido": {
@@ -5913,6 +6133,10 @@
       "assigned": "Asignado",
       "stopped": "Parada",
       "estimated": "⏱️ Estimado: +{minutes} min desde inicio"
+    },
+    "pasos": {
+      "pasajero": "Pasajero",
+      "viaje": "Viaje"
     }
   },
   "permisosAdmin": {

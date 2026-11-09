@@ -21,6 +21,11 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -206,6 +211,8 @@ export function RegistroVisitaLiceo({
 
       <CardContent className="p-4 sm:p-6">
         <form onSubmit={manejarEnvio} className="space-y-5">
+          <FormularioGuiado>
+          <PasoFormulario titulo={t("pasosVisita.lugar")}>
           {/* 1. Centro Educativo */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -247,6 +254,9 @@ export function RegistroVisitaLiceo({
             )}
           </div>
 
+          </PasoFormulario>
+
+          <PasoFormulario titulo={t("pasosVisita.sesion")}>
           {/* 2. Tema Impartido y Sugerencias Rápidas */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -339,6 +349,9 @@ export function RegistroVisitaLiceo({
             </div>
           </div>
 
+          </PasoFormulario>
+
+          <PasoFormulario titulo={t("pasosVisita.evidencia")}>
           {/* 4. Evidencias Fotográficas con Soporte Móvil de Cámara */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold">
@@ -404,6 +417,7 @@ export function RegistroVisitaLiceo({
               maxLength={1200}
             />
           </div>
+          </PasoFormulario>
 
           {errorValidacion && (
             <p className="rounded-lg bg-marca-50 p-2.5 text-xs font-medium text-tinta">
@@ -419,6 +433,7 @@ export function RegistroVisitaLiceo({
           )}
 
           {/* Botón de envío */}
+          <AccionesFormulario>
           <Button
             type="submit"
             disabled={isPending}
@@ -433,6 +448,8 @@ export function RegistroVisitaLiceo({
               {isPending ? t("savingVisit") : t("submitVisitButton")}
             </span>
           </Button>
+          </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </CardContent>
     </Card>

@@ -14,6 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -89,95 +94,103 @@ export function DialogoFondo({ donantes }: { donantes: { id: string; nombre: str
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t("nombre")}</Label>
-              <Input
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Código</Label>
-              <Input
-                placeholder="FND-XXX"
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-              />
-            </div>
-          </div>
+          <FormularioGuiado>
+            <PasoFormulario titulo={t("pasos.datos")}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{t("nombre")}</Label>
+                  <Input
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Código</Label>
+                  <Input
+                    placeholder="FND-XXX"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-1.5">
-            <Label>{t("tipoRestriccion")}</Label>
-            <Select
-              value={tipoRestriccion}
-              onValueChange={(v: "no_restringido" | "temporalmente_restringido" | "permanentemente_restringido") => setTipoRestriccion(v)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no_restringido">{t("no_restringido")}</SelectItem>
-                <SelectItem value="temporalmente_restringido">{t("temporalmente_restringido")}</SelectItem>
-                <SelectItem value="permanentemente_restringido">{t("permanentemente_restringido")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {tipoRestriccion !== "no_restringido" && (
-            <>
               <div className="space-y-1.5">
-                <Label>{t("donante")}</Label>
-                <Select value={donanteId} onValueChange={setDonanteId}>
+                <Label>{t("tipoRestriccion")}</Label>
+                <Select
+                  value={tipoRestriccion}
+                  onValueChange={(v: "no_restringido" | "temporalmente_restringido" | "permanentemente_restringido") => setTipoRestriccion(v)}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccione donante patrocinador" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {donantes.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.nombre}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="no_restringido">{t("no_restringido")}</SelectItem>
+                    <SelectItem value="temporalmente_restringido">{t("temporalmente_restringido")}</SelectItem>
+                    <SelectItem value="permanentemente_restringido">{t("permanentemente_restringido")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </PasoFormulario>
 
-              <div className="space-y-1.5">
-                <Label>{t("montoOriginal")} (RD$)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={montoOriginal}
-                  onChange={(e) => setMontoOriginal(e.target.value)}
-                  required
-                />
-              </div>
+            {/* Solo un fondo restringido tiene segundo paso: sin él el
+                formulario queda en uno y no ofrece el modo guiado. */}
+            {tipoRestriccion !== "no_restringido" && (
+              <PasoFormulario titulo={t("pasos.restriccion")}>
+                <div className="space-y-1.5">
+                  <Label>{t("donante")}</Label>
+                  <Select value={donanteId} onValueChange={setDonanteId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione donante patrocinador" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {donantes.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-1.5">
-                <Label>{t("proposito")}</Label>
-                <Textarea
-                  rows={2}
-                  value={proposito}
-                  onChange={(e) => setProposito(e.target.value)}
-                  placeholder="Finalidad convenida por el donante..."
-                />
-              </div>
-            </>
-          )}
+                <div className="space-y-1.5">
+                  <Label>{t("montoOriginal")} (RD$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={montoOriginal}
+                    onChange={(e) => setMontoOriginal(e.target.value)}
+                    required
+                  />
+                </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setAbierto(false)}
-            >
-              {t("cancelar")}
-            </Button>
-            <Button type="submit" disabled={guardando}>
-              {guardando ? t("procesando") : t("guardar")}
-            </Button>
-          </DialogFooter>
+                <div className="space-y-1.5">
+                  <Label>{t("proposito")}</Label>
+                  <Textarea
+                    rows={2}
+                    value={proposito}
+                    onChange={(e) => setProposito(e.target.value)}
+                    placeholder="Finalidad convenida por el donante..."
+                  />
+                </div>
+              </PasoFormulario>
+            )}
+
+            <AccionesFormulario>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAbierto(false)}
+                >
+                  {t("cancelar")}
+                </Button>
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? t("procesando") : t("guardar")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

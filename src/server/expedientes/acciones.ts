@@ -767,3 +767,74 @@ export async function leerFichaEscaneada(
     confianza: lectura.datos.confianza,
   };
 }
+
+export type EstadoVinculoCuenta = {
+  estado: "inicial" | "ok" | "no_permitido" | "invalido" | "ocupada" | "error";
+};
+
+/**
+ * Ata (o suelta) la cuenta del portal de un estudiante a su expediente.
+ *
+ * Es escritura del expediente, así que pide `expedientes.escribir`. La cuenta
+ * se comprueba DENTRO del UPDATE —rol `estudiante` y libre— y no antes en un
+ * `if`: entre leer y escribir otra persona podría haberla vinculado, y el
+ * UNIQUE de `usuario_id` lo convertiría en un error de base sin explicación.
+ * `accion=desvincular` suelta el vínculo, para corregir una cuenta mal
+ * elegida: va en otro nombre que el select porque los dos viajan en el mismo
+ * envío y `get` devolvería el primero.
+ */
+export async function vincularCuenta(
+  _previo: EstadoVinculoCuenta,
+  datos: FormData,
+): Promise<EstadoVinculoCuenta> {
+  const usuario = await requerirUsuario();
+
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const estudianteId = String(datos.get("estudiante") ?? "");
+  const cuentaId =
+    datos.get("accion") === "desvincular" ? "" : String(datos.get("usuario") ?? "");
+
+  if (!esUuid(estudianteId) || (cuentaId !== "" && !esUuid(cuentaId))) {
+    return { estado: "invalido" };
+  }
+
+  try {
+    const fila = await consultarUna<{ id: string }>(
+      cuentaId === ""
+        ? `UPDATE estudiante SET usuario_id = NULL WHERE id = $1 RETURNING id`
+        : `UPDATE estudiante e
+              SET usuario_id = $2
+             FROM usuario u
+             JOIN rol r ON r.id = u.rol_id
+            WHERE e.id = $1
+              AND u.id = $2
+              AND r.nombre = 'estudiante'
+              AND NOT EXISTS (
+                SELECT 1 FROM estudiante otro
+                 WHERE otro.usuario_id = $2 AND otro.id <> $1
+              )
+          RETURNING e.id`,
+      cuentaId === "" ? [estudianteId] : [estudianteId, cuentaId],
+    );
+
+    if (!fila) return { estado: cuentaId === "" ? "invalido" : "ocupada" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: cuentaId === "" ? "expediente.cuenta_desvinculada" : "expediente.cuenta_vinculada",
+      entidad: "estudiante",
+      entidadId: estudianteId,
+      datos: { usuario_id: cuentaId || null },
+    });
+  } catch (error) {
+    console.error("[expedientes] no se pudo vincular la cuenta", error);
+    return { estado: "error" };
+  }
+
+  revalidatePath("/[locale]/expedientes/[id]", "page");
+
+  return { estado: "ok" };
+}

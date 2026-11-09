@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   Loader2,
@@ -23,9 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ASISTIO_REUNION,
@@ -49,13 +53,13 @@ import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
 /**
  * Formulario de expediente: seis secciones y unos setenta campos.
  *
- * Las seis pestañas son las seis tablas del expediente —`estudiante` y los cinco
+ * Las seis secciones son las seis tablas del expediente —`estudiante` y los cinco
  * perfiles de las migraciones 0005 y 0008—, no las seis del prototipo. Es la
  * división que ya usaban las claves de `messages` (`records.tab.*`) y la que
  * hace que guardar sea una escritura por pestaña en vez de un `UPDATE` de setenta
  * columnas.
  *
- * `CamposExpediente` es el cuerpo —OCR más las seis pestañas— y lo comparten dos
+ * `CamposExpediente` es el cuerpo —las seis secciones— y lo comparten dos
  * pantallas: este diálogo de alta y la de edición
  * (`formulario-edicion-expediente.tsx`). Ninguna de las dos repite la rejilla de
  * campos; solo cambian el contenedor (diálogo o página completa) y si `valores`
@@ -65,6 +69,11 @@ import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
  * (`crearExpediente`) y, al terminar, lleva a la ficha recién creada: después
  * de rellenar setenta campos, lo que hace falta es ver el expediente que ha
  * quedado, no un cartel de "guardado" sobre el formulario en blanco.
+ *
+ * Cada sección es un `PasoFormulario`: en modo "normal" las seis van apiladas,
+ * cada una con su título; en "guiado", una a la vez con Anterior/Siguiente. Es
+ * el mismo recorrido que el resto de formularios del sistema, en vez de unas
+ * pestañas y unos botones propios que solo tenía el expediente.
  */
 
 export const SECCIONES = [
@@ -87,14 +96,6 @@ export type TextosFormulario = {
   error: string;
   faltaNombre: string;
   cancelar: string;
-  /**
-   * Ya resuelto en el servidor, una cadena por sección. Se pasa la lista y no
-   * una función porque entre un componente de servidor y uno de cliente solo
-   * viajan datos, no funciones.
-   */
-  progreso: readonly string[];
-  siguiente: string;
-  anterior: string;
   opcional: string;
   pestanas: Record<string, string>;
   campos: Record<string, string>;
@@ -118,13 +119,11 @@ export type TextosFormulario = {
 };
 
 export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
-  const [seccion, setSeccion] = useState<string>(SECCIONES[0]);
-
   /**
    * Lo que leyó el documento, para precargar los campos.
    *
-   * Se guarda aparte del formulario y se aplica REMONTANDO la rejilla con una
-   * `key` distinta. Los campos son no controlados —setenta `defaultValue`, que
+   * Se guarda aparte del formulario y se aplica REMONTANDO el formulario guiado
+   * con una `key` distinta —lo que, de paso, vuelve al primer paso—. Los campos son no controlados —setenta `defaultValue`, que
    * es lo que evita setenta `useState` y un re-render por cada tecla—, y un
    * `defaultValue` que cambia no mueve un campo ya montado.
    *
@@ -138,13 +137,6 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
     EstadoExpediente,
     FormData
   >(crearExpediente, { estado: "inicial" });
-
-  const indice = SECCIONES.indexOf(seccion as (typeof SECCIONES)[number]);
-
-  const ir = (paso: number) => {
-    const siguiente = SECCIONES[indice + paso];
-    if (siguiente) setSeccion(siguiente);
-  };
 
   return (
     <Dialog>
@@ -177,73 +169,43 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
             alLeer={(valores) => {
               setLeido(valores);
               setVersion((n) => n + 1);
-              setSeccion(SECCIONES[0]);
             }}
           />
         )}
 
         <form action={enviarAlta} className="space-y-4">
-          <CamposExpediente
-            key={version}
-            textos={textos}
-            seccion={seccion}
-            onSeccionChange={setSeccion}
-            valores={leido ?? undefined}
-          />
+          <FormularioGuiado key={version}>
+            <CamposExpediente textos={textos} valores={leido ?? undefined} />
 
-          {/* El único error que la acción distingue por campo es el nombre
-              vacío, y es el que se puede arreglar sin salir de aquí: se dice en
-              qué pestaña está. */}
-          {alta.estado !== "inicial" && alta.estado !== "ok" && (
-            <p role="alert" className={ALERTA_RIESGO.contenedor}>
-              <AlertCircle className={ALERTA_RIESGO.icono} />
-              <span className={ALERTA_RIESGO.texto}>
-                {alta.estado === "invalido"
-                  ? textos.faltaNombre
-                  : textos.error}
-              </span>
-            </p>
-          )}
+            {/* El único error que la acción distingue por campo es el nombre
+                vacío, y es el que se puede arreglar sin salir de aquí: se dice
+                en qué sección está. En guiado casi no llega a verse, porque el
+                paso de identidad no deja seguir sin nombre; queda para un
+                nombre hecho solo de espacios, que el navegador da por bueno. */}
+            {alta.estado !== "inicial" && alta.estado !== "ok" && (
+              <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                <AlertCircle className={ALERTA_RIESGO.icono} />
+                <span className={ALERTA_RIESGO.texto}>
+                  {alta.estado === "invalido"
+                    ? textos.faltaNombre
+                    : textos.error}
+                </span>
+              </p>
+            )}
 
-          <div className="flex flex-wrap items-center gap-3 border-t pt-4">
-            <p className="text-muted-foreground text-xs">
-              {textos.progreso[indice]}
-            </p>
-
-            {/* `flex-wrap` también aquí dentro: el contenedor de fuera lo
-                tenía, pero este no, así que los tres botones se comprimían en
-                una sola fila a 360px en vez de bajar a la siguiente. */}
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => ir(-1)}
-                disabled={indice === 0}
-              >
-                {textos.anterior}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => ir(1)}
-                disabled={indice === SECCIONES.length - 1}
-              >
-                {textos.siguiente}
-              </Button>
-
-              <Button type="submit" size="sm" disabled={guardando}>
-                {guardando ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Save className="size-3.5" />
-                )}
-                {guardando ? textos.guardando : textos.guardar}
-              </Button>
-            </div>
-          </div>
+            <AccionesFormulario>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button type="submit" size="sm" disabled={guardando}>
+                  {guardando ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Save className="size-3.5" />
+                  )}
+                  {guardando ? textos.guardando : textos.guardar}
+                </Button>
+              </div>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>
@@ -360,7 +322,12 @@ function LectorFicha({
 }
 
 /**
- * El cuerpo del formulario: banner de OCR más las seis pestañas de campos.
+ * El cuerpo del formulario: las seis secciones de campos, una por paso.
+ *
+ * Va DENTRO de un `FormularioGuiado`, que pone quien lo use junto con sus
+ * botones: los pasos ocultos siguen montados (`hidden`), así que el `FormData`
+ * lleva siempre las seis secciones, sea cual sea el modo y el paso en el que
+ * se pulse Guardar.
  *
  * Sin `<form>` ni botones propios —eso lo pone quien lo use, porque el diálogo
  * de alta y la página de edición envían a sitios distintos (ninguno, todavía, y
@@ -379,15 +346,11 @@ function LectorFicha({
  */
 export function CamposExpediente({
   textos,
-  seccion,
-  onSeccionChange,
   valores,
   soloLectura = false,
   campoFoto,
 }: {
   textos: TextosFormulario;
-  seccion: string;
-  onSeccionChange: (seccion: string) => void;
   valores?: ValoresExpediente;
   soloLectura?: boolean;
   campoFoto?: React.ReactNode;
@@ -401,25 +364,8 @@ export function CamposExpediente({
 
   return (
     <>
-      <Tabs value={seccion} onValueChange={onSeccionChange}>
-        {/* `h-auto` en móvil. `TabsList` trae `h-9` fija en el primitivo, y en
-            móvil estas seis pestañas caen en dos filas de tres: la segunda
-            quedaba recortada dentro de los 36px del contenedor, así que la
-            mitad de la navegación del formulario más largo del sistema no se
-            veía. Desde `sm` vuelven a una fila y la altura fija es correcta.
-            `truncate` en el disparador porque `TabsTrigger` trae
-            `whitespace-nowrap`: con una etiqueta larga o una traducción más
-            larga, el texto se salía del pill en vez de recortarse. */}
-        <TabsList className="grid h-auto w-full grid-cols-3 sm:h-9 sm:grid-cols-6">
-          {SECCIONES.map((clave) => (
-            <TabsTrigger key={clave} value={clave} className="truncate text-xs">
-              {textos.pestanas[clave]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
         {/* ── Identidad: tabla `estudiante` ───────────────────── */}
-        <TabsContent value="identity" className="mt-4 space-y-4">
+        <PasoFormulario titulo={textos.pestanas.identity}>
           {campoFoto}
 
           <Rejilla>
@@ -490,10 +436,10 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
           </Rejilla>
-        </TabsContent>
+        </PasoFormulario>
 
         {/* ── Académico: tabla `estudiante` ───────────────────── */}
-        <TabsContent value="academic" className="mt-4">
+        <PasoFormulario titulo={textos.pestanas.academic}>
           <Rejilla>
             <Selector
               nombre="estado"
@@ -555,10 +501,10 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
           </Rejilla>
-        </TabsContent>
+        </PasoFormulario>
 
         {/* ── Familia: tabla `familiar` (una fila por bloque) ─── */}
-        <TabsContent value="family" className="mt-4 space-y-3">
+        <PasoFormulario titulo={textos.pestanas.family} className="space-y-3">
           {FAMILIA_FIJA.map((parentesco) => (
             <fieldset
               key={parentesco}
@@ -622,10 +568,10 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
           </Rejilla>
-        </TabsContent>
+        </PasoFormulario>
 
         {/* ── Vivienda: tabla `perfil_vivienda` ───────────────── */}
-        <TabsContent value="housing" className="mt-4">
+        <PasoFormulario titulo={textos.pestanas.housing}>
           <Rejilla>
             <Selector
               nombre="casa_propia"
@@ -705,24 +651,26 @@ export function CamposExpediente({
                   {soloLectura ? tMapa("ayudaLectura") : tMapa("ayudaEdicion")}
                 </p>
               </div>
-              <MapaLaVega
-                modo={soloLectura ? "vista_vivienda" : "seleccion"}
-                lat={latitud}
-                lng={longitud}
-                alCambiarCoordenadas={(newLat, newLng, meta) => {
-                  setLatitud(newLat);
-                  setLongitud(newLng);
-                  if (meta?.municipio) setMunicipio(meta.municipio);
-                }}
-                altura="320px"
-                soloLectura={soloLectura}
-              />
+              <CuandoSeVea>
+                <MapaLaVega
+                  modo={soloLectura ? "vista_vivienda" : "seleccion"}
+                  lat={latitud}
+                  lng={longitud}
+                  alCambiarCoordenadas={(newLat, newLng, meta) => {
+                    setLatitud(newLat);
+                    setLongitud(newLng);
+                    if (meta?.municipio) setMunicipio(meta.municipio);
+                  }}
+                  altura="320px"
+                  soloLectura={soloLectura}
+                />
+              </CuandoSeVea>
             </div>
           </Rejilla>
-        </TabsContent>
+        </PasoFormulario>
 
         {/* ── Salud: tabla `perfil_salud` ─────────────────────── */}
-        <TabsContent value="health" className="mt-4">
+        <PasoFormulario titulo={textos.pestanas.health}>
           <Rejilla>
             <Area
               nombre="enfermedades"
@@ -751,10 +699,10 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
           </Rejilla>
-        </TabsContent>
+        </PasoFormulario>
 
         {/* ── Situación: `perfil_socioeconomico` + seguimiento ─ */}
-        <TabsContent value="social" className="mt-4">
+        <PasoFormulario titulo={textos.pestanas.social}>
           <Rejilla>
             <Area
               nombre="historia_de_vida"
@@ -834,9 +782,39 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
           </Rejilla>
-        </TabsContent>
-      </Tabs>
+        </PasoFormulario>
     </>
+  );
+}
+
+/**
+ * Monta su contenido la primera vez que tiene tamaño en pantalla.
+ *
+ * En modo guiado la sección de vivienda nace escondida (`hidden`), y Leaflet
+ * mide su contenedor al crearse: con cero píxeles de ancho dibuja las teselas
+ * mal y no se corrige al aparecer. Esperar a que el paso se vea evita tocar el
+ * mapa; una vez montado se queda, porque el tamaño ya no cambia.
+ */
+function CuandoSeVea({ children }: { children: React.ReactNode }) {
+  const caja = useRef<HTMLDivElement>(null);
+  const [visto, setVisto] = useState(false);
+
+  useEffect(() => {
+    const elemento = caja.current;
+    if (visto || !elemento) return;
+
+    const observador = new ResizeObserver(([entrada]) => {
+      if (entrada && entrada.contentRect.width > 0) setVisto(true);
+    });
+    observador.observe(elemento);
+
+    return () => observador.disconnect();
+  }, [visto]);
+
+  return (
+    <div ref={caja} className="min-h-[320px]">
+      {visto && children}
+    </div>
   );
 }
 

@@ -5,6 +5,11 @@ import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -96,6 +101,10 @@ export function FormularioSolicitud({
         </p>
       )}
 
+      <FormularioGuiado>
+      {/* El tipo va en el primer paso porque decide qué campos lleva el
+          segundo (monto, fecha, hora): al llegar allí ya están los correctos. */}
+      <PasoFormulario titulo={t("pasos.solicitud")}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="tipo" className="text-xs font-medium">
@@ -172,6 +181,11 @@ export function FormularioSolicitud({
           </div>
         )}
 
+      </div>
+      </PasoFormulario>
+
+      <PasoFormulario titulo={t("pasos.detalles")}>
+      <div className="grid gap-4 sm:grid-cols-2">
         {regla.monto !== "no" && (
           <div className="space-y-1.5">
             <Label htmlFor="monto" className="text-xs font-medium">
@@ -238,6 +252,7 @@ export function FormularioSolicitud({
           placeholder={t("form.detailPlaceholder")}
         />
       </div>
+      </PasoFormulario>
 
       {error && (
         <p
@@ -249,6 +264,7 @@ export function FormularioSolicitud({
         </p>
       )}
 
+      <AccionesFormulario>
       <Button
         type="submit"
         disabled={enviando}
@@ -261,6 +277,8 @@ export function FormularioSolicitud({
         )}
         {enviando ? t("form.sending") : t("form.submit")}
       </Button>
+      </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

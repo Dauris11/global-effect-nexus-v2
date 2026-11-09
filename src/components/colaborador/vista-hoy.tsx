@@ -23,6 +23,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -276,6 +281,8 @@ export function VistaHoy({
                 }}
                 className="space-y-4 pt-2"
               >
+                <FormularioGuiado>
+                <PasoFormulario titulo={t("pasos.tarea")}>
                 <div>
                   <Label htmlFor="titulo">{t("taskTitle")}</Label>
                   <Input
@@ -297,7 +304,9 @@ export function VistaHoy({
                     className="mt-1"
                   />
                 </div>
+                </PasoFormulario>
 
+                <PasoFormulario titulo={t("pasos.planificacion")}>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="prioridad">{t("taskPriority")}</Label>
@@ -331,8 +340,10 @@ export function VistaHoy({
                     ))}
                   </select>
                 </div>
+                </PasoFormulario>
 
                 {fallo && <AvisoFallo texto={t("saveError")} />}
+                <AccionesFormulario>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button
                     type="button"
@@ -350,6 +361,8 @@ export function VistaHoy({
                     {t("saveTask")}
                   </Button>
                 </div>
+                </AccionesFormulario>
+                </FormularioGuiado>
               </form>
             </DialogContent>
           </Dialog>

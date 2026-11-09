@@ -18,6 +18,11 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -253,125 +258,135 @@ function FormularioMateria({
     <form action={enviar} className="mt-3 space-y-3 border-t pt-3">
       <input type="hidden" name="id" value={materia?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor={`m-nombre-${clave}`}>{t("fieldName")}</Label>
-          <Input
-            id={`m-nombre-${clave}`}
-            name="nombre"
-            defaultValue={materia?.nombre}
-            required
-            maxLength={160}
-            aria-invalid={estado.estado === "nombre_vacio" || undefined}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.materia")}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5 lg:col-span-2">
+              <Label htmlFor={`m-nombre-${clave}`}>{t("fieldName")}</Label>
+              <Input
+                id={`m-nombre-${clave}`}
+                name="nombre"
+                defaultValue={materia?.nombre}
+                required
+                maxLength={160}
+                aria-invalid={estado.estado === "nombre_vacio" || undefined}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-codigo-${clave}`}>{t("fieldCode")}</Label>
-          <Input
-            id={`m-codigo-${clave}`}
-            name="codigo"
-            defaultValue={materia?.codigo ?? ""}
-            maxLength={24}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-codigo-${clave}`}>{t("fieldCode")}</Label>
+              <Input
+                id={`m-codigo-${clave}`}
+                name="codigo"
+                defaultValue={materia?.codigo ?? ""}
+                maxLength={24}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-creditos-${clave}`}>{t("fieldCredits")}</Label>
-          <Input
-            id={`m-creditos-${clave}`}
-            name="creditos"
-            type="number"
-            min={0}
-            max={20}
-            defaultValue={materia?.creditos ?? 0}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-creditos-${clave}`}>{t("fieldCredits")}</Label>
+              <Input
+                id={`m-creditos-${clave}`}
+                name="creditos"
+                type="number"
+                min={0}
+                max={20}
+                defaultValue={materia?.creditos ?? 0}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-horas-${clave}`}>{t("fieldHours")}</Label>
-          <Input
-            id={`m-horas-${clave}`}
-            name="horas"
-            type="number"
-            min={0}
-            defaultValue={materia?.horas ?? 0}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-horas-${clave}`}>{t("fieldHours")}</Label>
+              <Input
+                id={`m-horas-${clave}`}
+                name="horas"
+                type="number"
+                min={0}
+                defaultValue={materia?.horas ?? 0}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor={`m-docente-${clave}`}>{t("fieldTeacher")}</Label>
-          <select
-            id={`m-docente-${clave}`}
-            name="docente"
-            defaultValue={materia?.docente_id ?? ""}
-            aria-invalid={estado.estado === "docente_invalido" || undefined}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-control border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-          >
-            <option value="">{t("noTeacher")}</option>
-            {docentes.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+        <PasoFormulario titulo={t("pasos.clase")}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5 lg:col-span-2">
+              <Label htmlFor={`m-docente-${clave}`}>{t("fieldTeacher")}</Label>
+              <select
+                id={`m-docente-${clave}`}
+                name="docente"
+                defaultValue={materia?.docente_id ?? ""}
+                aria-invalid={estado.estado === "docente_invalido" || undefined}
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-control border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
+              >
+                <option value="">{t("noTeacher")}</option>
+                {docentes.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-horario-${clave}`}>{t("fieldSchedule")}</Label>
-          <Input
-            id={`m-horario-${clave}`}
-            name="horario"
-            defaultValue={materia?.horario ?? ""}
-            maxLength={120}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-horario-${clave}`}>{t("fieldSchedule")}</Label>
+              <Input
+                id={`m-horario-${clave}`}
+                name="horario"
+                defaultValue={materia?.horario ?? ""}
+                maxLength={120}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-aula-${clave}`}>{t("fieldRoom")}</Label>
-          <Input
-            id={`m-aula-${clave}`}
-            name="aula"
-            defaultValue={materia?.aula ?? ""}
-            maxLength={80}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-aula-${clave}`}>{t("fieldRoom")}</Label>
+              <Input
+                id={`m-aula-${clave}`}
+                name="aula"
+                defaultValue={materia?.aula ?? ""}
+                maxLength={80}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-cupo-${clave}`}>{t("fieldCapacity")}</Label>
-          <Input
-            id={`m-cupo-${clave}`}
-            name="cupo_maximo"
-            type="number"
-            min={1}
-            required
-            defaultValue={materia?.cupo_maximo ?? 30}
-            aria-invalid={estado.estado === "cupo_invalido" || undefined}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-cupo-${clave}`}>{t("fieldCapacity")}</Label>
+              <Input
+                id={`m-cupo-${clave}`}
+                name="cupo_maximo"
+                type="number"
+                min={1}
+                required
+                defaultValue={materia?.cupo_maximo ?? 30}
+                aria-invalid={estado.estado === "cupo_invalido" || undefined}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "nombre_vacio"
-            ? t("errName")
-            : estado.estado === "cupo_invalido"
-              ? t("errCapacity")
-              : estado.estado === "docente_invalido"
-                ? t("errTeacher")
-                : t("errGeneric")}
-        </p>
-      )}
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className="text-destructive text-xs">
+            {estado.estado === "nombre_vacio"
+              ? t("errName")
+              : estado.estado === "cupo_invalido"
+                ? t("errCapacity")
+                : estado.estado === "docente_invalido"
+                  ? t("errTeacher")
+                  : t("errGeneric")}
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando}>
-          {enviando && <Loader2 className="size-3.5 animate-spin" />}
-          {enviando ? t("saving") : t("save")}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("cancel")}
-        </Button>
-      </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={enviando}>
+              {enviando && <Loader2 className="size-3.5 animate-spin" />}
+              {enviando ? t("saving") : t("save")}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }
@@ -396,90 +411,100 @@ function FormularioVentana({
 
   return (
     <form action={enviar} className="space-y-3 border-t pt-3">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="v-periodo">{t("fieldPeriod")}</Label>
-          <select
-            id="v-periodo"
-            name="periodo"
-            required
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-          >
-            {periodos.map((periodo) => (
-              <option key={periodo.id} value={periodo.id}>
-                {periodo.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.tanda")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="v-periodo">{t("fieldPeriod")}</Label>
+              <select
+                id="v-periodo"
+                name="periodo"
+                required
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+              >
+                {periodos.map((periodo) => (
+                  <option key={periodo.id} value={periodo.id}>
+                    {periodo.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Sin valor por defecto a propósito: abrir la tanda equivocada manda a
-            todo el período a elegir en el hueco que no es. */}
-        <div className="space-y-1.5">
-          <Label htmlFor="v-ronda">{t("fieldTanda")}</Label>
-          <select
-            id="v-ronda"
-            name="ronda"
-            required
-            defaultValue=""
-            aria-invalid={estado.estado === "ronda_invalida" || undefined}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-          >
-            <option value="" disabled>
-              {t("fieldTandaPlaceholder")}
-            </option>
-            <option value="1">{t("tanda1")}</option>
-            <option value="2">{t("tanda2")}</option>
-          </select>
-        </div>
+            {/* Sin valor por defecto a propósito: abrir la tanda equivocada manda a
+                todo el período a elegir en el hueco que no es. */}
+            <div className="space-y-1.5">
+              <Label htmlFor="v-ronda">{t("fieldTanda")}</Label>
+              <select
+                id="v-ronda"
+                name="ronda"
+                required
+                defaultValue=""
+                aria-invalid={estado.estado === "ronda_invalida" || undefined}
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+              >
+                <option value="" disabled>
+                  {t("fieldTandaPlaceholder")}
+                </option>
+                <option value="1">{t("tanda1")}</option>
+                <option value="2">{t("tanda2")}</option>
+              </select>
+            </div>
+          </div>
+        </PasoFormulario>
 
-        {/* `datetime-local` porque el anuncio dice fecha Y hora, y es el control
-            que el navegador ya sabe dibujar con el formato de cada idioma. */}
-        <div className="space-y-1.5">
-          <Label htmlFor="v-abre">{t("fieldOpens")}</Label>
-          <Input id="v-abre" name="abre" type="datetime-local" required />
-        </div>
+        <PasoFormulario titulo={t("pasos.fechas")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* `datetime-local` porque el anuncio dice fecha Y hora, y es el control
+                que el navegador ya sabe dibujar con el formato de cada idioma. */}
+            <div className="space-y-1.5">
+              <Label htmlFor="v-abre">{t("fieldOpens")}</Label>
+              <Input id="v-abre" name="abre" type="datetime-local" required />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="v-cierra">{t("fieldCloses")}</Label>
-          <Input
-            id="v-cierra"
-            name="cierra"
-            type="datetime-local"
-            required
-            aria-invalid={estado.estado === "fechas_invalidas" || undefined}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="v-cierra">{t("fieldCloses")}</Label>
+              <Input
+                id="v-cierra"
+                name="cierra"
+                type="datetime-local"
+                required
+                aria-invalid={estado.estado === "fechas_invalidas" || undefined}
+              />
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="v-mensaje">{t("fieldMessage")}</Label>
-        <Input id="v-mensaje" name="mensaje" maxLength={280} />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="v-mensaje">{t("fieldMessage")}</Label>
+            <Input id="v-mensaje" name="mensaje" maxLength={280} />
+          </div>
+        </PasoFormulario>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "fechas_invalidas"
-            ? t("errDates")
-            : estado.estado === "fuera_de_periodo"
-              ? t("errOutsideTerm")
-              : estado.estado === "ronda_invalida"
-                ? t("errTanda")
-                : estado.estado === "ventana_solapada"
-                  ? t("errOverlap")
-                  : t("errGeneric")}
-        </p>
-      )}
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className="text-destructive text-xs">
+            {estado.estado === "fechas_invalidas"
+              ? t("errDates")
+              : estado.estado === "fuera_de_periodo"
+                ? t("errOutsideTerm")
+                : estado.estado === "ronda_invalida"
+                  ? t("errTanda")
+                  : estado.estado === "ventana_solapada"
+                    ? t("errOverlap")
+                    : t("errGeneric")}
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando}>
-          {enviando && <Loader2 className="size-3.5 animate-spin" />}
-          {enviando ? t("saving") : t("save")}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("cancel")}
-        </Button>
-      </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={enviando}>
+              {enviando && <Loader2 className="size-3.5 animate-spin" />}
+              {enviando ? t("saving") : t("save")}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

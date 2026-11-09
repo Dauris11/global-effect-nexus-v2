@@ -4,9 +4,11 @@ import { getTranslations } from "next-intl/server";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Historial360 } from "@/components/expedientes/historial-360";
+import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
+import { PortadaExpediente } from "@/components/expedientes/portada-expediente";
+import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
 import { FormularioEdicionExpediente } from "@/components/expedientes/formulario-edicion-expediente";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,17 +23,21 @@ import {
   ESTADOS_ESTUDIANTE,
   GENEROS,
   PARENTESCOS,
-  visualDeEstado,
 } from "@/lib/expedientes";
 import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
-import { cn } from "@/lib/utils";
 import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
-import { obtenerExpediente } from "@/server/expedientes/consultas";
+import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
+import { inscripcionesDelEstudiante } from "@/server/estudiantes/academico";
+import {
+  cuentaVinculada,
+  cuentasEstudianteSinVincular,
+  obtenerExpediente,
+} from "@/server/expedientes/consultas";
 
 /** Las mismas seis secciones que la lista y el alta. */
 const SECCIONES = [
@@ -142,10 +148,21 @@ export default async function PaginaExpediente({
    * va en su propia sección. Son las notas de UNA persona:
    * unas decenas de filas, no un agregado sobre la tabla entera.
    */
-  const [notas, historial360] = await Promise.all([
-    notasDelEstudiante(expediente.id),
-    historial360DelEstudiante(expediente.id),
-  ]);
+  const puedeEditar = usuarioTienePermiso(usuario, "expedientes.escribir");
+
+  // Todo lo que ata el expediente con el resto del sistema: su cuenta, la
+  // carrera (inscripciones), Global Effect 360 y las tareas que le dejan los
+  // docentes en el aula virtual. Las cuentas libres solo se piden si quien mira
+  // puede vincular una.
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres] =
+    await Promise.all([
+      notasDelEstudiante(expediente.id),
+      historial360DelEstudiante(expediente.id),
+      inscripcionesDelEstudiante(expediente.id),
+      asignacionesDelEstudiante(expediente.id),
+      cuentaVinculada(expediente.id),
+      puedeEditar ? cuentasEstudianteSinVincular() : Promise.resolve([]),
+    ]);
 
   const porPeriodo = new Map<string, number[]>();
 
@@ -168,9 +185,7 @@ export default async function PaginaExpediente({
 
   const indiceAcumulado = promedio(notas.map((nota) => nota.gpa));
 
-  const puedeEditar = usuarioTienePermiso(usuario, "expedientes.escribir");
   const puedeEliminar = usuarioTienePermiso(usuario, "expedientes.eliminar");
-  const visualEstado = visualDeEstado(expediente.estado);
 
   return (
     <div className="animate-entrada space-y-6">
@@ -213,20 +228,16 @@ export default async function PaginaExpediente({
         )}
       </div>
 
-      <div>
-        {/* El estado, junto al nombre. Vivía solo como desplegable dentro de
-            una de las seis pestañas, así que para saber si alguien está activo
-            o suspendido había que ir a buscarlo: el dato que más condiciona
-            cómo se lee la ficha era el más escondido de todos. */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-2xl font-bold">{expediente.nombre}</h1>
-
-          <Badge className={cn("gap-1", visualEstado.insignia)}>
-            <visualEstado.icono className="size-3.5 shrink-0" />
-            {t(`status.${expediente.estado}`)}
-          </Badge>
-        </div>
-      </div>
+      {/* La portada: foto, estado, dónde estudia y con qué cuenta entra al
+          portal. El estado va junto al nombre porque es el dato que más
+          condiciona cómo se lee la ficha. */}
+      <PortadaExpediente
+        expediente={expediente}
+        foto={urlDeAvatar(expediente.foto_url)}
+        cuenta={cuenta}
+        cuentasLibres={cuentasLibres}
+        puedeEditar={puedeEditar}
+      />
 
       {/* La tendencia académica, antes de la ficha: es la respuesta a "cómo va"
           y por eso va arriba. Si no hay ninguna nota, la tarjeta no se dibuja:
@@ -271,7 +282,11 @@ export default async function PaginaExpediente({
         </Card>
       )}
 
+      <MateriasUniversidad inscripciones={inscripciones} />
+
       <Historial360 datos={historial360} />
+
+      <TareasExpediente asignaciones={asignaciones} />
 
       <FormularioEdicionExpediente
         expediente={expediente}
@@ -283,13 +298,8 @@ export default async function PaginaExpediente({
           titulo: t("form.titleEdit"),
           guardar: t("form.saveEdit"),
           guardando: t("form.saving"),
-          faltaNombre: t("form.requiredHint"),
+          faltaNombre: t("form.faltaNombreSeccion"),
           cancelar: t("form.cancel"),
-          progreso: SECCIONES.map((_, indice) =>
-            t("form.progress", { current: indice + 1, total: SECCIONES.length }),
-          ),
-          siguiente: t("form.next"),
-          anterior: t("form.previous"),
           opcional: t("field.optional"),
           savedEdit: t("form.savedEdit"),
           notOwner: t("form.notOwner"),

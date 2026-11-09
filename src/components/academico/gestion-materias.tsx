@@ -21,6 +21,11 @@ import { CifraAcademica } from "@/components/academico/cifra";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -327,185 +332,195 @@ function FormularioMateria({
 
       <input type="hidden" name="id" value={materia?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor={`m-nombre-${clave}`}>{t("subject.name")}</Label>
-          <Input
-            id={`m-nombre-${clave}`}
-            name="nombre"
-            defaultValue={materia?.nombre}
-            placeholder={t("newSubject.namePlaceholder")}
-            required
-            maxLength={160}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.materia")}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5 lg:col-span-2">
+              <Label htmlFor={`m-nombre-${clave}`}>{t("subject.name")}</Label>
+              <Input
+                id={`m-nombre-${clave}`}
+                name="nombre"
+                defaultValue={materia?.nombre}
+                placeholder={t("newSubject.namePlaceholder")}
+                required
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-codigo-${clave}`}>{t("subject.code")}</Label>
-          <Input
-            id={`m-codigo-${clave}`}
-            name="codigo"
-            defaultValue={materia?.codigo ?? ""}
-            placeholder="LID-101"
-            maxLength={30}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-codigo-${clave}`}>{t("subject.code")}</Label>
+              <Input
+                id={`m-codigo-${clave}`}
+                name="codigo"
+                defaultValue={materia?.codigo ?? ""}
+                placeholder="LID-101"
+                maxLength={30}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-creditos-${clave}`}>{t("subject.credits")}</Label>
-          <Input
-            id={`m-creditos-${clave}`}
-            name="creditos"
-            type="number"
-            min={0}
-            max={20}
-            defaultValue={materia?.creditos ?? 3}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-creditos-${clave}`}>{t("subject.credits")}</Label>
+              <Input
+                id={`m-creditos-${clave}`}
+                name="creditos"
+                type="number"
+                min={0}
+                max={20}
+                defaultValue={materia?.creditos ?? 3}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-periodo-${clave}`}>{t("subject.term")}</Label>
-          <select
-            id={`m-periodo-${clave}`}
-            name="periodo"
-            defaultValue={materia?.periodo_id ?? ""}
-            className={SELECT}
-          >
-            <option value="">{t("noTerm")}</option>
-            {periodos.map((periodo) => (
-              <option key={periodo.id} value={periodo.id}>
-                {periodo.nombre} ·{" "}
-                {t(
-                  periodo.tipo === "semestre"
-                    ? "termKind.semester"
-                    : "termKind.quarter",
-                )}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-periodo-${clave}`}>{t("subject.term")}</Label>
+              <select
+                id={`m-periodo-${clave}`}
+                name="periodo"
+                defaultValue={materia?.periodo_id ?? ""}
+                className={SELECT}
+              >
+                <option value="">{t("noTerm")}</option>
+                {periodos.map((periodo) => (
+                  <option key={periodo.id} value={periodo.id}>
+                    {periodo.nombre} ·{" "}
+                    {t(
+                      periodo.tipo === "semestre"
+                        ? "termKind.semester"
+                        : "termKind.quarter",
+                    )}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-estado-${clave}`}>{t("subject.status")}</Label>
-          <select
-            id={`m-estado-${clave}`}
-            name="estado"
-            defaultValue={materia?.estado ?? "activa"}
-            className={SELECT}
-          >
-            {(["activa", "inactiva"] as const).map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`subjectStatus.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-estado-${clave}`}>{t("subject.status")}</Label>
+              <select
+                id={`m-estado-${clave}`}
+                name="estado"
+                defaultValue={materia?.estado ?? "activa"}
+                className={SELECT}
+              >
+                {(["activa", "inactiva"] as const).map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`subjectStatus.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-profesor-${clave}`}>{t("subject.teacher")}</Label>
-          <select
-            id={`m-profesor-${clave}`}
-            name="profesor"
-            value={profesor}
-            onChange={(evento) => setProfesor(evento.target.value)}
-            className={SELECT}
-          >
-            <option value="">{t("teacherPicker.unassigned")}</option>
-            {docentes.map((docente) => (
-              <option key={docente.id} value={docente.id}>
-                {docente.nombre}
-              </option>
-            ))}
-            <option value="externo">{t("teacherPicker.external")}</option>
-          </select>
-        </div>
-
-        {profesor === "externo" && (
           <div className="space-y-1.5">
-            <Label htmlFor={`m-externo-${clave}`}>
-              {t("teacherPicker.externalName")}
-            </Label>
-            <Input
-              id={`m-externo-${clave}`}
-              name="profesor_externo"
-              defaultValue={
-                materia?.profesor_usuario_id ? "" : (materia?.profesor_nombre ?? "")
-              }
-              maxLength={120}
+            <Label htmlFor={`m-desc-${clave}`}>{t("subject.description")}</Label>
+            <Textarea
+              id={`m-desc-${clave}`}
+              name="descripcion"
+              defaultValue={materia?.descripcion ?? ""}
+              maxLength={600}
+              rows={2}
             />
           </div>
+        </PasoFormulario>
+
+        <PasoFormulario titulo={t("pasos.docencia")}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-profesor-${clave}`}>{t("subject.teacher")}</Label>
+              <select
+                id={`m-profesor-${clave}`}
+                name="profesor"
+                value={profesor}
+                onChange={(evento) => setProfesor(evento.target.value)}
+                className={SELECT}
+              >
+                <option value="">{t("teacherPicker.unassigned")}</option>
+                {docentes.map((docente) => (
+                  <option key={docente.id} value={docente.id}>
+                    {docente.nombre}
+                  </option>
+                ))}
+                <option value="externo">{t("teacherPicker.external")}</option>
+              </select>
+            </div>
+
+            {profesor === "externo" && (
+              <div className="space-y-1.5">
+                <Label htmlFor={`m-externo-${clave}`}>
+                  {t("teacherPicker.externalName")}
+                </Label>
+                <Input
+                  id={`m-externo-${clave}`}
+                  name="profesor_externo"
+                  defaultValue={
+                    materia?.profesor_usuario_id ? "" : (materia?.profesor_nombre ?? "")
+                  }
+                  maxLength={120}
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5 lg:col-span-2">
+              <Label htmlFor={`m-horario-${clave}`}>{t("subject.schedule")}</Label>
+              <Input
+                id={`m-horario-${clave}`}
+                name="horario"
+                defaultValue={materia?.horario ?? ""}
+                placeholder={t("newSubject.scheduleHint")}
+                maxLength={120}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-aula-${clave}`}>{t("subject.room")}</Label>
+              <Input
+                id={`m-aula-${clave}`}
+                name="aula"
+                defaultValue={materia?.aula ?? ""}
+                placeholder="Aula A-1"
+                maxLength={60}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
+
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "nombre_vacio"
+                ? t("newSubject.nameRequired")
+                : t("newSubject.error")}
+            </span>
+          </p>
         )}
 
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor={`m-horario-${clave}`}>{t("subject.schedule")}</Label>
-          <Input
-            id={`m-horario-${clave}`}
-            name="horario"
-            defaultValue={materia?.horario ?? ""}
-            placeholder={t("newSubject.scheduleHint")}
-            maxLength={120}
-          />
-        </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando
+                ? materia
+                  ? t("rowActions.saving")
+                  : t("newSubject.creating")
+                : materia
+                  ? t("rowActions.save")
+                  : t("newSubject.create")}
+            </Button>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-aula-${clave}`}>{t("subject.room")}</Label>
-          <Input
-            id={`m-aula-${clave}`}
-            name="aula"
-            defaultValue={materia?.aula ?? ""}
-            placeholder="Aula A-1"
-            maxLength={60}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor={`m-desc-${clave}`}>{t("subject.description")}</Label>
-        <Textarea
-          id={`m-desc-${clave}`}
-          name="descripcion"
-          defaultValue={materia?.descripcion ?? ""}
-          maxLength={600}
-          rows={2}
-        />
-      </div>
-
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("newSubject.nameRequired")
-              : t("newSubject.error")}
-          </span>
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando
-            ? materia
-              ? t("rowActions.saving")
-              : t("newSubject.creating")
-            : materia
-              ? t("rowActions.save")
-              : t("newSubject.create")}
-        </Button>
-
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

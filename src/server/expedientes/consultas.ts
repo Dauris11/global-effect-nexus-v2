@@ -338,3 +338,50 @@ export async function obtenerExpediente(
     ),
   };
 }
+
+export type CuentaVinculada = {
+  id: string;
+  nombre: string;
+  email: string;
+  activo: boolean;
+  ultimo_acceso: Date | null;
+};
+
+/**
+ * La cuenta del portal con la que entra el estudiante de este expediente.
+ *
+ * El vínculo es `estudiante.usuario_id` (0005): sin él, el estudiante puede
+ * tener expediente pero su portal no ve ni sus materias ni sus tareas, porque
+ * todo el portal filtra por el estudiante de la sesión.
+ */
+export async function cuentaVinculada(
+  estudianteId: string,
+): Promise<CuentaVinculada | null> {
+  return consultarUna<CuentaVinculada>(
+    `SELECT u.id, u.nombre, u.email::text AS email, u.activo, u.ultimo_acceso
+       FROM estudiante e
+       JOIN usuario u ON u.id = e.usuario_id
+      WHERE e.id = $1`,
+    [estudianteId],
+  );
+}
+
+export type CuentaSinVincular = { id: string; nombre: string; email: string };
+
+/**
+ * Cuentas con rol `estudiante` que todavía no están atadas a ningún
+ * expediente: las únicas que se pueden ofrecer, porque `usuario_id` es UNIQUE
+ * y una cuenta solo puede ser de una persona.
+ */
+export async function cuentasEstudianteSinVincular(): Promise<CuentaSinVincular[]> {
+  return consultar<CuentaSinVincular>(
+    `SELECT u.id, u.nombre, u.email::text AS email
+       FROM usuario u
+       JOIN rol r ON r.id = u.rol_id
+      WHERE r.nombre = 'estudiante'
+        AND u.activo
+        AND NOT EXISTS (SELECT 1 FROM estudiante e WHERE e.usuario_id = u.id)
+      ORDER BY u.nombre
+      LIMIT 500`,
+  );
+}

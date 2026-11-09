@@ -16,6 +16,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -327,123 +332,133 @@ function FormularioTarea({
         <p className="text-sm font-semibold">{t("newTask.title")}</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label htmlFor="t-titulo">{t("task.title")}</Label>
-          <Input
-            id="t-titulo"
-            name="titulo"
-            placeholder={t("task.titlePlaceholder")}
-            required
-            maxLength={160}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.tarea")}>
+          <div className="space-y-1.5">
+            <Label htmlFor="t-titulo">{t("task.title")}</Label>
+            <Input
+              id="t-titulo"
+              name="titulo"
+              placeholder={t("task.titlePlaceholder")}
+              required
+              maxLength={160}
+            />
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="t-proyecto">{t("task.project")}</Label>
-          <select id="t-proyecto" name="proyecto" className={SELECT}>
-            <option value="">{t("board.noProject")}</option>
-            {proyectos.map((proyecto) => (
-              <option key={proyecto.id} value={proyecto.id}>
-                {proyecto.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="t-desc">{t("task.description")}</Label>
+            <Textarea id="t-desc" name="descripcion" maxLength={900} rows={2} />
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="t-prioridad">{t("task.priority")}</Label>
-          <select
-            id="t-prioridad"
-            name="prioridad"
-            defaultValue="media"
-            className={SELECT}
-          >
-            {(["baja", "media", "alta", "urgente"] as const).map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`priority.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <PasoFormulario titulo={t("pasos.plan")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="t-proyecto">{t("task.project")}</Label>
+              <select id="t-proyecto" name="proyecto" className={SELECT}>
+                <option value="">{t("board.noProject")}</option>
+                {proyectos.map((proyecto) => (
+                  <option key={proyecto.id} value={proyecto.id}>
+                    {proyecto.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="t-limite">{t("task.dueDate")}</Label>
-          <Input id="t-limite" name="limite" type="date" />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="t-prioridad">{t("task.priority")}</Label>
+              <select
+                id="t-prioridad"
+                name="prioridad"
+                defaultValue="media"
+                className={SELECT}
+              >
+                {(["baja", "media", "alta", "urgente"] as const).map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`priority.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="t-visibilidad">{t("task.visibility")}</Label>
-          <select
-            id="t-visibilidad"
-            name="visibilidad"
-            defaultValue="asignados"
-            className={SELECT}
-          >
-            <option value="asignados">{t("visibility.asignados")}</option>
-            <option value="todos">{t("visibility.todos")}</option>
-          </select>
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="t-limite">{t("task.dueDate")}</Label>
+              <Input id="t-limite" name="limite" type="date" />
+            </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="t-desc">{t("task.description")}</Label>
-        <Textarea id="t-desc" name="descripcion" maxLength={900} rows={2} />
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="t-visibilidad">{t("task.visibility")}</Label>
+              <select
+                id="t-visibilidad"
+                name="visibilidad"
+                defaultValue="asignados"
+                className={SELECT}
+              >
+                <option value="asignados">{t("visibility.asignados")}</option>
+                <option value="todos">{t("visibility.todos")}</option>
+              </select>
+            </div>
+          </div>
+        </PasoFormulario>
 
-      <fieldset className="space-y-1.5">
-        <legend className="text-sm font-medium">{t("task.assignees")}</legend>
+        <PasoFormulario titulo={t("pasos.responsables")}>
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium">{t("task.assignees")}</legend>
 
-        {/* Casillas nativas: mandan varios `asignado` en el mismo envío sin una
-            línea de JavaScript, y el servidor los lee con `getAll`. */}
-        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-          {personas.map((persona) => (
-            <label
-              key={persona.id}
-              className="flex cursor-pointer items-center gap-1.5 text-xs"
+            {/* Casillas nativas: mandan varios `asignado` en el mismo envío sin una
+                línea de JavaScript, y el servidor los lee con `getAll`. */}
+            <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+              {personas.map((persona) => (
+                <label
+                  key={persona.id}
+                  className="flex cursor-pointer items-center gap-1.5 text-xs"
+                >
+                  <input
+                    type="checkbox"
+                    name="asignado"
+                    value={persona.id}
+                    className="size-3.5 accent-[#2096BA]"
+                  />
+                  <span className="truncate">{persona.nombre}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </PasoFormulario>
+
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "titulo_vacio"
+                ? t("newTask.titleRequired")
+                : t("newTask.error")}
+            </span>
+          </p>
+        )}
+
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
             >
-              <input
-                type="checkbox"
-                name="asignado"
-                value={persona.id}
-                className="size-3.5 accent-[#2096BA]"
-              />
-              <span className="truncate">{persona.nombre}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando ? t("newTask.creating") : t("newTask.create")}
+            </Button>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "titulo_vacio"
-              ? t("newTask.titleRequired")
-              : t("newTask.error")}
-          </span>
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando ? t("newTask.creating") : t("newTask.create")}
-        </Button>
-
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("newTask.cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("newTask.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

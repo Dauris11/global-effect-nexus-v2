@@ -81,6 +81,14 @@
         "ayudaLectura": "Point on record within La Vega province.",
         "ayudaEdicion": "Tap the map, drag the pin or use your location to mark the student's home."
       }
+    },
+    "formularioGuiado": {
+      "modo": "How do you want to fill in this form",
+      "normal": "Standard",
+      "guiado": "Guided",
+      "paso": "Step {actual} of {total}: {titulo}",
+      "anterior": "Back",
+      "siguiente": "Next"
     }
   },
   "home": {
@@ -577,6 +585,20 @@
       "en_curso": "In progress",
       "completado": "Completed",
       "pausado": "Paused"
+    },
+    "pasos": {
+      "tarea": "Task",
+      "plan": "Project and deadline",
+      "responsables": "Assignees",
+      "proyecto": "Project",
+      "fechas": "Dates"
+    },
+    "activoFormulario": {
+      "pasos": {
+        "identificacion": "Identification and location",
+        "control": "Custody and value",
+        "detalle": "Photo and notes"
+      }
     }
   },
   "calendar": {
@@ -717,7 +739,11 @@
     "filterAgendaAppointments": "Appointments",
     "filterAgendaEvents": "Events",
     "due": "Due",
-    "scheduled": "Date"
+    "scheduled": "Date",
+    "pasos": {
+      "evento": "Event",
+      "cuandoDonde": "When and where"
+    }
   },
   "staff": {
     "eyebrow": "Operations",
@@ -865,7 +891,8 @@
       "notOwner": "Read only: your role can view this record but not edit it.",
       "readOnlyNote": "Read-only view.",
       "photoInvalid": "The photo must be JPG, PNG or WEBP.",
-      "photoTooLarge": "The photo is over 2 MB."
+      "photoTooLarge": "The photo is over 2 MB.",
+      "faltaNombreSeccion": "The student's name is missing, in the identity section."
     },
     "tab": {
       "identity": "Identity",
@@ -1027,6 +1054,46 @@
     "bathroom": {
       "dentro": "Inside the house",
       "fuera": "Outside the house"
+    },
+    "portada": {
+      "fotoDe": "Photo of {nombre}",
+      "cuenta": "Signs in to the portal as {email}",
+      "sinCuenta": "No portal account: cannot see their subjects or assignments",
+      "vincular": "Link account",
+      "cambiar": "Change account",
+      "tituloDialogo": "Student portal account",
+      "cuentaLabel": "Account",
+      "elegir": "Choose a student account",
+      "sinCuentasLibres": "There are no free student accounts. Create the account first in Staff and accounts.",
+      "desvincular": "Unlink",
+      "guardar": "Save",
+      "error": "The link could not be saved. Try again.",
+      "errorOcupada": "That account is already linked to another record or is not a student account.",
+      "universidadTitulo": "University subjects",
+      "universidadVacia": "No university subjects enrolled yet.",
+      "creditos": "{n, plural, one {# credit} other {# credits}}",
+      "estadoMateria": {
+        "activa": "In progress",
+        "aprobada": "Passed",
+        "reprobada": "Failed",
+        "retirada": "Withdrawn"
+      },
+      "tareasTitulo": "Virtual classroom assignments",
+      "tareasVacia": "Their teachers have not posted any assignments or exams yet.",
+      "resumen": "{pendientes} to submit · {entregadas} submitted · {calificadas} graded · {vencidas} overdue",
+      "vencida": "Overdue",
+      "estadoEntrega": {
+        "pendiente": "To submit",
+        "entregado": "Submitted",
+        "calificado": "Graded",
+        "tarde": "Submitted late"
+      },
+      "origen": {
+        "g360": "Global Effect 360",
+        "universidad": "University"
+      },
+      "nota": "Grade: {nota} of {maximo}",
+      "masTareas": "{n, plural, one {And # more assignment in their classroom} other {And # more assignments in their classroom}}"
     }
   },
   "academic": {
@@ -1162,7 +1229,12 @@
       "taskRubric": "Submission instructions and rubric",
       "taskRubricPlaceholder": "Write the grading criteria, the required report structure or the project guidelines...",
       "taskAllowLate": "Allow late submissions (they're flagged as late)",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "pasos": {
+        "tarea": "Assignment",
+        "evaluacion": "Grading",
+        "entrega": "Submission"
+      }
     },
     "termKind": {
       "label": "Length",
@@ -1355,6 +1427,10 @@
     "editTerm": {
       "title": "Edit term",
       "subtitle": "Changing the status is what starts a term or closes it."
+    },
+    "pasos": {
+      "materia": "Subject",
+      "docencia": "Teacher and schedule"
     }
   },
   "studentPortal": {
@@ -1818,6 +1894,11 @@
       "sidebars": {
         "estandar": "Standard",
         "negra": "Black"
+      },
+      "forms": "Forms",
+      "formModes": {
+        "normal": "Standard: everything at once",
+        "guiado": "Guided: one step at a time"
       }
     }
   },
@@ -1909,7 +1990,13 @@
     "fieldTanda": "Block",
     "fieldTandaPlaceholder": "Choose the block",
     "errTanda": "Choose block 1 or 2.",
-    "errOverlap": "Another window for this term is already open on those dates."
+    "errOverlap": "Another window for this term is already open on those dates.",
+    "pasos": {
+      "materia": "Subject",
+      "clase": "Teacher and schedule",
+      "tanda": "Term and round",
+      "fechas": "Dates and notice"
+    }
   },
   "bandeja": {
     "title": "Inbox",
@@ -2085,7 +2172,12 @@
       }
     },
     "forbidden": "You don't have access to sponsors",
-    "forbiddenHint": "The «patrocinadores.leer» permission is required. Ask coordination for it."
+    "forbiddenHint": "The «patrocinadores.leer» permission is required. Ask coordination for it.",
+    "pasos": {
+      "patrocinador": "Sponsor",
+      "contacto": "Contact",
+      "aporte": "Contribution and notes"
+    }
   },
   "finance": {
     "eyebrow": "Finances",
@@ -2281,6 +2373,12 @@
       "fileInvalid": "That file type is not accepted. Use a PDF, image, presentation or document.",
       "fileTooBig": "The file is over 20 MB. Host it elsewhere and put the link here.",
       "error": "Could not complete. Please try again."
+    },
+    "pasos": {
+      "programa": "Program",
+      "ejecucion": "Facilitator and dates",
+      "material": "Material",
+      "contenido": "Link or file"
     }
   },
   "sitemap": {
@@ -2657,6 +2755,10 @@
         "invalido": "Invalid action.",
         "error": "Couldn't save the step. Try again."
       }
+    },
+    "pasos": {
+      "solicitud": "Request",
+      "detalles": "Details"
     }
   },
   "contab": {
@@ -2859,7 +2961,11 @@
         "concepto": "Description",
         "referencia": "Reference",
         "guardar": "Record transfer",
-        "ok": "Transfer recorded."
+        "ok": "Transfer recorded.",
+        "pasos": {
+          "cuentas": "Accounts and amount",
+          "detalle": "Details"
+        }
       },
       "tasaForm": {
         "titulo": "Record rate",
@@ -2926,7 +3032,10 @@
         "separador": "Decimal separator",
         "punto": "Point (1,234.56)",
         "coma": "Comma (1.234,56)",
-        "guardar": "Import and propose matches"
+        "guardar": "Import and propose matches",
+        "pasos": {
+          "archivo": "File and period"
+        }
       },
       "estadoCuenta": "Bank statement",
       "propuesta": "Proposed",
@@ -3018,7 +3127,12 @@
       "referenciaAyuda": "Transfer, deposit or document number.",
       "notas": "Notes",
       "guardar": "Save draft",
-      "cancelar": "Cancel"
+      "cancelar": "Cancel",
+      "pasos": {
+        "datos": "Receipt data",
+        "clasificacion": "Classification",
+        "detalle": "Details"
+      }
     },
     "detalle": {
       "volver": "Receipts",
@@ -3120,7 +3234,12 @@
       "ninguna": "None",
       "estado": "Status",
       "guardar": "Save supplier",
-      "cancelar": "Cancel"
+      "cancelar": "Cancel",
+      "pasos": {
+        "identificacion": "Identification",
+        "contacto": "Contact",
+        "condiciones": "Terms"
+      }
     },
     "proveedor": {
       "volver": "Suppliers",
@@ -3180,7 +3299,12 @@
       "ocrExito": "Receipt read successfully ({confianza}% confidence). Review suggested fields.",
       "ocrError": "Could not read file: {error}",
       "guardar": "Save draft",
-      "cancelar": "Cancel"
+      "cancelar": "Cancel",
+      "pasos": {
+        "comprobante": "Tax receipt",
+        "montos": "Amounts",
+        "asignacion": "Allocation"
+      }
     },
     "cajas": {
       "titulo": "Petty Cash & Cash Counts",
@@ -3313,6 +3437,12 @@
         "codigo_repetido": "A fund with that code already exists.",
         "periodo_cerrado": "The accounting period for that date is closed.",
         "error": "Could not save. Try again."
+      },
+      "pasos": {
+        "movimiento": "Movement",
+        "soporte": "Category and support",
+        "datos": "Cash box details",
+        "fondo": "Fixed fund"
       }
     },
     "exportar": {
@@ -3395,7 +3525,13 @@
       "pago": "PG-{numero} · {fecha} · {cuenta}",
       "comprobante": "Voucher {numero}",
       "ok": "Saved.",
-      "exportarExcel": "Export to Excel"
+      "exportarExcel": "Export to Excel",
+      "pasos": {
+        "programacion": "Date and account",
+        "clasificacion": "Classification",
+        "monto": "Amount",
+        "medio": "Payment method"
+      }
     },
     "gantt": {
       "titulo": "Due dates",
@@ -3599,7 +3735,12 @@
         "emisionNo": "The Foundation does not issue tax receipts",
         "emisionTexto": "Receipt numbers issued outside the system are entered by hand on each document. This option cannot be changed here.",
         "vacioTitulo": "The Foundation record is missing",
-        "vacioTexto": "Migration 0048 creates it. Ask the technical team to apply it."
+        "vacioTexto": "Migration 0048 creates it. Ask the technical team to apply it.",
+        "pasos": {
+          "identidad": "Tax identity",
+          "ejercicio": "Fiscal year",
+          "contacto": "Contact"
+        }
       },
       "parametros": {
         "explicacion": "Each parameter has an effective date. A change does not edit the previous value: it creates a new effective period and closes the previous one, so past months are still calculated with the figure in force at the time.",
@@ -3875,7 +4016,11 @@
         "concepto": "Description",
         "guardar": "Save entry",
         "cancelar": "Cancel",
-        "ayudaEnvio": "To save: a description, at least two lines with an account, each with a debit or a credit (not both), and debits equal to credits."
+        "ayudaEnvio": "To save: a description, at least two lines with an account, each with a debit or a credit (not both), and debits equal to credits.",
+        "pasos": {
+          "datos": "Entry details",
+          "lineas": "Lines"
+        }
       },
       "editor": {
         "titulo": "Lines",
@@ -3928,7 +4073,11 @@
           "dia": "Day of month",
           "diaAyuda": "If the month has no such day, the entry falls on the last day of the month.",
           "concepto": "Entry description",
-          "guardar": "Save template"
+          "guardar": "Save template",
+          "pasos": {
+            "datos": "Template details",
+            "lineas": "Lines"
+          }
         }
       },
       "error": {
@@ -4005,7 +4154,14 @@
       "observadoBajoRevision": "Flagged (Requires monitoring)",
       "rechazadoRiesgoAlto": "Rejected (High Risk)",
       "observacionesOficial": "Compliance officer notes",
-      "guardarDictamen": "Save Ruling"
+      "guardarDictamen": "Save Ruling",
+      "pasos": {
+        "identificacion": "Identification",
+        "contacto": "Contact",
+        "clasificacion": "Classification",
+        "verificacion": "Verification",
+        "dictamen": "Ruling"
+      }
     },
     "donaciones": {
       "antetitulo": "Accounting",
@@ -4062,7 +4218,14 @@
       "unica": "One-time",
       "numeroCuotas": "Number of installments",
       "fechaInicioCobro": "First installment date",
-      "generarCalendario": "Generate pledge & installments"
+      "generarCalendario": "Generate pledge & installments",
+      "pasos": {
+        "donante": "Donor",
+        "montos": "Amount",
+        "destino": "Destination",
+        "compromiso": "Pledge",
+        "calendario": "Collection schedule"
+      }
     },
     "compras": {
       "antetitulo": "Accounting",
@@ -4101,7 +4264,12 @@
       "rechazada": "Rejected",
       "aprobar": "Approve",
       "rechazar": "Reject",
-      "indicarMotivoRechazo": "Enter reason for rejection:"
+      "indicarMotivoRechazo": "Enter reason for rejection:",
+      "pasos": {
+        "datos": "General data",
+        "lineas": "Items",
+        "justificacion": "Justification"
+      }
     },
     "retenciones": {
       "antetitulo": "Accounting",
@@ -4257,7 +4425,11 @@
       "confirmarLiberacion": "Confirm release",
       "procesando": "Processing...",
       "guardar": "Save fund",
-      "cancelar": "Cancel"
+      "cancelar": "Cancel",
+      "pasos": {
+        "datos": "Fund details",
+        "restriccion": "Donor restriction"
+      }
     },
     "presupuesto": {
       "antetitulo": "Accounting",
@@ -4391,7 +4563,14 @@
       "cesantia": "Severance pay",
       "vacaciones": "Untaken vacation",
       "regalia": "Christmas bonus (13th salary)",
-      "totalLiquidacion": "Total labor settlement"
+      "totalLiquidacion": "Total labor settlement",
+      "pasos": {
+        "puesto": "Position",
+        "contrato": "Contract",
+        "pago": "Payment and withholdings",
+        "periodo": "Period",
+        "fechas": "Dates"
+      }
     },
     "activosFijos": {
       "antetitulo": "Accounting",
@@ -4433,7 +4612,12 @@
       "tasaAnual": "Annual rate",
       "cuentaActivo": "Asset account",
       "totalAmortizado": "Total amortized",
-      "asientoGenerado": "Journal entry"
+      "asientoGenerado": "Journal entry",
+      "pasos": {
+        "identificacion": "Identification",
+        "adquisicion": "Acquisition",
+        "origen": "Origin and link"
+      }
     },
     "inventarioContable": {
       "antetitulo": "Accounting",
@@ -4488,7 +4672,13 @@
       "iniciarConteo": "Generate count sheet",
       "diferencia": "Difference",
       "impacto": "Monetary impact",
-      "aplicarAjustes": "Apply adjustments & post entry"
+      "aplicarAjustes": "Apply adjustments & post entry",
+      "pasos": {
+        "movimiento": "Movement",
+        "cantidades": "Quantity and destination",
+        "articulo": "Item",
+        "cuentas": "Accounting accounts"
+      }
     },
     "reportesFinancieros": {
       "antetitulo": "Accounting",
@@ -4769,6 +4959,11 @@
       "disable": "Disable",
       "enable": "Enable",
       "delete": "Delete"
+    },
+    "pasos": {
+      "documento": "Document",
+      "agentes": "Agents",
+      "contenido": "Content"
     }
   },
   "miDia": {
@@ -5306,7 +5501,11 @@
     "rolesEyebrow": "SUPERADMIN GOVERNANCE",
     "rolesHeading": "Project Assignment by Role",
     "backToProjects": "Back to Projects",
-    "saveError": "Couldn’t save. Try again."
+    "saveError": "Couldn’t save. Try again.",
+    "pasos": {
+      "tarea": "Task",
+      "planificacion": "Planning"
+    }
   },
   "rendicion": {
     "pageTitle": "Expense & Invoice Reimbursement with OCR",
@@ -5360,6 +5559,11 @@
       "propia": "You can't review your own expense report: someone else reviews it.",
       "ya_cambio": "Someone else already moved it. Reload to see its status.",
       "error": "The expense report could not be updated. Try again."
+    },
+    "pasos": {
+      "comprobante": "Receipt and supplier",
+      "montos": "Amounts",
+      "destino": "Program and description"
     }
   },
   "moodle": {
@@ -5550,6 +5754,11 @@
       "errProfesor": "Error assigning teacher.",
       "okEstudiante": "Student linked successfully.",
       "errEstudiante": "Error linking student."
+    },
+    "pasosVisita": {
+      "lugar": "School",
+      "sesion": "Session delivered",
+      "evidencia": "Evidence and notes"
     }
   },
   "reuniones": {
@@ -5642,6 +5851,11 @@
     "empty": {
       "title": "No meetings in this view",
       "description": "Use the 'Schedule Meeting' button to convene the first session."
+    },
+    "pasos": {
+      "reunion": "Meeting",
+      "cuandoDonde": "When and where",
+      "participantes": "Participants"
     }
   },
   "verComo": {
@@ -5767,6 +5981,12 @@
       "members": "Members",
       "save": "Save team",
       "saved": "Team saved"
+    },
+    "pasos": {
+      "tarea": "Task",
+      "fechas": "Dates and effort",
+      "responsables": "Assignees",
+      "plan": "Project and deadline"
     }
   },
   "accesoRapido": {
@@ -5913,6 +6133,10 @@
       "assigned": "Assigned",
       "stopped": "Stopped",
       "estimated": "⏱️ Estimated: +{minutes} min from start"
+    },
+    "pasos": {
+      "pasajero": "Passenger",
+      "viaje": "Trip"
     }
   },
   "permisosAdmin": {

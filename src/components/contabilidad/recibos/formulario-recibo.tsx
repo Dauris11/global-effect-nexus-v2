@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,167 +56,179 @@ export function FormularioRecibo({
     <form action={enviar} className="space-y-6">
       {recibo && <input type="hidden" name="id" value={recibo.id} />}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Campo etiqueta={t("formulario.tipo")} id="tipo">
-          <select
-            id="tipo"
-            name="tipo"
-            className={SELECT}
-            value={tipo}
-            disabled={Boolean(recibo)}
-            onChange={(e) => setTipo(e.target.value as TipoRecibo)}
-          >
-            {TIPOS_RECIBO.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`tipo.${valor}`)}
-              </option>
-            ))}
-          </select>
-          {/* Un select deshabilitado no se envía; el tipo viaja igual. */}
-          {recibo && <input type="hidden" name="tipo" value={tipo} />}
-        </Campo>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("formulario.pasos.datos")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo etiqueta={t("formulario.tipo")} id="tipo">
+              <select
+                id="tipo"
+                name="tipo"
+                className={SELECT}
+                value={tipo}
+                disabled={Boolean(recibo)}
+                onChange={(e) => setTipo(e.target.value as TipoRecibo)}
+              >
+                {TIPOS_RECIBO.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`tipo.${valor}`)}
+                  </option>
+                ))}
+              </select>
+              {/* Un select deshabilitado no se envía; el tipo viaja igual. */}
+              {recibo && <input type="hidden" name="tipo" value={tipo} />}
+            </Campo>
 
-        <Campo etiqueta={t("formulario.fecha")} id="fecha">
-          <Input id="fecha" name="fecha" type="date" required defaultValue={recibo?.fecha ?? hoy} />
-        </Campo>
+            <Campo etiqueta={t("formulario.fecha")} id="fecha">
+              <Input id="fecha" name="fecha" type="date" required defaultValue={recibo?.fecha ?? hoy} />
+            </Campo>
 
-        <Campo etiqueta={t("formulario.cuenta")} id="cuenta" ayuda={t("formulario.moneda", { moneda })}>
-          <select
-            id="cuenta"
-            name="cuenta"
-            className={SELECT}
-            value={cuentaId}
-            onChange={(e) => setCuentaId(e.target.value)}
-            required
-          >
-            {opciones.cuentas.map((cuenta) => (
-              <option key={cuenta.id} value={cuenta.id}>
-                {cuenta.nombre}
-              </option>
-            ))}
-          </select>
-        </Campo>
+            <Campo etiqueta={t("formulario.cuenta")} id="cuenta" ayuda={t("formulario.moneda", { moneda })}>
+              <select
+                id="cuenta"
+                name="cuenta"
+                className={SELECT}
+                value={cuentaId}
+                onChange={(e) => setCuentaId(e.target.value)}
+                required
+              >
+                {opciones.cuentas.map((cuenta) => (
+                  <option key={cuenta.id} value={cuenta.id}>
+                    {cuenta.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
 
-        <Campo etiqueta={t("formulario.monto")} id="monto">
-          <Input
-            id="monto"
-            name="monto"
-            inputMode="decimal"
-            required
-            placeholder="0.00"
-            defaultValue={recibo?.monto ?? ""}
-          />
-        </Campo>
+            <Campo etiqueta={t("formulario.monto")} id="monto">
+              <Input
+                id="monto"
+                name="monto"
+                inputMode="decimal"
+                required
+                placeholder="0.00"
+                defaultValue={recibo?.monto ?? ""}
+              />
+            </Campo>
 
-        {moneda === "USD" && (
-          <Campo etiqueta={t("formulario.tasa")} id="tasa">
-            <Input id="tasa" name="tasa" inputMode="decimal" required defaultValue={recibo?.tasa ?? ""} />
+            {moneda === "USD" && (
+              <Campo etiqueta={t("formulario.tasa")} id="tasa">
+                <Input id="tasa" name="tasa" inputMode="decimal" required defaultValue={recibo?.tasa ?? ""} />
+              </Campo>
+            )}
+
+            <Campo etiqueta={t("formulario.formaPago")} id="forma_pago">
+              <select
+                id="forma_pago"
+                name="forma_pago"
+                className={SELECT}
+                defaultValue={recibo?.forma_pago ?? "transferencia"}
+              >
+                {FORMAS_PAGO.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`formaPago.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+          </div>
+        </PasoFormulario>
+
+        <PasoFormulario titulo={t("formulario.pasos.clasificacion")}>
+          <Campo etiqueta={t("formulario.concepto")} id="concepto">
+            <Input id="concepto" name="concepto" required maxLength={200} defaultValue={recibo?.concepto ?? ""} />
           </Campo>
-        )}
 
-        <Campo etiqueta={t("formulario.formaPago")} id="forma_pago">
-          <select
-            id="forma_pago"
-            name="forma_pago"
-            className={SELECT}
-            defaultValue={recibo?.forma_pago ?? "transferencia"}
-          >
-            {FORMAS_PAGO.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`formaPago.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </Campo>
-      </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo etiqueta={t("formulario.categoria")} id="categoria">
+              <select
+                key={tipo}
+                id="categoria"
+                name="categoria"
+                className={SELECT}
+                defaultValue={recibo?.categoria_id ?? ""}
+                required
+              >
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
+                    {categoria.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
 
-      <Campo etiqueta={t("formulario.concepto")} id="concepto">
-        <Input id="concepto" name="concepto" required maxLength={200} defaultValue={recibo?.concepto ?? ""} />
-      </Campo>
+            <Campo etiqueta={t("formulario.fondo")} id="fondo">
+              <select id="fondo" name="fondo" className={SELECT} defaultValue={recibo?.fondo_id ?? ""} required>
+                {opciones.fondos.map((fondo) => (
+                  <option key={fondo.id} value={fondo.id}>
+                    {fondo.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Campo etiqueta={t("formulario.categoria")} id="categoria">
-          <select
-            key={tipo}
-            id="categoria"
-            name="categoria"
-            className={SELECT}
-            defaultValue={recibo?.categoria_id ?? ""}
-            required
-          >
-            {categorias.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nombre}
-              </option>
-            ))}
-          </select>
-        </Campo>
+            <Campo etiqueta={t("formulario.proyecto")} id="proyecto">
+              <select id="proyecto" name="proyecto" className={SELECT} defaultValue={recibo?.proyecto_id ?? ""}>
+                <option value="">{t("formulario.ninguno")}</option>
+                {opciones.proyectos.map((proyecto) => (
+                  <option key={proyecto.id} value={proyecto.id}>
+                    {proyecto.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+          </div>
+        </PasoFormulario>
 
-        <Campo etiqueta={t("formulario.fondo")} id="fondo">
-          <select id="fondo" name="fondo" className={SELECT} defaultValue={recibo?.fondo_id ?? ""} required>
-            {opciones.fondos.map((fondo) => (
-              <option key={fondo.id} value={fondo.id}>
-                {fondo.nombre}
-              </option>
-            ))}
-          </select>
-        </Campo>
+        <PasoFormulario titulo={t("formulario.pasos.detalle")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            {tipo === "ingreso" ? (
+              <Campo etiqueta={t("formulario.patrocinador")} id="patrocinador">
+                <select
+                  id="patrocinador"
+                  name="patrocinador"
+                  className={SELECT}
+                  defaultValue={recibo?.patrocinador_id ?? ""}
+                >
+                  <option value="">{t("formulario.ninguno")}</option>
+                  {opciones.patrocinadores.map((patrocinador) => (
+                    <option key={patrocinador.id} value={patrocinador.id}>
+                      {patrocinador.nombre}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+            ) : (
+              <Campo etiqueta={t("formulario.beneficiario")} id="beneficiario">
+                <Input id="beneficiario" name="beneficiario" maxLength={160} defaultValue={recibo?.beneficiario ?? ""} />
+              </Campo>
+            )}
 
-        <Campo etiqueta={t("formulario.proyecto")} id="proyecto">
-          <select id="proyecto" name="proyecto" className={SELECT} defaultValue={recibo?.proyecto_id ?? ""}>
-            <option value="">{t("formulario.ninguno")}</option>
-            {opciones.proyectos.map((proyecto) => (
-              <option key={proyecto.id} value={proyecto.id}>
-                {proyecto.nombre}
-              </option>
-            ))}
-          </select>
-        </Campo>
+            <Campo etiqueta={t("formulario.referencia")} id="referencia" ayuda={t("formulario.referenciaAyuda")}>
+              <Input id="referencia" name="referencia" maxLength={120} defaultValue={recibo?.referencia ?? ""} />
+            </Campo>
+          </div>
 
-        {tipo === "ingreso" ? (
-          <Campo etiqueta={t("formulario.patrocinador")} id="patrocinador">
-            <select
-              id="patrocinador"
-              name="patrocinador"
-              className={SELECT}
-              defaultValue={recibo?.patrocinador_id ?? ""}
-            >
-              <option value="">{t("formulario.ninguno")}</option>
-              {opciones.patrocinadores.map((patrocinador) => (
-                <option key={patrocinador.id} value={patrocinador.id}>
-                  {patrocinador.nombre}
-                </option>
-              ))}
-            </select>
+          <Campo etiqueta={t("formulario.notas")} id="notas">
+            <Textarea id="notas" name="notas" rows={3} maxLength={900} defaultValue={recibo?.notas ?? ""} />
           </Campo>
-        ) : (
-          <Campo etiqueta={t("formulario.beneficiario")} id="beneficiario">
-            <Input id="beneficiario" name="beneficiario" maxLength={160} defaultValue={recibo?.beneficiario ?? ""} />
-          </Campo>
-        )}
+        </PasoFormulario>
 
-        <Campo etiqueta={t("formulario.referencia")} id="referencia" ayuda={t("formulario.referenciaAyuda")}>
-          <Input id="referencia" name="referencia" maxLength={120} defaultValue={recibo?.referencia ?? ""} />
-        </Campo>
-      </div>
+        {error && <AvisoError>{error}</AvisoError>}
 
-      <Campo etiqueta={t("formulario.notas")} id="notas">
-        <Textarea id="notas" name="notas" rows={3} maxLength={900} defaultValue={recibo?.notas ?? ""} />
-      </Campo>
-
-      {error && <AvisoError>{error}</AvisoError>}
-
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={enviando}>
-          {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-          {t("formulario.guardar")}
-        </Button>
-        <Button asChild variant="ghost">
-          <Link href={recibo ? `/contabilidad/recibos/${recibo.id}` : "/contabilidad/recibos"}>
-            {t("formulario.cancelar")}
-          </Link>
-        </Button>
-      </div>
+        <AccionesFormulario>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {t("formulario.guardar")}
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href={recibo ? `/contabilidad/recibos/${recibo.id}` : "/contabilidad/recibos"}>
+                {t("formulario.cancelar")}
+              </Link>
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

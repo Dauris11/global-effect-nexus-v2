@@ -13,6 +13,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Label } from "@/components/ui/label";
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { MONEDAS } from "@/lib/contabilidad/formato";
@@ -90,107 +95,115 @@ export function FormularioCaja({
         </DialogHeader>
 
         <form onSubmit={onCrearCaja} className="space-y-4 pt-2 text-sm">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="codigo">{t("codigo")}</Label>
-              <Input
-                id="codigo"
-                required
-                className="uppercase font-mono"
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="departamento">{t("departamento")}</Label>
-              <Input
-                id="departamento"
-                required
-                maxLength={80}
-                value={departamento}
-                onChange={(e) => setDepartamento(e.target.value)}
-              />
-            </div>
-          </div>
+          <FormularioGuiado>
+            <PasoFormulario titulo={t("pasos.datos")}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="codigo">{t("codigo")}</Label>
+                  <Input
+                    id="codigo"
+                    required
+                    className="uppercase font-mono"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="departamento">{t("departamento")}</Label>
+                  <Input
+                    id="departamento"
+                    required
+                    maxLength={80}
+                    value={departamento}
+                    onChange={(e) => setDepartamento(e.target.value)}
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="nombre">{t("nombre")}</Label>
-            <Input
-              id="nombre"
-              required
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          </div>
+              <div className="space-y-1">
+                <Label htmlFor="nombre">{t("nombre")}</Label>
+                <Input
+                  id="nombre"
+                  required
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                />
+              </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="responsable">{t("responsable")}</Label>
-            <select
-              id="responsable"
-              className={SELECT}
-              value={responsableId}
-              onChange={(e) => setResponsableId(e.target.value)}
-              required
-            >
-              {responsables.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.nombre} ({r.rol})
-                </option>
-              ))}
-            </select>
-          </div>
+              <div className="space-y-1">
+                <Label htmlFor="responsable">{t("responsable")}</Label>
+                <select
+                  id="responsable"
+                  className={SELECT}
+                  value={responsableId}
+                  onChange={(e) => setResponsableId(e.target.value)}
+                  required
+                >
+                  {responsables.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.nombre} ({r.rol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </PasoFormulario>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="space-y-1">
-              <Label htmlFor="moneda">{t("moneda")}</Label>
-              <select
-                id="moneda"
-                className={SELECT}
-                value={moneda}
-                onChange={(e) => setMoneda(e.target.value as "DOP" | "USD")}
-              >
-                {MONEDAS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="fondoFijo">{t("fondoFijo")}</Label>
-              <Input
-                id="fondoFijo"
-                type="number"
-                step="0.01"
-                required
-                value={fondoFijo}
-                onChange={(e) => setFondoFijo(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="umbralAdjunto">{t("umbralAdjunto")}</Label>
-              <Input
-                id="umbralAdjunto"
-                type="number"
-                step="0.01"
-                required
-                value={umbralAdjunto}
-                onChange={(e) => setUmbralAdjunto(e.target.value)}
-              />
-            </div>
-          </div>
+            <PasoFormulario titulo={t("pasos.fondo")}>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <Label htmlFor="moneda">{t("moneda")}</Label>
+                  <select
+                    id="moneda"
+                    className={SELECT}
+                    value={moneda}
+                    onChange={(e) => setMoneda(e.target.value as "DOP" | "USD")}
+                  >
+                    {MONEDAS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="fondoFijo">{t("fondoFijo")}</Label>
+                  <Input
+                    id="fondoFijo"
+                    type="number"
+                    step="0.01"
+                    required
+                    value={fondoFijo}
+                    onChange={(e) => setFondoFijo(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="umbralAdjunto">{t("umbralAdjunto")}</Label>
+                  <Input
+                    id="umbralAdjunto"
+                    type="number"
+                    step="0.01"
+                    required
+                    value={umbralAdjunto}
+                    onChange={(e) => setUmbralAdjunto(e.target.value)}
+                  />
+                </div>
+              </div>
+            </PasoFormulario>
 
-          {error && <AvisoError>{error}</AvisoError>}
+            {error && <AvisoError>{error}</AvisoError>}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-              {t("cancelar")}
-            </Button>
-            <Button type="submit" disabled={guardando}>
-              {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              <span>{t("crearCaja")}</span>
-            </Button>
-          </div>
+            <AccionesFormulario>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  <span>{t("crearCaja")}</span>
+                </Button>
+              </div>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

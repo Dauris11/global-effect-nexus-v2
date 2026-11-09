@@ -12,6 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -126,62 +131,74 @@ export function DialogoEditarTarea({
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="id" value={tarea.id} />
-          <div className="space-y-1.5">
-            <Label htmlFor="e-titulo">{t("form.title")}</Label>
-            <Input id="e-titulo" name="titulo" defaultValue={tarea.titulo} maxLength={160} required />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="e-estado">{t("form.status")}</Label>
-              <select id="e-estado" name="estado" defaultValue={tarea.estado} className={CLASE_SELECT}>
-                {ESTADOS_TAREA_COLABORADOR.map((e) => (
-                  <option key={e} value={e}>
-                    {t(`status.${e}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="e-prioridad">{t("form.priority")}</Label>
-              <select id="e-prioridad" name="prioridad" defaultValue={tarea.prioridad} className={CLASE_SELECT}>
-                {PRIORIDADES_TAREA.map((p) => (
-                  <option key={p} value={p}>
-                    {t(`priority.${p}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="e-progreso">{t("form.progress")}</Label>
-              <Input id="e-progreso" name="progreso" type="number" min={0} max={100} step={5} defaultValue={tarea.progreso} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="e-inicio">{t("form.start")}</Label>
-              <Input id="e-inicio" name="inicio" type="date" defaultValue={tarea.fecha_inicio ?? ""} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="e-limite">{t("form.due")}</Label>
-              <Input id="e-limite" name="limite" type="date" defaultValue={tarea.fecha_limite ?? ""} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="e-horas">{t("form.hours")}</Label>
-              <Input id="e-horas" name="horas" type="number" min={0} step={0.5} defaultValue={tarea.horas_estimadas} />
-            </div>
-          </div>
-          <fieldset className="space-y-1.5">
-            <legend className="text-sm font-medium">{t("form.assignees")}</legend>
-            <CasillasPersonas nombre="asignado" personas={personas} marcadas={tarea.asignados_ids} />
-          </fieldset>
-          {error && <AvisoError clave={error} />}
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => alCambiar(false)}>
-              {t("cancel")}
-            </Button>
-            <Button type="submit" disabled={enviando}>
-              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {t("save")}
-            </Button>
-          </DialogFooter>
+          <FormularioGuiado>
+            <PasoFormulario titulo={t("pasos.tarea")}>
+              <div className="space-y-1.5">
+                <Label htmlFor="e-titulo">{t("form.title")}</Label>
+                <Input id="e-titulo" name="titulo" defaultValue={tarea.titulo} maxLength={160} required />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-estado">{t("form.status")}</Label>
+                  <select id="e-estado" name="estado" defaultValue={tarea.estado} className={CLASE_SELECT}>
+                    {ESTADOS_TAREA_COLABORADOR.map((e) => (
+                      <option key={e} value={e}>
+                        {t(`status.${e}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-prioridad">{t("form.priority")}</Label>
+                  <select id="e-prioridad" name="prioridad" defaultValue={tarea.prioridad} className={CLASE_SELECT}>
+                    {PRIORIDADES_TAREA.map((p) => (
+                      <option key={p} value={p}>
+                        {t(`priority.${p}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-progreso">{t("form.progress")}</Label>
+                  <Input id="e-progreso" name="progreso" type="number" min={0} max={100} step={5} defaultValue={tarea.progreso} />
+                </div>
+              </div>
+            </PasoFormulario>
+            <PasoFormulario titulo={t("pasos.fechas")}>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-inicio">{t("form.start")}</Label>
+                  <Input id="e-inicio" name="inicio" type="date" defaultValue={tarea.fecha_inicio ?? ""} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-limite">{t("form.due")}</Label>
+                  <Input id="e-limite" name="limite" type="date" defaultValue={tarea.fecha_limite ?? ""} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="e-horas">{t("form.hours")}</Label>
+                  <Input id="e-horas" name="horas" type="number" min={0} step={0.5} defaultValue={tarea.horas_estimadas} />
+                </div>
+              </div>
+            </PasoFormulario>
+            <PasoFormulario titulo={t("pasos.responsables")}>
+              <fieldset className="space-y-1.5">
+                <legend className="text-sm font-medium">{t("form.assignees")}</legend>
+                <CasillasPersonas nombre="asignado" personas={personas} marcadas={tarea.asignados_ids} />
+              </fieldset>
+            </PasoFormulario>
+            {error && <AvisoError clave={error} />}
+            <AccionesFormulario>
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => alCambiar(false)}>
+                  {t("cancel")}
+                </Button>
+                <Button type="submit" disabled={enviando}>
+                  {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {t("save")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>
@@ -229,51 +246,59 @@ export function BotonAsignarTarea({
           <form action={enviar} className="space-y-4">
             <input type="hidden" name="asignado" value={persona.id} />
             <input type="hidden" name="visibilidad" value="asignados" />
-            <div className="space-y-1.5">
-              <Label htmlFor="a-titulo">{t("form.title")}</Label>
-              <Input id="a-titulo" name="titulo" maxLength={160} required />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="space-y-1.5 sm:col-span-3">
-                <Label htmlFor="a-proyecto">{t("form.project")}</Label>
-                <select id="a-proyecto" name="proyecto" className={CLASE_SELECT}>
-                  <option value="">{t("noProject")}</option>
-                  {proyectos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="a-prioridad">{t("form.priority")}</Label>
-                <select id="a-prioridad" name="prioridad" defaultValue="media" className={CLASE_SELECT}>
-                  {PRIORIDADES_TAREA.map((p) => (
-                    <option key={p} value={p}>
-                      {t(`priority.${p}`)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="a-limite">{t("form.due")}</Label>
-                <Input id="a-limite" name="limite" type="date" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="a-desc">{t("form.description")}</Label>
-              <Textarea id="a-desc" name="descripcion" rows={2} maxLength={900} />
-            </div>
-            {error && <AvisoError clave={error} />}
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" disabled={enviando}>
-                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {t("save")}
-              </Button>
-            </DialogFooter>
+            <FormularioGuiado>
+              <PasoFormulario titulo={t("pasos.tarea")}>
+                <div className="space-y-1.5">
+                  <Label htmlFor="a-titulo">{t("form.title")}</Label>
+                  <Input id="a-titulo" name="titulo" maxLength={160} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="a-desc">{t("form.description")}</Label>
+                  <Textarea id="a-desc" name="descripcion" rows={2} maxLength={900} />
+                </div>
+              </PasoFormulario>
+              <PasoFormulario titulo={t("pasos.plan")}>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="space-y-1.5 sm:col-span-3">
+                    <Label htmlFor="a-proyecto">{t("form.project")}</Label>
+                    <select id="a-proyecto" name="proyecto" className={CLASE_SELECT}>
+                      <option value="">{t("noProject")}</option>
+                      {proyectos.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="a-prioridad">{t("form.priority")}</Label>
+                    <select id="a-prioridad" name="prioridad" defaultValue="media" className={CLASE_SELECT}>
+                      {PRIORIDADES_TAREA.map((p) => (
+                        <option key={p} value={p}>
+                          {t(`priority.${p}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="a-limite">{t("form.due")}</Label>
+                    <Input id="a-limite" name="limite" type="date" />
+                  </div>
+                </div>
+              </PasoFormulario>
+              {error && <AvisoError clave={error} />}
+              <AccionesFormulario>
+                <DialogFooter>
+                  <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
+                    {t("cancel")}
+                  </Button>
+                  <Button type="submit" disabled={enviando}>
+                    {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                    {t("save")}
+                  </Button>
+                </DialogFooter>
+              </AccionesFormulario>
+            </FormularioGuiado>
           </form>
         </DialogContent>
       </Dialog>

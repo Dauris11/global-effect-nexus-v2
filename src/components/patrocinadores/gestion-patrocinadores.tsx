@@ -18,6 +18,11 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -265,144 +270,158 @@ function Formulario({
 
       <input type="hidden" name="id" value={patrocinador?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`s-nombre-${clave}`}>{t("field.name")}</Label>
-          <Input
-            id={`s-nombre-${clave}`}
-            name="nombre"
-            defaultValue={patrocinador?.nombre}
-            required
-            maxLength={160}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.patrocinador")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`s-nombre-${clave}`}>{t("field.name")}</Label>
+              <Input
+                id={`s-nombre-${clave}`}
+                name="nombre"
+                defaultValue={patrocinador?.nombre}
+                required
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-tipo-${clave}`}>{t("field.type")}</Label>
-          <select
-            id={`s-tipo-${clave}`}
-            name="tipo"
-            defaultValue={patrocinador?.tipo ?? "persona"}
-            className={SELECT}
-          >
-            {TIPOS.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`type.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-tipo-${clave}`}>{t("field.type")}</Label>
+              <select
+                id={`s-tipo-${clave}`}
+                name="tipo"
+                defaultValue={patrocinador?.tipo ?? "persona"}
+                className={SELECT}
+              >
+                {TIPOS.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`type.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-estado-${clave}`}>{t("field.state")}</Label>
-          <select
-            id={`s-estado-${clave}`}
-            name="estado"
-            defaultValue={patrocinador?.estado ?? "activo"}
-            className={SELECT}
-          >
-            {(["activo", "inactivo"] as const).map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`state.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-estado-${clave}`}>{t("field.state")}</Label>
+              <select
+                id={`s-estado-${clave}`}
+                name="estado"
+                defaultValue={patrocinador?.estado ?? "activo"}
+                className={SELECT}
+              >
+                {(["activo", "inactivo"] as const).map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`state.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-email-${clave}`}>{t("field.email")}</Label>
-          <Input
-            id={`s-email-${clave}`}
-            name="email"
-            type="email"
-            defaultValue={patrocinador?.email ?? ""}
-            maxLength={160}
-          />
-        </div>
+        <PasoFormulario titulo={t("pasos.contacto")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-email-${clave}`}>{t("field.email")}</Label>
+              <Input
+                id={`s-email-${clave}`}
+                name="email"
+                type="email"
+                defaultValue={patrocinador?.email ?? ""}
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-tel-${clave}`}>{t("field.phone")}</Label>
-          <Input
-            id={`s-tel-${clave}`}
-            name="telefono"
-            type="tel"
-            defaultValue={patrocinador?.telefono ?? ""}
-            maxLength={40}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-tel-${clave}`}>{t("field.phone")}</Label>
+              <Input
+                id={`s-tel-${clave}`}
+                name="telefono"
+                type="tel"
+                defaultValue={patrocinador?.telefono ?? ""}
+                maxLength={40}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-pais-${clave}`}>{t("field.country")}</Label>
-          <Input
-            id={`s-pais-${clave}`}
-            name="pais"
-            defaultValue={patrocinador?.pais ?? ""}
-            maxLength={80}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-pais-${clave}`}>{t("field.country")}</Label>
+              <Input
+                id={`s-pais-${clave}`}
+                name="pais"
+                defaultValue={patrocinador?.pais ?? ""}
+                maxLength={80}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`s-monto-${clave}`}>{t("field.monthly")}</Label>
-          <Input
-            id={`s-monto-${clave}`}
-            name="monto"
-            type="number"
-            min={0}
-            step="0.01"
-            defaultValue={patrocinador?.monto_mensual ?? 0}
-          />
-        </div>
-      </div>
+        <PasoFormulario titulo={t("pasos.aporte")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor={`s-monto-${clave}`}>{t("field.monthly")}</Label>
+              <Input
+                id={`s-monto-${clave}`}
+                name="monto"
+                type="number"
+                min={0}
+                step="0.01"
+                defaultValue={patrocinador?.monto_mensual ?? 0}
+              />
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`s-notas-${clave}`}>{t("field.notes")}</Label>
-        <Textarea
-          id={`s-notas-${clave}`}
-          name="notas"
-          defaultValue={patrocinador?.notas ?? ""}
-          maxLength={900}
-          rows={2}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`s-notas-${clave}`}>{t("field.notes")}</Label>
+            <Textarea
+              id={`s-notas-${clave}`}
+              name="notas"
+              defaultValue={patrocinador?.notas ?? ""}
+              maxLength={900}
+              rows={2}
+            />
+          </div>
+        </PasoFormulario>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("form.nameRequired")
-              : estado.estado === "monto_invalido"
-                ? t("form.amountInvalid")
-                : t("form.error")}
-          </span>
-        </p>
-      )}
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "nombre_vacio"
+                ? t("form.nameRequired")
+                : estado.estado === "monto_invalido"
+                  ? t("form.amountInvalid")
+                  : t("form.error")}
+            </span>
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando
-            ? patrocinador
-              ? t("form.saving")
-              : t("form.creating")
-            : patrocinador
-              ? t("form.save")
-              : t("form.create")}
-        </Button>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando
+                ? patrocinador
+                  ? t("form.saving")
+                  : t("form.creating")
+                : patrocinador
+                  ? t("form.save")
+                  : t("form.create")}
+            </Button>
 
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("form.cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("form.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

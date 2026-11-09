@@ -13,6 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -92,142 +97,150 @@ export function DialogoActivoFijo({
             </div>
           )}
 
-          <div className="grid gap-4 py-4 text-sm">
-            <div className="grid grid-cols-2 gap-3">
+          <FormularioGuiado className="py-4 text-sm">
+            <PasoFormulario titulo={t("pasos.identificacion")}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="af-cod">{t("codigo")}</Label>
+                  <Input
+                    id="af-cod"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value)}
+                    placeholder="AF-2026-001"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="af-cat">{t("categoria")}</Label>
+                  <Select value={categoriaId} onValueChange={setCategoriaId} required>
+                    <SelectTrigger id="af-cat">
+                      <SelectValue placeholder="Seleccione categoría..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <Label htmlFor="af-cod">{t("codigo")}</Label>
+                <Label htmlFor="af-nom">{t("nombre")}</Label>
                 <Input
-                  id="af-cod"
-                  value={codigo}
-                  onChange={(e) => setCodigo(e.target.value)}
-                  placeholder="AF-2026-001"
+                  id="af-nom"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Ej. Servidor central y switches de red"
                   required
                 />
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="af-cat">{t("categoria")}</Label>
-                <Select value={categoriaId} onValueChange={setCategoriaId} required>
-                  <SelectTrigger id="af-cat">
-                    <SelectValue placeholder="Seleccione categoría..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categorias.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            </PasoFormulario>
 
-            <div className="space-y-1">
-              <Label htmlFor="af-nom">{t("nombre")}</Label>
-              <Input
-                id="af-nom"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej. Servidor central y switches de red"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="af-centro">{t("centroCosto")}</Label>
-                <Select value={centroCostoId} onValueChange={setCentroCostoId} required>
-                  <SelectTrigger id="af-centro">
-                    <SelectValue placeholder="Seleccione centro..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {centrosCosto.map((cc) => (
-                      <SelectItem key={cc.id} value={cc.id}>
-                        {cc.codigo} — {cc.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <PasoFormulario titulo={t("pasos.adquisicion")}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="af-centro">{t("centroCosto")}</Label>
+                  <Select value={centroCostoId} onValueChange={setCentroCostoId} required>
+                    <SelectTrigger id="af-centro">
+                      <SelectValue placeholder="Seleccione centro..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {centrosCosto.map((cc) => (
+                        <SelectItem key={cc.id} value={cc.id}>
+                          {cc.codigo} — {cc.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="af-fecha">{t("fechaAdquisicion")}</Label>
+                  <Input
+                    id="af-fecha"
+                    type="date"
+                    value={fechaAdquisicion}
+                    onChange={(e) => setFechaAdquisicion(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="af-fecha">{t("fechaAdquisicion")}</Label>
-                <Input
-                  id="af-fecha"
-                  type="date"
-                  value={fechaAdquisicion}
-                  onChange={(e) => setFechaAdquisicion(e.target.value)}
-                  required
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="af-costo">{t("costo")} (RD$)</Label>
+                  <Input
+                    id="af-costo"
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    value={costoAdquisicion}
+                    onChange={(e) => setCostoAdquisicion(e.target.value)}
+                    placeholder="85000.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="af-res">{t("valorResidual")} (RD$)</Label>
+                  <Input
+                    id="af-res"
+                    type="number"
+                    step="0.01"
+                    value={valorResidual}
+                    onChange={(e) => setValorResidual(e.target.value)}
+                  />
+                </div>
+              </div>
+            </PasoFormulario>
+
+            <PasoFormulario titulo={t("pasos.origen")}>
+              {activosFisicos.length > 0 && (
+                <div className="space-y-1">
+                  <Label htmlFor="af-qr">{t("enlaceInventarioQr")}</Label>
+                  <Select value={inventarioActivoId} onValueChange={setInventarioActivoId}>
+                    <SelectTrigger id="af-qr">
+                      <SelectValue placeholder="Sin enlace / Activo contable puro" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activosFisicos.map((af) => (
+                        <SelectItem key={af.id} value={af.id}>
+                          {af.codigo} — {af.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <label className="flex items-center gap-2 cursor-pointer pt-2">
+                <input
+                  type="checkbox"
+                  checked={esDonado}
+                  onChange={(e) => setEsDonado(e.target.checked)}
+                  className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
                 />
-              </div>
-            </div>
+                <span>{t("esDonado")} (Aporte de patrocinador)</span>
+              </label>
+            </PasoFormulario>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="af-costo">{t("costo")} (RD$)</Label>
-                <Input
-                  id="af-costo"
-                  type="number"
-                  step="0.01"
-                  min="1"
-                  value={costoAdquisicion}
-                  onChange={(e) => setCostoAdquisicion(e.target.value)}
-                  placeholder="85000.00"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="af-res">{t("valorResidual")} (RD$)</Label>
-                <Input
-                  id="af-res"
-                  type="number"
-                  step="0.01"
-                  value={valorResidual}
-                  onChange={(e) => setValorResidual(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {activosFisicos.length > 0 && (
-              <div className="space-y-1">
-                <Label htmlFor="af-qr">{t("enlaceInventarioQr")}</Label>
-                <Select value={inventarioActivoId} onValueChange={setInventarioActivoId}>
-                  <SelectTrigger id="af-qr">
-                    <SelectValue placeholder="Sin enlace / Activo contable puro" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activosFisicos.map((af) => (
-                      <SelectItem key={af.id} value={af.id}>
-                        {af.codigo} — {af.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <label className="flex items-center gap-2 cursor-pointer pt-2">
-              <input
-                type="checkbox"
-                checked={esDonado}
-                onChange={(e) => setEsDonado(e.target.checked)}
-                className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
-              />
-              <span>{t("esDonado")} (Aporte de patrocinador)</span>
-            </label>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
-              {t("cancelar")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={cargando || !codigo || !nombre || !categoriaId || !centroCostoId || !costoAdquisicion}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
-            >
-              {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {cargando ? t("procesando") : t("guardar")}
-            </Button>
-          </DialogFooter>
+            <AccionesFormulario>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={cargando || !codigo || !nombre || !categoriaId || !centroCostoId || !costoAdquisicion}
+                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                >
+                  {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {cargando ? t("procesando") : t("guardar")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

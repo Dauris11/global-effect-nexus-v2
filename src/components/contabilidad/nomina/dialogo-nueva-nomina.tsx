@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -80,101 +81,109 @@ export function DialogoNuevaNomina() {
             </div>
           )}
 
-          <div className="grid gap-4 py-4 text-sm">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="nom-anio">{t("anio")}</Label>
-                <Input
-                  id="nom-anio"
-                  type="number"
-                  min="2020"
-                  max="2099"
-                  value={anio}
-                  onChange={(e) => setAnio(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="nom-mes">{t("mes")}</Label>
-                <Input
-                  id="nom-mes"
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={mes}
-                  onChange={(e) => setMes(e.target.value)}
-                  required
-                />
-              </div>
+          <FormularioGuiado className="py-4">
+            <div className="grid gap-4 text-sm">
+              <PasoFormulario titulo={t("pasos.periodo")}>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="nom-anio">{t("anio")}</Label>
+                    <Input
+                      id="nom-anio"
+                      type="number"
+                      min="2020"
+                      max="2099"
+                      value={anio}
+                      onChange={(e) => setAnio(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="nom-mes">{t("mes")}</Label>
+                    <Input
+                      id="nom-mes"
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={mes}
+                      onChange={(e) => setMes(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="nom-tipo">{t("tipoPeriodo")}</Label>
+                  <Select
+                    value={periodoTipo}
+                    onValueChange={(val: "mensual" | "primera_quincena" | "segunda_quincena" | "regalia_pascual") =>
+                      setPeriodoTipo(val)
+                    }
+                  >
+                    <SelectTrigger id="nom-tipo">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mensual">{t("mensual")}</SelectItem>
+                      <SelectItem value="primera_quincena">{t("primera_quincena")}</SelectItem>
+                      <SelectItem value="segunda_quincena">{t("segunda_quincena")}</SelectItem>
+                      <SelectItem value="regalia_pascual">{t("regalia_pascual")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </PasoFormulario>
+
+              <PasoFormulario titulo={t("pasos.fechas")}>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="nom-corte">{t("fechaCorte")}</Label>
+                    <Input
+                      id="nom-corte"
+                      type="date"
+                      value={fechaCorte}
+                      onChange={(e) => setFechaCorte(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="nom-pago">{t("fechaPago")}</Label>
+                    <Input
+                      id="nom-pago"
+                      type="date"
+                      value={fechaPago}
+                      onChange={(e) => setFechaPago(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="nom-notas">{t("notas")}</Label>
+                  <Input
+                    id="nom-notas"
+                    value={notas}
+                    onChange={(e) => setNotas(e.target.value)}
+                    placeholder="Ej. Nómina quincenal regular personal docente y operativo"
+                  />
+                </div>
+              </PasoFormulario>
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="nom-tipo">{t("tipoPeriodo")}</Label>
-              <Select
-                value={periodoTipo}
-                onValueChange={(val: "mensual" | "primera_quincena" | "segunda_quincena" | "regalia_pascual") =>
-                  setPeriodoTipo(val)
-                }
-              >
-                <SelectTrigger id="nom-tipo">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mensual">{t("mensual")}</SelectItem>
-                  <SelectItem value="primera_quincena">{t("primera_quincena")}</SelectItem>
-                  <SelectItem value="segunda_quincena">{t("segunda_quincena")}</SelectItem>
-                  <SelectItem value="regalia_pascual">{t("regalia_pascual")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="nom-corte">{t("fechaCorte")}</Label>
-                <Input
-                  id="nom-corte"
-                  type="date"
-                  value={fechaCorte}
-                  onChange={(e) => setFechaCorte(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="nom-pago">{t("fechaPago")}</Label>
-                <Input
-                  id="nom-pago"
-                  type="date"
-                  value={fechaPago}
-                  onChange={(e) => setFechaPago(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="nom-notas">{t("notas")}</Label>
-              <Input
-                id="nom-notas"
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-                placeholder="Ej. Nómina quincenal regular personal docente y operativo"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
-              {t("cancelar")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={cargando}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
-            >
-              {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {cargando ? t("procesando") : t("generar")}
-            </Button>
-          </DialogFooter>
+            <AccionesFormulario>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={cargando}
+                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                >
+                  {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {cargando ? t("procesando") : t("generar")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

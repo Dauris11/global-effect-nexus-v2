@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -96,153 +97,164 @@ export function DialogoDonacion({
 
           {error && <div className="rounded-md border border-linea-fuerte bg-muted p-3 text-sm text-tinta">{error}</div>}
 
-          <div className="space-y-1.5">
-            <Label>{t("donante")}</Label>
-            <Select value={terceroId} onValueChange={setTerceroId}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("seleccioneDonante")} />
-              </SelectTrigger>
-              <SelectContent>
-                {donantes.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.nombre} ({d.identificacion})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t("fecha")}</Label>
-              <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t("claseDonacion")}</Label>
-              <Select value={clase} onValueChange={(v: "efectivo" | "especie") => setClase(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="efectivo">{t("efectivo")}</SelectItem>
-                  <SelectItem value="especie">{t("especieBienes")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t("tratamientoFiscal")}</Label>
-              <Select value={tratamiento} onValueChange={(v: "exento" | "gravado") => setTratamiento(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="exento">{t("exentoLey122")}</SelectItem>
-                  <SelectItem value="gravado">{t("gravadoComercial")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t("moneda")}</Label>
-              <Select value={moneda} onValueChange={(v: "DOP" | "USD") => setMoneda(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DOP">DOP (RD$)</SelectItem>
-                  <SelectItem value="USD">USD (US$)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{clase === "especie" ? t("valorTasado") : t("monto")}</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
-                placeholder="0.00"
-                required
-              />
-            </div>
-            {moneda === "USD" ? (
+          <FormularioGuiado>
+            <PasoFormulario titulo={t("pasos.donante")}>
               <div className="space-y-1.5">
-                <Label>{t("tasaCambio")}</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={tasa}
-                  onChange={(e) => setTasa(e.target.value)}
-                  required
-                />
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label>{t("fondoDestino")}</Label>
-                <Select value={fondoId} onValueChange={setFondoId}>
+                <Label>{t("donante")}</Label>
+                <Select value={terceroId} onValueChange={setTerceroId}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder={t("seleccioneDonante")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {fondos.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.nombre}
+                    {donantes.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.nombre} ({d.identificacion})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
 
-          {clase === "efectivo" ? (
-            <div className="space-y-1.5">
-              <Label>{t("cuentaBancariaReceptora")}</Label>
-              <Select value={cuentaBancariaId} onValueChange={setCuentaBancariaId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {cuentasBancarias.map((cb) => (
-                    <SelectItem key={cb.id} value={cb.id}>
-                      {cb.nombre} ({cb.moneda})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              <Label>{t("descripcionBienesEspecie")}</Label>
-              <Textarea
-                value={descripcionEspecie}
-                onChange={(e) => setDescripcionEspecie(e.target.value)}
-                placeholder={t("placeholderBienes")}
-                required
-                rows={2}
-              />
-            </div>
-          )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{t("fecha")}</Label>
+                  <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("claseDonacion")}</Label>
+                  <Select value={clase} onValueChange={(v: "efectivo" | "especie") => setClase(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="efectivo">{t("efectivo")}</SelectItem>
+                      <SelectItem value="especie">{t("especieBienes")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </PasoFormulario>
 
-          <div className="space-y-1.5">
-            <Label>{t("notasOpcionales")}</Label>
-            <Input value={notas} onChange={(e) => setNotas(e.target.value)} />
-          </div>
+            <PasoFormulario titulo={t("pasos.montos")}>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
-              {t("cancelar")}
-            </Button>
-            <Button type="submit" disabled={cargando}>
-              {cargando ? t("guardando") : t("confirmarDonacion")}
-            </Button>
-          </DialogFooter>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{t("tratamientoFiscal")}</Label>
+                  <Select value={tratamiento} onValueChange={(v: "exento" | "gravado") => setTratamiento(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="exento">{t("exentoLey122")}</SelectItem>
+                      <SelectItem value="gravado">{t("gravadoComercial")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("moneda")}</Label>
+                  <Select value={moneda} onValueChange={(v: "DOP" | "USD") => setMoneda(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DOP">DOP (RD$)</SelectItem>
+                      <SelectItem value="USD">USD (US$)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{clase === "especie" ? t("valorTasado") : t("monto")}</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                {moneda === "USD" ? (
+                  <div className="space-y-1.5">
+                    <Label>{t("tasaCambio")}</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={tasa}
+                      onChange={(e) => setTasa(e.target.value)}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <Label>{t("fondoDestino")}</Label>
+                    <Select value={fondoId} onValueChange={setFondoId}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fondos.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </PasoFormulario>
+
+            <PasoFormulario titulo={t("pasos.destino")}>
+              {clase === "efectivo" ? (
+                <div className="space-y-1.5">
+                  <Label>{t("cuentaBancariaReceptora")}</Label>
+                  <Select value={cuentaBancariaId} onValueChange={setCuentaBancariaId}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cuentasBancarias.map((cb) => (
+                        <SelectItem key={cb.id} value={cb.id}>
+                          {cb.nombre} ({cb.moneda})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label>{t("descripcionBienesEspecie")}</Label>
+                  <Textarea
+                    value={descripcionEspecie}
+                    onChange={(e) => setDescripcionEspecie(e.target.value)}
+                    placeholder={t("placeholderBienes")}
+                    required
+                    rows={2}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label>{t("notasOpcionales")}</Label>
+                <Input value={notas} onChange={(e) => setNotas(e.target.value)} />
+              </div>
+            </PasoFormulario>
+
+            <AccionesFormulario>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button type="submit" disabled={cargando}>
+                  {cargando ? t("guardando") : t("confirmarDonacion")}
+                </Button>
+              </DialogFooter>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>

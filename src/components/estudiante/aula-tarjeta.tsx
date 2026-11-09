@@ -1,22 +1,18 @@
 import {
-  Award,
   CalendarClock,
   Check,
   ClipboardCheck,
-  Clock,
-  ClockAlert,
   ExternalLink,
   FileText,
   Megaphone,
   Paperclip,
-  TriangleAlert,
-  type LucideIcon,
 } from "lucide-react";
 
 import { BotonBuzonMoodle } from "@/components/estudiante/boton-buzon-moodle";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Locale } from "@/i18n/routing";
+import { ENTREGA_VENCIDA, ESTADO_ENTREGA } from "@/lib/estado-entrega";
 import { fechaConHora } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
@@ -40,28 +36,6 @@ const ICONO_TIPO = {
   material: Paperclip,
   anuncio: Megaphone,
 } as const;
-
-/**
- * Estado de la entrega: peso del azul y un icono por estado, para que se
- * distinga también en escala de grises. Lo calificado es lo más pesado del
- * azul: ya está cerrado.
- *
- * "Vencida sin entregar" no está aquí: es el único estado que pide actuar, y
- * usa el rojo de `SEMAFORO` (ver `VENCIDA`).
- */
-const ESTADO_ENTREGA: Record<string, { clases: string; icono: LucideIcon }> = {
-  pendiente: { clases: "bg-muted text-tinta-2", icono: Clock },
-  entregado: { clases: "bg-marca-50 text-marca-700", icono: Check },
-  tarde: { clases: "bg-marca-50 text-marca-700", icono: ClockAlert },
-  calificado: { clases: "bg-marca-700 text-white", icono: Award },
-};
-
-/**
- * La excepción `SEMAFORO` (docs/09-sistema-visual.md §2.3): una tarea vencida
- * sin entregar es el estado de una entidad que requiere una decisión del
- * estudiante. Va con su icono, escrito como hex arbitrario y nunca `red-*`.
- */
-const VENCIDA = { clases: "bg-[#B4342B] text-white", icono: TriangleAlert };
 
 export type TextosAsignacion = {
   due: string;
@@ -93,7 +67,7 @@ export function TarjetaAsignacion({
   // no hay nada que entregar: solo lo evaluable se marca como vencido.
   const vencida = evaluable && fila.vencida;
   const visual = vencida
-    ? VENCIDA
+    ? ENTREGA_VENCIDA
     : (ESTADO_ENTREGA[estado] ?? ESTADO_ENTREGA.pendiente);
   const IconoEstado = visual.icono;
 

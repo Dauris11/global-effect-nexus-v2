@@ -1,7 +1,10 @@
 "use client";
 
-import { Check, Moon, PanelLeft, Palette, Sun } from "lucide-react";
+import { Check, LayoutList, ListOrdered, Moon, PanelLeft, Palette, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import { useModoFormulario } from "@/components/ui/formulario-guiado";
+import { MODOS_FORMULARIO } from "@/lib/modo-formulario";
 
 import {
   ACENTOS,
@@ -23,6 +26,7 @@ import { useApariencia } from "./usar-apariencia";
 export function SelectorApariencia() {
   const t = useTranslations("profile.appearance");
   const { tema, barra, acento, cambiar } = useApariencia();
+  const { modo: modoFormulario, cambiar: cambiarModo } = useModoFormulario();
 
   return (
     <div className="space-y-6">
@@ -72,6 +76,20 @@ export function SelectorApariencia() {
             onElegir={() => cambiar({ barra: valor })}
           >
             <Miniatura tema={tema} barra={valor} />
+          </Opcion>
+        ))}
+      </Grupo>
+
+      <Grupo titulo={t("forms")}>
+        {MODOS_FORMULARIO.map((valor) => (
+          <Opcion
+            key={valor}
+            activa={modoFormulario === valor}
+            etiqueta={t(`formModes.${valor}`)}
+            icono={valor === "guiado" ? ListOrdered : LayoutList}
+            onElegir={() => cambiarModo(valor)}
+          >
+            <MiniaturaFormulario guiado={valor === "guiado"} />
           </Opcion>
         ))}
       </Grupo>
@@ -125,6 +143,37 @@ function Opcion({
         {activa && <Check className="text-marca-500 size-4" />}
       </span>
     </button>
+  );
+}
+
+/**
+ * Maqueta de un formulario: todos los campos apilados, o uno solo con la barra
+ * de pasos encima. Con tokens, porque enseña el tema vigente.
+ */
+function MiniaturaFormulario({ guiado }: { guiado: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className="flex h-20 flex-col justify-center gap-1.5 rounded-control border border-linea bg-background px-3"
+    >
+      {guiado ? (
+        <>
+          <span className="flex gap-1">
+            <span className="h-1 flex-1 rounded-full bg-marca-500" />
+            <span className="h-1 flex-1 rounded-full bg-linea" />
+            <span className="h-1 flex-1 rounded-full bg-linea" />
+          </span>
+          <span className="h-3 rounded-full border border-linea-fuerte" />
+          <span className="ml-auto h-2.5 w-8 rounded-full bg-marca-500" />
+        </>
+      ) : (
+        <>
+          <span className="h-2.5 rounded-full border border-linea-fuerte" />
+          <span className="h-2.5 rounded-full border border-linea-fuerte" />
+          <span className="h-2.5 rounded-full border border-linea-fuerte" />
+        </>
+      )}
+    </span>
   );
 }
 

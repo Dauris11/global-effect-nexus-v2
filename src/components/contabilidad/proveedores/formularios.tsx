@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,68 +77,82 @@ export function FormularioProveedor({
   return (
     <form action={enviar} className="space-y-5">
       {proveedor && <input type="hidden" name="id" value={proveedor.id} />}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Campo id="tipo" etiqueta={t("tipo")}>
-          <select id="tipo" name="tipo" className={SELECT} value={tipo} onChange={(e) => setTipo(e.target.value as "fisica" | "juridica")}>
-            <option value="juridica">{tc("tipoProveedor.juridica")}</option>
-            <option value="fisica">{tc("tipoProveedor.fisica")}</option>
-          </select>
-        </Campo>
-        <Campo id="identificacion" etiqueta={t("identificacion")} ayuda={malDigito ? tc("error.identificacion_invalida") : t("identificacionAyuda")}>
-          <Input
-            id="identificacion"
-            name="identificacion"
-            inputMode="numeric"
-            required
-            value={identificacion}
-            onChange={(e) => setIdentificacion(e.target.value)}
-            aria-invalid={malDigito || undefined}
-          />
-        </Campo>
-        <Campo id="nombre" etiqueta={t("nombre")}>
-          <Input id="nombre" name="nombre" required maxLength={160} defaultValue={proveedor?.nombre ?? ""} />
-        </Campo>
-        <Campo id="nombre_comercial" etiqueta={t("nombreComercial")}>
-          <Input id="nombre_comercial" name="nombre_comercial" maxLength={160} defaultValue={proveedor?.nombre_comercial ?? ""} />
-        </Campo>
-        <Campo id="contacto" etiqueta={t("contacto")}>
-          <Input id="contacto" name="contacto" maxLength={120} defaultValue={proveedor?.contacto ?? ""} />
-        </Campo>
-        <Campo id="telefono" etiqueta={t("telefono")}>
-          <Input id="telefono" name="telefono" type="tel" maxLength={40} defaultValue={proveedor?.telefono ?? ""} />
-        </Campo>
-        <Campo id="email" etiqueta={t("email")}>
-          <Input id="email" name="email" type="email" maxLength={120} defaultValue={proveedor?.email ?? ""} />
-        </Campo>
-        <Campo id="condiciones" etiqueta={t("condiciones")}>
-          <Input id="condiciones" name="condiciones" type="number" min={0} max={365} defaultValue={proveedor?.condiciones_pago_dias ?? 30} />
-        </Campo>
-        <Campo id="categoria" etiqueta={t("categoria")}>
-          <select id="categoria" name="categoria" className={SELECT} defaultValue={proveedor?.categoria_id ?? ""}>
-            <option value="">{t("ninguna")}</option>
-            {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
-        </Campo>
-        <Campo id="estado" etiqueta={t("estado")}>
-          <select id="estado" name="estado" className={SELECT} defaultValue={proveedor?.estado ?? "activo"}>
-            <option value="activo">{tc("estadoProveedor.activo")}</option>
-            <option value="inactivo">{tc("estadoProveedor.inactivo")}</option>
-          </select>
-        </Campo>
-      </div>
-      <Campo id="direccion" etiqueta={t("direccion")}>
-        <Textarea id="direccion" name="direccion" rows={2} maxLength={300} defaultValue={proveedor?.direccion ?? ""} />
-      </Campo>
-      {error && <AvisoError>{error}</AvisoError>}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={enviando}>
-          {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-          {t("guardar")}
-        </Button>
-        <Button asChild variant="ghost">
-          <Link href={proveedor ? fichaProveedor(proveedor.id) : "/contabilidad/proveedores"}>{t("cancelar")}</Link>
-        </Button>
-      </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.identificacion")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo id="tipo" etiqueta={t("tipo")}>
+              <select id="tipo" name="tipo" className={SELECT} value={tipo} onChange={(e) => setTipo(e.target.value as "fisica" | "juridica")}>
+                <option value="juridica">{tc("tipoProveedor.juridica")}</option>
+                <option value="fisica">{tc("tipoProveedor.fisica")}</option>
+              </select>
+            </Campo>
+            <Campo id="identificacion" etiqueta={t("identificacion")} ayuda={malDigito ? tc("error.identificacion_invalida") : t("identificacionAyuda")}>
+              <Input
+                id="identificacion"
+                name="identificacion"
+                inputMode="numeric"
+                required
+                value={identificacion}
+                onChange={(e) => setIdentificacion(e.target.value)}
+                aria-invalid={malDigito || undefined}
+              />
+            </Campo>
+            <Campo id="nombre" etiqueta={t("nombre")}>
+              <Input id="nombre" name="nombre" required maxLength={160} defaultValue={proveedor?.nombre ?? ""} />
+            </Campo>
+            <Campo id="nombre_comercial" etiqueta={t("nombreComercial")}>
+              <Input id="nombre_comercial" name="nombre_comercial" maxLength={160} defaultValue={proveedor?.nombre_comercial ?? ""} />
+            </Campo>
+          </div>
+        </PasoFormulario>
+        <PasoFormulario titulo={t("pasos.contacto")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo id="contacto" etiqueta={t("contacto")}>
+              <Input id="contacto" name="contacto" maxLength={120} defaultValue={proveedor?.contacto ?? ""} />
+            </Campo>
+            <Campo id="telefono" etiqueta={t("telefono")}>
+              <Input id="telefono" name="telefono" type="tel" maxLength={40} defaultValue={proveedor?.telefono ?? ""} />
+            </Campo>
+            <Campo id="email" etiqueta={t("email")}>
+              <Input id="email" name="email" type="email" maxLength={120} defaultValue={proveedor?.email ?? ""} />
+            </Campo>
+          </div>
+          <Campo id="direccion" etiqueta={t("direccion")}>
+            <Textarea id="direccion" name="direccion" rows={2} maxLength={300} defaultValue={proveedor?.direccion ?? ""} />
+          </Campo>
+        </PasoFormulario>
+        <PasoFormulario titulo={t("pasos.condiciones")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo id="condiciones" etiqueta={t("condiciones")}>
+              <Input id="condiciones" name="condiciones" type="number" min={0} max={365} defaultValue={proveedor?.condiciones_pago_dias ?? 30} />
+            </Campo>
+            <Campo id="categoria" etiqueta={t("categoria")}>
+              <select id="categoria" name="categoria" className={SELECT} defaultValue={proveedor?.categoria_id ?? ""}>
+                <option value="">{t("ninguna")}</option>
+                {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select>
+            </Campo>
+            <Campo id="estado" etiqueta={t("estado")}>
+              <select id="estado" name="estado" className={SELECT} defaultValue={proveedor?.estado ?? "activo"}>
+                <option value="activo">{tc("estadoProveedor.activo")}</option>
+                <option value="inactivo">{tc("estadoProveedor.inactivo")}</option>
+              </select>
+            </Campo>
+          </div>
+        </PasoFormulario>
+        {error && <AvisoError>{error}</AvisoError>}
+        <AccionesFormulario>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {t("guardar")}
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href={proveedor ? fichaProveedor(proveedor.id) : "/contabilidad/proveedores"}>{t("cancelar")}</Link>
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }
@@ -348,129 +363,141 @@ export function FormularioFactura({
 
       <form action={enviar} className="space-y-5">
         {factura && <input type="hidden" name="id" value={factura.id} />}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Campo id="proveedor" etiqueta={t("proveedor")}>
-            <select id="proveedor" name="proveedor" className={SELECT} value={proveedor} onChange={(e) => setProveedor(e.target.value)} required>
-              {proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-            </select>
-          </Campo>
-          <Campo id="ncf" etiqueta={t("ncf")} ayuda={t("ncfAyuda")}>
-            <Input id="ncf" name="ncf" maxLength={13} value={ncf} onChange={(e) => setNcf(e.target.value.toUpperCase())} className="uppercase font-mono" />
-          </Campo>
-          <Campo id="fecha_emision" etiqueta={t("emision")}>
-            <Input id="fecha_emision" name="fecha_emision" type="date" required value={emision} onChange={(e) => setEmision(e.target.value)} />
-          </Campo>
-          <Campo id="fecha_vencimiento" etiqueta={t("vencimiento")}>
-            <Input key={sugerido} id="fecha_vencimiento" name="fecha_vencimiento" type="date" required defaultValue={factura?.fecha_vencimiento ?? sugerido} />
-          </Campo>
-          <Campo id="moneda" etiqueta={t("moneda")}>
-            <select id="moneda" name="moneda" className={SELECT} value={moneda} onChange={(e) => setMoneda(e.target.value)}>
-              {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </Campo>
-          {moneda === "USD" && (
-            <Campo id="tasa" etiqueta={t("tasa")}>
-              <Input id="tasa" name="tasa" inputMode="decimal" required defaultValue={factura?.tasa ?? ""} />
-            </Campo>
-          )}
-        </div>
+        <FormularioGuiado>
+          <PasoFormulario titulo={t("pasos.comprobante")}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Campo id="proveedor" etiqueta={t("proveedor")}>
+                <select id="proveedor" name="proveedor" className={SELECT} value={proveedor} onChange={(e) => setProveedor(e.target.value)} required>
+                  {proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                </select>
+              </Campo>
+              <Campo id="ncf" etiqueta={t("ncf")} ayuda={t("ncfAyuda")}>
+                <Input id="ncf" name="ncf" maxLength={13} value={ncf} onChange={(e) => setNcf(e.target.value.toUpperCase())} className="uppercase font-mono" />
+              </Campo>
+              <Campo id="fecha_emision" etiqueta={t("emision")}>
+                <Input id="fecha_emision" name="fecha_emision" type="date" required value={emision} onChange={(e) => setEmision(e.target.value)} />
+              </Campo>
+              <Campo id="fecha_vencimiento" etiqueta={t("vencimiento")}>
+                <Input key={sugerido} id="fecha_vencimiento" name="fecha_vencimiento" type="date" required defaultValue={factura?.fecha_vencimiento ?? sugerido} />
+              </Campo>
+              <Campo id="moneda" etiqueta={t("moneda")}>
+                <select id="moneda" name="moneda" className={SELECT} value={moneda} onChange={(e) => setMoneda(e.target.value)}>
+                  {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </Campo>
+              {moneda === "USD" && (
+                <Campo id="tasa" etiqueta={t("tasa")}>
+                  <Input id="tasa" name="tasa" inputMode="decimal" required defaultValue={factura?.tasa ?? ""} />
+                </Campo>
+              )}
+            </div>
 
-        {datosProveedor?.tipo === "fisica" && !ncf && (
-          <p className="rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">{tp("sinComprobante")}</p>
-        )}
+            {datosProveedor?.tipo === "fisica" && !ncf && (
+              <p className="rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">{tp("sinComprobante")}</p>
+            )}
+          </PasoFormulario>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(["subtotal", "itbis", "retencion_isr", "retencion_itbis"] as const).map((campo) => (
-            <Campo key={campo} id={campo} etiqueta={t(campo === "subtotal" ? "subtotal" : campo === "itbis" ? "itbis" : campo === "retencion_isr" ? "retencionIsr" : "retencionItbis")}>
-              <Input
-                id={campo}
-                name={campo}
-                inputMode="decimal"
-                required={campo === "subtotal"}
-                placeholder="0.00"
-                value={montos[campo]}
-                onChange={(e) => setMontos((m) => ({ ...m, [campo]: e.target.value }))}
-              />
-            </Campo>
-          ))}
-        </div>
-        <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-          <div><dt className="texto-meta">{t("total")}</dt><dd className="font-semibold">{formatearMonto(total, monedaVista)}</dd></div>
-          <div><dt className="texto-meta">{t("neto")}</dt><dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd></div>
-        </dl>
+          <PasoFormulario titulo={t("pasos.montos")}>
 
-        <Campo id="concepto" etiqueta={t("concepto")}>
-          <Input id="concepto" name="concepto" required maxLength={200} value={concepto} onChange={(e) => setConcepto(e.target.value)} />
-        </Campo>
-
-        {/* Asignación Institucional (Persona y Programa) */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Campo id="solicitante" etiqueta={t("solicitante")}>
-            <select
-              id="solicitante"
-              name="solicitante"
-              className={SELECT}
-              value={solicitante}
-              onChange={(e) => setSolicitante(e.target.value)}
-            >
-              <option value="">{t("ninguno")}</option>
-              {solicitantes.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.nombre} ({s.rol})
-                </option>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {(["subtotal", "itbis", "retencion_isr", "retencion_itbis"] as const).map((campo) => (
+                <Campo key={campo} id={campo} etiqueta={t(campo === "subtotal" ? "subtotal" : campo === "itbis" ? "itbis" : campo === "retencion_isr" ? "retencionIsr" : "retencionItbis")}>
+                  <Input
+                    id={campo}
+                    name={campo}
+                    inputMode="decimal"
+                    required={campo === "subtotal"}
+                    placeholder="0.00"
+                    value={montos[campo]}
+                    onChange={(e) => setMontos((m) => ({ ...m, [campo]: e.target.value }))}
+                  />
+                </Campo>
               ))}
-            </select>
-          </Campo>
+            </div>
+            <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+              <div><dt className="texto-meta">{t("total")}</dt><dd className="font-semibold">{formatearMonto(total, monedaVista)}</dd></div>
+              <div><dt className="texto-meta">{t("neto")}</dt><dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd></div>
+            </dl>
 
-          <Campo id="programa" etiqueta={t("programa")}>
-            <select
-              id="programa"
-              name="programa"
-              className={SELECT}
-              value={programa}
-              onChange={(e) => setPrograma(e.target.value)}
-            >
-              <option value="">{t("ninguno")}</option>
-              {PROGRAMAS_INSTITUCIONALES.map((prg) => (
-                <option key={prg.codigo} value={prg.codigo}>
-                  {prg.nombre}
-                </option>
-              ))}
-            </select>
-          </Campo>
-        </div>
+            <Campo id="concepto" etiqueta={t("concepto")}>
+              <Input id="concepto" name="concepto" required maxLength={200} value={concepto} onChange={(e) => setConcepto(e.target.value)} />
+            </Campo>
+          </PasoFormulario>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Campo id="categoria" etiqueta={t("categoria")}>
-            <select key={proveedor} id="categoria" name="categoria" className={SELECT} required
-              defaultValue={factura?.categoria_id ?? datosProveedor?.categoria_id ?? ""}>
-              {categorias.filter((c) => c.tipo !== "ingreso").map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-            </select>
-          </Campo>
-          <Campo id="fondo" etiqueta={t("fondo")}>
-            <select id="fondo" name="fondo" className={SELECT} defaultValue={factura?.fondo_id ?? ""} required>
-              {fondos.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
-            </select>
-          </Campo>
-          <Campo id="proyecto" etiqueta={t("proyecto")}>
-            <select id="proyecto" name="proyecto" className={SELECT} defaultValue={factura?.proyecto_id ?? ""}>
-              <option value="">{t("ninguno")}</option>
-              {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-            </select>
-          </Campo>
-        </div>
-        {error && <AvisoError>{error}</AvisoError>}
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={enviando}>
-            {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            {t("guardar")}
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
-              {t("cancelar")}
-            </Link>
-          </Button>
-        </div>
+          <PasoFormulario titulo={t("pasos.asignacion")}>
+
+            {/* Asignación Institucional (Persona y Programa) */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Campo id="solicitante" etiqueta={t("solicitante")}>
+                <select
+                  id="solicitante"
+                  name="solicitante"
+                  className={SELECT}
+                  value={solicitante}
+                  onChange={(e) => setSolicitante(e.target.value)}
+                >
+                  <option value="">{t("ninguno")}</option>
+                  {solicitantes.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre} ({s.rol})
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+
+              <Campo id="programa" etiqueta={t("programa")}>
+                <select
+                  id="programa"
+                  name="programa"
+                  className={SELECT}
+                  value={programa}
+                  onChange={(e) => setPrograma(e.target.value)}
+                >
+                  <option value="">{t("ninguno")}</option>
+                  {PROGRAMAS_INSTITUCIONALES.map((prg) => (
+                    <option key={prg.codigo} value={prg.codigo}>
+                      {prg.nombre}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <Campo id="categoria" etiqueta={t("categoria")}>
+                <select key={proveedor} id="categoria" name="categoria" className={SELECT} required
+                  defaultValue={factura?.categoria_id ?? datosProveedor?.categoria_id ?? ""}>
+                  {categorias.filter((c) => c.tipo !== "ingreso").map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                </select>
+              </Campo>
+              <Campo id="fondo" etiqueta={t("fondo")}>
+                <select id="fondo" name="fondo" className={SELECT} defaultValue={factura?.fondo_id ?? ""} required>
+                  {fondos.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                </select>
+              </Campo>
+              <Campo id="proyecto" etiqueta={t("proyecto")}>
+                <select id="proyecto" name="proyecto" className={SELECT} defaultValue={factura?.proyecto_id ?? ""}>
+                  <option value="">{t("ninguno")}</option>
+                  {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                </select>
+              </Campo>
+            </div>
+          </PasoFormulario>
+          {error && <AvisoError>{error}</AvisoError>}
+          <AccionesFormulario>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={enviando}>
+                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {t("guardar")}
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
+                  {t("cancelar")}
+                </Link>
+              </Button>
+            </div>
+          </AccionesFormulario>
+        </FormularioGuiado>
       </form>
     </div>
   );

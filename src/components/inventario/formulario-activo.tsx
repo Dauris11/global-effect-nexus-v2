@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 import { AlertCircle, Loader2, Save, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { useRouter } from "@/i18n/navigation";
 import {
   CATEGORIAS_ACTIVO,
@@ -21,6 +27,7 @@ interface FormularioActivoProps {
 
 export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
   const router = useRouter();
+  const tPasos = useTranslations("admin.activoFormulario.pasos");
   const esEdicion = Boolean(activo);
 
   const [nombre, setNombre] = useState(activo?.nombre ?? "");
@@ -97,11 +104,14 @@ export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
         </div>
       )}
 
+      <FormularioGuiado>
       <div className="rounded-2xl border border-linea bg-card p-5 shadow-xs">
         <h2 className="text-sm font-bold text-tinta">Datos Generales del Activo</h2>
         <p className="text-xs text-tinta-2">Información descriptiva para identificación y control</p>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-4 space-y-6">
+        <PasoFormulario titulo={tPasos("identificacion")}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Nombre */}
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-tinta">
@@ -168,6 +178,11 @@ export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
             />
           </div>
 
+        </div>
+        </PasoFormulario>
+
+        <PasoFormulario titulo={tPasos("control")}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Custodio / Responsable */}
           <div>
             <label className="text-xs font-semibold text-tinta">Custodio asignado</label>
@@ -223,6 +238,11 @@ export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
             />
           </div>
 
+        </div>
+        </PasoFormulario>
+
+        <PasoFormulario titulo={tPasos("detalle")}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* URL de Fotografía */}
           <div>
             <label className="text-xs font-semibold text-tinta">URL de Fotografía</label>
@@ -247,9 +267,12 @@ export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
             />
           </div>
         </div>
+        </PasoFormulario>
+        </div>
       </div>
 
       {/* Botones de Guardar / Cancelar */}
+      <AccionesFormulario>
       <div className="flex items-center justify-end gap-3">
         <Button
           type="button"
@@ -271,6 +294,8 @@ export function FormularioActivo({ activo, usuarios }: FormularioActivoProps) {
           <span>{esEdicion ? "Guardar Cambios" : "Crear Activo y Generar QR"}</span>
         </Button>
       </div>
+      </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
+import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import {
   Dialog,
   DialogContent,
@@ -96,44 +97,52 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
           <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo id="origen" etiqueta={t("origen")}>
-              <select id="origen" name="origen" className={SELECT} value={origen} onChange={(e) => setOrigen(e.target.value)}>
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
-                ))}
-              </select>
-            </Campo>
-            <Campo id="destino" etiqueta={t("destino")}>
-              <select id="destino" name="destino" className={SELECT} value={destino} onChange={(e) => setDestino(e.target.value)}>
-                {cuentas.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
-                ))}
-              </select>
-            </Campo>
-            <Campo id="fecha_tr" etiqueta={t("fecha")}>
-              <Input id="fecha_tr" name="fecha" type="date" defaultValue={hoy} required />
-            </Campo>
-            <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
-              <Input id="monto_origen" name="monto_origen" inputMode="decimal" required />
-            </Campo>
-            {monedaOrigen && monedaDestino && monedaOrigen !== monedaDestino && (
-              <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino})`} ayuda={t("montoDestinoAyuda")}>
-                <Input id="monto_destino" name="monto_destino" inputMode="decimal" required />
+          <FormularioGuiado>
+            <PasoFormulario titulo={t("pasos.cuentas")}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Campo id="origen" etiqueta={t("origen")}>
+                  <select id="origen" name="origen" className={SELECT} value={origen} onChange={(e) => setOrigen(e.target.value)}>
+                    {cuentas.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </Campo>
+                <Campo id="destino" etiqueta={t("destino")}>
+                  <select id="destino" name="destino" className={SELECT} value={destino} onChange={(e) => setDestino(e.target.value)}>
+                    {cuentas.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </Campo>
+                <Campo id="fecha_tr" etiqueta={t("fecha")}>
+                  <Input id="fecha_tr" name="fecha" type="date" defaultValue={hoy} required />
+                </Campo>
+                <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
+                  <Input id="monto_origen" name="monto_origen" inputMode="decimal" required />
+                </Campo>
+                {monedaOrigen && monedaDestino && monedaOrigen !== monedaDestino && (
+                  <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino})`} ayuda={t("montoDestinoAyuda")}>
+                    <Input id="monto_destino" name="monto_destino" inputMode="decimal" required />
+                  </Campo>
+                )}
+              </div>
+            </PasoFormulario>
+            <PasoFormulario titulo={t("pasos.detalle")}>
+              <Campo id="concepto_tr" etiqueta={t("concepto")}>
+                <Input id="concepto_tr" name="concepto" required maxLength={200} />
               </Campo>
-            )}
-          </div>
-          <Campo id="concepto_tr" etiqueta={t("concepto")}>
-            <Input id="concepto_tr" name="concepto" required maxLength={200} />
-          </Campo>
-          <Campo id="referencia_tr" etiqueta={t("referencia")}>
-            <Input id="referencia_tr" name="referencia" maxLength={120} />
-          </Campo>
-          {error && <AvisoError>{error}</AvisoError>}
-          <Button type="submit" disabled={enviando}>
-            {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            {t("guardar")}
-          </Button>
+              <Campo id="referencia_tr" etiqueta={t("referencia")}>
+                <Input id="referencia_tr" name="referencia" maxLength={120} />
+              </Campo>
+            </PasoFormulario>
+            {error && <AvisoError>{error}</AvisoError>}
+            <AccionesFormulario>
+              <Button type="submit" disabled={enviando}>
+                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {t("guardar")}
+              </Button>
+            </AccionesFormulario>
+          </FormularioGuiado>
         </form>
       </DialogContent>
     </Dialog>
@@ -220,50 +229,55 @@ export function ImportarEstado({
   return (
     <form action={enviar} className="space-y-5">
       <input type="hidden" name="cuenta" value={cuentaId} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Campo id="archivo_ec" etiqueta={t("archivo")}>
-          <Input id="archivo_ec" name="archivo" type="file" accept=".csv,text/csv" required />
-        </Campo>
-        <Campo id="desde_ec" etiqueta={t("desde")}>
-          <Input id="desde_ec" name="desde" type="date" defaultValue={desde} required />
-        </Campo>
-        <Campo id="hasta_ec" etiqueta={t("hasta")}>
-          <Input id="hasta_ec" name="hasta" type="date" defaultValue={hasta} required />
-        </Campo>
-        <Campo id="saldo_banco" etiqueta={t("saldo")}>
-          <Input id="saldo_banco" name="saldo_banco" inputMode="decimal" required />
-        </Campo>
-      </div>
-
-      <fieldset className="space-y-3">
-        <legend className="text-sm font-semibold text-tinta">{t("columnas")}</legend>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {columnas.map(([nombre, clave]) => (
-            <Campo key={nombre} id={nombre} etiqueta={etiquetas[clave]}>
-              <Input id={nombre} name={nombre} defaultValue={config[clave] ?? ""} maxLength={60} />
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.archivo")}>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Campo id="archivo_ec" etiqueta={t("archivo")}>
+              <Input id="archivo_ec" name="archivo" type="file" accept=".csv,text/csv" required />
             </Campo>
-          ))}
-          <Campo id="formato_fecha" etiqueta={t("formatoFecha")}>
-            <select id="formato_fecha" name="formato_fecha" className={SELECT} defaultValue={config.formatoFecha ?? "DD/MM/YYYY"}>
-              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-            </select>
-          </Campo>
-          <Campo id="separador" etiqueta={t("separador")}>
-            <select id="separador" name="separador" className={SELECT} defaultValue={config.separadorDecimal ?? "."}>
-              <option value=".">{t("punto")}</option>
-              <option value=",">{t("coma")}</option>
-            </select>
-          </Campo>
-        </div>
-      </fieldset>
+            <Campo id="desde_ec" etiqueta={t("desde")}>
+              <Input id="desde_ec" name="desde" type="date" defaultValue={desde} required />
+            </Campo>
+            <Campo id="hasta_ec" etiqueta={t("hasta")}>
+              <Input id="hasta_ec" name="hasta" type="date" defaultValue={hasta} required />
+            </Campo>
+            <Campo id="saldo_banco" etiqueta={t("saldo")}>
+              <Input id="saldo_banco" name="saldo_banco" inputMode="decimal" required />
+            </Campo>
+          </div>
+        </PasoFormulario>
 
-      {error && <AvisoError>{error}</AvisoError>}
-      <Button type="submit" disabled={enviando}>
-        {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-        {t("guardar")}
-      </Button>
+        <PasoFormulario titulo={t("columnas")}>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {columnas.map(([nombre, clave]) => (
+              <Campo key={nombre} id={nombre} etiqueta={etiquetas[clave]}>
+                <Input id={nombre} name={nombre} defaultValue={config[clave] ?? ""} maxLength={60} />
+              </Campo>
+            ))}
+            <Campo id="formato_fecha" etiqueta={t("formatoFecha")}>
+              <select id="formato_fecha" name="formato_fecha" className={SELECT} defaultValue={config.formatoFecha ?? "DD/MM/YYYY"}>
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              </select>
+            </Campo>
+            <Campo id="separador" etiqueta={t("separador")}>
+              <select id="separador" name="separador" className={SELECT} defaultValue={config.separadorDecimal ?? "."}>
+                <option value=".">{t("punto")}</option>
+                <option value=",">{t("coma")}</option>
+              </select>
+            </Campo>
+          </div>
+        </PasoFormulario>
+
+        {error && <AvisoError>{error}</AvisoError>}
+        <AccionesFormulario>
+          <Button type="submit" disabled={enviando}>
+            {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            {t("guardar")}
+          </Button>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

@@ -140,16 +140,8 @@ export default async function PaginaExpedientes({
                 guardar: t("form.save"),
                 guardando: t("form.saving"),
                 error: t("form.error"),
-                faltaNombre: t("form.requiredHint"),
+                faltaNombre: t("form.faltaNombreSeccion"),
                 cancelar: t("form.cancel"),
-                progreso: SECCIONES.map((_, indice) =>
-                  t("form.progress", {
-                    current: indice + 1,
-                    total: SECCIONES.length,
-                  }),
-                ),
-                siguiente: t("form.next"),
-                anterior: t("form.previous"),
                 opcional: t("field.optional"),
                 pestanas: Object.fromEntries(
                   SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),

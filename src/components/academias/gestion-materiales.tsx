@@ -31,6 +31,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -410,148 +415,159 @@ function Formulario({
 
       <input type="hidden" name="id" value={material?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`m-titulo-${clave}`}>{t("field.title")}</Label>
-          <Input
-            id={`m-titulo-${clave}`}
-            name="titulo"
-            defaultValue={material?.titulo}
-            required
-            maxLength={200}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.material")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`m-titulo-${clave}`}>{t("field.title")}</Label>
+              <Input
+                id={`m-titulo-${clave}`}
+                name="titulo"
+                defaultValue={material?.titulo}
+                required
+                maxLength={200}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-academia-${clave}`}>{t("field.program")}</Label>
-          <select
-            id={`m-academia-${clave}`}
-            name="academia_id"
-            defaultValue={material?.academia_id ?? academias[0]?.id ?? ""}
-            required
-            className={SELECT}
-          >
-            {academias.map((academia) => (
-              <option key={academia.id} value={academia.id}>
-                {academia.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-academia-${clave}`}>{t("field.program")}</Label>
+              <select
+                id={`m-academia-${clave}`}
+                name="academia_id"
+                defaultValue={material?.academia_id ?? academias[0]?.id ?? ""}
+                required
+                className={SELECT}
+              >
+                {academias.map((academia) => (
+                  <option key={academia.id} value={academia.id}>
+                    {academia.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-tipo-${clave}`}>{t("field.type")}</Label>
-          <select
-            id={`m-tipo-${clave}`}
-            name="tipo"
-            defaultValue={material?.tipo ?? "documento"}
-            className={SELECT}
-          >
-            {TIPOS_MATERIAL_ACADEMIA.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`materialType.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-tipo-${clave}`}>{t("field.type")}</Label>
+              <select
+                id={`m-tipo-${clave}`}
+                name="tipo"
+                defaultValue={material?.tipo ?? "documento"}
+                className={SELECT}
+              >
+                {TIPOS_MATERIAL_ACADEMIA.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`materialType.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-autor-${clave}`}>{t("field.author")}</Label>
-          <Input
-            id={`m-autor-${clave}`}
-            name="autor"
-            defaultValue={material?.autor ?? ""}
-            maxLength={160}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-autor-${clave}`}>{t("field.author")}</Label>
+              <Input
+                id={`m-autor-${clave}`}
+                name="autor"
+                defaultValue={material?.autor ?? ""}
+                maxLength={160}
+              />
+            </div>
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`m-enlace-${clave}`}>{t("field.link")}</Label>
-          <Input
-            id={`m-enlace-${clave}`}
-            name="enlace_url"
-            type="url"
-            inputMode="url"
-            defaultValue={material?.enlace_url ?? ""}
-            maxLength={500}
-            placeholder="https://"
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`m-desc-${clave}`}>{t("field.description")}</Label>
+            <Textarea
+              id={`m-desc-${clave}`}
+              name="descripcion"
+              defaultValue={material?.descripcion ?? ""}
+              maxLength={900}
+              rows={2}
+            />
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`m-archivo-${clave}`}>{t("field.file")}</Label>
-          {/* `accept` es una comodidad del navegador, no una comprobación: el
-              tipo y el tamaño se vuelven a mirar en el servidor. */}
-          <Input
-            id={`m-archivo-${clave}`}
-            name="archivo"
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
-            className="cursor-pointer"
-          />
-          <p className="text-muted-foreground text-[10px] leading-relaxed">
-            {material?.archivo_nombre
-              ? t("field.fileReplaceHint", { name: material.archivo_nombre })
-              : t("field.fileHint")}
+        <PasoFormulario titulo={t("pasos.contenido")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+
+            <div className="space-y-1.5">
+              <Label htmlFor={`m-enlace-${clave}`}>{t("field.link")}</Label>
+              <Input
+                id={`m-enlace-${clave}`}
+                name="enlace_url"
+                type="url"
+                inputMode="url"
+                defaultValue={material?.enlace_url ?? ""}
+                maxLength={500}
+                placeholder="https://"
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`m-archivo-${clave}`}>{t("field.file")}</Label>
+              {/* `accept` es una comodidad del navegador, no una comprobación: el
+                  tipo y el tamaño se vuelven a mirar en el servidor. */}
+              <Input
+                id={`m-archivo-${clave}`}
+                name="archivo"
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
+                className="cursor-pointer"
+              />
+              <p className="text-muted-foreground text-[10px] leading-relaxed">
+                {material?.archivo_nombre
+                  ? t("field.fileReplaceHint", { name: material.archivo_nombre })
+                  : t("field.fileHint")}
+              </p>
+            </div>
+          </div>
+        </PasoFormulario>
+
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "nombre_vacio"
+                ? t("form.titleRequired")
+                : estado.estado === "sin_contenido"
+                  ? t("form.contentRequired")
+                  : estado.estado === "enlace_invalido"
+                    ? t("form.linkInvalid")
+                    : estado.estado === "archivo_invalido"
+                      ? t("form.fileInvalid")
+                      : estado.estado === "archivo_grande"
+                        ? t("form.fileTooBig")
+                        : t("form.error")}
+            </span>
           </p>
-        </div>
-      </div>
+        )}
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`m-desc-${clave}`}>{t("field.description")}</Label>
-        <Textarea
-          id={`m-desc-${clave}`}
-          name="descripcion"
-          defaultValue={material?.descripcion ?? ""}
-          maxLength={900}
-          rows={2}
-        />
-      </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando
+                ? material
+                  ? t("form.saving")
+                  : t("form.creating")
+                : material
+                  ? t("form.save")
+                  : t("form.create")}
+            </Button>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("form.titleRequired")
-              : estado.estado === "sin_contenido"
-                ? t("form.contentRequired")
-                : estado.estado === "enlace_invalido"
-                  ? t("form.linkInvalid")
-                  : estado.estado === "archivo_invalido"
-                    ? t("form.fileInvalid")
-                    : estado.estado === "archivo_grande"
-                      ? t("form.fileTooBig")
-                      : t("form.error")}
-          </span>
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando
-            ? material
-              ? t("form.saving")
-              : t("form.creating")
-            : material
-              ? t("form.save")
-              : t("form.create")}
-        </Button>
-
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("form.cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("form.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

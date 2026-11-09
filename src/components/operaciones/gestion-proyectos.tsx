@@ -17,6 +17,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -264,117 +269,127 @@ function FormularioProyecto({
 
       <input type="hidden" name="id" value={proyecto?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`p-nombre-${clave}`}>{t("project.name")}</Label>
-          <Input
-            id={`p-nombre-${clave}`}
-            name="nombre"
-            defaultValue={proyecto?.nombre}
-            placeholder={t("newProject.namePlaceholder")}
-            required
-            maxLength={160}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.proyecto")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`p-nombre-${clave}`}>{t("project.name")}</Label>
+              <Input
+                id={`p-nombre-${clave}`}
+                name="nombre"
+                defaultValue={proyecto?.nombre}
+                placeholder={t("newProject.namePlaceholder")}
+                required
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`p-resp-${clave}`}>{t("project.lead")}</Label>
-          <Input
-            id={`p-resp-${clave}`}
-            name="responsable"
-            defaultValue={proyecto?.responsable ?? ""}
-            maxLength={120}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`p-resp-${clave}`}>{t("project.lead")}</Label>
+              <Input
+                id={`p-resp-${clave}`}
+                name="responsable"
+                defaultValue={proyecto?.responsable ?? ""}
+                maxLength={120}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`p-estado-${clave}`}>{t("project.status")}</Label>
-          <select
-            id={`p-estado-${clave}`}
-            name="estado"
-            defaultValue={proyecto?.estado ?? "planificacion"}
-            className={SELECT}
-          >
-            {(
-              ["planificacion", "en_curso", "pausado", "completado"] as const
-            ).map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`projectStatus.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`p-estado-${clave}`}>{t("project.status")}</Label>
+              <select
+                id={`p-estado-${clave}`}
+                name="estado"
+                defaultValue={proyecto?.estado ?? "planificacion"}
+                className={SELECT}
+              >
+                {(
+                  ["planificacion", "en_curso", "pausado", "completado"] as const
+                ).map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`projectStatus.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`p-inicio-${clave}`}>{t("project.start")}</Label>
-          <Input
-            id={`p-inicio-${clave}`}
-            name="inicio"
-            type="date"
-            defaultValue={proyecto?.fecha_inicio ?? ""}
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`p-desc-${clave}`}>{t("project.description")}</Label>
+            <Textarea
+              id={`p-desc-${clave}`}
+              name="descripcion"
+              defaultValue={proyecto?.descripcion ?? ""}
+              maxLength={900}
+              rows={2}
+            />
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`p-fin-${clave}`}>{t("project.end")}</Label>
-          <Input
-            id={`p-fin-${clave}`}
-            name="fin"
-            type="date"
-            defaultValue={proyecto?.fecha_fin ?? ""}
-          />
-        </div>
-      </div>
+        <PasoFormulario titulo={t("pasos.fechas")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor={`p-inicio-${clave}`}>{t("project.start")}</Label>
+              <Input
+                id={`p-inicio-${clave}`}
+                name="inicio"
+                type="date"
+                defaultValue={proyecto?.fecha_inicio ?? ""}
+              />
+            </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`p-desc-${clave}`}>{t("project.description")}</Label>
-        <Textarea
-          id={`p-desc-${clave}`}
-          name="descripcion"
-          defaultValue={proyecto?.descripcion ?? ""}
-          maxLength={900}
-          rows={2}
-        />
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`p-fin-${clave}`}>{t("project.end")}</Label>
+              <Input
+                id={`p-fin-${clave}`}
+                name="fin"
+                type="date"
+                defaultValue={proyecto?.fecha_fin ?? ""}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("newProject.nameRequired")
-              : estado.estado === "fin_antes_de_inicio"
-                ? t("editProject.endBeforeStart")
-                : t("newProject.error")}
-          </span>
-        </p>
-      )}
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "nombre_vacio"
+                ? t("newProject.nameRequired")
+                : estado.estado === "fin_antes_de_inicio"
+                  ? t("editProject.endBeforeStart")
+                  : t("newProject.error")}
+            </span>
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando
-            ? proyecto
-              ? t("editProject.saving")
-              : t("newProject.creating")
-            : proyecto
-              ? t("editProject.save")
-              : t("newProject.create")}
-        </Button>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando
+                ? proyecto
+                  ? t("editProject.saving")
+                  : t("newProject.creating")
+                : proyecto
+                  ? t("editProject.save")
+                  : t("newProject.create")}
+            </Button>
 
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("newTask.cancel")}
-        </Button>
-      </div>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("newTask.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

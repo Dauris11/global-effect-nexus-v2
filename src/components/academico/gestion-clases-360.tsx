@@ -20,6 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -427,141 +432,151 @@ function FormularioTarea({
     <form action={enviar} className="border-linea mt-3 space-y-3 border-t pt-3">
       <input type="hidden" name="materia" value={materiaId} />
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`t-titulo-${materiaId}`}>{t("taskTitle")}</Label>
-          <Input id={`t-titulo-${materiaId}`} name="titulo" required maxLength={160} />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.tarea")}>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`t-titulo-${materiaId}`}>{t("taskTitle")}</Label>
+              <Input id={`t-titulo-${materiaId}`} name="titulo" required maxLength={160} />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-tipo-${materiaId}`}>{t("taskType")}</Label>
-          <select id={`t-tipo-${materiaId}`} name="tipo" className={SELECTOR}>
-            <option value="tarea">{t("taskTypeTask")}</option>
-            <option value="examen">{t("taskTypeExam")}</option>
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-tipo-${materiaId}`}>{t("taskType")}</Label>
+              <select id={`t-tipo-${materiaId}`} name="tipo" className={SELECTOR}>
+                <option value="tarea">{t("taskTypeTask")}</option>
+                <option value="examen">{t("taskTypeExam")}</option>
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-vence-${materiaId}`}>{t("taskDue")}</Label>
-          <Input id={`t-vence-${materiaId}`} name="vence" type="datetime-local" />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-vence-${materiaId}`}>{t("taskDue")}</Label>
+              <Input id={`t-vence-${materiaId}`} name="vence" type="datetime-local" />
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`t-desc-${materiaId}`}>{t("taskDescription")}</Label>
-        <Textarea id={`t-desc-${materiaId}`} name="descripcion" maxLength={900} rows={2} />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`t-desc-${materiaId}`}>{t("taskDescription")}</Label>
+            <Textarea id={`t-desc-${materiaId}`} name="descripcion" maxLength={900} rows={2} />
+          </div>
+        </PasoFormulario>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-periodo-${materiaId}`}>{t("taskPeriod")}</Label>
-          <select
-            id={`t-periodo-${materiaId}`}
-            name="periodo"
-            required
-            defaultValue={(periodos.find((p) => p.vigente) ?? periodos[0])?.id}
-            className={SELECTOR}
-          >
-            {periodos.map((periodo) => (
-              <option key={periodo.id} value={periodo.id}>
-                {periodo.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+        <PasoFormulario titulo={t("pasos.evaluacion")}>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-periodo-${materiaId}`}>{t("taskPeriod")}</Label>
+              <select
+                id={`t-periodo-${materiaId}`}
+                name="periodo"
+                required
+                defaultValue={(periodos.find((p) => p.vigente) ?? periodos[0])?.id}
+                className={SELECTOR}
+              >
+                {periodos.map((periodo) => (
+                  <option key={periodo.id} value={periodo.id}>
+                    {periodo.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-peso-${materiaId}`}>{t("taskWeight")}</Label>
-          <Input
-            id={`t-peso-${materiaId}`}
-            name="peso"
-            type="number"
-            min={0.01}
-            max={100}
-            step="0.01"
-            defaultValue={1}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-peso-${materiaId}`}>{t("taskWeight")}</Label>
+              <Input
+                id={`t-peso-${materiaId}`}
+                name="peso"
+                type="number"
+                min={0.01}
+                max={100}
+                step="0.01"
+                defaultValue={1}
+              />
+            </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-limite-${materiaId}`}>{t("taskMaxMb")}</Label>
-          <Input
-            id={`t-limite-${materiaId}`}
-            name="limite_mb"
-            type="number"
-            min={1}
-            max={100}
-            defaultValue={15}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-puntos-${materiaId}`}>{t("taskMaxPoints")}</Label>
+              <Input
+                id={`t-puntos-${materiaId}`}
+                name="puntaje_maximo"
+                type="number"
+                min={1}
+                max={1000}
+                defaultValue={100}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-formatos-${materiaId}`}>{t("taskFormats")}</Label>
-          <Input
-            id={`t-formatos-${materiaId}`}
-            name="formatos_permitidos"
-            defaultValue="pdf, docx, jpg, png"
-          />
-        </div>
+        <PasoFormulario titulo={t("pasos.entrega")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-limite-${materiaId}`}>{t("taskMaxMb")}</Label>
+              <Input
+                id={`t-limite-${materiaId}`}
+                name="limite_mb"
+                type="number"
+                min={1}
+                max={100}
+                defaultValue={15}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`t-puntos-${materiaId}`}>{t("taskMaxPoints")}</Label>
-          <Input
-            id={`t-puntos-${materiaId}`}
-            name="puntaje_maximo"
-            type="number"
-            min={1}
-            max={1000}
-            defaultValue={100}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`t-formatos-${materiaId}`}>{t("taskFormats")}</Label>
+              <Input
+                id={`t-formatos-${materiaId}`}
+                name="formatos_permitidos"
+                defaultValue="pdf, docx, jpg, png"
+              />
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`t-instrucciones-${materiaId}`}>{t("taskRubric")}</Label>
-        <Textarea
-          id={`t-instrucciones-${materiaId}`}
-          name="instrucciones_entrega"
-          placeholder={t("taskRubricPlaceholder")}
-          maxLength={1500}
-          rows={2}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`t-instrucciones-${materiaId}`}>{t("taskRubric")}</Label>
+            <Textarea
+              id={`t-instrucciones-${materiaId}`}
+              name="instrucciones_entrega"
+              placeholder={t("taskRubricPlaceholder")}
+              maxLength={1500}
+              rows={2}
+            />
+          </div>
 
-      <label className="flex cursor-pointer items-center gap-2">
-        <input
-          type="checkbox"
-          name="permite_entregas_tardias"
-          value="true"
-          defaultChecked
-          className="border-input text-marca-600 focus:ring-ring size-4 rounded"
-        />
-        <span className="text-tinta-2 text-xs">{t("taskAllowLate")}</span>
-      </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              name="permite_entregas_tardias"
+              value="true"
+              defaultChecked
+              className="border-input text-marca-600 focus:ring-ring size-4 rounded"
+            />
+            <span className="text-tinta-2 text-xs">{t("taskAllowLate")}</span>
+          </label>
+        </PasoFormulario>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "nombre_vacio"
-            ? t("taskTitleRequired")
-            : estado.estado === "no_encontrado"
-              ? t("errOwner")
-              : estado.estado === "invalido" && periodos.length === 0
-                ? t("errNoPeriod")
-              : t("errGeneric")}
-        </p>
-      )}
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className="text-destructive text-xs">
+            {estado.estado === "nombre_vacio"
+              ? t("taskTitleRequired")
+              : estado.estado === "no_encontrado"
+                ? t("errOwner")
+                : estado.estado === "invalido" && periodos.length === 0
+                  ? t("errNoPeriod")
+                : t("errGeneric")}
+          </p>
+        )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando || periodos.length === 0}>
-          {enviando && <Loader2 className="size-3.5 animate-spin" />}
-          {t("newTask")}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("cancel")}
-        </Button>
-      </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={enviando || periodos.length === 0}>
+              {enviando && <Loader2 className="size-3.5 animate-spin" />}
+              {t("newTask")}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }

@@ -74,6 +74,10 @@ Inter. Cuerpo 15 px (landing 16). `texto-titulo-pagina` (28→32 px),
 - `ui/` solo tiene primitivos. Lo de un dominio va en `components/<dominio>/`.
 - Iconos: solo `lucide-react`, nunca emoji. `size-4`, `size-5`, `size-6`.
 - Botón de guardar con el icono `Save`.
+- Formulario de captura con ≥ 5 campos en 2+ grupos: `FormularioGuiado` /
+  `PasoFormulario` / `AccionesFormulario` (`ui/formulario-guiado.tsx`), para
+  que cada persona elija llenarlo normal o guiado. No en filtros ni
+  confirmaciones.
 - Objetivos táctiles ≥ 44 px, foco visible, `aria-current="page"` en la
   navegación.
 

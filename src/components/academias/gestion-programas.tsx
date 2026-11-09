@@ -30,6 +30,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AccionesFormulario,
+  FormularioGuiado,
+  PasoFormulario,
+} from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -383,148 +388,159 @@ function Formulario({
 
       <input type="hidden" name="id" value={academia?.id ?? ""} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor={`a-nombre-${clave}`}>{t("field.name")}</Label>
-          <Input
-            id={`a-nombre-${clave}`}
-            name="nombre"
-            defaultValue={academia?.nombre}
-            required
-            maxLength={160}
-          />
-        </div>
+      <FormularioGuiado>
+        <PasoFormulario titulo={t("pasos.programa")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor={`a-nombre-${clave}`}>{t("field.name")}</Label>
+              <Input
+                id={`a-nombre-${clave}`}
+                name="nombre"
+                defaultValue={academia?.nombre}
+                required
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-tipo-${clave}`}>{t("field.type")}</Label>
-          <select
-            id={`a-tipo-${clave}`}
-            name="tipo"
-            defaultValue={academia?.tipo ?? "liderazgo"}
-            className={SELECT}
-          >
-            {TIPOS_ACADEMIA.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`type.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-tipo-${clave}`}>{t("field.type")}</Label>
+              <select
+                id={`a-tipo-${clave}`}
+                name="tipo"
+                defaultValue={academia?.tipo ?? "liderazgo"}
+                className={SELECT}
+              >
+                {TIPOS_ACADEMIA.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`type.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-estado-${clave}`}>{t("field.state")}</Label>
-          <select
-            id={`a-estado-${clave}`}
-            name="estado"
-            defaultValue={academia?.estado ?? "activa"}
-            className={SELECT}
-          >
-            {ESTADOS_ACADEMIA.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`state.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-estado-${clave}`}>{t("field.state")}</Label>
+              <select
+                id={`a-estado-${clave}`}
+                name="estado"
+                defaultValue={academia?.estado ?? "activa"}
+                className={SELECT}
+              >
+                {ESTADOS_ACADEMIA.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {t(`state.${valor}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-facilitador-${clave}`}>
-            {t("field.facilitator")}
-          </Label>
-          <Input
-            id={`a-facilitador-${clave}`}
-            name="facilitador"
-            defaultValue={academia?.facilitador ?? ""}
-            maxLength={160}
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`a-desc-${clave}`}>{t("field.description")}</Label>
+            <Textarea
+              id={`a-desc-${clave}`}
+              name="descripcion"
+              defaultValue={academia?.descripcion ?? ""}
+              maxLength={900}
+              rows={2}
+            />
+          </div>
+        </PasoFormulario>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-participantes-${clave}`}>
-            {t("field.participants")}
-          </Label>
-          <Input
-            id={`a-participantes-${clave}`}
-            name="participantes"
-            type="number"
-            min={0}
-            step={1}
-            defaultValue={academia?.participantes ?? 0}
-          />
-        </div>
+        <PasoFormulario titulo={t("pasos.ejecucion")}>
+          <div className="grid gap-3 sm:grid-cols-2">
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-inicio-${clave}`}>{t("field.start")}</Label>
-          <Input
-            id={`a-inicio-${clave}`}
-            name="fecha_inicio"
-            type="date"
-            defaultValue={academia?.fecha_inicio ?? ""}
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-facilitador-${clave}`}>
+                {t("field.facilitator")}
+              </Label>
+              <Input
+                id={`a-facilitador-${clave}`}
+                name="facilitador"
+                defaultValue={academia?.facilitador ?? ""}
+                maxLength={160}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor={`a-fin-${clave}`}>{t("field.end")}</Label>
-          <Input
-            id={`a-fin-${clave}`}
-            name="fecha_fin"
-            type="date"
-            defaultValue={academia?.fecha_fin ?? ""}
-          />
-        </div>
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-participantes-${clave}`}>
+                {t("field.participants")}
+              </Label>
+              <Input
+                id={`a-participantes-${clave}`}
+                name="participantes"
+                type="number"
+                min={0}
+                step={1}
+                defaultValue={academia?.participantes ?? 0}
+              />
+            </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`a-desc-${clave}`}>{t("field.description")}</Label>
-        <Textarea
-          id={`a-desc-${clave}`}
-          name="descripcion"
-          defaultValue={academia?.descripcion ?? ""}
-          maxLength={900}
-          rows={2}
-        />
-      </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-inicio-${clave}`}>{t("field.start")}</Label>
+              <Input
+                id={`a-inicio-${clave}`}
+                name="fecha_inicio"
+                type="date"
+                defaultValue={academia?.fecha_inicio ?? ""}
+              />
+            </div>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>
-            {estado.estado === "nombre_vacio"
-              ? t("form.nameRequired")
-              : estado.estado === "fechas_incoherentes"
-                ? t("form.datesInvalid")
-                : estado.estado === "participantes_invalido"
-                  ? t("form.participantsInvalid")
-                  : t("form.error")}
-          </span>
-        </p>
-      )}
+            <div className="space-y-1.5">
+              <Label htmlFor={`a-fin-${clave}`}>{t("field.end")}</Label>
+              <Input
+                id={`a-fin-${clave}`}
+                name="fecha_fin"
+                type="date"
+                defaultValue={academia?.fecha_fin ?? ""}
+              />
+            </div>
+          </div>
+        </PasoFormulario>
 
-      <div className="flex items-center gap-2">
-        <Button
-          type="submit"
-          size="sm"
-          disabled={enviando}
-          className="transition-transform duration-150 active:scale-95"
-        >
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {enviando
-            ? academia
-              ? t("form.saving")
-              : t("form.creating")
-            : academia
-              ? t("form.save")
-              : t("form.create")}
-        </Button>
+        {estado.estado !== "inicial" && estado.estado !== "ok" && (
+          <p role="alert" className={ALERTA_RIESGO.contenedor}>
+            <AlertCircle className={ALERTA_RIESGO.icono} />
+            <span className={ALERTA_RIESGO.texto}>
+              {estado.estado === "nombre_vacio"
+                ? t("form.nameRequired")
+                : estado.estado === "fechas_incoherentes"
+                  ? t("form.datesInvalid")
+                  : estado.estado === "participantes_invalido"
+                    ? t("form.participantsInvalid")
+                    : t("form.error")}
+            </span>
+          </p>
+        )}
 
-        <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
-          {t("form.cancel")}
-        </Button>
-      </div>
+        <AccionesFormulario>
+          <div className="flex items-center gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={enviando}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              {enviando ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Save className="size-3.5" />
+              )}
+              {enviando
+                ? academia
+                  ? t("form.saving")
+                  : t("form.creating")
+                : academia
+                  ? t("form.save")
+                  : t("form.create")}
+            </Button>
+
+            <Button type="button" variant="ghost" size="sm" onClick={alTerminar}>
+              {t("form.cancel")}
+            </Button>
+          </div>
+        </AccionesFormulario>
+      </FormularioGuiado>
     </form>
   );
 }
