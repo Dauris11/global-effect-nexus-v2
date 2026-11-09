@@ -44,6 +44,17 @@ export const ESTADOS_ESTUDIANTE = [
   "suspendido",
 ] as const;
 
+/**
+ * El único estado con cuenta del portal vinculada al expediente. Quien está
+ * postulado todavía no es becado, y a quien está suspendido se le corta el
+ * acceso: ninguno de los dos entra al portal del estudiante.
+ */
+export const ESTADO_CON_CUENTA = "activo" satisfies (typeof ESTADOS_ESTUDIANTE)[number];
+
+export function llevaCuenta(estado: string): boolean {
+  return estado === ESTADO_CON_CUENTA;
+}
+
 export const GENEROS = ["masculino", "femenino", "otro"] as const;
 
 /** `familiar.parentesco`. Los cinco primeros son los bloques fijos del formulario. */

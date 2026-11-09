@@ -827,10 +827,28 @@
     },
     "filters": {
       "search": "Buscar",
-      "searchPlaceholder": "Nombre, cédula o programa",
+      "searchPlaceholder": "Nombre, cédula, programa o universidad",
       "status": "Estado",
       "apply": "Aplicar",
-      "clear": "Quitar filtros"
+      "clear": "Quitar filtros",
+      "allStatuses": "Todos",
+      "university": "Universidad",
+      "allUniversities": "Todas las universidades",
+      "situation": "Situación",
+      "anySituation": "Cualquier situación",
+      "situations": {
+        "en_riesgo": "En prueba académica",
+        "sin_notas": "Sin notas todavía",
+        "sin_cuenta": "Activos sin cuenta del portal",
+        "sin_foto": "Sin foto"
+      },
+      "order": "Ordenar por",
+      "orders": {
+        "nombre": "Nombre",
+        "indice_alto": "Índice más alto",
+        "indice_bajo": "Índice más bajo",
+        "ingreso_reciente": "Ingreso más reciente"
+      }
     },
     "views": {
       "cards": "Tarjetas",
@@ -1093,8 +1111,17 @@
         "universidad": "Universidad"
       },
       "nota": "Nota: {nota} de {maximo}",
-      "masTareas": "{n, plural, one {Y # tarea más en su aula virtual} other {Y # tareas más en su aula virtual}}"
-    }
+      "masTareas": "{n, plural, one {Y # tarea más en su aula virtual} other {Y # tareas más en su aula virtual}}",
+      "cuentaSoloActivos": "Solo los estudiantes activos tienen cuenta del portal",
+      "noActivoDesvincular": "Este expediente ya no está activo: puedes desvincular la cuenta que le quedó."
+    },
+    "lista": {
+      "cuenta": "Cuenta del portal",
+      "conCuenta": "Vinculada",
+      "sinCuenta": "Sin cuenta",
+      "acciones": "Acciones"
+    },
+    "sinFoto": "Sin foto"
   },
   "academic": {
     "eyebrow": "Académico",

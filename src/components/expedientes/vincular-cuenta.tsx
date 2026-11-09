@@ -39,10 +39,13 @@ export function VincularCuenta({
   estudianteId,
   vinculada,
   cuentas,
+  soloDesvincular = false,
 }: {
   estudianteId: string;
   vinculada: { id: string; email: string } | null;
   cuentas: CuentaSinVincular[];
+  /** Para un expediente que ya no está activo: solo se puede soltar la cuenta. */
+  soloDesvincular?: boolean;
 }) {
   const t = useTranslations("records.portada");
   const [abierto, setAbierto] = useState(false);
@@ -60,6 +63,8 @@ export function VincularCuenta({
   const error =
     estado.estado === "ocupada"
       ? t("errorOcupada")
+      : estado.estado === "no_activo"
+        ? t("cuentaSoloActivos")
       : estado.estado !== "inicial" && estado.estado !== "ok"
         ? t("error")
         : null;
@@ -69,7 +74,7 @@ export function VincularCuenta({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Link2 className="size-4" />
-          {vinculada ? t("cambiar") : t("vincular")}
+          {soloDesvincular ? t("desvincular") : vinculada ? t("cambiar") : t("vincular")}
         </Button>
       </DialogTrigger>
 
@@ -81,7 +86,9 @@ export function VincularCuenta({
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="estudiante" value={estudianteId} />
 
-          {cuentas.length === 0 ? (
+          {soloDesvincular ? (
+            <p className="text-sm text-tinta-2">{t("noActivoDesvincular")}</p>
+          ) : cuentas.length === 0 ? (
             <p className="text-sm text-tinta-2">{t("sinCuentasLibres")}</p>
           ) : (
             <div className="space-y-1.5">

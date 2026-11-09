@@ -10,6 +10,7 @@ import { requerirUsuario } from "@/lib/auth";
 import {
   esEstadoEstudiante,
   FAMILIA_FIJA,
+  llevaCuenta,
   GENEROS,
 } from "@/lib/expedientes";
 import {
@@ -769,7 +770,14 @@ export async function leerFichaEscaneada(
 }
 
 export type EstadoVinculoCuenta = {
-  estado: "inicial" | "ok" | "no_permitido" | "invalido" | "ocupada" | "error";
+  estado:
+    | "inicial"
+    | "ok"
+    | "no_permitido"
+    | "invalido"
+    | "no_activo"
+    | "ocupada"
+    | "error";
 };
 
 /**
@@ -779,6 +787,10 @@ export type EstadoVinculoCuenta = {
  * se comprueba DENTRO del UPDATE —rol `estudiante` y libre— y no antes en un
  * `if`: entre leer y escribir otra persona podría haberla vinculado, y el
  * UNIQUE de `usuario_id` lo convertiría en un error de base sin explicación.
+ * Solo un expediente ACTIVO lleva cuenta (`ESTADO_CON_CUENTA`): postulados y
+ * suspendidos no entran al portal. Soltar sí se permite en cualquier estado,
+ * para poder corregir un vínculo que quedó de cuando estaba activo.
+ *
  * `accion=desvincular` suelta el vínculo, para corregir una cuenta mal
  * elegida: va en otro nombre que el select porque los dos viajan en el mismo
  * envío y `get` devolvería el primero.
@@ -801,6 +813,15 @@ export async function vincularCuenta(
     return { estado: "invalido" };
   }
 
+  if (cuentaId !== "") {
+    const estudiante = await consultarUna<{ estado: string }>(
+      `SELECT estado::text AS estado FROM estudiante WHERE id = $1`,
+      [estudianteId],
+    );
+    if (!estudiante) return { estado: "invalido" };
+    if (!llevaCuenta(estudiante.estado)) return { estado: "no_activo" };
+  }
+
   try {
     const fila = await consultarUna<{ id: string }>(
       cuentaId === ""
@@ -812,6 +833,7 @@ export async function vincularCuenta(
             WHERE e.id = $1
               AND u.id = $2
               AND r.nombre = 'estudiante'
+              AND e.estado = 'activo'
               AND NOT EXISTS (
                 SELECT 1 FROM estudiante otro
                  WHERE otro.usuario_id = $2 AND otro.id <> $1

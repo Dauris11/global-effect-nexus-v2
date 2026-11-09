@@ -1,5 +1,7 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { FAMILIA_FIJA, type EstadoEstudiante } from "@/lib/expedientes";
+import type { OrdenExpediente, SituacionExpediente } from "@/lib/filtros-expedientes";
+import { GPA_PRUEBA_ACADEMICA } from "@/lib/notas";
 
 /**
  * Lista de expedientes para el módulo del equipo.
@@ -27,6 +29,8 @@ export type FilaExpediente = {
   fecha_ingreso: string | null;
   /** Ruta dentro del bucket `avatares`, o `null` si no tiene foto. */
   foto_url: string | null;
+  /** Si tiene cuenta del portal: sin ella no ve sus materias ni sus tareas. */
+  con_cuenta: boolean;
   /** Índice acumulado del historial, o `null` si aún no tiene notas. */
   indice: number | null;
   /** Número de evaluaciones en el historial, para saber si el índice es fiable. */
@@ -34,15 +38,75 @@ export type FilaExpediente = {
 };
 
 /**
- * Expedientes con filtro por estado y búsqueda.
- *
- * Los dos filtros van como parámetros anulables dentro del WHERE, no armando
- * el SQL a trozos: la consulta es siempre la misma cadena y no hay ninguna rama
- * por la que un valor pueda acabar concatenado.
- *
- * La búsqueda cubre nombre, cédula y programa: es lo que promete el
- * placeholder del filtro (`filters.searchPlaceholder`), aunque hasta ahora la
- * consulta solo miraba nombre y cédula.
+ * Filtros de la lista de expedientes. Todos opcionales y todos viajan en la
+ * URL, así que la pantalla es de servidor y un enlace filtrado se comparte tal
+ * cual.
+ */
+export type FiltrosExpedientes = {
+  busqueda?: string | null;
+  estado?: EstadoEstudiante | null;
+  universidad?: string | null;
+  situacion?: SituacionExpediente | null;
+};
+
+/*
+ * El índice de cada estudiante, una sola vez para la lista y el conteo: "en
+ * riesgo" y "sin notas" dependen de él, así que los dos lo necesitan.
+ */
+const DESDE_EXPEDIENTES = `
+       FROM estudiante e
+       LEFT JOIN (
+              SELECT estudiante_id,
+                     round(avg(gpa), 2)::float8 AS indice,
+                     count(*)::int AS evaluaciones
+                FROM historial_calificacion
+               GROUP BY estudiante_id
+            ) h ON h.estudiante_id = e.id`;
+
+/*
+ * Cada filtro es un parámetro anulable dentro del WHERE, no SQL armado a
+ * trozos: la consulta es siempre la misma cadena y ningún valor puede acabar
+ * concatenado. La situación se compara con literales fijos; el umbral de
+ * "en riesgo" es la prueba académica (GPA_PRUEBA_ACADEMICA = 2.00). "Sin
+ * cuenta" solo mira a los activos: son los únicos que deben tenerla
+ * (`ESTADO_CON_CUENTA`), así que en ellos falta y en los demás no.
+ */
+const DONDE_EXPEDIENTES = `
+      WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
+                              OR e.cedula ILIKE '%' || $1 || '%'
+                              OR e.programa ILIKE '%' || $1 || '%'
+                              OR e.universidad ILIKE '%' || $1 || '%')
+        AND ($2::text IS NULL OR e.estado::text = $2)
+        AND ($3::text IS NULL OR e.universidad = $3)
+        AND ($4::text IS NULL
+             OR ($4 = 'en_riesgo'  AND h.indice < $5)
+             OR ($4 = 'sin_notas'  AND h.indice IS NULL)
+             OR ($4 = 'sin_cuenta' AND e.estado = 'activo' AND e.usuario_id IS NULL)
+             OR ($4 = 'sin_foto'   AND e.foto_url IS NULL))`;
+
+function parametrosFiltro(filtros: FiltrosExpedientes) {
+  return [
+    filtros.busqueda ?? null,
+    filtros.estado ?? null,
+    filtros.universidad ?? null,
+    filtros.situacion ?? null,
+    GPA_PRUEBA_ACADEMICA,
+  ];
+}
+
+/*
+ * El ORDER BY sale de una tabla cerrada y no de la URL: el valor pedido solo
+ * elige una de estas cadenas, nunca se escribe en el SQL.
+ */
+const ORDEN_SQL: Record<OrdenExpediente, string> = {
+  nombre: "e.nombre",
+  indice_alto: "h.indice DESC NULLS LAST, e.nombre",
+  indice_bajo: "h.indice ASC NULLS LAST, e.nombre",
+  ingreso_reciente: "e.fecha_ingreso DESC NULLS LAST, e.nombre",
+};
+
+/**
+ * Expedientes filtrados y ordenados, una página.
  *
  * El índice sale de `historial_calificacion`, que es donde se guarda el GPA ya
  * calculado por materia (ver el comentario de la migración 0006: la escala de
@@ -50,13 +114,12 @@ export type FilaExpediente = {
  * recalcula).
  */
 export async function listaExpedientes({
-  busqueda = null,
-  estado = null,
+  orden = "nombre",
   porPagina = 20,
   pagina = 1,
-}: {
-  busqueda?: string | null;
-  estado?: EstadoEstudiante | null;
+  ...filtros
+}: FiltrosExpedientes & {
+  orden?: OrdenExpediente;
   /** Filas por página. */
   porPagina?: number;
   /** 1-indexado, como se ve en la URL (`?pagina=2`). */
@@ -75,52 +138,48 @@ export async function listaExpedientes({
             e.universidad,
             e.fecha_ingreso::text AS fecha_ingreso,
             e.foto_url,
+            e.usuario_id IS NOT NULL AS con_cuenta,
             h.indice,
             coalesce(h.evaluaciones, 0) AS evaluaciones
-       FROM estudiante e
-       LEFT JOIN (
-              SELECT estudiante_id,
-                     round(avg(gpa), 2)::float8 AS indice,
-                     count(*)::int AS evaluaciones
-                FROM historial_calificacion
-               GROUP BY estudiante_id
-            ) h ON h.estudiante_id = e.id
-      WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
-                              OR e.cedula ILIKE '%' || $1 || '%'
-                              OR e.programa ILIKE '%' || $1 || '%')
-        AND ($2::text IS NULL OR e.estado::text = $2)
-      ORDER BY e.nombre
-      LIMIT $3 OFFSET $4`,
-    [busqueda, estado, porPagina, salto],
+       ${DESDE_EXPEDIENTES}
+       ${DONDE_EXPEDIENTES}
+      ORDER BY ${ORDEN_SQL[orden]}
+      LIMIT $6 OFFSET $7`,
+    [...parametrosFiltro(filtros), porPagina, salto],
   );
 }
 
 /**
  * Cuántos expedientes hay con estos filtros, para la paginación.
  *
- * Mismo WHERE que `listaExpedientes`, aparte y no como `count(*) over()` en la
- * misma consulta: con la página vacía (fuera de rango) esa variante no
- * devuelve ninguna fila y se pierde el total, justo cuando más hace falta para
- * poder volver atrás.
+ * Mismo FROM y WHERE que `listaExpedientes`, aparte y no como
+ * `count(*) over()` en la misma consulta: con la página vacía (fuera de rango)
+ * esa variante no devuelve ninguna fila y se pierde el total, justo cuando más
+ * hace falta para poder volver atrás.
  */
-export async function contarExpedientes({
-  busqueda = null,
-  estado = null,
-}: {
-  busqueda?: string | null;
-  estado?: EstadoEstudiante | null;
-} = {}): Promise<number> {
+export async function contarExpedientes(
+  filtros: FiltrosExpedientes = {},
+): Promise<number> {
   const fila = await consultarUna<{ total: number }>(
     `SELECT count(*)::int AS total
-       FROM estudiante e
-      WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
-                              OR e.cedula ILIKE '%' || $1 || '%'
-                              OR e.programa ILIKE '%' || $1 || '%')
-        AND ($2::text IS NULL OR e.estado::text = $2)`,
-    [busqueda, estado],
+       ${DESDE_EXPEDIENTES}
+       ${DONDE_EXPEDIENTES}`,
+    parametrosFiltro(filtros),
   );
 
   return fila?.total ?? 0;
+}
+
+/** Las universidades que aparecen en algún expediente, para el filtro. */
+export async function universidadesDeExpedientes(): Promise<string[]> {
+  const filas = await consultar<{ universidad: string }>(
+    `SELECT DISTINCT universidad
+       FROM estudiante
+      WHERE universidad IS NOT NULL AND btrim(universidad) <> ''
+      ORDER BY universidad`,
+  );
+
+  return filas.map((fila) => fila.universidad);
 }
 
 export type CifrasExpedientes = {

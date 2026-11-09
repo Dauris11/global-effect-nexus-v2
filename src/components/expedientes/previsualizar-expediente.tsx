@@ -4,13 +4,12 @@ import { useState } from "react";
 import {
   BookOpen,
   Eye,
-  GraduationCap,
   Mail,
   PencilLine,
   Phone,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,9 +52,11 @@ export function PrevisualizarExpediente({
   /**
    * `"fila"`: foto a la izquierda, texto a la derecha — para la vista de
    * lista. `"tarjeta"`: todo centrado en columna — para la tarjeta cuadrada.
+   * `"boton"`: un botón discreto "Vista rápida", para las tarjetas y la tabla
+   * donde la foto y el nombre ya llevan a la ficha completa.
    * Ninguna cambia el contenido del diálogo, solo cómo se ve el disparador.
    */
-  variante?: "fila" | "tarjeta";
+  variante?: "fila" | "tarjeta" | "boton";
   textos: {
     preview: string;
     idCard: string;
@@ -71,11 +72,11 @@ export function PrevisualizarExpediente({
     optional: string;
     edit: string;
     viewFull: string;
+    sinFoto: string;
   };
 }) {
   const fechaIngreso = fila.fecha_ingreso ? fechaCorta(fila.fecha_ingreso, idioma) : null;
   const [abierto, setAbierto] = useState(false);
-  const inicial = fila.nombre.trim().charAt(0).toUpperCase() || "?";
 
   /*
    * El aspecto del estado se resuelve aquí, no llega por props.
@@ -114,7 +115,17 @@ export function PrevisualizarExpediente({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        {variante === "tarjeta" ? (
+        {variante === "boton" ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label={`${textos.preview}: ${fila.nombre}`}
+          >
+            <Eye className="size-4" />
+            {textos.preview}
+          </Button>
+        ) : variante === "tarjeta" ? (
           /* Tres bloques con aire entre ellos —retrato, identidad, etiquetas—
              en vez de cinco líneas seguidas al mismo `gap`. Con un espacio
              uniforme todo pesaba igual y el cuadrado se leía como una lista
@@ -126,16 +137,13 @@ export function PrevisualizarExpediente({
             aria-label={`${textos.preview}: ${fila.nombre}`}
             className="group flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-center"
           >
-            <Avatar className="size-14 shrink-0 rounded-2xl transition-transform duration-200 group-hover:scale-105">
-              <AvatarImage src={fotoUrl ?? undefined} alt="" />
-              <AvatarFallback className="rounded-2xl bg-[#2096BA]/10 text-lg text-[#187a99]">
-                {inicial === "?" ? (
-                  <GraduationCap className="size-6" />
-                ) : (
-                  inicial
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <FotoEstudiante
+              nombre={fila.nombre}
+              url={fotoUrl}
+              className="size-14 shrink-0 rounded-full transition-transform duration-200 group-hover:scale-105"
+              aviso="punto"
+              textoSinFoto={textos.sinFoto}
+            />
 
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="line-clamp-2 text-[13px] leading-tight font-bold group-hover:underline">
@@ -163,16 +171,13 @@ export function PrevisualizarExpediente({
             aria-label={`${textos.preview}: ${fila.nombre}`}
             className="group flex min-w-0 flex-1 items-start gap-3 text-left"
           >
-            <Avatar className="size-10 shrink-0 rounded-xl transition-transform group-hover:scale-105">
-              <AvatarImage src={fotoUrl ?? undefined} alt="" />
-              <AvatarFallback className="rounded-xl bg-[#2096BA]/10 text-[#187a99]">
-                {inicial === "?" ? (
-                  <GraduationCap className="size-5" />
-                ) : (
-                  inicial
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <FotoEstudiante
+              nombre={fila.nombre}
+              url={fotoUrl}
+              className="size-10 shrink-0 rounded-full transition-transform group-hover:scale-105"
+              aviso="punto"
+              textoSinFoto={textos.sinFoto}
+            />
 
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
@@ -208,16 +213,13 @@ export function PrevisualizarExpediente({
             posa en esa esquina y sin el hueco pisaba los nombres largos. */}
         <DialogHeader className="pr-8">
           <div className="flex items-center gap-4">
-            <Avatar className="size-16 shrink-0 rounded-2xl">
-              <AvatarImage src={fotoUrl ?? undefined} alt="" />
-              <AvatarFallback className="rounded-2xl bg-[#2096BA]/10 text-xl text-[#187a99]">
-                {inicial === "?" ? (
-                  <GraduationCap className="size-7" />
-                ) : (
-                  inicial
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <FotoEstudiante
+              nombre={fila.nombre}
+              url={fotoUrl}
+              className="size-16 shrink-0 rounded-full"
+              aviso="punto"
+              textoSinFoto={textos.sinFoto}
+            />
 
             <div className="min-w-0 space-y-2">
               {/* Sin `truncate`: un expediente es de una persona y su nombre se

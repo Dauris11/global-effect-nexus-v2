@@ -3,15 +3,17 @@ import {
   CalendarDays,
   GraduationCap,
   IdCard,
+  Lock,
   UserCheck,
   UserX,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { VincularCuenta } from "@/components/expedientes/vincular-cuenta";
 import { Badge } from "@/components/ui/badge";
 import { Dato, FilaDatos } from "@/components/ui/dato";
-import { visualDeEstado } from "@/lib/expedientes";
+import { llevaCuenta, visualDeEstado } from "@/lib/expedientes";
 import { fechaCorta } from "@/lib/fechas";
 import { cn } from "@/lib/utils";
 import type {
@@ -26,9 +28,9 @@ import type {
  * La foto estaba solo dentro del formulario de edición, así que para ponerle
  * cara a un expediente había que abrirlo para editar. Aquí va arriba, junto al
  * nombre, el estado y lo que ata a la persona con el resto del sistema: dónde
- * estudia y con qué cuenta entra al portal. Sin esa cuenta su portal no ve ni
- * sus materias ni las tareas que le dejan los docentes, por eso se dice aquí y
- * se arregla desde aquí.
+ * estudia y con qué cuenta entra al portal. Solo los activos la llevan; a un
+ * activo sin cuenta su portal no le ve ni las materias ni las tareas que le
+ * dejan los docentes, por eso se dice aquí y se arregla desde aquí.
  */
 export async function PortadaExpediente({
   expediente,
@@ -56,24 +58,20 @@ export async function PortadaExpediente({
   const t = await getTranslations("records");
   const idioma = (await getLocale()) === "en" ? "en" : "es";
   const visual = visualDeEstado(expediente.estado);
-  const inicial = expediente.nombre.trim().charAt(0).toUpperCase() || "?";
   const estudios = expediente.universidad ?? expediente.donde_estudia;
+  // Solo los activos llevan cuenta del portal: postulados y suspendidos no.
+  const activo = llevaCuenta(expediente.estado);
 
   return (
     <section className="rounded-card border border-linea bg-card p-5 shadow-card md:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-full bg-marca-50 text-4xl font-semibold text-marca-700 ring-4 ring-background shadow-card">
-          {foto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={foto}
-              alt={t("portada.fotoDe", { nombre: expediente.nombre })}
-              className="size-full object-cover"
-            />
-          ) : (
-            <span aria-hidden>{inicial}</span>
-          )}
-        </div>
+        <FotoEstudiante
+          nombre={expediente.nombre}
+          url={foto}
+          className="size-28 rounded-full ring-4 ring-background shadow-card"
+          aviso="punto"
+          textoSinFoto={t("sinFoto")}
+        />
 
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
@@ -103,15 +101,20 @@ export async function PortadaExpediente({
           <Dato icono={UserCheck} className="text-tinta">
             {t("portada.cuenta", { email: cuenta.email })}
           </Dato>
-        ) : (
+        ) : activo ? (
           <Dato icono={UserX}>{t("portada.sinCuenta")}</Dato>
+        ) : (
+          <Dato icono={Lock}>{t("portada.cuentaSoloActivos")}</Dato>
         )}
 
-        {puedeEditar && (
+        {/* A un activo se le vincula o cambia la cuenta; a otro estado solo se
+            le puede soltar la que le haya quedado de cuando estaba activo. */}
+        {puedeEditar && (activo || cuenta) && (
           <VincularCuenta
             estudianteId={expediente.id}
             vinculada={cuenta ? { id: cuenta.id, email: cuenta.email } : null}
-            cuentas={cuentasLibres}
+            cuentas={activo ? cuentasLibres : []}
+            soloDesvincular={!activo}
           />
         )}
       </div>

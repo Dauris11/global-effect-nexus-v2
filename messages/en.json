@@ -827,10 +827,28 @@
     },
     "filters": {
       "search": "Search",
-      "searchPlaceholder": "Name, ID or program",
+      "searchPlaceholder": "Name, ID, program or university",
       "status": "Status",
       "apply": "Apply",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "allStatuses": "All",
+      "university": "University",
+      "allUniversities": "All universities",
+      "situation": "Situation",
+      "anySituation": "Any situation",
+      "situations": {
+        "en_riesgo": "On academic probation",
+        "sin_notas": "No grades yet",
+        "sin_cuenta": "Active without portal account",
+        "sin_foto": "No photo"
+      },
+      "order": "Sort by",
+      "orders": {
+        "nombre": "Name",
+        "indice_alto": "Highest GPA",
+        "indice_bajo": "Lowest GPA",
+        "ingreso_reciente": "Most recent entry"
+      }
     },
     "views": {
       "cards": "Cards",
@@ -1093,8 +1111,17 @@
         "universidad": "University"
       },
       "nota": "Grade: {nota} of {maximo}",
-      "masTareas": "{n, plural, one {And # more assignment in their classroom} other {And # more assignments in their classroom}}"
-    }
+      "masTareas": "{n, plural, one {And # more assignment in their classroom} other {And # more assignments in their classroom}}",
+      "cuentaSoloActivos": "Only active students have a portal account",
+      "noActivoDesvincular": "This record is no longer active: you can unlink the account it kept."
+    },
+    "lista": {
+      "cuenta": "Portal account",
+      "conCuenta": "Linked",
+      "sinCuenta": "No account",
+      "acciones": "Actions"
+    },
+    "sinFoto": "No photo"
   },
   "academic": {
     "eyebrow": "Academic",
