@@ -20,6 +20,8 @@
     "db:seed:usuarios": "node scripts/seed-usuarios.mjs",
     "db:seed:operaciones": "node scripts/seed-operaciones.mjs",
     "db:seed:portales": "node scripts/seed-portales.mjs",
+    "db:seed:demo": "node scripts/seed-demo-estados.mjs",
+    "db:seed:demo:contabilidad": "node scripts/seed-demo-contabilidad.mjs",
     "db:seed:contabilidad": "node scripts/seed-contabilidad.mjs",
     "db:seed:inventario": "node scripts/seed-inventario.mjs",
     "db:seed:reuniones": "node scripts/seed-reuniones.mjs",
