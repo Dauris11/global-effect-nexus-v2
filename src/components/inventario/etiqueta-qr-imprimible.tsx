@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Printer, QrCode } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { BLANCO, TINTA } from "@/lib/paleta";
@@ -26,6 +27,7 @@ export function EtiquetaQrImprimible({
   numeroSerie,
   ubicacion,
 }: EtiquetaQrImprimibleProps) {
+  const t = useTranslations("admin.inventario");
   const [dataUrl, setDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,9 +67,9 @@ export function EtiquetaQrImprimible({
         <div className="flex items-center justify-between border-b border-linea pb-2 print:border-black">
           <div>
             <p className="text-[10px] font-bold tracking-widest text-marca-600 uppercase">
-              Fundación Global Effect
+              {t("fundacion")}
             </p>
-            <p className="text-xs font-semibold text-tinta-2">Control Patrimonial</p>
+            <p className="text-xs font-semibold text-tinta-2">{t("controlPatrimonial")}</p>
           </div>
           <span className="inline-flex items-center rounded-md bg-marca-50 px-2 py-0.5 text-xs font-bold text-marca-700 uppercase">
             {categoria}
@@ -79,7 +81,7 @@ export function EtiquetaQrImprimible({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={dataUrl}
-              alt={`Código QR de ${codigo}`}
+              alt={codigo}
               className="size-44 rounded-lg border border-linea/60 object-contain p-1 print:size-48"
             />
           ) : (
@@ -98,7 +100,7 @@ export function EtiquetaQrImprimible({
             </p>
           )}
           <p className="text-[10px] text-tinta-3">
-            <span className="font-semibold">Ubicación:</span> {ubicacion}
+            <span className="font-semibold">{t("ubicacionCorta")}</span> {ubicacion}
           </p>
         </div>
       </div>
@@ -108,7 +110,7 @@ export function EtiquetaQrImprimible({
         className="flex w-full items-center justify-center gap-2 print:hidden"
       >
         <Printer className="size-4" />
-        <span>Imprimir Etiqueta QR</span>
+        <span>{t("imprimirEtiqueta")}</span>
       </Button>
     </div>
   );

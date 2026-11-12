@@ -2,32 +2,36 @@
 
 import { useMemo, useState } from "react";
 import {
+  AlertCircle,
   Armchair,
   Car,
   CheckCircle2,
   ChevronRight,
   Clock,
   Eye,
-  Filter,
   Laptop,
+  Loader2,
   Package,
   Plus,
   QrCode,
   Refrigerator,
   Search,
+  Trash2,
   Wrench,
   XCircle,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import type { ActivoInventario, CategoriaActivo, EstadoActivo } from "@/lib/inventario";
 import { cn } from "@/lib/utils";
+import { eliminarActivoAction } from "@/server/inventario/acciones";
 
 interface TablaActivosProps {
   activos: ActivoInventario[];
   puedeEscribir: boolean;
   puedeAuditar: boolean;
+  puedeEliminar?: boolean;
 }
 
 const CATEGORIA_ICONOS: Record<CategoriaActivo, React.ComponentType<{ className?: string }>> = {
@@ -39,10 +43,20 @@ const CATEGORIA_ICONOS: Record<CategoriaActivo, React.ComponentType<{ className?
   otros: Package,
 };
 
-export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActivosProps) {
+export function TablaActivos({
+  activos,
+  puedeEscribir,
+  puedeAuditar,
+  puedeEliminar = false,
+}: TablaActivosProps) {
+  const t = useTranslations("admin.inventario");
+  const router = useRouter();
+
   const [busqueda, setBusqueda] = useState("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>("todas");
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>("todos");
+  const [estadoSeleccionado] = useState<string>("todos");
+  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
   const filtrados = useMemo(() => {
     return activos.filter((a) => {
@@ -73,34 +87,52 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
     }).format(val);
   };
 
+  const manejarEliminar = async (activo: ActivoInventario) => {
+    const confirmado = window.confirm(
+      t("confirmarEliminar", { code: activo.codigo, name: activo.nombre })
+    );
+    if (!confirmado) return;
+
+    try {
+      setErrorEliminar(null);
+      setEliminandoId(activo.id);
+      await eliminarActivoAction(activo.id);
+      router.refresh();
+    } catch (err) {
+      setErrorEliminar(err instanceof Error ? err.message : t("errorEliminar"));
+    } finally {
+      setEliminandoId(null);
+    }
+  };
+
   const renderEstadoBadge = (estado: EstadoActivo) => {
     switch (estado) {
       case "operativo":
         return (
           <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[#1E9E6A]/10 px-2 py-0.5 text-xs font-semibold text-[#1E9E6A]">
             <CheckCircle2 className="size-3.5" />
-            <span>Operativo</span>
+            <span>{t("estados.operativo")}</span>
           </span>
         );
       case "mantenimiento":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-marca-50 px-2 py-0.5 text-xs font-semibold text-marca-700">
             <Clock className="size-3.5" />
-            <span>Mantenimiento</span>
+            <span>{t("estados.mantenimiento")}</span>
           </span>
         );
       case "prestado":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-tinta-2">
             <Package className="size-3.5" />
-            <span>Prestado</span>
+            <span>{t("estados.prestado")}</span>
           </span>
         );
       case "baja":
         return (
           <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[#B4342B]/10 px-2 py-0.5 text-xs font-semibold text-[#B4342B]">
             <XCircle className="size-3.5" />
-            <span>De Baja</span>
+            <span>{t("estados.baja")}</span>
           </span>
         );
     }
@@ -108,6 +140,13 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
 
   return (
     <div className="flex flex-col gap-4">
+      {errorEliminar && (
+        <div className="flex items-center gap-2 rounded-xl border border-linea-fuerte bg-muted p-3 text-xs font-semibold text-tinta">
+          <AlertCircle className="size-4 shrink-0 text-tinta" />
+          <span>{errorEliminar}</span>
+        </div>
+      )}
+
       {/* Barra de Búsqueda y Botones de Acción */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -116,7 +155,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por código, nombre, custodio, serie o ubicación..."
+            placeholder={t("buscarPlaceholder")}
             className="w-full rounded-xl border border-linea bg-background py-2 pr-3 pl-9 text-xs outline-none transition-colors focus:border-marca-500"
           />
         </div>
@@ -128,7 +167,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
               className="flex items-center gap-1.5 rounded-xl border border-marca-500/30 bg-marca-50 px-3 py-2 text-xs font-bold text-marca-700 transition-colors hover:bg-marca-100"
             >
               <QrCode className="size-4" />
-              <span>Escanear QR</span>
+              <span>{t("escanearQr")}</span>
             </Link>
           )}
 
@@ -138,7 +177,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
               className="flex items-center gap-1.5 rounded-xl bg-marca-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-marca-700"
             >
               <Plus className="size-4" />
-              <span>Nuevo Activo</span>
+              <span>{t("nuevoActivo")}</span>
             </Link>
           )}
         </div>
@@ -156,7 +195,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
               : "bg-muted text-tinta-2 hover:text-tinta"
           )}
         >
-          Todas las Categorías ({activos.length})
+          {t("todasCategorias", { count: activos.length })}
         </button>
         {(["herramientas", "tecnologia", "mobiliario", "electrodomesticos", "vehiculos", "otros"] as const).map(
           (cat) => {
@@ -169,14 +208,14 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
                 type="button"
                 onClick={() => setCategoriaSeleccionada(cat)}
                 className={cn(
-                  "flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold capitalize transition-colors",
+                  "flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition-colors",
                   categoriaSeleccionada === cat
                     ? "bg-marca-600 text-white"
                     : "bg-muted text-tinta-2 hover:text-tinta"
                 )}
               >
                 <Icono className="size-3.5" />
-                <span>{cat}</span>
+                <span>{t(`categorias.${cat}`)}</span>
                 <span className="text-[10px] opacity-75">({cant})</span>
               </button>
             );
@@ -190,20 +229,20 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
           <table className="w-full text-left text-xs">
             <thead className="border-b border-linea bg-muted/40 font-semibold text-tinta-2 uppercase">
               <tr>
-                <th className="py-3 pr-3 pl-4">Código / Activo</th>
-                <th className="px-3 py-3">Categoría</th>
-                <th className="px-3 py-3">Ubicación Física</th>
-                <th className="px-3 py-3">Custodio Asignado</th>
-                <th className="px-3 py-3">Estado</th>
-                <th className="px-3 py-3 text-right">Valor Estimado</th>
-                <th className="py-3 pr-4 pl-3 text-center">Acciones</th>
+                <th className="py-3 pr-3 pl-4">{t("colCodigoActivo")}</th>
+                <th className="px-3 py-3">{t("colCategoria")}</th>
+                <th className="px-3 py-3">{t("colUbicacion")}</th>
+                <th className="px-3 py-3">{t("colCustodio")}</th>
+                <th className="px-3 py-3">{t("colEstado")}</th>
+                <th className="px-3 py-3 text-right">{t("colValor")}</th>
+                <th className="py-3 pr-4 pl-3 text-center">{t("colAcciones")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-linea">
               {filtrados.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-tinta-3">
-                    No se encontraron activos que coincidan con los filtros.
+                    {t("vacioFiltro")}
                   </td>
                 </tr>
               ) : (
@@ -237,9 +276,9 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
                         </div>
                       </td>
                       <td className="px-3 py-3">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium capitalize text-tinta">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-tinta">
                           <IconoCat className="size-3 text-tinta-2" />
-                          <span>{activo.categoria}</span>
+                          <span>{t(`categorias.${activo.categoria}`)}</span>
                         </span>
                       </td>
                       <td className="px-3 py-3 text-tinta-2 font-medium">{activo.ubicacion}</td>
@@ -247,7 +286,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
                         {activo.responsableNombre ? (
                           <span className="font-medium text-tinta">{activo.responsableNombre}</span>
                         ) : (
-                          <span className="text-tinta-3 italic">Sin custodio</span>
+                          <span className="text-tinta-3 italic">{t("sinCustodio")}</span>
                         )}
                       </td>
                       <td className="px-3 py-3">{renderEstadoBadge(activo.estado)}</td>
@@ -259,7 +298,7 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
                           <Link
                             href={`/administrativo/inventario/${activo.id}`}
                             className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta"
-                            title="Ver ficha completa y QR"
+                            title={t("verFichaTitulo")}
                           >
                             <Eye className="size-4" />
                           </Link>
@@ -267,10 +306,25 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
                             <Link
                               href={`/administrativo/inventario/${activo.id}/editar`}
                               className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta"
-                              title="Editar ficha"
+                              title={t("editarFichaTitulo")}
                             >
                               <Wrench className="size-4" />
                             </Link>
+                          )}
+                          {puedeEliminar && (
+                            <button
+                              type="button"
+                              onClick={() => void manejarEliminar(activo)}
+                              disabled={eliminandoId === activo.id}
+                              className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta disabled:opacity-50"
+                              title={t("eliminarTitulo")}
+                            >
+                              {eliminandoId === activo.id ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="size-4" />
+                              )}
+                            </button>
                           )}
                         </div>
                       </td>
@@ -287,16 +341,15 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
       <div className="flex flex-col gap-3 md:hidden">
         {filtrados.length === 0 ? (
           <div className="rounded-2xl border border-linea bg-card p-8 text-center text-xs text-tinta-3">
-            No se encontraron activos registrados con ese criterio.
+            {t("vacioMovil")}
           </div>
         ) : (
           filtrados.map((activo) => {
             const IconoCat = CATEGORIA_ICONOS[activo.categoria] ?? Package;
             return (
-              <Link
+              <div
                 key={activo.id}
-                href={`/administrativo/inventario/${activo.id}`}
-                className="flex flex-col rounded-2xl border border-linea bg-card p-4 transition-all active:scale-[0.98] active:bg-muted/50"
+                className="flex flex-col rounded-2xl border border-linea bg-card p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -323,24 +376,46 @@ export function TablaActivos({ activos, puedeEscribir, puedeAuditar }: TablaActi
 
                 <div className="mt-3 flex items-center justify-between border-t border-linea pt-2 text-xs">
                   <div>
-                    <span className="text-[10px] text-tinta-3 uppercase">Custodio</span>
+                    <span className="text-[10px] text-tinta-3 uppercase">{t("movilCustodio")}</span>
                     <p className="font-medium text-tinta">
-                      {activo.responsableNombre ?? "Sin asignar"}
+                      {activo.responsableNombre ?? t("sinAsignar")}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-tinta-3 uppercase">Valor</span>
+                    <span className="text-[10px] text-tinta-3 uppercase">{t("movilValor")}</span>
                     <p className="font-mono font-bold text-tinta">
                       {formatoMoneda(activo.valorEstimado)}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-2 flex items-center justify-end text-xs font-semibold text-marca-600">
-                  <span>Ver Ficha e Imprimir QR</span>
-                  <ChevronRight className="size-4" />
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  {puedeEliminar ? (
+                    <button
+                      type="button"
+                      onClick={() => void manejarEliminar(activo)}
+                      disabled={eliminandoId === activo.id}
+                      className="inline-flex items-center gap-1 rounded-lg border border-linea px-2.5 py-1 text-xs font-medium text-tinta-2 transition-colors hover:bg-muted hover:text-tinta disabled:opacity-50"
+                    >
+                      {eliminandoId === activo.id ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                      <span>{t("eliminarTitulo")}</span>
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                  <Link
+                    href={`/administrativo/inventario/${activo.id}`}
+                    className="flex items-center text-xs font-semibold text-marca-600"
+                  >
+                    <span>{t("movilVerFicha")}</span>
+                    <ChevronRight className="size-4" />
+                  </Link>
                 </div>
-              </Link>
+              </div>
             );
           })
         )}

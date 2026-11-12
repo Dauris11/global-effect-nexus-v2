@@ -9,12 +9,11 @@ import {
   ChevronRight,
   FlipHorizontal,
   Loader2,
-  Package,
-  QrCode,
   RefreshCw,
   Search,
   Upload,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -25,13 +24,16 @@ import {
 } from "@/server/inventario/acciones";
 
 export function EscanearQrActivo() {
+  const t = useTranslations("admin.inventario.escaner");
+  const tInv = useTranslations("admin.inventario");
+
   const [iniciado, setIniciado] = useState(false);
   const [cargandoCamara, setCargandoCamara] = useState(false);
   const [errorCamara, setErrorCamara] = useState<string | null>(null);
   const [camaraTrasera, setCamaraTrasera] = useState(true);
 
   // Resultado del escaneo
-  const [codigoDetectado, setCodigoDetectado] = useState<string | null>(null);
+  const [, setCodigoDetectado] = useState<string | null>(null);
   const [buscandoActivo, setBuscandoActivo] = useState(false);
   const [activoEncontrado, setActivoEncontrado] = useState<ActivoInventario | null>(null);
   const [auditoriaRegistrada, setAuditoriaRegistrada] = useState(false);
@@ -75,11 +77,11 @@ export function EscanearQrActivo() {
       if (activo) {
         setActivoEncontrado(activo);
       } else {
-        setErrorCamara(`Código "${codigoLimpio}" no coincide con ningún activo registrado.`);
+        setErrorCamara(t("errNoEncontrado", { code: codigoLimpio }));
       }
     } catch (err) {
       console.error("Error al buscar activo:", err);
-      setErrorCamara("Error al consultar la base de datos.");
+      setErrorCamara(t("errBaseDatos"));
     } finally {
       setBuscandoActivo(false);
     }
@@ -113,9 +115,7 @@ export function EscanearQrActivo() {
       setIniciado(true);
     } catch (err) {
       console.error("Error al iniciar cámara:", err);
-      setErrorCamara(
-        "No se pudo acceder a la cámara. Comprueba los permisos o ingresa el código manualmente."
-      );
+      setErrorCamara(t("errCamara"));
     } finally {
       setCargandoCamara(false);
     }
@@ -164,7 +164,7 @@ export function EscanearQrActivo() {
       setAuditoriaRegistrada(true);
     } catch (err) {
       console.error("Error al registrar auditoría:", err);
-      setErrorCamara("Error al registrar la auditoría in situ.");
+      setErrorCamara(t("errRegistrarAuditoria"));
     } finally {
       setRegistrandoAuditoria(false);
     }
@@ -182,7 +182,7 @@ export function EscanearQrActivo() {
       await procesarCodigo(result);
     } catch (err) {
       console.error("Error al escanear archivo:", err);
-      setErrorCamara("No se detectó ningún código QR legible en la imagen seleccionada.");
+      setErrorCamara(t("errArchivoQr"));
     } finally {
       setCargandoCamara(false);
     }
@@ -201,7 +201,7 @@ export function EscanearQrActivo() {
             <div className="size-64 rounded-2xl border-2 border-dashed border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
               <div className="flex h-full items-center justify-center">
                 <span className="rounded bg-black/60 px-2 py-1 text-xs font-semibold text-white">
-                  Apunta al código QR
+                  {t("apuntaQr")}
                 </span>
               </div>
             </div>
@@ -215,14 +215,12 @@ export function EscanearQrActivo() {
               <Camera className="size-8" />
             </div>
             <div>
-              <p className="font-semibold text-tinta">Escáner de Activos Físicos</p>
-              <p className="mt-1 text-xs text-tinta-2">
-                Utiliza la cámara trasera para auditar herramientas, computadoras o mobiliario
-              </p>
+              <p className="font-semibold text-tinta">{t("titulo")}</p>
+              <p className="mt-1 text-xs text-tinta-2">{t("descripcion")}</p>
             </div>
             <Button onClick={iniciarCamara} className="flex items-center gap-2">
               <Camera className="size-4" />
-              <span>Activar Cámara</span>
+              <span>{t("activarCamara")}</span>
             </Button>
           </div>
         )}
@@ -230,7 +228,7 @@ export function EscanearQrActivo() {
         {cargandoCamara && (
           <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-black/70 text-white">
             <Loader2 className="size-8 animate-spin text-marca-400" />
-            <p className="text-sm font-medium">Iniciando cámara...</p>
+            <p className="text-sm font-medium">{t("iniciandoCamara")}</p>
           </div>
         )}
 
@@ -245,7 +243,7 @@ export function EscanearQrActivo() {
               className="bg-black/60 text-white backdrop-blur hover:bg-black/80 hover:text-white"
             >
               <FlipHorizontal className="size-4" />
-              <span className="text-xs">Girar Cámara</span>
+              <span className="text-xs">{t("girarCamara")}</span>
             </Button>
 
             <Button
@@ -255,7 +253,7 @@ export function EscanearQrActivo() {
               onClick={detenerCamara}
               className="bg-black/60 text-white backdrop-blur hover:bg-black/80 hover:text-white"
             >
-              <span className="text-xs">Detener</span>
+              <span className="text-xs">{t("detener")}</span>
             </Button>
           </div>
         )}
@@ -277,7 +275,7 @@ export function EscanearQrActivo() {
           className="flex flex-1 items-center justify-center gap-2 text-xs"
         >
           <Upload className="size-4" />
-          <span>Subir Foto de QR</span>
+          <span>{t("subirFoto")}</span>
         </Button>
       </div>
 
@@ -295,7 +293,7 @@ export function EscanearQrActivo() {
           <div className="flex items-start justify-between gap-3 border-b border-linea pb-3">
             <div>
               <span className="inline-flex items-center rounded-md bg-marca-50 px-2 py-0.5 text-xs font-bold text-marca-700 uppercase">
-                {activoEncontrado.categoria}
+                {tInv(`categorias.${activoEncontrado.categoria}`)}
               </span>
               <h3 className="mt-1 font-mono text-lg font-extrabold text-tinta">
                 {activoEncontrado.codigo}
@@ -314,22 +312,22 @@ export function EscanearQrActivo() {
 
           <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-tinta-2">
             <div>
-              <p className="font-semibold text-tinta">Ubicación:</p>
+              <p className="font-semibold text-tinta">{t("ubicacion")}</p>
               <p>{activoEncontrado.ubicacion}</p>
             </div>
             <div>
-              <p className="font-semibold text-tinta">Custodio:</p>
-              <p>{activoEncontrado.responsableNombre ?? "Sin asignar"}</p>
+              <p className="font-semibold text-tinta">{t("custodio")}</p>
+              <p>{activoEncontrado.responsableNombre ?? tInv("sinAsignar")}</p>
             </div>
             <div>
-              <p className="font-semibold text-tinta">Estado Físico:</p>
-              <span className="font-semibold text-marca-700 capitalize">
-                {activoEncontrado.estado}
+              <p className="font-semibold text-tinta">{t("estadoFisico")}</p>
+              <span className="font-semibold text-marca-700">
+                {tInv(`estados.${activoEncontrado.estado}`)}
               </span>
             </div>
             {activoEncontrado.numeroSerie && (
               <div>
-                <p className="font-semibold text-tinta">Serie:</p>
+                <p className="font-semibold text-tinta">{t("serie")}</p>
                 <p>{activoEncontrado.numeroSerie}</p>
               </div>
             )}
@@ -348,12 +346,12 @@ export function EscanearQrActivo() {
                 ) : (
                   <CheckCircle2 className="size-4" />
                 )}
-                <span>Registrar Auditoría In Situ</span>
+                <span>{t("registrarAuditoria")}</span>
               </Button>
             ) : (
               <div className="flex items-center justify-center gap-2 rounded-xl border border-transparent bg-[#1E9E6A]/10 p-3 text-xs font-bold text-[#1E9E6A]">
                 <CheckCircle2 className="size-4" />
-                <span>¡Auditoría in situ registrada con éxito!</span>
+                <span>{t("auditoriaExito")}</span>
               </div>
             )}
 
@@ -362,7 +360,7 @@ export function EscanearQrActivo() {
                 href={`/administrativo/inventario/${activoEncontrado.id}`}
                 className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-linea py-2 text-xs font-semibold text-tinta transition-colors hover:bg-muted"
               >
-                <span>Ver Ficha Completa</span>
+                <span>{t("verFichaCompleta")}</span>
                 <ChevronRight className="size-4" />
               </Link>
               <Button
@@ -371,7 +369,7 @@ export function EscanearQrActivo() {
                 className="flex items-center gap-1 text-xs"
               >
                 <RefreshCw className="size-4" />
-                <span>Siguiente</span>
+                <span>{t("siguiente")}</span>
               </Button>
             </div>
           </div>
@@ -380,7 +378,7 @@ export function EscanearQrActivo() {
 
       {/* Entrada manual de código como respaldo */}
       <div className="mx-auto w-full max-w-md rounded-2xl border border-linea bg-card p-4">
-        <p className="text-xs font-semibold text-tinta-2">¿Problemas con la cámara? Entrada manual:</p>
+        <p className="text-xs font-semibold text-tinta-2">{t("entradaManual")}</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -394,12 +392,12 @@ export function EscanearQrActivo() {
               type="text"
               value={codigoManual}
               onChange={(e) => setCodigoManual(e.target.value)}
-              placeholder="Ej: ACT-0001"
+              placeholder={t("manualPlaceholder")}
               className="w-full rounded-xl border border-linea bg-background py-2 pr-3 pl-9 text-xs font-mono uppercase outline-none focus:border-marca-500"
             />
           </div>
           <Button type="submit" size="sm" disabled={buscandoActivo}>
-            {buscandoActivo ? <Loader2 className="size-4 animate-spin" /> : "Buscar"}
+            {buscandoActivo ? <Loader2 className="size-4 animate-spin" /> : t("buscar")}
           </Button>
         </form>
       </div>

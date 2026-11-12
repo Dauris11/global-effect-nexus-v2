@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  Calendar,
   CheckCircle2,
   Clock,
   Edit,
@@ -15,30 +14,34 @@ import {
   Wrench,
   XCircle,
 } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 import { EtiquetaQrImprimible } from "@/components/inventario/etiqueta-qr-imprimible";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import type { EstadoActivo } from "@/lib/inventario";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   obtenerActivoPorId,
   obtenerHistorialActivo,
 } from "@/server/inventario/consultas";
 
 interface PaginaDetalleActivoProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }
 
 export default async function PaginaDetalleActivo({ params }: PaginaDetalleActivoProps) {
   const usuario = await requerirPermiso("inventario.leer");
-  const { id } = await params;
+  const { locale, id } = await params;
 
-  const [activo, historial] = await Promise.all([
+  const [t, tForm, activo, historial, mensajes] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.inventario" }),
+    getTranslations({ locale, namespace: "admin.activoFormulario" }),
     obtenerActivoPorId(id),
     obtenerHistorialActivo(id),
+    mensajesCliente(["admin"]),
   ]);
 
   if (!activo) {
@@ -75,28 +78,28 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-[#1E9E6A]/10 px-3 py-1 text-xs font-bold text-[#1E9E6A]">
             <CheckCircle2 className="size-4" />
-            <span>Operativo</span>
+            <span>{t("estados.operativo")}</span>
           </span>
         );
       case "mantenimiento":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-marca-50 px-3 py-1 text-xs font-bold text-marca-700">
             <Clock className="size-4" />
-            <span>Mantenimiento</span>
+            <span>{t("estados.mantenimiento")}</span>
           </span>
         );
       case "prestado":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-tinta-2">
             <Package className="size-4" />
-            <span>Prestado</span>
+            <span>{t("estados.prestado")}</span>
           </span>
         );
       case "baja":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-[#B4342B]/10 px-3 py-1 text-xs font-bold text-[#B4342B]">
             <XCircle className="size-4" />
-            <span>De Baja</span>
+            <span>{t("estados.baja")}</span>
           </span>
         );
     }
@@ -112,7 +115,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-tinta-2 transition-colors hover:text-tinta"
           >
             <ArrowLeft className="size-4" />
-            <span>Volver al Catálogo</span>
+            <span>{t("volverCatalogo")}</span>
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <h1 className="font-mono text-2xl font-extrabold text-tinta sm:text-3xl">
@@ -129,7 +132,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
             className="inline-flex items-center gap-2 rounded-xl border border-linea bg-background px-4 py-2 text-xs font-bold text-tinta transition-colors hover:bg-muted"
           >
             <Edit className="size-4" />
-            <span>Editar Ficha</span>
+            <span>{t("editarFichaTitulo")}</span>
           </Link>
         )}
       </div>
@@ -142,7 +145,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
           <div className="rounded-2xl border border-linea bg-card p-5 shadow-xs">
             <div className="flex items-center gap-2 border-b border-linea pb-3">
               <Tag className="size-4 text-marca-600" />
-              <h2 className="text-sm font-bold text-tinta">Ficha Técnica Institucional</h2>
+              <h2 className="text-sm font-bold text-tinta">{t("fichaTecnica")}</h2>
             </div>
 
             {/* Foto si está disponible */}
@@ -159,12 +162,12 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-[11px] font-semibold text-tinta-3 uppercase">Categoría</p>
-                <p className="text-xs font-bold text-tinta capitalize">{activo.categoria}</p>
+                <p className="text-[11px] font-semibold text-tinta-3 uppercase">{t("colCategoria")}</p>
+                <p className="text-xs font-bold text-tinta">{t(`categorias.${activo.categoria}`)}</p>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-tinta-3 uppercase">Ubicación Física</p>
+                <p className="text-[11px] font-semibold text-tinta-3 uppercase">{t("colUbicacion")}</p>
                 <div className="flex items-center gap-1.5 text-xs font-bold text-tinta">
                   <MapPin className="size-3.5 text-marca-600" />
                   <span>{activo.ubicacion}</span>
@@ -172,10 +175,10 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-tinta-3 uppercase">Custodio / Responsable</p>
+                <p className="text-[11px] font-semibold text-tinta-3 uppercase">{t("colCustodio")}</p>
                 <div className="flex items-center gap-1.5 text-xs font-bold text-tinta">
                   <User className="size-3.5 text-marca-600" />
-                  <span>{activo.responsableNombre ?? "Sin custodio asignado"}</span>
+                  <span>{activo.responsableNombre ?? t("sinCustodio")}</span>
                 </div>
                 {activo.responsableEmail && (
                   <p className="text-[11px] text-tinta-2">{activo.responsableEmail}</p>
@@ -183,7 +186,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold text-tinta-3 uppercase">Valor Estimado en Libros</p>
+                <p className="text-[11px] font-semibold text-tinta-3 uppercase">{t("valorLibros")}</p>
                 <p className="font-mono text-sm font-bold text-tinta">
                   {formatoMoneda(activo.valorEstimado)}
                 </p>
@@ -191,14 +194,14 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
 
               {activo.marcaModelo && (
                 <div>
-                  <p className="text-[11px] font-semibold text-tinta-3 uppercase">Marca y Modelo</p>
+                  <p className="text-[11px] font-semibold text-tinta-3 uppercase">{tForm("marcaLabel")}</p>
                   <p className="text-xs font-medium text-tinta">{activo.marcaModelo}</p>
                 </div>
               )}
 
               {activo.numeroSerie && (
                 <div>
-                  <p className="text-[11px] font-semibold text-tinta-3 uppercase">Número de Serie (S/N)</p>
+                  <p className="text-[11px] font-semibold text-tinta-3 uppercase">{tForm("serieLabel")}</p>
                   <p className="font-mono text-xs font-bold text-tinta">{activo.numeroSerie}</p>
                 </div>
               )}
@@ -206,7 +209,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
 
             {activo.notas && (
               <div className="mt-4 rounded-xl border border-linea bg-muted/40 p-3 text-xs">
-                <p className="font-semibold text-tinta">Notas y Observaciones:</p>
+                <p className="font-semibold text-tinta">{t("notasObservaciones")}</p>
                 <p className="mt-0.5 text-tinta-2">{activo.notas}</p>
               </div>
             )}
@@ -216,13 +219,13 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
           <div className="rounded-2xl border border-linea bg-card p-5 shadow-xs">
             <div className="flex items-center gap-2 border-b border-linea pb-3">
               <History className="size-4 text-marca-600" />
-              <h2 className="text-sm font-bold text-tinta">Bitácora de Trazabilidad y Auditorías In Situ</h2>
+              <h2 className="text-sm font-bold text-tinta">{t("bitacoraTitulo")}</h2>
             </div>
 
             <div className="mt-4 flex flex-col divide-y divide-linea">
               {historial.length === 0 ? (
                 <p className="py-6 text-center text-xs text-tinta-3">
-                  No hay movimientos registrados para este activo.
+                  {t("sinMovimientos")}
                 </p>
               ) : (
                 historial.map((mov) => (
@@ -246,13 +249,13 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
                       <p className="text-tinta-2">{mov.notas}</p>
                       {mov.ubicacionNueva && mov.ubicacionAnterior && mov.ubicacionNueva !== mov.ubicacionAnterior && (
                         <p className="mt-0.5 text-[11px] text-tinta-3">
-                          Traslado: <span className="line-through">{mov.ubicacionAnterior}</span> →{" "}
+                          {t("traslado")} <span className="line-through">{mov.ubicacionAnterior}</span> →{" "}
                           <span className="font-semibold text-tinta">{mov.ubicacionNueva}</span>
                         </p>
                       )}
                       {mov.usuarioNombre && (
                         <p className="mt-0.5 text-[10px] text-tinta-3">
-                          Registrado por: {mov.usuarioNombre}
+                          {t("registradoPor", { name: mov.usuarioNombre })}
                         </p>
                       )}
                     </div>
@@ -268,16 +271,18 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
           <div className="rounded-2xl border border-linea bg-card p-5 shadow-xs">
             <div className="mb-4 flex items-center gap-2 border-b border-linea pb-3">
               <QrCode className="size-4 text-marca-600" />
-              <h2 className="text-sm font-bold text-tinta">Etiqueta QR Patrimonial</h2>
+              <h2 className="text-sm font-bold text-tinta">{t("etiquetaTitulo")}</h2>
             </div>
 
-            <EtiquetaQrImprimible
-              codigo={activo.codigo}
-              nombre={activo.nombre}
-              categoria={activo.categoria}
-              numeroSerie={activo.numeroSerie}
-              ubicacion={activo.ubicacion}
-            />
+            <NextIntlClientProvider messages={mensajes}>
+              <EtiquetaQrImprimible
+                codigo={activo.codigo}
+                nombre={activo.nombre}
+                categoria={t(`categorias.${activo.categoria}`)}
+                numeroSerie={activo.numeroSerie}
+                ubicacion={activo.ubicacion}
+              />
+            </NextIntlClientProvider>
           </div>
         </div>
       </div>
