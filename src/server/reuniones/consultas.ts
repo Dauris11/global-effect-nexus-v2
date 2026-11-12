@@ -290,8 +290,18 @@ export async function obtenerReunion(id: string): Promise<Reunion | null> {
 
 /**
  * Lista usuarios y estudiantes seleccionables para convocar a reuniones.
+ *
+ * Por privacidad, cuando quien agenda es un `estudiante`, el listado de
+ * estudiantes solo expone su propia ficha (para vincular su expediente a la
+ * tutoría) en lugar de exponer los nombres y correos de todos los becados.
  */
-export async function listarCandidatosParticipantes(): Promise<CandidatoParticipante[]> {
+export async function listarCandidatosParticipantes(filtro?: {
+  usuarioId?: string;
+  rol?: Rol;
+}): Promise<CandidatoParticipante[]> {
+  const soloPropioEstudiante =
+    filtro?.rol === "estudiante" && Boolean(filtro.usuarioId);
+
   const [personal, estudiantes] = await Promise.all([
     consultar<{ id: string; nombre: string; email: string; rol: string }>(
       `SELECT u.id, u.nombre, u.email, coalesce(r.nombre, 'personal') AS rol
@@ -304,12 +314,20 @@ export async function listarCandidatosParticipantes(): Promise<CandidatoParticip
          AND coalesce(r.nombre, '') <> 'estudiante'
        ORDER BY u.nombre ASC`
     ),
-    consultar<{ id: string; nombre: string; email: string }>(
-      `SELECT id, nombre, coalesce(email, '') AS email
-       FROM estudiante
-       WHERE estado IN ('activo', 'academia_liderazgo', 'postulado', 'standby_tecnico')
-       ORDER BY nombre ASC LIMIT 200`
-    ),
+    soloPropioEstudiante
+      ? consultar<{ id: string; nombre: string; email: string }>(
+          `SELECT id, nombre, coalesce(email, '') AS email
+           FROM estudiante
+           WHERE usuario_id = $1
+           ORDER BY nombre ASC LIMIT 1`,
+          [filtro!.usuarioId!]
+        )
+      : consultar<{ id: string; nombre: string; email: string }>(
+          `SELECT id, nombre, coalesce(email, '') AS email
+           FROM estudiante
+           WHERE estado IN ('activo', 'academia_liderazgo', 'postulado', 'standby_tecnico')
+           ORDER BY nombre ASC LIMIT 200`
+        ),
   ]);
 
   const listaPersonal: CandidatoParticipante[] = personal.map((p) => ({

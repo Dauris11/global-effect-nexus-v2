@@ -79,6 +79,7 @@ export default async function PortalProfesor({
   // `/academico/materias` pide `academico.leer`. Quien imparte por permiso sin
   // ser docente (Habitudes) no lo tiene: el enlace le rebotaba a su portal.
   const veMaterias = usuarioTienePermiso(usuario, "academico.leer");
+  const veReuniones = usuarioTienePermiso(usuario, "reuniones.leer");
 
   await iniciarInscripcionesVigentes();
 
@@ -190,6 +191,17 @@ export default async function PortalProfesor({
             titulo: t("shortcuts.calendar.label"),
             texto: t("shortcuts.calendar.hint"),
           },
+          ...(veReuniones
+            ? [
+                {
+                  href: "/reuniones",
+                  icono: Users,
+                  color: CUADRO.marca,
+                  titulo: t("shortcuts.meetings.label"),
+                  texto: t("shortcuts.meetings.hint"),
+                },
+              ]
+            : []),
         ]}
       />
 
@@ -261,13 +273,21 @@ export default async function PortalProfesor({
                           </div>
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1.5 self-center">
+                        <div className="flex shrink-0 flex-wrap items-center gap-1.5 self-center">
                           <Button asChild size="sm" variant="outline" className="h-8 text-xs">
                             <Link href={`/academico/clases-360?clase=${clase.id}&accion=asistencia#clase-${clase.id}`}>
                               <CalendarCheck className="size-3.5" />
                               {t("takeAttendance")}
                             </Link>
                           </Button>
+                          {clase.tareas > 0 && (
+                            <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                              <Link href={`/academico/clases-360?clase=${clase.id}&accion=publicaciones#clase-${clase.id}`}>
+                                <ClipboardList className="size-3.5" />
+                                {t("viewPosts")} ({clase.tareas})
+                              </Link>
+                            </Button>
+                          )}
                           <Button asChild size="sm" variant="ghost" className="h-8 text-xs text-marca-600 hover:text-marca-700">
                             <Link href={`/academico/clases-360?clase=${clase.id}&accion=alumnos#clase-${clase.id}`}>
                               {t("manageClass")}

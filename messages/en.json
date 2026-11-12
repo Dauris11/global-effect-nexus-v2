@@ -1708,6 +1708,8 @@
     },
     "requestsTitle": "My requests",
     "requestsDesc": "Certificates, letters, leave and appointments with administration.",
+    "meetingsTitle": "Meetings and tutoring",
+    "meetingsDesc": "Tutoring and follow-up sessions with teachers and coordination.",
     "next": {
       "title": "Next event",
       "empty": "No upcoming events",
@@ -1739,6 +1741,10 @@
       "classes360": {
         "label": "360 classes",
         "hint": "Tasks, submissions and final grade"
+      },
+      "meetings": {
+        "label": "Meetings and tutoring",
+        "hint": "Schedule with students and staff"
       }
     },
     "term": "Term",
@@ -1753,6 +1759,7 @@
     "classesEmptyHint": "Coordination assigns 360 classes to you from Pre-enrolment. If one seems to be missing, let them know.",
     "manageClass": "Manage class",
     "takeAttendance": "Attendance",
+    "viewPosts": "Posts",
     "viewSubject": "View subject",
     "reviewSubmission": "Grade"
   },

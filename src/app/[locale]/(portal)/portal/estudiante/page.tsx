@@ -10,6 +10,7 @@ import {
   MonitorPlay,
   Sparkles,
   Star,
+  Users,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -162,6 +163,16 @@ export default async function PortalEstudiante({
       titulo: t("requestsTitle"),
       texto: t("requestsDesc"),
     },
+    ...(usuarioTienePermiso(usuario, "reuniones.leer")
+      ? [
+          {
+            href: "/reuniones",
+            icono: Users,
+            titulo: t("meetingsTitle"),
+            texto: t("meetingsDesc"),
+          },
+        ]
+      : []),
     // El chat solo se ofrece a quien tiene el permiso: su pantalla lo
     // comprueba igual, pero un acceso que lleva a "no disponible" sobra.
     ...(usuarioTienePermiso(usuario, "ia.usar")

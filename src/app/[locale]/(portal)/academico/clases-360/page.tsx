@@ -16,6 +16,7 @@ import {
   asignacionesDeClases360,
   cifrasDocente,
   clases360,
+  entregasDeClases360,
   entregasPorRevisar,
   inscritosDeClase360,
   periodosParaTareas360,
@@ -54,7 +55,10 @@ export default async function PaginaClases360({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<{ clase?: string; accion?: "asistencia" | "alumnos" | "tarea" }>;
+  searchParams?: Promise<{
+    clase?: string;
+    accion?: "asistencia" | "alumnos" | "tarea" | "publicaciones";
+  }>;
 }) {
   const { locale } = await params;
   const { clase: claseInicialId, accion: seccionInicial } = (await searchParams) ?? {};
@@ -82,10 +86,20 @@ export default async function PaginaClases360({
   // Antes de leer: así el estado que se pinta ya es el de hoy.
   await iniciarInscripcionesVigentes();
 
-  const [cifras, clases, entregasBrutas, asistencia, periodosDeTarea, asignacionesPorClase, mensajes] = await Promise.all([
+  const [
+    cifras,
+    clases,
+    entregasBrutas,
+    todasEntregasBrutas,
+    asistencia,
+    periodosDeTarea,
+    asignacionesPorClase,
+    mensajes,
+  ] = await Promise.all([
     cifrasDocente(docenteId),
     clases360(docenteId),
     entregasPorRevisar(docenteId, 20),
+    entregasDeClases360(docenteId),
     asistenciaDeClases360(docenteId),
     periodosParaTareas360(docenteId),
     asignacionesDeClases360(docenteId),
@@ -98,12 +112,28 @@ export default async function PaginaClases360({
 
   // Un enlace firmado por entrega. Se piden en paralelo: son llamadas HTTP a
   // Storage y encadenarlas sumaría una ida y vuelta por cada una.
-  const entregas = await Promise.all(
-    entregasBrutas.map(async (entrega) => ({
-      ...entrega,
-      enlace: await enlaceDeDocumento(entrega.archivo_url),
-    })),
-  );
+  const [entregas, todasEntregas] = await Promise.all([
+    Promise.all(
+      entregasBrutas.map(async (entrega) => ({
+        ...entrega,
+        enlace: await enlaceDeDocumento(entrega.archivo_url),
+      })),
+    ),
+    Promise.all(
+      todasEntregasBrutas.map(async (entrega) => ({
+        ...entrega,
+        enlace: await enlaceDeDocumento(entrega.archivo_url),
+      })),
+    ),
+  ]);
+
+  const entregasPorAsignacion: Record<
+    string,
+    (typeof todasEntregas)[number][]
+  > = {};
+  for (const entrega of todasEntregas) {
+    (entregasPorAsignacion[entrega.asignacion_id] ??= []).push(entrega);
+  }
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -133,6 +163,7 @@ export default async function PaginaClases360({
           asistencia={asistencia}
           periodosDeTarea={periodosDeTarea}
           asignacionesPorClase={asignacionesPorClase}
+          entregasPorAsignacion={entregasPorAsignacion}
           puedeProgramar={puedeTodo || esDocente}
           // Quien imparte por permiso también cierra la nota de SUS clases; la
           // acción aplica el mismo criterio y el mismo filtro por docente.

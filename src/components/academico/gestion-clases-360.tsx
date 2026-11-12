@@ -75,6 +75,7 @@ export function GestionClases360({
   puedeProgramar,
   periodosDeTarea,
   asignacionesPorClase = {},
+  entregasPorAsignacion = {},
   claseInicialId = null,
   seccionInicial = null,
 }: {
@@ -84,6 +85,8 @@ export function GestionClases360({
   periodosDeTarea: Record<string, PeriodoParaTarea[]>;
   /** Publicaciones (tareas, exámenes, materiales y anuncios) por clase de 360. */
   asignacionesPorClase?: Record<string, AsignacionDeClase360[]>;
+  /** Todas las entregas (pendientes y calificadas) agrupadas por `asignacion_id`. */
+  entregasPorAsignacion?: Record<string, readonly (EntregaPorRevisar & { enlace: string | null })[]>;
   /** `academico.escribir` o `docencia.impartir` en sus propias clases. */
   puedeProgramar: boolean;
   inscritosPorClase: Record<string, InscritoEn360[]>;
@@ -94,7 +97,7 @@ export function GestionClases360({
    */
   puedeCalificar: boolean;
   claseInicialId?: string | null;
-  seccionInicial?: "asistencia" | "alumnos" | "tarea" | null;
+  seccionInicial?: "asistencia" | "alumnos" | "tarea" | "publicaciones" | null;
 }) {
   const t = useTranslations("academic.classes360");
   const [abierto, setAbierto] = useState<string | null>(
@@ -105,7 +108,9 @@ export function GestionClases360({
   const [tareaEn, setTareaEn] = useState<string | null>(
     seccionInicial === "tarea" ? claseInicialId : null,
   );
-  const [publicacionesEn, setPublicacionesEn] = useState<string | null>(null);
+  const [publicacionesEn, setPublicacionesEn] = useState<string | null>(
+    seccionInicial === "publicaciones" ? claseInicialId : null,
+  );
   const [asistenciaEn, setAsistenciaEn] = useState<string | null>(
     seccionInicial === "asistencia" ? claseInicialId : null,
   );
@@ -261,6 +266,7 @@ export function GestionClases360({
                   {publicacionesEn === clase.id && (
                     <ListaAsignacionesClase360
                       filas={asignacionesPorClase[clase.id] ?? []}
+                      entregasPorAsignacion={entregasPorAsignacion}
                     />
                   )}
 
@@ -629,10 +635,16 @@ function FormularioTarea({
  */
 function ListaAsignacionesClase360({
   filas,
+  entregasPorAsignacion = {},
 }: {
   filas: readonly AsignacionDeClase360[];
+  entregasPorAsignacion?: Record<
+    string,
+    readonly (EntregaPorRevisar & { enlace: string | null })[]
+  >;
 }) {
   const t = useTranslations("academic.classes360");
+  const [abiertaId, setAbiertaId] = useState<string | null>(null);
   const [borrandoId, setBorrandoId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [enCurso, iniciarTransicion] = useTransition();
@@ -680,67 +692,94 @@ function ListaAsignacionesClase360({
       <ul className="space-y-1.5">
         {filas.map((fila) => {
           const evaluable = fila.tipo === "tarea" || fila.tipo === "examen";
+          const entregasDeTarea = entregasPorAsignacion[fila.id] ?? [];
+          const desplegada = abiertaId === fila.id;
+
           return (
             <li
               key={fila.id}
-              className="bg-muted/40 rounded-control flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs"
+              className="bg-muted/40 rounded-control space-y-2 px-3 py-2 text-xs"
             >
-              <div className="min-w-0 flex-1 space-y-0.5">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="truncate font-medium text-tinta">
-                    {fila.titulo}
-                  </span>
-                  <Badge className="bg-marca-500/15 text-marca-600 text-[10px]">
-                    {etiquetaTipo(fila.tipo)}
-                  </Badge>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="truncate font-medium text-tinta">
+                      {fila.titulo}
+                    </span>
+                    <Badge className="bg-marca-500/15 text-marca-600 text-[10px]">
+                      {etiquetaTipo(fila.tipo)}
+                    </Badge>
+                  </div>
+                  <p className="text-tinta-3 truncate text-[11px]">
+                    {[
+                      fila.periodo,
+                      fila.fecha_vencimiento
+                        ? `${t("taskDue")}: ${fila.fecha_vencimiento}`
+                        : null,
+                      evaluable
+                        ? `${t("taskWeight")}: ${fila.peso} · ${t("gradeMax", { max: fila.puntaje_maximo })}`
+                        : null,
+                      evaluable
+                        ? t("submissionsCount", { n: fila.entregas })
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                 </div>
-                <p className="text-tinta-3 truncate text-[11px]">
-                  {[
-                    fila.periodo,
-                    fila.fecha_vencimiento
-                      ? `${t("taskDue")}: ${fila.fecha_vencimiento}`
-                      : null,
-                    evaluable
-                      ? `${t("taskWeight")}: ${fila.peso} · ${t("gradeMax", { max: fila.puntaje_maximo })}`
-                      : null,
-                    evaluable
-                      ? t("submissionsCount", { n: fila.entregas })
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              </div>
 
-              <div className="flex shrink-0 items-center gap-1.5">
-                {fila.archivo_url && (
-                  <a
-                    href={fila.archivo_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-marca-600 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                  >
-                    <ExternalLink className="size-3.5" />
-                    {t("openFile")}
-                  </a>
-                )}
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={enCurso && borrandoId === fila.id}
-                  title={t("deleteTask")}
-                  aria-label={t("deleteTask")}
-                  onClick={() => eliminar(fila.id)}
-                >
-                  {enCurso && borrandoId === fila.id ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="size-3.5" />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {evaluable && entregasDeTarea.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-expanded={desplegada}
+                      onClick={() => setAbiertaId(desplegada ? null : fila.id)}
+                      className="h-7 px-2 text-xs text-marca-600"
+                    >
+                      <GraduationCap className="size-3.5" />
+                      {t("submissionsCount", { n: entregasDeTarea.length })}
+                    </Button>
                   )}
-                </Button>
+
+                  {fila.archivo_url && (
+                    <a
+                      href={fila.archivo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-marca-600 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                    >
+                      <ExternalLink className="size-3.5" />
+                      {t("openFile")}
+                    </a>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={enCurso && borrandoId === fila.id}
+                    title={t("deleteTask")}
+                    aria-label={t("deleteTask")}
+                    onClick={() => eliminar(fila.id)}
+                  >
+                    {enCurso && borrandoId === fila.id ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3.5" />
+                    )}
+                  </Button>
+                </div>
               </div>
+
+              {desplegada && entregasDeTarea.length > 0 && (
+                <ul className="divide-linea border-linea divide-y border-t pt-2">
+                  {entregasDeTarea.map((entrega) => (
+                    <FilaEntrega key={entrega.id} entrega={entrega} />
+                  ))}
+                </ul>
+              )}
             </li>
           );
         })}

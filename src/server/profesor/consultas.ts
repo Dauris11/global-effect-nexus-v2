@@ -363,6 +363,7 @@ export async function materiasDelDocente(
 
 export type EntregaPorRevisar = {
   id: string;
+  asignacion_id?: string;
   asignacion: string;
   unidad: string;
   estudiante: string;
@@ -376,6 +377,40 @@ export type EntregaPorRevisar = {
   puntaje_maximo: number;
   comentario_profesor: string | null;
 };
+
+/**
+ * Todas las entregas (pendientes de calificar y ya calificadas) de las tareas
+ * publicadas en las clases de Global Effect 360 del docente.
+ *
+ * Permite desplegar una publicación desde la lista de su clase para revisar qué
+ * subió cada estudiante o corregir una calificación ya puesta.
+ */
+export async function entregasDeClases360(
+  docenteId: string | null,
+): Promise<(EntregaPorRevisar & { asignacion_id: string })[]> {
+  return consultar<EntregaPorRevisar & { asignacion_id: string }>(
+    `SELECT d.id,
+            d.asignacion_id,
+            a.titulo AS asignacion,
+            m3.nombre AS unidad,
+            e.nombre AS estudiante,
+            d.estado::text AS estado,
+            d.fecha_entrega,
+            d.archivo_url,
+            d.texto_respuesta,
+            d.calificacion::float8 AS calificacion,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            d.comentario_profesor
+       FROM entrega_estudiante d
+       JOIN asignacion  a  ON a.id = d.asignacion_id
+       JOIN estudiante  e  ON e.id = d.estudiante_id
+       JOIN materia_360 m3 ON m3.id = a.materia_360_id
+      WHERE d.estado IN ('entregado', 'tarde', 'calificado')
+        AND ($1::uuid IS NULL OR m3.docente_id = $1)
+      ORDER BY d.fecha_entrega DESC NULLS LAST, e.nombre`,
+    [docenteId],
+  );
+}
 
 /**
  * Entregas que esperan revisión, de las clases de este docente.

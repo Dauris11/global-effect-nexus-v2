@@ -1708,6 +1708,8 @@
     },
     "requestsTitle": "Mis solicitudes",
     "requestsDesc": "Constancias, cartas, permisos y citas con administración.",
+    "meetingsTitle": "Reuniones y tutorías",
+    "meetingsDesc": "Sesiones de tutoría y seguimiento con docentes y coordinación.",
     "next": {
       "title": "Próximo evento",
       "empty": "Sin eventos próximos",
@@ -1739,6 +1741,10 @@
       "classes360": {
         "label": "Clases de 360",
         "hint": "Tareas, entregas y nota final"
+      },
+      "meetings": {
+        "label": "Reuniones y tutorías",
+        "hint": "Agenda con estudiantes y equipo"
       }
     },
     "term": "Período",
@@ -1753,6 +1759,7 @@
     "classesEmptyHint": "La coordinación te asigna las clases de 360 desde Prematrícula. Si crees que falta alguna, avísale.",
     "manageClass": "Gestionar clase",
     "takeAttendance": "Asistencia",
+    "viewPosts": "Publicaciones",
     "viewSubject": "Ver materia",
     "reviewSubmission": "Calificar"
   },

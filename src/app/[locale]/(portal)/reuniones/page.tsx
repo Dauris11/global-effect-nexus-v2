@@ -47,7 +47,7 @@ export default async function PaginaReuniones({
   const [t, reuniones, candidatos, metricas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "reuniones" }),
     listarReuniones({ usuarioId: usuario.id, rol: usuario.rol }),
-    listarCandidatosParticipantes(),
+    listarCandidatosParticipantes({ usuarioId: usuario.id, rol: usuario.rol }),
     metricasReuniones({ usuarioId: usuario.id, rol: usuario.rol }),
     mensajesCliente(["reuniones"]),
   ]);
