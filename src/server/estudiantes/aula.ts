@@ -49,10 +49,14 @@ export type AsignacionDelEstudiante = {
   permite_entregas_tardias?: boolean;
   instrucciones_entrega?: string | null;
   entrega_id?: string | null;
+  entrega_archivo_url?: string | null;
   entrega_archivo_nombre?: string | null;
   entrega_archivo_tamano_mb?: number | null;
   entrega_archivo_formato?: string | null;
+  entrega_texto_respuesta?: string | null;
   entrega_comentario_estudiante?: string | null;
+  revisada_por_nombre?: string | null;
+  revisada_en?: string | null;
 };
 
 /**
@@ -91,10 +95,14 @@ export async function asignacionesDelEstudiante(
             coalesce(a.permite_entregas_tardias, true) AS permite_entregas_tardias,
             a.instrucciones_entrega,
             e.id AS entrega_id,
+            e.archivo_url AS entrega_archivo_url,
             e.archivo_nombre AS entrega_archivo_nombre,
             e.archivo_tamano_mb::float8 AS entrega_archivo_tamano_mb,
             e.archivo_formato AS entrega_archivo_formato,
-            e.comentario_estudiante AS entrega_comentario_estudiante
+            e.texto_respuesta AS entrega_texto_respuesta,
+            e.comentario_estudiante AS entrega_comentario_estudiante,
+            rev.nombre AS revisada_por_nombre,
+            e.revisada_en::text AS revisada_en
        FROM asignacion a
        LEFT JOIN materia m ON m.id = a.materia_id
        LEFT JOIN materia_360 m360 ON m360.id = a.materia_360_id
@@ -102,6 +110,7 @@ export async function asignacionesDelEstudiante(
        LEFT JOIN entrega_estudiante e
          ON e.asignacion_id = a.id
         AND e.estudiante_id = $1
+       LEFT JOIN usuario rev ON rev.id = e.revisada_por_id
       WHERE (
         a.materia_id IN (
           SELECT i.materia_id FROM inscripcion i

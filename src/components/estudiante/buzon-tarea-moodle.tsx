@@ -46,7 +46,9 @@ export function BuzonTareaMoodle({
   const router = useRouter();
 
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
-  const [textoRespuesta, setTextoRespuesta] = useState("");
+  const [textoRespuesta, setTextoRespuesta] = useState(
+    asignacion.entrega_texto_respuesta ?? "",
+  );
   const [comentarioEstudiante, setComentarioEstudiante] = useState(
     asignacion.entrega_comentario_estudiante ?? "",
   );
@@ -454,6 +456,17 @@ export function BuzonTareaMoodle({
                   )}
                 </div>
               </div>
+
+              {asignacion.entrega_texto_respuesta && (
+                <div className="rounded-xl border border-linea-fuerte/40 bg-card p-3.5 text-xs text-tinta">
+                  <p className="mb-1 font-semibold text-tinta">
+                    {t("answerText")}:
+                  </p>
+                  <p className="whitespace-pre-line leading-relaxed text-tinta/80">
+                    {asignacion.entrega_texto_respuesta}
+                  </p>
+                </div>
+              )}
 
               {asignacion.entrega_comentario_estudiante && (
                 <div className="rounded-xl border border-linea-fuerte/40 bg-card p-3 text-xs text-tinta/70">

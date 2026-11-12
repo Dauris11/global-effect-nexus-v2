@@ -11,15 +11,15 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 /**
  * Sesiones y asistencia de las clases de Global Effect 360.
  *
- * DOS PUERTAS, y no se mezclan:
+ * DOS PUERTAS con el mismo alcance que las tareas y las notas:
  *
- *   · Programar, editar y borrar sesiones: `academico.escribir`. Las fechas de
- *     clase las fija administración; el profesor no las mueve.
- *   · Marcar presente o ausente: `docencia.impartir` sobre SUS clases
- *     (`materia_360.docente_id`), o `academico.escribir` sobre cualquiera. El
- *     alcance va dentro del propio SQL: con el id de una sesión ajena no hay
- *     fila que escribir. Solo quien tiene `academico.escribir` salta el filtro
- *     (quitarle `docencia.impartir` a alguien no debe abrirle todas las clases).
+ *   · `academico.escribir` (`admin` y `super_admin`) sobre cualquier clase.
+ *   · `docencia.impartir` (`docente` o quien dé clases por excepción) sobre SUS
+ *     propias clases (`materia_360.docente_id`), comprobado dentro del SQL.
+ *
+ * Permitir al docente programar y ajustar sesiones en su propia clase evita que
+ * se quede bloqueado al pasar lista si coordinación aún no había pre-creado la
+ * fecha del día.
  */
 
 export type EstadoSesion360 =
@@ -52,7 +52,8 @@ export async function guardarSesion360(
   datos: DatosSesion360,
 ): Promise<{ estado: EstadoSesion360 }> {
   const usuario = await requerirUsuario();
-  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
+  const administra = usuarioTienePermiso(usuario, "academico.escribir");
+  if (!administra && !usuarioTienePermiso(usuario, "docencia.impartir")) {
     return { estado: "no_permitido" };
   }
 
@@ -73,6 +74,8 @@ export async function guardarSesion360(
   }
 
   try {
+    // Si no tiene permiso global (`academico.escribir`), el propio SELECT exige
+    // que `materia_360.docente_id` sea este usuario.
     const contexto = await consultarUna<{ dentro: boolean; inscritos: number }>(
       `SELECT ($3::date BETWEEN p.fecha_inicio AND p.fecha_fin) AS dentro,
               (SELECT count(*)::int FROM inscripcion_360 i
@@ -80,8 +83,10 @@ export async function guardarSesion360(
                   AND i.estado <> 'retirada') AS inscritos
          FROM periodo p
         WHERE p.id = $2
-          AND EXISTS (SELECT 1 FROM materia_360 WHERE id = $1)`,
-      [materiaId, periodoId, fecha],
+          AND EXISTS (SELECT 1 FROM materia_360 m
+                       WHERE m.id = $1
+                         AND ($4::uuid IS NULL OR m.docente_id = $4))`,
+      [materiaId, periodoId, fecha, administra ? null : usuario.id],
     );
     if (!contexto) return { estado: "no_encontrado" };
     if (!contexto.dentro) return { estado: "fuera_de_periodo" };
@@ -133,15 +138,21 @@ export async function borrarSesion360(
   id: string,
 ): Promise<{ estado: EstadoSesion360 }> {
   const usuario = await requerirUsuario();
-  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
+  const administra = usuarioTienePermiso(usuario, "academico.escribir");
+  if (!administra && !usuarioTienePermiso(usuario, "docencia.impartir")) {
     return { estado: "no_permitido" };
   }
   if (!UUID.test(id)) return { estado: "invalido" };
 
   try {
     const borrada = await consultarUna<{ id: string }>(
-      "DELETE FROM sesion_360 WHERE id = $1 RETURNING id",
-      [id],
+      `DELETE FROM sesion_360 s
+        USING materia_360 m
+        WHERE s.id = $1
+          AND m.id = s.materia_360_id
+          AND ($2::uuid IS NULL OR m.docente_id = $2)
+        RETURNING s.id`,
+      [id, administra ? null : usuario.id],
     );
     if (!borrada) return { estado: "no_encontrado" };
 

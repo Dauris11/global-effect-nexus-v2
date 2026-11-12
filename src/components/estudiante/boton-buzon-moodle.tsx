@@ -53,10 +53,11 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
       | "entregado"
       | "calificado"
       | "tarde",
-    entrega_archivo_url: null,
+    entrega_archivo_url: fila.entrega_archivo_url ?? null,
     entrega_archivo_nombre: fila.entrega_archivo_nombre ?? null,
     entrega_archivo_tamano_mb: fila.entrega_archivo_tamano_mb ?? null,
     entrega_archivo_formato: fila.entrega_archivo_formato ?? null,
+    entrega_texto_respuesta: fila.entrega_texto_respuesta ?? null,
     entrega_fecha: fila.fecha_entrega
       ? fila.fecha_entrega instanceof Date
         ? fila.fecha_entrega.toISOString()
@@ -65,8 +66,8 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
     entrega_comentario_estudiante: fila.entrega_comentario_estudiante ?? null,
     calificacion: fila.calificacion,
     comentario_profesor: fila.comentario_profesor,
-    revisada_por_nombre: null,
-    revisada_en: null,
+    revisada_por_nombre: fila.revisada_por_nombre ?? null,
+    revisada_en: fila.revisada_en ?? null,
   };
 
   const yaEntregada =

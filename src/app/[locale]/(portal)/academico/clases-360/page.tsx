@@ -130,7 +130,7 @@ export default async function PaginaClases360({
           entregas={entregas}
           asistencia={asistencia}
           periodosDeTarea={periodosDeTarea}
-          puedeProgramar={puedeTodo}
+          puedeProgramar={puedeTodo || esDocente}
           // Quien imparte por permiso también cierra la nota de SUS clases; la
           // acción aplica el mismo criterio y el mismo filtro por docente.
           puedeCalificar={

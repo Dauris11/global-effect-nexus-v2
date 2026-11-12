@@ -52,6 +52,7 @@ export interface AsignacionMoodleDetalle {
   entrega_archivo_nombre: string | null;
   entrega_archivo_tamano_mb: number | null;
   entrega_archivo_formato: string | null;
+  entrega_texto_respuesta?: string | null;
   entrega_fecha: string | null;
   entrega_comentario_estudiante: string | null;
   calificacion: number | null;

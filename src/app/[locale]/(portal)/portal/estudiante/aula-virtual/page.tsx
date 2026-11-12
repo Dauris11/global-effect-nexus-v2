@@ -22,6 +22,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
+import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import {
   asignacionesDelEstudiante,
   type AsignacionDelEstudiante,
@@ -102,12 +103,32 @@ export default async function PaginaAulaVirtual({
 
   const [t, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "studentPortal" }),
-    // El botón de entregar es cliente y usa este espacio; el proveedor del
-    // layout solo manda los cuatro del armazón.
-    mensajesCliente(["studentPortal"]),
+    // El botón y el buzón de entregas son componentes cliente que leen `studentPortal` y `moodle`.
+    mensajesCliente(["studentPortal", "moodle"]),
   ]);
 
-  const asignaciones = await asignacionesDelEstudiante(estudiante.id);
+  const asignacionesBrutas = await asignacionesDelEstudiante(estudiante.id);
+
+  // Firma en el servidor los enlaces del bucket privado (tanto el material del
+  // docente cuando no es URL externa como la entrega subida por el propio estudiante).
+  const asignaciones = await Promise.all(
+    asignacionesBrutas.map(async (fila) => {
+      const [archivoFirmado, entregaFirmada] = await Promise.all([
+        fila.archivo_url && !fila.archivo_url.startsWith("http")
+          ? enlaceDeDocumento(fila.archivo_url)
+          : Promise.resolve(fila.archivo_url),
+        fila.entrega_archivo_url && !fila.entrega_archivo_url.startsWith("http")
+          ? enlaceDeDocumento(fila.entrega_archivo_url)
+          : Promise.resolve(fila.entrega_archivo_url ?? null),
+      ]);
+
+      return {
+        ...fila,
+        archivo_url: archivoFirmado,
+        entrega_archivo_url: entregaFirmada,
+      };
+    }),
+  );
 
   const evaluables = asignaciones.filter(
     (fila) => fila.tipo === "tarea" || fila.tipo === "examen",
