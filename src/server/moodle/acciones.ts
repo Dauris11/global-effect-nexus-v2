@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirRol } from "@/lib/auth";
-import { consultarUna, enTransaccion } from "@/lib/db";
+import { consultar, consultarUna, enTransaccion } from "@/lib/db";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { MAXIMO_ENTREGA, subirEntrega } from "@/lib/supabase/almacen";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
@@ -78,13 +78,18 @@ export async function entregarTareaMoodleAction(
     const asignacion = await consultarUna<{
       id: string;
       titulo: string;
+      materia: string;
+      docente_usuario_id: string | null;
       limite_mb: number;
       formatos_permitidos: string[];
       fecha_vencimiento: string | null;
       permite_entregas_tardias: boolean;
       ya_entregada: boolean;
     }>(
-      `SELECT a.id, a.titulo, coalesce(a.limite_mb, 10)::int AS limite_mb,
+      `SELECT a.id, a.titulo,
+              coalesce(m.nombre, m360.nombre, 'Asignatura') AS materia,
+              coalesce(m360.docente_id, m.profesor_usuario_id, a.creada_por_id) AS docente_usuario_id,
+              coalesce(a.limite_mb, 10)::int AS limite_mb,
               coalesce(a.formatos_permitidos, ARRAY['pdf', 'docx'])::text[] AS formatos_permitidos,
               a.fecha_vencimiento::text,
               coalesce(a.permite_entregas_tardias, true) AS permite_entregas_tardias,
@@ -92,6 +97,8 @@ export async function entregarTareaMoodleAction(
                        WHERE e.asignacion_id = a.id AND e.estudiante_id = $2
                          AND (e.archivo_url IS NOT NULL OR e.texto_respuesta IS NOT NULL)) AS ya_entregada
          FROM public.asignacion a
+         LEFT JOIN public.materia m ON m.id = a.materia_id
+         LEFT JOIN public.materia_360 m360 ON m360.id = a.materia_360_id
         WHERE a.id = $1
           AND (
             EXISTS (SELECT 1 FROM public.inscripcion i
@@ -196,6 +203,24 @@ export async function entregarTareaMoodleAction(
           comentarioEstudiante,
         ],
       );
+
+      // Avisa al docente responsable de la clase en la misma transacción.
+      if (asignacion.docente_usuario_id && asignacion.docente_usuario_id !== usuario.id) {
+        const detalleEntrega = [estudiante.nombre, comentarioEstudiante]
+          .filter(Boolean)
+          .join(" — ");
+        await cliente.query(
+          `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+           SELECT u.id, $2, $3, 'tarea', '/academico/clases-360'
+             FROM public.usuario u
+            WHERE u.id = $1 AND u.activo`,
+          [
+            asignacion.docente_usuario_id,
+            `${asignacion.materia} · ${asignacion.titulo}`,
+            detalleEntrega,
+          ],
+        );
+      }
     });
 
     await registrar({
@@ -252,11 +277,19 @@ export async function calificarEntregaMoodleAction(
       id: string;
       maximo: number;
       escrita: boolean;
+      estudiante_usuario_id: string | null;
+      titulo: string;
+      materia: string;
     }>(
       `WITH objetivo AS (
-         SELECT e.id, coalesce(a.puntaje_maximo, 100) AS maximo
+         SELECT e.id,
+                coalesce(a.puntaje_maximo, 100) AS maximo,
+                est.usuario_id AS estudiante_usuario_id,
+                a.titulo,
+                coalesce(mu.nombre, m3.nombre, 'Asignatura') AS materia
            FROM public.entrega_estudiante e
            JOIN public.asignacion a ON a.id = e.asignacion_id
+           JOIN public.estudiante est ON est.id = e.estudiante_id
            LEFT JOIN public.materia     mu ON mu.id = a.materia_id
            LEFT JOIN public.materia_360 m3 ON m3.id = a.materia_360_id
           WHERE e.id = $1
@@ -278,6 +311,9 @@ export async function calificarEntregaMoodleAction(
         RETURNING e.id
        )
        SELECT o.id, o.maximo::float8 AS maximo,
+              o.estudiante_usuario_id,
+              o.titulo,
+              o.materia,
               EXISTS (SELECT 1 FROM escrita) AS escrita
          FROM objetivo o`,
       [
@@ -298,6 +334,29 @@ export async function calificarEntregaMoodleAction(
         ok: false,
         mensaje: `La calificación debe estar entre 0 y ${actualizada.maximo}, el puntaje de esta tarea.`,
       };
+    }
+
+    if (
+      actualizada.estudiante_usuario_id &&
+      actualizada.estudiante_usuario_id !== usuario.id
+    ) {
+      const mensajeAviso = [
+        `${calificacion}/${actualizada.maximo}`,
+        comentarioProfesor,
+      ]
+        .filter(Boolean)
+        .join(" — ");
+      await consultar(
+        `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+           FROM public.usuario u
+          WHERE u.id = $1 AND u.activo`,
+        [
+          actualizada.estudiante_usuario_id,
+          `${actualizada.materia} · ${actualizada.titulo}`,
+          mensajeAviso,
+        ],
+      );
     }
 
     await registrar({

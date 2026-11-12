@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
-import { consultarUna } from "@/lib/db";
+import { consultar, consultarUna } from "@/lib/db";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -89,7 +89,7 @@ export async function publicarTarea(
      * SELECT: si no es suya, no hay fila que seleccionar y no se escribe nada.
      * Con el permiso general, la condición se anula.
      */
-    const creada = await consultarUna<{ id: string }>(
+    const creada = await consultarUna<{ id: string; materia: string }>(
       `INSERT INTO asignacion (
          titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
          limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega,
@@ -108,12 +108,34 @@ export async function publicarTarea(
                        WHERE i.materia_id = m.id
                          AND i.periodo_id = $13
                          AND i.estado <> 'retirada')
-       RETURNING id`,
+       RETURNING id, (SELECT nombre FROM materia_360 WHERE id = $6) AS materia`,
       [titulo, descripcion, tipo, vence, usuario.id, materiaId,
        puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones, periodoId, peso],
     );
 
     if (!creada) return { estado: "no_encontrado" };
+
+    // Avisa en la campana a todos los estudiantes inscritos en esa clase y período
+    // que tengan cuenta activa vinculada.
+    await consultar(
+      `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+       SELECT DISTINCT u.id, $3, $4, 'tarea', '/portal/estudiante/aula-virtual'
+         FROM inscripcion_360 i
+         JOIN estudiante e ON e.id = i.estudiante_id
+         JOIN usuario u ON u.id = e.usuario_id
+        WHERE i.materia_id = $1
+          AND i.periodo_id = $2
+          AND i.estado IN ('prematriculada', 'cursando')
+          AND u.activo
+          AND u.id <> $5`,
+      [
+        materiaId,
+        periodoId,
+        `${creada.materia} · ${titulo}`,
+        descripcion || tipo,
+        usuario.id,
+      ],
+    );
 
     await registrar({
       usuarioId: usuario.id,
@@ -175,11 +197,23 @@ export async function revisarEntrega(
      * para no tener una ventana entre comprobar y escribir; el SELECT final
      * distingue "no es tuya" de "nota fuera de escala".
      */
-    const revisada = await consultarUna<{ id: string; maximo: number; escrita: boolean }>(
+    const revisada = await consultarUna<{
+      id: string;
+      maximo: number;
+      escrita: boolean;
+      estudiante_usuario_id: string | null;
+      titulo: string;
+      materia: string;
+    }>(
       `WITH objetivo AS (
-         SELECT d.id, coalesce(a.puntaje_maximo, 100) AS maximo
+         SELECT d.id,
+                coalesce(a.puntaje_maximo, 100) AS maximo,
+                est.usuario_id AS estudiante_usuario_id,
+                a.titulo,
+                coalesce(mu.nombre, m3.nombre, 'Asignatura') AS materia
            FROM entrega_estudiante d
            JOIN asignacion a ON a.id = d.asignacion_id
+           JOIN estudiante est ON est.id = d.estudiante_id
            LEFT JOIN materia     mu ON mu.id = a.materia_id
            LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
           WHERE d.id = $1
@@ -199,6 +233,9 @@ export async function revisarEntrega(
         RETURNING d.id
        )
        SELECT o.id, o.maximo::float8 AS maximo,
+              o.estudiante_usuario_id,
+              o.titulo,
+              o.materia,
               EXISTS (SELECT 1 FROM escrita) AS escrita
          FROM objetivo o`,
       [id, valor, comentario, usuario.id, puedeTodo ? null : usuario.id],
@@ -206,6 +243,27 @@ export async function revisarEntrega(
 
     if (!revisada) return { estado: "no_encontrado" };
     if (!revisada.escrita) return { estado: "nota_invalida" };
+
+    // Avisa al estudiante cuando el docente registra nota o comentario en su entrega.
+    if (
+      revisada.estudiante_usuario_id &&
+      revisada.estudiante_usuario_id !== usuario.id &&
+      (valor !== null || Boolean(comentario))
+    ) {
+      const resumenNota = valor !== null ? `${valor}/${revisada.maximo}` : "";
+      const mensajeAviso = [resumenNota, comentario].filter(Boolean).join(" — ");
+      await consultar(
+        `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+           FROM usuario u
+          WHERE u.id = $1 AND u.activo`,
+        [
+          revisada.estudiante_usuario_id,
+          `${revisada.materia} · ${revisada.titulo}`,
+          mensajeAviso,
+        ],
+      );
+    }
 
     await registrar({
       usuarioId: usuario.id,
@@ -277,17 +335,22 @@ export async function calificarInscripcion360(
     const propuesta = await propuestaDeInscripcion(id);
 
     // Una inscripción retirada no se califica: el estudiante no terminó la clase.
-    const calificada = await consultarUna<{ id: string }>(
+    const calificada = await consultarUna<{
+      id: string;
+      materia: string;
+      estudiante_usuario_id: string | null;
+    }>(
       `UPDATE inscripcion_360 i
           SET nota = $2::numeric, estado = $3,
               decidida_por = CASE WHEN $2::numeric IS NULL THEN NULL ELSE $5::uuid END,
               decidida_en  = CASE WHEN $2::numeric IS NULL THEN NULL ELSE now() END
-         FROM materia_360 m
+         FROM materia_360 m, estudiante e
         WHERE i.id = $1
           AND m.id = i.materia_id
+          AND e.id = i.estudiante_id
           AND i.estado <> 'retirada'
           AND ($4::uuid IS NULL OR m.docente_id = $4)
-      RETURNING i.id`,
+      RETURNING i.id, m.nombre AS materia, e.usuario_id AS estudiante_usuario_id`,
       // Sin filtro solo quien administra lo académico. Antes dependía de tener
       // `docencia.impartir`: quitárselo a una persona la dejaba calificando
       // cualquier clase en vez de ninguna.
@@ -295,6 +358,25 @@ export async function calificarInscripcion360(
     );
 
     if (!calificada) return { estado: "no_encontrado" };
+
+    // Avisa al estudiante cuando se cierra su nota final de Global Effect 360.
+    if (
+      valor !== null &&
+      calificada.estudiante_usuario_id &&
+      calificada.estudiante_usuario_id !== usuario.id
+    ) {
+      await consultar(
+        `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT u.id, $2, $3, 'info', '/portal/estudiante/calificaciones'
+           FROM usuario u
+          WHERE u.id = $1 AND u.activo`,
+        [
+          calificada.estudiante_usuario_id,
+          calificada.materia,
+          `${valor}/100 · ${estado}`,
+        ],
+      );
+    }
 
     await registrar({
       usuarioId: usuario.id,
