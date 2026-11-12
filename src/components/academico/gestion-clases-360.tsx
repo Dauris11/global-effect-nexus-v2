@@ -1,15 +1,17 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import {
   CalendarCheck,
   ExternalLink,
+  FileText,
   GraduationCap,
   Info,
   Loader2,
   Plus,
   Save,
   Sparkles,
+  Trash2,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -31,12 +33,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
+  borrarAsignacion360,
   publicarTarea,
   revisarEntrega,
   type EstadoAcademico,
 } from "@/server/profesor/acciones";
 import type { AsistenciaDeClases } from "@/server/profesor/asistencia";
 import type {
+  AsignacionDeClase360,
   Clase360,
   EntregaPorRevisar,
   InscritoEn360,
@@ -70,6 +74,7 @@ export function GestionClases360({
   asistencia,
   puedeProgramar,
   periodosDeTarea,
+  asignacionesPorClase = {},
   claseInicialId = null,
   seccionInicial = null,
 }: {
@@ -77,7 +82,9 @@ export function GestionClases360({
   asistencia: AsistenciaDeClases;
   /** Períodos donde cada clase tiene inscritos: a cuál pertenece una tarea nueva. */
   periodosDeTarea: Record<string, PeriodoParaTarea[]>;
-  /** `academico.escribir`: fija las fechas de clase. El profesor solo marca. */
+  /** Publicaciones (tareas, exámenes, materiales y anuncios) por clase de 360. */
+  asignacionesPorClase?: Record<string, AsignacionDeClase360[]>;
+  /** `academico.escribir` o `docencia.impartir` en sus propias clases. */
   puedeProgramar: boolean;
   inscritosPorClase: Record<string, InscritoEn360[]>;
   entregas: readonly (EntregaPorRevisar & { enlace: string | null })[];
@@ -98,6 +105,7 @@ export function GestionClases360({
   const [tareaEn, setTareaEn] = useState<string | null>(
     seccionInicial === "tarea" ? claseInicialId : null,
   );
+  const [publicacionesEn, setPublicacionesEn] = useState<string | null>(null);
   const [asistenciaEn, setAsistenciaEn] = useState<string | null>(
     seccionInicial === "asistencia" ? claseInicialId : null,
   );
@@ -204,6 +212,21 @@ export function GestionClases360({
                         type="button"
                         variant="ghost"
                         size="sm"
+                        aria-expanded={publicacionesEn === clase.id}
+                        onClick={() =>
+                          setPublicacionesEn(
+                            publicacionesEn === clase.id ? null : clase.id,
+                          )
+                        }
+                      >
+                        <FileText className="size-3.5" />
+                        {t("seeTasks")}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         aria-expanded={asistenciaEn === clase.id}
                         onClick={() =>
                           setAsistenciaEn(asistenciaEn === clase.id ? null : clase.id)
@@ -232,6 +255,12 @@ export function GestionClases360({
                       materiaId={clase.id}
                       periodos={periodosDeTarea[clase.id] ?? []}
                       alTerminar={() => setTareaEn(null)}
+                    />
+                  )}
+
+                  {publicacionesEn === clase.id && (
+                    <ListaAsignacionesClase360
+                      filas={asignacionesPorClase[clase.id] ?? []}
                     />
                   )}
 
@@ -445,6 +474,8 @@ function FormularioTarea({
               <select id={`t-tipo-${materiaId}`} name="tipo" className={SELECTOR}>
                 <option value="tarea">{t("taskTypeTask")}</option>
                 <option value="examen">{t("taskTypeExam")}</option>
+                <option value="material">{t("taskTypeMaterial")}</option>
+                <option value="anuncio">{t("taskTypeAnnouncement")}</option>
               </select>
             </div>
 
@@ -457,6 +488,17 @@ function FormularioTarea({
           <div className="space-y-1.5">
             <Label htmlFor={`t-desc-${materiaId}`}>{t("taskDescription")}</Label>
             <Textarea id={`t-desc-${materiaId}`} name="descripcion" maxLength={900} rows={2} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor={`t-url-${materiaId}`}>{t("taskResourceUrl")}</Label>
+            <Input
+              id={`t-url-${materiaId}`}
+              name="archivo_url"
+              type="url"
+              placeholder="https://..."
+              maxLength={500}
+            />
           </div>
         </PasoFormulario>
 
@@ -578,5 +620,131 @@ function FormularioTarea({
         </AccionesFormulario>
       </FormularioGuiado>
     </form>
+  );
+}
+
+/**
+ * Lista de publicaciones (tareas, exámenes, materiales y anuncios) de una clase
+ * de 360, con su conteo de entregas, enlace de recurso y botón de eliminar.
+ */
+function ListaAsignacionesClase360({
+  filas,
+}: {
+  filas: readonly AsignacionDeClase360[];
+}) {
+  const t = useTranslations("academic.classes360");
+  const [borrandoId, setBorrandoId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [enCurso, iniciarTransicion] = useTransition();
+
+  const etiquetaTipo = (tipo: AsignacionDeClase360["tipo"]) => {
+    switch (tipo) {
+      case "examen":
+        return t("taskTypeExam");
+      case "material":
+        return t("taskTypeMaterial");
+      case "anuncio":
+        return t("taskTypeAnnouncement");
+      default:
+        return t("taskTypeTask");
+    }
+  };
+
+  function eliminar(id: string) {
+    setError(null);
+    setBorrandoId(id);
+    iniciarTransicion(async () => {
+      const res = await borrarAsignacion360(id);
+      if (res.estado !== "ok") {
+        setError(res.estado === "no_encontrado" ? t("errOwner") : t("errGeneric"));
+      }
+      setBorrandoId(null);
+    });
+  }
+
+  if (filas.length === 0) {
+    return (
+      <p className="text-tinta-3 border-linea mt-3 border-t pt-3 text-center text-xs">
+        {t("noTasks")}
+      </p>
+    );
+  }
+
+  return (
+    <div className="border-linea mt-3 space-y-2 border-t pt-3">
+      {error && (
+        <p role="alert" className="text-destructive text-xs">
+          {error}
+        </p>
+      )}
+      <ul className="space-y-1.5">
+        {filas.map((fila) => {
+          const evaluable = fila.tipo === "tarea" || fila.tipo === "examen";
+          return (
+            <li
+              key={fila.id}
+              className="bg-muted/40 rounded-control flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs"
+            >
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="truncate font-medium text-tinta">
+                    {fila.titulo}
+                  </span>
+                  <Badge className="bg-marca-500/15 text-marca-600 text-[10px]">
+                    {etiquetaTipo(fila.tipo)}
+                  </Badge>
+                </div>
+                <p className="text-tinta-3 truncate text-[11px]">
+                  {[
+                    fila.periodo,
+                    fila.fecha_vencimiento
+                      ? `${t("taskDue")}: ${fila.fecha_vencimiento}`
+                      : null,
+                    evaluable
+                      ? `${t("taskWeight")}: ${fila.peso} · ${t("gradeMax", { max: fila.puntaje_maximo })}`
+                      : null,
+                    evaluable
+                      ? t("submissionsCount", { n: fila.entregas })
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-1.5">
+                {fila.archivo_url && (
+                  <a
+                    href={fila.archivo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-marca-600 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    {t("openFile")}
+                  </a>
+                )}
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={enCurso && borrandoId === fila.id}
+                  title={t("deleteTask")}
+                  aria-label={t("deleteTask")}
+                  onClick={() => eliminar(fila.id)}
+                >
+                  {enCurso && borrandoId === fila.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-3.5" />
+                  )}
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

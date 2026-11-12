@@ -13,6 +13,7 @@ import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import { iniciarInscripcionesVigentes } from "@/server/global360/consultas";
 import { asistenciaDeClases360 } from "@/server/profesor/asistencia";
 import {
+  asignacionesDeClases360,
   cifrasDocente,
   clases360,
   entregasPorRevisar,
@@ -81,12 +82,13 @@ export default async function PaginaClases360({
   // Antes de leer: así el estado que se pinta ya es el de hoy.
   await iniciarInscripcionesVigentes();
 
-  const [cifras, clases, entregasBrutas, asistencia, periodosDeTarea, mensajes] = await Promise.all([
+  const [cifras, clases, entregasBrutas, asistencia, periodosDeTarea, asignacionesPorClase, mensajes] = await Promise.all([
     cifrasDocente(docenteId),
     clases360(docenteId),
     entregasPorRevisar(docenteId, 20),
     asistenciaDeClases360(docenteId),
     periodosParaTareas360(docenteId),
+    asignacionesDeClases360(docenteId),
     mensajesCliente(["academic"]),
   ]);
 
@@ -130,6 +132,7 @@ export default async function PaginaClases360({
           entregas={entregas}
           asistencia={asistencia}
           periodosDeTarea={periodosDeTarea}
+          asignacionesPorClase={asignacionesPorClase}
           puedeProgramar={puedeTodo || esDocente}
           // Quien imparte por permiso también cierra la nota de SUS clases; la
           // acción aplica el mismo criterio y el mismo filtro por docente.

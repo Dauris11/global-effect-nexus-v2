@@ -5,6 +5,10 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Cruce Estudiante ↔ Docente (Paso 3): publicación de materiales/anuncios y listado/eliminación de publicaciones por clase (12 nov 2026):**
+      - **Publicación completa (`src/server/profesor/acciones.ts`, `gestion-clases-360.tsx`):** `publicarTarea` y `FormularioTarea` admiten los 4 tipos de `tipo_asignacion` (`tarea`, `examen`, `material`, `anuncio`) y enlace de recurso opcional (`archivo_url`), alimentando la sección de Recursos y Anuncios del Aula Virtual estudiantil.
+      - **Gestión de publicaciones por clase (`src/server/profesor/consultas.ts`, `acciones.ts`, `academico/clases-360/page.tsx`, `gestion-clases-360.tsx`):** nueva consulta `asignacionesDeClases360`, acción `borrarAsignacion360` (validada en SQL por `docente_id` y auditada en `audit_log`) y vista desplegable `ListaAsignacionesClase360` en cada clase con conteo de entregas, metadatos y eliminación.
+      - **i18n (`messages/es.json`, `messages/en.json`):** 7 nuevas claves simétricas en `academic.classes360`.
 - [x] **Cruce Estudiante ↔ Docente (Paso 2): notificaciones bidireccionales en la campana (12 nov 2026):**
       - **Lado docente (`src/server/profesor/acciones.ts`, `src/server/moodle/acciones.ts`):** `publicarTarea` notifica en `notificacion` a todos los estudiantes con cuenta activa inscritos en esa clase y período (`/portal/estudiante/aula-virtual`); `revisarEntrega` y `calificarEntregaMoodleAction` avisan al estudiante cuando recibe calificación o retroalimentación de su entrega; `calificarInscripcion360` avisa al estudiante al cerrarse su nota final de Global Effect 360 (`/portal/estudiante/calificaciones`).
       - **Lado estudiante (`src/server/moodle/acciones.ts`):** `entregarTareaMoodleAction` inserta dentro de la misma transacción el aviso para el docente responsable (`docente_id` / `profesor_usuario_id` / `creada_por_id`) con enlace directo a `/academico/clases-360`.

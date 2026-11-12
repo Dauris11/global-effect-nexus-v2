@@ -258,6 +258,59 @@ export async function periodosParaTareas360(
   return resultado;
 }
 
+export type AsignacionDeClase360 = {
+  id: string;
+  materia_id: string;
+  titulo: string;
+  descripcion: string | null;
+  tipo: "tarea" | "examen" | "material" | "anuncio";
+  periodo: string | null;
+  fecha_vencimiento: string | null;
+  peso: number;
+  puntaje_maximo: number;
+  archivo_url: string | null;
+  /** Cantidad de entregas enviadas por estudiantes para esta asignación. */
+  entregas: number;
+};
+
+/**
+ * Asignaciones (tareas, exámenes, materiales y anuncios) publicadas en cada
+ * clase de Global Effect 360 visible para el docente o coordinación.
+ */
+export async function asignacionesDeClases360(
+  docenteId: string | null,
+): Promise<Record<string, AsignacionDeClase360[]>> {
+  const filas = await consultar<AsignacionDeClase360>(
+    `SELECT a.id,
+            a.materia_360_id AS materia_id,
+            a.titulo,
+            a.descripcion,
+            a.tipo::text AS tipo,
+            p.nombre AS periodo,
+            to_char(a.fecha_vencimiento AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS fecha_vencimiento,
+            coalesce(a.peso, 1)::float8 AS peso,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            a.archivo_url,
+            (SELECT count(*)::int
+               FROM entrega_estudiante d
+              WHERE d.asignacion_id = a.id
+                AND d.estado IN ('entregado', 'tarde', 'calificado')) AS entregas
+       FROM asignacion a
+       JOIN materia_360 m ON m.id = a.materia_360_id
+       LEFT JOIN periodo p ON p.id = a.periodo_id
+      WHERE ($1::uuid IS NULL OR m.docente_id = $1)
+      ORDER BY a.fecha_publicacion DESC`,
+    [docenteId],
+  );
+
+  const resultado: Record<string, AsignacionDeClase360[]> = {};
+  for (const fila of filas) {
+    (resultado[fila.materia_id] ??= []).push(fila);
+  }
+
+  return resultado;
+}
+
 export type MateriaDelDocente = {
   id: string;
   nombre: string;

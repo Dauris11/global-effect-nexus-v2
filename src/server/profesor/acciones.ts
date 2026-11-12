@@ -73,11 +73,22 @@ export async function publicarTarea(
   const puntajeMaximo = Math.max(1, Math.min(1000, Number(datos.get("puntaje_maximo") || 100)));
   const permiteTardias = datos.get("permite_entregas_tardias") !== "false";
   const instrucciones = String(datos.get("instrucciones_entrega") ?? "").trim().slice(0, 2000);
+  const archivoUrl = String(datos.get("archivo_url") ?? "").trim().slice(0, 500);
   const periodoId = String(datos.get("periodo") ?? "");
   const peso = Number(datos.get("peso") || 1);
 
   if (!titulo) return { estado: "nombre_vacio" };
-  if (tipo !== "tarea" && tipo !== "examen") return { estado: "invalido" };
+  if (
+    tipo !== "tarea" &&
+    tipo !== "examen" &&
+    tipo !== "material" &&
+    tipo !== "anuncio"
+  ) {
+    return { estado: "invalido" };
+  }
+  if (archivoUrl && !/^https?:\/\/\S+$/i.test(archivoUrl)) {
+    return { estado: "invalido" };
+  }
 
   if (!esUuid(materiaId) || !esUuid(periodoId)) return { estado: "invalido" };
   // NUMERIC(5,2) admite hasta 999.99; 100 sobra para un peso relativo.
@@ -93,13 +104,13 @@ export async function publicarTarea(
       `INSERT INTO asignacion (
          titulo, descripcion, tipo, materia_360_id, fecha_vencimiento, creada_por_id,
          limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega,
-         periodo_id, peso
+         periodo_id, peso, archivo_url
        )
        SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
               -- datetime-local no trae zona: la hora es la de La Vega, no UTC.
               NULLIF($4, '')::timestamp AT TIME ZONE 'America/Santo_Domingo', $5,
               $8, $9, $10, $11, NULLIF($12, ''),
-              $13, $14
+              $13, $14, NULLIF($15, '')
          FROM materia_360 m
         WHERE m.id = $6
           AND ($7::uuid IS NULL OR m.docente_id = $7)
@@ -110,7 +121,7 @@ export async function publicarTarea(
                          AND i.estado <> 'retirada')
        RETURNING id, (SELECT nombre FROM materia_360 WHERE id = $6) AS materia`,
       [titulo, descripcion, tipo, vence, usuario.id, materiaId,
-       puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones, periodoId, peso],
+       puedeTodo ? null : usuario.id, limiteMb, formatosPermitidos, puntajeMaximo, permiteTardias, instrucciones, periodoId, peso, archivoUrl],
     );
 
     if (!creada) return { estado: "no_encontrado" };
@@ -396,6 +407,62 @@ export async function calificarInscripcion360(
 
   refrescar();
 
+  return { estado: "ok" };
+}
+
+/**
+ * Elimina una asignación (tarea, examen, material o anuncio) de una clase de
+ * Global Effect 360.
+ *
+ * Respeta el mismo alcance que `publicarTarea`: `academico.escribir` puede
+ * borrar sobre cualquier clase, y quien tiene `docencia.impartir` solo sobre
+ * las clases donde `materia_360.docente_id = usuario.id`.
+ */
+export async function borrarAsignacion360(
+  id: string,
+): Promise<EstadoAcademico> {
+  const usuario = await requerirUsuario();
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+
+  if (!puedeTodo && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  if (!esUuid(id)) return { estado: "invalido" };
+
+  try {
+    const borrada = await consultarUna<{
+      id: string;
+      titulo: string;
+      materia_360_id: string | null;
+    }>(
+      `DELETE FROM asignacion a
+        USING materia_360 m
+        WHERE a.id = $1
+          AND m.id = a.materia_360_id
+          AND ($2::uuid IS NULL OR m.docente_id = $2)
+        RETURNING a.id, a.titulo, a.materia_360_id`,
+      [id, puedeTodo ? null : usuario.id],
+    );
+
+    if (!borrada) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "tarea.borrada",
+      entidad: "asignacion",
+      entidadId: borrada.id,
+      datos: {
+        titulo: borrada.titulo,
+        materia_360_id: borrada.materia_360_id,
+      },
+    });
+  } catch (error) {
+    console.error("[academico] no se pudo borrar la asignación de 360", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
   return { estado: "ok" };
 }
 
