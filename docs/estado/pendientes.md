@@ -5,8 +5,8 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
-- [ ] **Observaciones #1 de Contabilidad (12 nov 2026)** — código listo, falta base y prueba:
-      - **Aplicar `db/migrations/0080_asiento_procesado.sql` y `0081_conciliacion_por_partida.sql`** (`npm run db:migrate`). Sin ellas fallan asientos, libros, bancos e inicio de contabilidad: el código ya lee `procesado_en`, `extracto_linea` y `conciliacion_partida`.
+- [ ] **Observaciones #1 de Contabilidad (12 nov 2026)** — en la base y en `main`, falta prueba en navegador:
+      - ~~Aplicar `0080` y `0081`~~ — aplicadas en la base real el 12 nov 2026; consultas de libros, asientos, inicio y bancos verificadas contra ella.
       - Probar en navegador: periodo del inicio con flechas; procesar un asiento (ficha y selección en lista); diario con mayores y auxiliares; mayor plegable con rango de cuentas; balanza solo débito y crédito; subir dos veces el mismo .csv (la segunda debe decir «ya estaban»); conciliar, ver en «Conciliadas» y anular.
       - `scripts/probar-contabilidad.mjs` (§ conciliación) todavía prueba la conciliación por lotes de la `0036`: reescribirlo para `extracto_linea`/`conciliacion_partida`.
       - Pendiente de diseño: conciliar uno a varios (un depósito que agrupa varios recibos).

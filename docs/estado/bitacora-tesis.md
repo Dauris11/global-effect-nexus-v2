@@ -575,9 +575,10 @@ historia: el `LEFT JOIN` al asiento no descartaba las de asientos anulados o
 fuera de fecha. Ahora suma con `FILTER (WHERE a.id IS NOT NULL)`.
 
 **Verificación.** `lint`, `build`, `i18n:check` y `audit:ui` en verde.
-**Limitaciones.** Las migraciones `0080` y `0081` no se aplicaron ni se
-ensayaron contra la base (está en Supabase y se pidió permiso antes). Falta
-probar en el navegador. La conciliación es una a una; un depósito del banco que
+Migraciones `0080` y `0081` aplicadas en la base real con autorización del
+usuario; las consultas nuevas (diario, mayor, balanza, asientos, inicio,
+bancos) se ejecutaron contra ella y responden.
+**Limitaciones.** Falta probar en el navegador. La conciliación es una a una; un depósito del banco que
 junta varios recibos todavía no se puede emparejar con varios asientos.
 
 ---
