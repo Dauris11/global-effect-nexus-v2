@@ -189,7 +189,7 @@
     "transport": "Transport",
     "driverDashboard": "Driver Cockpit",
     "menuTitle": "Full menu",
-    "commandShortcut": "⌘K",
+    "commandShortcut": "Ctrl K",
     "banks": "Banks",
     "receipts": "Receipts",
     "accountingHome": "Home",
@@ -229,7 +229,8 @@
     "fixedAssets": "Fixed assets",
     "consumablesInventory": "Inventory kardex",
     "financialStatements": "Financial statements",
-    "accountingClosing": "Accounting closing"
+    "accountingClosing": "Accounting closing",
+    "commandShortcutMac": "⌘K"
   },
   "landing": {
     "enter": "Sign in",
@@ -3030,16 +3031,20 @@
         "facturasBorrador": "{count, plural, =1 {supplier invoice to approve} other {supplier invoices to approve}}",
         "rendiciones": "{count, plural, =1 {expense report to review} other {expense reports to review}}",
         "arqueos": "{count, plural, =1 {open cash count} other {open cash counts}}",
-        "conciliaciones": "{count, plural, =1 {open bank reconciliation} other {open bank reconciliations}}",
-        "comprobantes": "{count, plural, =1 {receipt to validate} other {receipts to validate}}",
         "cajasBajas": "{count, plural, =1 {petty cash below 25%} other {petty cash funds below 25%}}",
-        "compras": "{count, plural, =1 {purchase or expense request to approve} other {purchase or expense requests to approve}}"
+        "compras": "{count, plural, =1 {purchase or expense request to approve} other {purchase or expense requests to approve}}",
+        "porConciliar": "{count, plural, =1 {bank transaction to reconcile} other {bank transactions to reconcile}}",
+        "sinProcesar": "{count, plural, =1 {journal entry not processed} other {journal entries not processed}}"
       },
       "periodo": {
         "etiqueta": "Period",
         "mes": "Month",
         "trimestre": "Quarter",
-        "anio": "Year"
+        "anio": "Year",
+        "rotuloTrimestre": "Q{n} {anio}",
+        "rango": "{desde} to {hasta}",
+        "anterior": "Previous period",
+        "siguiente": "Next period"
       },
       "kpiIngresos": "Income",
       "kpiEgresos": "Expenses",
@@ -3153,29 +3158,43 @@
       "saldo": "Balance",
       "cheque": "Check {numero}",
       "anulado": "Voided",
-      "conciliado": "Reconciled",
       "vacio": "No transactions in this range",
       "vacioTexto": "Change the dates or type to see more.",
-      "conciliaciones": "Reconciliations",
-      "conciliar": "New reconciliation",
       "tope": "Showing the 500 most recent transactions in the filter.",
       "verRecibo": "View receipt"
     },
     "conciliacion": {
       "titulo": "Bank reconciliation",
-      "rango": "From {desde} to {hasta}",
-      "abierta": "Open",
-      "cerrada": "Closed",
-      "lineas": "{confirmadas} of {lineas} lines confirmed",
-      "vacio": "No reconciliations for this account yet",
-      "vacioTexto": "Import the bank statement to start.",
+      "vistas": "Account view",
+      "vista": {
+        "movimientos": "Transactions",
+        "conciliar": "Reconcile",
+        "conciliadas": "Reconciled"
+      },
+      "vinculada": "Subsidiary ledger account:",
+      "delBanco": "Bank statement to reconcile ({n})",
+      "deLibros": "Journal entries to reconcile ({n})",
+      "delBancoCorto": "Bank",
+      "deLibrosCorto": "Books",
+      "bancoVacio": "No bank transactions to reconcile. Upload the statement (.csv).",
+      "librosVacio": "No entries on the subsidiary account to reconcile.",
+      "mismoMonto": "Same amount",
+      "montosDistintos": "The amounts do not match: pick an entry with the same amount or record the missing adjustment.",
+      "conciliar": "Reconcile",
+      "conciliadaOk": "Transaction reconciled.",
+      "todoConciliado": "Everything is reconciled on this account",
+      "sinPermiso": "You do not have permission to reconcile this account",
+      "ningunaConciliada": "No reconciled transactions yet",
+      "conciliadaPor": "Reconciled by {nombre} on {fecha}",
+      "anular": "Undo",
+      "anularTitulo": "Undo this reconciliation?",
+      "anularTexto": "The bank transaction and the entry go back to unreconciled. It is recorded in the audit log.",
+      "anularConfirmar": "Undo reconciliation",
       "importar": {
-        "titulo": "Import bank statement",
-        "descripcion": "Export the statement from online banking as CSV (not Excel) and say which column holds each field. Columns are prefilled from the bank settings.",
+        "boton": "Upload statement (.csv)",
+        "titulo": "Upload bank statement",
+        "descripcion": "Export the statement from online banking as CSV. You can upload the same period more than once: transactions already loaded are recognized by their reference and are not duplicated.",
         "archivo": "CSV file",
-        "desde": "From",
-        "hasta": "To",
-        "saldo": "Closing balance per bank",
         "columnas": "File columns",
         "colFecha": "Date",
         "colDescripcion": "Description",
@@ -3188,36 +3207,16 @@
         "separador": "Decimal separator",
         "punto": "Point (1,234.56)",
         "coma": "Comma (1.234,56)",
-        "guardar": "Import and propose matches",
-        "pasos": {
-          "archivo": "File and period"
-        }
+        "guardar": "Upload",
+        "resultado": "{nuevas, plural, =0 {No new transactions} one {# new transaction} other {# new transactions}} · {repetidas, plural, =0 {no duplicates} one {# was already loaded and skipped} other {# were already loaded and skipped}}."
       },
-      "estadoCuenta": "Bank statement",
-      "propuesta": "Proposed",
-      "confirmada": "Confirmed",
-      "sinPareja": "No match in books",
-      "confirmar": "Confirm",
-      "descartar": "Discard",
-      "confirmarTodas": "Confirm all proposals",
-      "proponer": "Search for matches again",
-      "cerrar": "Close reconciliation",
-      "cerrarAyuda": "On closing, unconfirmed proposals are discarded and reconciled transactions are locked.",
-      "movimiento": "MB-{numero} · {fecha}",
-      "reporte": "Reconciliation report",
-      "saldoBanco": "Balance per bank",
-      "depositosTransito": "Add: inflows in books not yet in the bank",
-      "chequesTransito": "Less: outflows in books not yet in the bank",
-      "saldoBancoAjustado": "Adjusted bank balance",
-      "saldoLibros": "Balance per books",
-      "partidasBanco": "Add or less: bank items not recorded in books",
-      "saldoLibrosAjustado": "Adjusted book balance",
-      "diferencia": "Difference",
-      "cuadra": "The reconciliation balances.",
-      "noCuadra": "The reconciliation does not balance: review the items.",
-      "transito": "Items in transit",
-      "transitoVacio": "No items in transit.",
-      "cerradaPor": "Closed by {nombre} on {fecha}"
+      "vincular": {
+        "boton": "Change",
+        "titulo": "Link to ledger account",
+        "descripcion": "Entries posted to this subsidiary account are the ones reconciled against the bank statement. It cannot change while there are reconciled transactions.",
+        "cuenta": "Subsidiary account",
+        "guardar": "Save link"
+      }
     },
     "recibos": {
       "titulo": "Receipts",
@@ -3801,24 +3800,12 @@
         "balanza": "Trial balance"
       },
       "rango": "From {desde} to {hasta}",
-      "totalDebe": "Total debits",
-      "totalHaber": "Total credits",
-      "asientos": "{n, plural, one {# entry} other {# entries}}",
-      "movimientos": "{n, plural, one {# movement} other {# movements}}",
       "topeDiario": "Showing the first {n} entries. Totals cover the whole range; the Excel export includes all of them.",
-      "topeMayor": "Showing the first {n} movements. The closing balance covers the whole range; the Excel export includes all of them.",
-      "saldoInicial": "Opening balance",
-      "saldoFinal": "Closing balance",
       "totalPeriodo": "Period total",
       "totalAsiento": "Entry total",
       "totalGeneral": "Grand total · {n, plural, one {# entry} other {# entries}}",
       "numeroAsiento": "Entry {numero}",
       "asientoDescuadrado": "Unbalanced",
-      "incluyeHijas": "includes all its sub-accounts",
-      "naturaleza": {
-        "deudora": "Debit-nature account: balance is debits minus credits",
-        "acreedora": "Credit-nature account: balance is credits minus debits"
-      },
       "descuadre": {
         "titulo": "Debits and credits do not match. Difference:",
         "texto": "The database refuses to save an unbalanced entry, so this points to a change made outside the system. Do not rely on these figures and report this date range to support."
@@ -3831,27 +3818,25 @@
         "fecha": "Date",
         "asiento": "Entry",
         "concepto": "Description",
-        "saldo": "Balance"
+        "saldo": "Balance",
+        "auxiliar": "Subsidiary"
       },
       "vacio": {
         "titulo": "No entries in this range",
         "texto": "Widen the dates. If the department has not posted anything yet, entries are recorded in Journal entries.",
         "irAsientos": "Go to journal entries",
-        "mayorTitulo": "Choose an account",
-        "mayorTexto": "The ledger is per account. Search for it above by code or name and press Apply; a group account adds up all its sub-accounts.",
-        "sinMovimientos": "This account has no movements in the range",
-        "sinMovimientosTexto": "The balance above is what it carried at the start. Widen the dates to see earlier movements."
+        "sinMovimientos": "No accounts with a balance in this range"
       },
       "filtros": {
         "mes": "Month",
         "desde": "From",
         "hasta": "To",
-        "cuenta": "Account",
-        "buscarCuenta": "Search by code or name",
-        "elegirCuenta": "Choose an account",
-        "grupo": "group",
         "ceros": "Show accounts without activity",
-        "aplicar": "Apply"
+        "aplicar": "Apply",
+        "cuentaDesde": "From account",
+        "cuentaHasta": "To account",
+        "primera": "First",
+        "ultima": "Last"
       },
       "estado": {
         "anulado": "Voided",
@@ -4099,7 +4084,9 @@
       "estado": {
         "vigente": "Active",
         "anulado": "Reversed",
-        "reverso": "Reversal"
+        "reverso": "Reversal",
+        "procesado": "Processed",
+        "pendiente": "Not processed"
       },
       "origen": {
         "recibo": "Receipt",
@@ -4121,7 +4108,11 @@
         "anulados_ocultar": "Hide reversed and reversals",
         "anulados_solo": "Only reversed and reversals",
         "aplicar": "Apply",
-        "limpiar": "Clear filters"
+        "limpiar": "Clear filters",
+        "proceso": "Status",
+        "procesoTodos": "All",
+        "proceso_pendiente": "Not processed",
+        "proceso_procesado": "Processed"
       },
       "col": {
         "numero": "Number",
@@ -4152,7 +4143,8 @@
           "descripcion": "Description",
           "debe": "Debit",
           "haber": "Credit"
-        }
+        },
+        "procesadoPor": "Processed by {nombre} on {fecha}."
       },
       "revertir": {
         "boton": "Reverse",
@@ -4259,6 +4251,13 @@
         "montos_distintos": "The amounts do not match.",
         "cuenta_cerrada": "One of the accounts is closed.",
         "error": "It could not be completed. Try again and, if it persists, tell the technical team."
+      },
+      "procesar": {
+        "boton": "Process",
+        "seleccionados": "Process selected",
+        "elegir": "Select {numero}",
+        "ok": "Entries processed: they are now in the books.",
+        "ayuda": "This entry is not in the journal, ledger or trial balance yet. Review it and process it so it counts."
       }
     },
     "terceros": {
@@ -5173,7 +5172,7 @@
       "cxpOverdue": "{n} overdue payables totaling {monto}",
       "cxpSoon": "{n} due within 7 days totaling {monto}",
       "orders": "{n} purchase orders awaiting approval",
-      "reconciliations": "{n} open bank reconciliations",
+      "reconciliations": "{n, plural, one {# bank transaction to reconcile} other {# bank transactions to reconcile}}",
       "recurring": "Recurring entry to generate: {nombre} (day {dia})",
       "fiscal": "{codigo} due in {dias} days ({fecha})",
       "fiscalToday": "{codigo} due today"

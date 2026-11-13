@@ -11,8 +11,8 @@ export type ClavePendiente =
   | "facturasBorrador"
   | "rendiciones"
   | "arqueos"
-  | "conciliaciones"
-  | "comprobantes"
+  | "porConciliar"
+  | "sinProcesar"
   | "cajasBajas"
   | "compras";
 

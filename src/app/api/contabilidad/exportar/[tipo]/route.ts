@@ -136,14 +136,7 @@ export async function GET(
       const rango = filtro.periodo ?? `${filtro.desde}_${filtro.hasta}`;
 
       if (tipo === "mayor") {
-        if (!filtro.cuenta) {
-          return new NextResponse("Falta cuenta", { status: 400 });
-        }
-        const libro = await exportarMayorExcel({ ...filtro, cuenta: filtro.cuenta });
-        if (!libro) {
-          return new NextResponse("Cuenta no encontrada", { status: 404 });
-        }
-        buffer = libro;
+        buffer = await exportarMayorExcel(filtro);
         nombreArchivo = `Libro_Mayor_${rango}.xlsx`;
       } else if (tipo === "diario") {
         buffer = await exportarDiarioExcel(filtro);
@@ -156,10 +149,10 @@ export async function GET(
       await registrarLectura(
         contexto,
         "exportar",
-        // El mayor es de una cuenta: el auditor ve cuál se descargó.
         tipo === "mayor" ? "contabilidad.cuenta_contable" : "contabilidad.asiento",
-        tipo === "mayor" ? (filtro.cuenta ?? undefined) : undefined,
-        `Exportación ${tipo} de ${filtro.desde} a ${filtro.hasta}`,
+        undefined,
+        `Exportación ${tipo} de ${filtro.desde} a ${filtro.hasta}` +
+          (tipo === "mayor" ? ` · cuentas ${filtro.cuentaDesde ?? "inicio"}–${filtro.cuentaHasta ?? "fin"}` : ""),
       );
     } else {
       return new NextResponse("Tipo de exportación no soportado", { status: 400 });

@@ -254,7 +254,11 @@ export async function colaMiDia(): Promise<ColaMiDia> {
       "SELECT count(*) AS n FROM contabilidad.orden_compra WHERE estado = 'pendiente_aprobacion'",
     ),
     consultarUna<{ n: string }>(
-      "SELECT count(*) AS n FROM contabilidad.conciliacion WHERE estado = 'abierta'",
+      // Desde la 0081 se concilia partida por partida: lo pendiente son las
+      // transacciones del banco sin pareja viva.
+      `SELECT count(*) AS n FROM contabilidad.extracto_linea e
+        WHERE NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                           WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL)`,
     ),
     consultar<{ id: string; nombre: string; dia_del_mes: number }>(
       `SELECT id, nombre, dia_del_mes FROM contabilidad.asiento_recurrente

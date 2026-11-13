@@ -614,13 +614,6 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             href: "/portal/contabilidad",
             icono: Home,
           },
-          // Aquí le llegan las compras que debe aprobar o rechazar y desde
-          // aquí pide las suyas, como todos los roles.
-          {
-            etiqueta: "requests",
-            href: "/administrativo/solicitudes",
-            icono: Inbox,
-          },
           ...modulosDeGrupo("general").map(itemDeModulo),
         ],
       },
@@ -653,16 +646,6 @@ const MENU_CONTABILIDAD: AreaNav[] = [
     secciones: [
       {
         items: modulosDeGrupo("gastos").map(itemDeModulo),
-      },
-    ],
-  },
-  {
-    clave: "contab_impuestos",
-    etiqueta: "contabGroups.impuestos",
-    icono: DollarSign,
-    secciones: [
-      {
-        items: modulosDeGrupo("impuestos").map(itemDeModulo),
       },
     ],
   },

@@ -1,10 +1,8 @@
 import { crearLibroExcel, type ColumnaExcel } from "./generador-excel";
 import {
   balanza,
-  cuentaMayor,
   libroDiario,
-  movimientosMayor,
-  resumenMayor,
+  mayorGeneral,
   totalesDiario,
   type FiltroLibros,
 } from "@/server/contabilidad/libros/consultas";
@@ -31,11 +29,12 @@ export async function exportarDiarioExcel(f: FiltroLibros): Promise<Buffer> {
     { header: "Asiento", key: "numero", width: 10, formato: "entero" },
     { header: "Fecha", key: "fecha", width: 12, formato: "fecha" },
     { header: "Concepto", key: "concepto", width: 40, formato: "texto" },
+    { header: "Cuenta mayor", key: "mayor", width: 30, formato: "texto" },
     { header: "Código", key: "codigo", width: 14, formato: "texto" },
-    { header: "Cuenta", key: "cuenta", width: 34, formato: "texto" },
+    { header: "Cuenta auxiliar", key: "cuenta", width: 34, formato: "texto" },
     { header: "Descripción", key: "descripcion", width: 30, formato: "texto" },
-    { header: "Debe", key: "debe", width: 16, formato: "moneda" },
-    { header: "Haber", key: "haber", width: 16, formato: "moneda" },
+    { header: "Débito", key: "debe", width: 16, formato: "moneda" },
+    { header: "Crédito", key: "haber", width: 16, formato: "moneda" },
   ];
 
   const filas = asientos.flatMap((a) =>
@@ -43,6 +42,7 @@ export async function exportarDiarioExcel(f: FiltroLibros): Promise<Buffer> {
       numero: Number(a.numero),
       fecha: a.fecha,
       concepto: a.estado === "vigente" ? a.concepto : `[${a.estado.toUpperCase()}] ${a.concepto}`,
+      mayor: `${l.mayorCodigo} ${l.mayorNombre}`,
       codigo: l.codigo,
       cuenta: l.cuenta,
       descripcion: l.descripcion ?? "",
@@ -63,48 +63,30 @@ export async function exportarDiarioExcel(f: FiltroLibros): Promise<Buffer> {
   });
 }
 
-export async function exportarMayorExcel(f: FiltroLibros & { cuenta: string }): Promise<Buffer | null> {
-  const [cuenta, resumen, movimientos] = await Promise.all([
-    cuentaMayor(f.cuenta),
-    resumenMayor(f.cuenta, f),
-    movimientosMayor(f.cuenta, f, null),
-  ]);
-  if (!cuenta) return null;
+/** El mayor general: cada mayor y, debajo, sus auxiliares sangradas. */
+export async function exportarMayorExcel(f: FiltroLibros): Promise<Buffer> {
+  const mayores = await mayorGeneral(f);
 
   const columnas: ColumnaExcel[] = [
-    { header: "Fecha", key: "fecha", width: 12, formato: "fecha" },
-    { header: "Asiento", key: "numero", width: 10, formato: "entero" },
-    { header: "Concepto", key: "concepto", width: 40, formato: "texto" },
-    { header: "Cuenta", key: "cuenta", width: 34, formato: "texto" },
-    { header: "Debe", key: "debe", width: 16, formato: "moneda" },
-    { header: "Haber", key: "haber", width: 16, formato: "moneda" },
+    { header: "Código", key: "codigo", width: 14, formato: "texto" },
+    { header: "Cuenta", key: "nombre", width: 40, formato: "texto" },
+    { header: "Débito", key: "debe", width: 16, formato: "moneda" },
+    { header: "Crédito", key: "haber", width: 16, formato: "moneda" },
     { header: "Saldo", key: "saldo", width: 18, formato: "moneda" },
   ];
 
-  const filas = [
-    { fecha: f.desde, concepto: "Saldo inicial", saldo: cifra(resumen.saldoInicial) },
-    ...movimientos.map((m) => ({
-      fecha: m.fecha,
-      numero: Number(m.numero),
-      concepto: m.concepto,
-      cuenta: `${m.codigo} ${m.cuenta}`,
-      debe: cifra(m.debe),
-      haber: cifra(m.haber),
-      saldo: cifra(m.saldo),
+  const filas = mayores.flatMap((m) => [
+    { codigo: m.codigo, nombre: m.nombre, debe: cifra(m.debe), haber: cifra(m.haber), saldo: cifra(m.saldo) },
+    ...m.auxiliares.map((a) => ({
+      codigo: a.codigo,
+      nombre: `   ${a.nombre}`,
+      debe: cifra(a.debe),
+      haber: cifra(a.haber),
+      saldo: cifra(a.saldo),
     })),
-  ];
+  ]);
 
-  return crearLibroExcel({
-    tituloHoja: `Mayor ${cuenta.codigo}`.slice(0, 31),
-    columnas,
-    filas,
-    totales: {
-      concepto: `Saldo final · ${cuenta.codigo} ${cuenta.nombre}`,
-      debe: cifra(resumen.debe),
-      haber: cifra(resumen.haber),
-      saldo: cifra(resumen.saldoFinal),
-    },
-  });
+  return crearLibroExcel({ tituloHoja: `Mayor ${rango(f)}`.slice(0, 31), columnas, filas });
 }
 
 export async function exportarBalanzaExcel(f: FiltroLibros): Promise<Buffer> {
@@ -113,10 +95,8 @@ export async function exportarBalanzaExcel(f: FiltroLibros): Promise<Buffer> {
   const columnas: ColumnaExcel[] = [
     { header: "Código", key: "codigo", width: 14, formato: "texto" },
     { header: "Cuenta", key: "nombre", width: 40, formato: "texto" },
-    { header: "Saldo inicial", key: "saldoInicial", width: 18, formato: "moneda" },
-    { header: "Debe", key: "debe", width: 16, formato: "moneda" },
-    { header: "Haber", key: "haber", width: 16, formato: "moneda" },
-    { header: "Saldo final", key: "saldoFinal", width: 18, formato: "moneda" },
+    { header: "Débito", key: "debe", width: 16, formato: "moneda" },
+    { header: "Crédito", key: "haber", width: 16, formato: "moneda" },
   ];
 
   // La sangría del árbol en el nombre: así sobrevive a un filtro o a un
@@ -124,10 +104,8 @@ export async function exportarBalanzaExcel(f: FiltroLibros): Promise<Buffer> {
   const filas = filasBalanza.map((b) => ({
     codigo: b.codigo,
     nombre: `${"   ".repeat(b.nivel)}${b.nombre}`,
-    saldoInicial: cifra(b.saldoInicial),
     debe: cifra(b.debe),
     haber: cifra(b.haber),
-    saldoFinal: cifra(b.saldoFinal),
   }));
 
   return crearLibroExcel({

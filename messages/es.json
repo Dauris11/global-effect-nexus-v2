@@ -189,7 +189,7 @@
     "transport": "Transporte",
     "driverDashboard": "Panel del Chofer",
     "menuTitle": "Todo el menú",
-    "commandShortcut": "⌘K",
+    "commandShortcut": "Ctrl K",
     "banks": "Bancos",
     "receipts": "Recibos",
     "accountingHome": "Inicio",
@@ -229,7 +229,8 @@
     "fixedAssets": "Activos fijos",
     "consumablesInventory": "Kardex de inventario",
     "financialStatements": "Estados financieros",
-    "accountingClosing": "Cierre contable"
+    "accountingClosing": "Cierre contable",
+    "commandShortcutMac": "⌘K"
   },
   "landing": {
     "enter": "Acceder",
@@ -3030,16 +3031,20 @@
         "facturasBorrador": "{count, plural, =1 {factura de proveedor por aprobar} other {facturas de proveedor por aprobar}}",
         "rendiciones": "{count, plural, =1 {rendición de gastos por revisar} other {rendiciones de gastos por revisar}}",
         "arqueos": "{count, plural, =1 {arqueo de caja abierto} other {arqueos de caja abiertos}}",
-        "conciliaciones": "{count, plural, =1 {conciliación bancaria abierta} other {conciliaciones bancarias abiertas}}",
-        "comprobantes": "{count, plural, =1 {comprobante por validar} other {comprobantes por validar}}",
         "cajasBajas": "{count, plural, =1 {caja chica bajo el 25 %} other {cajas chicas bajo el 25 %}}",
-        "compras": "{count, plural, =1 {solicitud de compra o gasto por aprobar} other {solicitudes de compra o gasto por aprobar}}"
+        "compras": "{count, plural, =1 {solicitud de compra o gasto por aprobar} other {solicitudes de compra o gasto por aprobar}}",
+        "porConciliar": "{count, plural, =1 {transacción del banco por conciliar} other {transacciones del banco por conciliar}}",
+        "sinProcesar": "{count, plural, =1 {asiento sin procesar} other {asientos sin procesar}}"
       },
       "periodo": {
         "etiqueta": "Periodo",
         "mes": "Mes",
         "trimestre": "Trimestre",
-        "anio": "Año"
+        "anio": "Año",
+        "rotuloTrimestre": "{n}.º trimestre {anio}",
+        "rango": "Del {desde} al {hasta}",
+        "anterior": "Periodo anterior",
+        "siguiente": "Periodo siguiente"
       },
       "kpiIngresos": "Ingresos",
       "kpiEgresos": "Egresos",
@@ -3153,29 +3158,43 @@
       "saldo": "Saldo",
       "cheque": "Cheque {numero}",
       "anulado": "Anulado",
-      "conciliado": "Conciliado",
       "vacio": "Sin movimientos en este rango",
       "vacioTexto": "Cambia las fechas o el tipo para ver más.",
-      "conciliaciones": "Conciliaciones",
-      "conciliar": "Nueva conciliación",
       "tope": "Se muestran los 500 movimientos más recientes del filtro.",
       "verRecibo": "Ver recibo"
     },
     "conciliacion": {
       "titulo": "Conciliación bancaria",
-      "rango": "Del {desde} al {hasta}",
-      "abierta": "Abierta",
-      "cerrada": "Cerrada",
-      "lineas": "{confirmadas} de {lineas} líneas confirmadas",
-      "vacio": "Todavía no hay conciliaciones de esta cuenta",
-      "vacioTexto": "Importa el estado de cuenta del banco para empezar.",
+      "vistas": "Vista de la cuenta",
+      "vista": {
+        "movimientos": "Movimientos",
+        "conciliar": "Conciliar",
+        "conciliadas": "Conciliadas"
+      },
+      "vinculada": "Cuenta contable auxiliar:",
+      "delBanco": "Estado del banco por conciliar ({n})",
+      "deLibros": "Asientos por conciliar ({n})",
+      "delBancoCorto": "Banco",
+      "deLibrosCorto": "Libros",
+      "bancoVacio": "No hay transacciones del banco por conciliar. Sube el estado de cuenta (.csv).",
+      "librosVacio": "No hay asientos de la cuenta auxiliar por conciliar.",
+      "mismoMonto": "Mismo monto",
+      "montosDistintos": "Los montos no coinciden: elige un asiento del mismo monto o registra el ajuste que falta.",
+      "conciliar": "Conciliar",
+      "conciliadaOk": "Transacción conciliada.",
+      "todoConciliado": "Todo está conciliado en esta cuenta",
+      "sinPermiso": "No tienes permiso para conciliar esta cuenta",
+      "ningunaConciliada": "Todavía no hay transacciones conciliadas",
+      "conciliadaPor": "Conciliada por {nombre} el {fecha}",
+      "anular": "Anular",
+      "anularTitulo": "¿Anular esta conciliación?",
+      "anularTexto": "La transacción del banco y el asiento vuelven a quedar por conciliar. Queda registrado en la bitácora.",
+      "anularConfirmar": "Anular conciliación",
       "importar": {
-        "titulo": "Importar estado de cuenta",
-        "descripcion": "Exporta el estado de cuenta de la banca en línea como CSV (no Excel) e indica en qué columna está cada dato. Las columnas se precargan con la configuración del banco.",
+        "boton": "Subir estado (.csv)",
+        "titulo": "Subir estado de cuenta",
+        "descripcion": "Exporta el estado de cuenta de la banca en línea como CSV. Puedes subir el mismo periodo más de una vez: las transacciones que ya estaban se reconocen por su referencia y no se duplican.",
         "archivo": "Archivo CSV",
-        "desde": "Desde",
-        "hasta": "Hasta",
-        "saldo": "Saldo final según el banco",
         "columnas": "Columnas del archivo",
         "colFecha": "Fecha",
         "colDescripcion": "Descripción",
@@ -3188,36 +3207,16 @@
         "separador": "Separador decimal",
         "punto": "Punto (1,234.56)",
         "coma": "Coma (1.234,56)",
-        "guardar": "Importar y proponer emparejamientos",
-        "pasos": {
-          "archivo": "Archivo y periodo"
-        }
+        "guardar": "Subir",
+        "resultado": "{nuevas, plural, =0 {Ninguna transacción nueva} one {# transacción nueva} other {# transacciones nuevas}} · {repetidas, plural, =0 {ninguna repetida} one {# ya estaba y se saltó} other {# ya estaban y se saltaron}}."
       },
-      "estadoCuenta": "Estado de cuenta del banco",
-      "propuesta": "Propuesta",
-      "confirmada": "Confirmada",
-      "sinPareja": "Sin pareja en libros",
-      "confirmar": "Confirmar",
-      "descartar": "Descartar",
-      "confirmarTodas": "Confirmar todas las propuestas",
-      "proponer": "Volver a buscar parejas",
-      "cerrar": "Cerrar conciliación",
-      "cerrarAyuda": "Al cerrar, las propuestas sin confirmar se descartan y los movimientos conciliados quedan bloqueados.",
-      "movimiento": "MB-{numero} · {fecha}",
-      "reporte": "Reporte de conciliación",
-      "saldoBanco": "Saldo según el banco",
-      "depositosTransito": "Más: entradas en libros que el banco aún no refleja",
-      "chequesTransito": "Menos: salidas en libros que el banco aún no refleja",
-      "saldoBancoAjustado": "Saldo del banco ajustado",
-      "saldoLibros": "Saldo según libros",
-      "partidasBanco": "Más o menos: partidas del banco sin registrar en libros",
-      "saldoLibrosAjustado": "Saldo de libros ajustado",
-      "diferencia": "Diferencia",
-      "cuadra": "La conciliación cuadra.",
-      "noCuadra": "La conciliación no cuadra: revisa las partidas.",
-      "transito": "Partidas en tránsito",
-      "transitoVacio": "No hay partidas en tránsito.",
-      "cerradaPor": "Cerrada por {nombre} el {fecha}"
+      "vincular": {
+        "boton": "Cambiar",
+        "titulo": "Vincular con la cuenta contable",
+        "descripcion": "Los asientos que tocan esta cuenta auxiliar son los que se concilian con el estado del banco. No se puede cambiar mientras haya transacciones conciliadas.",
+        "cuenta": "Cuenta auxiliar",
+        "guardar": "Guardar vínculo"
+      }
     },
     "recibos": {
       "titulo": "Recibos",
@@ -3801,57 +3800,43 @@
         "balanza": "Balanza"
       },
       "rango": "Del {desde} al {hasta}",
-      "totalDebe": "Total debe",
-      "totalHaber": "Total haber",
-      "asientos": "{n, plural, one {# asiento} other {# asientos}}",
-      "movimientos": "{n, plural, one {# movimiento} other {# movimientos}}",
       "topeDiario": "Se muestran los primeros {n} asientos. Los totales cubren el rango entero; la exportación a Excel trae todos.",
-      "topeMayor": "Se muestran los primeros {n} movimientos. El saldo final cubre el rango entero; la exportación a Excel trae todos.",
-      "saldoInicial": "Saldo inicial",
-      "saldoFinal": "Saldo final",
       "totalPeriodo": "Total del período",
       "totalAsiento": "Total del asiento",
       "totalGeneral": "Total general · {n, plural, one {# asiento} other {# asientos}}",
       "numeroAsiento": "Asiento {numero}",
       "asientoDescuadrado": "Descuadrado",
-      "incluyeHijas": "incluye todas sus subcuentas",
-      "naturaleza": {
-        "deudora": "Cuenta de naturaleza deudora: el saldo es debe menos haber",
-        "acreedora": "Cuenta de naturaleza acreedora: el saldo es haber menos debe"
-      },
       "descuadre": {
-        "titulo": "El debe y el haber no coinciden. Diferencia:",
+        "titulo": "El débito y el crédito no coinciden. Diferencia:",
         "texto": "La base de datos impide guardar un asiento descuadrado, así que esto indica un cambio hecho por fuera del sistema. No uses estas cifras y avisa a soporte con este rango de fechas."
       },
       "col": {
         "cuenta": "Cuenta",
         "descripcion": "Descripción",
-        "debe": "Debe",
-        "haber": "Haber",
+        "debe": "Débito",
+        "haber": "Crédito",
         "fecha": "Fecha",
         "asiento": "Asiento",
         "concepto": "Concepto",
-        "saldo": "Saldo"
+        "saldo": "Saldo",
+        "auxiliar": "Auxiliar"
       },
       "vacio": {
         "titulo": "No hay asientos en este rango",
         "texto": "Amplía las fechas. Si el departamento aún no ha contabilizado nada, los asientos se registran en Asientos.",
         "irAsientos": "Ir a asientos",
-        "mayorTitulo": "Elige una cuenta",
-        "mayorTexto": "El mayor es de una cuenta. Búscala arriba por código o nombre y pulsa Aplicar; una cuenta de grupo suma todas sus subcuentas.",
-        "sinMovimientos": "Esta cuenta no tiene movimientos en el rango",
-        "sinMovimientosTexto": "El saldo de arriba es el que traía al empezar. Amplía las fechas para ver movimientos anteriores."
+        "sinMovimientos": "No hay cuentas con saldo en este rango"
       },
       "filtros": {
         "mes": "Mes",
         "desde": "Desde",
         "hasta": "Hasta",
-        "cuenta": "Cuenta",
-        "buscarCuenta": "Buscar por código o nombre",
-        "elegirCuenta": "Elige una cuenta",
-        "grupo": "grupo",
         "ceros": "Mostrar cuentas sin movimiento",
-        "aplicar": "Aplicar"
+        "aplicar": "Aplicar",
+        "cuentaDesde": "Desde la cuenta",
+        "cuentaHasta": "Hasta la cuenta",
+        "primera": "La primera",
+        "ultima": "La última"
       },
       "estado": {
         "anulado": "Anulado",
@@ -4099,7 +4084,9 @@
       "estado": {
         "vigente": "Vigente",
         "anulado": "Revertido",
-        "reverso": "Reverso"
+        "reverso": "Reverso",
+        "procesado": "Procesado",
+        "pendiente": "Sin procesar"
       },
       "origen": {
         "recibo": "Recibo",
@@ -4121,7 +4108,11 @@
         "anulados_ocultar": "Ocultar revertidos y reversos",
         "anulados_solo": "Solo revertidos y reversos",
         "aplicar": "Aplicar",
-        "limpiar": "Limpiar filtros"
+        "limpiar": "Limpiar filtros",
+        "proceso": "Estado",
+        "procesoTodos": "Todos",
+        "proceso_pendiente": "Sin procesar",
+        "proceso_procesado": "Procesados"
       },
       "col": {
         "numero": "Número",
@@ -4150,9 +4141,10 @@
         "col": {
           "cuenta": "Cuenta",
           "descripcion": "Descripción",
-          "debe": "Debe",
-          "haber": "Haber"
-        }
+          "debe": "Débito",
+          "haber": "Crédito"
+        },
+        "procesadoPor": "Procesado por {nombre} el {fecha}."
       },
       "revertir": {
         "boton": "Revertir",
@@ -4172,7 +4164,7 @@
         "concepto": "Concepto",
         "guardar": "Guardar asiento",
         "cancelar": "Cancelar",
-        "ayudaEnvio": "Para guardar: concepto, al menos dos líneas con cuenta, cada una con debe o haber (no los dos), y débitos iguales a créditos.",
+        "ayudaEnvio": "Para guardar: concepto, al menos dos líneas con cuenta, cada una con débito o crédito (no los dos), y débitos iguales a créditos.",
         "pasos": {
           "datos": "Datos del asiento",
           "lineas": "Líneas"
@@ -4182,19 +4174,19 @@
         "titulo": "Líneas",
         "cuenta": "Cuenta",
         "descripcion": "Descripción",
-        "debe": "Debe",
-        "haber": "Haber",
+        "debe": "Débito",
+        "haber": "Crédito",
         "acciones": "Acciones",
         "linea": "Línea {n}",
         "cuentaDe": "Cuenta de la línea {n}",
         "descripcionDe": "Descripción de la línea {n}",
-        "debeDe": "Debe de la línea {n}",
-        "haberDe": "Haber de la línea {n}",
+        "debeDe": "Débito de la línea {n}",
+        "haberDe": "Crédito de la línea {n}",
         "elegirCuenta": "Elige una cuenta",
         "quitar": "Quitar la línea {n}",
         "agregar": "Agregar línea",
-        "totalDebe": "Total debe",
-        "totalHaber": "Total haber",
+        "totalDebe": "Total débito",
+        "totalHaber": "Total crédito",
         "diferencia": "Diferencia",
         "cuadra": "El asiento cuadra."
       },
@@ -4248,8 +4240,8 @@
         "pocas_lineas": "Un asiento necesita al menos dos líneas.",
         "cuenta_requerida": "elige la cuenta.",
         "monto_invalido": "el monto tiene que ser un número positivo de hasta 12 cifras.",
-        "linea_ambos_lados": "pon el monto en el debe o en el haber, no en los dos.",
-        "linea_vacia": "escribe un monto en el debe o en el haber.",
+        "linea_ambos_lados": "pon el monto en el débito o en el crédito, no en los dos.",
+        "linea_vacia": "escribe un monto en el débito o en el crédito.",
         "descuadrado": "Los débitos y los créditos no coinciden.",
         "periodo_cerrado": "La fecha cae en un período cerrado. Usa una fecha del período abierto.",
         "conciliado": "El movimiento ya está conciliado y no se puede cambiar.",
@@ -4259,6 +4251,13 @@
         "montos_distintos": "Los montos no coinciden.",
         "cuenta_cerrada": "Una de las cuentas está cerrada.",
         "error": "No se pudo completar. Inténtalo de nuevo y, si sigue, avisa al equipo técnico."
+      },
+      "procesar": {
+        "boton": "Procesar",
+        "seleccionados": "Procesar seleccionados",
+        "elegir": "Elegir {numero}",
+        "ok": "Asientos procesados: ya están en los libros.",
+        "ayuda": "Este asiento todavía no está en el diario, el mayor ni la balanza. Revísalo y procésalo para que cuente."
       }
     },
     "terceros": {
@@ -4977,8 +4976,8 @@
       "modalCierreAnualTitulo": "Ejecutar Cierre Anual del Ejercicio",
       "modalCierreAnualDesc": "Este proceso genera automáticamente el asiento de cierre liquidando todas las cuentas de ingresos y gastos, trasladando el resultado neto a la cuenta 3.1.01.02 Resultados Acumulados.",
       "alertaMesesAbiertos": "No se puede ejecutar el cierre anual: existen meses que aún están abiertos. Cierre primero todos los meses del ejercicio.",
-      "ingresosLiquidar": "Total de ingresos a liquidar al debe",
-      "gastosLiquidar": "Total de gastos a liquidar al haber",
+      "ingresosLiquidar": "Total de ingresos a liquidar al débito",
+      "gastosLiquidar": "Total de gastos a liquidar al crédito",
       "resultadoNeto": "Resultado neto a trasladar al patrimonio",
       "superavit": "Superávit neto",
       "deficit": "Déficit neto",
@@ -5173,7 +5172,7 @@
       "cxpOverdue": "{n} cuentas por pagar vencidas por {monto}",
       "cxpSoon": "{n} vencen en los próximos 7 días por {monto}",
       "orders": "{n} órdenes de compra esperan aprobación",
-      "reconciliations": "{n} conciliaciones bancarias abiertas",
+      "reconciliations": "{n, plural, one {# transacción del banco por conciliar} other {# transacciones del banco por conciliar}}",
       "recurring": "Asiento recurrente por generar: {nombre} (día {dia})",
       "fiscal": "{codigo} vence en {dias} días ({fecha})",
       "fiscalToday": "{codigo} vence hoy"

@@ -1,6 +1,7 @@
 import {
   Ban,
   CheckCircle2,
+  CircleDashed,
   DoorOpen,
   Lock,
   PenLine,
@@ -31,37 +32,50 @@ export const ICONO_TIPO: Record<TipoAsiento, LucideIcon> = {
 };
 
 /**
- * Estado de un asiento. Vigente y anulado son estado de entidad, así que
- * llevan el `SEMAFORO` con su icono; el reverso va en gris porque no está
- * bien ni mal: es la corrección de otro.
+ * Estado de un asiento: "Sin procesar" o "Procesado" (Observaciones #1).
+ * Procesado es estado de entidad aprobado, así que lleva el `SEMAFORO` con
+ * su icono; sin procesar va en gris con un círculo punteado (aún no está en
+ * los libros, no está mal). Anulado manda sobre lo demás. El reverso se
+ * marca aparte: es una corrección, y además puede estar o no procesado.
+ *
+ * `t` es el traductor de `contab.asientos`.
  */
 export function InsigniaEstadoAsiento({
   estado,
-  etiqueta,
+  procesado,
+  t,
 }: {
   estado: EstadoAsiento;
-  etiqueta: string;
+  procesado: boolean;
+  t: (clave: string) => string;
 }) {
-  if (estado === "vigente") {
-    return (
-      <Badge className={INSIGNIA_SEMAFORO.dentro}>
-        <CheckCircle2 />
-        {etiqueta}
-      </Badge>
-    );
-  }
   if (estado === "anulado") {
     return (
       <Badge className={INSIGNIA_SEMAFORO.alerta}>
         <Ban />
-        {etiqueta}
+        {t("estado.anulado")}
       </Badge>
     );
   }
   return (
-    <Badge variant="neutra">
-      <Undo2 />
-      {etiqueta}
-    </Badge>
+    <span className="inline-flex flex-wrap gap-1">
+      {procesado ? (
+        <Badge className={INSIGNIA_SEMAFORO.dentro}>
+          <CheckCircle2 />
+          {t("estado.procesado")}
+        </Badge>
+      ) : (
+        <Badge variant="neutra">
+          <CircleDashed />
+          {t("estado.pendiente")}
+        </Badge>
+      )}
+      {estado === "reverso" && (
+        <Badge variant="neutra">
+          <Undo2 />
+          {t("estado.reverso")}
+        </Badge>
+      )}
+    </span>
   );
 }

@@ -1,7 +1,5 @@
 "use server";
 
-import { createHash } from "node:crypto";
-
 import { revalidatePath } from "next/cache";
 
 import { requerirUsuario } from "@/lib/auth";
@@ -9,10 +7,13 @@ import { consultarUna, enTransaccionComo } from "@/lib/db";
 import { esFechaIso, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/formato";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { obtenerAdaptador, type ColumnasEstado } from "@/server/contabilidad/bancos";
+import { claveDeTransaccion } from "@/lib/contabilidad/extracto";
+import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe, estadoDeError, type EstadoErrorContable } from "@/server/contabilidad/sesion";
 
 /**
- * Transferencias entre cuentas propias, tasa del día y conciliación.
+ * Transferencias entre cuentas propias, tasa del día, estado de cuenta y
+ * conciliación.
  *
  * Una transferencia mueve dinero en el acto (dos movimientos y un asiento),
  * por eso exige `aprobar` y no solo `registrar`. Conciliar exige
@@ -30,10 +31,14 @@ export type EstadoBanco = {
     | "misma_cuenta"
     | "archivo_invalido"
     | "archivo_vacio"
+    | "montos_distintos"
     | EstadoErrorContable;
   /** Error de lectura del CSV ("Línea 12: fecha inválida…"). Es dato, no texto de interfaz. */
   detalle?: string;
   id?: string;
+  /** Subida del estado de cuenta: transacciones nuevas y las que ya estaban. */
+  nuevas?: number;
+  repetidas?: number;
 };
 
 function texto(datos: FormData, campo: string, maximo = 200): string {
@@ -104,45 +109,8 @@ export async function registrarTasa(_previo: EstadoBanco, datos: FormData): Prom
   }
 }
 
-/**
- * Importa el estado de cuenta (CSV) y abre la conciliación.
- *
- * El archivo se lee en el servidor con el adaptador del banco y las
- * columnas que confirmó el contable en el formulario. Las líneas se guardan
- * todas, en una transacción, y enseguida se pide a la base que proponga
- * emparejamientos: así la primera pantalla que ve el contable ya tiene el
- * trabajo hecho y solo le toca confirmar.
- */
-export async function importarEstadoCuenta(
-  _previo: EstadoBanco,
-  datos: FormData,
-): Promise<EstadoBanco> {
-  const usuario = await requerirUsuario();
-  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
-
-  const cuenta = texto(datos, "cuenta", 40);
-  const desde = texto(datos, "desde", 10);
-  const hasta = texto(datos, "hasta", 10);
-  const saldoTexto = texto(datos, "saldo_banco", 20).replace(/,/g, "");
-  const archivo = datos.get("archivo");
-
-  if (!esUuid(cuenta) || !esFechaIso(desde) || !esFechaIso(hasta) || hasta < desde) {
-    return { estado: "datos_invalidos" };
-  }
-  // El saldo del banco puede ser negativo (sobregiro) o cero: no sirve
-  // montoValido, que exige positivo.
-  if (!/^-?\d{1,12}(\.\d{1,2})?$/.test(saldoTexto)) return { estado: "monto_invalido" };
-  if (!(archivo instanceof File) || archivo.size === 0 || archivo.size > 5 * 1024 * 1024) {
-    return { estado: "archivo_invalido" };
-  }
-
-  const banco = await consultarUna<{ adaptador: string }>(
-    `SELECT b.adaptador FROM contabilidad.cuenta_bancaria cb
-       JOIN contabilidad.banco b ON b.id = cb.banco_id WHERE cb.id = $1`,
-    [cuenta],
-  );
-  if (!banco) return { estado: "datos_invalidos" };
-
+/** Lee las columnas del formulario de subida; las precarga la configuración del banco. */
+function columnasDe(datos: FormData): ColumnasEstado | null {
   const formato = texto(datos, "formato_fecha", 12);
   const columnas: ColumnasEstado = {
     fecha: texto(datos, "col_fecha", 60),
@@ -156,80 +124,151 @@ export async function importarEstadoCuenta(
       formato === "YYYY-MM-DD" || formato === "MM/DD/YYYY" ? formato : "DD/MM/YYYY",
     separadorDecimal: texto(datos, "separador", 1) === "," ? "," : ".",
   };
-  if (!columnas.fecha || !columnas.descripcion || !(columnas.monto || columnas.debito || columnas.credito)) {
-    return { estado: "datos_invalidos" };
+  const completo = columnas.fecha && columnas.descripcion && (columnas.monto || columnas.debito || columnas.credito);
+  return completo ? columnas : null;
+}
+
+/**
+ * Sube el estado de cuenta (.csv) a la cuenta (Observaciones #1).
+ *
+ * Se puede subir cuantas veces haga falta, también archivos que se solapan:
+ * cada transacción se reconoce por su referencia (`claveDeTransaccion`) y
+ * la base ignora la que ya estaba (`ON CONFLICT DO NOTHING` sobre
+ * `UNIQUE (cuenta_id, clave)`). La respuesta dice cuántas entraron y
+ * cuántas se saltaron, para que el contable sepa que no se duplicó nada.
+ * Dentro del mismo archivo también se descartan las repetidas.
+ */
+export async function subirEstadoBanco(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
+
+  const cuenta = texto(datos, "cuenta", 40);
+  const archivo = datos.get("archivo");
+  const columnas = columnasDe(datos);
+  if (!esUuid(cuenta) || !columnas) return { estado: "datos_invalidos" };
+  if (!(archivo instanceof File) || archivo.size === 0 || archivo.size > 5 * 1024 * 1024) {
+    return { estado: "archivo_invalido" };
   }
 
-  const bytes = Buffer.from(await archivo.arrayBuffer());
+  const banco = await consultarUna<{ adaptador: string }>(
+    `SELECT b.adaptador FROM contabilidad.cuenta_bancaria cb
+       JOIN contabilidad.banco b ON b.id = cb.banco_id
+      WHERE cb.id = $1 AND cb.estado = 'activa'`,
+    [cuenta],
+  );
+  if (!banco) return { estado: "datos_invalidos" };
+
   let movimientos;
   try {
-    movimientos = obtenerAdaptador(banco.adaptador).parsearEstadoCuenta(bytes.toString("utf8"), columnas);
+    movimientos = obtenerAdaptador(banco.adaptador).parsearEstadoCuenta(await archivo.text(), columnas);
   } catch (error) {
     return { estado: "archivo_invalido", detalle: error instanceof Error ? error.message : undefined };
   }
-  const enRango = movimientos.filter((m) => m.fecha >= desde && m.fecha <= hasta);
-  if (enRango.length === 0) return { estado: "archivo_vacio" };
+  if (movimientos.length === 0) return { estado: "archivo_vacio" };
+
+  const vistas = new Set<string>();
+  const unicas = movimientos
+    .map((m) => ({ ...m, clave: claveDeTransaccion(m) }))
+    .filter((m) => (vistas.has(m.clave) ? false : (vistas.add(m.clave), true)));
 
   try {
-    const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
-      const { rows } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.conciliacion
-           (cuenta_id, desde, hasta, saldo_banco, archivo_nombre, archivo_sha256, creado_por)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-        [cuenta, desde, hasta, saldoTexto, archivo.name.slice(0, 200),
-         createHash("sha256").update(bytes).digest("hex"), usuario.id],
-      );
-      const conciliacion = rows[0].id;
-
+    const nuevas = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       // Una sola sentencia con arreglos en vez de cien INSERT: la bitácora
       // igual escribe una fila por línea, pero el viaje a la base es uno.
-      await cliente.query(
-        `INSERT INTO contabilidad.conciliacion_linea
-           (conciliacion_id, linea, fecha, descripcion, referencia, monto, saldo)
-         SELECT $1, t.linea, t.fecha, t.descripcion, t.referencia, t.monto, t.saldo
-           FROM unnest($2::int[], $3::date[], $4::text[], $5::text[], $6::numeric[], $7::numeric[])
-                AS t(linea, fecha, descripcion, referencia, monto, saldo)`,
+      const { rowCount } = await cliente.query(
+        `INSERT INTO contabilidad.extracto_linea
+           (cuenta_id, fecha, descripcion, referencia, monto, saldo, clave, archivo_nombre, importado_por)
+         SELECT $1, t.fecha, t.descripcion, t.referencia, t.monto, t.saldo, t.clave, $8, $9
+           FROM unnest($2::date[], $3::text[], $4::text[], $5::numeric[], $6::numeric[], $7::text[])
+                AS t(fecha, descripcion, referencia, monto, saldo, clave)
+         ON CONFLICT (cuenta_id, clave) DO NOTHING`,
         [
-          conciliacion,
-          enRango.map((_, i) => i + 1),
-          enRango.map((m) => m.fecha),
-          enRango.map((m) => m.descripcion.slice(0, 300)),
-          enRango.map((m) => m.referencia),
-          enRango.map((m) => m.monto),
-          enRango.map((m) => m.saldo),
+          cuenta,
+          unicas.map((m) => m.fecha),
+          unicas.map((m) => m.descripcion.slice(0, 300)),
+          unicas.map((m) => m.referencia),
+          unicas.map((m) => m.monto),
+          unicas.map((m) => m.saldo),
+          unicas.map((m) => m.clave),
+          archivo.name.slice(0, 200),
+          usuario.id,
         ],
       );
-      await cliente.query(`SELECT contabilidad.proponer_emparejamientos($1)`, [conciliacion]);
-      return conciliacion;
+      return rowCount ?? 0;
     });
     refrescar();
-    return { estado: "ok", id };
+    return { estado: "ok", nuevas, repetidas: movimientos.length - nuevas };
   } catch (error) {
     return { estado: estadoDeError(error) };
   }
 }
 
 /**
- * Confirma o descarta la pareja propuesta de una línea. Descartar deja la
- * línea sin pareja (lo que el banco trae y los libros no).
+ * Concilia una transacción del banco con una línea de asiento de la cuenta
+ * auxiliar del banco. Se exige el MISMO monto con el mismo signo: si no
+ * coinciden, no es la misma transacción y lo que falta es un ajuste.
+ * Todo se vuelve a comprobar aquí, dentro de la transacción y con las filas
+ * bloqueadas: la pantalla pudo quedarse vieja mientras otra persona
+ * conciliaba la misma línea.
  */
-export async function decidirLinea(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
+export async function conciliarPartida(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
   const usuario = await requerirUsuario();
   if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
 
+  const cuenta = texto(datos, "cuenta", 40);
+  const extracto = texto(datos, "extracto", 40);
   const linea = texto(datos, "linea", 40);
-  const confirmar = texto(datos, "decision", 12) === "confirmar";
-  if (!esUuid(linea)) return { estado: "datos_invalidos" };
+  if (!esUuid(cuenta) || !esUuid(extracto) || !esUuid(linea)) return { estado: "datos_invalidos" };
 
   try {
     await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "conciliar");
+      const { rows } = await cliente.query<{ cuadra: boolean }>(
+        `SELECT e.monto = (l.debe - l.haber) AS cuadra
+           FROM contabilidad.extracto_linea e
+           JOIN contabilidad.cuenta_bancaria cb ON cb.id = e.cuenta_id
+           JOIN contabilidad.asiento_linea l ON l.id = $3 AND l.cuenta_id = cb.cuenta_contable_id
+           JOIN contabilidad.asiento a ON a.id = l.asiento_id AND NOT a.anulado
+          WHERE e.id = $2 AND e.cuenta_id = $1
+            AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                             WHERE p.anulado_en IS NULL
+                               AND (p.extracto_linea_id = e.id OR p.asiento_linea_id = l.id))
+            FOR UPDATE OF e, l`,
+        [cuenta, extracto, linea],
+      );
+      if (!rows[0]) throw new RechazoBanco("datos_invalidos");
+      if (!rows[0].cuadra) throw new RechazoBanco("montos_distintos");
       await cliente.query(
-        confirmar
-          ? `UPDATE contabilidad.conciliacion_linea SET confirmada = true
-              WHERE id = $1 AND movimiento_id IS NOT NULL`
-          : `UPDATE contabilidad.conciliacion_linea SET confirmada = false, movimiento_id = NULL
-              WHERE id = $1`,
-        [linea],
+        `INSERT INTO contabilidad.conciliacion_partida
+           (cuenta_id, extracto_linea_id, asiento_linea_id, conciliado_por)
+         VALUES ($1, $2, $3, $4)`,
+        [cuenta, extracto, linea, usuario.id],
+      );
+    });
+    refrescar();
+    return { estado: "ok" };
+  } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
+    return { estado: estadoDeError(error) };
+  }
+}
+
+/** Anula una conciliación: las dos líneas vuelven a quedar por conciliar. */
+export async function anularPartida(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  if (!esUuid(id)) return { estado: "datos_invalidos" };
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "anular");
+      await cliente.query(
+        `UPDATE contabilidad.conciliacion_partida
+            SET anulado_en = now(), anulado_por = $2
+          WHERE id = $1 AND anulado_en IS NULL`,
+        [id, usuario.id],
       );
     });
     refrescar();
@@ -239,34 +278,45 @@ export async function decidirLinea(_previo: EstadoBanco, datos: FormData): Promi
   }
 }
 
-/** Confirma de una vez todas las propuestas pendientes de la conciliación. */
-export async function confirmarTodas(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
-  return operarConciliacion(datos, `UPDATE contabilidad.conciliacion_linea SET confirmada = true
-     WHERE conciliacion_id = $1 AND movimiento_id IS NOT NULL AND NOT confirmada`);
-}
-
-/** Vuelve a buscar parejas para las líneas que quedaron sin ninguna. */
-export async function volverAProponer(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
-  return operarConciliacion(datos, `SELECT contabilidad.proponer_emparejamientos($1)`);
-}
-
-export async function cerrarConciliacion(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
-  return operarConciliacion(datos, `SELECT contabilidad.cerrar_conciliacion($1)`);
-}
-
-async function operarConciliacion(datos: FormData, sql: string): Promise<EstadoBanco> {
+/**
+ * Vincula el banco con su cuenta contable auxiliar. Es configuración del
+ * catálogo, así que pide `contabilidad.configurar`. No se permite cambiarla
+ * con partidas conciliadas vivas: quedarían emparejadas con líneas de otra
+ * cuenta.
+ */
+export async function vincularCuentaContable(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
   const usuario = await requerirUsuario();
-  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
+  if (!usuarioTienePermiso(usuario, "contabilidad.configurar")) return { estado: "no_permitido" };
 
-  const id = texto(datos, "id", 40);
-  if (!esUuid(id)) return { estado: "datos_invalidos" };
+  const cuenta = texto(datos, "cuenta", 40);
+  const contable = texto(datos, "cuenta_contable", 40);
+  if (!esUuid(cuenta) || !esUuid(contable)) return { estado: "datos_invalidos" };
 
   try {
-    await enTransaccionComo(await contextoDe(usuario), (cliente) => cliente.query(sql, [id]));
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "editar");
+      const { rowCount } = await cliente.query(
+        `UPDATE contabilidad.cuenta_bancaria cb SET cuenta_contable_id = $2
+          WHERE cb.id = $1
+            AND EXISTS (SELECT 1 FROM contabilidad.cuenta_contable c
+                         WHERE c.id = $2 AND c.tipo = 'activo' AND c.admite_movimiento AND c.activa)
+            AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                             WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL)`,
+        [cuenta, contable],
+      );
+      if (!rowCount) throw new RechazoBanco("datos_invalidos");
+    });
     refrescar();
-    return { estado: "ok", id };
+    return { estado: "ok" };
   } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
     return { estado: estadoDeError(error) };
+  }
+}
+
+class RechazoBanco extends Error {
+  constructor(readonly estado: EstadoBanco["estado"]) {
+    super(estado);
   }
 }
 

@@ -1,37 +1,46 @@
 import { Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { SELECT } from "@/components/contabilidad/comun";
 import { CamposRango } from "@/components/contabilidad/libros/campos-rango";
-import { SelectorCuenta } from "@/components/contabilidad/libros/selector-cuenta";
 import { Button } from "@/components/ui/button";
-import type { FiltroLibros, OpcionCuenta } from "@/server/contabilidad/libros/consultas";
+import type { FiltroLibros, OpcionMayor } from "@/server/contabilidad/libros/consultas";
 
 /**
  * Filtros de los libros en un formulario GET: van a la URL y el enlace se
  * comparte tal cual. La vista viaja oculta para que filtrar no devuelva al
  * diario. Las casillas no marcadas no se envían, así que apagarlas basta
  * para quitarlas de la URL.
+ *
+ * El mayor se filtra por un rango de cuentas mayores, "desde qué cuenta
+ * hasta qué cuenta" (Observaciones #1). Son `<select>` nativos para que el
+ * formulario funcione sin hidratar.
  */
 export async function FiltrosLibros({
   filtro,
-  cuentas,
+  mayores,
 }: {
   filtro: FiltroLibros;
-  cuentas: OpcionCuenta[];
+  mayores: OpcionMayor[];
 }) {
   const t = await getTranslations("contab.libros.filtros");
 
   return (
     <form method="get" className="space-y-3">
       <input type="hidden" name="vista" value={filtro.vista} />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {filtro.vista === "mayor" && <SelectorCuenta cuentas={cuentas} valor={filtro.cuenta} />}
+      {filtro.vista === "mayor" && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <SelectorMayor nombre="cdesde" etiqueta={t("cuentaDesde")} vacio={t("primera")} valor={filtro.cuentaDesde} mayores={mayores} />
+          <SelectorMayor nombre="chasta" etiqueta={t("cuentaHasta")} vacio={t("ultima")} valor={filtro.cuentaHasta} mayores={mayores} />
+        </div>
+      )}
+      <div className="grid gap-3 sm:grid-cols-3">
         {/* `key`: al navegar a otro rango, los campos controlados arrancan de la URL nueva. */}
         <CamposRango key={`${filtro.desde}-${filtro.hasta}`} desde={filtro.desde} hasta={filtro.hasta} />
       </div>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-        {filtro.vista === "balanza" && (
+        {filtro.vista !== "diario" && (
           <Casilla nombre="ceros" marcada={filtro.ceros} etiqueta={t("ceros")} />
         )}
         <Button type="submit" className="ml-auto">
@@ -40,6 +49,34 @@ export async function FiltrosLibros({
         </Button>
       </div>
     </form>
+  );
+}
+
+function SelectorMayor({
+  nombre,
+  etiqueta,
+  vacio,
+  valor,
+  mayores,
+}: {
+  nombre: string;
+  etiqueta: string;
+  vacio: string;
+  valor: string | null;
+  mayores: OpcionMayor[];
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-sm font-medium text-tinta">{etiqueta}</span>
+      <select name={nombre} defaultValue={valor ?? ""} className={SELECT}>
+        <option value="">{vacio}</option>
+        {mayores.map((m) => (
+          <option key={m.codigo} value={m.codigo}>
+            {`${m.codigo} · ${m.nombre}`}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 

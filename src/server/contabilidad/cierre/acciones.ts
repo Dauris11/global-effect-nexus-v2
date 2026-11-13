@@ -97,9 +97,11 @@ export async function ejecutarCierreAnual(
       const concepto = `Asiento de Cierre Ejercicio Fiscal ${ejercicio} - Cancelación de Cuentas de Resultados`;
 
       const { rows: asRows } = await cliente.query<{ id: string }>(
+        // Nace procesado: lo genera el cierre que alguien ya aprobó, y un
+        // asiento sin procesar impediría cerrar diciembre (0080).
         `INSERT INTO contabilidad.asiento
-           (numero, fecha, periodo_id, concepto, tipo, creado_por)
-         VALUES ($1, $2, $3, $4, 'ajuste', $5)
+           (numero, fecha, periodo_id, concepto, tipo, creado_por, procesado_en, procesado_por)
+         VALUES ($1, $2, $3, $4, 'ajuste', $5, now(), $5)
          RETURNING id`,
         [numeroAsiento, fechaCierre, periodoDiciembreId, concepto, ctx.usuarioId],
       );

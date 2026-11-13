@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CalendarPlus, Loader2, Pause, Play, Undo2 } from "lucide-react";
+import { CalendarPlus, CheckCheck, Loader2, Pause, Play, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk } from "@/components/contabilidad/comun";
@@ -22,6 +22,7 @@ import { MOTIVO_MINIMO } from "@/lib/contabilidad/asientos";
 import {
   cambiarPlantilla,
   generarDelMes,
+  procesarAsientos,
   revertirAsiento,
   type EstadoAccionAsiento,
 } from "@/server/contabilidad/asientos/acciones";
@@ -142,6 +143,50 @@ export function BotonActivar({ id, activo }: { id: string; activo: boolean }) {
         {activo ? t("desactivar") : t("activar")}
       </Button>
       {error && <AvisoError>{error}</AvisoError>}
+    </form>
+  );
+}
+
+/** Procesar un asiento desde su ficha. */
+export function BotonProcesar({ id }: { id: string }) {
+  const t = useTranslations("contab.asientos.procesar");
+  const [estado, enviar, enviando] = useActionState(procesarAsientos, INICIAL);
+  const error = useError(estado);
+
+  return (
+    <form action={enviar} className="space-y-3">
+      <input type="hidden" name="ids" value={id} />
+      <Button type="submit" disabled={enviando}>
+        {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCheck className="size-4" />}
+        {t("boton")}
+      </Button>
+      {error && <AvisoError>{error}</AvisoError>}
+    </form>
+  );
+}
+
+/**
+ * La lista de asientos dentro de un formulario: cada asiento sin procesar
+ * trae su casilla `ids` (la pinta la lista, que es de servidor) y este
+ * envoltorio solo pone el botón y el resultado. Así la tabla no tiene que
+ * hidratarse para poder elegir.
+ */
+export function FormularioProcesar({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("contab.asientos.procesar");
+  const [estado, enviar, enviando] = useActionState(procesarAsientos, INICIAL);
+  const error = useError(estado);
+
+  return (
+    <form action={enviar} className="space-y-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {estado.estado === "ok" && <AvisoOk>{t("ok")}</AvisoOk>}
+        <Button type="submit" variant="secondary" disabled={enviando}>
+          {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCheck className="size-4" />}
+          {t("seleccionados")}
+        </Button>
+      </div>
+      {error && <AvisoError>{error}</AvisoError>}
+      {children}
     </form>
   );
 }

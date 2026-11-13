@@ -5,8 +5,7 @@ import { Monto } from "@/components/contabilidad/comun";
 import type { TotalesLibro } from "@/server/contabilidad/libros/consultas";
 
 /**
- * Lo que comparten los tres libros: la fila de totales y el aviso de
- * descuadre. El aviso va ARRIBA y en tinta, no al pie: si debe ≠ haber, la
+ * Lo que comparten los libros: la celda de monto y el aviso de descuadre. El aviso va ARRIBA y en tinta, no al pie: si debe ≠ haber, la
  * base se tocó por fuera de la partida doble y nada de lo que sigue en la
  * pantalla es confiable.
  */
@@ -25,26 +24,6 @@ export async function AvisoDescuadre({ totales }: { totales: TotalesLibro }) {
         <p className="mt-1 text-sm opacity-90">{t("descuadre.texto")}</p>
       </div>
     </div>
-  );
-}
-
-export function ResumenTotales({
-  celdas,
-}: {
-  celdas: { clave: string; etiqueta: string; valor: string; nota?: string }[];
-}) {
-  return (
-    <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {celdas.map((c) => (
-        <div key={c.clave} className="rounded-card border border-linea bg-card p-4 shadow-card">
-          <dt className="texto-meta">{c.etiqueta}</dt>
-          <dd className="mt-1 text-lg font-semibold text-tinta sm:text-xl">
-            <Monto valor={c.valor} moneda="DOP" />
-          </dd>
-          {c.nota && <dd className="texto-meta">{c.nota}</dd>}
-        </div>
-      ))}
-    </dl>
   );
 }
 

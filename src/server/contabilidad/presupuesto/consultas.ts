@@ -139,6 +139,7 @@ export async function calcularEjecucionPresupuestaria(presupuestoId: string): Pr
         JOIN contabilidad.cuenta_contable cta ON cta.id = al.cuenta_id
         JOIN contabilidad.presupuesto p ON p.id = $1
        WHERE al.centro_costo_id IS NOT NULL
+         AND a.procesado_en IS NOT NULL
          AND EXTRACT(YEAR FROM a.fecha) = p.ejercicio
        GROUP BY al.centro_costo_id
     )

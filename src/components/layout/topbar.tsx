@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import {
   CalendarClock,
@@ -49,6 +49,10 @@ import { cn } from "@/lib/utils";
  * El TÍTULO de la página ya no vive aquí: lo pone cada página con
  * `EncabezadoPagina`. En el móvil este título acababa en `text-xs`.
  */
+
+/** El sistema operativo no cambia mientras la página está abierta. */
+const sinSuscripcion = () => () => {};
+
 export function TopBar({
   rol,
   rolReal,
@@ -85,6 +89,14 @@ export function TopBar({
 
   const [buscando, setBuscando] = useState(false);
   const [desplazada, setDesplazada] = useState(false);
+  // El atajo se rotula según el teclado de quien mira: ⌘K a un usuario de
+  // Windows no le dice nada (Observaciones #1). Arranca en "Ctrl K", que es
+  // lo de la mayoría, y se corrige al montar porque el servidor no lo sabe.
+  const esMac = useSyncExternalStore(
+    sinSuscripcion,
+    () => /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent),
+    () => false,
+  );
 
   // La línea aparece al desplazarse. Con un oyente pasivo: no bloquea el scroll.
   useEffect(() => {
@@ -146,7 +158,7 @@ export function TopBar({
         >
           <span className="flex-1 truncate text-[15px] text-tinta-2">{t("commandOpen")}</span>
           <kbd className="texto-meta hidden rounded-md border border-linea px-1.5 py-0.5 font-sans lg:inline">
-            {t("commandShortcut")}
+            {t(esMac ? "commandShortcutMac" : "commandShortcut")}
           </kbd>
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-marca-500 text-white">
             <Search className="size-4" />

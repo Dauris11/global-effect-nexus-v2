@@ -8,6 +8,8 @@ import {
   CalendarDays,
   CalendarRange,
   Calculator,
+  ChevronLeft,
+  ChevronRight,
   HandCoins,
   Info,
   Landmark,
@@ -32,7 +34,14 @@ import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { GRUPOS_CONTABLES, modulosDeGrupo } from "@/lib/contabilidad/modulos";
-import { PERIODOS_TABLERO, leerPeriodoTablero } from "@/lib/contabilidad/tablero";
+import {
+  PERIODOS_TABLERO,
+  desplazarPeriodo,
+  leerPeriodoTablero,
+  leerReferencia,
+  rangoTablero,
+  trimestreDe,
+} from "@/lib/contabilidad/tablero";
 import { claveDia, fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
@@ -63,11 +72,13 @@ export default async function PortalContabilidad({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string; ref?: string }>;
 }) {
   const [{ locale }, filtros] = await Promise.all([params, searchParams]);
   const idioma = locale === "en" ? "en" : "es";
   const periodo = leerPeriodoTablero(filtros.periodo);
+  const ref = leerReferencia(filtros.ref, claveDia());
+  const rango = rangoTablero(periodo, ref);
   const usuario = await requerirPermiso("contabilidad.leer");
 
   const [t, tc, tMiDia, cuentas, tasa, pendientes, cajas, flujo, visibilidad] = await Promise.all([
@@ -78,7 +89,7 @@ export default async function PortalContabilidad({
     tasaVigente(),
     pendientesDelDepartamento(),
     listarCajas(),
-    resumenFlujo(periodo),
+    resumenFlujo(periodo, rango),
     visibilidadDeRol(usuario.rol),
   ]);
 
@@ -104,7 +115,6 @@ export default async function PortalContabilidad({
     ...(puede("contabilidad.aprobar")
       ? [{ clave: "compras" as const, cuantos: pendientes.compras_pendientes, href: "/administrativo/solicitudes", urgente: true }]
       : []),
-    { clave: "comprobantes", cuantos: pendientes.comprobantes_por_validar, href: "/contabilidad/comprobantes-recibidos" },
     { clave: "cajasBajas", cuantos: pendientes.cajas_bajas, href: "/contabilidad/cajas", urgente: true },
     { clave: "arqueos", cuantos: pendientes.arqueos_abiertos, href: "/contabilidad/cajas" },
     { clave: "recibosBorrador", cuantos: pendientes.recibos_borrador, href: "/contabilidad/recibos?estado=borrador" },
@@ -112,8 +122,26 @@ export default async function PortalContabilidad({
     ...(puede("rendicion.revisar")
       ? [{ clave: "rendiciones" as const, cuantos: pendientes.rendiciones, href: "/administrativo/rendiciones" }]
       : []),
-    { clave: "conciliaciones", cuantos: pendientes.conciliaciones_abiertas, href: "/contabilidad/bancos" },
+    { clave: "porConciliar", cuantos: pendientes.por_conciliar, href: "/contabilidad/bancos" },
+    { clave: "sinProcesar", cuantos: pendientes.asientos_sin_procesar, href: "/contabilidad/asientos?proceso=pendiente" },
   ];
+
+  // El periodo se nombra siempre ("noviembre de 2026", "4.º trimestre 2026"):
+  // un chip de "Trimestre" a secas no decía de cuál se hablaba.
+  const anio = ref.slice(0, 4);
+  const rotuloPeriodo =
+    periodo === "mes"
+      ? new Intl.DateTimeFormat(idioma, { month: "long", year: "numeric", timeZone: "UTC" }).format(
+          new Date(`${rango.desde}T00:00:00Z`),
+        )
+      : periodo === "trimestre"
+        ? t("periodo.rotuloTrimestre", { n: trimestreDe(ref), anio })
+        : anio;
+  const rangoTexto = t("periodo.rango", {
+    desde: fechaCorta(rango.desde, idioma),
+    hasta: fechaCorta(rango.hasta, idioma),
+  });
+  const enlacePeriodo = (p: typeof periodo, r: string) => `/portal/contabilidad?periodo=${p}&ref=${r}`;
 
   const grupos = GRUPOS_CONTABLES.map((grupo) => ({
     grupo,
@@ -151,13 +179,30 @@ export default async function PortalContabilidad({
           {PERIODOS_TABLERO.map((p) => (
             <ChipFiltro
               key={p}
-              href={`/portal/contabilidad?periodo=${p}`}
+              href={enlacePeriodo(p, ref)}
               icono={ICONO_PERIODO[p]}
               etiqueta={t(`periodo.${p}`)}
               activo={p === periodo}
             />
           ))}
         </FilaChips>
+
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon" aria-label={t("periodo.anterior")}>
+            <Link href={enlacePeriodo(periodo, desplazarPeriodo(periodo, ref, -1))}>
+              <ChevronLeft className="size-5" />
+            </Link>
+          </Button>
+          <p className="min-w-0 text-center">
+            <span className="block font-semibold text-tinta first-letter:uppercase">{rotuloPeriodo}</span>
+            <span className="texto-meta block">{rangoTexto}</span>
+          </p>
+          <Button asChild variant="ghost" size="icon" aria-label={t("periodo.siguiente")}>
+            <Link href={enlacePeriodo(periodo, desplazarPeriodo(periodo, ref, 1))}>
+              <ChevronRight className="size-5" />
+            </Link>
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiEnlace

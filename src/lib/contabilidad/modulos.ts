@@ -42,6 +42,13 @@ import type { Permiso } from "@/lib/rbac";
  *
  * `etiqueta` es una clave del espacio `nav`; `descripcion`, una de
  * `contab.modulos`.
+ *
+ * Fuera de la lista desde nov 2026 (Observaciones #1 del departamento):
+ * nómina, impuestos, retenciones, activos fijos, consumibles, calculadoras,
+ * centros de costo, órdenes de compra, comprobantes recibidos, terceros,
+ * fondos, donaciones y la rendición por fondo; y `/reportes`, que repetía
+ * los estados financieros. El departamento no los usa. Sus rutas y tablas
+ * siguen en pie a propósito: volver a mostrar uno es devolver su entrada.
  */
 
 export const GRUPOS_CONTABLES = [
@@ -49,7 +56,6 @@ export const GRUPOS_CONTABLES = [
   "tesoreria",
   "ingresos",
   "gastos",
-  "impuestos",
   "activos",
   "departamento",
 ] as const;
@@ -106,15 +112,6 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     enAdministracion: true,
   },
   {
-    clave: "centros-costo",
-    grupo: "general",
-    etiqueta: "costCenters",
-    href: "/contabilidad/centros-costo",
-    icono: Layers,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
     clave: "presupuesto",
     grupo: "general",
     etiqueta: "budget",
@@ -162,24 +159,6 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
   },
   // ── Ingresos ────────────────────────────────────────────────────────
   {
-    clave: "donaciones",
-    grupo: "ingresos",
-    etiqueta: "donations",
-    href: "/contabilidad/donaciones",
-    icono: HandHeart,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
-    clave: "fondos",
-    grupo: "ingresos",
-    etiqueta: "funds",
-    href: "/contabilidad/fondos",
-    icono: Coins,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
     clave: "recibos",
     grupo: "ingresos",
     etiqueta: "receipts",
@@ -188,25 +167,7 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     permiso: "contabilidad.leer",
     enAdministracion: true,
   },
-  {
-    clave: "rendicion",
-    grupo: "ingresos",
-    etiqueta: "accountabilityReport",
-    href: "/contabilidad/rendicion",
-    icono: FileText,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
   // ── Gastos ──────────────────────────────────────────────────────────
-  {
-    clave: "ordenes-compra",
-    grupo: "gastos",
-    etiqueta: "purchaseOrders",
-    href: "/contabilidad/ordenes-compra",
-    icono: ShoppingBag,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
   {
     clave: "proveedores",
     grupo: "gastos",
@@ -226,24 +187,6 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     enAdministracion: true,
   },
   {
-    clave: "retenciones",
-    grupo: "gastos",
-    etiqueta: "withholdingCertificates",
-    href: "/contabilidad/retenciones",
-    icono: FileCheck2,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
-    clave: "comprobantes-recibidos",
-    grupo: "gastos",
-    etiqueta: "receivedReceipts",
-    href: "/contabilidad/comprobantes-recibidos",
-    icono: Inbox,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
     clave: "rendiciones",
     grupo: "gastos",
     etiqueta: "expenseReports",
@@ -252,64 +195,7 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     permiso: "rendicion.revisar",
     enAdministracion: false,
   },
-  {
-    clave: "nomina",
-    grupo: "gastos",
-    etiqueta: "payroll",
-    href: "/contabilidad/nomina",
-    icono: Users,
-    permiso: "contabilidad.nomina",
-    enAdministracion: true,
-  },
-  // ── Terceros ────────────────────────────────────────────────────────
-  {
-    clave: "terceros",
-    grupo: "departamento",
-    etiqueta: "thirdParties",
-    href: "/contabilidad/terceros",
-    icono: UserCheck,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  // ── Impuestos y Cumplimiento DGII ────────────────────────────────────
-  {
-    clave: "impuestos",
-    grupo: "impuestos",
-    etiqueta: "taxes",
-    href: "/contabilidad/impuestos",
-    icono: FileSpreadsheet,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  // ── Calculadoras Fiscales y Financieras ─────────────────────────────
-  {
-    clave: "calculadoras",
-    grupo: "departamento",
-    etiqueta: "calculators",
-    href: "/contabilidad/calculadoras",
-    icono: Calculator,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
   // ── Activos y Kardex ────────────────────────────────────────────────
-  {
-    clave: "activos-fijos",
-    grupo: "activos",
-    etiqueta: "fixedAssets",
-    href: "/contabilidad/activos-fijos",
-    icono: Landmark,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
-  {
-    clave: "consumibles",
-    grupo: "activos",
-    etiqueta: "consumablesInventory",
-    href: "/contabilidad/inventario",
-    icono: ShoppingBag,
-    permiso: "contabilidad.leer",
-    enAdministracion: true,
-  },
   {
     clave: "inventario",
     grupo: "activos",
@@ -326,14 +212,6 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     etiqueta: "requests",
     href: "/administrativo/solicitudes",
     icono: Inbox,
-    enAdministracion: false,
-  },
-  {
-    clave: "reportes",
-    grupo: "departamento",
-    etiqueta: "reports",
-    href: "/reportes",
-    icono: BarChart3,
     enAdministracion: false,
   },
   {

@@ -332,6 +332,58 @@ export async function generarDelMes(
   }
 }
 
+/**
+ * Procesa asientos: los pasa a los libros (Observaciones #1). Pide
+ * `contabilidad.aprobar` porque es el visto bueno de lo que otro registró.
+ *
+ * Un asiento y su reverso se procesan JUNTOS, igual que todos los asientos
+ * de un mismo documento: procesar solo el reverso de un original sin
+ * procesar restaría en el mayor algo que nunca se sumó. Por eso las
+ * parejas se completan aquí y no se confía en que la persona marque ambas.
+ */
+export async function procesarAsientos(
+  _previo: EstadoAccionAsiento,
+  datos: FormData,
+): Promise<EstadoAccionAsiento> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.aprobar")) return { estado: "no_permitido" };
+
+  const ids = [...new Set(datos.getAll("ids").map(String))].filter(esUuid).slice(0, 500);
+  if (ids.length === 0) return { estado: "datos_invalidos" };
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "aprobar");
+      await cliente.query(
+        `WITH elegidos AS (
+           SELECT a.* FROM contabilidad.asiento a WHERE a.id = ANY($1::uuid[])
+         ),
+         grupo AS (
+           SELECT id FROM elegidos
+           UNION
+           -- Reverso de un manual, y original de un reverso.
+           SELECT x.id FROM contabilidad.asiento x JOIN elegidos e
+               ON (x.origen_tabla = 'contabilidad.asiento' AND x.origen_id = e.id)
+               OR (e.origen_tabla = 'contabilidad.asiento' AND x.id = e.origen_id)
+           UNION
+           -- Asientos del mismo documento (el automático y su contra-asiento).
+           SELECT x.id FROM contabilidad.asiento x JOIN elegidos e
+               ON e.origen_tabla IS NOT NULL AND e.origen_tabla <> 'contabilidad.asiento'
+              AND x.origen_tabla = e.origen_tabla AND x.origen_id = e.origen_id
+         )
+         UPDATE contabilidad.asiento a
+            SET procesado_en = now(), procesado_por = $2
+          WHERE a.id IN (SELECT id FROM grupo) AND a.procesado_en IS NULL`,
+        [ids, usuario.id],
+      );
+    });
+    refrescar();
+    return { estado: "ok" };
+  } catch (error) {
+    return errorDe(error);
+  }
+}
+
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad", "layout");
 }

@@ -31,11 +31,16 @@ export const TOPE_ASIENTOS = TOPE;
 export const FILTRO_ANULADOS = ["ocultar", "solo"] as const;
 export type FiltroAnulados = (typeof FILTRO_ANULADOS)[number];
 
+/** Estado de proceso (Observaciones #1): sin procesar no entra a los libros. */
+export const FILTRO_PROCESO = ["pendiente", "procesado"] as const;
+export type FiltroProceso = (typeof FILTRO_PROCESO)[number];
+
 export type FiltroAsientos = {
   periodo: string | null;
   tipo: TipoAsiento | null;
   texto: string | null;
   anulados: FiltroAnulados | null;
+  proceso: FiltroProceso | null;
 };
 
 type Crudo = Record<string, string | string[] | undefined>;
@@ -49,6 +54,7 @@ export function leerFiltroAsientos(crudo: Crudo): FiltroAsientos {
   const periodo = uno(crudo.periodo);
   const tipo = uno(crudo.tipo);
   const anulados = uno(crudo.anulados);
+  const proceso = uno(crudo.proceso);
   return {
     periodo: esPeriodo(periodo) ? periodo : null,
     tipo: esTipoAsiento(tipo) ? tipo : null,
@@ -56,6 +62,7 @@ export function leerFiltroAsientos(crudo: Crudo): FiltroAsientos {
     anulados: (FILTRO_ANULADOS as readonly string[]).includes(anulados)
       ? (anulados as FiltroAnulados)
       : null,
+    proceso: (FILTRO_PROCESO as readonly string[]).includes(proceso) ? (proceso as FiltroProceso) : null,
   };
 }
 
@@ -73,6 +80,7 @@ export type FilaAsiento = {
   origen_id: string | null;
   total_debe: string;
   estado: EstadoAsiento;
+  procesado: boolean;
 };
 
 /** Hasta 200 asientos del filtro, los más recientes; trae uno de más para saber si hay más. */
@@ -81,6 +89,7 @@ export async function asientos(filtro: FiltroAsientos): Promise<FilaAsiento[]> {
     `SELECT s.* FROM (
        SELECT a.id, a.numero::text AS numero, a.fecha::text AS fecha, a.concepto, a.tipo,
               a.origen_tabla, a.origen_id::text AS origen_id, t.total::text AS total_debe,
+              a.procesado_en IS NOT NULL AS procesado,
               CASE WHEN o.id IS NOT NULL THEN 'reverso'
                    WHEN a.anulado OR r.id IS NOT NULL THEN 'anulado'
                    ELSE 'vigente' END AS estado
@@ -108,13 +117,14 @@ export async function asientos(filtro: FiltroAsientos): Promise<FilaAsiento[]> {
         WHERE ($1::text IS NULL OR to_char(a.fecha, 'YYYY-MM') = $1)
           AND ($2::text IS NULL OR a.tipo = $2)
           AND ($3::text IS NULL OR a.concepto ILIKE '%' || $3 || '%' OR a.numero::text = $3)
+          AND ($6::text IS NULL OR ($6 = 'procesado') = (a.procesado_en IS NOT NULL))
      ) s
      WHERE ($4::text IS NULL
             OR ($4 = 'ocultar' AND s.estado = 'vigente')
             OR ($4 = 'solo' AND s.estado <> 'vigente'))
      ORDER BY s.fecha DESC, s.numero::bigint DESC
      LIMIT $5`,
-    [filtro.periodo, filtro.tipo, filtro.texto, filtro.anulados, TOPE + 1],
+    [filtro.periodo, filtro.tipo, filtro.texto, filtro.anulados, TOPE + 1, filtro.proceso],
   );
 }
 
@@ -127,6 +137,8 @@ export type DetalleAsiento = FilaAsiento & {
   anulado_por: string | null;
   anulado_en: string | null;
   motivo_anulacion: string | null;
+  procesado_por: string | null;
+  procesado_en: string | null;
   reverso_id: string | null;
   reverso_numero: string | null;
   original_id: string | null;
@@ -148,12 +160,15 @@ export async function asientoPorId(id: string): Promise<DetalleAsiento | null> {
             a.anulado, un.nombre AS anulado_por,
             to_char(a.anulado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS anulado_en,
             a.motivo_anulacion,
+            a.procesado_en IS NOT NULL AS procesado, up.nombre AS procesado_por,
+            to_char(a.procesado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS procesado_en,
             r.id AS reverso_id, r.numero::text AS reverso_numero,
             o.id AS original_id, o.numero::text AS original_numero
        FROM contabilidad.asiento a
        JOIN contabilidad.periodo_contable p ON p.id = a.periodo_id
        JOIN usuario uc ON uc.id = a.creado_por
        LEFT JOIN usuario un ON un.id = a.anulado_por
+       LEFT JOIN usuario up ON up.id = a.procesado_por
        CROSS JOIN LATERAL (
          SELECT coalesce(sum(l.debe), 0) AS debe, coalesce(sum(l.haber), 0) AS haber
            FROM contabilidad.asiento_linea l WHERE l.asiento_id = a.id

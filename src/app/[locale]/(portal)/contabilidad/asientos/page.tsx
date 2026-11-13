@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { NotebookPen, Plus, Repeat } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { FormularioProcesar } from "@/components/contabilidad/asientos/acciones";
 import { FiltrosAsientos } from "@/components/contabilidad/asientos/filtros-asientos";
 import { ListaAsientos } from "@/components/contabilidad/asientos/lista-asientos";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { NextIntlClientProvider } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
@@ -47,13 +50,17 @@ export default async function PaginaAsientos({
   const filtro = leerFiltroAsientos(await searchParams);
   const hayFiltro = hayFiltroAsientos(filtro);
 
-  const [t, tc, filas, listaPeriodos] = await Promise.all([
+  const [t, tc, filas, listaPeriodos, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.asientos" }),
     getTranslations({ locale, namespace: "contab" }),
     asientos(filtro),
     periodos(),
+    mensajesCliente(["contab"]),
   ]);
   const escribe = usuarioTienePermiso(usuario, "contabilidad.asiento_manual");
+  const procesa =
+    usuarioTienePermiso(usuario, "contabilidad.aprobar") &&
+    filas.some((f) => !f.procesado && f.estado !== "anulado");
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
@@ -89,7 +96,15 @@ export default async function PaginaAsientos({
         />
       ) : (
         <>
-          <ListaAsientos filas={filas.slice(0, TOPE_ASIENTOS)} idioma={idioma} />
+          {procesa ? (
+            <NextIntlClientProvider messages={mensajes}>
+              <FormularioProcesar>
+                <ListaAsientos filas={filas.slice(0, TOPE_ASIENTOS)} idioma={idioma} elegible />
+              </FormularioProcesar>
+            </NextIntlClientProvider>
+          ) : (
+            <ListaAsientos filas={filas.slice(0, TOPE_ASIENTOS)} idioma={idioma} />
+          )}
           {filas.length > TOPE_ASIENTOS && <p className="texto-meta">{t("tope", { n: TOPE_ASIENTOS })}</p>}
         </>
       )}

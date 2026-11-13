@@ -17,9 +17,12 @@ import type { FilaAsiento } from "@/server/contabilidad/asientos/consultas";
 export async function ListaAsientos({
   filas,
   idioma,
+  elegible = false,
 }: {
   filas: FilaAsiento[];
   idioma: "es" | "en";
+  /** Casilla para procesar en los sin procesar (va dentro de `FormularioProcesar`). */
+  elegible?: boolean;
 }) {
   const t = await getTranslations("contab.asientos");
 
@@ -29,6 +32,7 @@ export async function ListaAsientos({
         <table className="w-full text-left text-sm">
           <thead className="border-b border-linea text-tinta-3">
             <tr>
+              {elegible && <th className="w-12 px-4 py-3" />}
               <th className="px-4 py-3 font-medium">{t("col.numero")}</th>
               <th className="px-4 py-3 font-medium">{t("col.fecha")}</th>
               <th className="px-4 py-3 font-medium">{t("col.concepto")}</th>
@@ -40,6 +44,22 @@ export async function ListaAsientos({
           <tbody>
             {filas.map((fila) => (
               <tr key={fila.id} className="border-b border-linea last:border-b-0 hover:bg-muted/50">
+                {elegible && (
+                  <td className="px-4 py-1">
+                    {!fila.procesado && fila.estado !== "anulado" && (
+                      // La celda entera es el objetivo táctil, no el cuadrito.
+                      <label className="flex size-11 cursor-pointer items-center justify-center">
+                        <input
+                          type="checkbox"
+                          name="ids"
+                          value={fila.id}
+                          aria-label={t("procesar.elegir", { numero: numeroDocumento("AS", fila.numero) })}
+                          className="size-5 accent-marca-500"
+                        />
+                      </label>
+                    )}
+                  </td>
+                )}
                 <td className="px-4 py-3 font-medium whitespace-nowrap tabular-nums">
                   <Link href={`/contabilidad/asientos/${fila.id}`} className="text-marca-600 hover:underline">
                     {numeroDocumento("AS", fila.numero)}
@@ -57,7 +77,7 @@ export async function ListaAsientos({
                   <Monto valor={fila.total_debe} moneda="DOP" />
                 </td>
                 <td className="px-4 py-3">
-                  <InsigniaEstadoAsiento estado={fila.estado} etiqueta={t(`estado.${fila.estado}`)} />
+                  <InsigniaEstadoAsiento estado={fila.estado} procesado={fila.procesado} t={t} />
                 </td>
               </tr>
             ))}
@@ -81,7 +101,7 @@ export async function ListaAsientos({
                 <Monto valor={fila.total_debe} moneda="DOP" className="font-semibold" />
               </div>
               <div className="mt-3">
-                <InsigniaEstadoAsiento estado={fila.estado} etiqueta={t(`estado.${fila.estado}`)} />
+                <InsigniaEstadoAsiento estado={fila.estado} procesado={fila.procesado} t={t} />
               </div>
             </Link>
           </li>

@@ -197,7 +197,7 @@ export async function obtenerResumenPreCierreAnual(ejercicio: number): Promise<R
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE c.tipo IN ('ingreso', 'gasto')
        AND c.admite_movimiento = true
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2
      GROUP BY c.id, c.codigo, c.nombre, c.tipo
      ORDER BY c.codigo ASC`,

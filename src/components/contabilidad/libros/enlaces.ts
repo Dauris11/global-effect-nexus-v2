@@ -11,7 +11,8 @@ import type { FiltroLibros } from "@/server/contabilidad/libros/consultas";
 export function consultaLibros(f: FiltroLibros, cambios: Partial<FiltroLibros> = {}): string {
   const v = { ...f, ...cambios };
   const p = new URLSearchParams({ vista: v.vista, desde: v.desde, hasta: v.hasta });
-  if (v.cuenta) p.set("cuenta", v.cuenta);
+  if (v.cuentaDesde) p.set("cdesde", v.cuentaDesde);
+  if (v.cuentaHasta) p.set("chasta", v.cuentaHasta);
   if (v.ceros) p.set("ceros", "1");
   return p.toString();
 }

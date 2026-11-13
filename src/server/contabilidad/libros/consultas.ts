@@ -1,5 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
-import { esFechaIso, esUuid } from "@/lib/contabilidad/formato";
+import { esFechaIso } from "@/lib/contabilidad/formato";
 
 /**
  * Libros contables: diario, mayor y balanza de comprobación.
@@ -10,6 +10,9 @@ import { esFechaIso, esUuid } from "@/lib/contabilidad/formato";
  * Toda suma la hace la base y los montos salen como TEXTO: un saldo corrido
  * sumado en float acaba diciendo 0.0000001 y "no cuadra". Los filtros llegan
  * de la URL, se validan aquí y lo que no sea válido se descarta.
+ *
+ * Solo entran los asientos PROCESADOS (0080): uno sin procesar todavía
+ * no está en los libros, por decisión del departamento (Observaciones #1).
  *
  * Los libros incluyen SIEMPRE todos los asientos, anulados o no. Anular
  * nunca borra: deja el original y contabiliza su reverso en el período
@@ -24,8 +27,6 @@ export type VistaLibro = (typeof VISTAS_LIBRO)[number];
 
 /** Asientos que se pintan en el diario; los totales cubren el rango entero. */
 export const TOPE_DIARIO = 300;
-/** Movimientos que se pintan en el mayor; el saldo final no depende de él. */
-export const TOPE_MAYOR = 500;
 
 export type FiltroLibros = {
   vista: VistaLibro;
@@ -33,10 +34,17 @@ export type FiltroLibros = {
   hasta: string;
   /** `YYYY-MM` cuando la balanza se pidió por mes. */
   periodo: string | null;
-  cuenta: string | null;
-  /** Balanza: mostrar también las cuentas sin saldo ni movimiento. */
+  /** Mayor general: rango de cuentas mayores por código, los dos inclusive. */
+  cuentaDesde: string | null;
+  cuentaHasta: string | null;
+  /** Balanza y mayor: mostrar también las cuentas sin saldo ni movimiento. */
   ceros: boolean;
 };
+
+/** Un código del catálogo ("1.1.02"); lo demás se descarta. */
+function esCodigoCuenta(valor: string): boolean {
+  return /^\d[\d.]{0,30}$/.test(valor);
+}
 
 type Crudo = Record<string, string | string[] | undefined>;
 
@@ -69,7 +77,8 @@ function mesEntero(desde: string, hasta: string): string | null {
  */
 export async function leerFiltroLibros(crudo: Crudo): Promise<FiltroLibros> {
   const vista = uno(crudo.vista);
-  const cuenta = uno(crudo.cuenta);
+  const cuentaDesde = uno(crudo.cdesde);
+  const cuentaHasta = uno(crudo.chasta);
   const periodo = uno(crudo.periodo);
   let desde = esFechaIso(uno(crudo.desde)) ? uno(crudo.desde) : null;
   let hasta = esFechaIso(uno(crudo.hasta)) ? uno(crudo.hasta) : null;
@@ -98,7 +107,8 @@ export async function leerFiltroLibros(crudo: Crudo): Promise<FiltroLibros> {
     // Un rango que es un mes entero se nombra como mes, venga de `periodo`
     // o de las dos fechas: el título y el archivo dicen "2026-10".
     periodo: mesEntero(desde as string, hasta as string),
-    cuenta: esUuid(cuenta) ? cuenta : null,
+    cuentaDesde: esCodigoCuenta(cuentaDesde) ? cuentaDesde : null,
+    cuentaHasta: esCodigoCuenta(cuentaHasta) ? cuentaHasta : null,
     // Un `anulados=1` de un enlace viejo se ignora: ya no hay qué filtrar.
     ceros: uno(crudo.ceros) === "1",
   };
@@ -108,6 +118,11 @@ export async function leerFiltroLibros(crudo: Crudo): Promise<FiltroLibros> {
 
 export type LineaDiario = {
   id: string;
+  /** Cuenta mayor (la madre de la auxiliar); la cuenta misma si no tiene madre. */
+  mayorCodigo: string;
+  mayorNombre: string;
+  /** Lo que suman las auxiliares de esta mayor en este lado del asiento. */
+  totalMayor: string;
   codigo: string;
   cuenta: string;
   descripcion: string | null;
@@ -152,6 +167,9 @@ type FilaDiario = {
   total_debe: string;
   total_haber: string;
   linea_id: string;
+  mayor_codigo: string;
+  mayor_nombre: string;
+  total_mayor: string;
   codigo: string;
   cuenta: string;
   descripcion: string | null;
@@ -192,6 +210,7 @@ export async function libroDiario(f: FiltroLibros, tope: number | null = TOPE_DI
             ORDER BY x.numero DESC LIMIT 1
          ) o ON true
         WHERE a.fecha BETWEEN $1::date AND $2::date
+          AND a.procesado_en IS NOT NULL
         ORDER BY a.fecha, a.numero
         LIMIT $3
      )
@@ -199,12 +218,19 @@ export async function libroDiario(f: FiltroLibros, tope: number | null = TOPE_DI
             to_char(s.fecha, 'YYYY-MM-DD') AS fecha, s.concepto, s.tipo, s.estado,
             sum(l.debe) OVER (PARTITION BY s.id)::text AS total_debe,
             sum(l.haber) OVER (PARTITION BY s.id)::text AS total_haber,
-            l.id AS linea_id, c.codigo, c.nombre AS cuenta, l.descripcion,
+            l.id AS linea_id,
+            coalesce(m.codigo, c.codigo) AS mayor_codigo, coalesce(m.nombre, c.nombre) AS mayor_nombre,
+            sum(l.debe + l.haber) OVER (PARTITION BY s.id, l.debe > 0, coalesce(m.id, c.id))::text AS total_mayor,
+            c.codigo, c.nombre AS cuenta, l.descripcion,
             l.debe::text AS debe, l.haber::text AS haber
        FROM sel s
        JOIN contabilidad.asiento_linea l ON l.asiento_id = s.id
        JOIN contabilidad.cuenta_contable c ON c.id = l.cuenta_id
-      ORDER BY s.fecha, s.numero, (l.debe > 0) DESC, c.codigo COLLATE "C", l.id`,
+       LEFT JOIN contabilidad.cuenta_contable m ON m.id = c.padre_id
+      -- Cargos antes que abonos y, dentro de cada lado, agrupado por mayor:
+      -- así las auxiliares de una misma mayor quedan juntas bajo ella.
+      ORDER BY s.fecha, s.numero, (l.debe > 0) DESC,
+               coalesce(m.codigo, c.codigo) COLLATE "C", c.codigo COLLATE "C", l.id`,
     [f.desde, f.hasta, tope],
   );
 
@@ -229,6 +255,9 @@ export async function libroDiario(f: FiltroLibros, tope: number | null = TOPE_DI
     }
     actual.lineas.push({
       id: fila.linea_id,
+      mayorCodigo: fila.mayor_codigo,
+      mayorNombre: fila.mayor_nombre,
+      totalMayor: fila.total_mayor,
       codigo: fila.codigo,
       cuenta: fila.cuenta,
       descripcion: fila.descripcion,
@@ -248,32 +277,22 @@ export async function totalesDiario(f: FiltroLibros): Promise<TotalesLibro> {
             (coalesce(sum(l.debe), 0) - coalesce(sum(l.haber), 0))::numeric(14,2)::text AS diferencia
        FROM contabilidad.asiento a
        JOIN contabilidad.asiento_linea l ON l.asiento_id = a.id
-      WHERE a.fecha BETWEEN $1::date AND $2::date`,
+      WHERE a.fecha BETWEEN $1::date AND $2::date
+        AND a.procesado_en IS NOT NULL`,
     [f.desde, f.hasta],
   );
   return fila ?? { asientos: 0, debe: "0.00", haber: "0.00", diferencia: "0.00" };
 }
 
-// ── Catálogo para el selector ──────────────────────────────────────────
-
-export type OpcionCuenta = {
-  id: string;
-  codigo: string;
-  nombre: string;
-  nivel: number;
-  admiteMovimiento: boolean;
-};
+// ── Mayor general ──────────────────────────────────────────────────────
 
 /**
- * Las cuentas en orden de árbol (la ruta de códigos desde la raíz), con su
- * nivel para sangrar. Ordenar por la ruta y no por el código deja ver las
- * cuentas sueltas sin padre donde están de verdad: en la raíz.
- * `COLLATE "C"` porque la intercalación del idioma ignora los puntos y
- * pondría "1.10" entre "1.1.01" y "1.1.02".
+ * Árbol del catálogo con la ruta de códigos desde la raíz. Ordenar por la
+ * ruta y no por el código deja ver las cuentas sueltas sin padre donde
+ * están de verdad: en la raíz. `COLLATE "C"` porque la intercalación del
+ * idioma ignora los puntos y pondría "1.10" entre "1.1.01" y "1.1.02".
  */
-export async function cuentasDelArbol(): Promise<OpcionCuenta[]> {
-  return consultar<OpcionCuenta>(
-    `WITH RECURSIVE arbol AS (
+const ARBOL = `arbol AS (
        SELECT c.id, 0 AS nivel, ARRAY[c.codigo COLLATE "C"] AS ruta
          FROM contabilidad.cuenta_contable c
         WHERE c.padre_id IS NULL
@@ -281,132 +300,146 @@ export async function cuentasDelArbol(): Promise<OpcionCuenta[]> {
        SELECT h.id, a.nivel + 1, a.ruta || (h.codigo COLLATE "C")
          FROM contabilidad.cuenta_contable h
          JOIN arbol a ON h.padre_id = a.id
-     )
-     SELECT c.id, c.codigo, c.nombre, a.nivel, c.admite_movimiento AS "admiteMovimiento"
+     )`;
+
+/** Una cuenta mayor del selector de rango. */
+export type OpcionMayor = { codigo: string; nombre: string };
+
+/**
+ * Cuenta mayor = la que tiene auxiliares (hijas que admiten movimiento).
+ * Es lo que el departamento llama "cuenta mayor": "1.1.02 Bancos" frente a
+ * su auxiliar "1.1.02.01 Banco Santa Cruz - DOP".
+ */
+export async function cuentasMayores(): Promise<OpcionMayor[]> {
+  return consultar<OpcionMayor>(
+    `WITH RECURSIVE ${ARBOL}
+     SELECT m.codigo, m.nombre
        FROM arbol a
-       JOIN contabilidad.cuenta_contable c ON c.id = a.id
+       JOIN contabilidad.cuenta_contable m ON m.id = a.id
+      WHERE EXISTS (SELECT 1 FROM contabilidad.cuenta_contable h
+                     WHERE h.padre_id = m.id AND h.admite_movimiento)
       ORDER BY a.ruta`,
   );
 }
 
-// ── Libro mayor ────────────────────────────────────────────────────────
-
-export type CuentaMayor = {
+export type AuxiliarMayor = {
   id: string;
   codigo: string;
   nombre: string;
-  tipo: string;
-  admiteMovimiento: boolean;
-  /** Activo y gasto crecen por el debe; pasivo, patrimonio e ingreso por el haber. */
-  deudora: boolean;
-};
-
-export type ResumenMayor = {
-  saldoInicial: string;
-  debe: string;
-  haber: string;
-  saldoFinal: string;
-  movimientos: number;
-};
-
-export type MovimientoMayor = {
-  id: string;
-  asientoId: string;
-  numero: string;
-  fecha: string;
-  concepto: string;
-  codigo: string;
-  cuenta: string;
-  descripcion: string | null;
   debe: string;
   haber: string;
   saldo: string;
 };
 
-export async function cuentaMayor(id: string): Promise<CuentaMayor | null> {
-  return consultarUna<CuentaMayor>(
-    `SELECT id, codigo, nombre, tipo, admite_movimiento AS "admiteMovimiento",
-            tipo IN ('activo', 'gasto') AS deudora
-       FROM contabilidad.cuenta_contable
-      WHERE id = $1`,
-    [id],
-  );
-}
+export type FilaMayor = {
+  id: string;
+  codigo: string;
+  nombre: string;
+  debe: string;
+  haber: string;
+  saldo: string;
+  auxiliares: AuxiliarMayor[];
+};
+
+type CrudoMayor = {
+  mayor_id: string;
+  mayor_codigo: string;
+  mayor_nombre: string;
+  mayor_debe: string;
+  mayor_haber: string;
+  mayor_saldo: string;
+  id: string;
+  codigo: string;
+  nombre: string;
+  debe: string;
+  haber: string;
+  saldo: string;
+  con_algo: boolean;
+};
 
 /**
- * Las líneas de la cuenta y de todas sus descendientes (CTE recursiva), así
- * una cuenta de grupo muestra su mayor agregado. El signo lo pone la
- * naturaleza de la cuenta pedida, no la de cada hija: en el mayor de
- * "Activo corriente" todo se lee como activo.
+ * El mayor general (Observaciones #1): sin movimientos, cada cuenta mayor
+ * con su débito y crédito del rango y su saldo a la fecha `hasta`, y debajo
+ * sus auxiliares con lo mismo. El saldo lleva el signo natural de cada
+ * auxiliar (activo y gasto crecen por el débito); el de la mayor es la suma
+ * de los de sus auxiliares, que comparten naturaleza.
  *
- * Va sin el "WITH RECURSIVE" delante porque es un trozo de CTE que las dos
- * consultas del mayor comparten: así el signo se define en un solo sitio.
+ * El rango de cuentas se aplica por la POSICIÓN en el árbol y no comparando
+ * códigos como texto, por la misma razón del `COLLATE "C"`.
  */
-const LINEAS_MAYOR = `sub AS (
-       SELECT id FROM contabilidad.cuenta_contable WHERE id = $1
-       UNION ALL
-       SELECT h.id FROM contabilidad.cuenta_contable h JOIN sub ON h.padre_id = sub.id
-     ),
-     naturaleza AS (
-       SELECT tipo IN ('activo', 'gasto') AS deudora
-         FROM contabilidad.cuenta_contable WHERE id = $1
-     ),
-     lineas AS (
-       SELECT l.id, l.debe, l.haber, l.descripcion, a.id AS asiento_id, a.numero, a.fecha,
-              a.concepto, c.codigo, c.nombre,
-              CASE WHEN n.deudora THEN l.debe - l.haber ELSE l.haber - l.debe END AS efecto
+export async function mayorGeneral(f: FiltroLibros): Promise<FilaMayor[]> {
+  const filas = await consultar<CrudoMayor>(
+    `WITH RECURSIVE ${ARBOL},
+     mov AS (
+       SELECT l.cuenta_id,
+              coalesce(sum(l.debe) FILTER (WHERE a.fecha >= $1::date), 0) AS debe,
+              coalesce(sum(l.haber) FILTER (WHERE a.fecha >= $1::date), 0) AS haber,
+              coalesce(sum(l.debe), 0) AS debe_total,
+              coalesce(sum(l.haber), 0) AS haber_total
          FROM contabilidad.asiento_linea l
          JOIN contabilidad.asiento a ON a.id = l.asiento_id
-         JOIN contabilidad.cuenta_contable c ON c.id = l.cuenta_id
-         CROSS JOIN naturaleza n
-        WHERE l.cuenta_id IN (SELECT id FROM sub)
-          AND a.fecha <= $3::date
-     )`;
-
-export async function resumenMayor(cuentaId: string, f: FiltroLibros): Promise<ResumenMayor> {
-  const fila = await consultarUna<ResumenMayor>(
-    `WITH RECURSIVE ${LINEAS_MAYOR}
-     SELECT coalesce(sum(efecto) FILTER (WHERE fecha < $2::date), 0)::numeric(14,2)::text AS "saldoInicial",
-            coalesce(sum(debe) FILTER (WHERE fecha >= $2::date), 0)::numeric(14,2)::text AS debe,
-            coalesce(sum(haber) FILTER (WHERE fecha >= $2::date), 0)::numeric(14,2)::text AS haber,
-            coalesce(sum(efecto), 0)::numeric(14,2)::text AS "saldoFinal",
-            count(*) FILTER (WHERE fecha >= $2::date)::int AS movimientos
-       FROM lineas`,
-    [cuentaId, f.desde, f.hasta],
-  );
-  return fila ?? { saldoInicial: "0.00", debe: "0.00", haber: "0.00", saldoFinal: "0.00", movimientos: 0 };
-}
-
-/**
- * Cada movimiento del rango con su saldo corrido. El saldo es una función
- * de ventana sobre TODAS las líneas hasta `hasta`, así arranca en el saldo
- * inicial sin calcularlo aparte; el filtro por `desde` va por fuera, porque
- * filtrar dentro cortaría la ventana. La ventana se evalúa antes del LIMIT:
- * el tope recorta lo que se pinta, no el saldo.
- */
-export async function movimientosMayor(
-  cuentaId: string,
-  f: FiltroLibros,
-  tope: number | null = TOPE_MAYOR,
-): Promise<MovimientoMayor[]> {
-  return consultar<MovimientoMayor>(
-    `WITH RECURSIVE ${LINEAS_MAYOR},
-     corrido AS (
-       SELECT *, sum(efecto) OVER (
-                   ORDER BY fecha, numero, (debe > 0) DESC, codigo COLLATE "C", id
-                   ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS saldo
-         FROM lineas
+        WHERE a.fecha <= $2::date AND a.procesado_en IS NOT NULL
+        GROUP BY l.cuenta_id
+     ),
+     aux AS (
+       SELECT m.id AS mayor_id, m.codigo AS mayor_codigo, m.nombre AS mayor_nombre, am.ruta,
+              h.id, h.codigo, h.nombre,
+              coalesce(v.debe, 0) AS debe, coalesce(v.haber, 0) AS haber,
+              CASE WHEN h.tipo IN ('activo', 'gasto')
+                   THEN coalesce(v.debe_total, 0) - coalesce(v.haber_total, 0)
+                   ELSE coalesce(v.haber_total, 0) - coalesce(v.debe_total, 0) END AS saldo,
+              (v.debe_total <> 0 OR v.haber_total <> 0) IS TRUE AS con_algo
+         FROM contabilidad.cuenta_contable m
+         JOIN arbol am ON am.id = m.id
+         JOIN contabilidad.cuenta_contable h ON h.padre_id = m.id AND h.admite_movimiento
+         LEFT JOIN mov v ON v.cuenta_id = h.id
      )
-     SELECT id, asiento_id AS "asientoId", numero::text AS numero,
-            to_char(fecha, 'YYYY-MM-DD') AS fecha, concepto, codigo,
-            nombre AS cuenta, descripcion, debe::text AS debe, haber::text AS haber,
-            saldo::text AS saldo
-       FROM corrido
-      WHERE fecha >= $2::date
-      ORDER BY fecha, numero, (debe > 0) DESC, codigo COLLATE "C", id
-      LIMIT $4`,
-    [cuentaId, f.desde, f.hasta, tope],
+     SELECT mayor_id, mayor_codigo, mayor_nombre,
+            (sum(debe) OVER w)::numeric(14,2)::text AS mayor_debe,
+            (sum(haber) OVER w)::numeric(14,2)::text AS mayor_haber,
+            (sum(saldo) OVER w)::numeric(14,2)::text AS mayor_saldo,
+            id, codigo, nombre,
+            debe::numeric(14,2)::text AS debe, haber::numeric(14,2)::text AS haber,
+            saldo::numeric(14,2)::text AS saldo, con_algo
+       FROM aux
+     WINDOW w AS (PARTITION BY mayor_id)
+      ORDER BY ruta, codigo COLLATE "C"`,
+    [f.desde, f.hasta],
   );
+
+  const mayores: FilaMayor[] = [];
+  for (const fila of filas) {
+    let actual = mayores.at(-1);
+    if (!actual || actual.id !== fila.mayor_id) {
+      actual = {
+        id: fila.mayor_id,
+        codigo: fila.mayor_codigo,
+        nombre: fila.mayor_nombre,
+        debe: fila.mayor_debe,
+        haber: fila.mayor_haber,
+        saldo: fila.mayor_saldo,
+        auxiliares: [],
+      };
+      mayores.push(actual);
+    }
+    if (f.ceros || fila.con_algo) {
+      actual.auxiliares.push({
+        id: fila.id,
+        codigo: fila.codigo,
+        nombre: fila.nombre,
+        debe: fila.debe,
+        haber: fila.haber,
+        saldo: fila.saldo,
+      });
+    }
+  }
+
+  const desde = f.cuentaDesde ? mayores.findIndex((m) => m.codigo === f.cuentaDesde) : 0;
+  const hasta = f.cuentaHasta ? mayores.findIndex((m) => m.codigo === f.cuentaHasta) : mayores.length - 1;
+  // Un código que ya no existe no vacía el libro: se ignora ese extremo.
+  const [inicio, fin] = [desde < 0 ? 0 : desde, hasta < 0 ? mayores.length - 1 : hasta].sort((a, b) => a - b);
+
+  return mayores.slice(inicio, fin + 1).filter((m) => m.auxiliares.length > 0);
 }
 
 // ── Balanza de comprobación ────────────────────────────────────────────
@@ -419,29 +452,20 @@ export type FilaBalanza = {
   nivel: number;
   /** false = cuenta de grupo: su fila es el subtotal de sus descendientes. */
   admiteMovimiento: boolean;
-  saldoInicial: string;
   debe: string;
   haber: string;
-  saldoFinal: string;
 };
 
 /**
- * Una fila por cuenta, en orden de árbol. `cierre` es la clausura del
- * árbol (cada cuenta con ella misma y con todas sus descendientes): la
- * fila de un grupo suma lo de sus hojas sin que la app recorra nada.
- * Los saldos llevan el signo natural de cada cuenta (ver `CuentaMayor`).
+ * Una fila por cuenta, en orden de árbol, con el débito y el crédito del
+ * rango. Sin saldo anterior ni final: el departamento los pidió fuera
+ * (Observaciones #1). `cierre` es la clausura del árbol (cada cuenta con
+ * ella misma y con todas sus descendientes): la fila de un grupo suma lo de
+ * sus hojas sin que la app recorra nada.
  */
 export async function balanza(f: FiltroLibros): Promise<FilaBalanza[]> {
   return consultar<FilaBalanza>(
-    `WITH RECURSIVE arbol AS (
-       SELECT c.id, 0 AS nivel, ARRAY[c.codigo COLLATE "C"] AS ruta
-         FROM contabilidad.cuenta_contable c
-        WHERE c.padre_id IS NULL
-       UNION ALL
-       SELECT h.id, a.nivel + 1, a.ruta || (h.codigo COLLATE "C")
-         FROM contabilidad.cuenta_contable h
-         JOIN arbol a ON h.padre_id = a.id
-     ),
+    `WITH RECURSIVE ${ARBOL},
      cierre AS (
        SELECT id AS ancestro, id AS descendiente FROM contabilidad.cuenta_contable
        UNION ALL
@@ -450,20 +474,14 @@ export async function balanza(f: FiltroLibros): Promise<FilaBalanza[]> {
          JOIN contabilidad.cuenta_contable h ON h.padre_id = ci.descendiente
      ),
      mov AS (
-       SELECT l.cuenta_id,
-              coalesce(sum(l.debe) FILTER (WHERE a.fecha < $1::date), 0) AS debe_previo,
-              coalesce(sum(l.haber) FILTER (WHERE a.fecha < $1::date), 0) AS haber_previo,
-              coalesce(sum(l.debe) FILTER (WHERE a.fecha >= $1::date), 0) AS debe,
-              coalesce(sum(l.haber) FILTER (WHERE a.fecha >= $1::date), 0) AS haber
+       SELECT l.cuenta_id, sum(l.debe) AS debe, sum(l.haber) AS haber
          FROM contabilidad.asiento_linea l
          JOIN contabilidad.asiento a ON a.id = l.asiento_id
-        WHERE a.fecha <= $2::date
+        WHERE a.fecha BETWEEN $1::date AND $2::date AND a.procesado_en IS NOT NULL
         GROUP BY l.cuenta_id
      ),
      suma AS (
        SELECT ci.ancestro AS id,
-              coalesce(sum(m.debe_previo), 0) AS debe_previo,
-              coalesce(sum(m.haber_previo), 0) AS haber_previo,
               coalesce(sum(m.debe), 0) AS debe,
               coalesce(sum(m.haber), 0) AS haber
          FROM cierre ci
@@ -472,18 +490,12 @@ export async function balanza(f: FiltroLibros): Promise<FilaBalanza[]> {
      )
      SELECT c.id, c.codigo, c.nombre, c.tipo, a.nivel,
             c.admite_movimiento AS "admiteMovimiento",
-            (CASE WHEN c.tipo IN ('activo', 'gasto') THEN s.debe_previo - s.haber_previo
-                  ELSE s.haber_previo - s.debe_previo END)::numeric(14,2)::text AS "saldoInicial",
             s.debe::numeric(14,2)::text AS debe,
-            s.haber::numeric(14,2)::text AS haber,
-            (CASE WHEN c.tipo IN ('activo', 'gasto')
-                  THEN s.debe_previo + s.debe - s.haber_previo - s.haber
-                  ELSE s.haber_previo + s.haber - s.debe_previo - s.debe END)::numeric(14,2)::text AS "saldoFinal"
+            s.haber::numeric(14,2)::text AS haber
        FROM arbol a
        JOIN contabilidad.cuenta_contable c ON c.id = a.id
        JOIN suma s ON s.id = c.id
-      WHERE $3::boolean
-         OR s.debe_previo <> 0 OR s.haber_previo <> 0 OR s.debe <> 0 OR s.haber <> 0
+      WHERE $3::boolean OR s.debe <> 0 OR s.haber <> 0
       ORDER BY a.ruta`,
     [f.desde, f.hasta, f.ceros],
   );

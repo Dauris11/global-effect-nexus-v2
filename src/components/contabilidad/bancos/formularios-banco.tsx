@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { ArrowLeftRight, Loader2, Save, Upload } from "lucide-react";
+import { useActionState, useState } from "react";
+import { ArrowLeftRight, Link2, Loader2, Save, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
@@ -11,17 +11,18 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "@/i18n/navigation";
 import {
-  importarEstadoCuenta,
   registrarTasa,
+  subirEstadoBanco,
   transferirEntreCuentas,
+  vincularCuentaContable,
   type EstadoBanco,
 } from "@/server/contabilidad/bancos/acciones";
 import type { OpcionCuenta } from "@/server/contabilidad/recibos/consultas";
@@ -181,103 +182,140 @@ export function FormularioTasa({ hoy }: { hoy: string }) {
 }
 
 /**
- * Importar el estado de cuenta. Las columnas vienen precargadas con la
- * configuración del banco (`banco.config_estado`): el contable solo las
- * toca si el banco cambió el formato de su exportación.
+ * Subir el estado de cuenta (.csv) desde la cuenta (Observaciones #1). Las
+ * columnas vienen precargadas con la configuración del banco
+ * (`banco.config_estado`): el contable solo las toca si el banco cambió el
+ * formato de su exportación. Subir dos veces el mismo periodo no duplica:
+ * el servidor salta lo que ya tenía y lo dice.
  */
-export function ImportarEstado({
-  cuentaId,
-  config,
-  desde,
-  hasta,
-}: {
-  cuentaId: string;
-  config: Record<string, string>;
-  desde: string;
-  hasta: string;
-}) {
+export function DialogoSubirEstado({ cuentaId, config }: { cuentaId: string; config: Record<string, string> }) {
   const t = useTranslations("contab.conciliacion.importar");
-  const router = useRouter();
-  const [estado, enviar, enviando] = useActionState(importarEstadoCuenta, INICIAL);
+  const [abierto, setAbierto] = useState(false);
+  const [estado, enviar, enviando] = useActionState(subirEstadoBanco, INICIAL);
   const error = useError(estado);
 
-  useEffect(() => {
-    if (estado.estado === "ok" && estado.id) {
-      router.push(`/contabilidad/bancos/${cuentaId}/conciliacion/${estado.id}`);
-    }
-  }, [estado, router, cuentaId]);
-
-  const columnas: [string, string][] = [
-    ["col_fecha", "fecha"],
-    ["col_descripcion", "descripcion"],
-    ["col_referencia", "referencia"],
-    ["col_debito", "debito"],
-    ["col_credito", "credito"],
-    ["col_monto", "monto"],
-    ["col_saldo", "saldo"],
+  const columnas: [string, string, string][] = [
+    ["col_fecha", "fecha", t("colFecha")],
+    ["col_descripcion", "descripcion", t("colDescripcion")],
+    ["col_referencia", "referencia", t("colReferencia")],
+    ["col_debito", "debito", t("colDebito")],
+    ["col_credito", "credito", t("colCredito")],
+    ["col_monto", "monto", t("colMonto")],
+    ["col_saldo", "saldo", t("colSaldo")],
   ];
-  const etiquetas: Record<string, string> = {
-    fecha: t("colFecha"),
-    descripcion: t("colDescripcion"),
-    referencia: t("colReferencia"),
-    debito: t("colDebito"),
-    credito: t("colCredito"),
-    monto: t("colMonto"),
-    saldo: t("colSaldo"),
-  };
 
   return (
-    <form action={enviar} className="space-y-5">
-      <input type="hidden" name="cuenta" value={cuentaId} />
-      <FormularioGuiado>
-        <PasoFormulario titulo={t("pasos.archivo")}>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Campo id="archivo_ec" etiqueta={t("archivo")}>
-              <Input id="archivo_ec" name="archivo" type="file" accept=".csv,text/csv" required />
-            </Campo>
-            <Campo id="desde_ec" etiqueta={t("desde")}>
-              <Input id="desde_ec" name="desde" type="date" defaultValue={desde} required />
-            </Campo>
-            <Campo id="hasta_ec" etiqueta={t("hasta")}>
-              <Input id="hasta_ec" name="hasta" type="date" defaultValue={hasta} required />
-            </Campo>
-            <Campo id="saldo_banco" etiqueta={t("saldo")}>
-              <Input id="saldo_banco" name="saldo_banco" inputMode="decimal" required />
-            </Campo>
-          </div>
-        </PasoFormulario>
-
-        <PasoFormulario titulo={t("columnas")}>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {columnas.map(([nombre, clave]) => (
-              <Campo key={nombre} id={nombre} etiqueta={etiquetas[clave]}>
-                <Input id={nombre} name={nombre} defaultValue={config[clave] ?? ""} maxLength={60} />
+    <Dialog open={abierto} onOpenChange={setAbierto}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Upload className="size-4" />
+          {t("boton")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{t("titulo")}</DialogTitle>
+          <DialogDescription>{t("descripcion")}</DialogDescription>
+        </DialogHeader>
+        <form action={enviar} className="space-y-5">
+          <input type="hidden" name="cuenta" value={cuentaId} />
+          <Campo id="archivo_ec" etiqueta={t("archivo")}>
+            <Input id="archivo_ec" name="archivo" type="file" accept=".csv,text/csv" required />
+          </Campo>
+          <details className="rounded-control border border-linea p-3">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium text-tinta">
+              {t("columnas")}
+            </summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {columnas.map(([nombre, clave, etiqueta]) => (
+                <Campo key={nombre} id={nombre} etiqueta={etiqueta}>
+                  <Input id={nombre} name={nombre} defaultValue={config[clave] ?? ""} maxLength={60} />
+                </Campo>
+              ))}
+              <Campo id="formato_fecha" etiqueta={t("formatoFecha")}>
+                <select id="formato_fecha" name="formato_fecha" className={SELECT} defaultValue={config.formatoFecha ?? "DD/MM/YYYY"}>
+                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                </select>
               </Campo>
-            ))}
-            <Campo id="formato_fecha" etiqueta={t("formatoFecha")}>
-              <select id="formato_fecha" name="formato_fecha" className={SELECT} defaultValue={config.formatoFecha ?? "DD/MM/YYYY"}>
-                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-              </select>
-            </Campo>
-            <Campo id="separador" etiqueta={t("separador")}>
-              <select id="separador" name="separador" className={SELECT} defaultValue={config.separadorDecimal ?? "."}>
-                <option value=".">{t("punto")}</option>
-                <option value=",">{t("coma")}</option>
-              </select>
-            </Campo>
-          </div>
-        </PasoFormulario>
+              <Campo id="separador" etiqueta={t("separador")}>
+                <select id="separador" name="separador" className={SELECT} defaultValue={config.separadorDecimal ?? "."}>
+                  <option value=".">{t("punto")}</option>
+                  <option value=",">{t("coma")}</option>
+                </select>
+              </Campo>
+            </div>
+          </details>
+          {error && <AvisoError>{error}</AvisoError>}
+          {estado.estado === "ok" && (
+            <AvisoOk>{t("resultado", { nuevas: estado.nuevas ?? 0, repetidas: estado.repetidas ?? 0 })}</AvisoOk>
+          )}
+          <DialogFooter>
+            <Button type="submit" disabled={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+              {t("guardar")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-        {error && <AvisoError>{error}</AvisoError>}
-        <AccionesFormulario>
-          <Button type="submit" disabled={enviando}>
-            {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-            {t("guardar")}
-          </Button>
-        </AccionesFormulario>
-      </FormularioGuiado>
-    </form>
+/** Vincular el banco con su cuenta contable auxiliar. */
+export function DialogoVincularCuenta({
+  cuentaId,
+  actual,
+  opciones,
+}: {
+  cuentaId: string;
+  actual: string;
+  opciones: { id: string; codigo: string; nombre: string }[];
+}) {
+  const t = useTranslations("contab.conciliacion.vincular");
+  const [abierto, setAbierto] = useState(false);
+  const [estado, enviar, enviando] = useActionState(
+    async (previo: EstadoBanco, datos: FormData) => {
+      const resultado = await vincularCuentaContable(previo, datos);
+      if (resultado.estado === "ok") setAbierto(false);
+      return resultado;
+    },
+    INICIAL,
+  );
+  const error = useError(estado);
+
+  return (
+    <Dialog open={abierto} onOpenChange={setAbierto}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Link2 className="size-4" />
+          {t("boton")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("titulo")}</DialogTitle>
+          <DialogDescription>{t("descripcion")}</DialogDescription>
+        </DialogHeader>
+        <form action={enviar} className="space-y-4">
+          <input type="hidden" name="cuenta" value={cuentaId} />
+          <Campo id="cuenta_contable" etiqueta={t("cuenta")}>
+            <select id="cuenta_contable" name="cuenta_contable" className={SELECT} defaultValue={actual} required>
+              {opciones.map((c) => (
+                <option key={c.id} value={c.id}>{`${c.codigo} · ${c.nombre}`}</option>
+              ))}
+            </select>
+          </Campo>
+          {error && <AvisoError>{error}</AvisoError>}
+          <DialogFooter>
+            <Button type="submit" disabled={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {t("guardar")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

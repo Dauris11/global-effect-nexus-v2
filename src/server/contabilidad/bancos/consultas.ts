@@ -29,7 +29,11 @@ export type CuentaConSaldo = {
   saldo_dop: string | null;
   estado: "activa" | "cerrada";
   movimientos: number;
+  /** Fecha de la última transacción del banco ya conciliada. */
   ultima_conciliacion: string | null;
+  /** La cuenta contable auxiliar del banco: con ella se buscan los asientos a conciliar. */
+  cuenta_contable_id: string;
+  cuenta_contable: string;
 };
 
 export async function cuentasConSaldo(): Promise<CuentaConSaldo[]> {
@@ -42,10 +46,14 @@ export async function cuentasConSaldo(): Promise<CuentaConSaldo[]> {
                          * contabilidad.tasa_referencia(CURRENT_DATE), 2)
             END::text AS saldo_dop,
             coalesce(s.n, 0)::int AS movimientos,
-            (SELECT max(c.hasta)::text FROM contabilidad.conciliacion c
-              WHERE c.cuenta_id = cb.id AND c.estado = 'cerrada') AS ultima_conciliacion
+            (SELECT max(e.fecha)::text
+               FROM contabilidad.conciliacion_partida p
+               JOIN contabilidad.extracto_linea e ON e.id = p.extracto_linea_id
+              WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL) AS ultima_conciliacion,
+            cb.cuenta_contable_id, cc.codigo || ' · ' || cc.nombre AS cuenta_contable
        FROM contabilidad.cuenta_bancaria cb
        JOIN contabilidad.banco b ON b.id = cb.banco_id
+       JOIN contabilidad.cuenta_contable cc ON cc.id = cb.cuenta_contable_id
        LEFT JOIN LATERAL (
          SELECT sum(m.importe) AS suma, count(*) AS n
            FROM contabilidad.movimiento_bancario m
@@ -104,7 +112,6 @@ export type FilaLibro = {
   /** Saldo después de este movimiento; null en los anulados. */
   saldo: string | null;
   estado: "vigente" | "anulado";
-  conciliado: boolean;
   origen_tabla: string | null;
   origen_id: string | null;
 };
@@ -141,7 +148,7 @@ export async function libroDeBanco(cuentaId: string, filtro: FiltroLibro): Promi
      SELECT id, numero::text AS numero, fecha::text AS fecha, tipo, concepto, referencia,
             beneficiario, cheque_numero::text AS cheque_numero, estado_cheque,
             importe::text AS importe, saldo_corrido::text AS saldo, estado,
-            conciliacion_id IS NOT NULL AS conciliado, origen_tabla, origen_id
+            origen_tabla, origen_id
        FROM historia
       WHERE ($2::date IS NULL OR fecha >= $2)
         AND ($3::date IS NULL OR fecha <= $3)
@@ -179,137 +186,110 @@ export async function libroDeBanco(cuentaId: string, filtro: FiltroLibro): Promi
   };
 }
 
-export type FilaConciliacion = {
+// ── Conciliación partida por partida (0081) ────────────────────────────
+
+/** Una transacción del estado de cuenta que todavía no tiene pareja. */
+export type LineaExtracto = {
   id: string;
-  desde: string;
-  hasta: string;
-  saldo_banco: string;
-  estado: "abierta" | "cerrada";
-  lineas: number;
-  confirmadas: number;
-  creado_por: string;
+  fecha: string;
+  descripcion: string;
+  referencia: string | null;
+  /** Con signo, como lo dice el banco: + entra, − sale. */
+  monto: string;
 };
 
-export async function conciliacionesDeCuenta(cuentaId: string): Promise<FilaConciliacion[]> {
-  return consultar<FilaConciliacion>(
-    `SELECT c.id, c.desde::text AS desde, c.hasta::text AS hasta, c.saldo_banco::text AS saldo_banco,
-            c.estado, u.nombre AS creado_por,
-            (SELECT count(*)::int FROM contabilidad.conciliacion_linea l WHERE l.conciliacion_id = c.id) AS lineas,
-            (SELECT count(*)::int FROM contabilidad.conciliacion_linea l
-              WHERE l.conciliacion_id = c.id AND l.confirmada) AS confirmadas
-       FROM contabilidad.conciliacion c
-       JOIN usuario u ON u.id = c.creado_por
-      WHERE c.cuenta_id = $1
-      ORDER BY c.hasta DESC`,
+/** Una línea de asiento en la cuenta auxiliar del banco, sin pareja. */
+export type LineaAsientoBanco = {
+  id: string;
+  asiento_id: string;
+  numero: string;
+  fecha: string;
+  concepto: string;
+  /** Débito − crédito: el mismo signo que el banco (un débito a Bancos es dinero que entra). */
+  monto: string;
+};
+
+export type PartidaConciliada = {
+  id: string;
+  conciliado_en: string;
+  conciliado_por: string;
+  banco_fecha: string;
+  banco_descripcion: string;
+  banco_referencia: string | null;
+  monto: string;
+  asiento_id: string;
+  asiento_numero: string;
+  asiento_concepto: string;
+};
+
+export type PorConciliar = { banco: LineaExtracto[]; libros: LineaAsientoBanco[] };
+
+/**
+ * Lo que falta conciliar en la cuenta, de los dos lados. Los asientos son
+ * los que tocan la cuenta contable auxiliar del banco, procesados o no (el
+ * contable concilia contra lo que registró), y nunca los anulados: lo que
+ * se revirtió no pasó por el banco.
+ */
+export async function porConciliar(cuentaId: string): Promise<PorConciliar> {
+  const [banco, libros] = await Promise.all([
+    consultar<LineaExtracto>(
+      `SELECT e.id, e.fecha::text AS fecha, e.descripcion, e.referencia, e.monto::text AS monto
+         FROM contabilidad.extracto_linea e
+        WHERE e.cuenta_id = $1
+          AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                           WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL)
+        ORDER BY e.fecha, e.id
+        LIMIT 500`,
+      [cuentaId],
+    ),
+    consultar<LineaAsientoBanco>(
+      `SELECT l.id, a.id AS asiento_id, a.numero::text AS numero, a.fecha::text AS fecha,
+              coalesce(l.descripcion, a.concepto) AS concepto, (l.debe - l.haber)::text AS monto
+         FROM contabilidad.cuenta_bancaria cb
+         JOIN contabilidad.asiento_linea l ON l.cuenta_id = cb.cuenta_contable_id
+         JOIN contabilidad.asiento a ON a.id = l.asiento_id
+        WHERE cb.id = $1 AND NOT a.anulado
+          AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                           WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL)
+        ORDER BY a.fecha, a.numero
+        LIMIT 500`,
+      [cuentaId],
+    ),
+  ]);
+  return { banco, libros };
+}
+
+export async function partidasConciliadas(cuentaId: string): Promise<PartidaConciliada[]> {
+  return consultar<PartidaConciliada>(
+    `SELECT p.id,
+            to_char(p.conciliado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD') AS conciliado_en,
+            u.nombre AS conciliado_por,
+            e.fecha::text AS banco_fecha, e.descripcion AS banco_descripcion,
+            e.referencia AS banco_referencia, e.monto::text AS monto,
+            a.id AS asiento_id, a.numero::text AS asiento_numero, a.concepto AS asiento_concepto
+       FROM contabilidad.conciliacion_partida p
+       JOIN contabilidad.extracto_linea e ON e.id = p.extracto_linea_id
+       JOIN contabilidad.asiento_linea l ON l.id = p.asiento_linea_id
+       JOIN contabilidad.asiento a ON a.id = l.asiento_id
+       JOIN public.usuario u ON u.id = p.conciliado_por
+      WHERE p.cuenta_id = $1 AND p.anulado_en IS NULL
+      ORDER BY e.fecha DESC, p.conciliado_en DESC
+      LIMIT 500`,
     [cuentaId],
   );
 }
 
-export type LineaConciliacion = {
-  id: string;
-  linea: number;
-  fecha: string;
-  descripcion: string;
-  referencia: string | null;
-  monto: string;
-  confirmada: boolean;
-  movimiento_id: string | null;
-  movimiento_numero: string | null;
-  movimiento_fecha: string | null;
-  movimiento_concepto: string | null;
-};
+export type CuentaAuxiliar = { id: string; codigo: string; nombre: string };
 
-export type PartidaTransito = {
-  id: string;
-  numero: string;
-  fecha: string;
-  tipo: TipoMovimientoBanco;
-  concepto: string;
-  importe: string;
-};
-
-export type DetalleConciliacion = {
-  id: string;
-  cuenta_id: string;
-  cuenta: string;
-  moneda: Moneda;
-  desde: string;
-  hasta: string;
-  saldo_banco: string;
-  estado: "abierta" | "cerrada";
-  archivo_nombre: string | null;
-  cerrada_por: string | null;
-  cerrada_en: string | null;
-  /** Saldo según libros al `hasta`. */
-  saldo_libros: string;
-  lineas: LineaConciliacion[];
-  /** En libros y no en el banco: depósitos y cheques en tránsito. */
-  transito: PartidaTransito[];
-};
-
-/**
- * Todo lo que necesita el reporte de conciliación: el saldo según el
- * banco, el saldo según libros al cierre del rango, lo que el banco trae y
- * los libros no (líneas sin pareja) y lo que los libros traen y el banco
- * todavía no (partidas en tránsito). La cuadratura la hace la pantalla con
- * sumas que también salen de aquí, ya hechas por la base.
- */
-export async function conciliacionPorId(id: string): Promise<DetalleConciliacion | null> {
-  if (!esUuid(id)) return null;
-
-  const cabecera = await consultarUna<Omit<DetalleConciliacion, "lineas" | "transito">>(
-    `SELECT c.id, c.cuenta_id, cb.nombre AS cuenta, cb.moneda, c.desde::text AS desde,
-            c.hasta::text AS hasta, c.saldo_banco::text AS saldo_banco, c.estado,
-            c.archivo_nombre, u.nombre AS cerrada_por, c.cerrada_en::text AS cerrada_en,
-            (cb.saldo_inicial + coalesce((
-               SELECT sum(m.importe) FROM contabilidad.movimiento_bancario m
-                WHERE m.cuenta_id = cb.id AND m.estado = 'vigente' AND m.fecha <= c.hasta), 0))::text
-              AS saldo_libros
-       FROM contabilidad.conciliacion c
-       JOIN contabilidad.cuenta_bancaria cb ON cb.id = c.cuenta_id
-       LEFT JOIN usuario u ON u.id = c.cerrada_por
-      WHERE c.id = $1`,
-    [id],
+/** Cuentas auxiliares de activo a las que se puede vincular un banco. */
+export async function cuentasAuxiliaresDeActivo(): Promise<CuentaAuxiliar[]> {
+  return consultar<CuentaAuxiliar>(
+    `SELECT id, codigo, nombre FROM contabilidad.cuenta_contable
+      WHERE tipo = 'activo' AND admite_movimiento AND activa
+      ORDER BY codigo COLLATE "C"`,
   );
-  if (!cabecera) return null;
-
-  const [lineas, transito] = await Promise.all([
-    consultar<LineaConciliacion>(
-      `SELECT l.id, l.linea, l.fecha::text AS fecha, l.descripcion, l.referencia,
-              l.monto::text AS monto, l.confirmada, l.movimiento_id,
-              m.numero::text AS movimiento_numero, m.fecha::text AS movimiento_fecha,
-              m.concepto AS movimiento_concepto
-         FROM contabilidad.conciliacion_linea l
-         LEFT JOIN contabilidad.movimiento_bancario m ON m.id = l.movimiento_id
-        WHERE l.conciliacion_id = $1
-        ORDER BY l.fecha, l.linea`,
-      [id],
-    ),
-    // Movimientos vigentes hasta el cierre que no quedaron conciliados en
-    // ninguna conciliación anterior ni emparejados en esta.
-    consultar<PartidaTransito>(
-      `SELECT m.id, m.numero::text AS numero, m.fecha::text AS fecha, m.tipo, m.concepto,
-              m.importe::text AS importe
-         FROM contabilidad.movimiento_bancario m
-         JOIN contabilidad.conciliacion c ON c.id = $1
-        WHERE m.cuenta_id = c.cuenta_id
-          AND m.estado = 'vigente'
-          AND m.fecha <= c.hasta
-          AND m.conciliacion_id IS NULL
-          AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_linea l
-                           WHERE l.conciliacion_id = c.id AND l.movimiento_id = m.id)
-        ORDER BY m.fecha, m.numero`,
-      [id],
-    ),
-  ]);
-
-  return { ...cabecera, lineas, transito };
 }
 
-/**
- * Configuración del estado de cuenta del banco de una cuenta, para
- * precargar el formulario de importación.
- */
 export async function configuracionEstado(
   cuentaId: string,
 ): Promise<{ adaptador: string; config: Record<string, string> } | null> {

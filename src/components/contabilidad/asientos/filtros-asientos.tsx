@@ -12,6 +12,7 @@ import { TIPOS_ASIENTO } from "@/lib/contabilidad/asientos";
 import { mesLargo } from "@/lib/fechas";
 import {
   FILTRO_ANULADOS,
+  FILTRO_PROCESO,
   type FiltroAsientos,
   type PeriodoContable,
 } from "@/server/contabilidad/asientos/consultas";
@@ -40,6 +41,7 @@ export async function FiltrosAsientos({
     if (filtro.periodo) consulta.set("periodo", filtro.periodo);
     if (filtro.texto) consulta.set("q", filtro.texto);
     if (filtro.anulados) consulta.set("anulados", filtro.anulados);
+    if (filtro.proceso) consulta.set("proceso", filtro.proceso);
     if (tipo) consulta.set("tipo", tipo);
     const texto = consulta.toString();
     return `/contabilidad/asientos${texto ? `?${texto}` : ""}`;
@@ -60,7 +62,7 @@ export async function FiltrosAsientos({
         ))}
       </FilaChips>
 
-      <form method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+      <form method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
         {filtro.tipo && <input type="hidden" name="tipo" value={filtro.tipo} />}
         <Campo etiqueta={t("filtros.buscar")} className="sm:col-span-2 lg:col-span-1">
           <Input name="q" type="search" defaultValue={filtro.texto ?? ""} maxLength={80} />
@@ -73,6 +75,16 @@ export async function FiltrosAsientos({
                 {p.cerrado
                   ? t("filtros.periodoCerrado", { mes: mesLargo(p.clave, idioma) })
                   : mesLargo(p.clave, idioma)}
+              </option>
+            ))}
+          </select>
+        </Campo>
+        <Campo etiqueta={t("filtros.proceso")}>
+          <select name="proceso" defaultValue={filtro.proceso ?? ""} className={SELECT}>
+            <option value="">{t("filtros.procesoTodos")}</option>
+            {FILTRO_PROCESO.map((v) => (
+              <option key={v} value={v}>
+                {t(`filtros.proceso_${v}`)}
               </option>
             ))}
           </select>

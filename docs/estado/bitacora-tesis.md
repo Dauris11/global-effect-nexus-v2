@@ -509,6 +509,79 @@ prueba manual listada en `pendientes.md`.
 
 ---
 
+## 12 nov 2026 — Observaciones #1 del Departamento de Contabilidad
+
+**Qué se pidió.** El contador revisó el portal con capturas y dejó once
+observaciones; además, quitar del portal lo que el departamento no usa.
+
+**Qué se hizo, observación por observación.**
+1. *Inicio: «¿a qué mes, trimestre o año se refiere?»* El tablero nombra el
+   periodo («noviembre de 2026», «4.º trimestre 2026») con su rango de fechas y
+   flechas para ir al anterior o al siguiente (`?ref=` en la URL). Las cifras
+   salen de ese rango y no de `CURRENT_DATE`.
+2. *El atajo ⌘K en Windows.* Se rotula «Ctrl K» y solo en Mac «⌘K».
+3. *Estados «Sin procesar» y «Procesado».* Migración `0080`: `asiento.procesado_en`.
+   Lo nuevo nace sin procesar y no entra al diario, mayor, balanza, estados
+   financieros, cierre ni presupuesto hasta que alguien con
+   `contabilidad.aprobar` lo procesa (desde la ficha o eligiendo varios en la
+   lista). Un período no se cierra con asientos sin procesar (disparador).
+4. *Débito y Crédito* en lugar de Debe y Haber, en pantalla y en Excel.
+5. *Quitar las tarjetas de totales* de los libros. Los totales siguen al pie.
+6. *Diario con cuentas auxiliares y sus montos.* Cada asiento muestra la cuenta
+   mayor con su monto y debajo sus auxiliares en la columna «Auxiliar».
+7. *Mayor general sin movimientos.* Cuentas mayores con débito, crédito y saldo,
+   plegables (`<details>`) para ver sus auxiliares, filtradas por un rango
+   «desde la cuenta / hasta la cuenta».
+8. *Balanza sin saldo anterior ni final.* Débito y crédito del rango.
+9. a 11. *Bancos.* Migración `0081`: `extracto_linea` y `conciliacion_partida`.
+   El estado de cuenta (.csv) se sube desde la propia cuenta y no se duplica:
+   cada transacción se reconoce por su referencia (o fecha + monto +
+   descripción si no trae). La cuenta muestra su cuenta contable auxiliar y se
+   puede cambiar. «Conciliar» enfrenta lo que trae el banco con las líneas de
+   asiento de esa auxiliar; se empareja una con otra si el monto coincide. Lo
+   conciliado se lista y cada pareja se puede anular.
+
+**Módulos retirados del menú.** Por la lista de lo que el departamento sí usa
+(archivos, Gantt de cuentas por pagar, tareas, proveedores, bancos en pesos y
+dólares, proyectos con presupuesto, cajas por persona o departamento, recibos
+con filtros, reportes de bancos, historial de gastos, recibos de egreso):
+fuera nómina, impuestos, retenciones, activos fijos, consumibles,
+calculadoras, centros de costo, órdenes de compra, comprobantes recibidos,
+terceros, fondos, donaciones, la rendición por fondo y el `/reportes`
+repetido. Solo salen del registro `MODULOS_CONTABLES`; rutas y tablas siguen.
+La conciliación por lotes de la `0036` sí se borró de la interfaz: la sustituye
+la nueva.
+
+**Decisiones y motivo.**
+- *Los asientos que ya existían quedan procesados*: ya estaban en los libros y
+  sacarlos cambiaría balances ya vistos. Se rellenan con el `DEFAULT` del
+  `ALTER`, que no dispara la protección de períodos cerrados.
+- *Un asiento y su reverso se procesan juntos* (y los asientos de un mismo
+  documento): procesar solo el reverso restaría en el mayor algo que nunca se
+  sumó.
+- *Conciliar contra líneas de asiento y no contra el libro de banco*: así entra
+  también un asiento manual que tocó la cuenta del banco, que es lo que pidió
+  el contador («asientos no conciliados que utilicen bancos»).
+- *Ocultar módulos en vez de borrarlos*: lo decidió el usuario; es reversible.
+
+**Alternativas descartadas.** Un estado «procesado» solo visual, sin efecto en
+los libros (no respondería a la observación). Mantener la conciliación por
+lotes junto a la nueva (dos formas de hacer lo mismo). Comparar códigos de
+cuenta como texto para el rango del mayor («1.10» quedaría entre «1.1.01» y
+«1.1.02»): se usa la posición en el árbol.
+
+**Corrección colateral.** El balance general sumaba todas las líneas de la
+historia: el `LEFT JOIN` al asiento no descartaba las de asientos anulados o
+fuera de fecha. Ahora suma con `FILTER (WHERE a.id IS NOT NULL)`.
+
+**Verificación.** `lint`, `build`, `i18n:check` y `audit:ui` en verde.
+**Limitaciones.** Las migraciones `0080` y `0081` no se aplicaron ni se
+ensayaron contra la base (está en Supabase y se pidió permiso antes). Falta
+probar en el navegador. La conciliación es una a una; un depósito del banco que
+junta varios recibos todavía no se puede emparejar con varios asientos.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

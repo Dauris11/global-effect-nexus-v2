@@ -219,12 +219,15 @@ export async function obtenerBalanceGeneral(filtros?: {
        c.tipo,
        c.padre_id,
        c.admite_movimiento,
-       COALESCE(SUM(al.debe), 0) AS total_debe,
-       COALESCE(SUM(al.haber), 0) AS total_haber
+       -- FILTER: el LEFT JOIN al asiento no descarta la línea cuando su
+       -- asiento no cumple (anulado, sin procesar, fuera de fecha); sin él,
+       -- el balance sumaba todas las líneas de la historia.
+       COALESCE(SUM(al.debe) FILTER (WHERE a.id IS NOT NULL), 0) AS total_debe,
+       COALESCE(SUM(al.haber) FILTER (WHERE a.id IS NOT NULL), 0) AS total_haber
      FROM contabilidad.cuenta_contable c
      LEFT JOIN contabilidad.asiento_linea al ON al.cuenta_id = c.id
      LEFT JOIN contabilidad.asiento a ON a.id = al.asiento_id
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha <= $1
        ${filtroExtra}
      GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.padre_id, c.admite_movimiento
@@ -421,7 +424,7 @@ export async function obtenerEstadoActividades(filtros?: {
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      LEFT JOIN contabilidad.fondo f ON f.id = al.fondo_id
      WHERE c.tipo IN ('ingreso', 'gasto')
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2
        ${filtroExtra}
      GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.padre_id, c.admite_movimiento, f.tipo_restriccion
@@ -548,7 +551,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE c.codigo = '5.2.01.09'
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2`,
     [fechaDesde, fechaHasta],
   );
@@ -570,7 +573,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE a.anulado = false
+     WHERE a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2`,
     [fechaDesde, fechaHasta],
   );
@@ -601,7 +604,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE c.codigo LIKE '1.2%' AND c.codigo NOT LIKE '1.2.09%' AND c.codigo NOT LIKE '1.2.01.02%'
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2`,
     [fechaDesde, fechaHasta],
   );
@@ -623,7 +626,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE (c.codigo LIKE '1.1.01%' OR c.codigo LIKE '1.1.02%')
-       AND a.anulado = false`,
+       AND a.anulado = false AND a.procesado_en IS NOT NULL`,
     [fechaDesde, fechaHasta],
   );
 
@@ -678,7 +681,7 @@ export async function obtenerEstadoCambiosPatrimonio(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE c.codigo = '3.1.01.02'
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha < $1`,
     [fechaDesde],
   );
@@ -818,7 +821,7 @@ export async function obtenerMayorAnalitico(filtros: {
        FROM contabilidad.asiento_linea al
        JOIN contabilidad.asiento a ON a.id = al.asiento_id
        WHERE al.cuenta_id = $1
-         AND a.anulado = false
+         AND a.anulado = false AND a.procesado_en IS NOT NULL
          AND a.fecha < $3`,
       [c.id, c.tipo, fechaDesde],
     );
@@ -865,7 +868,7 @@ export async function obtenerMayorAnalitico(filtros: {
        LEFT JOIN contabilidad.centro_costo cc ON cc.id = al.centro_costo_id
        LEFT JOIN contabilidad.fondo f ON f.id = al.fondo_id
        WHERE al.cuenta_id = $1
-         AND a.anulado = false
+         AND a.anulado = false AND a.procesado_en IS NOT NULL
          AND a.fecha BETWEEN $2 AND $3
          ${extraMov}
        ORDER BY a.fecha ASC, a.numero ASC`,
@@ -942,7 +945,7 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE (c.codigo LIKE '1.1.01%' OR c.codigo LIKE '1.1.02%')
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha <= $1`,
     [fechaInicio],
   );
@@ -963,7 +966,7 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE c.codigo IN ('5.2.01.01', '5.2.01.02', '5.2.01.03')
-       AND a.anulado = false
+       AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha >= (CURRENT_DATE - INTERVAL '90 days')`,
   );
   const gastoFijoPromedio = Number(filaGastosFijos?.promedio_fijo ?? 0);

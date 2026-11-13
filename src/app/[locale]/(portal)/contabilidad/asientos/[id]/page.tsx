@@ -4,7 +4,7 @@ import { ArrowLeft, Info } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { DialogoRevertir } from "@/components/contabilidad/asientos/acciones";
+import { BotonProcesar, DialogoRevertir } from "@/components/contabilidad/asientos/acciones";
 import { ICONO_TIPO, InsigniaEstadoAsiento } from "@/components/contabilidad/asientos/insignias";
 import { LineasAsiento } from "@/components/contabilidad/asientos/lineas-asiento";
 import { Dato } from "@/components/contabilidad/comun";
@@ -62,6 +62,8 @@ export default async function PaginaAsiento({
   const puedeRevertir =
     usuarioTienePermiso(usuario, "contabilidad.asiento_manual") &&
     esRevertible(asiento.tipo, asiento.origen_tabla, asiento.estado);
+  const pendiente = !asiento.procesado && asiento.estado !== "anulado";
+  const puedeProcesar = pendiente && usuarioTienePermiso(usuario, "contabilidad.aprobar");
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 animate-entrada">
@@ -77,7 +79,7 @@ export default async function PaginaAsiento({
         antetitulo={ta(`tipo.${asiento.tipo}`)}
         titulo={<span className="tabular-nums">{numero}</span>}
         subtitulo={asiento.concepto}
-        acciones={<InsigniaEstadoAsiento estado={asiento.estado} etiqueta={ta(`estado.${asiento.estado}`)} />}
+        acciones={<InsigniaEstadoAsiento estado={asiento.estado} procesado={asiento.procesado} t={ta} />}
       />
 
       <Card className="p-5 md:p-6">
@@ -114,6 +116,9 @@ export default async function PaginaAsiento({
 
       <ol className="space-y-1 text-sm text-tinta-2">
         <li>{t("creadoPor", { nombre: asiento.creado_por, fecha: cuando(asiento.creado_en) })}</li>
+        {asiento.procesado_por && asiento.procesado_en && (
+          <li>{t("procesadoPor", { nombre: asiento.procesado_por, fecha: cuando(asiento.procesado_en) })}</li>
+        )}
         {asiento.anulado_por && asiento.anulado_en && (
           <li>
             {t("anuladoPor", { nombre: asiento.anulado_por, fecha: cuando(asiento.anulado_en) })}{" "}
@@ -140,6 +145,13 @@ export default async function PaginaAsiento({
         )}
       </ol>
 
+      {pendiente && (
+        <p className="flex items-start gap-2 rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">
+          <Info className="mt-0.5 size-4 shrink-0" />
+          <span>{ta("procesar.ayuda")}</span>
+        </p>
+      )}
+
       {asiento.tipo === "automatico" && asiento.estado === "vigente" && (
         <p className="flex items-start gap-2 rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">
           <Info className="mt-0.5 size-4 shrink-0" />
@@ -147,10 +159,13 @@ export default async function PaginaAsiento({
         </p>
       )}
 
-      {puedeRevertir && (
-        <section className="border-t border-linea pt-6">
+      {(puedeRevertir || puedeProcesar) && (
+        <section className="flex flex-wrap items-start gap-3 border-t border-linea pt-6">
           <NextIntlClientProvider messages={mensajes}>
-            <DialogoRevertir id={asiento.id} numero={numero} periodoCerrado={asiento.periodo_cerrado} />
+            {puedeProcesar && <BotonProcesar id={asiento.id} />}
+            {puedeRevertir && (
+              <DialogoRevertir id={asiento.id} numero={numero} periodoCerrado={asiento.periodo_cerrado} />
+            )}
           </NextIntlClientProvider>
         </section>
       )}

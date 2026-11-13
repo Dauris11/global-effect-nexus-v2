@@ -1,6 +1,6 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { UMBRAL_CAJA_BAJA } from "@/lib/contabilidad/cajas";
-import type { PeriodoTablero } from "@/lib/contabilidad/tablero";
+import type { PeriodoTablero, RangoTablero } from "@/lib/contabilidad/tablero";
 
 /**
  * Lecturas del tablero de Contabilidad.
@@ -19,8 +19,8 @@ export type PendientesContables = {
   cxp_semana: number;
   rendiciones: number;
   arqueos_abiertos: number;
-  conciliaciones_abiertas: number;
-  comprobantes_por_validar: number;
+  por_conciliar: number;
+  asientos_sin_procesar: number;
   cajas_bajas: number;
   compras_pendientes: number;
 };
@@ -35,20 +35,15 @@ export type ResumenFlujo = {
   serie: FlujoMes[];
 };
 
-// El inicio de cada periodo lo calcula la base con su propio CURRENT_DATE,
-// el mismo reloj que decide el periodo contable de cada documento.
-const DESDE: Record<PeriodoTablero, string> = {
-  mes: "date_trunc('month', CURRENT_DATE)",
-  trimestre: "date_trunc('quarter', CURRENT_DATE)",
-  anio: "date_trunc('year', CURRENT_DATE)",
-};
-
 /** Meses que dibuja la gráfica: nunca menos de seis, para que haya tendencia. */
 const MESES_GRAFICA: Record<PeriodoTablero, number> = { mes: 6, trimestre: 6, anio: 12 };
 
-export async function resumenFlujo(periodo: PeriodoTablero): Promise<ResumenFlujo> {
-  // DESDE es una expresión fija elegida por clave, no un valor del usuario.
-  const desde = DESDE[periodo];
+/**
+ * Cifras del periodo `rango` (lo eligió la persona: un mes, trimestre o año
+ * concreto). La gráfica termina en el mes donde acaba el rango, así mirar un
+ * trimestre pasado muestra la tendencia de entonces y no la de hoy.
+ */
+export async function resumenFlujo(periodo: PeriodoTablero, rango: RangoTablero): Promise<ResumenFlujo> {
   const meses = MESES_GRAFICA[periodo];
 
   const [totales, serie] = await Promise.all([
@@ -56,25 +51,26 @@ export async function resumenFlujo(periodo: PeriodoTablero): Promise<ResumenFluj
       `SELECT
          COALESCE((SELECT SUM(COALESCE(r.monto_dop, r.monto)) FROM contabilidad.recibo r
                     WHERE r.tipo = 'ingreso' AND r.estado = 'contabilizado'
-                      AND r.fecha >= ${desde}), 0)::text AS ingresos,
+                      AND r.fecha BETWEEN $1::date AND $2::date), 0)::text AS ingresos,
          (COALESCE((SELECT SUM(COALESCE(r.monto_dop, r.monto)) FROM contabilidad.recibo r
                      WHERE r.tipo = 'egreso' AND r.estado = 'contabilizado'
-                       AND r.fecha >= ${desde}
+                       AND r.fecha BETWEEN $1::date AND $2::date
                        AND NOT EXISTS (SELECT 1 FROM contabilidad.caja_movimiento m
                                         WHERE m.recibo_id = r.id)), 0)
           + COALESCE((SELECT SUM(m.monto) FROM contabilidad.caja_movimiento m
                        WHERE m.tipo = 'gasto' AND m.estado <> 'anulado'
-                         AND m.fecha >= ${desde}), 0))::text AS egresos,
+                         AND m.fecha BETWEEN $1::date AND $2::date), 0))::text AS egresos,
          COALESCE((SELECT SUM(saldo) FROM contabilidad.cuenta_por_pagar
                     WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')), 0)::text AS compromisos,
          COALESCE((SELECT SUM(saldo) FROM contabilidad.cuenta_por_pagar
                     WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')
                       AND fecha_vencimiento <= CURRENT_DATE + 7), 0)::text AS por_vencer`,
+      [rango.desde, rango.hasta],
     ),
     consultar<{ mes: string; ingresos: string; egresos: string }>(
       `WITH meses AS (
-         SELECT generate_series(date_trunc('month', CURRENT_DATE) - ($1::int - 1) * interval '1 month',
-                                date_trunc('month', CURRENT_DATE), interval '1 month')::date AS mes
+         SELECT generate_series(date_trunc('month', $2::date) - ($1::int - 1) * interval '1 month',
+                                date_trunc('month', $2::date), interval '1 month')::date AS mes
        )
        SELECT to_char(meses.mes, 'YYYY-MM') AS mes,
               COALESCE((SELECT SUM(COALESCE(r.monto_dop, r.monto)) FROM contabilidad.recibo r
@@ -90,7 +86,7 @@ export async function resumenFlujo(periodo: PeriodoTablero): Promise<ResumenFluj
                               AND date_trunc('month', m.fecha) = meses.mes), 0))::text AS egresos
          FROM meses
         ORDER BY meses.mes`,
-      [meses],
+      [meses, rango.hasta],
     ),
   ]);
 
@@ -121,9 +117,11 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
               WHERE estado IN ('enviada', 'en_revision')) AS rendiciones,
             (SELECT count(*)::int FROM contabilidad.arqueo
               WHERE estado IN ('abierto', 'cerrado')) AS arqueos_abiertos,
-            (SELECT count(*)::int FROM contabilidad.conciliacion WHERE estado = 'abierta') AS conciliaciones_abiertas,
-            (SELECT count(*)::int FROM contabilidad.comprobante_recibido
-              WHERE estado IN ('recibido', 'observado')) AS comprobantes_por_validar,
+            (SELECT count(*)::int FROM contabilidad.extracto_linea e
+              WHERE NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
+                                 WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL)) AS por_conciliar,
+            (SELECT count(*)::int FROM contabilidad.asiento
+              WHERE procesado_en IS NULL AND NOT anulado) AS asientos_sin_procesar,
             (SELECT count(*)::int FROM contabilidad.caja
               WHERE estado = 'activa' AND saldo_actual < fondo_fijo * $1) AS cajas_bajas,
             -- Los mismos estados que la bandeja de solicitudes trae para quien
@@ -143,8 +141,8 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
       cxp_semana: 0,
       rendiciones: 0,
       arqueos_abiertos: 0,
-      conciliaciones_abiertas: 0,
-      comprobantes_por_validar: 0,
+      por_conciliar: 0,
+      asientos_sin_procesar: 0,
       cajas_bajas: 0,
       compras_pendientes: 0,
     }
