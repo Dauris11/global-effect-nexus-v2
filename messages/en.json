@@ -2895,7 +2895,9 @@
       "quoteHint": "PDF, PNG, JPG or DOCX. Maximum {mb} MB.",
       "submit": "Send purchase",
       "success": "Purchase sent to accounting. You will see its status in the list.",
-      "download": "Download the quote"
+      "download": "Download the quote",
+      "replaceQuote": "Replace quote",
+      "replacingQuote": "Uploading…"
     },
     "step": {
       "comment": "Comment",

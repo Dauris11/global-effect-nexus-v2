@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Paperclip,
   ShieldCheck,
+  Upload,
   User,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -29,6 +30,8 @@ import {
 import { cn } from "@/lib/utils";
 import {
   avanzarSolicitud,
+  reemplazarCotizacionCompra,
+  type EstadoFormularioSolicitud,
   type EstadoPasoSolicitud,
 } from "@/server/solicitudes/acciones";
 import type { FilaSolicitud } from "@/server/solicitudes/consultas";
@@ -62,6 +65,12 @@ export function TarjetaSolicitud({
     avanzarSolicitud,
     { estado: "inicial" },
   );
+  const [estadoCotizacion, enviarCotizacion, subiendoCotizacion] = useActionState<
+    EstadoFormularioSolicitud,
+    FormData
+  >(reemplazarCotizacionCompra, { estado: "inicial" });
+  const puedeReemplazarCotizacion =
+    solicitud.tipo === "compra" && solicitud.acciones.includes("cancelar");
 
   const { insignia, icono: Icono } = visualDeSolicitud(solicitud.estado);
 
@@ -89,7 +98,7 @@ export function TarjetaSolicitud({
         aria-expanded={abierta}
         className="flex w-full items-start gap-3 p-4 text-left"
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#2096BA]/15 text-[#187a99]">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-marca-500/15 text-marca-600">
           <Icono className="size-5" />
         </span>
 
@@ -158,23 +167,65 @@ export function TarjetaSolicitud({
           )}
 
           {solicitud.cotizacion && (
-            <FilaDatos>
-              <Dato icono={Paperclip}>
-                <a
-                  href={`/api/solicitudes/${solicitud.id}/cotizacion`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-marca-600 hover:underline"
-                  title={t("purchase.download")}
-                >
-                  {solicitud.cotizacion.nombre}
-                </a>
-              </Dato>
-            </FilaDatos>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <FilaDatos>
+                  <Dato icono={Paperclip}>
+                    <a
+                      href={`/api/solicitudes/${solicitud.id}/cotizacion`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-marca-600 hover:underline"
+                      title={t("purchase.download")}
+                    >
+                      {solicitud.cotizacion.nombre}
+                    </a>
+                  </Dato>
+                </FilaDatos>
+
+                {puedeReemplazarCotizacion && (
+                  <form action={enviarCotizacion}>
+                    <input type="hidden" name="id" value={solicitud.id} />
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-control border border-linea bg-card px-2.5 py-1 text-xs font-medium text-tinta-2 transition-colors hover:bg-muted hover:text-tinta">
+                      <input
+                        type="file"
+                        name="cotizacion"
+                        accept=".pdf,.png,.jpg,.jpeg,.docx"
+                        className="sr-only"
+                        disabled={subiendoCotizacion}
+                        onChange={(e) => {
+                          if (e.currentTarget.files?.[0]) {
+                            e.currentTarget.form?.requestSubmit();
+                          }
+                        }}
+                      />
+                      {subiendoCotizacion ? (
+                        <Loader2 className="size-3.5 animate-spin text-marca-500" />
+                      ) : (
+                        <Upload className="size-3.5 text-marca-600" />
+                      )}
+                      <span>
+                        {subiendoCotizacion
+                          ? t("purchase.replacingQuote")
+                          : t("purchase.replaceQuote")}
+                      </span>
+                    </label>
+                  </form>
+                )}
+              </div>
+
+              {estadoCotizacion.estado !== "inicial" &&
+                estadoCotizacion.estado !== "ok" && (
+                  <p className="flex items-center gap-1.5 text-xs text-tinta">
+                    <AlertCircle className="size-3.5 shrink-0" />
+                    {t(`form.error.${estadoCotizacion.estado}` as never)}
+                  </p>
+                )}
+            </div>
           )}
 
           {solicitud.respuesta && (
-            <div className="flex items-start gap-2 rounded-lg bg-[#2096BA]/10 p-3 text-xs text-[#0a6a8a]">
+            <div className="flex items-start gap-2 rounded-lg bg-marca-500/10 p-3 text-xs text-marca-700">
               <MessageSquare className="mt-0.5 size-3.5 shrink-0" />
               <div>
                 <p className="font-semibold">
@@ -195,7 +246,7 @@ export function TarjetaSolicitud({
 
               return (
                 <li key={paso.id} className="relative">
-                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-card text-[#187a99] dark:bg-slate-950">
+                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-card text-marca-600 dark:bg-slate-950">
                     <IconoPaso className="size-3.5" />
                   </span>
                   <p className="text-xs font-semibold">
@@ -251,7 +302,7 @@ export function TarjetaSolicitud({
                     alPulsar={accion === "rechazar" ? antesDeRechazar : undefined}
                   />
                 ))}
-                {enviando && <Loader2 className="size-4 animate-spin self-center text-[#2096BA]" />}
+                {enviando && <Loader2 className="size-4 animate-spin self-center text-marca-500" />}
               </div>
             </form>
           )}
@@ -291,9 +342,9 @@ function BotonAccion({
       variant={principal ? "default" : "outline"}
       className={cn(
         "rounded-md active:scale-[0.99]",
-        principal && "bg-[#2096BA] text-white hover:bg-[#187a99]",
-        negativa && "border-[#171A1D]/30 text-[#171A1D] dark:text-slate-200",
-        !principal && !negativa && "border-[#2096BA]/40 text-[#187a99]",
+        principal && "bg-marca-500 text-white hover:bg-marca-600",
+        negativa && "border-tinta/30 text-tinta dark:text-slate-200",
+        !principal && !negativa && "border-marca-500/40 text-marca-600",
       )}
     >
       {etiqueta}

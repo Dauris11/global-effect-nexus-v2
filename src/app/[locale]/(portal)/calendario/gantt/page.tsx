@@ -118,10 +118,11 @@ export default async function PaginaGantt({
   const desde = todo ? TRAMO_ABIERTO.desde : (ventana?.inicio ?? TRAMO_ABIERTO.desde);
   const hasta = todo ? TRAMO_ABIERTO.hasta : (ventana?.fin ?? TRAMO_ABIERTO.hasta);
 
+  const periodoEfectivo = todo ? null : (ventana?.periodo_id ?? null);
   const vacio = { barras: [] as Barra[], sinFechas: 0 };
   const [academico, tareas, operaciones, clases360] = await Promise.all([
     familias.includes("academico") ? familiaAcademico(desde, hasta) : vacio,
-    familias.includes("tareas") ? familiaTareas(desde, hasta) : vacio,
+    familias.includes("tareas") ? familiaTareas(desde, hasta, periodoEfectivo) : vacio,
     familias.includes("operaciones") ? familiaOperaciones(desde, hasta) : vacio,
     familias.includes("clases360") ? familiaClases360(desde, hasta) : vacio,
   ]);

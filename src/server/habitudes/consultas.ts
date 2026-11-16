@@ -133,6 +133,33 @@ export async function listarLiceosHabitudes(): Promise<HabitudesLiceo[]> {
 }
 
 /**
+ * Condición SQL que decide si un usuario activo puede actuar como facilitador
+ * de Habitudes (permiso `habitudes.evidencias.subir` por su rol o por excepción
+ * en `usuario_permiso`, excluyendo super_admin y admin administrativos salvo
+ * que sean del programa).
+ */
+const CONDICION_FACILITADOR_HABITUDES = `
+  u.activo = true
+  AND r.nombre NOT IN ('super_admin', 'admin', 'estudiante', 'contabilidad', 'chofer')
+  AND EXISTS (
+    SELECT 1
+      FROM public.permiso p
+     WHERE p.codigo = 'habitudes.evidencias.subir'
+       AND coalesce(
+             (SELECT up.concedido
+                FROM public.usuario_permiso up
+               WHERE up.usuario_id = u.id
+                 AND up.permiso_id = p.id),
+             EXISTS (
+               SELECT 1
+                 FROM public.rol_permiso rp
+                WHERE rp.rol_id = u.rol_id
+                  AND rp.permiso_id = p.id
+             )
+           )
+  )`;
+
+/**
  * Panel de Monitoreo de Profesores para el Director de Habitudes (DH).
  * Inspecciona cada facilitador, dónde da clases en La Vega, evidencias y estudiantes alcanzados.
  */
@@ -155,8 +182,7 @@ export async function monitoreoProfesoresHabitudes(): Promise<ProfesorMonitoreoI
             (SELECT max(v.fecha_visita)::text FROM public.habitudes_visita_evidencia v WHERE v.facilitador_id = u.id) AS ultima_visita
        FROM public.usuario u
        JOIN public.rol r ON r.id = u.rol_id
-      WHERE r.nombre IN ('habitudes', 'docente', 'dir_habitudes')
-        AND u.activo = true
+      WHERE ${CONDICION_FACILITADOR_HABITUDES}
       ORDER BY u.nombre ASC`,
     [],
   );
@@ -314,7 +340,7 @@ export async function listarDocentesYEstudiantesParaAsignacion(): Promise<{
     `SELECT u.id, u.nombre, u.email
        FROM public.usuario u
        JOIN public.rol r ON r.id = u.rol_id
-      WHERE r.nombre IN ('habitudes', 'docente', 'dir_habitudes') AND u.activo = true
+      WHERE ${CONDICION_FACILITADOR_HABITUDES}
       ORDER BY u.nombre ASC`,
     [],
   );

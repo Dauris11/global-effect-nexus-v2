@@ -5,6 +5,11 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Reemplazo de cotización en Compras, filtro por período en Gantt, permisos en Habitudes y enlace en Mi día (16 nov 2026):**
+      - **Reemplazar cotización en `compra` (`src/server/solicitudes/acciones.ts`, `tarjeta-solicitud.tsx`, `messages/{es,en}.json`):** nueva acción `reemplazarCotizacionCompra` que permite al solicitante sustituir el archivo de cotización mientras la solicitud está en `enviada` o `en_revision`, borrando el archivo anterior del bucket privado y auditando el cambio.
+      - **Filtro por período en tareas del Gantt (`src/server/calendario/gantt.ts`, `calendario/gantt/page.tsx`):** `familiaTareas` recibe `periodoId` en modo «Por período» y filtra `coalesce(a.periodo_id, mu.periodo_id) = $3`.
+      - **Facilitadores de Habitudes por permiso efectivo (`src/server/habitudes/consultas.ts`):** `monitoreoProfesoresHabitudes` y `listarDocentesYEstudiantesParaAsignacion` consultan el permiso efectivo `habitudes.evidencias.subir` (`rol_permiso` + `usuario_permiso`) en lugar de nombres de rol fijos.
+      - **Enlace de órdenes pendientes en «Mi día» (`contabilidad/mi-dia/page.tsx`):** apunta a `/administrativo/solicitudes` en lugar de la ruta retirada del menú `/contabilidad/ordenes-compra`.
 - [x] **Blindaje final de base de datos, pruebas unitarias 360, control de frecuencia por IP y tokens de marca (16 nov 2026):**
       - **Trigger de integridad en `asistencia_360` (`db/migrations/0083_integridad_asistencia_360.sql`):** función `public._fn_integridad_asistencia_360` y trigger `tg_integridad_asistencia_360` (`BEFORE INSERT OR UPDATE`) que impide en PostgreSQL marcar asistencia de una inscripción de 360 ajena a la materia y período de la sesión.
       - **Pruebas unitarias de Académico / Global Effect 360 (`scripts/probar-academico-360.mjs`, `package.json`):** suite con `node:test` (`npm run test:academico`) que verifica `esDiaValido`, `aDia`, `validarPeriodo` (`src/lib/periodos.ts`) y `calcularNotaFinal` (`src/lib/nota-final.ts`: ponderación con escalas distintas, tareas vencidas no entregadas = 0, tareas vencidas entregadas sin revisar excluidas).

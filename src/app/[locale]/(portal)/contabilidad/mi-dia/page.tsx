@@ -118,7 +118,7 @@ export default async function PaginaMiDia({
       clave: "ordenes",
       icono: Inbox,
       texto: t("agenda.orders", { n: cola.ordenesPendientes }),
-      href: "/contabilidad/ordenes-compra",
+      href: "/administrativo/solicitudes",
     },
     cola.conciliacionesAbiertas > 0 && {
       clave: "conciliaciones",

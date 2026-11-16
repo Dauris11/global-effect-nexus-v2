@@ -166,6 +166,7 @@ export async function familiaAcademico(
 export async function familiaTareas(
   desde: string,
   hasta: string,
+  periodoId: string | null = null,
 ): Promise<Familia_Resultado> {
   const barras = await consultar<Barra>(
     `SELECT a.id::text AS id,
@@ -186,14 +187,19 @@ export async function familiaTareas(
         AND a.fecha_vencimiento IS NOT NULL
         AND a.fecha_vencimiento::date >= $1::date
         AND a.fecha_publicacion::date <= $2::date
+        AND ($3::uuid IS NULL OR coalesce(a.periodo_id, mu.periodo_id) = $3)
       ORDER BY a.fecha_vencimiento`,
-    [desde, hasta],
+    [desde, hasta, periodoId],
   );
 
   const sinFecha = await consultarUna<{ n: number }>(
     `SELECT count(*)::int AS n
-       FROM asignacion
-      WHERE tipo IN ('tarea', 'examen') AND fecha_vencimiento IS NULL`,
+       FROM asignacion a
+       LEFT JOIN materia mu ON mu.id = a.materia_id
+      WHERE a.tipo IN ('tarea', 'examen')
+        AND a.fecha_vencimiento IS NULL
+        AND ($1::uuid IS NULL OR coalesce(a.periodo_id, mu.periodo_id) = $1)`,
+    [periodoId],
   );
 
   return { barras, sinFechas: sinFecha?.n ?? 0 };

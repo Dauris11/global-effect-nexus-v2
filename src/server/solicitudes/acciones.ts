@@ -319,6 +319,110 @@ export async function crearCompra(
 }
 
 /**
+ * Reemplaza la cotización adjunta de una solicitud de compra mientras sigue
+ * abierta (`enviada` o `en_revision`) y solo por quien la pidió.
+ */
+export async function reemplazarCotizacionCompra(
+  _previo: EstadoFormularioSolicitud,
+  datos: FormData,
+): Promise<EstadoFormularioSolicitud> {
+  const usuario = await requerirUsuario();
+  const solicitudId = String(datos.get("id") ?? "");
+  if (!esUuid(solicitudId)) return { estado: "invalido" };
+
+  const archivo = datos.get("cotizacion");
+  if (!(archivo instanceof File) || archivo.size === 0) {
+    return { estado: "sin_archivo" };
+  }
+
+  const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!(extension in FORMATOS_COTIZACION)) return { estado: "formato_no_admitido" };
+  if (archivo.type && archivo.type !== FORMATOS_COTIZACION[extension]) {
+    return { estado: "formato_no_admitido" };
+  }
+  if (archivo.size > MAXIMO_COTIZACION_BYTES) return { estado: "muy_grande" };
+
+  const formato = extension === "jpeg" ? "jpg" : extension;
+  const rutaNueva = `compras/${crypto.randomUUID()}.${formato}`;
+
+  const subida = await subirMaterial(rutaNueva, archivo);
+  if (!subida.ok) return { estado: "error" };
+
+  let rutaAnterior: string | null = null;
+  try {
+    const resultado = await enTransaccion(async (cliente) => {
+      const actual = await cliente.query<{
+        solicitante_id: string | null;
+        tipo: string;
+        estado: string;
+        ruta_anterior: string | null;
+      }>(
+        `SELECT s.solicitante_id,
+                s.tipo,
+                s.estado,
+                ad.ruta AS ruta_anterior
+           FROM solicitud s
+           LEFT JOIN solicitud_adjunto ad ON ad.solicitud_id = s.id
+          WHERE s.id = $1
+          FOR UPDATE OF s`,
+        [solicitudId],
+      );
+
+      const fila = actual.rows[0];
+      if (!fila) return "invalido" as const;
+      if (
+        fila.solicitante_id !== usuario.id ||
+        fila.tipo !== "compra" ||
+        (fila.estado !== "enviada" && fila.estado !== "en_revision")
+      ) {
+        return "no_permitido" as const;
+      }
+
+      rutaAnterior = fila.ruta_anterior;
+
+      await cliente.query(
+        `INSERT INTO solicitud_adjunto
+           (solicitud_id, ruta, nombre, formato, tamano_bytes, subido_por)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (solicitud_id) DO UPDATE SET
+           ruta = EXCLUDED.ruta,
+           nombre = EXCLUDED.nombre,
+           formato = EXCLUDED.formato,
+           tamano_bytes = EXCLUDED.tamano_bytes,
+           subido_por = EXCLUDED.subido_por`,
+        [solicitudId, rutaNueva, archivo.name.slice(0, 200), formato, archivo.size, usuario.id],
+      );
+
+      return "ok" as const;
+    });
+
+    if (resultado !== "ok") {
+      await borrarDocumento(rutaNueva);
+      return { estado: resultado };
+    }
+  } catch (error) {
+    await borrarDocumento(rutaNueva);
+    console.error("[solicitudes] no se pudo reemplazar la cotización", error);
+    return { estado: "error" };
+  }
+
+  if (rutaAnterior && rutaAnterior !== rutaNueva) {
+    await borrarDocumento(rutaAnterior);
+  }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "solicitud.cotizacion_reemplazada",
+    entidad: "solicitud",
+    entidadId: solicitudId,
+    datos: { nombre: archivo.name.slice(0, 200), formato },
+  });
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+/**
  * Un paso del flujo: tomar, aprobar, aprobar en dirección, rechazar, completar
  * o cancelar.
  *

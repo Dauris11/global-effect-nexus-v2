@@ -2895,7 +2895,9 @@
       "quoteHint": "PDF, PNG, JPG o DOCX. Máximo {mb} MB.",
       "submit": "Enviar compra",
       "success": "Compra enviada a contabilidad. Verás su estado en la lista.",
-      "download": "Descargar la cotización"
+      "download": "Descargar la cotización",
+      "replaceQuote": "Reemplazar cotización",
+      "replacingQuote": "Subiendo…"
     },
     "step": {
       "comment": "Comentario",
