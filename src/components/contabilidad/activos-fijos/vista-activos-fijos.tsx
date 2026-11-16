@@ -55,12 +55,12 @@ export function VistaActivosFijos({
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#2096BA]/20 bg-[#2096BA]/5 p-4 shadow-xs">
-          <div className="text-xs font-medium text-[#2096BA]">Valor Neto en Libros</div>
-          <div className="mt-1 text-xl font-bold tabular-nums text-[#2096BA]">
+        <div className="rounded-xl border border-marca-500/20 bg-marca-500/5 p-4 shadow-xs">
+          <div className="text-xs font-medium text-marca-500">Valor Neto en Libros</div>
+          <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorLibros.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
-          <div className="mt-1 text-[11px] text-[#2096BA]/80">Patrimonio institucional vigente</div>
+          <div className="mt-1 text-[11px] text-marca-500/80">Patrimonio institucional vigente</div>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export function VistaActivosFijos({
                     <th className="px-4 py-3">{t("fechaAdquisicion")}</th>
                     <th className="px-4 py-3 text-right">{t("costo")}</th>
                     <th className="px-4 py-3 text-right">{t("depreciacionAcumulada")}</th>
-                    <th className="px-4 py-3 text-right font-bold text-[#2096BA]">{t("valorLibros")}</th>
+                    <th className="px-4 py-3 text-right font-bold text-marca-500">{t("valorLibros")}</th>
                     <th className="px-4 py-3 text-center">{t("estado")}</th>
                   </tr>
                 </thead>
@@ -142,7 +142,7 @@ export function VistaActivosFijos({
                       <td className="px-4 py-3 text-right tabular-nums text-tinta-2 dark:text-slate-400">
                         RD$ {a.depreciacion_acumulada.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold tabular-nums text-[#2096BA]">
+                      <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {a.valor_en_libros.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -182,7 +182,7 @@ export function VistaActivosFijos({
                     <th className="px-4 py-3">{t("fechaAsiento")}</th>
                     <th className="px-4 py-3">{t("asientoGenerado")}</th>
                     <th className="px-4 py-3 text-center">Activos amortizados</th>
-                    <th className="px-4 py-3 text-right font-bold text-[#2096BA]">
+                    <th className="px-4 py-3 text-right font-bold text-marca-500">
                       {t("totalAmortizado")}
                     </th>
                   </tr>
@@ -194,11 +194,11 @@ export function VistaActivosFijos({
                         {d.mes}/{d.anio}
                       </td>
                       <td className="px-4 py-3 text-tinta-2 dark:text-slate-400">{d.fecha_asiento}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-[#2096BA]">
+                      <td className="px-4 py-3 font-mono text-xs text-marca-500">
                         {d.asiento_numero ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-center tabular-nums">{d.activos_conteo}</td>
-                      <td className="px-4 py-3 text-right font-bold tabular-nums text-[#2096BA]">
+                      <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {d.total_depreciacion.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
@@ -234,7 +234,7 @@ export function VistaActivosFijos({
                     <td className="px-4 py-3 text-center tabular-nums">
                       {c.vida_util_meses} meses ({Math.round(c.vida_util_meses / 12)} años)
                     </td>
-                    <td className="px-4 py-3 text-center tabular-nums font-semibold text-[#2096BA]">
+                    <td className="px-4 py-3 text-center tabular-nums font-semibold text-marca-500">
                       {c.porcentaje_anual}%
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-slate-400">

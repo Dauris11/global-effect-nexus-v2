@@ -1,10 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
+import { ipDeCabeceras, permitirFrecuencia } from "@/lib/frecuencia";
 import {
   fechaHoyRD,
   SQL_HOY_RD,
@@ -217,10 +219,15 @@ async function registrarInscripcionDiaria(
   }
 }
 
-/** Puerta pública `/transporte`: la única acción sin sesión. */
+/** Puerta pública `/transporte`: la única acción sin sesión, acotada por IP. */
 export async function inscribirPuntualDiaria(
   datos: DatosInscripcion,
 ): Promise<{ ok: boolean; mensaje?: string }> {
+  const cabeceras = await headers();
+  const ip = ipDeCabeceras(cabeceras);
+  if (!permitirFrecuencia(`transporte_publico:${ip}`, 12, 10 * 60_000)) {
+    return { ok: false, mensaje: "tope_invitados" };
+  }
   return registrarInscripcionDiaria(datos, "publica", null);
 }
 

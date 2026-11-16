@@ -41,7 +41,7 @@ export function VistaInventario({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="text-xs text-muted-foreground">Valorización Total de Inventario</div>
-          <div className="mt-1 text-xl font-bold tabular-nums text-[#2096BA]">
+          <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorInventario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
@@ -127,7 +127,7 @@ export function VistaInventario({
                     <th className="px-4 py-3 text-right">{t("stockActual")}</th>
                     <th className="px-4 py-3 text-right">{t("stockMinimo")}</th>
                     <th className="px-4 py-3 text-right">{t("costoPromedio")}</th>
-                    <th className="px-4 py-3 text-right font-bold text-[#2096BA]">
+                    <th className="px-4 py-3 text-right font-bold text-marca-500">
                       {t("valorTotal")}
                     </th>
                     <th className="px-4 py-3 text-center">Estado</th>
@@ -162,7 +162,7 @@ export function VistaInventario({
                         <td className="px-4 py-3 text-right tabular-nums text-tinta-2 dark:text-slate-400">
                           RD$ {a.costo_promedio.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-3 text-right font-bold tabular-nums text-[#2096BA]">
+                        <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                           RD$ {a.valor_total.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -218,7 +218,7 @@ export function VistaInventario({
                             m.tipo.startsWith("entrada")
                               ? "border-linea bg-muted text-[#1E9E6A]"
                               : m.tipo === "salida_consumo"
-                              ? "border-[#2096BA]/30 bg-[#2096BA]/10 text-[#2096BA]"
+                              ? "border-marca-500/30 bg-marca-500/10 text-marca-500"
                               : "border-linea bg-muted text-[#B4342B]"
                           }
                         >
@@ -231,7 +231,7 @@ export function VistaInventario({
                       <td className="px-4 py-3 text-right tabular-nums text-tinta-2">
                         RD$ {m.costo_unitario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold tabular-nums text-[#2096BA]">
+                      <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {m.costo_total.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-slate-400">
@@ -285,7 +285,7 @@ export function VistaInventario({
                       <td className="px-4 py-3 text-right tabular-nums">
                         {c.diferencia_neta > 0 ? `+${c.diferencia_neta}` : c.diferencia_neta}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-[#2096BA]">
+                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-marca-500">
                         RD$ {c.impacto_total.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-center">

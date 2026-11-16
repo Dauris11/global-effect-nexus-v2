@@ -5,6 +5,11 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Blindaje final de base de datos, pruebas unitarias 360, control de frecuencia por IP y tokens de marca (16 nov 2026):**
+      - **Trigger de integridad en `asistencia_360` (`db/migrations/0083_integridad_asistencia_360.sql`):** función `public._fn_integridad_asistencia_360` y trigger `tg_integridad_asistencia_360` (`BEFORE INSERT OR UPDATE`) que impide en PostgreSQL marcar asistencia de una inscripción de 360 ajena a la materia y período de la sesión.
+      - **Pruebas unitarias de Académico / Global Effect 360 (`scripts/probar-academico-360.mjs`, `package.json`):** suite con `node:test` (`npm run test:academico`) que verifica `esDiaValido`, `aDia`, `validarPeriodo` (`src/lib/periodos.ts`) y `calcularNotaFinal` (`src/lib/nota-final.ts`: ponderación con escalas distintas, tareas vencidas no entregadas = 0, tareas vencidas entregadas sin revisar excluidas).
+      - **Control de frecuencia por IP en Transporte (`src/lib/frecuencia.ts`, `api/transporte/posicion/route.ts`, `src/server/transporte/acciones.ts`):** limitador en memoria por ventana deslizante (`permitirFrecuencia`, `ipDeCabeceras`) aplicado a `/api/transporte/posicion` (60/min por IP → `429`) y a la inscripción pública `inscribirPuntualDiaria` (12 cada 10 min por IP).
+      - **Unificación de tokens de marca (`marca-500`/`marca-600`/`marca-700`):** sustitución de `#2096BA`/`#187a99`/`#0a6a8a` escritos a mano en `comida/page.tsx`, `tablero-tareas.tsx` y los módulos contables de `nomina`, `activos-fijos` e `inventario`.
 - [ ] **Observaciones #1 de Contabilidad (12 nov 2026)** — en la base y en `main`, falta prueba en navegador:
       - ~~Aplicar `0080` y `0081`~~ — aplicadas en la base real el 12 nov 2026; consultas de libros, asientos, inicio y bancos verificadas contra ella.
       - Probar en navegador: periodo del inicio con flechas; procesar un asiento (ficha y selección en lista); diario con mayores y auxiliares; mayor plegable con rango de cuentas; balanza solo débito y crédito; subir dos veces el mismo .csv (la segunda debe decir «ya estaban»); conciliar, ver en «Conciliadas» y anular.

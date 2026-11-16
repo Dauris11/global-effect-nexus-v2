@@ -48,7 +48,7 @@ export default async function PaginaComida({
         <Card>
           <CardContent className="space-y-5 pt-5">
             <div className="flex items-start gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[#2096BA]/10 text-[#187a99]">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-card bg-marca-500/10 text-marca-600">
                 <UtensilsCrossed className="size-6" />
               </span>
 
@@ -62,7 +62,7 @@ export default async function PaginaComida({
               <span
                 className={
                   abierto
-                    ? "ml-auto shrink-0 rounded-full bg-[#2096BA]/15 px-2 py-0.5 text-[10px] font-medium text-[#0a6a8a]"
+                    ? "ml-auto shrink-0 rounded-full bg-marca-500/15 px-2 py-0.5 text-[10px] font-medium text-marca-700"
                     : "ml-auto shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-600"
                 }
               >

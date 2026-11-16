@@ -263,7 +263,7 @@ export function DialogoNuevoEmpleado({
                       type="checkbox"
                       checked={cotizaTss}
                       onChange={(e) => setCotizaTss(e.target.checked)}
-                      className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+                      className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
                     />
                     <span>{t("cotizaTss")}</span>
                   </label>
@@ -273,7 +273,7 @@ export function DialogoNuevoEmpleado({
                       type="checkbox"
                       checked={aplicaIsr}
                       onChange={(e) => setAplicaIsr(e.target.checked)}
-                      className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+                      className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
                     />
                     <span>{t("aplicaIsr")}</span>
                   </label>
@@ -289,7 +289,7 @@ export function DialogoNuevoEmpleado({
                 <Button
                   type="submit"
                   disabled={cargando || !terceroId || !centroCostoId || !salarioBase}
-                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                  className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t("guardarEmpleado")}

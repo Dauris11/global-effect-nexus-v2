@@ -63,7 +63,7 @@ export function DialogoNuevaNomina() {
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button className="bg-[#2096BA] hover:bg-[#187a99] text-white">
+        <Button className="bg-marca-500 hover:bg-marca-600 text-white">
           <Plus className="mr-2 h-4 w-4" />
           {t("nueva")}
         </Button>
@@ -176,7 +176,7 @@ export function DialogoNuevaNomina() {
                 <Button
                   type="submit"
                   disabled={cargando}
-                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                  className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {cargando ? t("procesando") : t("generar")}

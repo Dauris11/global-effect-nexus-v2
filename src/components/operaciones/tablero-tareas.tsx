@@ -417,7 +417,7 @@ function FormularioTarea({
                     type="checkbox"
                     name="asignado"
                     value={persona.id}
-                    className="size-3.5 accent-[#2096BA]"
+                    className="size-3.5 accent-marca-500"
                   />
                   <span className="truncate">{persona.nombre}</span>
                 </label>

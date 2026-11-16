@@ -71,7 +71,7 @@ export function VistaNomina({
                     <th className="px-4 py-3 text-right">{t("devengado")}</th>
                     <th className="px-4 py-3 text-right">TSS Empleado</th>
                     <th className="px-4 py-3 text-right">{t("isr")}</th>
-                    <th className="px-4 py-3 text-right font-bold text-[#2096BA]">{t("neto")}</th>
+                    <th className="px-4 py-3 text-right font-bold text-marca-500">{t("neto")}</th>
                     <th className="px-4 py-3 text-center">{t("estado")}</th>
                     <th className="px-4 py-3 text-right">{t("acciones")}</th>
                   </tr>
@@ -103,7 +103,7 @@ export function VistaNomina({
                       <td className="px-4 py-3 text-right tabular-nums text-tinta-2 dark:text-slate-400">
                         RD$ {n.total_isr_empleado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold tabular-nums text-[#2096BA]">
+                      <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {n.total_neto.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -113,7 +113,7 @@ export function VistaNomina({
                             n.estado === "pagada"
                               ? "border-linea bg-muted text-[#1E9E6A]"
                               : n.estado === "aprobada"
-                              ? "border-[#2096BA]/30 bg-[#2096BA]/10 text-[#2096BA]"
+                              ? "border-marca-500/30 bg-marca-500/10 text-marca-500"
                               : "border-linea bg-muted text-tinta-2 dark:text-slate-300"
                           }
                         >

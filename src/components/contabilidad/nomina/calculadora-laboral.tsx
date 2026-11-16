@@ -45,7 +45,7 @@ export function CalculadoraLaboral() {
   return (
     <div className="rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-6 flex items-center gap-3 border-b border-linea pb-4 dark:border-slate-800">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2096BA]/10 text-[#2096BA]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-marca-500/10 text-marca-500">
           <Calculator className="h-5 w-5" />
         </div>
         <div>
@@ -109,7 +109,7 @@ export function CalculadoraLaboral() {
               type="checkbox"
               checked={incluyePreaviso}
               onChange={(e) => setIncluyePreaviso(e.target.checked)}
-              className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+              className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
             />
             <span>{t("incluyePreaviso")}</span>
           </label>
@@ -119,13 +119,13 @@ export function CalculadoraLaboral() {
               type="checkbox"
               checked={incluyeCesantia}
               onChange={(e) => setIncluyeCesantia(e.target.checked)}
-              className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+              className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
             />
             <span>{t("incluyeCesantia")}</span>
           </label>
         </div>
 
-        <Button type="submit" className="bg-[#2096BA] hover:bg-[#187a99] text-white">
+        <Button type="submit" className="bg-marca-500 hover:bg-marca-600 text-white">
           Recalcular liquidación
         </Button>
       </form>
@@ -154,9 +154,9 @@ export function CalculadoraLaboral() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-[#2096BA]/10 p-3 border border-[#2096BA]/20">
-              <div className="text-xs font-medium text-[#2096BA]">{t("totalLiquidacion")}</div>
-              <div className="text-base font-bold tabular-nums text-[#2096BA]">
+            <div className="rounded-lg bg-marca-500/10 p-3 border border-marca-500/20">
+              <div className="text-xs font-medium text-marca-500">{t("totalLiquidacion")}</div>
+              <div className="text-base font-bold tabular-nums text-marca-500">
                 RD$ {resultado.totalLiquidacion.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </div>
             </div>

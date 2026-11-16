@@ -79,7 +79,7 @@ export function DialogoActivoFijo({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button className="bg-[#2096BA] hover:bg-[#187a99] text-white">
+        <Button className="bg-marca-500 hover:bg-marca-600 text-white">
           <Plus className="mr-2 h-4 w-4" />
           {t("nuevo")}
         </Button>
@@ -219,7 +219,7 @@ export function DialogoActivoFijo({
                   type="checkbox"
                   checked={esDonado}
                   onChange={(e) => setEsDonado(e.target.checked)}
-                  className="rounded border-linea-fuerte text-[#2096BA] focus:ring-[#2096BA]"
+                  className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
                 />
                 <span>{t("esDonado")} (Aporte de patrocinador)</span>
               </label>
@@ -233,7 +233,7 @@ export function DialogoActivoFijo({
                 <Button
                   type="submit"
                   disabled={cargando || !codigo || !nombre || !categoriaId || !centroCostoId || !costoAdquisicion}
-                  className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                  className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {cargando ? t("procesando") : t("guardar")}

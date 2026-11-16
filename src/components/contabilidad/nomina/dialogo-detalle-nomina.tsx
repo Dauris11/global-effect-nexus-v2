@@ -107,7 +107,7 @@ export function DialogoDetalleNomina({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 text-[#2096BA] hover:text-[#187a99]">
+        <Button variant="ghost" size="sm" className="h-8 text-marca-500 hover:text-marca-600">
           <FileText className="mr-1 h-3.5 w-3.5" />
           {t("verDetalle")}
         </Button>
@@ -124,7 +124,7 @@ export function DialogoDetalleNomina({
                   nomina.estado === "pagada"
                     ? "border-linea bg-muted text-[#1E9E6A]"
                     : nomina.estado === "aprobada"
-                    ? "border-[#2096BA]/30 bg-[#2096BA]/10 text-[#2096BA]"
+                    ? "border-marca-500/30 bg-marca-500/10 text-marca-500"
                     : "border-linea bg-muted text-tinta-2 dark:text-slate-300"
                 }
               >
@@ -143,7 +143,7 @@ export function DialogoDetalleNomina({
 
         {cargando ? (
           <div className="flex h-40 items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-[#2096BA]" />
+            <Loader2 className="h-6 w-6 animate-spin text-marca-500" />
           </div>
         ) : nomina ? (
           <div className="space-y-6">
@@ -170,9 +170,9 @@ export function DialogoDetalleNomina({
                   RD$ {nomina.total_isr_empleado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <div className="rounded-xl border border-[#2096BA]/20 bg-[#2096BA]/5 p-3">
-                <div className="text-xs font-medium text-[#2096BA]">{t("neto")}</div>
-                <div className="text-base font-bold tabular-nums text-[#2096BA]">
+              <div className="rounded-xl border border-marca-500/20 bg-marca-500/5 p-3">
+                <div className="text-xs font-medium text-marca-500">{t("neto")}</div>
+                <div className="text-base font-bold tabular-nums text-marca-500">
                   RD$ {nomina.total_neto.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export function DialogoDetalleNomina({
                       <td className="px-3 py-2 text-right tabular-nums text-tinta-2">
                         {l.deduccion_isr.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-3 py-2 text-right font-bold tabular-nums text-[#2096BA]">
+                      <td className="px-3 py-2 text-right font-bold tabular-nums text-marca-500">
                         {l.neto_a_pagar.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums text-slate-400">
@@ -264,7 +264,7 @@ export function DialogoDetalleNomina({
                     onClick={handlePagar}
                     disabled={procesandoAccion}
                     size="sm"
-                    className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                    className="bg-marca-500 hover:bg-marca-600 text-white"
                   >
                     <DollarSign className="mr-1 h-3.5 w-3.5" />
                     {t("confirmarPago")}
@@ -293,7 +293,7 @@ export function DialogoDetalleNomina({
                 type="button"
                 onClick={handleAprobar}
                 disabled={procesandoAccion}
-                className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+                className="bg-marca-500 hover:bg-marca-600 text-white"
                 size="sm"
               >
                 {procesandoAccion ? (

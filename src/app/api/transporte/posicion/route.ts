@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 
+import { ipDeCabeceras, permitirFrecuencia } from "@/lib/frecuencia";
 import { obtenerViajePorId } from "@/server/transporte/consultas";
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Tope por IP: 60 consultas por minuto (el mapa en vivo sondea cada 4 s = 15/min). */
+const LIMITE_POR_MINUTO = 60;
+const VENTANA_MS = 60_000;
 
 /**
  * Rastreo en vivo de un viaje. Es público a propósito (lo consume la puerta
  * `/transporte` sin sesión), así que no devuelve ids internos del chofer.
  */
 export async function GET(request: Request) {
+  const ip = ipDeCabeceras(request.headers);
+  if (!permitirFrecuencia(`posicion:${ip}`, LIMITE_POR_MINUTO, VENTANA_MS)) {
+    return NextResponse.json({ error: "demasiadas_peticiones" }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const viajeId = searchParams.get("viajeId");
 
