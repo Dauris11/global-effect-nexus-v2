@@ -394,6 +394,19 @@ export async function avanzarSolicitud(
         await cliente.query(`SELECT contabilidad.crear_cxp_desde_solicitud($1)`, [id]);
       }
 
+      // Al aprobar un `alta_expediente`, el candidato del embudo pasa a
+      // estudiante `activo` en la misma transacción, sin obligar a abrir su
+      // ficha aparte para cambiarle el estado a mano.
+      if (nuevo === "aprobada" && solicitud.tipo === "alta_expediente" && solicitud.estudiante_id) {
+        await cliente.query(
+          `UPDATE estudiante
+              SET estado = 'activo'::estado_estudiante
+            WHERE id = $1
+              AND estado IN ('reclutado', 'postulado', 'academia_liderazgo', 'standby_tecnico')`,
+          [solicitud.estudiante_id],
+        );
+      }
+
       const aviso = `#${solicitud.folio} · ${solicitud.titulo}`;
 
       // Al solicitante, salvo que el paso sea suyo.
@@ -595,6 +608,7 @@ function refrescar() {
   revalidatePath("/[locale]/administrativo/solicitudes", "page");
   revalidatePath("/[locale]/portal/administrativo", "page");
   revalidatePath("/[locale]/portal/estudiante", "page");
+  revalidatePath("/[locale]/expedientes", "page");
   // La campana vive en el armazón.
   revalidatePath("/[locale]", "layout");
 }

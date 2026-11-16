@@ -16,17 +16,21 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import {
+  esEstadoSolicitud,
+  ESTADOS_SOLICITUD,
   esTipoSolicitud,
   REGLAS,
   revisaAlgo,
   tiposQuePuedeCrear,
 } from "@/lib/solicitudes";
-import { redirigir } from "@/i18n/navigation";
+import { Link, redirigir } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 import {
   estudiantesParaSolicitud,
   resueltasPor,
   solicitudesDe,
   solicitudesPorAtender,
+  solicitudesRevisionPorEstado,
   type FilaSolicitud,
 } from "@/server/solicitudes/consultas";
 
@@ -61,9 +65,12 @@ export default async function PaginaSolicitudes({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ tipo?: string }>;
+  searchParams: Promise<{ tipo?: string; estado?: string }>;
 }) {
-  const [{ locale }, { tipo: tipoPedido }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { tipo: tipoPedido, estado: estadoPedido }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
   const usuario = await requerirUsuario();
   if (usuario.rol === "estudiante") {
@@ -71,19 +78,30 @@ export default async function PaginaSolicitudes({
   }
 
   const revisa = revisaAlgo(usuario);
+  const estadoFiltro = revisa && esEstadoSolicitud(estadoPedido) ? estadoPedido : null;
   const tipos = tiposQuePuedeCrear(usuario);
   const conEstudiante = tipos.some((tipo) => REGLAS[tipo].estudiante !== "no");
 
-  const [t, porAtender, mias, resueltas, estudiantes, mensajes] = await Promise.all([
-    getTranslations({ locale, namespace: "requests" }),
-    revisa ? solicitudesPorAtender(usuario) : Promise.resolve([]),
-    solicitudesDe(usuario),
-    revisa ? resueltasPor(usuario) : Promise.resolve([]),
-    conEstudiante
-      ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
-      : Promise.resolve([]),
-    mensajesCliente(["requests"]),
-  ]);
+  const [t, porAtender, filtradasPorEstado, mias, resueltas, estudiantes, mensajes] =
+    await Promise.all([
+      getTranslations({ locale, namespace: "requests" }),
+      revisa ? solicitudesPorAtender(usuario) : Promise.resolve([]),
+      estadoFiltro ? solicitudesRevisionPorEstado(usuario, estadoFiltro) : Promise.resolve([]),
+      solicitudesDe(usuario),
+      revisa && !estadoFiltro ? resueltasPor(usuario) : Promise.resolve([]),
+      conEstudiante
+        ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
+        : Promise.resolve([]),
+      mensajesCliente(["requests"]),
+    ]);
+
+  const parametroTipo = esTipoSolicitud(tipoPedido) ? `tipo=${tipoPedido}` : "";
+  const urlFiltroEstado = (estado?: string) => {
+    const partes = [parametroTipo, estado ? `estado=${estado}` : ""].filter(Boolean);
+    return partes.length > 0
+      ? `/administrativo/solicitudes?${partes.join("&")}`
+      : "/administrativo/solicitudes";
+  };
 
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
@@ -91,14 +109,74 @@ export default async function PaginaSolicitudes({
 
       <NextIntlClientProvider messages={mensajes}>
         {revisa && (
-          <Bloque
-            icono={Inbox}
-            titulo={t("pendingTitle")}
-            vacio={t("pendingEmpty")}
-            solicitudes={porAtender}
-            mostrarSolicitante
-            contar
-          />
+          <div className="space-y-4">
+            <div
+              role="navigation"
+              aria-label={t("filterByStatus")}
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              <Link
+                href={urlFiltroEstado()}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-semibold transition-colors",
+                  !estadoFiltro
+                    ? "bg-marca-500 text-white"
+                    : "bg-muted text-tinta-2 hover:text-tinta",
+                )}
+              >
+                <span>{t("filterActionable")}</span>
+                {porAtender.length > 0 && (
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px]",
+                      !estadoFiltro
+                        ? "bg-white/20 text-white"
+                        : "bg-tinta text-background",
+                    )}
+                  >
+                    {porAtender.length}
+                  </span>
+                )}
+              </Link>
+              {ESTADOS_SOLICITUD.map((est) => {
+                const activo = estadoFiltro === est;
+                return (
+                  <Link
+                    key={est}
+                    href={urlFiltroEstado(est)}
+                    className={cn(
+                      "rounded-control px-3 py-1.5 text-xs font-semibold transition-colors",
+                      activo
+                        ? "bg-marca-500 text-white"
+                        : "bg-muted text-tinta-2 hover:text-tinta",
+                    )}
+                  >
+                    {t(`status.${est}`)}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {estadoFiltro ? (
+              <Bloque
+                icono={Inbox}
+                titulo={t("filteredTitle", { estado: t(`status.${estadoFiltro}`) })}
+                vacio={t("filteredEmpty")}
+                solicitudes={filtradasPorEstado}
+                mostrarSolicitante
+                contar
+              />
+            ) : (
+              <Bloque
+                icono={Inbox}
+                titulo={t("pendingTitle")}
+                vacio={t("pendingEmpty")}
+                solicitudes={porAtender}
+                mostrarSolicitante
+                contar
+              />
+            )}
+          </div>
         )}
 
         {/* Todo rol puede pedir una compra a contabilidad con su cotización. */}

@@ -3,6 +3,7 @@ import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 import {
   accionesPermitidas,
   type AccionSolicitud,
+  type EstadoSolicitud,
   REGLAS,
   TIPOS_SOLICITUD,
 } from "@/lib/solicitudes";
@@ -75,11 +76,35 @@ type FilaBase = Omit<FilaSolicitud, "pasos" | "acciones" | "cotizacion"> & {
 
 /**
  * Quién dio el primer visto bueno de lo que está en dirección. Dirección no
- * puede ser la misma persona: el segundo nivel existe para que lo vean dos.
+ * puede ser la misma persona cuando existe otro director activo que pueda dar
+ * el segundo visto bueno; si en la Fundación solo hay un director activo
+ * (distinto del solicitante), devuelve NULL para no dejar la solicitud
+ * atascada en `pendiente_direccion`.
  */
 const APROBO_PRIMER_NIVEL = `(SELECT p.usuario_id
      FROM solicitud_paso p
-    WHERE p.solicitud_id = s.id AND p.estado_nuevo = 'pendiente_direccion'
+    WHERE p.solicitud_id = s.id
+      AND p.estado_nuevo = 'pendiente_direccion'
+      AND EXISTS (
+            SELECT 1
+              FROM usuario ud
+              JOIN permiso pe ON pe.codigo = 'solicitudes.direccion'
+             WHERE ud.activo
+               AND ud.id IS DISTINCT FROM s.solicitante_id
+               AND ud.id IS DISTINCT FROM p.usuario_id
+               AND coalesce(
+                     (SELECT up.concedido
+                        FROM usuario_permiso up
+                       WHERE up.usuario_id = ud.id
+                         AND up.permiso_id = pe.id),
+                     EXISTS (
+                       SELECT 1
+                         FROM rol_permiso rp
+                        WHERE rp.rol_id = ud.rol_id
+                          AND rp.permiso_id = pe.id
+                     )
+                   )
+          )
     ORDER BY p.created_at DESC
     LIMIT 1) AS aprobo_primer_nivel`;
 
@@ -228,6 +253,38 @@ export async function resueltasPor(
   return conPasos(filas, usuario);
 }
 
+/**
+ * Solicitudes del área que esta persona revisa filtradas por un estado
+ * concreto (p. ej. para que contabilidad o administración consulten todas las
+ * aprobadas, rechazadas, en revisión o completadas de su ámbito).
+ */
+export async function solicitudesRevisionPorEstado(
+  usuario: ConPermisos,
+  estado: EstadoSolicitud,
+  limite = 100,
+): Promise<FilaSolicitud[]> {
+  const tipos = TIPOS_SOLICITUD.filter((tipo) =>
+    usuarioTienePermiso(usuario, REGLAS[tipo].revisa),
+  );
+  const dirige = usuarioTienePermiso(usuario, "solicitudes.direccion");
+
+  if (tipos.length === 0 && !dirige) return [];
+
+  const filas = await consultar<FilaBase>(
+    `SELECT ${COLUMNAS}
+       ${ORIGEN}
+      WHERE s.estado = $1
+        AND s.solicitante_id IS DISTINCT FROM $4
+        AND (s.tipo = ANY($2::text[])
+             OR ($3 AND (s.requiere_direccion OR s.estado = 'pendiente_direccion')))
+      ORDER BY s.updated_at DESC
+      LIMIT $5`,
+    [estado, tipos, dirige, usuario.id, limite],
+  );
+
+  return conPasos(filas, usuario);
+}
+
 /** Una sola, con lo justo para que la acción decida. */
 export async function solicitudParaFlujo(id: string) {
   return consultarUna<{
@@ -237,11 +294,12 @@ export async function solicitudParaFlujo(id: string) {
     estado: string;
     titulo: string;
     solicitante_id: string | null;
+    estudiante_id: string | null;
     requiere_direccion: boolean;
     aprobo_primer_nivel: string | null;
   }>(
     `SELECT s.id, s.folio::int AS folio, s.tipo, s.estado, s.titulo,
-            s.solicitante_id, s.requiere_direccion, ${APROBO_PRIMER_NIVEL}
+            s.solicitante_id, s.estudiante_id, s.requiere_direccion, ${APROBO_PRIMER_NIVEL}
        FROM solicitud s
       WHERE s.id = $1`,
     [id],
