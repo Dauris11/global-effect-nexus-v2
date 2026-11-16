@@ -179,6 +179,27 @@ export async function obtenerViajeEnVivo(): Promise<
 }
 
 /**
+ * Coordenadas de la vivienda del estudiante (si su expediente las tiene
+ * registradas en `perfil_vivienda`), para señalar su casa en el mapa de rutas.
+ */
+export async function viviendaEstudiante(
+  estudianteId: string | null,
+): Promise<{ lat: number; lng: number; direccion: string | null } | null> {
+  if (!estudianteId) return null;
+
+  return consultarUna<{ lat: number; lng: number; direccion: string | null }>(
+    `SELECT latitud::float8 AS lat,
+            longitud::float8 AS lng,
+            coalesce(NULLIF(sector, ''), NULLIF(comunidad, ''), NULLIF(direccion, '')) AS direccion
+       FROM public.perfil_vivienda
+      WHERE estudiante_id = $1
+        AND latitud IS NOT NULL
+        AND longitud IS NOT NULL`,
+    [estudianteId],
+  );
+}
+
+/**
  * La inscripción semanal recurrente de un estudiante.
  */
 export async function obtenerInscripcionesRecurrentesEstudiante(

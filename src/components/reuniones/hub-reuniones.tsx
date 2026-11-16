@@ -210,9 +210,13 @@ export function HubReuniones({
     startTransition(async () => {
       const res = await agendarReunionAction({}, formData);
       if (res.error) {
-        setMensajeError(res.error);
+        setMensajeError(t(`feedback.errors.${res.error}`));
       } else {
-        setMensajeExito(res.mensaje ?? "Reunión agendada exitosamente.");
+        setMensajeExito(
+          res.folio
+            ? t("feedback.scheduledWithFolio", { folio: res.folio })
+            : t("feedback.scheduled"),
+        );
         setDialogoAgendarAbierto(false);
         // Reset campos
         setTitulo("");
@@ -238,9 +242,9 @@ export function HubReuniones({
     startTransition(async () => {
       const res = await guardarMinutaReunionAction({}, formData);
       if (res.error) {
-        setMensajeError(res.error);
+        setMensajeError(t(`feedback.errors.${res.error}`));
       } else {
-        setMensajeExito(res.mensaje ?? "Minuta guardada.");
+        setMensajeExito(t("feedback.minutesSaved"));
         setReuniones((prev) =>
           prev.map((r) =>
             r.id === reunionParaMinuta.id
@@ -269,9 +273,9 @@ export function HubReuniones({
     startTransition(async () => {
       const res = await cancelarReunionAction({}, formData);
       if (res.error) {
-        setMensajeError(res.error);
+        setMensajeError(t(`feedback.errors.${res.error}`));
       } else {
-        setMensajeExito("Reunión cancelada.");
+        setMensajeExito(t("feedback.cancelled"));
         setReuniones((prev) =>
           prev.map((r) =>
             r.id === reunionParaCancelar.id

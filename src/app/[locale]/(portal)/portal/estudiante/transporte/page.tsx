@@ -18,6 +18,7 @@ import {
   listarRutasConParadas,
   obtenerInscripcionesRecurrentesEstudiante,
   obtenerViajeEnVivo,
+  viviendaEstudiante,
 } from "@/server/transporte/consultas";
 
 export async function generateMetadata({
@@ -40,13 +41,14 @@ export default async function PaginaTransporteEstudiante({
   const usuario = await requerirRol(["estudiante", "admin", "super_admin"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  const [t, viajeEnVivo, rutas, horarios, inscripciones, invitados, mensajes] = await Promise.all([
+  const [t, viajeEnVivo, rutas, horarios, inscripciones, invitados, vivienda, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "transport" }),
     obtenerViajeEnVivo(),
     listarRutasConParadas(),
     listarHorariosTransporte(),
     obtenerInscripcionesRecurrentesEstudiante(estudiante.id),
     invitadosDeUsuario(usuario.id),
+    viviendaEstudiante(estudiante.id),
     mensajesCliente(["transport"]),
   ]);
 
@@ -77,7 +79,11 @@ export default async function PaginaTransporteEstudiante({
 
         {/* Pestaña 1: Dónde viene la guagua en vivo */}
         <TabsContent value="mapa" className="space-y-4">
-          <MapaTransporte viajeInicial={viajeEnVivo} paradas={paradasRuta} />
+          <MapaTransporte
+            viajeInicial={viajeEnVivo}
+            paradas={paradasRuta}
+            vivienda={vivienda}
+          />
 
           {/* Información de paradas y orden del viaje */}
           <div className="rounded-card border border-linea bg-card p-5 shadow-card">

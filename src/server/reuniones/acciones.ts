@@ -14,11 +14,29 @@ import type {
   TipoReunion,
 } from "@/lib/reuniones";
 
+export type CodigoErrorReunion =
+  | "no_permitido"
+  | "falta_titulo"
+  | "fecha_invalida"
+  | "hora_inicio_invalida"
+  | "hora_fin_invalida"
+  | "hora_orden_invalido"
+  | "falta_id"
+  | "falta_minuta"
+  | "no_encontrada"
+  | "sin_permiso_minuta"
+  | "sin_permiso_modificar"
+  | "sin_permiso_cancelar"
+  | "error_agendar"
+  | "error_minuta"
+  | "error_actualizar"
+  | "error_cancelar";
+
 export type EstadoAccionReunion = {
   exito?: boolean;
-  mensaje?: string;
+  folio?: number;
   reunionId?: string;
-  error?: string;
+  error?: CodigoErrorReunion;
 };
 
 /**
@@ -68,7 +86,7 @@ export async function agendarReunionAction(
   const usuario = await requerirUsuario();
 
   if (!usuarioTienePermiso(usuario, "reuniones.agendar")) {
-    return { error: "No tienes permiso para agendar reuniones." };
+    return { error: "no_permitido" };
   }
 
   const titulo = String(formData.get("titulo") ?? "").trim();
@@ -82,11 +100,11 @@ export async function agendarReunionAction(
   const estudianteId = String(formData.get("estudiante_id") ?? "").trim() || null;
   const participantesRaw = String(formData.get("participantes") ?? "[]").trim();
 
-  if (!titulo) return { error: "El título de la reunión es obligatorio." };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { error: "Fecha inválida (YYYY-MM-DD)." };
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaInicio)) return { error: "Hora de inicio inválida (HH:MM)." };
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaFin)) return { error: "Hora de fin inválida (HH:MM)." };
-  if (horaFin <= horaInicio) return { error: "La hora de fin debe ser posterior a la de inicio." };
+  if (!titulo) return { error: "falta_titulo" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { error: "fecha_invalida" };
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaInicio)) return { error: "hora_inicio_invalida" };
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(horaFin)) return { error: "hora_fin_invalida" };
+  if (horaFin <= horaInicio) return { error: "hora_orden_invalido" };
 
   let participantesIds: { id: string; tipo: "personal" | "estudiante" }[] = [];
   try {
@@ -187,12 +205,12 @@ export async function agendarReunionAction(
 
     return {
       exito: true,
-      mensaje: `Reunión #${resultado.folio} agendada con éxito.`,
+      folio: resultado.folio,
       reunionId: resultado.id,
     };
   } catch (error) {
     console.error("[reuniones] error agendando reunión", error);
-    return { error: "No se pudo agendar la reunión. Intente de nuevo." };
+    return { error: "error_agendar" };
   }
 }
 
@@ -209,8 +227,8 @@ export async function guardarMinutaReunionAction(
   const marcarRealizada = formData.get("marcar_realizada") === "true";
   const asistenciasRaw = String(formData.get("asistencias") ?? "{}").trim();
 
-  if (!reunionId) return { error: "ID de reunión no proporcionado." };
-  if (!minuta) return { error: "Debe ingresar el texto o acuerdos de la minuta." };
+  if (!reunionId) return { error: "falta_id" };
+  if (!minuta) return { error: "falta_minuta" };
 
   const reunion = await consultarUna<{
     id: string;
@@ -218,7 +236,7 @@ export async function guardarMinutaReunionAction(
     titulo: string;
   }>("SELECT id, organizador_usuario_id, titulo FROM reunion WHERE id = $1", [reunionId]);
 
-  if (!reunion) return { error: "Reunión no encontrada." };
+  if (!reunion) return { error: "no_encontrada" };
 
   // Comprobar permiso: gestor general, admin, o el propio anfitrión organizador
   const puedeGestionar =
@@ -226,7 +244,7 @@ export async function guardarMinutaReunionAction(
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {
-    return { error: "Solo el anfitrión o un administrador pueden redactar la minuta." };
+    return { error: "sin_permiso_minuta" };
   }
 
   let asistenciasMap: Record<string, string> = {};
@@ -276,12 +294,11 @@ export async function guardarMinutaReunionAction(
 
     return {
       exito: true,
-      mensaje: "Minuta y acuerdos guardados exitosamente.",
       reunionId,
     };
   } catch (error) {
     console.error("[reuniones] error guardando minuta", error);
-    return { error: "Error al registrar la minuta." };
+    return { error: "error_minuta" };
   }
 }
 
@@ -300,21 +317,21 @@ export async function actualizarReunionAction(
   const lugarOEnlace = String(formData.get("lugar_o_enlace") ?? "").trim();
   const estado = String(formData.get("estado") ?? "programada") as EstadoReunion;
 
-  if (!reunionId) return { error: "ID de reunión no proporcionado." };
+  if (!reunionId) return { error: "falta_id" };
 
   const reunion = await consultarUna<{
     id: string;
     organizador_usuario_id: string;
   }>("SELECT id, organizador_usuario_id FROM reunion WHERE id = $1", [reunionId]);
 
-  if (!reunion) return { error: "Reunión no encontrada." };
+  if (!reunion) return { error: "no_encontrada" };
 
   const puedeGestionar =
     usuarioTienePermiso(usuario, "reuniones.gestionar") ||
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {
-    return { error: "No tienes permiso para modificar esta reunión." };
+    return { error: "sin_permiso_modificar" };
   }
 
   try {
@@ -345,12 +362,11 @@ export async function actualizarReunionAction(
 
     return {
       exito: true,
-      mensaje: "Reunión actualizada correctamente.",
       reunionId,
     };
   } catch (error) {
     console.error("[reuniones] error actualizando reunión", error);
-    return { error: "Error al actualizar la reunión." };
+    return { error: "error_actualizar" };
   }
 }
 
@@ -365,7 +381,7 @@ export async function cancelarReunionAction(
   const reunionId = String(formData.get("reunion_id") ?? "").trim();
   const motivo = String(formData.get("motivo") ?? "").trim();
 
-  if (!reunionId) return { error: "ID de reunión no proporcionado." };
+  if (!reunionId) return { error: "falta_id" };
 
   const reunion = await consultarUna<{
     id: string;
@@ -380,14 +396,14 @@ export async function cancelarReunionAction(
     [reunionId],
   );
 
-  if (!reunion) return { error: "Reunión no encontrada." };
+  if (!reunion) return { error: "no_encontrada" };
 
   const puedeGestionar =
     usuarioTienePermiso(usuario, "reuniones.gestionar") ||
     reunion.organizador_usuario_id === usuario.id;
 
   if (!puedeGestionar) {
-    return { error: "No tienes permiso para cancelar esta reunión." };
+    return { error: "sin_permiso_cancelar" };
   }
 
   const descActualizada = [
@@ -431,11 +447,10 @@ export async function cancelarReunionAction(
 
     return {
       exito: true,
-      mensaje: "Reunión cancelada.",
       reunionId,
     };
   } catch (error) {
     console.error("[reuniones] error cancelando reunión", error);
-    return { error: "Error al cancelar la reunión." };
+    return { error: "error_cancelar" };
   }
 }

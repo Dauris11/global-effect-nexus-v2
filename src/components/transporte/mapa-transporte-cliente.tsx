@@ -17,6 +17,7 @@ import { iconoGuagua3D } from "./marcador-guagua-3d";
 export interface PropsMapaTransporte {
   viajeInicial: (TransporteViaje & { paradas: TransporteParada[] }) | null;
   paradas: TransporteParada[];
+  vivienda?: { lat: number; lng: number; direccion: string | null } | null;
 }
 
 /** Leaflet pinta los popups como HTML: todo texto de la BD pasa por aquí. */
@@ -31,6 +32,7 @@ function escapar(texto: string): string {
 export function MapaTransporteCliente({
   viajeInicial,
   paradas,
+  vivienda = null,
 }: PropsMapaTransporte) {
   const t = useTranslations("transport");
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -150,10 +152,51 @@ export function MapaTransporteCliente({
       `);
     });
 
+    if (vivienda) {
+      const homeHtml = `
+        <div style="
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: ${TINTA};
+          border: 2px solid ${BLANCO};
+          color: ${BLANCO};
+          font-size: 11px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        ">
+          ⌂
+        </div>
+      `;
+
+      const homeMarker = L.marker([vivienda.lat, vivienda.lng], {
+        icon: L.divIcon({
+          html: homeHtml,
+          className: "parada-icono-circulo",
+          iconSize: [26, 26],
+          iconAnchor: [13, 13],
+        }),
+      }).addTo(mapa);
+
+      homeMarker.bindPopup(`
+        <div class="space-y-1 font-sans text-xs">
+          <strong class="block text-sm font-semibold text-tinta">
+            ${escapar(t("popup.studentHome"))}
+          </strong>
+          ${vivienda.direccion ? `<p class="text-tinta-2">${escapar(vivienda.direccion)}</p>` : ""}
+        </div>
+      `);
+
+      coordenadasRuta.push([vivienda.lat, vivienda.lng]);
+    }
+
     if (coordenadasRuta.length > 0) {
       mapa.fitBounds(L.latLngBounds(coordenadasRuta), { padding: [35, 35] });
     }
-  }, [paradas, t]);
+  }, [paradas, vivienda, t]);
 
   // Actualización del marcador 3D de la guagua
   useEffect(() => {

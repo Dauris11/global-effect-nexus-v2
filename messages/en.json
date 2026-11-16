@@ -6028,6 +6028,30 @@
       "reunion": "Meeting",
       "cuandoDonde": "When and where",
       "participantes": "Participants"
+    },
+    "feedback": {
+      "scheduled": "Meeting scheduled.",
+      "scheduledWithFolio": "Meeting #{folio} scheduled.",
+      "minutesSaved": "Minutes and agreements saved.",
+      "cancelled": "Meeting cancelled.",
+      "errors": {
+        "no_permitido": "You do not have permission to schedule meetings.",
+        "falta_titulo": "The meeting title is required.",
+        "fecha_invalida": "Invalid date (YYYY-MM-DD).",
+        "hora_inicio_invalida": "Invalid start time (HH:MM).",
+        "hora_fin_invalida": "Invalid end time (HH:MM).",
+        "hora_orden_invalido": "The end time must be after the start time.",
+        "falta_id": "Meeting ID not provided.",
+        "falta_minuta": "Please enter the minutes or agreements text.",
+        "no_encontrada": "Meeting not found.",
+        "sin_permiso_minuta": "Only the host or an administrator can write the minutes.",
+        "sin_permiso_modificar": "You do not have permission to modify this meeting.",
+        "sin_permiso_cancelar": "You do not have permission to cancel this meeting.",
+        "error_agendar": "Could not schedule the meeting. Please try again.",
+        "error_minuta": "Error saving the minutes.",
+        "error_actualizar": "Error updating the meeting.",
+        "error_cancelar": "Error cancelling the meeting."
+      }
     }
   },
   "verComo": {
@@ -6305,7 +6329,8 @@
       "status": "Status",
       "assigned": "Assigned",
       "stopped": "Stopped",
-      "estimated": "⏱️ Estimated: +{minutes} min from start"
+      "estimated": "⏱️ Estimated: +{minutes} min from start",
+      "studentHome": "My home"
     },
     "pasos": {
       "pasajero": "Passenger",

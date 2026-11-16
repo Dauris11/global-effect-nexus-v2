@@ -6028,6 +6028,30 @@
       "reunion": "Reunión",
       "cuandoDonde": "Cuándo y dónde",
       "participantes": "Participantes"
+    },
+    "feedback": {
+      "scheduled": "Reunión agendada exitosamente.",
+      "scheduledWithFolio": "Reunión #{folio} agendada con éxito.",
+      "minutesSaved": "Minuta y acuerdos guardados exitosamente.",
+      "cancelled": "Reunión cancelada.",
+      "errors": {
+        "no_permitido": "No tienes permiso para agendar reuniones.",
+        "falta_titulo": "El título de la reunión es obligatorio.",
+        "fecha_invalida": "Fecha inválida (YYYY-MM-DD).",
+        "hora_inicio_invalida": "Hora de inicio inválida (HH:MM).",
+        "hora_fin_invalida": "Hora de fin inválida (HH:MM).",
+        "hora_orden_invalido": "La hora de fin debe ser posterior a la de inicio.",
+        "falta_id": "ID de reunión no proporcionado.",
+        "falta_minuta": "Debes ingresar el texto o acuerdos de la minuta.",
+        "no_encontrada": "Reunión no encontrada.",
+        "sin_permiso_minuta": "Solo el anfitrión o un administrador pueden redactar la minuta.",
+        "sin_permiso_modificar": "No tienes permiso para modificar esta reunión.",
+        "sin_permiso_cancelar": "No tienes permiso para cancelar esta reunión.",
+        "error_agendar": "No se pudo agendar la reunión. Inténtalo de nuevo.",
+        "error_minuta": "Error al registrar la minuta.",
+        "error_actualizar": "Error al actualizar la reunión.",
+        "error_cancelar": "Error al cancelar la reunión."
+      }
     }
   },
   "verComo": {
@@ -6305,7 +6329,8 @@
       "status": "Estado",
       "assigned": "Asignado",
       "stopped": "Parada",
-      "estimated": "⏱️ Estimado: +{minutes} min desde inicio"
+      "estimated": "⏱️ Estimado: +{minutes} min desde inicio",
+      "studentHome": "Mi vivienda"
     },
     "pasos": {
       "pasajero": "Pasajero",
