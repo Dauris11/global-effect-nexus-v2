@@ -317,8 +317,8 @@ async function probarAccionNombrada(usuarioId) {
   });
 }
 
-/** Un recibo borrador de prueba en la cuenta indicada. Devuelve su id. */
-async function reciboDePrueba(c, usuarioId, { tipo = "ingreso", cuenta = "Santa Cruz DOP", monto = "1500.00", tasa = null } = {}) {
+/** Un recibo borrador de prueba en la cuenta indicada (por moneda o nombre). Devuelve su id. */
+async function reciboDePrueba(c, usuarioId, { tipo = "ingreso", moneda = "DOP", monto = "1500.00", tasa = null } = {}) {
   const { rows: [r] } = await c.query(
     `INSERT INTO contabilidad.recibo
        (tipo, numero, fecha, periodo_id, cuenta_bancaria_id, moneda, tasa, monto, concepto,
@@ -328,9 +328,13 @@ async function reciboDePrueba(c, usuarioId, { tipo = "ingreso", cuenta = "Santa 
             (SELECT id FROM contabilidad.categoria WHERE tipo = $1 AND cuenta_id IS NOT NULL LIMIT 1),
             (SELECT id FROM contabilidad.fondo WHERE nombre = 'General'),
             'transferencia', 'REF-PRUEBA-1', $5
-       FROM contabilidad.cuenta_bancaria cb WHERE cb.nombre = $2
+       FROM (
+         SELECT id, moneda FROM contabilidad.cuenta_bancaria
+          WHERE moneda = $2 AND estado = 'activa'
+          ORDER BY creado_en LIMIT 1
+       ) cb
      RETURNING id`,
-    [tipo, cuenta, monto, tasa, usuarioId],
+    [tipo, moneda, monto, tasa, usuarioId],
   );
   return r.id;
 }
@@ -393,8 +397,8 @@ async function probarTransferencia(usuarioId) {
     // es 60.50: se perdieron 50 pesos en el cambio.
     const { rows: [t] } = await c.query(
       `SELECT contabilidad.transferir(
-         (SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz USD'),
-         (SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP'),
+         (SELECT id FROM contabilidad.cuenta_bancaria WHERE moneda = 'USD' AND estado = 'activa' ORDER BY creado_en LIMIT 1),
+         (SELECT id FROM contabilidad.cuenta_bancaria WHERE moneda = 'DOP' AND estado = 'activa' ORDER BY creado_en LIMIT 1),
          CURRENT_DATE, 100.00, 6000.00, 'Cambio de prueba', NULL) AS id`,
     );
     await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);
@@ -413,28 +417,86 @@ async function probarConciliacion(usuarioId) {
   await enPrueba(usuarioId, async (c) => {
     const id = await reciboDePrueba(c, usuarioId, { monto: "777.77" });
     await c.query(`SELECT contabilidad.contabilizar_recibo($1)`, [id]);
-    const { rows: [conc] } = await c.query(
-      `INSERT INTO contabilidad.conciliacion (cuenta_id, desde, hasta, saldo_banco, creado_por)
-       SELECT id, CURRENT_DATE - 30, CURRENT_DATE + 3, 0, $1
-         FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP'
+
+    const { rows: [cuenta] } = await c.query(
+      `SELECT id, cuenta_contable_id FROM contabilidad.cuenta_bancaria WHERE moneda = 'DOP' AND estado = 'activa' ORDER BY creado_en LIMIT 1`,
+    );
+
+    const { rows: [lineaAsiento] } = await c.query(
+      `SELECT l.id
+         FROM contabilidad.recibo r
+         JOIN contabilidad.asiento_linea l
+           ON l.asiento_id = r.asiento_id
+          AND l.cuenta_id = $2
+        WHERE r.id = $1`,
+      [id, cuenta.cuenta_contable_id],
+    );
+
+    // 1. Subir línea de estado de cuenta y comprobar deduplicación por (cuenta_id, clave)
+    const primera = await c.query(
+      `INSERT INTO contabilidad.extracto_linea
+         (cuenta_id, fecha, descripcion, referencia, monto, clave, importado_por)
+       VALUES ($1, CURRENT_DATE, 'DEPOSITO PRUEBA', 'REF-PRUEBA-0081', 777.77, 'ref:ref-prueba-0081', $2)
+       ON CONFLICT (cuenta_id, clave) DO NOTHING
        RETURNING id`,
-      [usuarioId],
+      [cuenta.id, usuarioId],
     );
-    await c.query(
-      `INSERT INTO contabilidad.conciliacion_linea (conciliacion_id, linea, fecha, descripcion, referencia, monto)
-       VALUES ($1, 2, CURRENT_DATE + 2, 'DEPOSITO', 'REF-PRUEBA-1', 777.77)`,
-      [conc.id],
+    const duplicada = await c.query(
+      `INSERT INTO contabilidad.extracto_linea
+         (cuenta_id, fecha, descripcion, referencia, monto, clave, importado_por)
+       VALUES ($1, CURRENT_DATE, 'DEPOSITO PRUEBA', 'REF-PRUEBA-0081', 777.77, 'ref:ref-prueba-0081', $2)
+       ON CONFLICT (cuenta_id, clave) DO NOTHING`,
+      [cuenta.id, usuarioId],
     );
-    const { rows: [p] } = await c.query(`SELECT contabilidad.proponer_emparejamientos($1) AS n`, [conc.id]);
-    await c.query(`UPDATE contabilidad.conciliacion_linea SET confirmada = true WHERE conciliacion_id = $1`, [conc.id]);
-    await c.query(`SELECT contabilidad.cerrar_conciliacion($1)`, [conc.id]);
-    if (p.n >= 1) pasar("(l1) la propuesta empareja por importe, fecha ±3 días y referencia");
-    else fallar("(l1) proponer", `emparejó ${p.n}`);
+    if (primera.rowCount === 1 && duplicada.rowCount === 0) {
+      pasar("(l1) extracto_linea guarda la transacción una vez e ignora duplicados por clave");
+    } else {
+      fallar("(l1) deduplicación de extracto_linea", `${primera.rowCount} / ${duplicada.rowCount}`);
+    }
+
+    const extractoId = primera.rows[0].id;
+
+    // 2. Conciliar partida banco ↔ línea de asiento
+    const { rows: [partida] } = await c.query(
+      `INSERT INTO contabilidad.conciliacion_partida
+         (cuenta_id, extracto_linea_id, asiento_linea_id, conciliado_por)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      [cuenta.id, extractoId, lineaAsiento.id, usuarioId],
+    );
+
+    // 3. No se puede volver a conciliar una línea con pareja viva
     esperarError(
-      "(l2) un movimiento conciliado no se puede anular",
-      await errorDe(c, `SELECT contabilidad.anular_recibo($1, 'Prueba tras conciliar')`, [id]),
-      "conciliad",
+      "(l2) una línea de extracto o asiento ya conciliada no admite segunda pareja viva",
+      await errorDe(
+        c,
+        `INSERT INTO contabilidad.conciliacion_partida
+           (cuenta_id, extracto_linea_id, asiento_linea_id, conciliado_por)
+         VALUES ($1, $2, $3, $4)`,
+        [cuenta.id, extractoId, lineaAsiento.id, usuarioId],
+      ),
+      "duplicate key",
     );
+
+    // 4. Anular la conciliación libera ambas líneas para volver a conciliar
+    await c.query(
+      `UPDATE contabilidad.conciliacion_partida
+          SET anulado_en = now(), anulado_por = $2, motivo_anulacion = 'Prueba de reversión'
+        WHERE id = $1`,
+      [partida.id, usuarioId],
+    );
+    const reConciliada = await c.query(
+      `INSERT INTO contabilidad.conciliacion_partida
+         (cuenta_id, extracto_linea_id, asiento_linea_id, conciliado_por)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      [cuenta.id, extractoId, lineaAsiento.id, usuarioId],
+    );
+    if (reConciliada.rowCount === 1) {
+      pasar("(l3) anular la conciliación conserva el historial y libera las líneas");
+    } else {
+      fallar("(l3) re-conciliar tras anular", `rowCount=${reConciliada.rowCount}`);
+    }
   });
 }
 
@@ -494,7 +556,7 @@ async function probarCuentasPorPagar(usuarioId) {
     await c.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, 'Banco X', 'corriente', 'DOP', '1111')`, [proveedor]);
     await c.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, 'Banco Y', 'corriente', 'DOP', '2222')`, [proveedor]);
 
-    const cuenta = `(SELECT id FROM contabilidad.cuenta_bancaria WHERE nombre = 'Santa Cruz DOP')`;
+    const cuenta = `(SELECT id FROM contabilidad.cuenta_bancaria WHERE moneda = 'DOP' AND estado = 'activa' ORDER BY creado_en LIMIT 1)`;
     await c.query(`SELECT contabilidad.pagar_cxp($1, ${cuenta}, CURRENT_DATE, 26.00, 'transferencia', 'P1', NULL)`, [cxp]);
     await c.query(`SELECT contabilidad.pagar_cxp($1, ${cuenta}, CURRENT_DATE, 1000.00, 'cheque', 'P2', NULL)`, [cxp]);
     await c.query(`SET CONSTRAINTS ALL IMMEDIATE`);

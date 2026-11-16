@@ -5,6 +5,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Bus,
+  CalendarDays,
   Clock,
   MapPin,
   Navigation,
@@ -475,17 +476,28 @@ export function PanelChofer({
           )}
         </div>
 
-        {/* Acceso directo a reportar gasto de mantenimiento o compra de repuesto */}
-        <div className="border-t border-linea pt-3 mt-4">
+        {/* Accesos directos a reportar gasto/compra y a reuniones operativas */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-linea pt-3">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="w-full justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+            className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
           >
             <Link href="/administrativo/solicitudes?tipo=compra">
               <Receipt className="size-3.5" />
               <span>{t("requestMaintenanceOrPurchase")}</span>
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+          >
+            <Link href="/reuniones">
+              <CalendarDays className="size-3.5" />
+              <span>{t("viewMeetings")}</span>
             </Link>
           </Button>
         </div>

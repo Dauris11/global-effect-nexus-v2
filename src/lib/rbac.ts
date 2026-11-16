@@ -310,8 +310,9 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "reuniones.leer",
   ],
   chofer: [
-    "transporte.operar",
     "ia.usar",
+    "reuniones.leer",
+    "transporte.operar",
   ],
   // contabilidad: todos los permisos del módulo menos auditar.
   // Un auxiliar puede tener registrar sin aprobar via usuario_permiso.

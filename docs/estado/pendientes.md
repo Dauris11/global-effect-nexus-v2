@@ -8,7 +8,8 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [ ] **Observaciones #1 de Contabilidad (12 nov 2026)** — en la base y en `main`, falta prueba en navegador:
       - ~~Aplicar `0080` y `0081`~~ — aplicadas en la base real el 12 nov 2026; consultas de libros, asientos, inicio y bancos verificadas contra ella.
       - Probar en navegador: periodo del inicio con flechas; procesar un asiento (ficha y selección en lista); diario con mayores y auxiliares; mayor plegable con rango de cuentas; balanza solo débito y crédito; subir dos veces el mismo .csv (la segunda debe decir «ya estaban»); conciliar, ver en «Conciliadas» y anular.
-      - `scripts/probar-contabilidad.mjs` (§ conciliación) todavía prueba la conciliación por lotes de la `0036`: reescribirlo para `extracto_linea`/`conciliacion_partida`.
+      - ~~`scripts/probar-contabilidad.mjs` (§ conciliación) todavía prueba la conciliación por lotes de la `0036`: reescribirlo para `extracto_linea`/`conciliacion_partida`.~~ — actualizado el 16 nov 2026 (`l1`–`l3`: deduplicación por clave en `extracto_linea`, unicidad de pareja viva en `conciliacion_partida` y liberación al anular).
+      - **Permiso `reuniones.leer` para `chofer` (`0082`, 16 nov 2026):** migración `0082_chofer_reuniones_leer.sql`, `PERMISOS_POR_ROL.chofer` en `src/lib/rbac.ts` y botón «Mis reuniones» en `panel-chofer.tsx`.
       - Pendiente de diseño: conciliar uno a varios (un depósito que agrupa varios recibos).
       - Módulos fuera del menú de contabilidad (rutas vivas): nómina, impuestos, retenciones, activos fijos, consumibles, calculadoras, centros de costo, órdenes de compra, comprobantes recibidos, terceros, fondos, donaciones, rendición por fondo y `/reportes`. «Mi día» todavía enlaza a órdenes de compra si hay alguna pendiente.
 - [x] **Cruce Estudiante ↔ Docente (Pasos 4 y 5): historial/recalificación de entregas por tarea y conexión de Reuniones y Tutorías (12 nov 2026):**

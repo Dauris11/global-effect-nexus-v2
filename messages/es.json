@@ -6232,6 +6232,7 @@
     "finishTrip": "FINALIZAR VIAJE",
     "reportBreakdownButton": "Reportar avería / problema",
     "requestMaintenanceOrPurchase": "Reportar gasto / compra de repuesto",
+    "viewMeetings": "Mis reuniones",
     "expectedPassengers": "Pasajeros convocados",
     "passengerCount": "{count} registrados",
     "noPassengersEnrolled": "No hay pasajeros registrados para este turno todavía.",
