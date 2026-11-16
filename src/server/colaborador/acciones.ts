@@ -10,6 +10,10 @@ import { consultarUna, enTransaccion } from "@/lib/db";
 import { borrarDocumento, subirMaterial } from "@/lib/supabase/almacen";
 import { otrosConPermiso } from "@/server/contabilidad/sesion";
 import {
+  leerComprobanteFiscal,
+  type ResultadoOcrComprobante,
+} from "@/server/ia/ocr";
+import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import {
@@ -206,11 +210,31 @@ const FORMATOS_COMPROBANTE: Record<string, string> = {
 const MAXIMO_COMPROBANTE_BYTES = 10 * 1024 * 1024;
 
 /**
+ * Extrae con IA/OCR real los datos fiscales de un comprobante subido en el
+ * formulario de rendición de gastos.
+ */
+export async function extraerComprobanteOcrAction(
+  datos: FormData,
+): Promise<ResultadoOcrComprobante> {
+  const usuario = await requerirPermiso("rendicion.enviar");
+  const archivo = datos.get("comprobante");
+
+  if (!(archivo instanceof File) || archivo.size === 0) {
+    return { estado: "ilegible" };
+  }
+
+  return leerComprobanteFiscal(archivo, usuario.id);
+}
+
+/**
  * Registra una rendición de gastos con foto/comprobante u OCR.
  *
  * El comprobante viaja como archivo y se guarda en el bucket privado: antes
  * se guardaba la URL `blob:` de la vista previa, que solo existe en el
  * navegador de quien la subió, así que contabilidad nunca veía la factura.
+ *
+ * Devuelve claves de error (`falta_proveedor`, `falta_concepto`, etc.) para
+ * que el componente cliente las traduzca con `next-intl`.
  */
 export async function enviarRendicionGastoAction(
   datos: FormData,
@@ -229,18 +253,18 @@ export async function enviarRendicionGastoAction(
   const ocrRaw = String(datos.get("ocr_data") ?? "").trim();
 
   if (!proveedorNombre) {
-    return { ok: false, mensaje: "El nombre del proveedor es obligatorio." };
+    return { ok: false, mensaje: "falta_proveedor" };
   }
   if (!concepto) {
-    return { ok: false, mensaje: "El concepto del gasto es obligatorio." };
+    return { ok: false, mensaje: "falta_concepto" };
   }
   if (isNaN(montoTotal) || montoTotal <= 0) {
-    return { ok: false, mensaje: "El monto total debe ser mayor a 0." };
+    return { ok: false, mensaje: "monto_invalido" };
   }
 
   // Validación de NCF dominicano (B01, B02, B11, B14, B15, E31, etc.)
   if (ncf && !/^[BE][0-9]{8,12}$/.test(ncf)) {
-    return { ok: false, mensaje: "El formato de NCF no es válido según DGII (ej. B0100000001 o E310000000001)." };
+    return { ok: false, mensaje: "ncf_invalido" };
   }
 
   let ocrJson: Record<string, unknown> | null = null;
@@ -259,17 +283,17 @@ export async function enviarRendicionGastoAction(
     const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
     const tipoEsperado = FORMATOS_COMPROBANTE[extension];
     if (!tipoEsperado || (archivo.type && archivo.type !== tipoEsperado)) {
-      return { ok: false, mensaje: "El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF." };
+      return { ok: false, mensaje: "formato_invalido" };
     }
     if (archivo.size > MAXIMO_COMPROBANTE_BYTES) {
-      return { ok: false, mensaje: "El comprobante no puede pasar de 10 MB." };
+      return { ok: false, mensaje: "archivo_grande" };
     }
 
     const formato = extension === "jpeg" ? "jpg" : extension;
     ruta = `rendiciones/${crypto.randomUUID()}.${formato}`;
     const subida = await subirMaterial(ruta, archivo);
     if (!subida.ok) {
-      return { ok: false, mensaje: "No se pudo subir el comprobante." };
+      return { ok: false, mensaje: "error_subida" };
     }
   }
 
@@ -327,7 +351,7 @@ export async function enviarRendicionGastoAction(
   } catch (error) {
     await borrarDocumento(ruta);
     console.error("[rendicion] Error al enviar rendición de gasto:", error);
-    return { ok: false, mensaje: "Error al registrar la rendición de gasto." };
+    return { ok: false, mensaje: "error" };
   }
 }
 

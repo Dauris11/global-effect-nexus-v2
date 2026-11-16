@@ -221,3 +221,124 @@ async function anotarExtraccion({
     console.error("[ocr] no se pudo anotar la extracción", error);
   }
 }
+
+const INSTRUCCIONES_COMPROBANTE = [
+  "Eres un lector contable de facturas y comprobantes fiscales de la República Dominicana (DGII).",
+  "Transcribes lo que VES en el comprobante. No inventes datos que no estén escritos.",
+  "Responde SOLO con un objeto JSON, sin texto alrededor y sin bloque de código.",
+  "Campos:",
+  '  "proveedor": nombre o razón social del comercio/proveedor, o null.',
+  '  "rnc": RNC o cédula del proveedor (solo dígitos, 9 u 11 caracteres), o null.',
+  '  "ncf": Número de Comprobante Fiscal (ej. B0100000001 o E310000000001), o null.',
+  '  "fecha": fecha de emisión en formato YYYY-MM-DD, o null.',
+  '  "monto": número decimal con el total facturado (mayor a 0), o null.',
+  '  "itbis": número decimal con el ITBIS facturado (0 o mayor), o null.',
+  '  "concepto": resumen breve (máximo 180 caracteres) de los bienes o servicios facturados, o null.',
+  '  "confianza": entero de 0 a 100 con tu certeza global sobre la lectura.',
+].join("\n");
+
+export type DatosComprobanteLeidos = {
+  proveedor: string | null;
+  rnc: string | null;
+  ncf: string | null;
+  fecha: string | null;
+  monto: number | null;
+  itbis: number | null;
+  concepto: string | null;
+  confianza: number;
+};
+
+export type ResultadoOcrComprobante =
+  | { estado: "ok"; datos: DatosComprobanteLeidos }
+  | { estado: "tipo_no_admitido" }
+  | { estado: "demasiado_grande" }
+  | { estado: "sin_clave" }
+  | { estado: "ilegible" }
+  | { estado: "error" };
+
+/**
+ * Lee una factura o comprobante fiscal para precargar el formulario de
+ * rendición de gastos. Valida cada campo por separado y deja rastro en
+ * `extraccion_ocr`.
+ */
+export async function leerComprobanteFiscal(
+  archivo: File,
+  usuarioId: string,
+): Promise<ResultadoOcrComprobante> {
+  if (!(TIPOS_DOCUMENTO_OCR as readonly string[]).includes(archivo.type)) {
+    return { estado: "tipo_no_admitido" };
+  }
+
+  if (archivo.size > MAXIMO_DOCUMENTO_OCR) {
+    return { estado: "demasiado_grande" };
+  }
+
+  const base64 = Buffer.from(await archivo.arrayBuffer()).toString("base64");
+
+  const lectura = await leerDocumento(
+    { mime: archivo.type, base64 },
+    INSTRUCCIONES_COMPROBANTE,
+    PETICION,
+  );
+
+  if (lectura.estado === "sin_clave") return { estado: "sin_clave" };
+  if (lectura.estado === "ilegible") return { estado: "ilegible" };
+
+  if (lectura.estado !== "ok") {
+    await anotarExtraccion({
+      usuarioId,
+      estudianteId: null,
+      estado: "error",
+      modelo: null,
+      datos: null,
+      confianza: null,
+      mensaje: lectura.estado,
+    });
+    return { estado: "error" };
+  }
+
+  const bruto = lectura.datos;
+  const proveedor = texto(bruto.proveedor, 160);
+  const rncBruto = texto(bruto.rnc, 20)?.replace(/\D/g, "") ?? null;
+  const rnc = rncBruto && /^\d{9,11}$/.test(rncBruto) ? rncBruto : null;
+  const ncfBruto = texto(bruto.ncf, 20)?.toUpperCase().replace(/[^A-Z0-9]/g, "") ?? null;
+  const ncf = ncfBruto && /^[BE][0-9]{8,12}$/.test(ncfBruto) ? ncfBruto : null;
+  const fechaBruta = texto(bruto.fecha, 10);
+  const fecha = fechaBruta && esFechaIso(fechaBruta) ? fechaBruta : null;
+  const montoNum = typeof bruto.monto === "number" ? bruto.monto : Number(bruto.monto);
+  const monto = Number.isFinite(montoNum) && montoNum > 0 ? Math.round(montoNum * 100) / 100 : null;
+  const itbisNum = typeof bruto.itbis === "number" ? bruto.itbis : Number(bruto.itbis);
+  const itbis = Number.isFinite(itbisNum) && itbisNum >= 0 ? Math.round(itbisNum * 100) / 100 : null;
+  const concepto = texto(bruto.concepto, 240);
+  const confianza = entero(bruto.confianza);
+
+  const datos: DatosComprobanteLeidos = {
+    proveedor,
+    rnc,
+    ncf,
+    fecha,
+    monto,
+    itbis,
+    concepto,
+    confianza,
+  };
+
+  try {
+    await consultarUna<{ id: string }>(
+      `INSERT INTO extraccion_ocr
+              (documento_id, estudiante_id, estado, modelo, confianza,
+               datos_extraidos, mensaje_error, creado_por_id)
+       VALUES (NULL, NULL, 'completado', $1, $2, $3, NULL, $4)
+       RETURNING id`,
+      [lectura.modelo, confianza, JSON.stringify(datos), usuarioId],
+    );
+  } catch (error) {
+    console.error("[ocr] no se pudo anotar extracción de comprobante", error);
+  }
+
+  if (!proveedor && monto === null && !ncf) {
+    return { estado: "ilegible" };
+  }
+
+  return { estado: "ok", datos };
+}

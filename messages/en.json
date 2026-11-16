@@ -5719,6 +5719,17 @@
       "ya_cambio": "Someone else already moved it. Reload to see its status.",
       "error": "The expense report could not be updated. Try again."
     },
+    "submitErrorCode": {
+      "falta_proveedor": "The supplier name is required.",
+      "falta_concepto": "The expense description is required.",
+      "monto_invalido": "The total amount must be greater than 0.",
+      "ncf_invalido": "The NCF format is not valid according to DGII (e.g. B0100000001 or E310000000001).",
+      "formato_invalido": "The receipt must be an image (JPG, PNG, WEBP) or a PDF.",
+      "archivo_grande": "The receipt cannot exceed 10 MB.",
+      "error_subida": "Could not upload the receipt.",
+      "error": "Error recording the expense report."
+    },
+    "ocrManualNotice": "File attached. Please fill in or verify the fields manually.",
     "pasos": {
       "comprobante": "Receipt and supplier",
       "montos": "Amounts",

@@ -132,7 +132,10 @@ export async function actualizarExpediente(
                 envio_correo_patrocinador = coalesce($23, envio_correo_patrocinador),
                 asistio_reunion_mensual = coalesce($24, asistio_reunion_mensual),
                 notas_adicionales = $25,
-                foto_url = coalesce($26, foto_url)
+                foto_url = coalesce($26, foto_url),
+                -- Solo el estado activo conserva el vínculo a usuario: al
+                -- pasar a suspendido, retirado o graduado se suelta la cuenta.
+                usuario_id = CASE WHEN $27 THEN usuario_id ELSE NULL END
           WHERE id = $1
           RETURNING id`,
         [
@@ -162,6 +165,7 @@ export async function actualizarExpediente(
           texto("asistio_reunion_mensual"),
           texto("notas_adicionales"),
           rutaFoto,
+          llevaCuenta(estado),
         ],
       );
 

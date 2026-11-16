@@ -5719,6 +5719,17 @@
       "ya_cambio": "Otra persona ya la movió. Recarga para ver su estado.",
       "error": "No se pudo actualizar la rendición. Inténtalo de nuevo."
     },
+    "submitErrorCode": {
+      "falta_proveedor": "El nombre del proveedor es obligatorio.",
+      "falta_concepto": "El concepto del gasto es obligatorio.",
+      "monto_invalido": "El monto total debe ser mayor a 0.",
+      "ncf_invalido": "El formato de NCF no es válido según DGII (ej. B0100000001 o E310000000001).",
+      "formato_invalido": "El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF.",
+      "archivo_grande": "El comprobante no puede pasar de 10 MB.",
+      "error_subida": "No se pudo subir el comprobante.",
+      "error": "Error al registrar la rendición de gasto."
+    },
+    "ocrManualNotice": "Archivo adjuntado. Completa o verifica los datos manualmente.",
     "pasos": {
       "comprobante": "Comprobante y proveedor",
       "montos": "Montos",

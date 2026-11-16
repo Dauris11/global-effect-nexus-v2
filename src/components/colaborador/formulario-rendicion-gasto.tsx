@@ -27,7 +27,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { enviarRendicionGastoAction } from "@/server/colaborador/acciones";
+import {
+  enviarRendicionGastoAction,
+  extraerComprobanteOcrAction,
+} from "@/server/colaborador/acciones";
 
 interface FormularioRendicionGastoProps {
   programas: { id: string; nombre: string; codigo: string | null }[];
@@ -47,6 +50,7 @@ export function FormularioRendicionGasto({
   const [isPending, startTransition] = useTransition();
   const [escaneandoOcr, setEscaneandoOcr] = useState(false);
   const [ocrCompletado, setOcrCompletado] = useState(false);
+  const [ocrManual, setOcrManual] = useState(false);
   const [archivoNombre, setArchivoNombre] = useState<string | null>(null);
   // El archivo en sí, no su vista previa: la URL `blob:` solo vive en este
   // navegador y contabilidad no podía abrirla.
@@ -68,38 +72,41 @@ export function FormularioRendicionGasto({
     null,
   );
 
-  // Simulación inteligente de OCR con extracción de comprobantes dominicanos
-  const procesarArchivoOcr = (file: File) => {
+  // Extracción real con OCR en servidor (`leerComprobanteFiscal`)
+  const procesarArchivoOcr = async (file: File) => {
     setArchivoNombre(file.name);
     setArchivo(file);
 
     setEscaneandoOcr(true);
     setOcrCompletado(false);
+    setOcrManual(false);
 
-    setTimeout(() => {
-      // Extracción simulada con datos fiscales dominicanos representativos
-      const datosOcr = {
-        proveedor: "Ferretería & Suministros Cibao SRL",
-        rnc: "131456789",
-        ncf: "B0100000045",
-        fecha: new Date().toISOString().split("T")[0],
-        monto: 3850.0,
-        itbis: 587.29,
-        concepto: "Compra de discos de corte, electrodos y pernos para Casa de Herramientas",
-      };
+    try {
+      const formData = new FormData();
+      formData.set("comprobante", file);
+      const resultado = await extraerComprobanteOcrAction(formData);
 
-      setProveedorNombre(datosOcr.proveedor);
-      setProveedorRnc(datosOcr.rnc);
-      setNcf(datosOcr.ncf);
-      setFechaComprobante(datosOcr.fecha);
-      setMontoTotal(datosOcr.monto.toString());
-      setMontoItbis(datosOcr.itbis.toString());
-      setConcepto(datosOcr.concepto);
-      setOcrData(datosOcr);
-
+      if (resultado.estado === "ok") {
+        const { datos } = resultado;
+        if (datos.proveedor) setProveedorNombre(datos.proveedor);
+        if (datos.rnc) setProveedorRnc(datos.rnc);
+        if (datos.ncf) setNcf(datos.ncf);
+        if (datos.fecha) setFechaComprobante(datos.fecha);
+        if (datos.monto !== null) setMontoTotal(String(datos.monto));
+        if (datos.itbis !== null) setMontoItbis(String(datos.itbis));
+        if (datos.concepto) setConcepto(datos.concepto);
+        setOcrData(datos);
+        setOcrCompletado(true);
+      } else {
+        setOcrData(null);
+        setOcrManual(true);
+      }
+    } catch {
+      setOcrData(null);
+      setOcrManual(true);
+    } finally {
       setEscaneandoOcr(false);
-      setOcrCompletado(true);
-    }, 1200);
+    }
   };
 
   const manejarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
@@ -136,11 +143,27 @@ export function FormularioRendicionGasto({
         setArchivo(null);
         setArchivoNombre(null);
         setOcrCompletado(false);
+        setOcrManual(false);
         if (onExito) onExito();
         // La lista de abajo es del servidor: sin esto no aparecía lo enviado.
         router.refresh();
       } else {
-        setMensaje({ tipo: "error", texto: res.mensaje || t("submitError") });
+        const codigo = res.mensaje;
+        const codigosConocidos = [
+          "falta_proveedor",
+          "falta_concepto",
+          "monto_invalido",
+          "ncf_invalido",
+          "formato_invalido",
+          "archivo_grande",
+          "error_subida",
+          "error",
+        ] as const;
+        const textoError =
+          codigo && (codigosConocidos as readonly string[]).includes(codigo)
+            ? t(`submitErrorCode.${codigo as (typeof codigosConocidos)[number]}`)
+            : t("submitError");
+        setMensaje({ tipo: "error", texto: textoError });
       }
     });
   };
@@ -216,6 +239,11 @@ export function FormularioRendicionGasto({
               <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#1E9E6A]/10 px-3 py-1 text-xs font-semibold text-[#1E9E6A]">
                 <CheckCircle2 className="size-3.5" />
                 {t("ocrAutoExtracted")}
+              </div>
+            )}
+            {ocrManual && !ocrCompletado && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-medium text-tinta-2">
+                {t("ocrManualNotice")}
               </div>
             )}
           </div>
