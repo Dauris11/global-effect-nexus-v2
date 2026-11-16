@@ -38,29 +38,33 @@ export function VistaActivosFijos({
       {/* Tarjetas de Resumen Patrimonial */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-xs text-muted-foreground">Costo Histórico de Adquisición</div>
+          <div className="text-xs text-muted-foreground">{t("kpiCostoHistorico")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-tinta dark:text-slate-100">
             RD$ {totalCosto.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">{activos.length} activos capitalizados</div>
+          <div className="mt-1 text-[11px] text-slate-400">
+            {t("kpiCapitalizados", { n: activos.length })}
+          </div>
         </div>
 
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-xs text-muted-foreground">Depreciación Acumulada Total</div>
+          <div className="text-xs text-muted-foreground">{t("kpiDeprecAcum")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-[#B4342B]">
             RD$ {totalDeprecAcum.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            {totalCosto > 0 ? ((totalDeprecAcum / totalCosto) * 100).toFixed(1) : 0}% amortizado
+            {t("kpiPorcentajeAmortizado", {
+              pct: totalCosto > 0 ? ((totalDeprecAcum / totalCosto) * 100).toFixed(1) : "0",
+            })}
           </div>
         </div>
 
         <div className="rounded-xl border border-marca-500/20 bg-marca-500/5 p-4 shadow-xs">
-          <div className="text-xs font-medium text-marca-500">Valor Neto en Libros</div>
+          <div className="text-xs font-medium text-marca-500">{t("valorLibros")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorLibros.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
-          <div className="mt-1 text-[11px] text-marca-500/80">Patrimonio institucional vigente</div>
+          <div className="mt-1 text-[11px] text-marca-500/80">{t("kpiPatrimonioVigente")}</div>
         </div>
       </div>
 
@@ -181,7 +185,7 @@ export function VistaActivosFijos({
                     <th className="px-4 py-3">{t("anio")} / {t("mes")}</th>
                     <th className="px-4 py-3">{t("fechaAsiento")}</th>
                     <th className="px-4 py-3">{t("asientoGenerado")}</th>
-                    <th className="px-4 py-3 text-center">Activos amortizados</th>
+                    <th className="px-4 py-3 text-center">{t("activosAmortizados")}</th>
                     <th className="px-4 py-3 text-right font-bold text-marca-500">
                       {t("totalAmortizado")}
                     </th>
@@ -232,7 +236,10 @@ export function VistaActivosFijos({
                       {c.nombre}
                     </td>
                     <td className="px-4 py-3 text-center tabular-nums">
-                      {c.vida_util_meses} meses ({Math.round(c.vida_util_meses / 12)} años)
+                      {t("vidaUtilMesesAnios", {
+                        meses: c.vida_util_meses,
+                        anios: Math.round(c.vida_util_meses / 12),
+                      })}
                     </td>
                     <td className="px-4 py-3 text-center tabular-nums font-semibold text-marca-500">
                       {c.porcentaje_anual}%

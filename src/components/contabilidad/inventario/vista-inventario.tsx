@@ -40,36 +40,36 @@ export function VistaInventario({
       {/* Resumen del almacén */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-xs text-muted-foreground">Valorización Total de Inventario</div>
+          <div className="text-xs text-muted-foreground">{t("kpiValorizacion")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorInventario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            Costo Promedio Ponderado (NIIF / NIC 2)
+            {t("kpiCostoPromedioNIIF")}
           </div>
         </div>
 
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-xs text-muted-foreground">Artículos en Catálogo</div>
+          <div className="text-xs text-muted-foreground">{t("kpiArticulosCatalogo")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-tinta dark:text-slate-100">
-            {articulos.length} artículos
+            {t("kpiArticulosConteo", { n: articulos.length })}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">Comedor, suministros y material didáctico</div>
+          <div className="mt-1 text-[11px] text-slate-400">{t("kpiArticulosDesc")}</div>
         </div>
 
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-xs text-muted-foreground">Alertas de Reabastecimiento</div>
+          <div className="text-xs text-muted-foreground">{t("kpiAlertasReabastecimiento")}</div>
           <div className="mt-1 flex items-center gap-2">
             <span
               className={`text-xl font-bold tabular-nums ${
                 articulosBajoStock.length > 0 ? "text-[#B4342B]" : "text-[#1E9E6A]"
               }`}
             >
-              {articulosBajoStock.length} artículos
+              {t("kpiArticulosConteo", { n: articulosBajoStock.length })}
             </span>
             {articulosBajoStock.length > 0 && <AlertTriangle className="h-5 w-5 text-[#B4342B]" />}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">Existencias en o bajo el stock mínimo</div>
+          <div className="mt-1 text-[11px] text-slate-400">{t("kpiAlertasDesc")}</div>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ export function VistaInventario({
                     <th className="px-4 py-3 text-right font-bold text-marca-500">
                       {t("valorTotal")}
                     </th>
-                    <th className="px-4 py-3 text-center">Estado</th>
+                    <th className="px-4 py-3 text-center">{t("colEstado")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -173,7 +173,7 @@ export function VistaInventario({
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="border-linea bg-muted text-[#1E9E6A]">
-                              Óptimo
+                              {t("optimo")}
                             </Badge>
                           )}
                         </td>
@@ -204,7 +204,7 @@ export function VistaInventario({
                     <th className="px-4 py-3 text-right">{t("total")}</th>
                     <th className="px-4 py-3 text-right">{t("stockAnterior")}</th>
                     <th className="px-4 py-3 text-right font-semibold">{t("stockPosterior")}</th>
-                    <th className="px-4 py-3">Motivo / Programa</th>
+                    <th className="px-4 py-3">{t("colMotivoPrograma")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -241,7 +241,7 @@ export function VistaInventario({
                         {m.stock_posterior}
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {m.motivo ?? (m.centro_costo_nombre ? `Imputado a ${m.centro_costo_nombre}` : "—")}
+                        {m.motivo ?? (m.centro_costo_nombre ? t("imputadoA", { nombre: m.centro_costo_nombre }) : "—")}
                       </td>
                     </tr>
                   ))}
@@ -265,10 +265,10 @@ export function VistaInventario({
                     <th className="px-4 py-3">{t("codigo")}</th>
                     <th className="px-4 py-3">{t("fecha")}</th>
                     <th className="px-4 py-3">{t("descripcion")}</th>
-                    <th className="px-4 py-3 text-center">Artículos</th>
+                    <th className="px-4 py-3 text-center">{t("colArticulos")}</th>
                     <th className="px-4 py-3 text-right">{t("diferencia")}</th>
                     <th className="px-4 py-3 text-right">{t("impacto")}</th>
-                    <th className="px-4 py-3 text-center">Estado</th>
+                    <th className="px-4 py-3 text-center">{t("colEstado")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">

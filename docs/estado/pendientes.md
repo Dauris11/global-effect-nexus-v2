@@ -5,6 +5,9 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Internacionalización de códigos de calificación Moodle y vistas contables de Activos Fijos e Inventario (16 nov 2026):**
+      - **Códigos i18n en `calificarEntregaMoodleAction` (`src/server/moodle/acciones.ts`, `messages/{es,en}.json`):** sustitución de cadenas literales en español por códigos en `moodle.gradeResult.*`.
+      - **Vistas de Activos Fijos e Inventario Contable (`vista-activos-fijos.tsx`, `vista-inventario.tsx`, `messages/{es,en}.json`):** localización de KPIs, cabeceras de tablas y etiquetas de estado bajo `contab.activosFijos` y `contab.inventarioContable`.
 - [x] **Vivienda en mapa de transporte, trigger diferido de cotización en compra e i18n en acciones de Reuniones (16 nov 2026):**
       - **Marcador de vivienda del estudiante en el mapa (`src/server/transporte/consultas.ts`, `mapa-transporte-cliente.tsx`, `portal/estudiante/transporte/page.tsx`):** nueva consulta `viviendaEstudiante` que lee `latitud`/`longitud` de `perfil_vivienda` y dibuja el marcador «Mi vivienda» en el mapa de transporte en vivo.
       - **Trigger diferido que exige adjunto en `compra` (`db/migrations/0084_compra_con_adjunto.sql`):** `CONSTRAINT TRIGGER tg_solicitud_compra_con_adjunto` (`DEFERRABLE INITIALLY DEFERRED`) que verifica al hacer `COMMIT` que toda solicitud con `tipo = 'compra'` tenga su cotización en `solicitud_adjunto`.

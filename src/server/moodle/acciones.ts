@@ -259,11 +259,11 @@ export async function calificarEntregaMoodleAction(
   const comentarioProfesor = String(datos.get("comentario_profesor") ?? "").trim();
 
   if (!entregaId) {
-    return { ok: false, mensaje: "Identificador de entrega inválido." };
+    return { ok: false, mensaje: "id_invalido" };
   }
 
   if (isNaN(calificacion) || calificacion < 0) {
-    return { ok: false, mensaje: "La calificación debe ser una nota numérica no negativa." };
+    return { ok: false, mensaje: "nota_invalida" };
   }
 
   try {
@@ -326,13 +326,13 @@ export async function calificarEntregaMoodleAction(
     );
 
     if (!actualizada) {
-      return { ok: false, mensaje: "La entrega especificada no existe." };
+      return { ok: false, mensaje: "no_existe" };
     }
 
     if (!actualizada.escrita) {
       return {
         ok: false,
-        mensaje: `La calificación debe estar entre 0 y ${actualizada.maximo}, el puntaje de esta tarea.`,
+        mensaje: "fuera_de_escala",
       };
     }
 
@@ -371,9 +371,9 @@ export async function calificarEntregaMoodleAction(
     revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
     revalidatePath("/[locale]/academico/clases-360", "page");
 
-    return { ok: true, mensaje: "Calificación y feedback guardados exitosamente." };
+    return { ok: true, mensaje: "calificada" };
   } catch (error) {
     console.error("[moodle] Error al calificar entrega:", error);
-    return { ok: false, mensaje: "Error al registrar la calificación de la entrega." };
+    return { ok: false, mensaje: "error" };
   }
 }
