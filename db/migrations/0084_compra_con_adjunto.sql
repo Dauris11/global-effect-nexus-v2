@@ -33,3 +33,4 @@ CREATE CONSTRAINT TRIGGER tg_solicitud_compra_con_adjunto
   FOR EACH ROW
   WHEN (NEW.tipo = 'compra')
   EXECUTE FUNCTION public._fn_solicitud_compra_con_adjunto();
+

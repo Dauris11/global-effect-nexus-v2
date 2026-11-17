@@ -49,19 +49,30 @@ const SELECTOR =
  * profesor solo marca. Los permisos se vuelven a comprobar en las acciones:
  * esconder el formulario aquí no es control de acceso.
  */
+export type AccionesAsistenciaClase = {
+  guardar?: typeof guardarSesion360;
+  borrar?: typeof borrarSesion360;
+  marcar?: typeof marcarAsistencia360;
+};
+
 export function AsistenciaClase360({
   materiaId,
   sesiones,
   marcas,
   periodos,
   puedeProgramar,
+  acciones,
 }: {
   materiaId: string;
   sesiones: readonly SesionClase360[];
   marcas: Record<string, MarcaAsistencia[]>;
   periodos: readonly PeriodoDeClase360[];
   puedeProgramar: boolean;
+  acciones?: AccionesAsistenciaClase;
 }) {
+  const fnGuardar = acciones?.guardar ?? guardarSesion360;
+  const fnBorrar = acciones?.borrar ?? borrarSesion360;
+  const fnMarcar = acciones?.marcar ?? marcarAsistencia360;
   const t = useTranslations("academic.classes360");
   const idioma = useLocale() as Locale;
   const hoy = new Date().toISOString().slice(0, 10);
@@ -74,7 +85,7 @@ export function AsistenciaClase360({
   function borrar(id: string) {
     setError(null);
     iniciarBorrado(async () => {
-      const { estado } = await borrarSesion360(id);
+      const { estado } = await fnBorrar(id);
       if (estado !== "ok") setError(estado);
       else if (abierta === id) setAbierta(null);
     });
@@ -102,6 +113,7 @@ export function AsistenciaClase360({
           periodos={periodos}
           sesion={formulario === "nueva" ? null : formulario}
           alTerminar={() => setFormulario(null)}
+          guardar={fnGuardar}
         />
       )}
 
@@ -171,7 +183,11 @@ export function AsistenciaClase360({
               </div>
 
               {abierta === sesion.id && (
-                <ListaAsistencia sesionId={sesion.id} marcas={marcas[sesion.id] ?? []} />
+                <ListaAsistencia
+                  sesionId={sesion.id}
+                  marcas={marcas[sesion.id] ?? []}
+                  marcarAsistencia={fnMarcar}
+                />
               )}
             </li>
           ))}
@@ -189,9 +205,11 @@ export function AsistenciaClase360({
 function ListaAsistencia({
   sesionId,
   marcas,
+  marcarAsistencia,
 }: {
   sesionId: string;
   marcas: readonly MarcaAsistencia[];
+  marcarAsistencia: typeof marcarAsistencia360;
 }) {
   const t = useTranslations("academic.classes360");
   const [valores, setValores] = useState<Record<string, boolean | null>>(() =>
@@ -208,7 +226,7 @@ function ListaAsistencia({
     setEnviando(true);
     setValores({ ...valores, ...Object.fromEntries(objetivo.map((id) => [id, presente])) });
 
-    const { estado } = await marcarAsistencia360({
+    const { estado } = await marcarAsistencia({
       sesionId,
       presente,
       inscripcionIds: ids,
@@ -275,11 +293,13 @@ function FormularioSesion({
   periodos,
   sesion,
   alTerminar,
+  guardar,
 }: {
   materiaId: string;
   periodos: readonly PeriodoDeClase360[];
   sesion: SesionClase360 | null;
   alTerminar: () => void;
+  guardar: typeof guardarSesion360;
 }) {
   const t = useTranslations("academic.classes360");
   const [periodoId, setPeriodoId] = useState(sesion?.periodo_id ?? periodos[0]?.id ?? "");
@@ -294,7 +314,7 @@ function FormularioSesion({
   function enviar(datos: FormData) {
     setError(null);
     iniciar(async () => {
-      const { estado } = await guardarSesion360({
+      const { estado } = await guardar({
         id: sesion?.id,
         materiaId,
         periodoId,

@@ -8,6 +8,7 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { AsistenciaEstudiante360 } from "@/components/global360/asistencia-estudiante";
 import { MatriculaCuatrimestral360 } from "@/components/estudiante/matricula-cuatrimestral-360";
 import {
@@ -24,7 +25,10 @@ import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { cn } from "@/lib/utils";
-import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import {
+  cumplimientoCuatrimestralEstudiante,
+  estudianteDeUsuario,
+} from "@/server/estudiantes/portal";
 import {
   avanceEn360,
   catalogoConSituacion,
@@ -90,10 +94,16 @@ export default async function PaginaGlobal360({
 
   // Las tandas son del período de la ventana: sin ventana no hay período del
   // que hablar.
-  const tandas =
+  const [tandas, cumplimiento] = await Promise.all([
     ventana && estudiante.id
-      ? await tandasDelEstudiante(estudiante.id, ventana.periodo_id)
-      : [];
+      ? tandasDelEstudiante(estudiante.id, ventana.periodo_id)
+      : Promise.resolve([]),
+    cumplimientoCuatrimestralEstudiante(
+      estudiante.id,
+      estudiante.esUniversitario,
+      ventana?.periodo_id,
+    ),
+  ]);
 
   const dadas = materias.filter((m) => m.situacion === "aprobada");
   const porDar = materias.filter((m) => m.situacion !== "aprobada");
@@ -111,6 +121,11 @@ export default async function PaginaGlobal360({
   return (
     <div className="animate-entrada space-y-8">
       <EncabezadoPagina titulo={t("title")} />
+
+      <AvisoMinimoCuatrimestral
+        cumplimiento={cumplimiento}
+        mostrarCuandoNoAplica
+      />
 
       {/* El anuncio de la ventana, con fecha Y hora. Es lo que el estudiante
           viene a ver cuando le llega el aviso de la cabecera. Abierta es un

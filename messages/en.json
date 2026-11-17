@@ -1831,6 +1831,17 @@
       "empty": "No upcoming events",
       "emptyHint": "You have no scheduled activities for now.",
       "assignment": "Assignment"
+    },
+    "quarterlyRequirement": {
+      "currentTerm": "current term",
+      "onlyUniversityTitle": "Requirement exclusive to university students",
+      "onlyUniversityHint": "The mandatory minimum of 2 classes per quarter applies only to university students.",
+      "metTitle": "University requirement met: you have {taken} of {min} mandatory classes in {term}.",
+      "metDetail": "Includes {c360} Global Effect 360 class(es) and {career} degree subject(s).",
+      "pendingTitle": "Mandatory university requirement: you have {taken} of {min} classes in {term} ({missing} remaining).",
+      "pendingDetail": "Every university student must take at least 2 classes per quarter.",
+      "go360": "Go to Global Effect 360",
+      "goEnrollment": "Go to Enrollment"
     }
   },
   "teacherPortal": {
@@ -1861,6 +1872,10 @@
       "meetings": {
         "label": "Meetings and tutoring",
         "hint": "Schedule with students and staff"
+      },
+      "assignedSubjects": {
+        "label": "My assigned subjects",
+        "hint": "View students, take attendance, assign tasks and review submissions"
       }
     },
     "term": "Term",
@@ -1877,7 +1892,49 @@
     "takeAttendance": "Attendance",
     "viewPosts": "Posts",
     "viewSubject": "View subject",
-    "reviewSubmission": "Grade"
+    "reviewSubmission": "Grade",
+    "assignTask": "Assign task",
+    "assignedSubjects": {
+      "title": "Assigned subjects",
+      "subtitle": "Manage the subjects assigned to you by administration: take attendance, post tasks and grade submissions.",
+      "emptyTitle": "You have no assigned subjects yet",
+      "emptyHint": "Once administration assigns a subject to you, it will appear here to take attendance and post tasks.",
+      "noTerm": "No term",
+      "noSchedule": "Schedule TBD",
+      "studentsCount": "{count} enrolled",
+      "manage": "Manage subject",
+      "collapse": "Collapse",
+      "tabs": {
+        "attendance": "Take attendance",
+        "assignTask": "Assign task",
+        "posts": "Posts",
+        "students": "Students"
+      },
+      "noStudentsForTask": "At least one enrolled student is required to publish a task.",
+      "taskPublished": "Post saved and students notified.",
+      "taskError": "Could not publish. Please check the fields and try again.",
+      "dueAt": "Due",
+      "submissionsCount": "{count} submissions",
+      "viewSubmissions": "View submissions",
+      "hideSubmissions": "Hide submissions",
+      "openAttachment": "Open file",
+      "feedbackPlaceholder": "Feedback for the student",
+      "grade": "Grade",
+      "graded": "Grade saved.",
+      "gradeError": "Could not save grade.",
+      "noStudents": "There are no students enrolled in this subject.",
+      "types": {
+        "tarea": "Assignment",
+        "examen": "Exam",
+        "material": "Material",
+        "anuncio": "Announcement"
+      },
+      "publishTask": "Publish",
+      "noPosts": "There are no posts in this subject yet.",
+      "deletePost": "Delete post",
+      "taskTitlePlaceholder": "e.g. Lab assignment #1",
+      "taskDescriptionPlaceholder": "Instructions and activity details"
+    }
   },
   "modules": {
     "academicSubjects": {

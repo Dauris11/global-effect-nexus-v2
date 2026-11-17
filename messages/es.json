@@ -1831,6 +1831,17 @@
       "empty": "Sin eventos próximos",
       "emptyHint": "No tienes actividades programadas por ahora.",
       "assignment": "Tarea"
+    },
+    "quarterlyRequirement": {
+      "currentTerm": "cuatrimestre vigente",
+      "onlyUniversityTitle": "Requisito exclusivo para estudiantes universitarios",
+      "onlyUniversityHint": "La obligatoriedad de tomar al menos 2 clases por cuatrimestre aplica únicamente a los estudiantes universitarios.",
+      "metTitle": "Requisito universitario cumplido: llevas {taken} de {min} clases obligatorias en {term}.",
+      "metDetail": "Incluye {c360} clase(s) de Global Effect 360 y {career} materia(s) de carrera.",
+      "pendingTitle": "Requisito obligatorio universitario: llevas {taken} de {min} clases en {term} (te falta(n) {missing}).",
+      "pendingDetail": "Todo estudiante universitario debe cursar al menos 2 clases por cuatrimestre de manera obligatoria.",
+      "go360": "Ir a Global Effect 360",
+      "goEnrollment": "Ir a Prematrícula"
     }
   },
   "teacherPortal": {
@@ -1861,6 +1872,10 @@
       "meetings": {
         "label": "Reuniones y tutorías",
         "hint": "Agenda con estudiantes y equipo"
+      },
+      "assignedSubjects": {
+        "label": "Mis materias asignadas",
+        "hint": "Ver alumnos, pasar lista, asignar tareas y revisar entregas"
       }
     },
     "term": "Período",
@@ -1877,7 +1892,49 @@
     "takeAttendance": "Asistencia",
     "viewPosts": "Publicaciones",
     "viewSubject": "Ver materia",
-    "reviewSubmission": "Calificar"
+    "reviewSubmission": "Calificar",
+    "assignTask": "Asignar tarea",
+    "assignedSubjects": {
+      "title": "Materias asignadas",
+      "subtitle": "Gestiona las materias que administración te asignó: pasa lista, publica tareas y califica entregas.",
+      "emptyTitle": "Aún no tienes materias asignadas",
+      "emptyHint": "Cuando administración te asigne una materia, aparecerá aquí para pasar lista y publicar tareas.",
+      "noTerm": "Sin período",
+      "noSchedule": "Horario por definir",
+      "studentsCount": "{count} inscritos",
+      "manage": "Gestionar materia",
+      "collapse": "Ocultar",
+      "tabs": {
+        "attendance": "Pasar lista",
+        "assignTask": "Asignar tarea",
+        "posts": "Publicaciones",
+        "students": "Alumnos"
+      },
+      "noStudentsForTask": "Necesitas al menos un estudiante inscrito en la materia para publicar una tarea.",
+      "taskPublished": "Publicación guardada y notificada a los estudiantes.",
+      "taskError": "No se pudo publicar. Revisa los datos e inténtalo de nuevo.",
+      "dueAt": "Vence",
+      "submissionsCount": "{count} entregas",
+      "viewSubmissions": "Ver entregas",
+      "hideSubmissions": "Ocultar entregas",
+      "openAttachment": "Abrir archivo",
+      "feedbackPlaceholder": "Comentario para el estudiante",
+      "grade": "Calificar",
+      "graded": "Calificación guardada.",
+      "gradeError": "No se pudo guardar la calificación.",
+      "noStudents": "No hay estudiantes inscritos en esta materia.",
+      "types": {
+        "tarea": "Tarea",
+        "examen": "Examen",
+        "material": "Material",
+        "anuncio": "Anuncio"
+      },
+      "publishTask": "Publicar",
+      "noPosts": "Aún no hay publicaciones en esta materia.",
+      "deletePost": "Eliminar publicación",
+      "taskTitlePlaceholder": "Ej. Práctica de laboratorio #1",
+      "taskDescriptionPlaceholder": "Instrucciones y detalles de la actividad"
+    }
   },
   "modules": {
     "academicSubjects": {

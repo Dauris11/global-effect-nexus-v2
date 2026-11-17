@@ -41,3 +41,4 @@ DROP TRIGGER IF EXISTS tg_integridad_asistencia_360 ON public.asistencia_360;
 CREATE TRIGGER tg_integridad_asistencia_360
   BEFORE INSERT OR UPDATE ON public.asistencia_360
   FOR EACH ROW EXECUTE FUNCTION public._fn_integridad_asistencia_360();
+

@@ -469,10 +469,173 @@ export async function borrarAsignacion360(
 function refrescar() {
   revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
+  revalidatePath("/[locale]/portal/profesor/materias", "page");
   revalidatePath("/[locale]/portal/estudiante/global-360", "page");
   revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
   revalidatePath("/[locale]/portal/estudiante/calificaciones", "page");
   revalidatePath("/[locale]/portal/estudiante", "page");
+}
+
+/** Publica una tarea, examen, material o anuncio en una materia asignada al docente. */
+export async function publicarTareaMateria(
+  _previo: EstadoAcademico,
+  datos: FormData,
+): Promise<EstadoAcademico> {
+  const usuario = await requerirUsuario();
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+
+  if (!puedeTodo && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const materiaId = String(datos.get("materia") ?? "");
+  const titulo = String(datos.get("titulo") ?? "").trim().slice(0, 160);
+  const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 900);
+  const tipo = String(datos.get("tipo") ?? "tarea");
+  const vence = String(datos.get("vence") ?? "").trim();
+  if (vence && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(vence)) {
+    return { estado: "invalido" };
+  }
+  const limiteMb = Math.max(1, Math.min(100, Number(datos.get("limite_mb") || 15)));
+  const formatosRaw = String(datos.get("formatos_permitidos") || "pdf, docx, jpg, png");
+  const formatosPermitidos = formatosRaw
+    .split(",")
+    .map((f) => f.trim().replace(/^\./, "").toLowerCase())
+    .filter(Boolean);
+  const puntajeMaximo = Math.max(1, Math.min(1000, Number(datos.get("puntaje_maximo") || 100)));
+  const permiteTardias = datos.get("permite_entregas_tardias") !== "false";
+  const instrucciones = String(datos.get("instrucciones_entrega") ?? "").trim().slice(0, 2000);
+  const archivoUrl = String(datos.get("archivo_url") ?? "").trim().slice(0, 500);
+  const peso = Number(datos.get("peso") || 1);
+
+  if (!titulo) return { estado: "nombre_vacio" };
+  if (
+    tipo !== "tarea" &&
+    tipo !== "examen" &&
+    tipo !== "material" &&
+    tipo !== "anuncio"
+  ) {
+    return { estado: "invalido" };
+  }
+  if (archivoUrl && !/^https?:\/\/\S+$/i.test(archivoUrl)) {
+    return { estado: "invalido" };
+  }
+  if (!esUuid(materiaId)) return { estado: "invalido" };
+  if (!Number.isFinite(peso) || peso <= 0 || peso > 100) return { estado: "invalido" };
+
+  try {
+    const creada = await consultarUna<{ id: string; materia: string }>(
+      `INSERT INTO asignacion (
+         titulo, descripcion, tipo, materia_id, fecha_vencimiento, creada_por_id,
+         limite_mb, formatos_permitidos, puntaje_maximo, permite_entregas_tardias, instrucciones_entrega,
+         periodo_id, peso, archivo_url
+       )
+       SELECT $1, NULLIF($2, ''), $3::tipo_asignacion, m.id,
+              NULLIF($4, '')::timestamp AT TIME ZONE 'America/Santo_Domingo', $5,
+              $8, $9, $10, $11, NULLIF($12, ''),
+              m.periodo_id, $13, NULLIF($14, '')
+         FROM materia m
+        WHERE m.id = $6
+          AND ($7::uuid IS NULL OR m.profesor_usuario_id = $7)
+          AND EXISTS (SELECT 1 FROM inscripcion i
+                       WHERE i.materia_id = m.id
+                         AND i.estado <> 'retirada')
+       RETURNING id, (SELECT nombre FROM materia WHERE id = $6) AS materia`,
+      [
+        titulo,
+        descripcion,
+        tipo,
+        vence,
+        usuario.id,
+        materiaId,
+        puedeTodo ? null : usuario.id,
+        limiteMb,
+        formatosPermitidos.length > 0 ? formatosPermitidos : ["pdf", "docx", "jpg", "png"],
+        puntajeMaximo,
+        permiteTardias,
+        instrucciones,
+        peso,
+        archivoUrl,
+      ],
+    );
+
+    if (!creada) return { estado: "no_encontrado" };
+
+    await consultar(
+      `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+       SELECT DISTINCT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+         FROM inscripcion i
+         JOIN estudiante e ON e.id = i.estudiante_id
+         JOIN usuario u ON u.id = e.usuario_id
+        WHERE i.materia_id = $1
+          AND i.estado <> 'retirada'
+          AND u.activo`,
+      [materiaId, `${creada.materia} · ${titulo}`, descripcion || titulo],
+    );
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "tarea.publicada",
+      entidad: "asignacion",
+      entidadId: creada.id,
+      datos: { titulo, tipo, materia_id: materiaId },
+    });
+  } catch (error) {
+    console.error("[academico] no se pudo publicar la asignación de materia", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+/** Elimina una asignación publicada en una materia asignada al docente. */
+export async function borrarAsignacionMateria(
+  id: string,
+): Promise<EstadoAcademico> {
+  const usuario = await requerirUsuario();
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+
+  if (!puedeTodo && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  if (!esUuid(id)) return { estado: "invalido" };
+
+  try {
+    const borrada = await consultarUna<{
+      id: string;
+      titulo: string;
+      materia_id: string | null;
+    }>(
+      `DELETE FROM asignacion a
+        USING materia m
+        WHERE a.id = $1
+          AND m.id = a.materia_id
+          AND ($2::uuid IS NULL OR m.profesor_usuario_id = $2)
+        RETURNING a.id, a.titulo, a.materia_id`,
+      [id, puedeTodo ? null : usuario.id],
+    );
+
+    if (!borrada) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "tarea.borrada",
+      entidad: "asignacion",
+      entidadId: borrada.id,
+      datos: {
+        titulo: borrada.titulo,
+        materia_id: borrada.materia_id,
+      },
+    });
+  } catch (error) {
+    console.error("[academico] no se pudo borrar la asignación de materia", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

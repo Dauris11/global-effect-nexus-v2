@@ -3,6 +3,7 @@ import { BookOpen, CalendarRange, CircleCheck, Coins } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { ElegirMaterias } from "@/components/estudiante/elegir-materias";
 import { PeriodoInscripciones } from "@/components/estudiante/prematricula-periodo";
 import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
@@ -18,7 +19,10 @@ import {
   type InscripcionDelEstudiante,
   materiasOfertadas,
 } from "@/server/estudiantes/academico";
-import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import {
+  cumplimientoCuatrimestralEstudiante,
+  estudianteDeUsuario,
+} from "@/server/estudiantes/portal";
 import {
   tandasDelEstudiante,
   ventanaVigente,
@@ -79,6 +83,12 @@ export default async function PaginaMisMaterias({
     ventanaVigente(),
   ]);
 
+  const cumplimiento = await cumplimientoCuatrimestralEstudiante(
+    estudiante.id,
+    estudiante.esUniversitario,
+    ventana?.periodo_id,
+  );
+
   // El catálogo solo se pide si hay ventana: sin ella no hay nada que elegir y
   // sería una consulta por visita para no dibujar nada.
   const [oferta, mensajes, tandas] = ventana
@@ -117,6 +127,8 @@ export default async function PaginaMisMaterias({
   return (
     <div className="animate-entrada space-y-8">
       <EncabezadoPagina titulo={t("subjectsPage.title")} />
+
+      <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard

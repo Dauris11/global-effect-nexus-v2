@@ -173,11 +173,18 @@ export default async function PortalProfesor({
             titulo: t("shortcuts.classes360.label"),
             texto: t("shortcuts.classes360.hint"),
           },
+          {
+            href: "/portal/profesor/materias",
+            icono: Library,
+            color: CUADRO.marca,
+            titulo: t("shortcuts.assignedSubjects.label"),
+            texto: t("shortcuts.assignedSubjects.hint"),
+          },
           ...(veMaterias
             ? [
                 {
                   href: "/academico/materias",
-                  icono: Library,
+                  icono: BookOpen,
                   color: CUADRO.marca,
                   titulo: t("shortcuts.subjects.label"),
                   texto: t("shortcuts.subjects.hint"),
@@ -340,13 +347,25 @@ export default async function PortalProfesor({
                           </p>
                         </div>
 
-                        {veMaterias && (
-                          <Button asChild size="sm" variant="ghost" className="h-7 shrink-0 text-xs text-marca-600 hover:text-marca-700">
-                            <Link href={`/academico/materias?q=${encodeURIComponent(materia.codigo || materia.nombre)}`}>
-                              {t("viewSubject")}
+                        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia`}>
+                              <CalendarCheck className="size-3.5" />
+                              {t("takeAttendance")}
                             </Link>
                           </Button>
-                        )}
+                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea`}>
+                              <ClipboardList className="size-3.5" />
+                              {t("assignTask")}
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm" variant="ghost" className="h-8 text-xs text-marca-600 hover:text-marca-700">
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos`}>
+                              {t("manageClass")}
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     </li>
                   ))}

@@ -2,7 +2,13 @@ import { cache } from "react";
 
 import { consultar, consultarUna } from "@/lib/db";
 import type { TipoEstudiante } from "@/lib/expedientes";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
 import { esLetra, gpaDe, type Letra, letraDe } from "@/lib/notas";
+import {
+  esEstudianteUniversitario,
+  evaluarMinimoCuatrimestral,
+  type EvaluacionMinimoCuatrimestral,
+} from "@/lib/reglas-academicas";
 
 /**
  * Datos del portal del estudiante.
@@ -27,6 +33,8 @@ export type EstudianteDeSesion = {
   nombre: string;
   tipo: TipoEstudiante;
   estado: string;
+  universidad: string | null;
+  esUniversitario: boolean;
   tieneExpediente: boolean;
 };
 
@@ -47,11 +55,13 @@ export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
     nombre: string;
     tipo: string | null;
     estado: string | null;
+    universidad: string | null;
   }>(
     `SELECT e.id,
             COALESCE(e.nombre, u.nombre) AS nombre,
             COALESCE(e.tipo::text, 'becado') AS tipo,
-            COALESCE(e.estado::text, 'activo') AS estado
+            COALESCE(e.estado::text, 'activo') AS estado,
+            e.universidad
        FROM usuario u
        LEFT JOIN estudiante e ON e.usuario_id = u.id
       WHERE u.id = $1`,
@@ -64,6 +74,8 @@ export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
       nombre: "Estudiante",
       tipo: "becado",
       estado: "activo",
+      universidad: null,
+      esUniversitario: false,
       tieneExpediente: false,
     };
   }
@@ -73,6 +85,8 @@ export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
     nombre: fila.nombre,
     tipo: (fila.tipo as TipoEstudiante) ?? "becado",
     estado: fila.estado ?? "activo",
+    universidad: fila.universidad,
+    esUniversitario: esEstudianteUniversitario(fila.universidad),
     tieneExpediente: fila.id !== null,
   };
 });
@@ -271,4 +285,82 @@ export async function eventosProximos(limite = 5): Promise<EventoProximo[]> {
       LIMIT $1`,
     [limite],
   );
+}
+
+export type CumplimientoCuatrimestral = EvaluacionMinimoCuatrimestral & {
+  periodoId: string | null;
+  periodoNombre: string | null;
+};
+
+/**
+ * Evalúa si el estudiante cumple con el mínimo obligatorio de 2 clases por
+ * cuatrimestre (solo aplica a estudiantes universitarios).
+ *
+ * Toma como referencia el período de la ventana de prematrícula abierta o
+ * anunciada; si no hay ventana vigente, usa el período activo por fecha actual
+ * en República Dominicana.
+ */
+export async function cumplimientoCuatrimestralEstudiante(
+  estudianteId: string | null,
+  esUniversitario: boolean,
+  periodoObjetivoId?: string | null,
+): Promise<CumplimientoCuatrimestral> {
+  const periodo = periodoObjetivoId
+    ? await consultarUna<{ id: string; nombre: string }>(
+        `SELECT id, nombre FROM periodo WHERE id = $1`,
+        [periodoObjetivoId],
+      )
+    : await consultarUna<{ id: string; nombre: string }>(
+        `SELECT p.id, p.nombre
+           FROM periodo p
+          LEFT JOIN ventana_prematricula v
+            ON v.periodo_id = p.id
+           AND v.activa
+           AND now() < v.cierra
+          WHERE v.id IS NOT NULL
+             OR (${SQL_HOY_RD} BETWEEN p.fecha_inicio AND p.fecha_fin)
+          ORDER BY (v.id IS NOT NULL AND now() >= v.abre) DESC,
+                   (v.id IS NOT NULL) DESC,
+                   p.fecha_inicio DESC
+          LIMIT 1`,
+      );
+
+  if (!periodo || !estudianteId) {
+    return {
+      periodoId: periodo?.id ?? null,
+      periodoNombre: periodo?.nombre ?? null,
+      ...evaluarMinimoCuatrimestral({
+        esUniversitario,
+        clases360: 0,
+        clasesCarrera: 0,
+      }),
+    };
+  }
+
+  const conteos = await consultarUna<{
+    clases_360: number;
+    clases_carrera: number;
+  }>(
+    `SELECT (SELECT count(*)::int
+               FROM inscripcion_360 i3
+              WHERE i3.estudiante_id = $1
+                AND i3.periodo_id = $2
+                AND i3.estado <> 'retirada') AS clases_360,
+            (SELECT count(*)::int
+               FROM inscripcion ic
+              WHERE ic.estudiante_id = $1
+                AND ic.periodo_id = $2
+                AND ic.estado <> 'retirada') AS clases_carrera`,
+    [estudianteId, periodo.id],
+  );
+
+  return {
+    periodoId: periodo.id,
+    periodoNombre: periodo.nombre,
+    ...evaluarMinimoCuatrimestral({
+      esUniversitario,
+      clases360: conteos?.clases_360 ?? 0,
+      clasesCarrera: conteos?.clases_carrera ?? 0,
+    }),
+  };
 }

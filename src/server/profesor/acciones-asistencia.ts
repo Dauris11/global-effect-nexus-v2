@@ -242,7 +242,188 @@ export async function marcarAsistencia360(datos: {
 function refrescar() {
   revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
+  revalidatePath("/[locale]/portal/profesor/materias", "page");
   revalidatePath("/[locale]/portal/estudiante/global-360", "page");
+}
+
+/** Programa o edita una sesión de clase en una materia asignada al docente. */
+export async function guardarSesionMateria(
+  datos: DatosSesion360,
+): Promise<{ estado: EstadoSesion360 }> {
+  const usuario = await requerirUsuario();
+  const administra = usuarioTienePermiso(usuario, "academico.escribir");
+  if (!administra && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const { id, materiaId, periodoId, fecha } = datos;
+  const horaInicio = datos.horaInicio?.trim() || null;
+  const horaFin = datos.horaFin?.trim() || null;
+
+  if (!UUID.test(materiaId) || !UUID.test(periodoId) || (id && !UUID.test(id))) {
+    return { estado: "invalido" };
+  }
+  if (!esDiaValido(fecha)) return { estado: "invalido" };
+  if ((horaInicio && !HORA.test(horaInicio)) || (horaFin && !HORA.test(horaFin))) {
+    return { estado: "horas_invalidas" };
+  }
+  if (horaFin && (!horaInicio || horaFin <= horaInicio)) {
+    return { estado: "horas_invalidas" };
+  }
+
+  try {
+    const contexto = await consultarUna<{ dentro: boolean; inscritos: number }>(
+      `SELECT ($3::date BETWEEN p.fecha_inicio AND p.fecha_fin) AS dentro,
+              (SELECT count(*)::int FROM inscripcion i
+                WHERE i.materia_id = $1 AND i.periodo_id = p.id
+                  AND i.estado <> 'retirada') AS inscritos
+         FROM periodo p
+        WHERE p.id = $2
+          AND EXISTS (SELECT 1 FROM materia m
+                       WHERE m.id = $1
+                         AND ($4::uuid IS NULL OR m.profesor_usuario_id = $4))`,
+      [materiaId, periodoId, fecha, administra ? null : usuario.id],
+    );
+    if (!contexto) return { estado: "no_encontrado" };
+    if (!contexto.dentro) return { estado: "fuera_de_periodo" };
+    if (contexto.inscritos === 0) return { estado: "sin_inscritos" };
+
+    let sesionId: string | undefined;
+
+    if (id) {
+      const editada = await consultarUna<{ id: string }>(
+        `UPDATE sesion_materia
+            SET fecha = $2::date, hora_inicio = $3::time, hora_fin = $4::time
+          WHERE id = $1 AND materia_id = $5 AND periodo_id = $6
+        RETURNING id`,
+        [id, fecha, horaInicio, horaFin, materiaId, periodoId],
+      );
+      sesionId = editada?.id;
+    } else {
+      const creada = await consultarUna<{ id: string }>(
+        `INSERT INTO sesion_materia
+           (materia_id, periodo_id, fecha, hora_inicio, hora_fin, creado_por)
+         VALUES ($1, $2, $3::date, $4::time, $5::time, $6)
+         RETURNING id`,
+        [materiaId, periodoId, fecha, horaInicio, horaFin, usuario.id],
+      );
+      sesionId = creada?.id;
+    }
+
+    if (!sesionId) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: id ? "sesion_materia.editada" : "sesion_materia.creada",
+      entidad: "sesion_materia",
+      entidadId: sesionId,
+      datos: { materiaId, periodoId, fecha },
+    });
+  } catch (error) {
+    if (esViolacionUnica(error)) return { estado: "duplicada" };
+    console.error("[materia] no se pudo guardar la sesión", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+/** Elimina una sesión de asistencia de materia asignada. */
+export async function borrarSesionMateria(
+  sesionId: string,
+): Promise<{ estado: EstadoSesion360 }> {
+  const usuario = await requerirUsuario();
+  const administra = usuarioTienePermiso(usuario, "academico.escribir");
+  if (!administra && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+  if (!UUID.test(sesionId)) return { estado: "invalido" };
+
+  try {
+    const borrada = await consultarUna<{ id: string }>(
+      `DELETE FROM sesion_materia s
+        USING materia m
+        WHERE s.id = $1
+          AND m.id = s.materia_id
+          AND ($2::uuid IS NULL OR m.profesor_usuario_id = $2)
+       RETURNING s.id`,
+      [sesionId, administra ? null : usuario.id],
+    );
+    if (!borrada) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "sesion_materia.borrada",
+      entidad: "sesion_materia",
+      entidadId: sesionId,
+    });
+  } catch (error) {
+    console.error("[materia] no se pudo borrar la sesión", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+/** Marca presente o ausente a uno o a todos los inscritos de una sesión de materia. */
+export async function marcarAsistenciaMateria(datos: {
+  sesionId: string;
+  presente: boolean;
+  inscripcionIds?: string[];
+}): Promise<{ estado: EstadoSesion360 }> {
+  const usuario = await requerirUsuario();
+  const administra = usuarioTienePermiso(usuario, "academico.escribir");
+  if (!administra && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const { sesionId, presente, inscripcionIds } = datos;
+  if (!UUID.test(sesionId) || typeof presente !== "boolean") {
+    return { estado: "invalido" };
+  }
+  if (inscripcionIds && (inscripcionIds.length === 0 || !inscripcionIds.every((x) => UUID.test(x)))) {
+    return { estado: "invalido" };
+  }
+
+  try {
+    const marcadas = await consultar<{ inscripcion_id: string }>(
+      `INSERT INTO asistencia_materia (sesion_id, inscripcion_id, presente, marcado_por, marcado_en)
+       SELECT s.id, i.id, $2, $3, now()
+         FROM sesion_materia s
+         JOIN materia m ON m.id = s.materia_id
+         JOIN inscripcion i
+              ON i.materia_id = s.materia_id
+             AND i.periodo_id = s.periodo_id
+        WHERE s.id = $1
+          AND i.estado <> 'retirada'
+          AND ($4::uuid[] IS NULL OR i.id = ANY($4::uuid[]))
+          AND ($5::uuid IS NULL OR m.profesor_usuario_id = $5)
+       ON CONFLICT (sesion_id, inscripcion_id)
+       DO UPDATE SET presente = EXCLUDED.presente,
+                     marcado_por = EXCLUDED.marcado_por,
+                     marcado_en = now()
+       RETURNING inscripcion_id`,
+      [sesionId, presente, usuario.id, inscripcionIds ?? null, administra ? null : usuario.id],
+    );
+
+    if (marcadas.length === 0) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "asistencia_materia.marcada",
+      entidad: "sesion_materia",
+      entidadId: sesionId,
+      datos: { presente, marcadas: marcadas.length },
+    });
+  } catch (error) {
+    console.error("[materia] no se pudo marcar la asistencia", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
 }
 
 function esViolacionUnica(error: unknown): boolean {

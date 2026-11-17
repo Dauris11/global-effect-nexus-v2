@@ -10,6 +10,10 @@ import {
   validarPeriodo,
 } from "../src/lib/periodos.ts";
 import { calcularNotaFinal } from "../src/lib/nota-final.ts";
+import {
+  esEstudianteUniversitario,
+  evaluarMinimoCuatrimestral,
+} from "../src/lib/reglas-academicas.ts";
 
 test("esDiaValido acepta fechas reales y rechaza fechas inexistentes", () => {
   assert.equal(esDiaValido("2026-01-15"), true);
@@ -180,3 +184,42 @@ test("calcularNotaFinal cuenta 0 en vencidas no entregadas e ignora entregadas p
   assert.equal(r.propuesta, 50);
   assert.equal(r.contadas, 2);
 });
+
+test("esEstudianteUniversitario distingue estudiantes con universidad registrada", () => {
+  assert.equal(esEstudianteUniversitario("UCATECI"), true);
+  assert.equal(esEstudianteUniversitario("   "), false);
+  assert.equal(esEstudianteUniversitario(null), false);
+  assert.equal(esEstudianteUniversitario(undefined), false);
+});
+
+test("evaluarMinimoCuatrimestral exige al menos 2 clases solo a universitarios", () => {
+  const noUni = evaluarMinimoCuatrimestral({
+    esUniversitario: false,
+    clases360: 0,
+    clasesCarrera: 0,
+  });
+  assert.equal(noUni.aplica, false);
+  assert.equal(noUni.cumplido, true);
+  assert.equal(noUni.faltantes, 0);
+
+  const uniFaltante = evaluarMinimoCuatrimestral({
+    esUniversitario: true,
+    clases360: 1,
+    clasesCarrera: 0,
+  });
+  assert.equal(uniFaltante.aplica, true);
+  assert.equal(uniFaltante.tomadas, 1);
+  assert.equal(uniFaltante.faltantes, 1);
+  assert.equal(uniFaltante.cumplido, false);
+
+  const uniCumplido = evaluarMinimoCuatrimestral({
+    esUniversitario: true,
+    clases360: 1,
+    clasesCarrera: 1,
+  });
+  assert.equal(uniCumplido.aplica, true);
+  assert.equal(uniCumplido.tomadas, 2);
+  assert.equal(uniCumplido.faltantes, 0);
+  assert.equal(uniCumplido.cumplido, true);
+});
+

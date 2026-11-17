@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { CondicionFundacion } from "@/components/estudiante/condicion-fundacion";
 import { EventosProximos } from "@/components/estudiante/eventos-proximos";
 import { MateriasEnCurso } from "@/components/estudiante/materias-en-curso";
@@ -39,6 +40,7 @@ import {
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import {
   condicionEnLaFundacion,
+  cumplimientoCuatrimestralEstudiante,
   estudianteDeUsuario,
   eventosProximos,
   materiasInscritas,
@@ -85,7 +87,7 @@ export default async function PortalEstudiante({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  const [materias, notas, condicion, solicitudes, eventos, asignaciones] =
+  const [materias, notas, condicion, solicitudes, eventos, asignaciones, cumplimiento] =
     await Promise.all([
       materiasInscritas(estudiante.id),
       notasDelEstudiante(estudiante.id),
@@ -93,6 +95,10 @@ export default async function PortalEstudiante({
       solicitudesDe(usuario),
       eventosProximos(4),
       asignacionesDelEstudiante(estudiante.id),
+      cumplimientoCuatrimestralEstudiante(
+        estudiante.id,
+        estudiante.esUniversitario,
+      ),
     ]);
 
   const todasLasNotas = notas.map((nota) => nota.nota);
@@ -224,6 +230,8 @@ export default async function PortalEstudiante({
             </p>
           </div>
         ) : null}
+
+        <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} enlazar />
       </div>
 
       <TarjetaProximo

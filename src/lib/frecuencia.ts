@@ -56,3 +56,4 @@ export function permitirFrecuencia(
   actual.conteo += 1;
   return true;
 }
+

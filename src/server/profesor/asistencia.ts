@@ -155,3 +155,73 @@ export async function asistenciaDelEstudiante(
     [estudianteId],
   );
 }
+
+/** Sesiones, marcas y períodos con inscritos de las materias universitarias asignadas. */
+export async function asistenciaDeMaterias(
+  docenteId: string | null,
+): Promise<AsistenciaDeClases> {
+  const [sesiones, marcas, periodos] = await Promise.all([
+    consultar<SesionClase360>(
+      `SELECT s.id, s.materia_id, s.periodo_id,
+              p.nombre AS periodo,
+              to_char(s.fecha, 'YYYY-MM-DD') AS fecha,
+              to_char(s.hora_inicio, 'HH24:MI') AS hora_inicio,
+              to_char(s.hora_fin, 'HH24:MI') AS hora_fin,
+              count(*) FILTER (WHERE a.presente IS TRUE)::int  AS presentes,
+              count(*) FILTER (WHERE a.presente IS FALSE)::int AS ausentes,
+              count(i.id)::int AS total
+         FROM sesion_materia s
+         JOIN materia m ON m.id = s.materia_id
+         JOIN periodo p ON p.id = s.periodo_id
+         LEFT JOIN inscripcion i
+                ON i.materia_id = s.materia_id
+               AND i.periodo_id = s.periodo_id
+               AND i.estado <> 'retirada'
+         LEFT JOIN asistencia_materia a
+                ON a.sesion_id = s.id AND a.inscripcion_id = i.id
+        WHERE ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
+        GROUP BY s.id, p.nombre
+        ORDER BY s.fecha DESC`,
+      [docenteId],
+    ),
+    consultar<MarcaAsistencia & { sesion_id: string }>(
+      `SELECT s.id AS sesion_id, i.id AS inscripcion_id, e.nombre, a.presente
+         FROM sesion_materia s
+         JOIN materia m ON m.id = s.materia_id
+         JOIN inscripcion i
+              ON i.materia_id = s.materia_id
+             AND i.periodo_id = s.periodo_id
+             AND i.estado <> 'retirada'
+         JOIN estudiante e ON e.id = i.estudiante_id
+         LEFT JOIN asistencia_materia a
+                ON a.sesion_id = s.id AND a.inscripcion_id = i.id
+        WHERE ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
+        ORDER BY e.nombre`,
+      [docenteId],
+    ),
+    consultar<PeriodoDeClase360 & { materia_id: string }>(
+      `SELECT DISTINCT i.materia_id, p.id, p.nombre,
+              to_char(p.fecha_inicio, 'YYYY-MM-DD') AS fecha_inicio,
+              to_char(p.fecha_fin, 'YYYY-MM-DD') AS fecha_fin
+         FROM inscripcion i
+         JOIN materia m ON m.id = i.materia_id
+         JOIN periodo p ON p.id = i.periodo_id
+        WHERE i.estado <> 'retirada'
+          AND ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
+        ORDER BY fecha_inicio DESC`,
+      [docenteId],
+    ),
+  ]);
+
+  const resultado: AsistenciaDeClases = { sesiones: {}, marcas: {}, periodos: {} };
+
+  for (const s of sesiones) (resultado.sesiones[s.materia_id] ??= []).push(s);
+  for (const { sesion_id, ...marca } of marcas) {
+    (resultado.marcas[sesion_id] ??= []).push(marca);
+  }
+  for (const { materia_id, ...periodo } of periodos) {
+    (resultado.periodos[materia_id] ??= []).push(periodo);
+  }
+
+  return resultado;
+}

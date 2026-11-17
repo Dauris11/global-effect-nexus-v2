@@ -319,24 +319,19 @@ export type MateriaDelDocente = {
   estado: string;
   horario: string | null;
   aula: string | null;
+  periodo_id: string | null;
   periodo: string | null;
-  /** Matriculados en la materia y tareas que tiene puestas. */
+  periodo_inicio: string | null;
+  periodo_fin: string | null;
+  /** Matriculados activos en la materia y tareas que tiene puestas. */
   inscritos: number;
   tareas: number;
 };
 
 /**
- * Las materias universitarias a nombre del docente.
+ * Las materias asignadas a nombre del docente por administración.
  *
- * Filtra por `profesor_usuario_id` y NUNCA por `profesor_nombre`: ese es texto
- * libre y la 0019 añadió la clave ajena justamente porque comparar nombres le
- * acaba enseñando a alguien la materia de otro —"Juan Pérez" y "Juan A. Pérez"
- * son la misma persona con dos cadenas, y dos homónimos son dos personas con
- * una sola—.
- *
- * El docente aquí solo MIRA. El catálogo de materias lo administra coordinación
- * con `academico.escribir`, que el rol `docente` no tiene; esta consulta existe
- * para que vea las suyas en su portal, no para que las toque.
+ * Filtra por `profesor_usuario_id` y NUNCA por `profesor_nombre`.
  */
 export async function materiasDelDocente(
   docenteId: string | null,
@@ -349,14 +344,115 @@ export async function materiasDelDocente(
             m.estado,
             m.horario,
             m.aula,
+            m.periodo_id,
             p.nombre AS periodo,
-            (SELECT count(*)::int FROM inscripcion i WHERE i.materia_id = m.id) AS inscritos,
-            (SELECT count(*)::int FROM asignacion  a WHERE a.materia_id = m.id
-                                                       AND a.tipo IN ('tarea', 'examen')) AS tareas
+            to_char(p.fecha_inicio, 'YYYY-MM-DD') AS periodo_inicio,
+            to_char(p.fecha_fin, 'YYYY-MM-DD') AS periodo_fin,
+            (SELECT count(*)::int
+               FROM inscripcion i
+              WHERE i.materia_id = m.id
+                AND i.estado <> 'retirada') AS inscritos,
+            (SELECT count(*)::int FROM asignacion a WHERE a.materia_id = m.id
+                                                      AND a.tipo IN ('tarea', 'examen')) AS tareas
        FROM materia m
        LEFT JOIN periodo p ON p.id = m.periodo_id
       WHERE ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
       ORDER BY m.estado, p.fecha_inicio DESC NULLS LAST, m.nombre`,
+    [docenteId],
+  );
+}
+
+export type InscritoEnMateria = {
+  id: string;
+  estudiante_id: string;
+  nombre: string;
+  estado: string;
+  periodo: string | null;
+  periodo_id: string;
+  nota_final: number | null;
+};
+
+/** Estudiantes inscritos en una materia asignada al docente. */
+export async function inscritosDeMateria(
+  materiaId: string,
+): Promise<InscritoEnMateria[]> {
+  return consultar<InscritoEnMateria>(
+    `SELECT i.id,
+            e.id AS estudiante_id,
+            e.nombre,
+            i.estado::text AS estado,
+            p.nombre AS periodo,
+            i.periodo_id,
+            i.nota_final::float8 AS nota_final
+       FROM inscripcion i
+       JOIN estudiante e ON e.id = i.estudiante_id
+       LEFT JOIN periodo p ON p.id = i.periodo_id
+      WHERE i.materia_id = $1
+        AND i.estado <> 'retirada'
+      ORDER BY e.nombre`,
+    [materiaId],
+  );
+}
+
+/** Asignaciones publicadas en cada materia universitaria asignada al docente. */
+export async function asignacionesDeMaterias(
+  docenteId: string | null,
+): Promise<Record<string, AsignacionDeClase360[]>> {
+  const filas = await consultar<AsignacionDeClase360>(
+    `SELECT a.id,
+            a.materia_id,
+            a.titulo,
+            a.descripcion,
+            a.tipo::text AS tipo,
+            p.nombre AS periodo,
+            to_char(a.fecha_vencimiento AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS fecha_vencimiento,
+            coalesce(a.peso, 1)::float8 AS peso,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            a.archivo_url,
+            (SELECT count(*)::int
+               FROM entrega_estudiante d
+              WHERE d.asignacion_id = a.id
+                AND d.estado IN ('entregado', 'tarde', 'calificado')) AS entregas
+       FROM asignacion a
+       JOIN materia m ON m.id = a.materia_id
+       LEFT JOIN periodo p ON p.id = a.periodo_id
+      WHERE ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
+      ORDER BY a.fecha_publicacion DESC`,
+    [docenteId],
+  );
+
+  const resultado: Record<string, AsignacionDeClase360[]> = {};
+  for (const fila of filas) {
+    (resultado[fila.materia_id] ??= []).push(fila);
+  }
+
+  return resultado;
+}
+
+/** Entregas de tareas en las materias universitarias del docente. */
+export async function entregasDeMaterias(
+  docenteId: string | null,
+): Promise<(EntregaPorRevisar & { asignacion_id: string })[]> {
+  return consultar<EntregaPorRevisar & { asignacion_id: string }>(
+    `SELECT d.id,
+            d.asignacion_id,
+            a.titulo AS asignacion,
+            m.nombre AS unidad,
+            e.nombre AS estudiante,
+            d.estado::text AS estado,
+            d.fecha_entrega,
+            d.archivo_url,
+            d.texto_respuesta,
+            d.calificacion::float8 AS calificacion,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            d.comentario_profesor
+       FROM entrega_estudiante d
+       JOIN asignacion a ON a.id = d.asignacion_id
+       JOIN estudiante e ON e.id = d.estudiante_id
+       JOIN materia m ON m.id = a.materia_id
+      WHERE d.estado IN ('entregado', 'tarde', 'calificado')
+        AND ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
+      ORDER BY d.fecha_entrega DESC NULLS LAST, e.nombre`,
     [docenteId],
   );
 }
