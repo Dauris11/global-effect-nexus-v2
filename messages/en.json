@@ -230,7 +230,8 @@
     "consumablesInventory": "Inventory kardex",
     "financialStatements": "Financial statements",
     "accountingClosing": "Accounting closing",
-    "commandShortcutMac": "⌘K"
+    "commandShortcutMac": "⌘K",
+    "assignedSubjects": "My subjects"
   },
   "landing": {
     "enter": "Sign in",
@@ -1933,7 +1934,14 @@
       "noPosts": "There are no posts in this subject yet.",
       "deletePost": "Delete post",
       "taskTitlePlaceholder": "e.g. Lab assignment #1",
-      "taskDescriptionPlaceholder": "Instructions and activity details"
+      "taskDescriptionPlaceholder": "Instructions and activity details",
+      "statusActive": "Active",
+      "statusApproved": "Passed",
+      "statusFailed": "Failed",
+      "finalGradePlaceholder": "Grade 0-100",
+      "saveFinalGrade": "Save grade",
+      "finalGradeSaved": "Final grade saved.",
+      "finalGradeError": "Could not save grade (0 to 100)."
     }
   },
   "modules": {

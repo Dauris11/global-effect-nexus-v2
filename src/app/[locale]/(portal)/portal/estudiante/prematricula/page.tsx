@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { ElegirMaterias } from "@/components/estudiante/elegir-materias";
+import { AsistenciaEstudiante360 } from "@/components/global360/asistencia-estudiante";
 import { PeriodoInscripciones } from "@/components/estudiante/prematricula-periodo";
 import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -27,6 +28,7 @@ import {
   tandasDelEstudiante,
   ventanaVigente,
 } from "@/server/global360/consultas";
+import { asistenciaMateriasDelEstudiante } from "@/server/profesor/asistencia";
 
 export async function generateMetadata({
   params,
@@ -78,9 +80,10 @@ export default async function PaginaMisMaterias({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  const [inscripciones, ventana] = await Promise.all([
+  const [inscripciones, ventana, asistenciaMaterias] = await Promise.all([
     inscripcionesDelEstudiante(estudiante.id),
     ventanaVigente(),
+    estudiante.id ? asistenciaMateriasDelEstudiante(estudiante.id) : Promise.resolve([]),
   ]);
 
   const cumplimiento = await cumplimientoCuatrimestralEstudiante(
@@ -155,6 +158,8 @@ export default async function PaginaMisMaterias({
       </div>
 
       {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} enlazar />}
+
+      <AsistenciaEstudiante360 filas={asistenciaMaterias} locale={idioma} />
 
       {ventana && mensajes && (
         <NextIntlClientProvider messages={mensajes}>

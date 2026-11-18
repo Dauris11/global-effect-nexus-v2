@@ -230,7 +230,8 @@
     "consumablesInventory": "Kardex de inventario",
     "financialStatements": "Estados financieros",
     "accountingClosing": "Cierre contable",
-    "commandShortcutMac": "⌘K"
+    "commandShortcutMac": "⌘K",
+    "assignedSubjects": "Mis materias"
   },
   "landing": {
     "enter": "Acceder",
@@ -1933,7 +1934,14 @@
       "noPosts": "Aún no hay publicaciones en esta materia.",
       "deletePost": "Eliminar publicación",
       "taskTitlePlaceholder": "Ej. Práctica de laboratorio #1",
-      "taskDescriptionPlaceholder": "Instrucciones y detalles de la actividad"
+      "taskDescriptionPlaceholder": "Instrucciones y detalles de la actividad",
+      "statusActive": "Activa",
+      "statusApproved": "Aprobada",
+      "statusFailed": "Reprobada",
+      "finalGradePlaceholder": "Nota 0-100",
+      "saveFinalGrade": "Guardar nota",
+      "finalGradeSaved": "Nota final guardada.",
+      "finalGradeError": "No se pudo guardar la nota (0 a 100)."
     }
   },
   "modules": {

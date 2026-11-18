@@ -287,6 +287,12 @@ export default async function PortalProfesor({
                               {t("takeAttendance")}
                             </Link>
                           </Button>
+                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                            <Link href={`/academico/clases-360?clase=${clase.id}&accion=tarea#clase-${clase.id}`}>
+                              <ClipboardList className="size-3.5" />
+                              {t("assignTask")}
+                            </Link>
+                          </Button>
                           {clase.tareas > 0 && (
                             <Button asChild size="sm" variant="outline" className="h-8 text-xs">
                               <Link href={`/academico/clases-360?clase=${clase.id}&accion=publicaciones#clase-${clase.id}`}>

@@ -466,6 +466,8 @@ export async function borrarAsignacion360(
   return { estado: "ok" };
 }
 
+
+
 function refrescar() {
   revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
@@ -589,6 +591,8 @@ export async function publicarTareaMateria(
   return { estado: "ok" };
 }
 
+
+
 /** Elimina una asignación publicada en una materia asignada al docente. */
 export async function borrarAsignacionMateria(
   id: string,
@@ -631,6 +635,88 @@ export async function borrarAsignacionMateria(
     });
   } catch (error) {
     console.error("[academico] no se pudo borrar la asignación de materia", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+  return { estado: "ok" };
+}
+
+
+/**
+ * Cierra o actualiza la nota final (`nota_final`) y el estado (`aprobada`,
+ * `reprobada` o `activa`) de un estudiante en una materia asignada al docente.
+ */
+export async function calificarInscripcionMateria(
+  _previo: EstadoAcademico,
+  datos: FormData,
+): Promise<EstadoAcademico> {
+  const usuario = await requerirUsuario();
+  const puedeTodo = usuarioTienePermiso(usuario, "academico.escribir");
+
+  if (!puedeTodo && !usuarioTienePermiso(usuario, "docencia.impartir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const inscripcionId = String(datos.get("inscripcion") ?? "");
+  const notaRaw = String(datos.get("nota") ?? "").trim();
+  const decision = String(datos.get("decision") ?? "").trim();
+
+  if (!esUuid(inscripcionId)) return { estado: "invalido" };
+  if (decision !== "aprobada" && decision !== "reprobada" && decision !== "activa") {
+    return { estado: "decision_invalida" };
+  }
+
+  const nota = notaRaw === "" ? null : Number(notaRaw);
+  if (nota !== null && (!Number.isFinite(nota) || nota < 0 || nota > 100)) {
+    return { estado: "nota_invalida" };
+  }
+
+  try {
+    const actualizada = await consultarUna<{
+      id: string;
+      materia: string;
+      estudiante_usuario_id: string | null;
+    }>(
+      `UPDATE inscripcion i
+          SET nota_final = $2,
+              estado = $3::estado_inscripcion,
+              updated_at = now()
+         FROM materia m, estudiante e
+        WHERE i.id = $1
+          AND m.id = i.materia_id
+          AND e.id = i.estudiante_id
+          AND i.estado <> 'retirada'
+          AND ($4::uuid IS NULL OR m.profesor_usuario_id = $4)
+      RETURNING i.id, m.nombre AS materia, e.usuario_id AS estudiante_usuario_id`,
+      [inscripcionId, nota, decision, puedeTodo ? null : usuario.id],
+    );
+
+    if (!actualizada) return { estado: "no_encontrado" };
+
+    if (
+      nota !== null &&
+      actualizada.estudiante_usuario_id &&
+      actualizada.estudiante_usuario_id !== usuario.id
+    ) {
+      await consultar(
+        `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT u.id, $2, $3, 'calificacion', '/portal/estudiante/calificaciones'
+           FROM usuario u
+          WHERE u.id = $1 AND u.activo`,
+        [actualizada.estudiante_usuario_id, actualizada.materia, `${nota}/100`],
+      );
+    }
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "materia.calificada",
+      entidad: "inscripcion",
+      entidadId: inscripcionId,
+      datos: { nota, decision },
+    });
+  } catch (error) {
+    console.error("[academico] no se pudo calificar la inscripción de materia", error);
     return { estado: "error" };
   }
 

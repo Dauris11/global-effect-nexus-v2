@@ -225,3 +225,29 @@ export async function asistenciaDeMaterias(
 
   return resultado;
 }
+
+/** Asistencia del estudiante en sus materias asignadas activas. */
+export async function asistenciaMateriasDelEstudiante(
+  estudianteId: string,
+): Promise<AsistenciaDeMateria[]> {
+  return consultar<AsistenciaDeMateria>(
+    `SELECT m.id AS materia_id, m.nombre AS materia, p.nombre AS periodo,
+            count(s.id)::int AS sesiones,
+            count(a.sesion_id)::int AS marcadas,
+            count(*) FILTER (WHERE a.presente IS TRUE)::int  AS presentes,
+            count(*) FILTER (WHERE a.presente IS FALSE)::int AS ausentes,
+            CASE WHEN count(a.sesion_id) = 0 THEN NULL
+                 ELSE round(100.0 * count(*) FILTER (WHERE a.presente IS TRUE)
+                            / count(a.sesion_id))::int END AS porcentaje
+       FROM inscripcion i
+       JOIN materia m ON m.id = i.materia_id
+       JOIN periodo p ON p.id = i.periodo_id
+       JOIN sesion_materia s ON s.materia_id = i.materia_id AND s.periodo_id = i.periodo_id
+       LEFT JOIN asistencia_materia a ON a.sesion_id = s.id AND a.inscripcion_id = i.id
+      WHERE i.estudiante_id = $1
+        AND i.estado = 'activa'
+      GROUP BY m.id, m.nombre, p.id, p.nombre, p.fecha_inicio
+      ORDER BY p.fecha_inicio DESC, m.nombre`,
+    [estudianteId],
+  );
+}

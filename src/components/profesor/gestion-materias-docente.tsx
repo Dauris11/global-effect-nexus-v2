@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { calificarEntregaMoodleAction } from "@/server/moodle/acciones";
 import {
   borrarAsignacionMateria,
+  calificarInscripcionMateria,
   publicarTareaMateria,
   type EstadoAcademico,
 } from "@/server/profesor/acciones";
@@ -535,18 +536,72 @@ function ListaInscritosMateria({
   return (
     <ul className="divide-linea divide-y">
       {inscritos.map((est) => (
-        <li key={est.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-          <span className="font-medium">{est.nombre}</span>
-          <div className="flex items-center gap-2 text-xs text-tinta-3">
-            {est.nota_final !== null && (
-              <span className="font-semibold text-tinta">{est.nota_final}</span>
-            )}
-            <Badge variant="outline" className="text-[10px]">
-              {est.estado}
-            </Badge>
-          </div>
-        </li>
+        <FilaInscritoMateria key={est.id} est={est} />
       ))}
     </ul>
+  );
+}
+
+function FilaInscritoMateria({ est }: { est: InscritoEnMateria }) {
+  const tProf = useTranslations("teacherPortal.assignedSubjects");
+  const [estado, accion, guardando] = useActionState<EstadoAcademico, FormData>(
+    calificarInscripcionMateria,
+    { estado: "inicial" },
+  );
+
+  return (
+    <li className="py-2.5 text-sm">
+      <form
+        action={accion}
+        className="flex flex-wrap items-center justify-between gap-2"
+      >
+        <input type="hidden" name="inscripcion" value={est.id} />
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{est.nombre}</p>
+          <p className="text-tinta-3 text-xs">{est.periodo ?? tProf("noTerm")}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            name="nota"
+            type="number"
+            min={0}
+            max={100}
+            step="0.5"
+            defaultValue={est.nota_final ?? ""}
+            placeholder={tProf("finalGradePlaceholder")}
+            className="h-8 w-24 text-xs"
+          />
+          <select
+            name="decision"
+            defaultValue={
+              est.estado === "aprobada" || est.estado === "reprobada"
+                ? est.estado
+                : "activa"
+            }
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 rounded-control h-8 border bg-card px-2 text-xs shadow-xs outline-none focus-visible:ring-[3px]"
+          >
+            <option value="activa">{tProf("statusActive")}</option>
+            <option value="aprobada">{tProf("statusApproved")}</option>
+            <option value="reprobada">{tProf("statusFailed")}</option>
+          </select>
+          <Button type="submit" size="sm" variant="outline" className="h-8 text-xs" disabled={guardando}>
+            {guardando ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
+            {tProf("saveFinalGrade")}
+          </Button>
+        </div>
+      </form>
+      {estado.estado === "ok" && (
+        <p className="text-marca-700 mt-1 text-right text-xs font-medium">
+          {tProf("finalGradeSaved")}
+        </p>
+      )}
+      {estado.estado !== "inicial" && estado.estado !== "ok" && (
+        <p className="text-destructive mt-1 text-right text-xs font-medium">
+          {tProf("finalGradeError")}
+        </p>
+      )}
+    </li>
   );
 }

@@ -560,11 +560,20 @@ export async function cifrasDocente(
     `SELECT (SELECT count(*)::int FROM materia_360 m
               WHERE m.activa
                 AND ($1::uuid IS NULL OR m.docente_id = $1)) AS clases_360,
-            (SELECT count(DISTINCT i.estudiante_id)::int
-               FROM inscripcion_360 i
-               JOIN materia_360 m ON m.id = i.materia_id
-              WHERE i.estado IN ('prematriculada', 'cursando')
-                AND ($1::uuid IS NULL OR m.docente_id = $1)) AS estudiantes,
+            (SELECT count(DISTINCT est_id)::int
+               FROM (
+                 SELECT i.estudiante_id AS est_id
+                   FROM inscripcion_360 i
+                   JOIN materia_360 m ON m.id = i.materia_id
+                  WHERE i.estado IN ('prematriculada', 'cursando')
+                    AND ($1::uuid IS NULL OR m.docente_id = $1)
+                 UNION
+                 SELECT ic.estudiante_id AS est_id
+                   FROM inscripcion ic
+                   JOIN materia mu ON mu.id = ic.materia_id
+                  WHERE ic.estado <> 'retirada'
+                    AND ($1::uuid IS NULL OR mu.profesor_usuario_id = $1)
+               ) t) AS estudiantes,
             (SELECT count(*)::int
                FROM entrega_estudiante d
                JOIN asignacion a ON a.id = d.asignacion_id
