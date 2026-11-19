@@ -12,6 +12,7 @@ import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
+import { textoDePuntos } from "@/lib/indice-academico";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { carrerasDeUniversidad, universidadPorId } from "@/server/universidades/consultas";
 
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 /** Una universidad: su régimen y sus carreras. Cada carrera lleva a sus pénsums. */
 export default async function PaginaUniversidad({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
-  const usuario = await requerirPermiso("academico.leer");
+  const usuario = await requerirPermiso("catalogo.leer");
   const universidad = UUID.test(id) ? await universidadPorId(id) : null;
 
   if (!universidad) notFound();
@@ -37,7 +38,7 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
     carrerasDeUniversidad(id),
     mensajesCliente(["catalog"]),
   ]);
-  const puedeEscribir = usuarioTienePermiso(usuario, "academico.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "catalogo.escribir");
 
   return (
     <div className="animate-entrada mx-auto max-w-4xl space-y-6">
@@ -56,7 +57,19 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="neutra">{t(`regime.${universidad.regimen}`)}</Badge>
         {!universidad.activa && <Badge variant="neutra">{t("status.inactive")}</Badge>}
+        <Badge variant={universidad.reglas_confirmadas ? "marca" : "neutra"}>
+          {universidad.reglas_confirmadas ? t("rules.confirmedBadge") : t("rules.pendingBadge")}
+        </Badge>
       </div>
+
+      <p className="texto-meta">
+        {t("rules.summary", {
+          points: textoDePuntos(universidad.puntos_por_letra),
+          min: universidad.letra_minima_aprobar,
+          withdrawn: universidad.retirada_cuenta_en_divisor ? t("rules.withdrawnYes") : t("rules.withdrawnNo"),
+          rounding: universidad.redondeo_indice === "truncar" ? t("rules.truncate") : t("rules.round"),
+        })}
+      </p>
 
       {puedeEscribir && (
         <NextIntlClientProvider messages={mensajes}>

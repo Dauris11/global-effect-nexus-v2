@@ -6958,7 +6958,9 @@
       "solicitudes_gestionar": "Manage requests",
       "transporte_gestionar": "Manage transport",
       "transporte_operar": "Operate transport routes",
-      "usuarios_administrar": "Manage users"
+      "usuarios_administrar": "Manage users",
+      "catalogo_leer": "View the university and curriculum catalog",
+      "catalogo_escribir": "Edit the university and curriculum catalog"
     }
   },
   "lineaTiempo": {
@@ -7086,6 +7088,22 @@
       "noPensum": "No curriculum assigned yet: choose university, program and plan above to see progress.",
       "emptyPensum": "The chosen curriculum has no subjects loaded yet.",
       "regime": "Term system: {regime}"
+    },
+    "rules": {
+      "title": "This university's grading rules",
+      "points": "Points per letter",
+      "minLetter": "Minimum passing letter",
+      "withdrawn": "Withdrawn course (R)",
+      "withdrawnYes": "Its credits count in the index divisor",
+      "withdrawnNo": "Its credits don't count in the divisor",
+      "rounding": "Index",
+      "truncate": "Truncated to 2 decimals",
+      "round": "Rounded to 2 decimals",
+      "confirmed": "Rules verified against the university's regulations",
+      "help": "Each university computes its index its own way. Until verified, the system flags them as \"to be confirmed\".",
+      "confirmedBadge": "Rules verified",
+      "pendingBadge": "Rules to be confirmed",
+      "summary": "Points: {points} · Passes from {min} · Withdrawn: {withdrawn} · {rounding}"
     }
   }
 }

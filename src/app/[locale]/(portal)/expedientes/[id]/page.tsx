@@ -190,7 +190,7 @@ export default async function PaginaExpediente({
           profile: <FichaPerfil e={expediente} />,
           family: <FichaFamilia e={expediente} />,
           health: <FichaSalud e={expediente} />,
-          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} arbol={arbol} puedeAdministrar={usuarioTienePermiso(usuario, "academico.escribir")} />,
+          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} arbol={arbol} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />,
           record: <TabRecord notas={notas} />,
           curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} />,
           g360: <Tab360 datos={historial360} />,

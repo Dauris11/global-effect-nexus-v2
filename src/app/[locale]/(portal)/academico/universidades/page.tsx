@@ -22,17 +22,17 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 /**
  * Catálogo de universidades. Entra quien lee lo académico; crea y edita quien
- * tiene `academico.escribir`. Es la raíz de universidad → carrera → pénsum.
+ * tiene `catalogo.escribir`. Es la raíz de universidad → carrera → pénsum.
  */
 export default async function PaginaUniversidades({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const usuario = await requerirPermiso("academico.leer");
+  const usuario = await requerirPermiso("catalogo.leer");
   const [t, universidades, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "catalog" }),
     universidadesCatalogo(),
     mensajesCliente(["catalog"]),
   ]);
-  const puedeEscribir = usuarioTienePermiso(usuario, "academico.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "catalogo.escribir");
 
   return (
     <div className="animate-entrada mx-auto max-w-4xl space-y-6">

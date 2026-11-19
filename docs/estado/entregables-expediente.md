@@ -7,7 +7,7 @@ cuando la entregues. Las fases 2, 3, 5, 6 y 7 pueden avanzar sin nada de esto;
 
 ## A. Documentos (bloquean la fase 4)
 
-- [ ] **Pénsum en PDF** de cada carrera de las universidades del programa
+- [ ] **Pénsum en PDF** de cada carrera de las universidades del programa (llegó UCATECI · Sistemas; faltan las demás carreras y universidades)
       (UCATECI, UNPHU, UTESA, UASD y la que falte). Mejor uno real por
       universidad, aunque sea de una sola carrera, para ver cómo escribe cada
       una el código, el nombre, los créditos y los prerrequisitos.

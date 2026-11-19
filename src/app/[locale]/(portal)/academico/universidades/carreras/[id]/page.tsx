@@ -45,7 +45,7 @@ export default async function PaginaCarrera({
 }) {
   const { locale, id } = await params;
   const { pensum: pensumElegido } = await searchParams;
-  const usuario = await requerirPermiso("academico.leer");
+  const usuario = await requerirPermiso("catalogo.leer");
   const carrera = UUID.test(id) ? await carreraPorId(id) : null;
 
   if (!carrera) notFound();
@@ -55,7 +55,7 @@ export default async function PaginaCarrera({
     pensumsDeCarrera(id),
     mensajesCliente(["catalog"]),
   ]);
-  const puedeEscribir = usuarioTienePermiso(usuario, "academico.escribir");
+  const puedeEscribir = usuarioTienePermiso(usuario, "catalogo.escribir");
   const actual = pensums.find((p) => p.id === pensumElegido) ?? pensums[0] ?? null;
   const materias = actual ? await materiasDePensum(actual.id) : [];
 

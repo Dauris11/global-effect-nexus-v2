@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { textoDePuntos } from "@/lib/indice-academico";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import {
   cargarMateriasPensum,
@@ -125,7 +126,11 @@ function Desplegable({ etiqueta, icono, children }: { etiqueta: string; icono?: 
 export function FormUniversidad({
   universidad,
 }: {
-  universidad?: { id: string; siglas: string; nombre: string; regimen: string; activa: boolean };
+  universidad?: {
+    id: string; siglas: string; nombre: string; regimen: string; activa: boolean;
+    puntos_por_letra: Record<string, number>; letra_minima_aprobar: string;
+    retirada_cuenta_en_divisor: boolean; redondeo_indice: string; reglas_confirmadas: boolean;
+  };
 }) {
   const t = useTranslations("catalog");
   const k = universidad?.id ?? "nueva";
@@ -152,6 +157,33 @@ export function FormUniversidad({
               </select>
             </Campo>
           </div>
+          <p className="text-sm font-semibold">{t("rules.title")}</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Campo id={`u-puntos-${k}`} etiqueta={t("rules.points")}>
+              <Input id={`u-puntos-${k}`} name="puntos" required maxLength={200}
+                defaultValue={universidad ? textoDePuntos(universidad.puntos_por_letra) : "A=4, B=3, C=2, D=1, F=0"} />
+            </Campo>
+            <Campo id={`u-minima-${k}`} etiqueta={t("rules.minLetter")}>
+              <Input id={`u-minima-${k}`} name="letra_minima" required maxLength={3} defaultValue={universidad?.letra_minima_aprobar ?? "D"} />
+            </Campo>
+            <Campo id={`u-retirada-${k}`} etiqueta={t("rules.withdrawn")}>
+              <select id={`u-retirada-${k}`} name="retirada" defaultValue={universidad && !universidad.retirada_cuenta_en_divisor ? "no" : "si"} className={CLASE_SELECT}>
+                <option value="si">{t("rules.withdrawnYes")}</option>
+                <option value="no">{t("rules.withdrawnNo")}</option>
+              </select>
+            </Campo>
+            <Campo id={`u-redondeo-${k}`} etiqueta={t("rules.rounding")}>
+              <select id={`u-redondeo-${k}`} name="redondeo" defaultValue={universidad?.redondeo_indice ?? "truncar"} className={CLASE_SELECT}>
+                <option value="truncar">{t("rules.truncate")}</option>
+                <option value="redondear">{t("rules.round")}</option>
+              </select>
+            </Campo>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="confirmadas" value="si" defaultChecked={universidad?.reglas_confirmadas} className="size-4" />
+            {t("rules.confirmed")}
+          </label>
+          <p className="texto-meta">{t("rules.help")}</p>
           {universidad && (
             <Campo id={`u-activa-${k}`} etiqueta={t("university.status")}>
               <select id={`u-activa-${k}`} name="activa" defaultValue={universidad.activa ? "si" : "no"} className={CLASE_SELECT}>

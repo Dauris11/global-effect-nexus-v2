@@ -68,9 +68,19 @@ export async function carrerasDeUniversidad(universidadId: string): Promise<Carr
   );
 }
 
+export type ReglasUniversidad = {
+  puntos_por_letra: Record<string, number>;
+  letra_minima_aprobar: string;
+  retirada_cuenta_en_divisor: boolean;
+  redondeo_indice: "truncar" | "redondear";
+  reglas_confirmadas: boolean;
+};
+
 export async function universidadPorId(id: string) {
-  return consultarUna<{ id: string; siglas: string; nombre: string; regimen: Regimen; activa: boolean }>(
-    `SELECT id, siglas, nombre, regimen, activa FROM universidad WHERE id = $1`,
+  return consultarUna<{ id: string; siglas: string; nombre: string; regimen: Regimen; activa: boolean } & ReglasUniversidad>(
+    `SELECT id, siglas, nombre, regimen, activa, puntos_por_letra, letra_minima_aprobar,
+            retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas
+       FROM universidad WHERE id = $1`,
     [id],
   );
 }

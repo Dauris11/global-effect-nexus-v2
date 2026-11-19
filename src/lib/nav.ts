@@ -143,7 +143,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "universities",
             href: "/academico/universidades",
             icono: Landmark,
-            permiso: "academico.leer",
+            permiso: "catalogo.leer",
           },
         ],
       },

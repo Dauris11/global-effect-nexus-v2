@@ -6958,7 +6958,9 @@
       "solicitudes_gestionar": "Gestionar solicitudes",
       "transporte_gestionar": "Gestionar el transporte",
       "transporte_operar": "Operar rutas de transporte",
-      "usuarios_administrar": "Administrar usuarios"
+      "usuarios_administrar": "Administrar usuarios",
+      "catalogo_leer": "Ver el catálogo de universidades y pénsum",
+      "catalogo_escribir": "Editar el catálogo de universidades y pénsum"
     }
   },
   "lineaTiempo": {
@@ -7086,6 +7088,22 @@
       "noPensum": "Aún no tiene pénsum asignado: elige universidad, carrera y plan arriba para ver su avance.",
       "emptyPensum": "El pénsum elegido todavía no tiene materias cargadas.",
       "regime": "Régimen: {regime}"
+    },
+    "rules": {
+      "title": "Reglas de calificación de esta universidad",
+      "points": "Puntos por letra",
+      "minLetter": "Letra mínima para aprobar",
+      "withdrawn": "Materia retirada (R)",
+      "withdrawnYes": "Sus créditos cuentan en el divisor del índice",
+      "withdrawnNo": "Sus créditos no cuentan en el divisor",
+      "rounding": "Índice",
+      "truncate": "Se trunca a 2 decimales",
+      "round": "Se redondea a 2 decimales",
+      "confirmed": "Reglas verificadas con el reglamento de la universidad",
+      "help": "Cada universidad calcula su índice a su manera. Mientras no estén verificadas, el sistema las marca como «por confirmar».",
+      "confirmedBadge": "Reglas verificadas",
+      "pendingBadge": "Reglas por confirmar",
+      "summary": "Puntos: {points} · Aprueba desde {min} · Retirada: {withdrawn} · {rounding}"
     }
   }
 }

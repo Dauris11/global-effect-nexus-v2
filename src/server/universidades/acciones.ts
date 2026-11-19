@@ -5,13 +5,14 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
+import { leerPuntosPorLetra } from "@/lib/indice-academico";
 import { leerListaDePensum } from "@/lib/pensum";
 import { usuarioTienePermiso } from "@/lib/rbac";
 
 /**
  * Escrituras del catálogo universidad → carrera → pénsum → materias.
  *
- * El catálogo es de la institución, así que escribir exige `academico.escribir`
+ * El catálogo es de la institución, así que escribir exige `catalogo.escribir`
  * (admin y super_admin). Vincular a un estudiante con el catálogo es edición de
  * su expediente: `expedientes.escribir`. Nada se borra: una universidad o
  * carrera con estudiantes colgando se desactiva, y las FK son RESTRICT para que
@@ -37,7 +38,7 @@ const REGIMENES = ["cuatrimestre", "trimestre", "semestre"];
 
 const texto = (d: FormData, k: string, max: number) => String(d.get(k) ?? "").trim().slice(0, max);
 
-async function conPermiso(permiso: "academico.escribir" | "expedientes.escribir") {
+async function conPermiso(permiso: "catalogo.escribir" | "expedientes.escribir") {
   const usuario = await requerirUsuario();
 
   return usuarioTienePermiso(usuario, permiso) ? usuario : null;
@@ -54,7 +55,7 @@ function refrescar() {
 }
 
 export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
-  const usuario = await conPermiso("academico.escribir");
+  const usuario = await conPermiso("catalogo.escribir");
 
   if (!usuario) return { estado: "no_permitido" };
 
@@ -63,20 +64,31 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
   const nombre = texto(d, "nombre", 160);
   const regimen = texto(d, "regimen", 20);
   const activa = d.get("activa") !== "no";
+  // Reglas de calificación de ESTA universidad (cada una tiene las suyas).
+  const puntos = leerPuntosPorLetra(texto(d, "puntos", 200));
+  const letraMinima = texto(d, "letra_minima", 3).toUpperCase();
+  const retirada = d.get("retirada") !== "no";
+  const redondeo = texto(d, "redondeo", 12) === "redondear" ? "redondear" : "truncar";
+  const confirmadas = d.get("confirmadas") === "si";
 
-  if (!siglas || !nombre || !REGIMENES.includes(regimen) || (id && !UUID.test(id))) {
+  if (!siglas || !nombre || !REGIMENES.includes(regimen) || (id && !UUID.test(id)) || !puntos || !(letraMinima in puntos)) {
     return { estado: "dato_invalido" };
   }
 
   try {
     const fila = id
       ? await consultarUna<{ id: string }>(
-          `UPDATE universidad SET siglas = $2, nombre = $3, regimen = $4, activa = $5 WHERE id = $1 RETURNING id`,
-          [id, siglas, nombre, regimen, activa],
+          `UPDATE universidad SET siglas = $2, nombre = $3, regimen = $4, activa = $5,
+                  puntos_por_letra = $6::jsonb, letra_minima_aprobar = $7,
+                  retirada_cuenta_en_divisor = $8, redondeo_indice = $9, reglas_confirmadas = $10
+            WHERE id = $1 RETURNING id`,
+          [id, siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas],
         )
       : await consultarUna<{ id: string }>(
-          `INSERT INTO universidad (siglas, nombre, regimen, activa) VALUES ($1, $2, $3, $4) RETURNING id`,
-          [siglas, nombre, regimen, activa],
+          `INSERT INTO universidad (siglas, nombre, regimen, activa, puntos_por_letra, letra_minima_aprobar,
+                                   retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas)
+           VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9) RETURNING id`,
+          [siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas],
         );
 
     if (!fila) return { estado: "no_encontrado" };
@@ -86,7 +98,7 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
       accion: id ? "universidad.editada" : "universidad.creada",
       entidad: "universidad",
       entidadId: fila.id,
-      datos: { siglas, regimen, activa },
+      datos: { siglas, regimen, activa, puntos, letraMinima, retirada, redondeo, confirmadas },
     });
   } catch (error) {
     if (esDuplicado(error)) return { estado: "duplicado" };
@@ -101,7 +113,7 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
 }
 
 export async function guardarCarrera(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
-  const usuario = await conPermiso("academico.escribir");
+  const usuario = await conPermiso("catalogo.escribir");
 
   if (!usuario) return { estado: "no_permitido" };
 
@@ -144,7 +156,7 @@ export async function guardarCarrera(_p: EstadoCatalogo, d: FormData): Promise<E
 }
 
 export async function guardarPensum(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
-  const usuario = await conPermiso("academico.escribir");
+  const usuario = await conPermiso("catalogo.escribir");
 
   if (!usuario) return { estado: "no_permitido" };
 
@@ -191,7 +203,7 @@ export async function guardarPensum(_p: EstadoCatalogo, d: FormData): Promise<Es
  * transacción: o entra la lista legible completa o no entra nada.
  */
 export async function cargarMateriasPensum(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
-  const usuario = await conPermiso("academico.escribir");
+  const usuario = await conPermiso("catalogo.escribir");
 
   if (!usuario) return { estado: "no_permitido" };
 
@@ -245,7 +257,7 @@ export async function cargarMateriasPensum(_p: EstadoCatalogo, d: FormData): Pro
 }
 
 export async function quitarMateriaPensum(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
-  const usuario = await conPermiso("academico.escribir");
+  const usuario = await conPermiso("catalogo.escribir");
 
   if (!usuario) return { estado: "no_permitido" };
 

@@ -61,6 +61,8 @@ export const PERMISOS = [
   "academico.escribir",
   "academico.leer",
   "calificaciones.registrar",
+  "catalogo.escribir",
+  "catalogo.leer",
   // Permisos finos de contabilidad (migración 0034).
   // Los permisos finanzas.* siguen existiendo para compatibilidad
   // con el dashboard viejo; el módulo nuevo usa contabilidad.*
@@ -204,6 +206,8 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "academico.escribir",
     "academico.leer",
     "calificaciones.registrar",
+    "catalogo.escribir",
+    "catalogo.leer",
     "contabilidad.auditar",
     "contabilidad.leer",
     "expedientes.eliminar",
@@ -242,6 +246,8 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   admin: [
     "academico.escribir",
     "academico.leer",
+    "catalogo.escribir",
+    "catalogo.leer",
     "expedientes.eliminar",
     "expedientes.escribir",
     "expedientes.leer",

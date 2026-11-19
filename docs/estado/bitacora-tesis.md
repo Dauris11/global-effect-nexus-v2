@@ -1041,6 +1041,16 @@ cuatrimestre, a corregir por el admin.
 comprobación contra la base real de duplicados (23505) y borrado bloqueado
 (23503). **No visto en pantalla.**
 
+**Complemento (migración `0096`).** (6) El catálogo pasó de `academico.*` a
+permisos propios (`catalogo.leer/escribir`) tras comprobar que `academico.leer`
+lo tienen de fábrica estudiantes y docentes; así el menú y las rutas dependen de
+`/configuracion/visibilidad` y de las excepciones por persona. (7) Cada
+universidad guarda sus propias reglas de calificación; la retirada (`R`) no suma
+puntos y, según la regla, entra o no en el divisor. Para UCATECI el 3,56 del
+reporte solo cuadra con 746 puntos / 209 créditos truncado, se dejó como
+hipótesis sin confirmar. (8) Se sembraron 17 documentos de prueba de la base de
+conocimiento con casos de borde para medir a Elly AI.
+
 ---
 
 ## Pendiente de registrar (se completará al cerrar cada etapa)
