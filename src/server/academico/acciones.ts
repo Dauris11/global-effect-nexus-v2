@@ -423,6 +423,53 @@ function refrescar() {
   revalidatePath("/[locale]/academico/prematricula", "page");
   revalidatePath("/[locale]/portal/estudiante/prematricula", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
+  revalidatePath("/[locale]/portal/profesor/materias", "page");
+}
+
+/**
+ * Asignación rápida de docente a una materia universitaria desde la vista
+ * agrupada por período, sin tener que editar todo el formulario.
+ */
+export async function asignarDocenteMateria(
+  materiaId: string,
+  profesorUsuarioId: string | null,
+): Promise<{ ok: boolean }> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "academico.escribir")) {
+    return { ok: false };
+  }
+  if (!esUuid(materiaId)) return { ok: false };
+  if (profesorUsuarioId && !esUuid(profesorUsuarioId)) return { ok: false };
+
+  let profesorNombre: string | null = null;
+  if (profesorUsuarioId) {
+    const fila = await consultarUna<{ nombre: string }>(
+      `SELECT nombre FROM public.usuario WHERE id = $1 AND activo = true`,
+      [profesorUsuarioId],
+    );
+    if (!fila) return { ok: false };
+    profesorNombre = fila.nombre;
+  }
+
+  try {
+    const actualizada = await consultarUna<{ id: string }>(
+      `UPDATE public.materia_universitaria
+          SET profesor_usuario_id = $2,
+              profesor_nombre = $3
+        WHERE id = $1
+        RETURNING id`,
+      [materiaId, profesorUsuarioId || null, profesorNombre],
+    );
+    if (!actualizada) return { ok: false };
+
+    await anotar(usuario.id, "materia", "asignar_docente", materiaId, {
+      profesor_usuario_id: profesorUsuarioId || null,
+    });
+    refrescar();
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

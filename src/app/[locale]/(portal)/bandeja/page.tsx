@@ -6,7 +6,6 @@ import { GraficasBandeja } from "@/components/bandeja/graficas-bandeja";
 import { NotificacionesBandeja } from "@/components/bandeja/notificaciones-bandeja";
 import { PendientesBandeja } from "@/components/bandeja/pendientes-bandeja";
 import {
-  avanceDeProyecto,
   ProyectosBandeja,
 } from "@/components/bandeja/proyectos-bandeja";
 import { ReunionesBandeja } from "@/components/bandeja/reuniones-bandeja";
@@ -62,9 +61,6 @@ export default async function PaginaBandeja({
     cargarBandeja(usuario),
   ]);
 
-  const proyectosEnMarcha =
-    datos.proyectos?.filter((p) => p.estado !== "completado" && p.estado !== "cancelado") ?? null;
-
   return (
     <div className="animate-entrada space-y-6 md:space-y-8">
       <EncabezadoPagina
@@ -95,21 +91,11 @@ export default async function PaginaBandeja({
 
       {datos.pendientes && <PendientesBandeja pendientes={datos.pendientes} />}
 
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        {datos.tareas && <TareasBandeja tareas={datos.tareas} idioma={idioma} />}
-        <NotificacionesBandeja notificaciones={datos.notificaciones} idioma={idioma} />
-        {datos.proyectos && <ProyectosBandeja proyectos={datos.proyectos} />}
-        {datos.reuniones && <ReunionesBandeja reuniones={datos.reuniones} idioma={idioma} />}
-      </div>
-
       <GraficasBandeja
         datos={{
-          tareas: datos.tareas?.map((x) => ({ prioridad: x.prioridad, estado: x.estado })) ?? null,
+          tareas: datos.tareasGrafica,
           flujo: datos.flujo,
-          proyectos:
-            proyectosEnMarcha
-              ?.filter((p) => p.tareas > 0)
-              .map((p) => ({ nombre: p.nombre, avance: avanceDeProyecto(p) })) ?? null,
+          proyectos: datos.proyectosGrafica,
         }}
         etiquetas={{
           porPrioridad: t("charts.byPriority"),
@@ -136,6 +122,13 @@ export default async function PaginaBandeja({
           },
         }}
       />
+
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        {datos.tareas && <TareasBandeja tareas={datos.tareas} idioma={idioma} />}
+        <NotificacionesBandeja notificaciones={datos.notificaciones} idioma={idioma} />
+        {datos.proyectos && <ProyectosBandeja proyectos={datos.proyectos} />}
+        {datos.reuniones && <ReunionesBandeja reuniones={datos.reuniones} idioma={idioma} />}
+      </div>
     </div>
   );
 }

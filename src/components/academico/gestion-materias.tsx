@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
   Clock,
   Layers,
   Library,
@@ -18,9 +19,10 @@ import { useTranslations } from "next-intl";
 
 import { AccionesFila } from "@/components/academico/acciones-fila";
 import { CifraAcademica } from "@/components/academico/cifra";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AccionesFormulario,
   FormularioGuiado,
@@ -29,9 +31,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ALERTA_RIESGO, ANIMACION, CUADRO, VACIO } from "@/lib/paleta";
+import {
+  ALERTA_RIESGO,
+  ANIMACION,
+  AZUL,
+  AZUL_OSCURO,
+  AZUL_SUAVE,
+  CUADRO,
+  NEUTRO,
+  VACIO,
+} from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
+  asignarDocenteMateria,
   eliminarMateria,
   guardarMateria,
   type EstadoCatalogo,
@@ -85,9 +97,41 @@ export function GestionMaterias({
 }) {
   const t = useTranslations("academic");
   const [editando, setEditando] = useState<string | null>(null);
+  const [filtroDocente, setFiltroDocente] = useState<"todas" | "con" | "sin">("todas");
 
   const activas = materias.filter((m) => m.estado === "activa");
   const creditos = activas.reduce((suma, m) => suma + m.creditos, 0);
+
+  const conDocente = activas.filter((m) => Boolean(m.profesor_usuario_id || m.profesor_nombre)).length;
+  const sinDocente = activas.filter((m) => !m.profesor_usuario_id && !m.profesor_nombre).length;
+  const inactivas = materias.length - activas.length;
+
+  const serieCobertura = [
+    { nombre: t("subjects.chartWithTeacher"), valor: conDocente, color: AZUL },
+    { nombre: t("subjects.chartNoTeacher"), valor: sinDocente, color: AZUL_OSCURO },
+    { nombre: t("subjects.chartInactive"), valor: inactivas, color: NEUTRO },
+  ];
+
+  const porDocente = new Map<string, number>();
+  for (const m of activas) {
+    const nombre = m.profesor_nombre ?? t("subjects.chartNoTeacher");
+    porDocente.set(nombre, (porDocente.get(nombre) ?? 0) + 1);
+  }
+  const serieDocentes = [...porDocente.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([nombre, valor], idx) => ({
+      nombre: nombre.length > 20 ? `${nombre.slice(0, 19)}…` : nombre,
+      valor,
+      color: nombre === t("subjects.chartNoTeacher") ? AZUL_OSCURO : idx === 0 ? AZUL_SUAVE : AZUL,
+    }));
+
+  const visibles = materias.filter((m) => {
+    const tieneDocente = Boolean(m.profesor_usuario_id || m.profesor_nombre);
+    if (filtroDocente === "con") return tieneDocente;
+    if (filtroDocente === "sin") return !tieneDocente;
+    return true;
+  });
 
   return (
     <div className={cn("space-y-5", ANIMACION.entrada)}>
@@ -110,28 +154,106 @@ export function GestionMaterias({
         />
       </div>
 
+      {materias.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("subjects.chartCoverageTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieCobertura}
+                  total={materias.length}
+                  etiquetaTotal=""
+                  vacio={t("subjects.chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieCobertura.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("subjects.chartTeachersTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieDocentes} vacio={t("subjects.chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <Card>
         <CardContent className="pt-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <CardTitle>
               <Library className="size-4" />
               {t("subjects.title")}
-              <Badge className="ml-1 bg-[#2096BA]/15 text-[10px] text-[#187a99]">
-                {materias.length}
+              <Badge className="ml-1 bg-marca-500/15 text-[10px] text-marca-600">
+                {visibles.length}
               </Badge>
             </CardTitle>
 
-            {puedeEscribir && editando !== "nueva" && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setEditando("nueva")}
-                className="transition-transform duration-150 active:scale-95"
-              >
-                <Plus className="size-3.5" />
-                {t("subjects.new")}
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {(
+                [
+                  { id: "todas", label: t("subjects.filterAll"), count: materias.length },
+                  {
+                    id: "con",
+                    label: t("subjects.filterWithTeacher"),
+                    count: materias.filter((m) => Boolean(m.profesor_usuario_id || m.profesor_nombre)).length,
+                  },
+                  {
+                    id: "sin",
+                    label: t("subjects.filterNoTeacher"),
+                    count: materias.filter((m) => !m.profesor_usuario_id && !m.profesor_nombre).length,
+                  },
+                ] as const
+              ).map((chip) => {
+                const activo = filtroDocente === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setFiltroDocente(chip.id)}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors",
+                      activo
+                        ? "border-marca-500 bg-marca-50 text-marca-700"
+                        : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+                    )}
+                  >
+                    <span>{chip.label}</span>
+                    <span className="tabular-nums opacity-75">{chip.count}</span>
+                  </button>
+                );
+              })}
+
+              {puedeEscribir && editando !== "nueva" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setEditando("nueva")}
+                  className="transition-transform duration-150 active:scale-95"
+                >
+                  <Plus className="size-3.5" />
+                  {t("subjects.new")}
+                </Button>
+              )}
+            </div>
           </div>
 
           {editando === "nueva" && (
@@ -142,39 +264,78 @@ export function GestionMaterias({
             />
           )}
 
-          {materias.length === 0 ? (
+          {visibles.length === 0 ? (
             <div className={VACIO.contenedor}>
               <span className={VACIO.icono}>
                 <Library className="size-6" />
               </span>
               <p className={VACIO.titulo}>
-                {hayFiltro ? t("noMatches") : t("subjects.empty")}
+                {hayFiltro || filtroDocente !== "todas" ? t("noMatches") : t("subjects.empty")}
               </p>
             </div>
           ) : (
-            <>
-              <ul className="mt-3 divide-y">
-                {materias.map((materia) => (
-                  <li key={materia.id} className="group py-3">
-                    {editando === materia.id ? (
-                      <FormularioMateria
-                        materia={materia}
-                        periodos={periodos}
-                        docentes={docentes}
-                        alTerminar={() => setEditando(null)}
-                      />
-                    ) : (
-                      <FilaMateria
-                        materia={materia}
-                        puedeEscribir={puedeEscribir}
-                        alEditar={() => setEditando(materia.id)}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-4 space-y-4">
+              {(() => {
+                const grupos = new Map<string, { nombre: string; items: MateriaGestionada[] }>();
+                for (const m of visibles) {
+                  const clave = m.periodo_id ?? "__sin_periodo__";
+                  const nombre = m.periodo ?? t("subjects.noTermGroup");
+                  const grupo = grupos.get(clave) ?? { nombre, items: [] };
+                  grupo.items.push(m);
+                  grupos.set(clave, grupo);
+                }
+                return [...grupos.entries()].map(([clave, grupo]) => {
+                  const conDoc = grupo.items.filter(
+                    (m) => Boolean(m.profesor_usuario_id || m.profesor_nombre),
+                  ).length;
+                  return (
+                    <details
+                      key={clave}
+                      open
+                      className="group/sec rounded-card border border-linea bg-muted/15"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-tinta select-none hover:bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <Clock className="size-4 text-marca-500" />
+                          <span>{grupo.nombre}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-marca-500/15 text-[10px] text-marca-600 tabular-nums">
+                            {t("subjects.assignedCount", {
+                              con: conDoc,
+                              total: grupo.items.length,
+                            })}
+                          </Badge>
+                          <ChevronDown className="size-4 text-tinta-3 transition-transform group-open/sec:rotate-180" />
+                        </div>
+                      </summary>
 
-            </>
+                      <ul className="divide-y border-t border-linea bg-card px-4">
+                        {grupo.items.map((materia) => (
+                          <li key={materia.id} className="group py-3">
+                            {editando === materia.id ? (
+                              <FormularioMateria
+                                materia={materia}
+                                periodos={periodos}
+                                docentes={docentes}
+                                alTerminar={() => setEditando(null)}
+                              />
+                            ) : (
+                              <FilaMateria
+                                materia={materia}
+                                docentes={docentes}
+                                puedeEscribir={puedeEscribir}
+                                alEditar={() => setEditando(materia.id)}
+                              />
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  );
+                });
+              })()}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -182,19 +343,37 @@ export function GestionMaterias({
   );
 }
 
-/** Una materia: nombre, código, quién la da, cuándo y con cuánta matrícula. */
+/** Una materia: nombre, código, asignación rápida de docente, horario y matrícula. */
 function FilaMateria({
   materia,
+  docentes,
   puedeEscribir,
   alEditar,
 }: {
   materia: MateriaGestionada;
+  docentes: readonly DocenteAsignable[];
   puedeEscribir: boolean;
   alEditar: () => void;
 }) {
   const t = useTranslations("academic");
+  const [docenteActual, setDocenteActual] = useState(materia.profesor_usuario_id ?? "");
+  const [guardando, iniciar] = useTransition();
+  const [errorAsig, setErrorAsig] = useState(false);
 
   const activa = materia.estado === "activa";
+
+  function cambiarDocente(nuevoId: string) {
+    const previo = docenteActual;
+    setDocenteActual(nuevoId);
+    setErrorAsig(false);
+    iniciar(async () => {
+      const res = await asignarDocenteMateria(materia.id, nuevoId || null);
+      if (!res.ok) {
+        setDocenteActual(previo);
+        setErrorAsig(true);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-wrap items-start gap-3">
@@ -258,16 +437,43 @@ function FilaMateria({
         </p>
       </div>
 
-      <Badge
-        className={cn(
-          "shrink-0 text-[10px]",
-          activa
-            ? "bg-[#2096BA]/15 text-[#187a99]"
-            : "bg-muted text-tinta-2",
+      <div className="flex flex-wrap items-center gap-2">
+        {puedeEscribir && (
+          <div className="flex items-center gap-1.5">
+            <select
+              aria-label={t("subjects.assignTeacherLabel")}
+              value={docenteActual}
+              disabled={guardando}
+              onChange={(e) => cambiarDocente(e.target.value)}
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 max-w-44 rounded-md border bg-card px-2 text-xs shadow-xs outline-none focus-visible:ring-[3px]"
+            >
+              <option value="">{t("subjects.unassignedTeacher")}</option>
+              {docentes.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nombre}
+                </option>
+              ))}
+            </select>
+            {guardando && <Loader2 className="size-3.5 animate-spin text-marca-500" />}
+            {errorAsig && (
+              <span className="text-[11px] font-medium text-tinta">
+                {t("subjects.assignError")}
+              </span>
+            )}
+          </div>
         )}
-      >
-        {t(`subjectStatus.${materia.estado}` as never)}
-      </Badge>
+
+        <Badge
+          className={cn(
+            "shrink-0 text-[10px]",
+            activa
+              ? "bg-marca-500/15 text-marca-600"
+              : "bg-muted text-tinta-2",
+          )}
+        >
+          {t(`subjectStatus.${materia.estado}` as never)}
+        </Badge>
+      </div>
 
       {puedeEscribir && (
         <AccionesFila
