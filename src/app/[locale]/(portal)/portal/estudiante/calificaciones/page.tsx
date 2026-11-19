@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { CalendarRange, Layers, Star } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { DistribucionLetras } from "@/components/estudiante/distribucion-letras";
+import { GraficoEvolucionCalificaciones } from "@/components/estudiante/graficos-modulos-estudiante";
 import { agruparPorPeriodo } from "@/components/estudiante/periodos";
 import { Seccion } from "@/components/estudiante/seccion";
 import { TablaNotas } from "@/components/estudiante/tabla-notas";
@@ -12,6 +14,7 @@ import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
 import { StatCard } from "@/components/ui/stat-card";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
 import { aprobada, promedio } from "@/lib/notas";
 import {
@@ -62,9 +65,9 @@ export default async function PaginaCalificaciones({
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  const t = await getTranslations({ locale, namespace: "studentPortal" });
-
-  const [notas, notas360] = await Promise.all([
+  const [t, mensajes, notas, notas360] = await Promise.all([
+    getTranslations({ locale, namespace: "studentPortal" }),
+    mensajesCliente(["studentPortal"]),
     notasDelEstudiante(estudiante.id),
     notas360DelEstudiante(estudiante.id),
   ]);
@@ -128,6 +131,16 @@ export default async function PaginaCalificaciones({
         />
       ) : (
         <>
+          <NextIntlClientProvider messages={mensajes}>
+            <GraficoEvolucionCalificaciones
+              periodos={periodos.map((p) => ({
+                nombre: p.nombre,
+                promedio: promedio(p.notas.map((n) => n.nota)) ?? 0,
+                materias: p.notas.length,
+              }))}
+            />
+          </NextIntlClientProvider>
+
           {periodos.length > 1 && (
             <FilaChips etiqueta={t("gradesPage.title")}>
               <ChipFiltro

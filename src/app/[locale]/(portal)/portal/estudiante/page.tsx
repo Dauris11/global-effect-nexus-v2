@@ -5,30 +5,37 @@ import {
   Bot,
   Bus,
   CalendarDays,
-  GraduationCap,
   Inbox,
   MonitorPlay,
   Sparkles,
   Star,
   Users,
 } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { CondicionFundacion } from "@/components/estudiante/condicion-fundacion";
-import { EventosProximos } from "@/components/estudiante/eventos-proximos";
-import { MateriasEnCurso } from "@/components/estudiante/materias-en-curso";
-import { NotasRecientes } from "@/components/estudiante/notas-recientes";
+import {
+  DashboardGraficoEstudiante,
+  KpisAnimadosEstudiante,
+} from "@/components/estudiante/dashboard-inicio-estudiante";
+import {
+  MateriasEnCursoInteractivo,
+  NotasRecientesInteractivo,
+  SolicitudesInteractivo,
+} from "@/components/estudiante/dashboard-secciones-estudiante";
 import { agruparPorPeriodo } from "@/components/estudiante/periodos";
 import { TarjetaProximo } from "@/components/estudiante/tarjeta-proximo";
 import {
   AccesosPortal,
-  BannerPortal,
   type AccesoPortal,
 } from "@/components/layout/banner-portal";
-import { ResumenSolicitudes } from "@/components/solicitudes/resumen-solicitudes";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
+import { claveDia } from "@/lib/fechas";
 import {
   aprobada,
   GPA_PRUEBA_ACADEMICA,
@@ -45,6 +52,7 @@ import {
   eventosProximos,
   materiasInscritas,
   notasDelEstudiante,
+  reunionesEstudiante,
 } from "@/server/estudiantes/portal";
 import { solicitudesDe } from "@/server/solicitudes/consultas";
 
@@ -87,19 +95,65 @@ export default async function PortalEstudiante({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  const [materias, notas, condicion, solicitudes, eventos, asignaciones, cumplimiento] =
-    await Promise.all([
-      materiasInscritas(estudiante.id),
-      notasDelEstudiante(estudiante.id),
-      condicionEnLaFundacion(estudiante.id, 3),
-      solicitudesDe(usuario),
-      eventosProximos(4),
-      asignacionesDelEstudiante(estudiante.id),
-      cumplimientoCuatrimestralEstudiante(
-        estudiante.id,
-        estudiante.esUniversitario,
-      ),
-    ]);
+  const [
+    materias,
+    notas,
+    condicion,
+    solicitudes,
+    eventos,
+    asignaciones,
+    cumplimiento,
+    reuniones,
+    mensajes,
+  ] = await Promise.all([
+    materiasInscritas(estudiante.id),
+    notasDelEstudiante(estudiante.id),
+    condicionEnLaFundacion(estudiante.id, 3),
+    solicitudesDe(usuario),
+    eventosProximos(20),
+    asignacionesDelEstudiante(estudiante.id),
+    cumplimientoCuatrimestralEstudiante(
+      estudiante.id,
+      estudiante.esUniversitario,
+    ),
+    reunionesEstudiante(usuario.id, estudiante.id),
+    mensajesCliente(["studentPortal", "requests"]),
+  ]);
+
+  const hoyIso = claveDia();
+  const tareasDashboard = asignaciones.map((a) => {
+    const fechaBase = a.fecha_vencimiento ?? a.fecha_publicacion;
+    const fechaIso = fechaBase.toISOString().slice(0, 10);
+    const hora = a.fecha_vencimiento
+      ? fechaBase.toISOString().slice(11, 16)
+      : null;
+    return {
+      id: a.id,
+      titulo: a.titulo,
+      tipo: a.tipo,
+      materia: a.materia,
+      fechaIso,
+      hora,
+      estadoEntrega: a.estado_entrega,
+      vencida: a.vencida,
+    };
+  });
+  const eventosDashboard = eventos.map((e) => ({
+    id: e.id,
+    titulo: e.titulo,
+    tipo: e.tipo,
+    fecha: e.fecha,
+    hora: e.hora_inicio ? e.hora_inicio.slice(0, 5) : null,
+    ubicacion: e.ubicacion,
+  }));
+  const reunionesDashboard = reuniones.map((r) => ({
+    id: r.id,
+    titulo: r.titulo,
+    tipo: r.tipo,
+    modalidad: r.modalidad,
+    fecha: r.fecha,
+    hora: r.hora_inicio,
+  }));
 
   const todasLasNotas = notas.map((nota) => nota.nota);
   const promedioGeneral = promedio(todasLasNotas);
@@ -195,26 +249,20 @@ export default async function PortalEstudiante({
 
   return (
     <div className="animate-entrada space-y-10 md:space-y-12">
-      <div className="space-y-4">
-        <BannerPortal
-          rol="estudiante"
-          icono={GraduationCap}
-          insignia={t(`type.${estudiante.tipo}`)}
+      <div className="space-y-6">
+        <EncabezadoPagina
           titulo={t("greeting", { name: estudiante.nombre })}
-          kpis={[
-            {
-              valor:
-                promedioGeneral === null ? "—" : promedioGeneral.toFixed(1),
-              etiqueta: t("stats.average"),
-            },
-            {
-              valor: indice === null ? "—" : indice.toFixed(2),
-              etiqueta: `${t("gradesPage.gpaShort")} ${t("gpaScale")}`,
-            },
-            { valor: String(aprobadas), etiqueta: t("stats.passed") },
-            { valor: String(creditos), etiqueta: t("stats.credits") },
-          ]}
+          subtitulo={t("summary")}
         />
+
+        <NextIntlClientProvider messages={mensajes}>
+          <KpisAnimadosEstudiante
+            promedio={promedioGeneral}
+            indice={indice}
+            aprobadas={aprobadas}
+            creditos={creditos}
+          />
+        </NextIntlClientProvider>
 
         {/* Prueba académica: el aviso solo aparece si el índice ya está por
             debajo del mínimo, nunca cuando aún no hay historial. Es el aviso
@@ -234,6 +282,16 @@ export default async function PortalEstudiante({
         <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} enlazar />
       </div>
 
+      <NextIntlClientProvider messages={mensajes}>
+        <DashboardGraficoEstudiante
+          tareas={tareasDashboard}
+          eventos={eventosDashboard}
+          reuniones={reunionesDashboard}
+          hoyIso={hoyIso}
+          locale={idioma}
+        />
+      </NextIntlClientProvider>
+
       <TarjetaProximo
         entrega={proximaEntrega}
         evento={eventos[0] ?? null}
@@ -242,21 +300,17 @@ export default async function PortalEstudiante({
 
       <AccesosPortal accesos={accesos} />
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
-        <MateriasEnCurso materias={materias} />
-        <NotasRecientes periodo={periodos[0]} />
-      </div>
+      <NextIntlClientProvider messages={mensajes}>
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
+          <MateriasEnCursoInteractivo materias={materias} />
+          <NotasRecientesInteractivo periodo={periodos[0]} />
+        </div>
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
-        <CondicionFundacion condicion={condicion} />
-        <ResumenSolicitudes
-          solicitudes={solicitudes.slice(0, 5)}
-          href="/portal/estudiante/solicitudes"
-          locale={idioma}
-        />
-      </div>
-
-      <EventosProximos eventos={eventos} locale={idioma} />
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
+          <CondicionFundacion condicion={condicion} />
+          <SolicitudesInteractivo solicitudes={solicitudes} locale={idioma} />
+        </div>
+      </NextIntlClientProvider>
     </div>
   );
 }

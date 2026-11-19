@@ -204,17 +204,20 @@ export const CUADRO = {
 export const SEMAFORO = {
   /** Dentro y al día. */
   dentro: "#1E9E6A",
+  /** En observación / cumplimiento parcial. */
+  advertencia: "#D97706",
   /** Requiere una decisión de alguien. */
   alerta: "#B4342B",
 } as const;
 
 /**
- * Los mismos dos estados como clases de insignia, escritas aquí y no en
+ * Los mismos estados como clases de insignia, escritas aquí y no en
  * cada `.tsx`: así ningún componente lleva un hex suelto y `audit:ui` no
  * tiene que hacer excepciones. Siempre acompañadas de su icono.
  */
 export const INSIGNIA_SEMAFORO = {
   dentro: "border-transparent bg-[#1E9E6A]/10 text-[#1E9E6A]",
+  advertencia: "border-transparent bg-[#D97706]/10 text-[#D97706]",
   alerta: "border-transparent bg-[#B4342B]/10 text-[#B4342B]",
 } as const;
 

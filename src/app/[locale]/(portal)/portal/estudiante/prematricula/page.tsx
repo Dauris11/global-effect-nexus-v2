@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { ElegirMaterias } from "@/components/estudiante/elegir-materias";
+import { GraficoCargaPrematricula } from "@/components/estudiante/graficos-modulos-estudiante";
 import { AsistenciaEstudiante360 } from "@/components/global360/asistencia-estudiante";
 import { PeriodoInscripciones } from "@/components/estudiante/prematricula-periodo";
 import { TandasPeriodo360 } from "@/components/global360/tandas-periodo";
@@ -80,7 +81,10 @@ export default async function PaginaMisMaterias({
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
-  const t = await getTranslations({ locale, namespace: "studentPortal" });
+  const [t, mensajesPortal] = await Promise.all([
+    getTranslations({ locale, namespace: "studentPortal" }),
+    mensajesCliente(["studentPortal"]),
+  ]);
 
   const [inscripciones, ventana, asistenciaMaterias, valoresParametros] = await Promise.all([
     inscripcionesDelEstudiante(estudiante.id),
@@ -164,6 +168,15 @@ export default async function PaginaMisMaterias({
           etiqueta={t("subjectsPage.stats.closed")}
         />
       </div>
+
+      <NextIntlClientProvider messages={mensajesPortal}>
+        <GraficoCargaPrematricula
+          materias={activas.map((m) => ({
+            nombre: m.materia,
+            creditos: m.creditos ?? 0,
+          }))}
+        />
+      </NextIntlClientProvider>
 
       {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} enlazar />}
 

@@ -392,3 +392,41 @@ export async function cumplimientoCuatrimestralEstudiante(
     }),
   };
 }
+
+export type ReunionEstudiante = {
+  id: string;
+  titulo: string;
+  tipo: string;
+  modalidad: string;
+  fecha: string;
+  hora_inicio: string;
+  estado: string;
+};
+
+/** Reuniones del estudiante en una ventana amplia alrededor de hoy para su calendario. */
+export async function reunionesEstudiante(
+  usuarioId: string,
+  estudianteId: string | null,
+): Promise<ReunionEstudiante[]> {
+  return consultar<ReunionEstudiante>(
+    `SELECT DISTINCT r.id,
+            r.titulo,
+            r.tipo,
+            r.modalidad,
+            to_char(r.fecha, 'YYYY-MM-DD') AS fecha,
+            to_char(r.hora_inicio, 'HH24:MI') AS hora_inicio,
+            r.estado
+       FROM reunion r
+       LEFT JOIN reunion_participante rp ON rp.reunion_id = r.id
+      WHERE r.estado <> 'cancelada'
+        AND r.fecha BETWEEN (${SQL_HOY_RD} - interval '30 days')::date
+                        AND (${SQL_HOY_RD} + interval '90 days')::date
+        AND (
+          r.organizador_usuario_id = $1
+          OR rp.usuario_id = $1
+          OR ($2::uuid IS NOT NULL AND (r.estudiante_id = $2 OR rp.estudiante_id = $2))
+        )
+      ORDER BY fecha, hora_inicio`,
+    [usuarioId, estudianteId],
+  );
+}
