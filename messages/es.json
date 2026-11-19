@@ -1044,6 +1044,7 @@
       "whereStudies": "Dónde estudia",
       "university": "Universidad",
       "entryDate": "Fecha de ingreso",
+      "group": "Grupo",
       "school": "Centro educativo de procedencia",
       "facilitator": "Facilitador de Habitudes",
       "habitudesStory": "Breve historia (Habitudes)",
@@ -1227,6 +1228,86 @@
       "conCuenta": "Vinculada",
       "sinCuenta": "Sin cuenta",
       "acciones": "Acciones"
+    },
+    "v2": {
+      "group": "Grupo {n}",
+      "noGroup": "Sin grupo",
+      "tenure": "Lleva {time} en la Fundación",
+      "tenureNone": "Sin fecha de ingreso registrada",
+      "tenureLabel": "Tiempo en la Fundación",
+      "years": "{n, plural, one {# año} other {# años}}",
+      "months": "{n, plural, one {# mes} other {# meses}}",
+      "days": "{n, plural, one {# día} other {# días}}",
+      "today": "Ingresó hoy",
+      "tabs": {
+        "info": "Información",
+        "profile": "Perfil",
+        "family": "Familia y vivienda",
+        "health": "Salud",
+        "university": "Universidad",
+        "record": "Récord de notas",
+        "curriculum": "Pénsum y graduación",
+        "g360": "Global 360",
+        "followUp": "Seguimiento",
+        "sponsorship": "Patrocinio",
+        "edit": "Editar"
+      },
+      "sections": {
+        "personal": "Datos personales",
+        "contact": "Contacto",
+        "studies": "Estudios e ingreso",
+        "story": "Historia y situación",
+        "habitudes": "Habitudes",
+        "family": "Familia",
+        "housing": "Vivienda",
+        "health": "Salud y emergencias",
+        "whereStudies": "Dónde estudia"
+      },
+      "empty360": "Este estudiante todavía no tiene clases de Global Effect 360.",
+      "record": {
+        "title": "Evolución del índice",
+        "cumulative": "Índice acumulado",
+        "periodIndex": "Índice del período",
+        "subject": "Materia",
+        "grade": "Nota",
+        "letter": "Letra",
+        "index": "Índice",
+        "empty": "Todavía no hay notas registradas para este estudiante.",
+        "academyPending": "El récord de notas de la academia de liderazgo se mostrará aquí cuando se cargue y se lea con OCR."
+      },
+      "curriculum": {
+        "title": "Pénsum",
+        "approvedCredits": "Créditos de materias aprobadas en el sistema",
+        "pending": "El pénsum de la carrera se mostrará aquí cuando se cargue el catálogo de universidades, carreras y pénsum. Mientras tanto no hay un total ni un porcentaje de avance: no se inventan."
+      },
+      "graduation": {
+        "title": "Graduación",
+        "graduated": "Graduado",
+        "notYet": "Aún no se ha graduado",
+        "date": "Fecha de graduación",
+        "noDate": "Sin fecha registrada"
+      },
+      "followUp": {
+        "monthly": "Servicio, reunión y carta por mes",
+        "noMonths": "Todavía no hay meses que seguir: falta la fecha de ingreso o es muy reciente.",
+        "month": "Mes",
+        "service": "Servicio",
+        "meeting": "Reunión",
+        "letter": "Carta al patrocinador",
+        "hint": "La carta se deduce de lo que llegó al buzón de la Fundación; el servicio y la reunión los marca administración en Servicios mensuales.",
+        "notes": "Notas de seguimiento",
+        "stages": "Historial de etapas",
+        "noStages": "Todavía no hay cambios de etapa registrados.",
+        "by": "por {name}"
+      },
+      "sponsor": {
+        "none": "Este estudiante no tiene un patrocinador asignado.",
+        "title": "Patrocinador",
+        "active": "Vigente",
+        "ended": "Finalizada",
+        "since": "desde {date}",
+        "until": "hasta {date}"
+      }
     },
     "sinFoto": "Sin foto"
   },
@@ -2435,6 +2516,22 @@
   },
   "sponsors": {
     "eyebrow": "Patrocinio",
+    "detail": {
+      "notFound": "No se encontró a ese patrocinador",
+      "back": "Volver a patrocinadores",
+      "letters": "Cartas",
+      "perMonth": "al mes",
+      "students": "{count, plural, =0 {Estudiantes que patrocina} one {# estudiante que patrocina} other {# estudiantes que patrocina}}",
+      "noStudents": "Este patrocinador todavía no tiene estudiantes asignados",
+      "group": "Grupo {n}",
+      "since": "desde {date}",
+      "until": "hasta {date}",
+      "current": "Vigente",
+      "ended": "Finalizada",
+      "letterOf": "Carta de {month}",
+      "langEs": "Cartas en español",
+      "langEn": "Cartas en inglés"
+    },
     "title": "Patrocinadores",
     "description": "Personas y organizaciones que sostienen la Fundación, y lo que aporta cada una.",
     "new": "Nuevo patrocinador",

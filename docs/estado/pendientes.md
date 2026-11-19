@@ -1717,3 +1717,20 @@ módulo) — esto es solo la cola de pendientes concretos.
       servidor con Whisper de Groq (la cuenta ya lo tiene).
 - [ ] Contabilidad puede abrir `/configuracion/conocimiento` para su agente, pero no
       hay entrada en su menú que lo muestre.
+
+- [x] Detalle del expediente reorganizado en pestañas por tipo de información, con
+      **grupo** (migración `0094`), **tiempo en la Fundación** (`src/lib/antiguedad.ts`,
+      probado con `node --test scripts/probar-antiguedad.mjs`), récord de notas por
+      período, pénsum/graduación, seguimiento mensual, historial de etapas y
+      patrocinio. Datos probados contra la base real.
+- [x] Patrocinadores, becas y expedientes enlazados: ficha del patrocinador
+      (`/patrocinadores/[id]`) con sus estudiantes, y enlaces lista → ficha, becas →
+      expediente/patrocinador y expediente → patrocinador.
+- [ ] **Pénsum y fecha de graduación siguen a medias** hasta construir la fase 2 (catálogo
+      universidad → carrera → pénsum, no necesita documentos) y la 4 (OCR). La
+      graduación se deduce del historial de etapas: los egresados anteriores al
+      registro de etapas salen «sin fecha registrada».
+- [ ] Confirmar qué es el **grupo** (cohorte de Habitudes o generación de la beca) y
+      asignarlo a los expedientes existentes; mostrarlo y filtrarlo en la lista.
+- [ ] El detalle del expediente no se ha visto en pantalla (solo `tsc`, `build` y las
+      consultas contra la base): revisar pestañas, espaciados y móvil.

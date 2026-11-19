@@ -475,6 +475,14 @@ export function CamposExpediente({
               valorPredeterminado={valores?.fecha_ingreso}
               soloLectura={soloLectura}
             />
+
+            <Campo
+              nombre="grupo"
+              etiqueta={textos.campos.group}
+              tipo="number"
+              valorPredeterminado={valores?.grupo != null ? String(valores.grupo) : undefined}
+              soloLectura={soloLectura}
+            />
             <Campo
               nombre="centro_educativo"
               etiqueta={textos.campos.school}

@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -166,7 +168,12 @@ function Ficha({
           {/* `break-words` y no `truncate`: el nombre de una organización es lo
               que se viene a leer, y cortarlo a la mitad obliga a abrir la ficha
               para saber de quién se habla. */}
-          <p className="text-sm font-semibold break-words">{fila.nombre}</p>
+          <p className="text-sm font-semibold break-words">
+            {/* La ficha del patrocinador: sus estudiantes, su aporte y sus cartas. */}
+            <Link href={`/patrocinadores/${fila.id}`} className="hover:text-[#187a99] hover:underline">
+              {fila.nombre}
+            </Link>
+          </p>
           <p className="text-muted-foreground text-xs">
             {t(`type.${fila.tipo}` as never)}
             {fila.pais ? ` · ${fila.pais}` : ""}
@@ -228,10 +235,13 @@ function Ficha({
           {t("perMonth", { monto: formatoUsd(fila.monto_mensual) })}
         </p>
 
-        <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+        <Link
+          href={`/patrocinadores/${fila.id}`}
+          className="text-muted-foreground inline-flex min-h-8 items-center gap-1 text-xs hover:text-[#187a99] hover:underline"
+        >
           <Users className="size-3 shrink-0" />
           {t("scholars", { count: fila.becados })}
-        </span>
+        </Link>
       </div>
     </div>
   );

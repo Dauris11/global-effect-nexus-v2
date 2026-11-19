@@ -979,6 +979,45 @@ resolvería ambos es transcribir en el servidor con Whisper de Groq.
 
 ---
 
+## 19 nov 2026 — Detalle del expediente por pestañas y enlace patrocinador ↔ estudiante
+
+**Peticiones.** (1) Que la información de la persona aparezca primero y lo
+académico se separe por tipo (personal, perfil, 360, universidad, familia…), con el
+**grupo** del estudiante (van por el 10), cuánto lleva en la Fundación, y el
+pénsum, la graduación y el récord de notas; (2) que Patrocinadores (lista y becas),
+los expedientes y los estudiantes estén vinculados entre sí.
+
+**Decisiones y por qué.**
+- **Pestañas del cliente, no por enlace.** Cada apertura del expediente escribe
+  una fila `expediente.consultado` y esa auditoría cuenta aperturas; con una
+  pestaña por URL cada clic habría contado otra. Todo se pide una vez (son unas
+  decenas de filas de una persona) y la pestaña activa se refleja en `?seccion=`
+  sin navegar.
+- **Grupo = número simple, sin tope y nullable** (`0094`): sigue creciendo y no se
+  adivina por la fecha de ingreso; los existentes quedan «sin grupo». Está por
+  confirmar si es la cohorte de Habitudes o la generación de la beca.
+- **Antigüedad calculada desde `fecha_ingreso`** con meses cumplidos y el
+  aniversario del día 31 (o 29 de febrero) adelantado al último día del mes corto;
+  sin fecha de ingreso se dice, no se cae a la fecha de creación del expediente.
+  El «hoy» es el de La Vega, no el de un servidor en UTC.
+- **Nada inventado en pénsum y graduación.** El catálogo de pénsum (fase 2) y los
+  récords con OCR (fase 4) no existen aún: el récord de notas muestra lo real
+  (notas por período, índice del período y acumulado, tendencia); el pénsum dice
+  que está pendiente; la fecha de graduación se deduce del historial de etapas, no
+  de una segunda columna que pudiera contradecirlo.
+- **El vínculo ya existía en los datos** (`asignacion_beca`) y faltaba en la
+  pantalla: se añadió la ficha del patrocinador con sus estudiantes y los enlaces
+  lista → ficha, becas → expediente y patrocinador, y expediente → patrocinador.
+- La página de detalle bajó de 396 a ~210 líneas al sacar los textos del
+  formulario a un helper y cada pestaña a su componente.
+
+**Verificación.** `tsc`, `lint`, `i18n:check`, `audit:ui`, `build`, 5 pruebas de
+antigüedad (fecha futura, nula, 29 de febrero, día 31) y las consultas nuevas
+contra la base real (expediente, seguimiento de 12 meses, patrocinador y sus
+becados). **No visto en pantalla.**
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

@@ -12,3 +12,12 @@ export const SQL_HOY_RD = "(now() AT TIME ZONE 'America/Santo_Domingo')::date";
  * a las dos de la madrugada.
  */
 export const SQL_HORA_RD = "(now() AT TIME ZONE 'America/Santo_Domingo')::time";
+
+/**
+ * La fecha de hoy en La Vega (`YYYY-MM-DD`), calculada en JavaScript. República
+ * Dominicana no tiene horario de verano: UTC−4 todo el año. Es la gemela de
+ * `SQL_HOY_RD` para cuando el cálculo se hace fuera de la base.
+ */
+export function hoyRD(ahora: number = Date.now()): string {
+  return new Date(ahora - 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}

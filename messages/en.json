@@ -1044,6 +1044,7 @@
       "whereStudies": "Where they study",
       "university": "University",
       "entryDate": "Entry date",
+      "group": "Group",
       "school": "Previous school",
       "facilitator": "Habitudes facilitator",
       "habitudesStory": "Short story (Habitudes)",
@@ -1227,6 +1228,86 @@
       "conCuenta": "Linked",
       "sinCuenta": "No account",
       "acciones": "Actions"
+    },
+    "v2": {
+      "group": "Group {n}",
+      "noGroup": "No group",
+      "tenure": "{time} in the Foundation",
+      "tenureNone": "No entry date on record",
+      "tenureLabel": "Time in the Foundation",
+      "years": "{n, plural, one {# year} other {# years}}",
+      "months": "{n, plural, one {# month} other {# months}}",
+      "days": "{n, plural, one {# day} other {# days}}",
+      "today": "Joined today",
+      "tabs": {
+        "info": "Information",
+        "profile": "Profile",
+        "family": "Family and housing",
+        "health": "Health",
+        "university": "University",
+        "record": "Grade record",
+        "curriculum": "Curriculum and graduation",
+        "g360": "Global 360",
+        "followUp": "Follow-up",
+        "sponsorship": "Sponsorship",
+        "edit": "Edit"
+      },
+      "sections": {
+        "personal": "Personal data",
+        "contact": "Contact",
+        "studies": "Studies and entry",
+        "story": "Story and situation",
+        "habitudes": "Habitudes",
+        "family": "Family",
+        "housing": "Housing",
+        "health": "Health and emergencies",
+        "whereStudies": "Where they study"
+      },
+      "empty360": "This student has no Global Effect 360 classes yet.",
+      "record": {
+        "title": "Index over time",
+        "cumulative": "Cumulative index",
+        "periodIndex": "Period index",
+        "subject": "Subject",
+        "grade": "Grade",
+        "letter": "Letter",
+        "index": "Index",
+        "empty": "No grades recorded for this student yet.",
+        "academyPending": "The leadership academy grade record will show here once it is uploaded and read with OCR."
+      },
+      "curriculum": {
+        "title": "Curriculum",
+        "approvedCredits": "Credits of approved subjects in the system",
+        "pending": "The degree curriculum will show here once the catalog of universities, degrees and curricula is loaded. Until then there is no total or progress percentage: none is made up."
+      },
+      "graduation": {
+        "title": "Graduation",
+        "graduated": "Graduated",
+        "notYet": "Not graduated yet",
+        "date": "Graduation date",
+        "noDate": "No date on record"
+      },
+      "followUp": {
+        "monthly": "Service, meeting and letter by month",
+        "noMonths": "No months to follow yet: the entry date is missing or very recent.",
+        "month": "Month",
+        "service": "Service",
+        "meeting": "Meeting",
+        "letter": "Letter to sponsor",
+        "hint": "The letter is derived from what reached the Foundation mailbox; service and meeting are marked by administration in Monthly services.",
+        "notes": "Follow-up notes",
+        "stages": "Stage history",
+        "noStages": "No stage changes recorded yet.",
+        "by": "by {name}"
+      },
+      "sponsor": {
+        "none": "This student has no sponsor assigned.",
+        "title": "Sponsor",
+        "active": "Current",
+        "ended": "Ended",
+        "since": "since {date}",
+        "until": "until {date}"
+      }
     },
     "sinFoto": "No photo"
   },
@@ -2435,6 +2516,22 @@
   },
   "sponsors": {
     "eyebrow": "Sponsorship",
+    "detail": {
+      "notFound": "Sponsor not found",
+      "back": "Back to sponsors",
+      "letters": "Letters",
+      "perMonth": "per month",
+      "students": "{count, plural, =0 {Students sponsored} one {# student sponsored} other {# students sponsored}}",
+      "noStudents": "This sponsor has no students assigned yet",
+      "group": "Group {n}",
+      "since": "since {date}",
+      "until": "until {date}",
+      "current": "Current",
+      "ended": "Ended",
+      "letterOf": "{month} letter",
+      "langEs": "Letters in Spanish",
+      "langEn": "Letters in English"
+    },
     "title": "Sponsors",
     "description": "People and organisations that sustain the Foundation, and what each one contributes.",
     "new": "New sponsor",

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
 import { ALERTA_RIESGO, ANIMACION, CUADRO, VACIO } from "@/lib/paleta";
@@ -149,7 +150,12 @@ function Fila({
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold break-words">{fila.nombre}</p>
+          <p className="text-sm font-semibold break-words">
+            {/* Del becado al expediente: ahí están su pénsum, sus notas y su patrocinio. */}
+            <Link href={`/expedientes/${fila.estudiante_id}`} className="hover:text-[#187a99] hover:underline">
+              {fila.nombre}
+            </Link>
+          </p>
           <p className="text-muted-foreground text-xs">
             {[fila.programa, fila.universidad].filter(Boolean).join(" · ") ||
               "—"}
@@ -160,7 +166,9 @@ function Fila({
           {vinculado ? (
             <>
               <p className="text-sm font-medium break-words">
-                {fila.patrocinador}
+                <Link href={`/patrocinadores/${fila.patrocinador_id}`} className="hover:text-[#187a99] hover:underline">
+                  {fila.patrocinador}
+                </Link>
               </p>
               <p className="text-muted-foreground text-xs">
                 {[

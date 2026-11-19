@@ -27,6 +27,8 @@ export type FilaExpediente = {
   programa: string | null;
   universidad: string | null;
   fecha_ingreso: string | null;
+  /** Número del grupo (cohorte); `null` = sin asignar. */
+  grupo: number | null;
   /** Ruta dentro del bucket `avatares`, o `null` si no tiene foto. */
   foto_url: string | null;
   /** Si tiene cuenta del portal: sin ella no ve sus materias ni sus tareas. */
@@ -137,6 +139,7 @@ export async function listaExpedientes({
             e.programa,
             e.universidad,
             e.fecha_ingreso::text AS fecha_ingreso,
+            e.grupo::int AS grupo,
             e.foto_url,
             e.usuario_id IS NOT NULL AS con_cuenta,
             h.indice,
@@ -247,6 +250,8 @@ export type ExpedienteCompleto = {
   donde_estudia: string | null;
   universidad: string | null;
   fecha_ingreso: string | null;
+  /** Número del grupo (cohorte); `null` = sin asignar. */
+  grupo: number | null;
   centro_educativo: string | null;
   director_centro: string | null;
   facilitador_habitudes: string | null;
@@ -319,6 +324,7 @@ export async function obtenerExpediente(
             e.donde_estudia,
             e.universidad,
             e.fecha_ingreso::text AS fecha_ingreso,
+            e.grupo::int AS grupo,
             e.centro_educativo,
             e.director_centro,
             e.facilitador_habitudes,

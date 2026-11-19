@@ -71,6 +71,10 @@ export async function actualizarExpediente(
 
   const texto = lectorDeTexto(datos);
   const numero = lectorDeNumero(datos);
+  // Grupo (cohorte): entero positivo o vacío. Se valida aquí: un `input number`
+  // del navegador se puede manipular.
+  const grupoLeido = numero("grupo");
+  const grupo = grupoLeido !== null && Number.isInteger(grupoLeido) && grupoLeido > 0 && grupoLeido < 1000 ? grupoLeido : null;
 
   // Los desplegables se vuelven a comprobar aquí: un `select` del navegador
   // se puede manipular.
@@ -142,7 +146,8 @@ export async function actualizarExpediente(
                 foto_url = coalesce($26, foto_url),
                 -- Solo el estado activo conserva el vínculo a usuario: al
                 -- pasar a suspendido, retirado o graduado se suelta la cuenta.
-                usuario_id = CASE WHEN $27 THEN usuario_id ELSE NULL END
+                usuario_id = CASE WHEN $27 THEN usuario_id ELSE NULL END,
+                grupo = $28
           WHERE id = $1
           RETURNING id`,
         [
@@ -173,6 +178,7 @@ export async function actualizarExpediente(
           texto("notas_adicionales"),
           rutaFoto,
           llevaCuenta(estado),
+          grupo,
         ],
       );
 
@@ -377,6 +383,10 @@ export async function crearExpediente(
 
   const texto = lectorDeTexto(datos);
   const numero = lectorDeNumero(datos);
+  // Grupo (cohorte): entero positivo o vacío. Se valida aquí: un `input number`
+  // del navegador se puede manipular.
+  const grupoLeido = numero("grupo");
+  const grupo = grupoLeido !== null && Number.isInteger(grupoLeido) && grupoLeido > 0 && grupoLeido < 1000 ? grupoLeido : null;
 
   const nombre = String(datos.get("nombre") ?? "").trim();
 
@@ -410,12 +420,12 @@ export async function crearExpediente(
            centro_educativo, director_centro, facilitador_habitudes,
            breve_historia_habitudes, amonestaciones, solicitudes_pendientes,
            envio_correo_patrocinador, asistio_reunion_mensual,
-           notas_adicionales
+           notas_adicionales, grupo
          ) VALUES (
            $1, $2, $3, $4, $5::date, $6, $7, $8::genero, $9, $10,
            $11::estado_estudiante, $12, $13, $14,
            $15::date, $16, $17, $18, $19, $20, $21,
-           coalesce($22, 'pendiente'), coalesce($23, 'no'), $24
+           coalesce($22, 'pendiente'), coalesce($23, 'no'), $24, $25
          )
          RETURNING id`,
         // Los dos `coalesce` de la sentencia repiten los DEFAULT de la 0005
@@ -452,6 +462,7 @@ export async function crearExpediente(
           texto("envio_correo_patrocinador"),
           texto("asistio_reunion_mensual"),
           texto("notas_adicionales"),
+          grupo,
         ],
       );
 

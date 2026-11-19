@@ -2,10 +2,12 @@ import {
   BookOpen,
   CalendarDays,
   GraduationCap,
+  Hourglass,
   IdCard,
   Lock,
   UserCheck,
   UserX,
+  Users,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -38,6 +40,7 @@ export async function PortadaExpediente({
   cuenta,
   cuentasLibres,
   puedeEditar,
+  tiempo,
 }: {
   expediente: Pick<
     ExpedienteCompleto,
@@ -49,11 +52,14 @@ export async function PortadaExpediente({
     | "programa"
     | "donde_estudia"
     | "fecha_ingreso"
+    | "grupo"
   >;
   foto: string | null;
   cuenta: CuentaVinculada | null;
   cuentasLibres: CuentaSinVincular[];
   puedeEditar: boolean;
+  /** «1 año y 8 meses» en la Fundación, ya redactado; `null` sin fecha de ingreso. */
+  tiempo: string | null;
 }) {
   const t = await getTranslations("records");
   const idioma = (await getLocale()) === "en" ? "en" : "es";
@@ -81,17 +87,25 @@ export async function PortadaExpediente({
               <visual.icono className="size-3.5 shrink-0" />
               {t(`status.${expediente.estado}`)}
             </Badge>
+
+            <Badge variant="neutra" className="gap-1">
+              <Users className="size-3.5 shrink-0" />
+              {expediente.grupo ? t("v2.group", { n: expediente.grupo }) : t("v2.noGroup")}
+            </Badge>
           </div>
 
           <FilaDatos>
             {estudios && <Dato icono={GraduationCap}>{estudios}</Dato>}
             {expediente.programa && <Dato icono={BookOpen}>{expediente.programa}</Dato>}
             {expediente.cedula && <Dato icono={IdCard}>{expediente.cedula}</Dato>}
-            {expediente.fecha_ingreso && (
+            {expediente.fecha_ingreso ? (
               <Dato icono={CalendarDays}>
                 {t("detail.since")} {fechaCorta(expediente.fecha_ingreso, idioma)}
               </Dato>
-            )}
+            ) : null}
+            <Dato icono={Hourglass}>
+              {tiempo ? t("v2.tenure", { time: tiempo }) : t("v2.tenureNone")}
+            </Dato>
           </FilaDatos>
         </div>
       </div>

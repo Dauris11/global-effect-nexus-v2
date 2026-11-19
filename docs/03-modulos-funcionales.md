@@ -112,6 +112,21 @@ Funcionalidades:
   becado universitario: el `regular` de curso técnico se retiró en la `0047`.
 - Buscador inteligente con dropdown en tiempo real (BuscadorEstudiantes).
 - Filtros por estado y por carrera.
+- **Detalle del expediente por pestañas** (`/expedientes/[id]`): la portada
+  (foto, estado, **grupo** y **tiempo en la Fundación** desde la fecha de ingreso)
+  y debajo, por tipo de información: Información, Perfil, Familia y vivienda,
+  Salud, Universidad, Récord de notas, Pénsum y graduación, Global 360,
+  Seguimiento (servicio, reunión y carta al patrocinador mes a mes, e historial de
+  etapas), Patrocinio y Editar. La ficha se abre en *Información*. Todo se pide
+  una vez y las pestañas son del cliente, para que una apertura cuente como una
+  sola consulta en el registro de lecturas.
+- **Grupo:** número de la cohorte a la que pertenece el estudiante (hoy van por el
+  10); sin tope, nullable y editable en el alta y en la edición. Los expedientes
+  existentes quedan «sin grupo» hasta asignarlos.
+- **Pénsum y graduación:** el récord de notas muestra las notas reales por período
+  con su índice; el pénsum y la fecha de graduación dependen del catálogo de
+  universidades (fase 2) y de los documentos con OCR (fase 4) y se dicen
+  pendientes, sin inventar totales.
 - Etapas: Habitudes llena el expediente del postulante (`reclutado` →
   `postulado`); en la academia de liderazgo (último filtro) y de ahí en
   adelante lo lleva administración. Cada alta y cada cambio de estado queda en
@@ -165,6 +180,12 @@ Funcionalidades:
   se traducen las cartas de sus becados. Un patrocinador puede tener varios
   estudiantes (`asignacion_beca`).
 - **Cartas a patrocinadores** (`/patrocinadores/correos`): ver el módulo 24.
+- **Ficha del patrocinador** (`/patrocinadores/[id]`): sus datos, su aporte y los
+  **estudiantes que patrocina**, con enlace a cada expediente, el aporte asignado,
+  desde cuándo y el estado de su carta de este mes. Desde la lista de
+  patrocinadores y desde Becas se llega a ella, y desde el expediente de cada
+  estudiante (pestaña Patrocinio) se vuelve al patrocinador: antes estas
+  pantallas no se llevaban entre sí.
 - Campos: nombre, código, cuatrimestre, créditos, profesor, horario,
   aula, estado (activa/inactiva), descripción.
 - Búsqueda en tiempo real por nombre, código o profesor.

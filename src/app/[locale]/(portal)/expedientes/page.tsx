@@ -143,6 +143,7 @@ export default async function PaginaExpedientes({
                   whereStudies: t("field.whereStudies"),
                   university: t("field.university"),
                   entryDate: t("field.entryDate"),
+            group: t("field.group"),
                   school: t("field.school"),
                   schoolDirector: t("field.schoolDirector"),
                   facilitator: t("field.facilitator"),
