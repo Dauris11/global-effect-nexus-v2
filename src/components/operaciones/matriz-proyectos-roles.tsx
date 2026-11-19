@@ -8,6 +8,7 @@ import {
   FolderKanban,
   Loader2,
   Lock,
+  Search,
   ShieldCheck,
   Sparkles,
   Users,
@@ -15,6 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   type ProyectoAsignadoRol,
   ROLES_ASIGNABLES_PROYECTO,
@@ -35,10 +37,20 @@ export function MatrizProyectosRoles({
   const tRol = useTranslations("roles");
 
   const [proyectos, setProyectos] = useState(proyectosIniciales);
+  const [busqueda, setBusqueda] = useState("");
   const [proyectoGuardandoId, setProyectoGuardandoId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   // Sin esto un fallo solo deshacía la casilla y parecía que el clic no hacía nada.
   const [fallo, setFallo] = useState(false);
+
+  const q = busqueda.trim().toLowerCase();
+  const proyectosVisibles = q
+    ? proyectos.filter(
+        (p) =>
+          p.proyecto_nombre.toLowerCase().includes(q) ||
+          (p.proyecto_descripcion?.toLowerCase().includes(q) ?? false),
+      )
+    : proyectos;
 
   const toggleRol = (proyectoId: string, rol: RolAsignableProyecto) => {
     const proyecto = proyectos.find((p) => p.proyecto_id === proyectoId);
@@ -79,11 +91,23 @@ export function MatrizProyectosRoles({
   return (
     <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="size-5 text-marca-500" />
-          <CardTitle className="text-lg font-bold text-tinta">
-            {t("matrixTitle")}
-          </CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="size-5 text-marca-500" />
+            <CardTitle className="text-lg font-bold text-tinta">
+              {t("matrixTitle")}
+            </CardTitle>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-3" />
+            <Input
+              type="search"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder={t("matrixSearchPlaceholder")}
+              className="h-9 pl-8 text-xs"
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -111,7 +135,17 @@ export function MatrizProyectosRoles({
               </tr>
             </thead>
             <tbody className="divide-y divide-linea-fuerte/40">
-              {proyectos.map((proyecto) => {
+              {proyectosVisibles.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={ROLES_ASIGNABLES_PROYECTO.length + 1}
+                    className="py-8 text-center text-xs text-tinta-3"
+                  >
+                    {t("matrixEmpty")}
+                  </td>
+                </tr>
+              ) : (
+                proyectosVisibles.map((proyecto) => {
                 const guardando = proyectoGuardandoId === proyecto.proyecto_id;
                 return (
                   <tr
@@ -169,7 +203,7 @@ export function MatrizProyectosRoles({
                     })}
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

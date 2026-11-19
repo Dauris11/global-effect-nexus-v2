@@ -13,6 +13,7 @@ import {
   Loader2,
   MessageSquare,
   Pencil,
+  Search,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,6 +25,7 @@ import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { Dato } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
 import { PRIORIDAD, clasesDeEstado } from "@/lib/paleta";
@@ -69,6 +71,8 @@ export function TorreTareas({
 }) {
   const t = useTranslations("torre");
   const [filtro, setFiltro] = useState<FiltroTorre>("abiertas");
+  const [busqueda, setBusqueda] = useState("");
+  const [prioridadFiltro, setPrioridadFiltro] = useState<string>("todas");
 
   const conteos = useMemo(
     () =>
@@ -77,7 +81,19 @@ export function TorreTareas({
       ) as Record<FiltroTorre, number>,
     [tareas],
   );
-  const visibles = useMemo(() => filtrarTareasTorre(tareas, filtro), [tareas, filtro]);
+  const visibles = useMemo(() => {
+    const base = filtrarTareasTorre(tareas, filtro);
+    const q = busqueda.trim().toLowerCase();
+    return base.filter((tarea) => {
+      if (prioridadFiltro !== "todas" && tarea.prioridad !== prioridadFiltro) return false;
+      if (q) {
+        const enTitulo = tarea.titulo.toLowerCase().includes(q);
+        const enProy = tarea.proyecto_nombre?.toLowerCase().includes(q) ?? false;
+        if (!enTitulo && !enProy) return false;
+      }
+      return true;
+    });
+  }, [tareas, filtro, busqueda, prioridadFiltro]);
 
   return (
     <section className="space-y-4">
@@ -92,6 +108,33 @@ export function TorreTareas({
           />
         ))}
       </FilaChips>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-48 flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-3" />
+          <Input
+            type="search"
+            aria-label={t("searchTasks")}
+            placeholder={t("searchTasks")}
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <select
+          aria-label={t("cols.priority")}
+          value={prioridadFiltro}
+          onChange={(e) => setPrioridadFiltro(e.target.value)}
+          className={SELECT_FILA}
+        >
+          <option value="todas">{t("allPriorities")}</option>
+          {(["urgente", "alta", "media", "baja"] as const).map((p) => (
+            <option key={p} value={p}>
+              {t(`priority.${p}`)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {visibles.length === 0 ? (
         <EstadoVacio icono={ListTodo} titulo={tareas.length ? t("empty") : t("emptyTower")} />

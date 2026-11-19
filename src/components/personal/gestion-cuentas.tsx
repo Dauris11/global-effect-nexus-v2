@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Check, Copy, KeyRound, Loader2, Plus, UserMinus, UserPlus, X } from "lucide-react";
+import { Check, Copy, KeyRound, Loader2, Plus, Search, UserMinus, UserPlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,21 @@ export function GestionCuentas({
   yo: string;
 }) {
   const t = useTranslations("staff");
+  const tRoles = useTranslations("roles");
   const [abierto, setAbierto] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [rolFiltro, setRolFiltro] = useState<string>("todos");
+
+  const q = busqueda.trim().toLowerCase();
+  const visibles = equipo.filter((p) => {
+    if (rolFiltro !== "todos" && p.rol !== rolFiltro) return false;
+    if (q) {
+      const enNombre = p.nombre.toLowerCase().includes(q);
+      const enEmail = p.email.toLowerCase().includes(q);
+      if (!enNombre && !enEmail) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-4">
@@ -68,15 +82,42 @@ export function GestionCuentas({
 
       <Card>
         <CardContent className="pt-5">
-          <CardTitle className="mb-3">{t("people")}</CardTitle>
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>{t("people")}</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-44 flex-1 sm:w-56">
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+                <Input
+                  type="search"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder={t("searchPlaceholder")}
+                  className="h-9 pl-8 text-sm"
+                />
+              </div>
+              <select
+                aria-label={t("column.role")}
+                value={rolFiltro}
+                onChange={(e) => setRolFiltro(e.target.value)}
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-card px-2.5 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+              >
+                <option value="todos">{t("allRoles")}</option>
+                {roles.map((r) => (
+                  <option key={r} value={r}>
+                    {tRoles(r)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-          {equipo.length === 0 ? (
+          {visibles.length === 0 ? (
             <p className="text-muted-foreground py-6 text-center text-sm">
               {t("empty")}
             </p>
           ) : (
             <ul className="divide-y">
-              {equipo.map((persona) => (
+              {visibles.map((persona) => (
                 <Fila
                   key={persona.id}
                   persona={persona}

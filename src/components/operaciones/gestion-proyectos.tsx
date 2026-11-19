@@ -10,13 +10,16 @@ import {
   Pencil,
   Plus,
   Save,
+  Search,
   User,
+  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import {
   AccionesFormulario,
   FormularioGuiado,
@@ -29,7 +32,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
-import { ALERTA_RIESGO, ANIMACION, clasesDeEstado, CUADRO, VACIO } from "@/lib/paleta";
+import {
+  ALERTA_RIESGO,
+  ANIMACION,
+  AZUL,
+  AZUL_OSCURO,
+  AZUL_SUAVE,
+  clasesDeEstado,
+  CUADRO,
+  NEUTRO,
+  VACIO,
+} from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   type EstadoOperaciones,
@@ -60,6 +73,9 @@ const SELECT =
  * rastro de a qué pertenecían. Para retirar una iniciativa está el estado
  * `completado` o `pausado`, que es lo que la pantalla ofrece.
  */
+const ESTADOS_FILTRO = ["todos", "en_curso", "planificacion", "pausado", "completado"] as const;
+type EstadoFiltro = (typeof ESTADOS_FILTRO)[number];
+
 export function GestionProyectos({
   proyectos,
   puedeEscribir,
@@ -69,21 +85,176 @@ export function GestionProyectos({
 }) {
   const t = useTranslations("admin");
   const [editando, setEditando] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>("todos");
+
+  const texto = busqueda.trim().toLowerCase();
+  const hayFiltros = texto.length > 0 || estadoFiltro !== "todos";
+
+  const visibles = proyectos.filter((p) => {
+    if (estadoFiltro !== "todos" && p.estado !== estadoFiltro) return false;
+    if (texto.length > 0) {
+      const enNombre = p.nombre.toLowerCase().includes(texto);
+      const enDesc = p.descripcion?.toLowerCase().includes(texto) ?? false;
+      const enResp = p.responsable?.toLowerCase().includes(texto) ?? false;
+      if (!enNombre && !enDesc && !enResp) return false;
+    }
+    return true;
+  });
+
+  const totalTareas = proyectos.reduce((s, p) => s + p.tareas, 0);
+  const totalHechas = proyectos.reduce((s, p) => s + p.hechas, 0);
+  const avanceGlobal = totalTareas > 0 ? Math.round((totalHechas / totalTareas) * 100) : 0;
+  const enCursoCount = proyectos.filter((p) => p.estado === "en_curso").length;
+  const completadosCount = proyectos.filter((p) => p.estado === "completado").length;
+
+  const serieEstados = [
+    { nombre: t("projectStatus.en_curso"), valor: enCursoCount, color: AZUL },
+    {
+      nombre: t("projectStatus.planificacion"),
+      valor: proyectos.filter((p) => p.estado === "planificacion").length,
+      color: AZUL_SUAVE,
+    },
+    {
+      nombre: t("projectStatus.pausado"),
+      valor: proyectos.filter((p) => p.estado === "pausado").length,
+      color: NEUTRO,
+    },
+    { nombre: t("projectStatus.completado"), valor: completadosCount, color: AZUL_OSCURO },
+  ];
+
+  const serieAvance = [...proyectos]
+    .filter((p) => p.tareas > 0)
+    .sort((a, b) => b.tareas - a.tareas)
+    .slice(0, 6)
+    .map((p) => ({
+      nombre: p.nombre.length > 20 ? `${p.nombre.slice(0, 19)}…` : p.nombre,
+      valor: Math.round((p.hechas / p.tareas) * 100),
+      color: p.estado === "completado" ? AZUL_OSCURO : AZUL,
+    }));
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {puedeEscribir && editando !== "nuevo" && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setEditando("nuevo")}
-            className="transition-transform duration-150 active:scale-95"
-          >
-            <Plus className="size-3.5" />
-            {t("projects.new")}
-          </Button>
-        )}
+      {proyectos.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-card border border-linea bg-card p-3.5 shadow-card">
+              <p className="text-xs font-semibold text-tinta/60 uppercase">{t("projects.statsTotal")}</p>
+              <p className="mt-1.5 text-2xl font-bold text-tinta tabular-nums">{proyectos.length}</p>
+            </div>
+            <div className="rounded-card border border-linea bg-card p-3.5 shadow-card">
+              <p className="text-xs font-semibold text-tinta/60 uppercase">{t("projects.statsActive")}</p>
+              <p className="mt-1.5 text-2xl font-bold text-marca-600 tabular-nums">{enCursoCount}</p>
+            </div>
+            <div className="rounded-card border border-linea bg-card p-3.5 shadow-card">
+              <p className="text-xs font-semibold text-tinta/60 uppercase">{t("projects.statsDone")}</p>
+              <p className="mt-1.5 text-2xl font-bold text-tinta tabular-nums">{completadosCount}</p>
+            </div>
+            <div className="rounded-card border border-linea bg-card p-3.5 shadow-card">
+              <p className="text-xs font-semibold text-tinta/60 uppercase">{t("projects.statsProgress")}</p>
+              <p className="mt-1.5 text-2xl font-bold text-tinta tabular-nums">{avanceGlobal}%</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold">{t("projects.chartStatusTitle")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid items-center gap-3 sm:grid-cols-2">
+                  <GraficaAnillo
+                    datos={serieEstados}
+                    total={proyectos.length}
+                    etiquetaTotal={t("projects.statsTotal")}
+                    vacio={t("projects.chartEmpty")}
+                  />
+                  <ul className="divide-y divide-linea">
+                    {serieEstados.map((fila) => (
+                      <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                        <span
+                          aria-hidden
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: fila.color }}
+                        />
+                        <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                        <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold">{t("projects.chartProgressTitle")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GraficaBarras datos={serieAvance} vacio={t("projects.chartEmpty")} />
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative min-w-48 flex-1 sm:max-w-64">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder={t("projects.searchPlaceholder")}
+              className="h-9 pl-8 text-sm"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {ESTADOS_FILTRO.map((est) => {
+              const activo = estadoFiltro === est;
+              const conteo =
+                est === "todos"
+                  ? proyectos.length
+                  : proyectos.filter((p) => p.estado === est).length;
+              return (
+                <button
+                  key={est}
+                  type="button"
+                  onClick={() => setEstadoFiltro(est)}
+                  className={cn(
+                    "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors",
+                    activo
+                      ? "border-marca-500 bg-marca-50 text-marca-700"
+                      : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+                  )}
+                >
+                  <span>
+                    {est === "todos"
+                      ? t("projects.allStatuses")
+                      : t(`projectStatus.${est}` as never)}
+                  </span>
+                  <span className="tabular-nums opacity-75">{conteo}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          {puedeEscribir && editando !== "nuevo" && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setEditando("nuevo")}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              <Plus className="size-3.5" />
+              {t("projects.new")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {editando === "nuevo" && (
@@ -103,9 +274,29 @@ export function GestionProyectos({
             <p className={VACIO.titulo}>{t("projects.empty")}</p>
           </CardContent>
         </Card>
+      ) : visibles.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+            <p className="text-sm text-tinta-2">{t("projects.emptyFiltered")}</p>
+            {hayFiltros && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setBusqueda("");
+                  setEstadoFiltro("todos");
+                }}
+              >
+                <X className="size-3.5" />
+                {t("projects.clearFilters")}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {proyectos.map((proyecto) => (
+          {visibles.map((proyecto) => (
             <Card key={proyecto.id} className="group">
               <CardContent className="pt-5">
                 {editando === proyecto.id ? (
@@ -179,8 +370,8 @@ function Tarjeta({
           <Link
             href={`/administrativo/proyectos/${proyecto.id}`}
             className="inline-flex size-8 items-center justify-center rounded-md border border-linea text-tinta-2 transition-colors hover:border-marca-500 hover:text-marca-600 hover:bg-muted"
-            title="Ver Cronograma Gantt"
-            aria-label="Ver Cronograma Gantt"
+            title={t("projects.viewGantt")}
+            aria-label={t("projects.viewGantt")}
           >
             <CalendarDays className="size-3.5" />
           </Link>

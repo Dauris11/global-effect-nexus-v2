@@ -131,7 +131,7 @@ export default async function PaginaGlobal360({
       {/* El anuncio de la ventana, con fecha Y hora. Es lo que el estudiante
           viene a ver cuando le llega el aviso de la cabecera. Abierta es un
           aviso estándar de la marca; anunciada, gris. */}
-      {ventana && (
+      {ventana ? (
         <div
           className={cn(
             "flex items-start gap-3 rounded-control p-4",
@@ -154,6 +154,14 @@ export default async function PaginaGlobal360({
               <p className="mt-1 text-sm italic opacity-90">{ventana.mensaje}</p>
             )}
           </div>
+        </div>
+      ) : (
+        <div
+          role="status"
+          className="bg-muted text-tinta-2 flex items-start gap-3 rounded-control p-4 text-sm"
+        >
+          <CalendarClock className="mt-0.5 size-5 shrink-0 text-tinta-3" aria-hidden />
+          <p className="font-medium">{t("windowClosed")}</p>
         </div>
       )}
 
@@ -182,14 +190,16 @@ export default async function PaginaGlobal360({
 
       {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} />}
 
-      {/* El proveedor solo envuelve lo que lleva botones (cliente). */}
-      <NextIntlClientProvider messages={mensajes}>
-        <MatriculaCuatrimestral360
-          materias={catalogoMatricula}
-          ventana={ventana}
-          tandas={tandas}
-        />
-      </NextIntlClientProvider>
+      {/* La selección de materias solo se habilita cuando hay una ventana abierta. */}
+      {abierta && (
+        <NextIntlClientProvider messages={mensajes}>
+          <MatriculaCuatrimestral360
+            materias={catalogoMatricula}
+            ventana={ventana}
+            tandas={tandas}
+          />
+        </NextIntlClientProvider>
+      )}
 
       {asistencia.length > 0 && (
         <AsistenciaEstudiante360 filas={asistencia} locale={locale} />
