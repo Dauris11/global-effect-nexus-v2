@@ -26,3 +26,9 @@ test("rechaza sin adivinar: faltan campos, créditos raros, código repetido", (
 test("un código no es prerrequisito de sí mismo", () => {
   assert.deepEqual(leerListaDePensum("X1;Y;3;1;x1,Z9").materias[0].prerrequisitos, ["Z9"]);
 });
+
+test("los comentarios con # se ignoran sin contarse como error", () => {
+  const r = leerListaDePensum("# cabecera\nA1;Algo;2;1");
+  assert.equal(r.rechazadas.length, 0);
+  assert.equal(r.materias.length, 1);
+});

@@ -37,7 +37,8 @@ export function leerListaDePensum(texto: string): LecturaPensum {
   const vistos = new Set<string>();
 
   texto.split(/\r?\n/).forEach((linea, i) => {
-    if (!linea.trim()) return;
+    // Líneas vacías y comentarios (#) no son materias ni errores.
+    if (!linea.trim() || linea.trimStart().startsWith("#")) return;
 
     const campos = linea.split(/[;\t|]/).map((c) => c.trim());
     const [codigo, nombre, creditosTxt, periodoTxt, prereqTxt] = campos;

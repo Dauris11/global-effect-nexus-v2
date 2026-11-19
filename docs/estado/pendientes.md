@@ -6,7 +6,9 @@ aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (esta
 módulo) — esto es solo la cola de pendientes concretos.
 
 - [x] **Catálogo de universidades y pénsum — fase 2 del expediente (19 nov 2026, migración `0095`):** universidad → carrera → pénsum → materias (`/academico/universidades`), selector en cascada y matrícula en la pestaña Universidad del expediente, avance de créditos en la pestaña Pénsum. Detalle en `bitacora-tesis.md`.
-      - [ ] **Los aporta el usuario:** pénsum de su carrera y de cada universidad (UCATECI, UNPHU, UTESA, UASD y PUCMM, que ya aparece en dos expedientes y se crea desde la pantalla), requisitos de graduación y fórmula del promedio/índice. Se cargan con la lista pegada; el OCR de PDF es la fase 4.
+      - [x] **Pénsum de UCATECI · Ingeniería en Sistemas de Computación (plan ISC-R2-2019, 110 materias, 237 créditos)** cargado desde `db/datos/pensum-ucateci-isc-r2-2019.txt` con `scripts/cargar-pensum.mjs` (base del usuario: `PensumPdf.pdf`). Las opciones de electiva (ISC123-130) no se cargaron: ocupan los cupos ELE013-016, así que una electiva aprobada no suma al avance hasta definir cómo se empareja.
+      - [ ] **Faltan:** pénsum de las demás carreras y universidades (UCATECI, UNPHU, UTESA, UASD y PUCMM, que ya aparece en dos expedientes y se crea desde la pantalla), requisitos de graduación y fórmula del promedio/índice. Se cargan con la lista pegada o con `cargar-pensum.mjs`; el OCR de PDF es la fase 4.
+      - [ ] **Fórmula del índice (a confirmar):** en `GraduaWeb.pdf` el índice general es 3,56 con 746 puntos y 206 créditos (746/206 = 3,62). Con los 3 créditos de la materia reprobada HUM008 sumados (209) da 3,57. Hace falta que el usuario diga cómo se calcula antes de implementar la fase 3.
       - [ ] Confirmar el régimen real de cada universidad (se sembró «cuatrimestre» en las cuatro).
       - [ ] Ver en pantalla `/academico/universidades` y la pestaña Universidad/Pénsum (no probado en navegador).
 
