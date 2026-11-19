@@ -1,10 +1,10 @@
-# Módulos Funcionales — Global Effect Nexus
+# Módulos Funcionales — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Catálogo funcional de los módulos y portales del sistema (qué hace cada parte de la plataforma).
 
 VISIÓN GENERAL
 ─────────────────────────────────────────────────────────────────
-Global Effect Nexus es el ERP institucional de la Fundación Global
+Portal GlobalEffect es el ERP institucional de la Fundación Global
 Effect, con el portal del estudiante integrado. Centraliza en un solo
 sistema la gestión académica, los expedientes, el patrocinio, las
 operaciones, las finanzas y las solicitudes y aprobaciones, además de
@@ -161,6 +161,10 @@ Gestión de materias académicas por cuatrimestre.
 Funcionalidades:
 - CRUD completo: crear, editar y eliminar materias.
 - Vista responsive: tarjetas en mobile, tabla en desktop.
+- **Idioma de las cartas:** cada patrocinador tiene un idioma (`es`/`en`) al que
+  se traducen las cartas de sus becados. Un patrocinador puede tener varios
+  estudiantes (`asignacion_beca`).
+- **Cartas a patrocinadores** (`/patrocinadores/correos`): ver el módulo 24.
 - Campos: nombre, código, cuatrimestre, créditos, profesor, horario,
   aula, estado (activa/inactiva), descripción.
 - Búsqueda en tiempo real por nombre, código o profesor.
@@ -386,13 +390,31 @@ Funcionalidades:
 Asistente con inteligencia artificial para consultas institucionales.
 
 Funcionalidades:
-- Chat interactivo con historial de mensajes (markdown renderizado).
+- Chat interactivo con historial de mensajes (texto plano: la salida del modelo no se interpreta como Markdown ni HTML).
 - La IA recibe contexto en tiempo real de la base de datos:
   estudiantes, materias y clases de 360, academias, patrocinadores, eventos, tareas,
   finanzas (ingresos, egresos, balance).
 - Prompts rápidos sugeridos (botones de acceso directo).
 - Respuestas en español, claras y concisas.
 - Botón de reiniciar conversación.
+- **Alcance y seguridad (aplican a todos los chats de IA):**
+  - El agente lo decide el servidor con el rol de la sesión; cada rol tiene una
+    lista cerrada de herramientas con el permiso vuelto a comprobar, y toda
+    escritura es una propuesta que la persona aprueba.
+  - Solo atiende asuntos de la Fundación (incluidas las materias, tareas y notas
+    de quien pregunta); lo demás recibe una frase fija de fuera de alcance.
+  - Las preguntas con código, JSON, HTML, marcadores de rol u órdenes a la IA se
+    rechazan antes de llamar al modelo. Lo que devuelven herramientas, documentos
+    y datos del portal viaja como dato no confiable, con las etiquetas propias
+    desarmadas. El bloque de reglas fijas va siempre al final del prompt, detrás
+    de las instrucciones que el administrador puede editar.
+  - Los filtros por patrón se pueden esquivar; las garantías reales son las
+    estructurales de arriba.
+- **Base de conocimiento editable** (`/configuracion/conocimiento`): `super_admin`
+  (todos los agentes), `contabilidad` (solo su normativa) y `admin`, con el
+  permiso `ia.conocimiento`, (solo el agente de estudiantes) cargan, **editan**,
+  activan y borran documentos; cada cambio queda en la auditoría y el texto se
+  revisa con las mismas reglas que las preguntas.
 
 ## MÓDULO 21: CHAT IA ESTUDIANTIL
 *Ruta: /chat-ia-estudiantil*
@@ -452,6 +474,30 @@ Funcionalidades:
   - ¿Asistió a reunión mensual? (check morado / X roja)
 - Estadísticas: activos, hicieron servicio, asistieron reunión.
 - Exportación a PDF imprimible con formato profesional.
+- **Carta mensual al patrocinador** (tercera columna, solo lectura): el
+  estudiante escribe desde su correo al buzón de la Fundación y **Elly AI**
+  sustituye a la persona externa que antes revisaba y traducía las cartas:
+  1. Un webhook (`POST /api/correo/entrante`, con secreto compartido) recibe el
+     mensaje normalizado desde el buzón; no depende del proveedor de correo.
+  2. Identifica al estudiante por la dirección del remitente (se puede
+     falsificar: sin SPF/DKIM/DMARC en `pass` la carta se retiene).
+  3. Elly AI clasifica y traduce con un esquema cerrado: retiene si pide dinero,
+     teléfono, ropa u objetos, si chismea o se queja de la Fundación o trae datos
+     personales. Cualquier duda (sin clave, respuesta inválida, enlaces, cifras
+     o contactos en la traducción) deja la carta **retenida**.
+  4. El destinatario sale siempre de la base (asignación activa → correo del
+     patrocinador); la carta no puede cambiarlo.
+  5. Solo la primera carta válida por estudiante y mes cuenta (índice único).
+  6. Cumple el mes si llegó hasta el **día límite** (parámetro
+     `correos.dia_limite`, 20 por defecto, inclusive, hora de La Vega). El
+     estado es **derivado**: cumplió, en revisión, tardía, no envió o sin
+     patrocinador.
+  7. La planilla añade la columna «Cumplió» (servicio + reunión + carta) y el
+     filtro «solo los que no cumplieron», que se imprime a PDF.
+  8. Administración decide las retenidas en `/patrocinadores/correos`: aprobar y
+     enviar, rechazar, volver a revisar o vincular un remitente desconocido.
+  El reenvío automático de las cartas limpias está **apagado** por defecto
+  (`correos.reenvio_automatico`): durante el piloto todas esperan aprobación.
 
 ## MÓDULO 25: INSCRIPCIÓN DE COMIDA
 *Ruta: /comida (pública, sin login) | /inscripcion-comida (con layout)*

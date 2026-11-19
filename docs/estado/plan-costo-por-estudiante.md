@@ -1,6 +1,6 @@
 # Plan de Arquitectura y Gestión: Costo Integral por Estudiante Becado (TCO Educativo)
 
-**Proyecto:** Global Effect Nexus  
+**Proyecto:** Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect  
 **Fecha de formulación:** 18 de noviembre de 2026  
 **Estado:** Propuesta de arquitectura y diseño administrativo (Plan a futuro)  
 **Ubicación:** `docs/estado/plan-costo-por-estudiante.md`  

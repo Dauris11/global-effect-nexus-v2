@@ -1,4 +1,4 @@
-# 03 · Modelo de Datos — Global Effect Nexus
+# 03 · Modelo de Datos — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 Documentación del modelo de datos relacional (PostgreSQL 17 / Supabase), desplegado y verificado.
 

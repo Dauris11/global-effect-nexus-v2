@@ -1,4 +1,4 @@
-# Stack Tecnológico — Global Effect Nexus
+# Stack Tecnológico — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Stack **definitivo** del proyecto (fuente de verdad). Actualiza y consolida lo indicado en [01 · Visión](01-vision-y-alcance.md) y [02 · Arquitectura](02-arquitectura-tecnica.md). Última actualización: 2026-11-19 (se corrigieron validación, estado de cliente y formularios para que coincidan con `package.json`).
 
@@ -33,7 +33,7 @@
 | **Resend** | Envío de correos (notificaciones de tareas, patrocinadores) | `RESEND_API_KEY`, `RESEND_FROM` |
 | **n8n** | Webhooks a CRM / orquestación de notificaciones | `N8N_WEBHOOK_URL` |
 | **GENIALiA** | CRM institucional (sincronización de contactos/leads vía n8n) | (a través de n8n) |
-| **Anthropic** | Traducción IA, OCR de expedientes, asistentes de chat | `ANTHROPIC_API_KEY` |
+| **Gemini (Google)** | Elly AI: chat con herramientas, OCR de expedientes y revisión/traducción de cartas, por REST con `fetch` (`src/lib/gemini*.ts`, sin SDK) | `GEMINI_API_KEY`, `GEMINI_MODEL` |
 
 Plantilla completa en [`.env.example`](../.env.example).
 
@@ -76,7 +76,7 @@ src/
 │  ├─ supabase/{server,client}.ts  # clientes SSR/browser
 │  ├─ auth.ts · rbac.ts        # sesión + permisos
 │  ├─ db.ts                    # pool pg + query()
-│  ├─ anthropic.ts · email.ts · integrations.ts  # IA · Resend · n8n
+│  ├─ gemini.ts · email.ts · integrations.ts  # IA · Resend · n8n
 │  ├─ nav.ts · utils.ts        # navegación por permisos · cn()
 ├─ server/                     # capa de dominio (patrón por módulo)
 │  ├─ storage.ts               # Supabase Storage + tabla documento

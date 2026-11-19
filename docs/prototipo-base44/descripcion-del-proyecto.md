@@ -1,11 +1,11 @@
 ================================================================
-  GLOBAL EFFECT NEXUS — DESCRIPCIÓN DEL PROYECTO Y MÓDULOS
+  PORTAL GLOBALEFFECT — DESCRIPCIÓN DEL PROYECTO Y MÓDULOS
   Fecha: 2026-06-25
 ================================================================
 
 VISIÓN GENERAL
 ─────────────────────────────────────────────────────────────────
-Global Effect Nexus es el ERP institucional de la Fundación Global
+Portal GlobalEffect es el ERP institucional de la Fundación Global
 Effect: un sistema de gestión (académico, expedientes, patrocinio,
 operaciones, finanzas, solicitudes y aprobaciones) con el portal del
 estudiante integrado. Centraliza en un solo sistema todos los flujos

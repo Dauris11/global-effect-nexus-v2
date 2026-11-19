@@ -323,12 +323,12 @@ módulo) — esto es solo la cola de pendientes concretos.
         - `src/components/operaciones/visualizador-gantt.tsx`: visualizador SVG/HTML con selector de escala (Días / Semanas), timeline con barras proporcionales al avance, progreso visual interno y panel modal de detalle.
         - Nueva ruta: `/administrativo/proyectos/[id]` (`src/app/[locale]/(portal)/administrativo/proyectos/[id]/page.tsx`) con navegación directa desde la tarjeta de proyectos.
       - **Calidad:** 4,355 claves simétricas (`npm run i18n:check`), 0 colores fuera de marca (`npm run audit:ui`) y 95 pruebas pasando (`npm run test:contabilidad`).
-- [x] **Nexus AI, fases 1–5 y parte de la 6–7 (24 oct 2026).** Migraciones
+- [x] **Elly AI, fases 1–5 y parte de la 6–7 (24 oct 2026).** Migraciones
       `0057`–`0059` aplicadas. Agente por rol, medidor y cuotas, chat con
       streaming (`/api/ia/chat`), herramientas con aprobación y deshacer,
       conocimiento por agente, «Mi día» de Contabilidad y apariencia
       (tema claro/oscuro y barra lateral negra, en Mi perfil). Detalle y lo que
-      falta en [`plan-nexus-ai.md`](plan-nexus-ai.md); revisión del trabajo
+      falta en [`plan-elly-ai.md`](plan-elly-ai.md); revisión del trabajo
       del otro agente en [`revision-portales-y-contabilidad.md`](revision-portales-y-contabilidad.md).
 - [x] **Actividad del equipo, visibilidad por rol y modo oscuro (25 oct 2026).**
       `/configuracion/actividad` (quién hizo qué y a qué hora, con 4 gráficas,
@@ -346,10 +346,10 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [ ] **Probar en pantalla, con sesión:** visibilidad (ocultar y bloquear un
       módulo para un rol y entrar con esa cuenta), actividad, «Mi día» y el
       asistente.
-- [ ] **Probar Nexus AI en pantalla con una clave real** (`ANTHROPIC_API_KEY`):
+- [ ] **Probar Elly AI en pantalla con una clave real** (`GEMINI_API_KEY`):
       hasta ahora solo se probó el bucle con un proveedor falso y el flujo de
       streaming contra un servidor de Anthropic simulado. Verificar el
-      identificador de modelo (`ANTHROPIC_MODEL`) y, si se quiere Haiku para
+      identificador de modelo (`GEMINI_MODEL`) y, si se quiere Haiku para
       estudiante y colaborador, fijarlo en `/configuracion/ia`.
 - [ ] **Cargar precios y cuotas** en `/configuracion/ia`: sin precios el costo no
       se calcula y sin cuota no hay tope.
@@ -586,7 +586,7 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [x] **Arquitectura Móvil Nativa y Dock de Acceso Rápido:** Manifiesto PWA (`manifest.webmanifest`)
       en `src/app/manifest.ts` para modo standalone en iOS/Android sin barra de URL, barra inferior táctil
       con botón central elevado de acceso rápido táctil (`BarraInferior`) y cajón deslizable nativo
-      (`CajonAccionesRapidas`) con atajos a cámara QR, rendición de comprobantes, tareas del día, agenda y Nexus IA por voz.
+      (`CajonAccionesRapidas`) con atajos a cámara QR, rendición de comprobantes, tareas del día, agenda y Elly AI por voz.
 - [x] **Agenda de Reuniones Institucionales para Todo el Personal (Sustitución de Psicología):** Agendamiento
       de reuniones institucionales para todo el personal y estudiantes (coordinación operativa, tutorías académicas,
       seguimiento vocacional, consejos de dirección y reuniones departamentales), respaldado por la migración
@@ -705,7 +705,7 @@ módulo) — esto es solo la cola de pendientes concretos.
       pantallas, pero nada impide que un INSERT por SQL cree una octava. Si
       importa que la base lo sostenga, es una migración de una línea.
 
-- [ ] `ANTHROPIC_API_KEY` en `.env.local` devuelve 401 — el chat IA y el OCR de
+- [ ] (histórico: con Anthropic) `ANTHROPIC_API_KEY` en `.env.local` devolvía 401 — el chat IA y el OCR de
       expedientes no funcionan hasta tener una clave válida.
 - [ ] Decidir el valor real de `envio_correo_patrocinador` (TEXT sin CHECK):
       la migración 0005 comenta `pendiente/enviado/no_aplica`, pero
@@ -1604,3 +1604,52 @@ módulo) — esto es solo la cola de pendientes concretos.
       el ERD y `esquema.dbml` desde la base (85 tablas; el diccionario llega a
       la `0019`). Lo que debe entregarse para cerrar el expediente está en
       `docs/estado/entregables-expediente.md`.
+
+- [x] IA: base de conocimiento editable por `admin` (permiso nuevo
+      `ia.conocimiento`, migración `0091`, solo agente de estudiantes) y capas
+      de seguridad comunes a las cuatro rutas del modelo (`src/lib/ia-seguridad.ts`):
+      rechazo de código/JSON/órdenes en preguntas y documentos, datos como no
+      confiables con etiquetas desarmadas, y bloque fijo de alcance al final del
+      prompt. Pruebas: `node --test scripts/probar-ia-seguridad.mjs`.
+- [ ] IA: la salida del modelo no se filtra (se pinta como texto plano y el
+      prompt prohíbe código); si se quiere bloquearla, añadir revisión de salida.
+      Las instrucciones editables del agente (`ai_agente.instrucciones`) se
+      neutralizan pero no se rechazan: decidir si también deben pasar el filtro.
+- [ ] IA: probar con la API real (los filtros solo se probaron sin red) y con
+      un documento cargado de verdad; no hay documentos en la base todavía.
+
+- [x] Cartas mensuales a patrocinadores con Elly AI (migración `0092`, parámetros
+      `correos.*`): webhook `/api/correo/entrante`, cola de salida real
+      (`correo_cola` por fin se vacía, con Resend por `fetch`), bandeja
+      `/patrocinadores/correos`, columnas «Carta» y «Cumplió» en la planilla.
+      Prueba: `npx tsx scripts/probar-correos-entrada.ts` y
+      `node --test scripts/probar-correos-patrocinador.mjs`.
+- [ ] Cartas: conectar un buzón real al webhook y poner `RESEND_API_KEY`,
+      `CORREO_ENTRANTE_SECRET` y `CRON_SECRET` (hoy ninguna carta puede entrar ni
+      salir). Probar con la API real de IA y con cartas de verdad.
+- [ ] Cartas: `estudiante.envio_correo_patrocinador` (columna plana) sigue
+      editándose en el expediente pero ya no cuenta para nada; retirarla del
+      formulario.
+- [ ] Cartas: no se muestra todavía el estado de la carta en el portal del
+      estudiante ni en el detalle del expediente.
+
+- [x] Elly AI pasa de Anthropic a **Gemini** (capa gratuita por ahora): cliente
+      REST propio (`src/lib/gemini.ts` puro y `gemini-cliente.ts`), sin SDK; se
+      desinstaló `@anthropic-ai/sdk`. Chat con herramientas, OCR y revisión de
+      cartas usan lo mismo. Pruebas: `node --test scripts/probar-gemini.mjs`.
+- [x] `GEMINI_API_KEY` ya está en `.env.local` (pendiente: ponerla en Vercel).
+- [ ] **Datos y capa gratuita:** en la capa gratuita de Gemini, Google marca lo
+      enviado como «usado para mejorar sus productos». Antes de pasar por Elly
+      cédulas (OCR), cartas de estudiantes o notas reales, activar facturación o
+      decidir qué flujos esperan. El límite gratuito (pocas peticiones por
+      minuto) dará 429 con varios usuarios a la vez: el chat avisa y las cartas
+      quedan retenidas hasta «Volver a revisar».
+- [x] Cliente de Gemini probado en vivo con la clave real (`scripts/probar-gemini-vivo.ts`,
+      solo texto inventado): chat, llamada forzada (cartas) y flujo funcionan con
+      `gemini-3.1-flash-lite`. Los Flash grandes daban 503 por demanda ese día.
+- [ ] Falta probar en vivo el bucle de herramientas con aprobación y el OCR con
+      un documento real; y confirmar en AI Studio que el proyecto de la clave
+      está en el nivel de **pago** (entonces Google no usa lo enviado para mejorar
+      sus productos; en el gratuito sí).
+- [ ] Poner `GEMINI_API_KEY` y `GEMINI_MODEL` en las variables de entorno de
+      Vercel (cuenta personal) y redesplegar.

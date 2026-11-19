@@ -1,5 +1,5 @@
 ================================================================================
-GLOBAL EFFECT NEXUS — AUDITORÍA Y RECUENTO DE MÓDULOS, ROLES Y CONTABILIDAD
+PORTAL GLOBALEFFECT — AUDITORÍA Y RECUENTO DE MÓDULOS, ROLES Y CONTABILIDAD
 Fecha: 25 de octubre de 2026
 Fundación Global Effect (La Vega, República Dominicana — ASFL Ley 122-05)
 ================================================================================
@@ -142,7 +142,7 @@ A. ROL: super_admin (Portal: /portal/administrativo | /dashboard)
 - Calendario institucional            /calendario
 - Reuniones y minutas                 /reuniones
 - Línea de tiempo Gantt               /calendario/gantt
-- Asistente Nexus AI                  /chat-ia
+- Asistente Elly AI                  /chat-ia
 - Reportes institucionales            /reportes
 - Mapa del sitio                      /sitemap
 
@@ -194,7 +194,7 @@ B. ROL: contabilidad (Portal: /portal/contabilidad)
 [Módulos que le FALTAN en la barra lateral para estar al mismo nivel]:
 - Calendario institucional (/calendario)
 - Reuniones y actas (/reuniones)
-- Chat Nexus AI contable (/chat-ia)
+- Chat Elly AI contable (/chat-ia)
 - Acceso a Perfil/Apariencia en la barra superior (/perfil)
 - Agrupación por secciones en la barra lateral (General, Tesorería, Ingresos, Gastos, Impuestos, Activos, Departamento) en lugar de una lista plana.
 
@@ -241,7 +241,7 @@ F. ROL: habitudes & dir_habitudes (Portal: /habitudes)
 - Materiales pedagógicos              /academias/materiales
 - Expedientes postulados              /expedientes
 - Calendario y reuniones              /calendario | /reuniones
-- Asistente Nexus AI                  /chat-ia
+- Asistente Elly AI                  /chat-ia
 - Perfil y Apariencia                 /perfil
 
 --------------------------------------------------------------------------------

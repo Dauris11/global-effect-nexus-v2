@@ -1,4 +1,4 @@
-# Rediseño "app web" + optimización + reorganización — Global Effect Nexus
+# Rediseño "app web" + optimización + reorganización — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > **Para:** Claude Code (y cualquier agente que trabaje en el repo, incluida la IA de Antigravity).
 > **De:** revisión hecha el 2026-10-03 sobre la rama `marca-panel-y-limpieza`, con el retiro de Psicología y el módulo de Solicitudes todavía sin commitear.
@@ -124,7 +124,7 @@ Reorganiza la documentación del repo siguiendo la sección 1.1 de docs/prompts/
 ### 2.2 Prompt (copiar y pegar)
 
 ```text
-Define el sistema visual nuevo "app web estilo Airbnb" de Global Effect Nexus. Lee primero docs/prompts/rediseno-app-web.md sección 2.1 y respétala al pie de la letra. NO toques pantallas todavía.
+Define el sistema visual nuevo "app web estilo Airbnb" de Portal GlobalEffect. Lee primero docs/prompts/rediseno-app-web.md sección 2.1 y respétala al pie de la letra. NO toques pantallas todavía.
 
 1. src/app/globals.css
    - Añade una escala de marca como tokens Tailwind 4 en @theme: --color-marca-50 … --color-marca-900 derivada de #2096BA (500 = #2096BA, 600 = #187a99, 700 = #0a6a8a, 300 = #5FB8D4), y --color-tinta (#171A1D), --color-tinta-2 (#5B6470), --color-tinta-3 (#8A929C), --color-linea (#EBEEF1), --color-linea-fuerte (#D5DBE1).
@@ -233,10 +233,10 @@ Al terminar la oleada 3: borra de paleta.ts lo marcado @deprecated y los re-expo
 ### 6.1 Prompt (copiar y pegar)
 
 ```text
-Haz que Global Effect Nexus se sienta y rinda como app web. Sigue docs/prompts/rediseno-app-web.md §6.
+Haz que Portal GlobalEffect se sienta y rinda como app web. Sigue docs/prompts/rediseno-app-web.md §6.
 
 1. Estados de ruta: añade en src/app/[locale]/(portal)/ un loading.tsx genérico (skeleton de EncabezadoPagina + 3 StatCard + lista), un error.tsx (EstadoVacio con "Reintentar" que llama a reset(), sin exponer el error) y un not-found.tsx. Igual para (auth) y para la landing. Las pantallas de la Fase 5 ya traen su loading.tsx específico.
-2. Instalable (PWA ligera): src/app/manifest.ts con name, short_name "GE Nexus", start_url "/es/dashboard", display "standalone", background_color y theme_color #FFFFFF, iconos 192/512 y maskable generados con sharp desde el logo (script scripts/generar-iconos-app.mjs, sin dependencias nuevas). apple-touch-icon. NO añadas service worker todavía (las páginas dependen de sesión y datos frescos); deja la nota en docs/estado/pendientes.md.
+2. Instalable (PWA ligera): src/app/manifest.ts con name, short_name "GlobalEffect", start_url "/es/dashboard", display "standalone", background_color y theme_color #FFFFFF, iconos 192/512 y maskable generados con sharp desde el logo (script scripts/generar-iconos-app.mjs, sin dependencias nuevas). apple-touch-icon. NO añadas service worker todavía (las páginas dependen de sesión y datos frescos); deja la nota en docs/estado/pendientes.md.
 3. Imágenes: quedan 5 <img> (perfil/page.tsx, formulario-perfil.tsx, formulario-edicion-expediente.tsx, sidebar.tsx, seccion-noticias.tsx). Los que muestran la vista previa de un archivo recién elegido (blob:) se quedan como <img>, con un comentario que lo explique; los que pintan imágenes guardadas (avatar de la barra, noticias) pasan a next/image con sizes correctos (configura images.remotePatterns para el dominio de Supabase Storage). Hero de la landing con priority y placeholder blur.
 4. Frontera cliente/servidor: hay 54 archivos "use client". Revisa cada uno y baja la directiva al componente hoja que de verdad necesita estado o eventos. Objetivo: que layouts y páginas sean de servidor.
 5. Carga diferida: next/dynamic con ssr:false para el globo (cobe), recharts y el event-manager del calendario, cada uno con su skeleton.

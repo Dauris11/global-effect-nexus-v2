@@ -1,6 +1,6 @@
 ================================================================
   MÓDULOS POR PORTAL — FUNCIONES DE CADA UNO
-  Documento descriptivo del sistema Global Effect Nexus
+  Documento descriptivo del sistema Portal GlobalEffect
   Fecha: 2026-08-08 · Actualizado: 2026-10-24 (fin de los cursos técnicos)
 ================================================================
 
@@ -8,7 +8,7 @@
   INTRODUCCIÓN
 ══════════════════════════════════════════════════════════════════
 
-Global Effect Nexus es el ERP institucional de la Fundación: un
+Portal GlobalEffect es el ERP institucional de la Fundación: un
 sistema de gestión (académico, expedientes, patrocinio,
 operaciones, finanzas, solicitudes y aprobaciones) con el portal
 del estudiante integrado. Se organiza en 5 portales por rol +

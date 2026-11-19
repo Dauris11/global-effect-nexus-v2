@@ -68,3 +68,32 @@ Deja los archivos en una carpeta fuera del repositorio (tienen datos
 personales de estudiantes; no se suben a git) y dime la ruta, o pégalos en el
 chat. Con **A** completa arranco la fase 4; con **B** la fase 3 usa tus reglas
 en vez de valores por defecto.
+
+## E. Para activar las cartas a patrocinadores (fase 7a)
+
+El sistema ya recibe cartas por un webhook; falta conectarlo a un buzón real.
+Eso depende de tu infraestructura, así que **la decisión es tuya**:
+
+- [ ] **Qué buzón recibe las cartas** y cómo se conecta. Opciones: (a) un flujo de
+      n8n con disparador de Gmail/IMAP que llame a `POST /api/correo/entrante`;
+      (b) el correo entrante de Resend (requiere un dominio y DNS);
+      (c) un reenvío de Google Workspace a un servicio que llame al webhook.
+      Cualquiera debe mandar `Authorization: Bearer <CORREO_ENTRANTE_SECRET>` y
+      `message_id`, `from`, `subject`, `text`/`html`, `received_at` y, si puede,
+      el resultado SPF/DKIM/DMARC en `authentication`.
+- [ ] Definir en el servidor `CORREO_ENTRANTE_SECRET` y `CRON_SECRET`, y
+      `RESEND_API_KEY` + `RESEND_FROM` reales (hoy no están; sin ellos los
+      correos se quedan en cola y no salen). Programar un cron que llame a
+      `GET /api/cron/correos` cada pocos minutos.
+- [ ] Idioma de cada patrocinador (por defecto inglés): revísalo en
+      `/patrocinadores`.
+- [ ] ¿«Antes del 20» incluye el 20? (hoy sí, hasta las 23:59 hora RD). ¿Una carta
+      tardía cuenta como no cumplida ese mes? (hoy sí.)
+- [ ] ¿Reenvío automático de las cartas limpias o aprobación de administración?
+      (hoy aprobación.)
+- [ ] ¿El patrocinador recibe solo la traducción, o también el original? (hoy solo
+      la traducción.) ¿Qué hacer con las fotos o adjuntos? (hoy se retiene la
+      carta.) ¿Y con las respuestas del patrocinador? (llegan al buzón de la
+      Fundación porque el `Reply-To` es el correo de contacto.)
+- [ ] Que cada estudiante tenga en su expediente el **correo desde el que
+      escribirá**: es lo que identifica al remitente.

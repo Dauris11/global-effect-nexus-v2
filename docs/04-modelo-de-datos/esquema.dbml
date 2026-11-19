@@ -1,5 +1,5 @@
 // ================================================================
-// Global Effect Nexus — Esquema de base de datos (DBML)
+// Portal GlobalEffect — Esquema de base de datos (DBML)
 // Generado desde PostgreSQL 17 (Supabase). Importar en https://dbdiagram.io
 // 33 tablas · 6 enums · pgvector. Refleja migraciones 0001-0013, con 0030
 // (fin de psicologia), 0031 (solicitudes y aprobaciones) y 0047 (fin de los

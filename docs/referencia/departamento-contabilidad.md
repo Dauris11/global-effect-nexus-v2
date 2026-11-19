@@ -1,4 +1,4 @@
-# Departamento de Contabilidad — Global Effect Nexus
+# Departamento de Contabilidad — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 Módulo ERP integral de contabilidad gubernamental, fiscal y financiera diseñado para la **Fundación Global Effect**, una Asociación Sin Fines de Lucro (ASFL) legalmente constituida en La Vega, República Dominicana, bajo la **Ley 122-05**.
 

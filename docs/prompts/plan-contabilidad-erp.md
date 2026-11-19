@@ -1,7 +1,7 @@
 # Departamento de Contabilidad — plan por fases (propuesta para aprobar)
 
 > **Escrito:** 2026-10-24, sobre la rama `feat/portal-contabilidad`.
-> **Responde a:** el prompt "Módulo de Contabilidad (Global Effect Nexus)" (ASFL,
+> **Responde a:** el prompt "Módulo de Contabilidad (Portal GlobalEffect)" (ASFL,
 > Ley 122-05, sin emisión de e-CF).
 > **Estado:** aprobado el 24 oct 2026 con las decisiones de la sección (d). Fase 1 en
 > curso (migración `0048`).

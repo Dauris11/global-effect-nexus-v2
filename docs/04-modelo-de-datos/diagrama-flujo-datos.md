@@ -1,4 +1,4 @@
-# Diagrama de Flujo de Datos (DFD) — Global Effect Nexus
+# Diagrama de Flujo de Datos (DFD) — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Parte de la **Cuarta Entrega** de la tesis (junto al ERD y el Diccionario de Datos).
 > Representa cómo fluyen los datos entre las entidades externas (usuarios por rol), los procesos del sistema y los almacenes de datos (tablas).
@@ -21,7 +21,7 @@ flowchart TB
   PUBLICO([Público / Visitante])
   IA{{Servicio de IA / OCR}}
 
-  SISTEMA[("SISTEMA<br/>Global Effect Nexus")]
+  SISTEMA[("SISTEMA<br/>Portal GlobalEffect")]
 
   ADMIN -->|expedientes, tareas, patrocinadores| SISTEMA
   SISTEMA -->|reportes, notificaciones| ADMIN

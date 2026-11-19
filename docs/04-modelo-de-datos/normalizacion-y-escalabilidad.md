@@ -1,4 +1,4 @@
-# Normalización, Escalabilidad e IA — Global Effect Nexus
+# Normalización, Escalabilidad e IA — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Justificación técnica del diseño de la base de datos: metodología SMART, formas normales (1NF, 2NF, 3NF), decisiones de escalabilidad y soporte nativo para Inteligencia Artificial. Documento de sustento para la memoria de tesis.
 

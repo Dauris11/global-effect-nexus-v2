@@ -1,6 +1,6 @@
 ================================================================
   PROMPT — ESTRUCTURA Y ESTILO DE LA PÁGINA DE INICIO
-  Global Effect Nexus
+  Portal GlobalEffect
 ================================================================
 
 Crea una página de inicio (landing page) para el ERP institucional

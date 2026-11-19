@@ -1,4 +1,4 @@
-# Prompt: Portales por rol como software completo (Global Effect Nexus)
+# Prompt: Portales por rol como software completo (Portal GlobalEffect)
 
 ## 1. Objetivo y principio rector
 

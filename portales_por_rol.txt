@@ -1,11 +1,11 @@
 ================================================================================
-GLOBAL EFFECT NEXUS — SISTEMA ERP INSTITUCIONAL (LA VEGA, REPÚBLICA DOMINICANA)
+PORTAL GLOBALEFFECT — SISTEMA ERP INSTITUCIONAL (LA VEGA, REPÚBLICA DOMINICANA)
 PORTALES DEL SISTEMA POR ROL Y FUNCIONES DETALLADAS
 Fecha de actualización: 24 de octubre de 2026
 Entidad: Fundación Global Effect (ASFL Ley 122-05)
 ================================================================================
 
-El sistema Global Effect Nexus organiza sus accesos, pantallas y permisos en 6
+El sistema Portal GlobalEffect organiza sus accesos, pantallas y permisos en 6
 portales especializados según el rol asignado a cada usuario, más herramientas
 transversales compartidas. El control de acceso está gobernado por RBAC estricto
 (Role-Based Access Control) a nivel de servidor, rutas y base de datos.
@@ -198,7 +198,7 @@ Disponibles para todos los usuarios autenticados según sus permisos funcionales
   peticiones administrativas, gastos y justificaciones.
 - Agenda Institucional de Reuniones: Herramienta transversal para convocar y participar
   en reuniones presenciales o virtuales con levantamiento de minutas y acuerdos.
-- Asistente de Inteligencia Artificial (Nexus AI): Widget flotante disponible en todas
+- Asistente de Inteligencia Artificial (Elly AI): Widget flotante disponible en todas
   las pantallas para responder dudas del sistema, navegar y procesar datos.
 - Mi Perfil: Gestión individual de datos personales, credenciales y fotografía.
 ================================================================================

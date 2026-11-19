@@ -27,7 +27,8 @@ la siguiente.
 | 4 | Importaciones con IA/OCR: récord de notas de la academia, pénsum en PDF, listado de notas del cuatrimestre (se empareja por matrícula y luego nombre; **siempre pasa por una pantalla de revisión**, nunca escribe notas directo) | Récord de notas, pénsum y listado de notas | Esperando documentos |
 | 5 | Servicio mensual: foto del estudiante → aprobación de administración → cumplió / no cumplió por mes en el expediente (extiende `registro_servicio`) | — | Pendiente |
 | 6 | Reunión mensual: lista de activos, asistencia, PDF exportable, conteo de inasistencias (extiende `reunion`) | — | Pendiente |
-| 7 | Sanciones y correos automáticos: umbrales configurables sobre las fases 3, 5 y 6; envío por `correo_cola` | — | Pendiente |
+| 7a | Carta mensual al patrocinador: buzón → Elly AI (revisa y traduce) → patrocinador; cumplimiento derivado en la planilla | Elegir el buzón y conectarlo (ver `entregables-expediente.md`) | **Hecha** (migración `0092`) |
+| 7b | Sanciones: umbrales configurables sobre las fases 3, 5 y 6 | Reglas de sanción | Pendiente |
 
 ## Decisiones tomadas
 

@@ -1,4 +1,4 @@
-# Dependencias y comandos de instalación — Global Effect Nexus
+# Dependencias y comandos de instalación — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Convertido de `docs/referencia/dependencias.md` (2026-10-03) sin cambiar su contenido. Es la
 > fotografía del **Sprint 0** (julio 2026): las versiones y varias librerías

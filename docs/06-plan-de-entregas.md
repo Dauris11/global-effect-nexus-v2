@@ -1,6 +1,6 @@
-# Plan Maestro de Generación de Entregas — Global Effect Nexus
+# Plan Maestro de Generación de Entregas — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
-Este documento sirve como guía y conjunto de instrucciones estructuradas para que **Claude** (o cualquier otro asistente de IA) genere de manera automatizada y precisa los documentos correspondientes a las entregas restantes (**Segunda a Sexta**) del proyecto de grado **Global Effect Nexus**, basándose fielmente en el código de base de datos y la arquitectura técnica ya implementados.
+Este documento sirve como guía y conjunto de instrucciones estructuradas para que **Claude** (o cualquier otro asistente de IA) genere de manera automatizada y precisa los documentos correspondientes a las entregas restantes (**Segunda a Sexta**) del proyecto de grado **Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect**, basándose fielmente en el código de base de datos y la arquitectura técnica ya implementados.
 
 ---
 
@@ -38,7 +38,7 @@ A continuación, se presentan los prompts exactos diseñados para que se los env
 > **Contexto:** Copia este prompt tal cual para obtener el documento completo de la Segunda Entrega.
 
 ```markdown
-Actúa como un Ingeniero de Software experto redactando un documento de tesis de grado. Necesito que generes la "Segunda Entrega" del proyecto "Global Effect Nexus" (plataforma integral de gestión para la Fundación Global Effect) siguiendo estrictamente el estándar de la guía metodológica adjunta.
+Actúa como un Ingeniero de Software experto redactando un documento de tesis de grado. Necesito que generes la "Segunda Entrega" del proyecto "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect" (plataforma integral de gestión para la Fundación Global Effect) siguiendo estrictamente el estándar de la guía metodológica adjunta.
 
 Para redactarlo, utiliza los siguientes datos del proyecto que ya están implementados:
 - Objetivo general del sistema: Diseñar e implementar una plataforma integral que centralice el control de estudiantes, expedientes académicos, patrocinadores, contabilidad, portales de usuario por rol (RBAC), consultas seguras mediante SQL parametrizado a mano sobre PostgreSQL, y asistentes de inteligencia artificial (OCR y RAG).
@@ -72,7 +72,7 @@ Por favor, genera un documento estructurado en markdown con las siguientes secci
 > **Contexto:** Copia este prompt para redactar la Tercera Entrega (Objetivos Específicos, Marco Teórico y Seguridad).
 
 ```markdown
-Actúa como un experto en ciberseguridad y arquitectura de software. Genera la "Tercera Entrega" para el proyecto "Global Effect Nexus" siguiendo los lineamientos académicos correspondientes.
+Actúa como un experto en ciberseguridad y arquitectura de software. Genera la "Tercera Entrega" para el proyecto "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect" siguiendo los lineamientos académicos correspondientes.
 
 Para el contenido técnico, apóyate en estas decisiones reales del proyecto:
 - Arquitectura: Next.js (App Router) + PostgreSQL (Supabase). No usamos ORM (como Prisma o Drizzle) para garantizar el control total de la base de datos y optimizar consultas, escribiendo SQL parametrizado de forma manual para mitigar riesgos de Inyección SQL.
@@ -104,7 +104,7 @@ Escribe las siguientes secciones:
 > **Contexto:** Esta entrega es de diagramación. Los diccionarios y diagramas relacionales ya existen en la carpeta `docs/04-modelo-de-datos/`. Este prompt le pide a Claude generar los diagramas de flujo de datos (DFD) faltantes y estructurar la entrega.
 
 ```markdown
-Actúa como un Analista de Sistemas de Software. Genera la "Cuarta Entrega" del proyecto "Global Effect Nexus".
+Actúa como un Analista de Sistemas de Software. Genera la "Cuarta Entrega" del proyecto "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect".
 
 Esta entrega consta de tres partes:
 1. Diagrama Entidad Relación (ERD).
@@ -115,7 +115,7 @@ Para realizarla:
 - Toma como entrada el código Mermaid y las relaciones descritas en los archivos 'docs/04-modelo-de-datos/diagrama-entidad-relacion.md' y el diccionario en 'docs/04-modelo-de-datos/diccionario-de-datos.md'.
 - Tu tarea principal es:
   1. Diseñar el Diagrama de Flujo de Datos (DFD) en dos niveles usando notación Mermaid:
-     - DFD Nivel 0 (Diagrama de Contexto): Muestra la interacción de los actores externos (Estudiante, Docente, Patrocinador, Contabilidad, Administrador / Dirección) con el sistema central "Global Effect Nexus".
+     - DFD Nivel 0 (Diagrama de Contexto): Muestra la interacción de los actores externos (Estudiante, Docente, Patrocinador, Contabilidad, Administrador / Dirección) con el sistema central "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect".
      - DFD Nivel 1: Muestra los procesos principales del sistema: (1.0 Autenticación y RBAC, 2.0 Gestión de Expedientes con OCR, 3.0 Control Académico, 4.0 Solicitudes y Aprobaciones, 5.0 Registro Financiero y Contable, 6.0 Procesamiento de Consultas de IA).
   2. Redactar una explicación teórica clara de cada nivel y flujo de datos representados en los diagramas.
   3. Estructurar el documento final para que el usuario pueda insertar el ERD y el Diccionario de Datos existentes de forma integrada.
@@ -127,7 +127,7 @@ Para realizarla:
 > **Contexto:** Genera los estándares, reglas de negocio detalladas y el diseño lógico de reportes.
 
 ```markdown
-Actúa como un Diseñador de Software y Administrador de Bases de Datos Senior. Genera la "Quinta Entrega" del proyecto "Global Effect Nexus" de acuerdo con los siguientes requerimientos:
+Actúa como un Diseñador de Software y Administrador de Bases de Datos Senior. Genera la "Quinta Entrega" del proyecto "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect" de acuerdo con los siguientes requerimientos:
 
 1. ESTÁNDARES DEL SISTEMA:
    - Define las directrices técnicas del proyecto:
@@ -157,10 +157,10 @@ Actúa como un Diseñador de Software y Administrador de Bases de Datos Senior. 
 > **Contexto:** Cierre formal del proyecto integrador (Introducción, Conclusiones y Bibliografía).
 
 ```markdown
-Actúa como un Académico de Ciencias de la Computación. Genera la "Sexta Entrega" y cierre metodológico de la tesis "Global Effect Nexus" que contiene:
+Actúa como un Académico de Ciencias de la Computación. Genera la "Sexta Entrega" y cierre metodológico de la tesis "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect" que contiene:
 
 1. INTRODUCCIÓN:
-   - Redacta una introducción formal de 3 a 4 párrafos que contextualice el problema de la Fundación Global Effect en la República Dominicana (el crecimiento de sus operaciones académicas, la necesidad de digitalización y seguridad de datos, y cómo "Global Effect Nexus" actúa como solución integral bajo arquitectura moderna).
+   - Redacta una introducción formal de 3 a 4 párrafos que contextualice el problema de la Fundación Global Effect en la República Dominicana (el crecimiento de sus operaciones académicas, la necesidad de digitalización y seguridad de datos, y cómo "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect" actúa como solución integral bajo arquitectura moderna).
 
 2. CONCLUSIÓN:
    - Escribe las conclusiones del proyecto divididas por áreas:

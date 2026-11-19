@@ -1,4 +1,4 @@
-# Documentación — Global Effect Nexus
+# Documentación — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 ERP institucional de la **Fundación Global Effect**: gestión académica, expedientes, patrocinio, operaciones, finanzas y solicitudes y aprobaciones, con el **portal del estudiante integrado**.
 Toda la documentación del proyecto está centralizada en esta carpeta: **un archivo por tema**, sin duplicados.

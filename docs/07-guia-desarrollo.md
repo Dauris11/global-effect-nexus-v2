@@ -1,4 +1,4 @@
-# Guía de Desarrollo — Global Effect Nexus
+# Guía de Desarrollo — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 Convenciones y flujos de trabajo del proyecto. Léela antes de escribir código. Los estándares aquí descritos ya están aplicados desde la fase de base de datos.
 

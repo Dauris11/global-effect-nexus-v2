@@ -1,10 +1,10 @@
-# Visión y Alcance — Global Effect Nexus
+# Visión y Alcance — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Documento de visión del proyecto: propósito, alcance funcional, roles y estado. Última actualización: 2026-11-19 (transporte con historial GPS y plan del expediente académico).
 
 ## 1. Visión general
 
-**Global Effect Nexus** es el **ERP institucional** de la **Fundación Global Effect** (La Vega, República Dominicana), con el **portal del estudiante integrado**. Centraliza en un solo sistema integral la gestión académica, expedientes administrativos, patrocinio, operaciones, gestión de proyectos y tareas, inventario físico de activos con códigos QR, finanzas y contabilidad formal bajo normativa de la DGII, y las solicitudes y aprobaciones institucionales.
+**Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect** es el **ERP institucional** de la **Fundación Global Effect** (La Vega, República Dominicana), con el **portal del estudiante integrado**. Centraliza en un solo sistema integral la gestión académica, expedientes administrativos, patrocinio, operaciones, gestión de proyectos y tareas, inventario físico de activos con códigos QR, finanzas y contabilidad formal bajo normativa de la DGII, y las solicitudes y aprobaciones institucionales.
 
 > **Directrices de alcance consolidadas (octubre 2026):**
 > 1. **Extinción definitiva de Psicología y Expedientes Administrativos:** El departamento de psicología no existe. Los expedientes de estudiantes son estrictamente administrativos y socioeducativos. Las antiguas citas de psicología se transforman en una **Agenda de Reuniones Institucionales** disponible para todo el personal, donde tanto estudiantes (tutorías, asesorías, seguimiento) como colaboradores internos pueden coordinar reuniones.

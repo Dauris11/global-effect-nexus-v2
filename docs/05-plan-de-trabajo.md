@@ -1,4 +1,4 @@
-# Plan de Trabajo — Global Effect Nexus
+# Plan de Trabajo — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Plan de 14 sprints (~7 meses) y próximos pasos. Detalle de las 527 subtareas en [`fuentes-datos/sprints-clickup.csv`](fuentes-datos/sprints-clickup.csv). El estado real de cada pantalla está en [`docs/estado/progreso.md`](estado/progreso.md).
 
@@ -104,7 +104,7 @@ Cada módulo = migración (ya lista) + queries parametrizadas + validación Zod 
 | Reportes | `server/reportes/` | agregaciones Proyectos/Académico/Contabilidad | `operaciones/academico/finanzas.leer` |
 | Storage | `server/storage.ts` | subida a Supabase Storage + tabla `documento` | (sesión) |
 
-Integraciones backend: `lib/anthropic.ts` (chat/traducción/OCR), `lib/email.ts` (Resend), `lib/integrations.ts` (webhook n8n → CRM GENIALiA).
+Integraciones backend: `lib/gemini.ts` y `lib/gemini-cliente.ts` (chat/traducción/OCR), `lib/email.ts` (Resend), `lib/integrations.ts` (webhook n8n → CRM GENIALiA).
 
 ---
 

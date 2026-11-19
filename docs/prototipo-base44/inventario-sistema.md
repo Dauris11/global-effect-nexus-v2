@@ -1,5 +1,5 @@
 ================================================================
-  GLOBAL EFFECT NEXUS — INVENTARIO COMPLETO DEL SISTEMA
+  PORTAL GLOBALEFFECT — INVENTARIO COMPLETO DEL SISTEMA
   Páginas, Subpáginas, Login, Módulos, Formularios y Botones
   Fecha: 2026-07-02 · Revisado: 2026-10 (cambio de alcance a ERP)
 ================================================================

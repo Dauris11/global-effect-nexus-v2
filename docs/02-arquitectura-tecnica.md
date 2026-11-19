@@ -1,4 +1,4 @@
-# Arquitectura Técnica — Global Effect Nexus
+# Arquitectura Técnica — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Arquitectura de la aplicación: capas, estructura de carpetas y decisiones clave. La base de datos se detalla en [03 · Modelo de datos](04-modelo-de-datos/).
 
@@ -27,7 +27,7 @@
 ## 2. Estructura de carpetas objetivo (Next.js)
 
 ```
-global-effect-nexus/
+portal-globaleffect/
 ├─ db/                        # migraciones .sql, seed.sql, README (✅ implementado)
 ├─ docs/                      # documentación / entregas (✅ este directorio)
 ├─ messages/                  # i18n: es.json, en.json

@@ -1,4 +1,4 @@
-# Global Effect Nexus — reglas para agentes
+# Portal GlobalEffect — reglas para agentes
 
 ERP institucional de la Fundación Global Effect (La Vega, RD) con portal del
 estudiante integrado. Proyecto final de grado (UCATECI). Next.js 16 (App Router,
@@ -7,6 +7,15 @@ estudiante integrado. Proyecto final de grado (UCATECI). Next.js 16 (App Router,
 
 `CLAUDE.md` y `AGENTS.md` dicen lo mismo: uno lo lee Claude Code y el otro
 Antigravity/Gemini. Si cambias uno, cambia el otro en el mismo commit.
+
+## Nombres (no cambiar sin avisar)
+
+- **Proyecto / tesis:** «Sistema Web Inteligente para la Gestión Académica y
+  Administrativa de la Fundación Global Effect».
+- **Producto y portal:** «Portal GlobalEffect» (según el subdominio): la parte
+  administrativa ERP y el portal del estudiante y del docente para las clases.
+- **Asistente de IA:** «Elly AI». El nombre «Nexus» ya no existe: no lo
+  reintroduzcas en textos, código, documentos ni datos.
 
 ## Comandos
 

@@ -4,7 +4,7 @@
 
 ---
 
-# GLOBAL EFFECT NEXUS
+# SISTEMA WEB INTELIGENTE PARA LA GESTIÓN ACADÉMICA Y ADMINISTRATIVA DE LA FUNDACIÓN GLOBAL EFFECT
 ### Sistema Web Inteligente de Planificación de Recursos Empresariales (ERP) y Gestión Académica con Portal del Estudiante Integrado
 
 **Sustentantes:**
@@ -33,7 +33,7 @@
 
 ## 1. Descripción General del Proyecto
 
-El presente proyecto consiste en la investigación, análisis, diseño y desarrollo de **Global Effect Nexus**, un sistema integral de Planificación de Recursos Empresariales (ERP) con portal del estudiante integrado, arquitectura de control patrimonial mediante códigos QR y subsistema contable ajustado estrictamente a la normativa de la Dirección General de Impuestos Internos (DGII) de la República Dominicana.
+El presente proyecto consiste en la investigación, análisis, diseño y desarrollo de **Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect**, un sistema integral de Planificación de Recursos Empresariales (ERP) con portal del estudiante integrado, arquitectura de control patrimonial mediante códigos QR y subsistema contable ajustado estrictamente a la normativa de la Dirección General de Impuestos Internos (DGII) de la República Dominicana.
 
 La plataforma tiene como propósito unificar, automatizar y blindar los flujos de trabajo administrativos, académicos, financieros y operativos de la **Fundación Global Effect**, una organización sin fines de lucro (ONG) dedicada a la formación integral, liderazgo y rescate de jóvenes en condiciones de vulnerabilidad en la provincia de La Vega y zonas aledañas.
 
@@ -69,13 +69,13 @@ La Fundación Global Effect ha experimentado un incremento exponencial en su mat
 5. **Aislamiento en la Docencia en Liceos y Talleres Virtuales:** Los facilitadores del programa Habitudes en centros educativos públicos carecían de un repositorio común para sincronizar sus presentaciones multimedia y subir evidencias fotográficas en tiempo real desde sus teléfonos móviles. Asimismo, las jornadas formativas cuatrimestrales (Global 360) carecían de un aula virtual tipo Moodle con control riguroso de fechas de entrega y límites de archivos por peso y formato.
 
 **Pregunta de Investigación:**  
-*¿De qué manera el diseño e implementación de un sistema web integral ERP inteligente (Global Effect Nexus), sustentado en Next.js, PostgreSQL y autenticación RBAC granular, optimiza el cumplimiento fiscal ante la DGII, asegura la trazabilidad patrimonial de activos mediante códigos QR, agiliza la rendición de cuentas operativa y unifica el seguimiento académico de los beneficiarios de la Fundación Global Effect?*
+*¿De qué manera el diseño e implementación de un sistema web integral ERP inteligente (Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect), sustentado en Next.js, PostgreSQL y autenticación RBAC granular, optimiza el cumplimiento fiscal ante la DGII, asegura la trazabilidad patrimonial de activos mediante códigos QR, agiliza la rendición de cuentas operativa y unifica el seguimiento académico de los beneficiarios de la Fundación Global Effect?*
 
 ---
 
 ## 3. Alcance del Proyecto (Criterios SMART)
 
-| Criterio | Dimensión | Definición Específica del Proyecto Global Effect Nexus |
+| Criterio | Dimensión | Definición Específica del Proyecto Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect |
 | :--- | :--- | :--- |
 | **S** | **Específico** *(Specific)* | Desarrollar un ERP institucional integral estructurado en **30 módulos funcionales** y **6 portales web**, que cubra: Contabilidad fiscal DGII (NCF, libros de banco, cajas chicas con desglose por billetes/monedas y alerta de fraude $\ge$ RD$200, retenciones y formatos 606/607); Inventario físico de activos fijos con etiquetas QR de alta resolución y lector móvil por cámara; Aula Virtual Global 360 estilo Moodle; Torre de Control de Tareas del empleado ("Lo que me toca hoy"); Rendición de gastos con OCR; y Hub Colaborativo Habitudes. |
 | **M** | **Medible** *(Measurable)* | Se constatará mediante: 100% de los 6 portales operativos; generación exitosa y validación sintáctica de los reportes 606 y 607 de la DGII; escaneo funcional de códigos QR en menos de 1 segundo mediante cámara móvil; y migración verificada de al menos el 30% de los expedientes históricos y transacciones durante la fase de validación (S12). |
@@ -91,7 +91,7 @@ La Fundación Global Effect ha experimentado un incremento exponencial en su mat
 Operar una entidad receptora de fondos sin un módulo contable de partida doble que valide NCFs ni controle cajas chicas expone a la institución a pasivos contingentes, pérdidas por fraude interno y cuestionamientos legales por parte del fisco dominicano. Paralelamente, la ausencia de control físico sobre herramientas de alto valor económico ponía en riesgo el patrimonio institucional.
 
 ### 4.2 Razones Técnicas y Metodológicas
-Frente al paradigma de emplear sistemas comerciales genéricos y costosos que no encajan en la realidad comunitaria, Global Effect Nexus se fundamenta en código abierto robusto:
+Frente al paradigma de emplear sistemas comerciales genéricos y costosos que no encajan en la realidad comunitaria, Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect se fundamenta en código abierto robusto:
 - **PostgreSQL 17 nativo:** Manejo transaccional estricto (ACID), integridad referencial en cascada, esquemas dedicados (`contabilidad`, `public`) y búsquedas vectoriales con `pgvector`.
 - **Acceso a datos sin ORM (`node-postgres`):** Permite auditoría visual del 100% de las consultas SQL, optimización a nivel de milisegundos y erradicación total de vulnerabilidades por inyección SQL mediante parámetros obligatorios (`$1, $2, ...`).
 - **Control de Acceso Basado en Roles (RBAC):** La seguridad de datos sensibles (expedientes de menores, comprobantes financieros, registros de auditoría) queda blindada en la capa del servidor mediante políticas de sesión inalterables.
@@ -106,7 +106,7 @@ Constituye un Proyecto Integrador de Conocimientos que sintetiza las disciplinas
 
 ## 5. Posicionamiento del Proyecto
 
-Global Effect Nexus se posiciona bajo el lema institucional:
+Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect se posiciona bajo el lema institucional:
 > **"Menos tiempo administrando papeles, más tiempo transformando vidas con transparencia y rigor técnico."**
 
 Su propuesta de valor se articula en 4 pilares:
@@ -138,7 +138,7 @@ El desarrollo se planificó en **14 sprints quincenales** (aproximadamente 7 mes
 
 ```mermaid
 gantt
-    title Cronograma Maestro de Sprints — Global Effect Nexus
+    title Cronograma Maestro de Sprints — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
     dateFormat  YYYY-MM-DD
     section Fase 1: Arquitectura y BD
     S0 - Planeamiento, ERD y Entorno       :done, s0, 2026-07-06, 2026-07-17
@@ -179,7 +179,7 @@ El plan de adopción y comunicación de la plataforma articula mecanismos intern
 
 ## 4. Objetivo General
 
-**Diseñar, desarrollar e implementar el sistema web inteligente de planificación de recursos empresariales (ERP) y gestión académica "Global Effect Nexus", sustentado en una arquitectura Next.js 16 y PostgreSQL 17 sin intermediación de ORM, con control de acceso basado en roles (RBAC), módulo de contabilidad formal homologado a la normativa de la DGII, trazabilidad física de activos mediante códigos QR y herramientas colaborativas de docencia y productividad, con el propósito de centralizar las operaciones de la Fundación Global Effect, blindar la rendición de cuentas financiera y optimizar el acompañamiento integral de los beneficiarios en La Vega, República Dominicana.**
+**Diseñar, desarrollar e implementar el sistema web inteligente de planificación de recursos empresariales (ERP) y gestión académica "Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect", sustentado en una arquitectura Next.js 16 y PostgreSQL 17 sin intermediación de ORM, con control de acceso basado en roles (RBAC), módulo de contabilidad formal homologado a la normativa de la DGII, trazabilidad física de activos mediante códigos QR y herramientas colaborativas de docencia y productividad, con el propósito de centralizar las operaciones de la Fundación Global Effect, blindar la rendición de cuentas financiera y optimizar el acompañamiento integral de los beneficiarios en La Vega, República Dominicana.**
 
 ---
 
@@ -204,7 +204,7 @@ El plan de adopción y comunicación de la plataforma articula mecanismos intern
 Las aplicaciones de página única (SPA) tradicionales descargan pesados paquetes de JavaScript al cliente y exponen APIs REST o GraphQL públicas que incrementan la superficie de ataque. Next.js 16 con App Router adopta una arquitectura basada en **React Server Components (RSC)** y **Server Actions**, ejecutando la lógica de negocio, validaciones y consultas SQL directamente en el entorno seguro del servidor. Esto garantiza que las credenciales de base de datos nunca viajen al navegador y reduce la latencia en la interacción con el usuario.
 
 ### 2.2 PostgreSQL 17 sin ORM (Consultas SQL Parametrizadas)
-Los Mapeadores Objeto-Relacional (ORMs) convencionales introducen capas de abstracción innecesarias, generan consultas SQL subóptimas y complican la implementación de transacciones complejas. En Global Effect Nexus, la comunicación con PostgreSQL se gestiona mediante el cliente `pg` (`node-postgres`) utilizando **únicamente consultas parametrizadas manuales** (`$1, $2, ...`), garantizando:
+Los Mapeadores Objeto-Relacional (ORMs) convencionales introducen capas de abstracción innecesarias, generan consultas SQL subóptimas y complican la implementación de transacciones complejas. En Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect, la comunicación con PostgreSQL se gestiona mediante el cliente `pg` (`node-postgres`) utilizando **únicamente consultas parametrizadas manuales** (`$1, $2, ...`), garantizando:
 - Protección matemática y estructural contra inyecciones SQL.
 - Inspección directa del plan de ejecución (`EXPLAIN ANALYZE`).
 - Manejo granular de transacciones ACID (`BEGIN`, `COMMIT`, `ROLLBACK`) en transferencias contables y liquidación de cajas chicas.
@@ -257,7 +257,7 @@ Para impedir la alteración retroactiva de pólizas contables y cuadres de caja,
 
 ## 1. Diagrama Entidad-Relación (ERD)
 
-El modelo de datos de Global Effect Nexus reside en PostgreSQL 17 (Supabase) estructurado en dos esquemas principales: `public` y `contabilidad`. Cuenta con **más de 70 tablas relacionales** organizadas en 11 dominios operativos:
+El modelo de datos de Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect reside en PostgreSQL 17 (Supabase) estructurado en dos esquemas principales: `public` y `contabilidad`. Cuenta con **más de 70 tablas relacionales** organizadas en 11 dominios operativos:
 
 ```mermaid
 erDiagram
@@ -310,7 +310,7 @@ erDiagram
 ## 2. Diagramas de Flujo de Datos (DFD)
 
 ### 2.1 DFD Nivel 0 — Diagrama de Contexto General
-Muestra la interacción de los 6 roles de usuarios, los patrocinadores y las entidades de apoyo con la caja negra de Global Effect Nexus:
+Muestra la interacción de los 6 roles de usuarios, los patrocinadores y las entidades de apoyo con la caja negra de Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect:
 
 ```mermaid
 flowchart TD
@@ -325,7 +325,7 @@ flowchart TD
         EXT2[Oficina Virtual DGII - Reportes 606/607]
     end
 
-    SYS((GLOBAL EFFECT NEXUS\nERP Institucional))
+    SYS((PORTAL GLOBALEFFECT\nERP Institucional))
 
     U1 <-->|Políticas, Proyectos por Rol, Aprobaciones| SYS
     U2 <-->|Torre de Control 'Lo que me toca hoy', Rendición Gastos OCR| SYS
@@ -526,7 +526,7 @@ ACT-0014    Generador Eléctrico Honda 5.5KW  GEN-1104   Ramón Morales  Manteni
 
 ## 1. Introducción General
 
-El presente documento consolida la investigación, el diseño conceptual, la arquitectura física y los estándares de ingeniería implementados en el desarrollo de **Global Effect Nexus**, la plataforma web integral de Planificación de Recursos Empresariales (ERP) y Gestión Académica desarrollada como Proyecto Final de Grado (Proyecto Integrador de Conocimientos) en la Escuela de Ingeniería en Sistemas y Computación de la Universidad Católica del Cibao (UCATECI).
+El presente documento consolida la investigación, el diseño conceptual, la arquitectura física y los estándares de ingeniería implementados en el desarrollo de **Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect**, la plataforma web integral de Planificación de Recursos Empresariales (ERP) y Gestión Académica desarrollada como Proyecto Final de Grado (Proyecto Integrador de Conocimientos) en la Escuela de Ingeniería en Sistemas y Computación de la Universidad Católica del Cibao (UCATECI).
 
 La investigación surge de la necesidad real de modernización tecnológica experimentada por la **Fundación Global Effect Inc.** en La Vega, una entidad cuya loable labor social requería superar la vulnerabilidad de sus registros manuales y hojas de cálculo desvinculadas. La complejidad de sus operaciones —que abarca la administración de becas universitarias, docencia comunitaria en liceos, talleres industriales, rendición de gastos en efectivo y cumplimiento estricto de las leyes impositivas dominicanas ante la DGII— demandaba un software robusto, auditable y concebido a la medida de su estructura institucional.
 
@@ -536,13 +536,13 @@ A lo largo de los seis entregables académicos que integran este informe, se exp
 
 ## 2. Conclusiones
 
-La culminación del diseño y desarrollo de **Global Effect Nexus** permite extraer las siguientes conclusiones fundamentales desde la perspectiva de la ingeniería de software:
+La culminación del diseño y desarrollo de **Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect** permite extraer las siguientes conclusiones fundamentales desde la perspectiva de la ingeniería de software:
 
 1. **Eficiencia y Seguridad en el Manejo de Datos Relacionales:** Se comprobó que prescindir de un ORM genérico en favor de consultas SQL parametrizadas a mano sobre **PostgreSQL 17** proporciona un control absoluto de la integridad referencial, mitiga de manera nativa la inyección de código malicioso y permite un rendimiento superior a milisegundos en consultas analíticas de alta concurrencia.
 2. **Rigor Normativo y Blindaje Fiscal:** La estructuración del esquema `contabilidad` con validación sintáctica de Números de Comprobante Fiscal (NCF) y la generación automática de los Formatos 606 y 607 resuelve de raíz el riesgo de contingencias fiscales ante la DGII, dotando a la institución de un estándar de transparencia equiparable al de grandes corporaciones comerciales.
 3. **Control Patrimonial Mediante Tecnologías Web Móviles:** La implementación del módulo de inventario con códigos QR matriciales (ISO/IEC 18004) demostró que es viable ejecutar levantamientos físicos y auditorías en tiempo real a través de navegadores web móviles estándar sin incurrir en los elevados costes de licenciamiento y mantenimiento de aplicaciones nativas en tiendas cerradas.
 4. **Productividad Diaria y Rendición de Cuentas Ágil:** La creación de la "Torre de Control del Empleado" y el formulario de rendición de gastos con extracción asistida por OCR eliminaron los cuellos de botella en la liquidación de fondos de caja chica, permitiendo que el personal administrativo y docente concentre su esfuerzo en la transformación social y mentoría de los beneficiarios.
-5. **Valor Académico e Impacto Social del Proyecto:** Global Effect Nexus valida que el rigor metodológico exigido por la Escuela de Ingeniería en Sistemas y Computación de UCATECI se traduce en herramientas de alto impacto práctico para el desarrollo comunitario de La Vega y de la República Dominicana.
+5. **Valor Académico e Impacto Social del Proyecto:** Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect valida que el rigor metodológico exigido por la Escuela de Ingeniería en Sistemas y Computación de UCATECI se traduce en herramientas de alto impacto práctico para el desarrollo comunitario de La Vega y de la República Dominicana.
 
 ---
 

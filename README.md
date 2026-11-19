@@ -1,18 +1,31 @@
-# Global Effect Nexus
+# Portal GlobalEffect
+
+**Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect** — nombre formal del proyecto. «Portal GlobalEffect» es el nombre del producto (parte administrativa ERP y portal del estudiante y del docente) y «Elly AI», su asistente de IA.
 
 **ERP institucional** de la **Fundación Global Effect** (La Vega, República Dominicana): sistema de gestión (académico, expedientes, patrocinio, operaciones, finanzas, solicitudes y aprobaciones) con **portal del estudiante integrado**. Proyecto final de grado — UCATECI.
 
 > **Cambio de alcance (octubre 2026):** la Fundación eliminó el departamento de Psicología. Su portal, sus citas y sus notas se retiraron (migración `0030_fin_de_psicologia.sql`); el expediente del estudiante pasa a manos de administración, y el módulo **Solicitudes y aprobaciones** (migración `0031`) ocupa el lugar de la cita de psicología.
 
-> **Estado (2026-08-06):** base de datos desplegada en Supabase (38 tablas, RBAC, pgvector) y app en **Next.js 16 + Tailwind 4** con **Supabase Auth + RBAC**, i18n `es/en` y capa `server/` por dominio.
+## Dónde ver el avance (para quien se une al proyecto)
+
+| Qué | Dónde |
+|---|---|
+| **Qué falta y qué se cerró** (la lista viva) | [`docs/estado/pendientes.md`](docs/estado/pendientes.md) |
+| **Por qué se decidió cada cosa** (bitácora de la tesis) | [`docs/estado/bitacora-tesis.md`](docs/estado/bitacora-tesis.md) |
+| Estado real de cada pantalla | [`docs/estado/progreso.md`](docs/estado/progreso.md) |
+| Plan del expediente académico por fases y **lo que falta entregar para cerrarlo** | [`docs/estado/plan-expediente-academico.md`](docs/estado/plan-expediente-academico.md) · [`entregables-expediente.md`](docs/estado/entregables-expediente.md) |
+| Toda la documentación (visión, módulos, datos, plan, guía de desarrollo) | [`docs/README.md`](docs/README.md) |
+| Reglas para los agentes de IA que programan (Claude Code, Antigravity) | [`CLAUDE.md`](CLAUDE.md) · [`AGENTS.md`](AGENTS.md) |
+
+> **Estado (2026-11-19):** base de datos en Supabase (**85 tablas** en `public`, 93 migraciones, RBAC, pgvector) y app en **Next.js 16 + React 19 + Tailwind 4** con **Supabase Auth + RBAC** de ocho roles (`super_admin`, `admin`, `docente`, `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes`, `chofer`), i18n `es/en` y capa `server/` por dominio.
 >
-> **Sistema visual definido.** Turquesa institucional `#2096BA` sobre base slate, una sola familia tipográfica (Inter) y los seis colores de rol. La norma está escrita en [`docs/09-sistema-visual.md`](docs/09-sistema-visual.md), que es la fuente de verdad: si una pantalla y el documento no coinciden, gana el documento.
+> **Hecho:** landing pública y login por portal; portales de estudiante, docente, administrativo y contabilidad; Académico y Global Effect 360 (aula virtual); Expedientes con OCR y **historial de etapas**; Contabilidad dominicana (ASFL); Solicitudes y aprobaciones; Patrocinadores; Servicios mensuales; **Transporte** con mapa en vivo, GPS del chofer y recorrido real; Habitudes; Inventario con QR; y **Elly AI**.
 >
-> **Estado real de cada pantalla:** [`docs/estado/progreso.md`](docs/estado/progreso.md).
+> **Elly AI** (asistente por rol) funciona con **Gemini** y tiene capas de seguridad (alcance solo de la Fundación, rechazo de código/JSON/órdenes, datos como no confiables). La base de conocimiento la edita administración. **Cartas mensuales a patrocinadores:** el agente revisa y traduce lo que los becados escriben al buzón de la Fundación, y el cumplimiento del mes se deriva solo en la planilla de servicios; falta conectar un buzón real (ver `entregables-expediente.md`, sección E).
 >
-> **Pantallas terminadas:** landing pública (hero configurable, acceso a los seis portales, eventos y blog), login general y **un login por portal**, los **portales por rol** (estudiante, docente, administrativo y contabilidad), Académico, Expedientes con **OCR por IA**, Contabilidad, Administrativo (S9), **Solicitudes y aprobaciones** y Calendario.
+> **Sistema visual:** norma en [`docs/09-sistema-visual.md`](docs/09-sistema-visual.md) (turquesa `#2096BA`, Inter; si una pantalla y el documento no coinciden, gana el documento).
 >
-> Build, tipos, lint e i18n en verde.
+> Antes de dar algo por terminado: `npm run lint && npm run build && npm run i18n:check && npm run audit:ui`.
 
 ---
 
@@ -45,8 +58,8 @@ git --version
 ## Paso 1 — Clonar el repositorio
 
 ```bash
-git clone https://github.com/Dauris11/Global-Effect-Nexus.git
-cd Global-Effect-Nexus
+git clone https://github.com/Dauris11/global-effect-nexus-v2.git
+cd global-effect-nexus-v2
 ```
 
 El repositorio es **privado**. Si `git clone` pide credenciales, autenticarse antes:
@@ -85,9 +98,17 @@ cp .env.example .env.local
 | `SUPABASE_STORAGE_BUCKET` | Bucket de documentos y expedientes | `documentos` |
 | `RESEND_API_KEY` · `RESEND_FROM` | Envío de correos (aviso de tarea asignada) | panel de Resend |
 | `N8N_WEBHOOK_URL` | Webhook de automatizaciones (CRM/notificaciones) | instancia de n8n |
-| `ANTHROPIC_API_KEY` · `ANTHROPIC_MODEL` | Asistentes de IA y OCR de documentos | consola de Anthropic |
+| `GEMINI_API_KEY` · `GEMINI_MODEL` | Elly AI: chat, OCR de documentos y revisión de cartas | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `CORREO_ENTRANTE_SECRET` | Secreto con el que el buzón de la Fundación llama a `/api/correo/entrante` (cartas a patrocinadores) | cualquier cadena larga y aleatoria |
+| `CRON_SECRET` | Protege `/api/cron/correos`, que vacía la cola de correos salientes | cualquier cadena larga y aleatoria |
 
-**Lo mínimo para arrancar** son las de Supabase y `DATABASE_URL`. Sin `RESEND_API_KEY`, `N8N_WEBHOOK_URL` ni `ANTHROPIC_API_KEY` la app funciona igual: solo quedan inactivos el correo, el webhook y la IA.
+**Lo mínimo para arrancar** son las de Supabase y `DATABASE_URL`. Sin `RESEND_API_KEY`, `N8N_WEBHOOK_URL` ni `GEMINI_API_KEY` la app funciona igual: solo quedan inactivos el correo, el webhook y la IA.
+
+> **Sobre la IA y los datos:** lo que Elly envía a Gemini (notas, cédulas del OCR, cartas) lo recibe Google. En la capa **gratuita** Google puede usarlo para mejorar sus productos; en el nivel de **pago** no. Con datos reales conviene la clave de un proyecto con facturación activa.
+
+### Despliegue en Vercel
+
+Las mismas variables de `.env.local` van en Vercel → Project → Settings → Environment Variables (Production y Preview; marcar las secretas como *Sensitive*; ninguna lleva el prefijo `NEXT_PUBLIC_` salvo las dos de Supabase que ya lo traen). Después de añadir o cambiar una variable hay que **redesplegar**.
 
 ## Paso 4 — Base de datos
 

@@ -1,4 +1,4 @@
-# Diccionario de Datos — Global Effect Nexus
+# Diccionario de Datos — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > **Fuente:** generado desde la base de datos en vivo (PostgreSQL 17 · Supabase). Refleja el estado desplegado por las migraciones `db/migrations/0001`–`0013`, con el cambio de alcance de octubre de 2026 aplicado: la `0030` retira las tablas de psicología y la `0031` añade el dominio de solicitudes y aprobaciones. La `0047` (24 oct 2026) retira los cursos técnicos: borra `curso`, `calificacion` y el enum `tipo_evaluacion`, y deja `tipo_estudiante` con un solo valor, `becado`.
 

@@ -1,4 +1,4 @@
-# Bitácora de decisiones — Global Effect Nexus
+# Bitácora de decisiones — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 Registro cronológico del desarrollo con fines de tesis (UCATECI). Para cada
 trabajo: **qué se pidió, qué se decidió y por qué, qué alternativas se
@@ -709,6 +709,158 @@ regenerarlo desde la base.
 probado en navegador con un viaje real, y el GPS web se suspende con el
 teléfono bloqueado (un seguimiento fiable pediría app móvil). Sin pruebas
 automatizadas del dominio.
+
+---
+
+## 19 nov 2026 — Seguridad y alcance del asistente de IA; base de conocimiento editable
+
+**Petición.** Que el administrador pueda modificar el documento de la base de
+conocimiento del asistente de estudiantes; que las acciones de la IA dependan
+del rol; que solo responda sobre la Fundación; y capas de seguridad para que no
+le inserten JSON ni código.
+
+**Qué se encontró.** Casi todo lo estructural ya existía: el agente lo elige el
+servidor según el rol (`AGENTE_POR_ROL`), cada rol tiene herramientas cerradas
+con el permiso vuelto a comprobar, las escrituras son propuestas que aprueba una
+persona y la salida se pinta como texto plano. Faltaban cuatro cosas: `admin` no
+tenía el permiso para tocar el conocimiento, un documento no se podía editar
+(solo cargar, activar o borrar), ninguna regla de alcance, y nada impedía que un
+texto con código u órdenes llegara al modelo.
+
+**Decisiones y por qué.**
+- **Permiso propio `ia.conocimiento`** (solo el agente de estudiantes) en vez de
+  darle `ia.administrar` a `admin`: éste además cambia modelos, cuotas y límites.
+  Al editar se exige permiso sobre los agentes de antes y de después, para que
+  nadie mueva un documento a un agente que no le corresponde.
+- **Editar = reemplazar los fragmentos en una transacción** con el mismo
+  `fuente_id`; hizo falta una columna `orden` (`0091`) porque los fragmentos de
+  un documento no tenían secuencia.
+- **Una sola función arma el prompt** (`ensamblarSistema`) para las cuatro rutas
+  que llaman al modelo; antes las instrucciones editables podían ir al final y
+  pisar las reglas. El bloque fijo de alcance va **último**.
+- **Rechazar, no reescribir.** Un reglamento alterado en silencio es peor que
+  uno rechazado. Aplica a preguntas y documentos.
+- **Datos como no confiables:** resultados de herramientas, fragmentos y datos
+  del portal (títulos de tareas escritos por docentes) van envueltos y con
+  nuestras etiquetas desarmadas, para que nadie «cierre» el bloque de datos.
+- **Alcance:** se mantiene la ayuda con las materias, tareas y notas del propio
+  estudiante; quitarla dejaría sin respuesta a quien estudia. **Consecuencia que
+  conviene revisar:** como las preguntas con código o SQL se rechazan (pedido
+  explícito del solicitante), un estudiante de computación puede preguntar
+  conceptos pero no pegar código para que se lo revisen. Es una decisión
+  reversible, no un descuido.
+- **Invisibles:** los inofensivos (ancho cero, BOM, saltos de página de un PDF)
+  se quitan en silencio y se conservan los emoji compuestos; solo se rechazan los
+  «tag characters», los selectores de variación y los controles de dirección,
+  que son la forma conocida de esconder instrucciones. Rechazar todo invisible
+  habría bloqueado textos pegados de PDF y emoji sin proteger nada más.
+
+**Límite honesto.** Los filtros por patrón se pueden esquivar con suficiente
+imaginación; no son la garantía. Las garantías son las estructurales de arriba.
+La salida del modelo no se filtra: se pinta como texto plano y el prompt prohíbe
+código.
+
+**Verificación.** `node --test scripts/probar-ia-seguridad.mjs` (11 pruebas del
+sanitizador, la neutralización y el orden del prompt) más las 12 de 360; `tsc`,
+`lint`, `build`, `i18n:check` (5,561 claves) y `audit:ui` en verde. **No
+probado:** con la API real ni con un documento cargado (la base no tiene ninguno).
+
+---
+
+## 19 nov 2026 — Cambio de nombres y cartas mensuales a patrocinadores
+
+**Petición.** (1) El asistente de IA pasa a llamarse **Elly AI**, el portal es
+**Portal GlobalEffect** (según el subdominio) y el proyecto es **Sistema Web
+Inteligente para la Gestión Académica y Administrativa de la Fundación Global
+Effect**; el nombre «Nexus» no debe aparecer en ningún lado. (2) Sustituir a la
+persona externa que traduce y filtra las cartas de los becados a sus
+patrocinadores por un agente.
+
+**Renombrado.** Se cambió en interfaz, mensajes, código, documentos, scripts,
+`package.json` y los comentarios de las migraciones (solo comentarios; se
+comprobó que el SQL no cambió), más los datos de inventario (`0093`). **Quedan
+tres excepciones por razones técnicas:** los nombres de archivo de las
+migraciones `0057_nexus_ai_*` y `0058_nexus_ai_*` (ya registrados como aplicados;
+renombrarlos las haría correr de nuevo), la URL del repositorio en GitHub, y el
+campo `agente` de la bitácora contable, que vale «Nexus» en 572 filas: la bitácora
+es una cadena de hashes sobre la fila entera y reescribirlas rompería la
+verificación, además de que es evidencia de auditoría y no texto de interfaz.
+Se asumió que el subdominio es `portal.globaleffect.org` (el QR de los activos
+apuntaba a `nexus.globaleffect.org`).
+
+**Cartas: qué se encontró.** Nada recibía correo, y `correo_cola` solo se llenaba:
+ningún proceso la vaciaba ni existía el paquete de Resend. Había que construir
+también el envío.
+
+**Decisiones y por qué.**
+- **Agnóstico del proveedor:** un webhook autenticado recibe un mensaje
+  normalizado. Elegir el buzón (Gmail, Resend inbound, n8n) es decisión del
+  dueño y puede implicar DNS, así que se dejó como paso de configuración.
+- **El código decide, el modelo solo clasifica y traduce.** El modelo no tiene
+  herramientas de envío; responde con un esquema cerrado y todo lo que no encaje
+  retiene la carta. Sin clave de IA, ninguna carta se envía (se probó).
+- **El destinatario sale de la base**, nunca de la carta.
+- **El remitente se puede falsificar:** sin SPF/DKIM/DMARC en `pass`, la carta se
+  retiene.
+- **La traducción se revisa también con reglas** (enlaces, correos, teléfonos,
+  cifras y palabras de pago), porque una carta puede pedirle al modelo que los
+  añada.
+- **Cumplimiento derivado, no marcado:** se calcula desde `correo_patrocinador`
+  con un `LEFT JOIN`; no hay casilla que el agente escriba. Una sola carta válida
+  por estudiante y mes, impuesta por un índice único.
+- **Piloto prudente:** el reenvío automático está apagado; todas las cartas
+  esperan la aprobación de administración hasta que se confíe en el agente.
+
+**Verificación.** `node --test` sobre las reglas puras (zona horaria RD alrededor
+de las 23:59 del día 20, HTML a texto, validación del veredicto, revisión del
+texto saliente) y `npx tsx scripts/probar-correos-entrada.ts` contra la base real
+con datos temporales (remitente desconocido, mensaje repetido, sin clave → retenido
+sin correo encolado, duplicado del mes, estado en la planilla). **No probado:** con
+la API de IA real, con un buzón real ni enviando un correo de verdad.
+
+---
+
+## 19 nov 2026 — Elly AI pasa de Anthropic a Gemini
+
+**Petición.** Usar la API gratuita de Gemini mientras tanto y descartar la de
+Anthropic.
+
+**Decisiones y por qué.**
+- **Cliente propio por REST con `fetch`**, sin paquete, y desinstalar
+  `@anthropic-ai/sdk`. Pasar luego a un plan de pago es la misma API con
+  facturación activada, así que no se mantienen dos proveedores.
+- **Un archivo puro** (`src/lib/gemini.ts`) concentra la traducción de formatos
+  para poder probarlo sin clave: esquemas de herramientas (Gemini rechaza
+  `additionalProperties` y otras claves), `systemInstruction`, rol `model`,
+  `inlineData` para imágenes y PDF, llamadas paralelas y errores.
+- **Firmas de pensamiento (`thoughtSignature`):** Gemini 3 rechaza la siguiente
+  petición si la llamada a herramienta que él devolvió no vuelve con su firma;
+  por eso cada bloque conserva su parte cruda y se reenvía tal cual.
+- **El flujo SSE se acumula en un búfer** porque un evento puede llegar partido.
+- **429 es «límite», no «fallo»:** en la capa gratuita será frecuente; el chat lo
+  explica y las cartas quedan retenidas (cerrado hacia el lado seguro).
+- **Modelo por defecto `gemini-3.1-flash-lite`**, elegido porque fue el único de
+  los probados que respondió el 19 nov: `gemini-3.6-flash`, `gemini-3.8-flash` y
+  `gemini-flash-latest` devolvían 503 «alta demanda». Se puede subir con
+  `GEMINI_MODEL` cuando haya menos demanda. `gemini-2.5-flash` figura como
+  deprecado. Un modelo guardado en la configuración de un agente que no empiece
+  por `gemini-` se ignora (daría 404). El cliente reintenta dos veces los 500/503.
+- Las capas de seguridad (`ensamblarSistema`, `envolverDatos`, revisión de
+  entrada) no cambian: viven antes del proveedor.
+
+**Riesgo que se asume y debe saberse.** En la capa **gratuita**, la página oficial
+de precios marca «Used to improve our products: Yes» (en la de pago, «No»): Google
+puede usar lo enviado para mejorar sus productos. Elly envía a Google el contexto
+del estudiante (notas), las cédulas del OCR y las cartas a patrocinadores. Hasta
+tener facturación activa, conviene no pasar datos reales sensibles.
+
+**Verificación.** `node --test scripts/probar-gemini.mjs` (11 pruebas: esquemas,
+firma que vuelve intacta, llamadas paralelas, SSE partido, bloqueos, códigos HTTP,
+PDF en línea), el motor de herramientas con proveedor simulado, y las pruebas de
+cartas sin clave. **Probado en vivo** con la clave del proyecto (texto inventado):
+chat, llamada forzada de herramienta y flujo en pantalla responden bien; falta
+probar el bucle completo de herramientas con aprobación y el OCR con un documento
+real.
 
 ---
 

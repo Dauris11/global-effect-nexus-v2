@@ -1,5 +1,5 @@
 ================================================================
-  PROMPT MAESTRO — GLOBAL EFFECT NEXUS
+  PROMPT MAESTRO — PORTAL GLOBALEFFECT
   Descripción completa de la plataforma y organización de portales
 ================================================================
 
@@ -7,7 +7,7 @@
   1. IDENTIDAD DE LA PLATAFORMA
 ══════════════════════════════════════════════════════════════════
 
-Nombre: Global Effect Nexus
+Nombre: Portal GlobalEffect
 Tipo: ERP institucional de la Fundación Global Effect: sistema
 de gestión (académico, expedientes, patrocinio, operaciones,
 finanzas, solicitudes y aprobaciones) con portal del estudiante

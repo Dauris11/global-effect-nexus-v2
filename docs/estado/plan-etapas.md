@@ -1,6 +1,6 @@
-# Plan Maestro de Ejecución por Sprints — Global Effect Nexus
+# Plan Maestro de Ejecución por Sprints — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
-Este plan desglosa la totalidad del proyecto **Global Effect Nexus**, el **ERP institucional** de Global Effect (sistema de gestión con portal del estudiante integrado), detallando el funcionamiento de los **5 portales**, sus **27+ módulos funcionales**, la arquitectura técnica y el conjunto ordenado de **8 Sprints de ejecución** listos para ser entregados a Claude (o ejecutados de forma autónoma) con prompts listos para copiar.
+Este plan desglosa la totalidad del proyecto **Portal GlobalEffect**, el **ERP institucional** de Global Effect (sistema de gestión con portal del estudiante integrado), detallando el funcionamiento de los **5 portales**, sus **27+ módulos funcionales**, la arquitectura técnica y el conjunto ordenado de **8 Sprints de ejecución** listos para ser entregados a Claude (o ejecutados de forma autónoma) con prompts listos para copiar.
 
 > **Cambio de alcance (oct 2026)**: el departamento de Psicología se eliminó. Su portal, su módulo y su rol desaparecen (migración `0030_fin_de_psicologia.sql`), el expediente pasa a ser de administración (`admin` / `super_admin`), y la cita de psicología del estudiante la sustituye el módulo **Solicitudes y aprobaciones** (migración `0031_solicitudes_y_aprobaciones.sql`, Sprint 8).
 
@@ -115,7 +115,7 @@ graph TD
 
 #### 📋 Prompt para Claude — Sprint 2:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 2 de Global Effect Nexus: "Portal Administrativo & Operaciones (Tareas, Proyectos, Personal)".
+Hola Claude, vamos a ejecutar el SPRINT 2 de Portal GlobalEffect: "Portal Administrativo & Operaciones (Tareas, Proyectos, Personal)".
 Sigue rigurosamente las reglas del proyecto:
 1. Crea la ruta que falta: `src/app/[locale]/(portal)/portal/administrativo/page.tsx` usando `BannerPortal` y `AccesosPortal` de `@/components/layout/banner-portal`, con KPIs de tareas y proyectos, y lista de tareas urgentes.
 2. Implementa `/administrativo/tareas`: Tablero Kanban de 3 columnas (Pendiente, En Progreso, Completada) con prioridades (baja, media, alta, urgente usando `PRIORIDAD` de `src/lib/paleta.ts`).
@@ -151,7 +151,7 @@ Sigue rigurosamente las reglas del proyecto:
 
 #### 📋 Prompt para Claude — Sprint 3:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 3 de Global Effect Nexus: "Portal Contabilidad & Patrocinadores (Finanzas y Becas)".
+Hola Claude, vamos a ejecutar el SPRINT 3 de Portal GlobalEffect: "Portal Contabilidad & Patrocinadores (Finanzas y Becas)".
 Sigue rigurosamente las reglas del proyecto:
 1. En `/portal/contabilidad` y `/contabilidad`, los ingresos se identifican en azul de marca (`#2096BA`) y los egresos en neutro oscuro (`#171A1D`) usando `MOVIMIENTO` de `src/lib/paleta.ts`. NUNCA verde ni rojo común.
 2. Implementa Server Actions en `src/server/finanzas/transacciones.ts`:
@@ -187,7 +187,7 @@ Sigue rigurosamente las reglas del proyecto:
 
 #### 📋 Prompt para Claude — Sprint 4:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 4 de Global Effect Nexus: "Bienestar, Vida Estudiantil & Operaciones Diarias".
+Hola Claude, vamos a ejecutar el SPRINT 4 de Portal GlobalEffect: "Bienestar, Vida Estudiantil & Operaciones Diarias".
 Sigue rigurosamente las reglas del proyecto:
 1. `/servicios-mensuales`: Tabla estilo hoja de cálculo donde cada fila es un estudiante activo, con selector de mes (últimos 12 meses), checkboxes interactivos para "Servicio Comunitario" y "Reunión Mensual" (que guardan inmediatamente mediante Server Action), y botón para imprimir reporte/PDF amigable para impresión (`@media print`).
 2. `/inscripcion-comida`: Pantalla administrativa que muestra las reservas de comida del día registradas desde `/comida`. Agrupa por rol/programa, muestra hora de inscripción, totalizador y vista para imprimir la lista de cocina.
@@ -217,7 +217,7 @@ Sigue rigurosamente las reglas del proyecto:
 
 #### 📋 Prompt para Claude — Sprint 5:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 5 de Global Effect Nexus: "Expedientes Cierre (Alta Completa y Auditoría)".
+Hola Claude, vamos a ejecutar el SPRINT 5 de Portal GlobalEffect: "Expedientes Cierre (Alta Completa y Auditoría)".
 Sigue rigurosamente las reglas del proyecto:
 1. En `src/server/expedientes/acciones.ts`: Implementa `crearExpediente()` utilizando `enTransaccion()`. Debe crear el registro en `estudiante` y sus perfiles relacionados (`perfil_vivienda`, `perfil_salud`, `perfil_socioeconomico`, `familiar`) y emitir un registro en `audit_log`.
 2. En `src/components/expedientes/dialogo-nuevo-expediente.tsx`: Desbloquea el botón "Guardar Expediente", conecta el submit al Server Action y maneja retroalimentación (loading spinner y notificación toast/banner).
@@ -244,7 +244,7 @@ Sigue rigurosamente las reglas del proyecto:
 
 #### 📋 Prompt para Claude — Sprint 6:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 6 de Global Effect Nexus: "Reportes Analíticos, Sitemap & Pulido Global de Microinteracciones".
+Hola Claude, vamos a ejecutar el SPRINT 6 de Portal GlobalEffect: "Reportes Analíticos, Sitemap & Pulido Global de Microinteracciones".
 Sigue rigurosamente las reglas del proyecto:
 1. En `/reportes`: Construye los reportes analíticos con Recharts en tres pestañas:
    - Operaciones y Proyectos: distribución por estado y % de avance medio.
@@ -273,7 +273,7 @@ Sigue rigurosamente las reglas del proyecto:
 
 #### 📋 Prompt para Claude — Sprint 7:
 ```markdown
-Hola Claude, vamos a ejecutar el SPRINT 7 de Global Effect Nexus: "Inteligencia Artificial Institucional & OCR".
+Hola Claude, vamos a ejecutar el SPRINT 7 de Portal GlobalEffect: "Inteligencia Artificial Institucional & OCR".
 Nota previa: Requiere ANTHROPIC_API_KEY configurada en .env.local.
 1. En `/chat-ia`: Implementa la interfaz de chat institucional para administradores, integrando el SDK `@anthropic-ai/sdk`. Incluye sugerencias de preguntas rápidas (balance del mes, estudiantes en riesgo académico, resumen de proyectos).
 2. En `src/server/ia/chat-admin.ts`: Construye un system prompt enriquecido con las estadísticas clave del sistema (agregados de alumnos, proyectos y finanzas sin filtrar datos confidenciales de los expedientes).

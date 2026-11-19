@@ -1,4 +1,4 @@
-# Diagrama Entidad-Relación — Global Effect Nexus
+# Diagrama Entidad-Relación — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 > Base de datos: **PostgreSQL 17 (Supabase)**. Este ERD refleja el núcleo del esquema desplegado por las migraciones `db/migrations/0001`–`0012`, con el cambio de alcance de octubre de 2026 ya aplicado: la `0030` retira las tablas de psicología (la Fundación eliminó el departamento) y la `0031` añade `solicitud` y `solicitud_paso`. El 24 de octubre la `0047` retira los cursos técnicos: se van `curso`, `calificacion` y el enum `tipo_evaluacion`, y `tipo_estudiante` se queda con un solo valor, `becado` (33 tablas del núcleo, 6 enums, pgvector para IA). Las tablas que llegaron en `0015`–`0029` (landing, noticia, aula virtual, etc.) se documentan en sus migraciones; entre ellas están las de Global Effect 360 (`materia_360`, `ventana_prematricula`, `inscripcion_360`), que desde la `0047` ocupan el lugar de los cursos técnicos.
 > Los diagramas están en sintaxis **Mermaid** (se renderizan en GitHub, VS Code, Obsidian o [mermaid.live](https://mermaid.live)).

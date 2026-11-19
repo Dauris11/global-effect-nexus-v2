@@ -6,7 +6,7 @@ Plan aprobado el 24 oct 2026; estado de la implementación justo debajo.
 ## Estado de implementación (24 oct 2026)
 
 Aprobado con las recomendaciones del plan. **Desviación:** el bucle de
-herramientas está escrito sobre `@anthropic-ai/sdk` (ya instalado) y no sobre el
+herramientas está escrito sobre un cliente propio de Gemini (`src/lib/gemini*.ts`; antes `@anthropic-ai/sdk`) y no sobre el
 AI SDK v6. Motivo: la aprobación humana queda persistida en `ai_accion` con su
 cadena SHA-256 y se hace con una petición aparte del usuario; el `needsApproval`
 del AI SDK no archiva eso por sí solo, y así no se añade una dependencia ni una
@@ -33,7 +33,7 @@ conversaciones, la app OAuth de Drive y los comprobantes reales anonimizados.
 |---|---|
 | `src/components/ia/widget-flotante-ia.tsx` (704 líneas) | Botón flotante ya montado en el armazón del portal (`(portal)/layout.tsx`). Dos modos, «consultas» y «acciones»; el modo acciones está restringido para el estudiante. |
 | `src/server/ia/asistente-global.ts` (699 líneas) | Cerebro del widget. Acción `enviarMensajeWidget`. El «conocimiento» es **texto fijo en código** (`REGLAMENTO_FUNDACION`), no una base. La única «acción» es **sugerir navegación** a una ruta; no escribe datos. |
-| `src/lib/ia.ts` | Cliente `@anthropic-ai/sdk`. Modelo único por `ANTHROPIC_MODEL` (por defecto `claude-sonnet-5`), sin prompt caching, sin herramientas, sin streaming. |
+| `src/lib/ia.ts` | Cliente de Gemini por REST. Modelo único por `GEMINI_MODEL` (por defecto `gemini-3.1-flash-lite`; antes Anthropic), sin prompt caching, sin herramientas, sin streaming. |
 | `src/server/ia/{estudiante,interno,ocr,acciones*}.ts` | Chat estudiantil, chat interno del equipo y OCR de cédulas (con rastro en `extraccion_ocr`). |
 | Migración `0012_ia.sql` | `conversacion_ia`, `mensaje_ia` (con columna `tokens`, sin usar para costo), `extraccion_ocr` y `fragmento_conocimiento` con `VECTOR(1536)` + HNSW. **pgvector ya está instalado** (`0001`). Nadie escribe en `fragmento_conocimiento`. |
 | Migración `0056_chat_interno_y_comprobantes.sql` | Canales de chat y base para comprobantes fotográficos. Es la base del flujo «Reportar gasto». |

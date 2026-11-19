@@ -1,4 +1,4 @@
-# Base de datos — Global Effect Nexus
+# Base de datos — Portal GlobalEffect
 
 Base de datos relacional del sistema, en **PostgreSQL 17** (desplegada en **Supabase**). SQL escrito a mano (sin ORM), en migraciones `.sql` numeradas por dominio.
 

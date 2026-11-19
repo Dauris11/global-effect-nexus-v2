@@ -1,4 +1,4 @@
-# Prompt: Nexus AI (agentes por rol) y automatización de Contabilidad
+# Prompt: Elly AI (agentes por rol) y automatización de Contabilidad
 
 Complementa `prompt-portales-erp-global-effect.md`. Lee el repo y ambos documentos antes de proponer nada. Entrega un plan por fases y espera mi aprobación antes de migraciones.
 
@@ -11,14 +11,14 @@ Complementa `prompt-portales-erp-global-effect.md`. Lee el repo y ambos document
 ## 1. Objetivo
 
 1. **Contabilidad:** que la contadora haga más con menos pasos. Automatizar todo lo que se pueda de forma autónoma y segura, y dejar para ella solo las decisiones.
-2. **Nexus AI:** un botón flotante animado en todo el programa que ayuda a cada usuario **según su rol**, con una base de conocimiento propia por rol, y que puede **ejecutar acciones reales** (crear tarea o proyecto, mover una fecha en el Gantt, crear o tachar un evento del calendario, etc.) dentro de los permisos del usuario.
+2. **Elly AI:** un botón flotante animado en todo el programa que ayuda a cada usuario **según su rol**, con una base de conocimiento propia por rol, y que puede **ejecutar acciones reales** (crear tarea o proyecto, mover una fecha en el Gantt, crear o tachar un evento del calendario, etc.) dentro de los permisos del usuario.
 3. **Control:** medidor de tokens y registro de actividad completo.
 
 ## 2. Arquitectura recomendada
 
 - **Motor del agente: Vercel AI SDK v6** (TypeScript), con proveedor Anthropic. Aporta bucle de herramientas, streaming, `needsApproval` (aprobación humana antes de ejecutar) y `usage` por paso, que alimenta el medidor de tokens. Lee la documentación oficial vigente antes de implementar; no instales skills ni plantillas de terceros sin revisarlas.
 - **Interfaz:** botón flotante propio con shadcn/ui y Framer Motion, y `useChat` para el hilo. Las llamadas a herramientas se muestran como pasos en vivo (nombre, estado, resultado) y las aprobaciones como tarjetas con Aprobar y Rechazar.
-- **Cambios en tiempo real:** el agente escribe en la base de datos y **Supabase Realtime** empuja los cambios a las pantallas abiertas. Cada registro creado o modificado por el agente se resalta unos segundos con la etiqueta "Nexus AI" y un botón **Deshacer**.
+- **Cambios en tiempo real:** el agente escribe en la base de datos y **Supabase Realtime** empuja los cambios a las pantallas abiertas. Cada registro creado o modificado por el agente se resalta unos segundos con la etiqueta "Elly AI" y un botón **Deshacer**.
 - **Por qué no CopilotKit:** su valor (estado compartido, interfaz generativa) se cubre con Realtime y las partes de herramienta del AI SDK, y añadirlo duplicaría la capa de agente. Si luego quieres sus componentes prediseñados, se evalúa.
 - **Base de conocimiento:** Postgres con **pgvector** y búsqueda híbrida (vectores + texto), con **RLS por rol** para que un agente nunca recupere documentos de otro rol.
 - **Modelos** (verifica los identificadores vigentes en la documentación de Anthropic): Haiku para estudiante, colaborador y clasificación masiva; Sonnet para contabilidad, administración, dirección, docente y Habitudes. Usa **prompt caching** para el prefijo fijo (instrucciones y esquema de herramientas).
@@ -105,4 +105,4 @@ Cada agente se define en una **tabla de configuración** editable (instrucciones
 
 ## 9. Primer paso
 
-Lee el repo y responde con: (a) qué existe hoy del asistente "Nexus AI", (b) plan por fases ajustado al stack, (c) esquema de datos de agentes, base de conocimiento, uso y acciones, (d) dudas. No escribas código de producción hasta que apruebe el plan.
+Lee el repo y responde con: (a) qué existe hoy del asistente "Elly AI", (b) plan por fases ajustado al stack, (c) esquema de datos de agentes, base de conocimiento, uso y acciones, (d) dudas. No escribas código de producción hasta que apruebe el plan.

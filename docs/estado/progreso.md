@@ -1,4 +1,4 @@
-# Progreso — Global Effect Nexus
+# Progreso — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 Estado real de cada pantalla del sistema, a **24 de octubre de 2026**.
 
@@ -239,7 +239,7 @@ puede agendar y coordinar reuniones de trabajo, extinguiendo por completo el enf
 |---|---|---|---|
 | ✅ | Mi perfil | `/perfil` | Cada usuario edita sus propios datos y su foto, que se ve en todo el armazón |
 | ✅ | Apariencia | `/perfil` | Tema claro u oscuro y barra lateral estándar o negra, por navegador. Falta revisar el modo oscuro pantalla por pantalla |
-| 🟡 | Nexus AI (asistente por rol) | botón flotante, `/configuracion/ia`, `/configuracion/conocimiento` | Un agente por rol, streaming, herramientas con aprobación y deshacer, cuotas, conocimiento por agente. Sin probar con el modelo real; sin embeddings ni Drive. Ver `plan-nexus-ai.md` |
+| 🟡 | Elly AI (asistente por rol) | botón flotante, `/configuracion/ia`, `/configuracion/conocimiento` | Un agente por rol, streaming, herramientas con aprobación y deshacer, cuotas, conocimiento por agente. Sin probar con el modelo real; sin embeddings ni Drive. Ver `plan-elly-ai.md` |
 | ✅ | Mi día (Contabilidad) | `/contabilidad/mi-dia` | Cola de comprobantes con sugerencia, aprobación en lote, anomalías, métricas y nivel de autonomía |
 
 ---

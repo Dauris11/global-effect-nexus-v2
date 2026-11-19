@@ -1,7 +1,7 @@
 # Portal de Contabilidad — especificación y prompts por fases
 
 > **Para:** Claude Code (y Antigravity, si toma alguna fase).
-> **Escrito:** 2026-10-04, sobre `main` en el commit `cca04bf` ("Global Effect Nexus v2 — estado inicial limpio").
+> **Escrito:** 2026-10-04, sobre `main` en el commit `cca04bf` ("Portal GlobalEffect v2 — estado inicial limpio").
 > **Cómo usar este archivo:** primero lee las secciones 0 a 4, que son la norma del módulo. Después ejecuta las fases de la sección 5 **en orden**, una rama y un PR por fase. No pases a la siguiente fase sin tener la anterior en verde (`lint`, `build`, `i18n:check`, `audit:ui` y las pruebas de la fase).
 > **Diseño:** toda pantalla nueva sigue `docs/09-sistema-visual.md`. Aquí no se repite esa norma.
 

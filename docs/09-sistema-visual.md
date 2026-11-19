@@ -1,4 +1,4 @@
-# 09 · Sistema visual — Global Effect Nexus
+# 09 · Sistema visual — Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect
 
 **Norma vigente desde el 3 de octubre de 2026.** Sustituye a `estilos.md`, que
 describía el lenguaje de agosto (panel con barra negra y banners en degradado)

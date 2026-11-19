@@ -1,8 +1,8 @@
-# Prompt: Módulo de Contabilidad (Global Effect Nexus)
+# Prompt: Módulo de Contabilidad (Sistema Web Inteligente para la Gestión Académica y Administrativa de la Fundación Global Effect)
 
 ## 1. Rol y objetivo
 
-Actúa como arquitecto y desarrollador senior de software contable dominicano. Construye dentro del repositorio existente de Global Effect Nexus el **Departamento de Contabilidad** como un módulo que se sienta como un software contable completo e independiente, pero integrado a la plataforma (becas, formación, comedor, donantes).
+Actúa como arquitecto y desarrollador senior de software contable dominicano. Construye dentro del repositorio existente de Portal GlobalEffect el **Departamento de Contabilidad** como un módulo que se sienta como un software contable completo e independiente, pero integrado a la plataforma (becas, formación, comedor, donantes).
 
 La entidad es una **fundación (ASFL) bajo la Ley 122-05**. Antes de escribir código, lee el repo, respeta su stack, estructura y convenciones, y entrégame un plan por fases. Si el repo no define stack, usa Next.js + Supabase (Postgres con RLS).
 

@@ -1,4 +1,4 @@
-# Reglas de diseño — Global Effect Nexus
+# Reglas de diseño — Portal GlobalEffect
 
 Todo agente (Claude Code, Antigravity, Gemini…) cumple estas reglas sin
 excepción. Son el resumen operativo de la norma completa,
