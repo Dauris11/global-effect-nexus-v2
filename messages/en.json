@@ -1936,7 +1936,9 @@
       "finalGradePlaceholder": "Grade 0-100",
       "saveFinalGrade": "Save grade",
       "finalGradeSaved": "Final grade saved.",
-      "finalGradeError": "Could not save grade (0 to 100)."
+      "finalGradeError": "Could not save grade (0 to 100).",
+      "tasksProgress": "Tasks: {done}/{total}",
+      "attendancePct": "{pct}% attendance"
     }
   },
   "modules": {

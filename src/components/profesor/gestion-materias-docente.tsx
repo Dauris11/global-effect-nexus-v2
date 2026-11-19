@@ -810,6 +810,11 @@ function FilaInscritoMateria({ est }: { est: InscritoEnMateria }) {
         <Dato icono={Calculator} className="text-xs">
           {t("proposedGrade")}: <b>{est.notaPropuesta?.toFixed(1) ?? "—"}</b>
         </Dato>
+        {est.asistenciaPorcentaje !== null && (
+          <Dato icono={CalendarCheck} className="text-xs">
+            {tProf("attendancePct", { pct: est.asistenciaPorcentaje })}
+          </Dato>
+        )}
       </FilaDatos>
 
       <form

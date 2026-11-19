@@ -1936,7 +1936,9 @@
       "finalGradePlaceholder": "Nota 0-100",
       "saveFinalGrade": "Guardar nota",
       "finalGradeSaved": "Nota final guardada.",
-      "finalGradeError": "No se pudo guardar la nota (0 a 100)."
+      "finalGradeError": "No se pudo guardar la nota (0 a 100).",
+      "tasksProgress": "Tareas: {done}/{total}",
+      "attendancePct": "{pct}% asistencia"
     }
   },
   "modules": {

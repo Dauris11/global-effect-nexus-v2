@@ -386,6 +386,7 @@ export type InscritoEnMateria = {
   notaPropuesta: number | null;
   entregadas: number;
   tareas: number;
+  asistenciaPorcentaje: number | null;
 };
 
 type FilaInscritoMateria = Omit<
@@ -439,7 +440,19 @@ export async function inscritosDeMateria(
               i.estado::text AS estado,
               p.nombre AS periodo,
               i.periodo_id,
-              i.nota_final::float8 AS nota_final
+              i.nota_final::float8 AS nota_final,
+              (SELECT CASE
+                        WHEN count(am.sesion_id) = 0 THEN NULL
+                        ELSE round(
+                          100.0 * count(*) FILTER (WHERE am.presente IS TRUE)
+                          / count(am.sesion_id)
+                        )::int
+                      END
+                 FROM sesion_materia sm
+                 JOIN asistencia_materia am
+                   ON am.sesion_id = sm.id AND am.inscripcion_id = i.id
+                WHERE sm.materia_id = i.materia_id
+                  AND sm.periodo_id = i.periodo_id) AS "asistenciaPorcentaje"
          FROM inscripcion i
          JOIN estudiante e ON e.id = i.estudiante_id
          LEFT JOIN periodo p ON p.id = i.periodo_id
