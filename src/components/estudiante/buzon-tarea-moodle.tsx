@@ -353,7 +353,7 @@ export function BuzonTareaMoodle({
                       {archivoSeleccionado
                         ? `${(archivoSeleccionado.size / (1024 * 1024)).toFixed(2)} MB`
                         : t("uploadFileLimits", {
-                            max: asignacion.limite_mb,
+                            limit: asignacion.limite_mb,
                             formats: formatos.join(", "),
                           })}
                     </p>
