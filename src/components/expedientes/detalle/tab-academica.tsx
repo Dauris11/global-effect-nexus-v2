@@ -1,12 +1,15 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
 import { Historial360 } from "@/components/expedientes/historial-360";
 import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
+import { VincularCatalogo } from "@/components/universidades/vincular-catalogo";
 import { Badge } from "@/components/ui/badge";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { fechaLarga } from "@/lib/fechas";
 import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
 import type { AsignacionDelEstudiante } from "@/server/estudiantes/aula";
@@ -15,6 +18,7 @@ import type { Historial360 as Datos360 } from "@/server/estudiantes/historial-36
 import type { NotaDelEstudiante } from "@/server/estudiantes/portal";
 import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
 import type { SeguimientoExpediente } from "@/server/expedientes/seguimiento";
+import type { ArbolCatalogo, CatalogoDelEstudiante } from "@/server/universidades/consultas";
 
 /**
  * Las pestañas académicas del expediente: universidad, récord de notas, pénsum y
@@ -27,12 +31,23 @@ export async function TabUniversidad({
   e,
   inscripciones,
   asignaciones,
+  catalogo,
+  arbol,
+  puedeAdministrar,
 }: {
   e: ExpedienteCompleto;
   inscripciones: InscripcionDelEstudiante[];
   asignaciones: AsignacionDelEstudiante[];
+  catalogo: CatalogoDelEstudiante;
+  /** Solo se pide para quien puede editar el expediente; `null` = solo lectura. */
+  arbol: ArbolCatalogo | null;
+  puedeAdministrar: boolean;
 }) {
-  const t = await getTranslations("records");
+  const [t, tc, mensajes] = await Promise.all([
+    getTranslations("records"),
+    getTranslations("catalog"),
+    arbol ? mensajesCliente(["catalog"]) : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -44,6 +59,32 @@ export async function TabUniversidad({
             { etiqueta: t("field.whereStudies"), valor: e.donde_estudia },
           ]}
         />
+      </Seccion>
+      <Seccion titulo={tc("link.title")}>
+        {arbol && mensajes ? (
+          <NextIntlClientProvider messages={mensajes}>
+            <VincularCatalogo
+              estudianteId={e.id}
+              arbol={arbol}
+              puedeAdministrar={puedeAdministrar}
+              inicial={{
+                universidadId: catalogo.universidad?.id ?? "",
+                carreraId: catalogo.carrera?.id ?? "",
+                pensumId: catalogo.pensum?.id ?? "",
+                matricula: catalogo.matricula ?? "",
+              }}
+            />
+          </NextIntlClientProvider>
+        ) : (
+          <Filas
+            filas={[
+              { etiqueta: tc("link.university"), valor: catalogo.universidad?.siglas },
+              { etiqueta: tc("link.career"), valor: catalogo.carrera?.nombre },
+              { etiqueta: tc("link.pensum"), valor: catalogo.pensum ? tc("pensum.versionLabel", { version: catalogo.pensum.version }) : null },
+              { etiqueta: tc("link.matricula"), valor: catalogo.matricula },
+            ]}
+          />
+        )}
       </Seccion>
       <MateriasUniversidad inscripciones={inscripciones} />
       <TareasExpediente asignaciones={asignaciones} />
@@ -134,10 +175,12 @@ export async function TabPensum({
   inscripciones,
   seg,
   tiempo,
+  catalogo,
 }: {
   e: ExpedienteCompleto;
   inscripciones: InscripcionDelEstudiante[];
   seg: SeguimientoExpediente;
+  catalogo: CatalogoDelEstudiante;
   /** «1 año y 8 meses», ya redactado, o `null` sin fecha de ingreso. */
   tiempo: string | null;
 }) {
@@ -156,9 +199,7 @@ export async function TabPensum({
             { etiqueta: t("v2.curriculum.approvedCredits"), valor: creditos > 0 ? String(creditos) : null },
           ]}
         />
-        {/* Sin catálogo de pénsum todavía: no hay total ni porcentaje de avance que
-            enseñar, y no se inventan. */}
-        <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>
+        {catalogo.pensum ? <AvancePensum catalogo={catalogo} /> : <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>}
       </Seccion>
 
       <Seccion titulo={t("v2.graduation.title")}>
@@ -181,5 +222,54 @@ export async function TabPensum({
         />
       </Seccion>
     </>
+  );
+}
+
+/**
+ * Avance sobre el pénsum elegido. El porcentaje sale de créditos aprobados sobre
+ * créditos del plan, y una materia solo cuenta si el sistema la vio aprobada
+ * (inscripción aprobada o historial consolidado): lo que no casa queda pendiente.
+ */
+async function AvancePensum({ catalogo }: { catalogo: CatalogoDelEstudiante }) {
+  const t = await getTranslations("catalog");
+  const { creditosAprobados: ap, creditosTotales: tot, materias } = catalogo;
+  const pct = tot > 0 ? Math.round((ap / tot) * 100) : 0;
+
+  if (materias.length === 0) return <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("progress.emptyPensum")}</p>;
+
+  return (
+    <div className="mt-4 space-y-4">
+      <div>
+        <p className="text-sm font-medium">{t("progress.credits", { approved: ap, total: tot, percent: pct })}</p>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-full bg-marca-500" style={{ width: `${pct}%` }} />
+        </div>
+        {catalogo.universidad && <p className="texto-meta mt-2">{t("progress.regime", { regime: t(`regime.${catalogo.universidad.regimen}`) })}</p>}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[420px] text-sm">
+          <thead>
+            <tr className="border-b border-linea text-left text-xs text-tinta-3">
+              <th className="py-2 font-medium">{t("progress.code")}</th>
+              <th className="py-2 font-medium">{t("progress.subject")}</th>
+              <th className="w-16 py-2 text-right font-medium">{t("progress.creditsShort")}</th>
+              <th className="w-28 py-2 text-right font-medium">{t("progress.state")}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-linea">
+            {materias.map((m) => (
+              <tr key={m.id}>
+                <td className="py-2 pr-2 font-medium">{m.codigo}</td>
+                <td className="py-2 pr-2 break-words">{m.nombre}</td>
+                <td className="py-2 text-right tabular-nums">{m.creditos}</td>
+                <td className="py-2 text-right">
+                  <Badge variant={m.estado === "aprobada" ? "marca" : "neutra"}>{t(`progress.${m.estado}`)}</Badge>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

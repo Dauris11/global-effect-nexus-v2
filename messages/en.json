@@ -232,7 +232,8 @@
     "financialStatements": "Financial statements",
     "accountingClosing": "Accounting closing",
     "commandShortcutMac": "⌘K",
-    "assignedSubjects": "My subjects"
+    "assignedSubjects": "My subjects",
+    "universities": "Universities"
   },
   "landing": {
     "enter": "Sign in",
@@ -6919,6 +6920,96 @@
       "aprobada": "Passed",
       "reprobada": "Failed",
       "retirada": "Withdrawn"
+    }
+  },
+  "catalog": {
+    "title": "Universities and curriculum",
+    "back": "Back",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "university": {
+      "new": "New university",
+      "acronym": "Acronym",
+      "name": "Name",
+      "regime": "Term system",
+      "status": "Status",
+      "empty": "There are no universities yet",
+      "counts": "{careers} programs · {students} students"
+    },
+    "regime": {
+      "cuatrimestre": "Four-month terms",
+      "trimestre": "Trimesters",
+      "semestre": "Semesters"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "career": {
+      "title": "Programs",
+      "new": "New program",
+      "name": "Program name",
+      "empty": "This university has no programs yet",
+      "counts": "{pensums} curricula · {students} students"
+    },
+    "pensum": {
+      "title": "Curriculum",
+      "new": "New curriculum",
+      "version": "Plan version or year",
+      "versionLabel": "Plan {version}",
+      "currentLabel": "Validity",
+      "current": "Current",
+      "old": "Previous",
+      "empty": "This program has no curriculum yet",
+      "noSubjects": "This curriculum has no subjects loaded",
+      "totals": "{subjects} subjects · {credits} credits · {students} students",
+      "period": "Term",
+      "code": "Code",
+      "subject": "Subject",
+      "creditsShort": "Cr.",
+      "prereq": "Prerequisites",
+      "none": "None",
+      "remove": "Remove {name}",
+      "load": "Load subjects",
+      "loadButton": "Load list",
+      "loadPlaceholder": "ISC-101 ; Introduction to programming ; 4 ; 1 ;\nISC-201 ; Data structures ; 3 ; 2 ; ISC-101",
+      "loadHelp": "One subject per line: code ; name ; credits ; term ; prerequisites (comma-separated). Empty credits count as 3. An existing code is updated.",
+      "loaded": "{count} subjects loaded.",
+      "rejected": "These lines could not be read: {lines}."
+    },
+    "errors": {
+      "no_permitido": "You don't have permission to change the catalog.",
+      "no_encontrado": "What you are trying to change was not found.",
+      "dato_invalido": "Check the data: something is missing or in the wrong format.",
+      "duplicado": "One with that name or code already exists.",
+      "error": "It could not be saved. Try again."
+    },
+    "link": {
+      "title": "University, program and curriculum",
+      "university": "University",
+      "career": "Program",
+      "pensum": "Curriculum",
+      "matricula": "Student ID",
+      "none": "Not chosen",
+      "save": "Save",
+      "manage": "Manage the catalog",
+      "saved": "Saved."
+    },
+    "progress": {
+      "title": "Curriculum progress",
+      "credits": "{approved} of {total} credits passed ({percent}%)",
+      "subjects": "Curriculum subjects",
+      "code": "Code",
+      "subject": "Subject",
+      "creditsShort": "Cr.",
+      "state": "Status",
+      "aprobada": "Passed",
+      "cursando": "In progress",
+      "pendiente": "Pending",
+      "noPensum": "No curriculum assigned yet: choose university, program and plan above to see progress.",
+      "emptyPensum": "The chosen curriculum has no subjects loaded yet.",
+      "regime": "Term system: {regime}"
     }
   }
 }

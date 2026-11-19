@@ -1018,6 +1018,31 @@ becados). **No visto en pantalla.**
 
 ---
 
+## Catálogo de universidades y pénsum (fase 2 del expediente)
+
+**Qué se hizo.** Migración `0095`: `universidad` (siglas, régimen), `carrera`,
+`pensum` (versión, vigente) y `pensum_materia` (código, créditos, período
+sugerido, prerrequisitos), y en `estudiante` las columnas `universidad_id`,
+`carrera_id`, `pensum_id` y `matricula`. Se sembraron UCATECI, UNPHU, UTESA y
+UASD y se enlazaron los expedientes cuyo texto de universidad las menciona.
+Pantallas `/academico/universidades` (lista → universidad → carrera → pénsum) y
+selector en cascada en el expediente; la pestaña Pénsum calcula el avance.
+
+**Decisiones.** (1) Las columnas de texto `universidad` y `programa` se siguen
+escribiendo al vincular, porque listados y reglas de créditos aún las leen.
+(2) Las FK son `RESTRICT`: nada con estudiantes se borra, se desactiva.
+(3) El servidor valida la cadena universidad→carrera→pénsum; la cascada del
+navegador solo guía. (4) El pénsum se carga por lista pegada con un parser
+probado (`src/lib/pensum.ts`); el OCR de PDF (fase 4) escribirá por la misma vía
+tras una pantalla de revisión. (5) El régimen de todas se sembró como
+cuatrimestre, a corregir por el admin.
+
+**Verificación.** `tsc`, `lint`, `i18n:check`, `audit:ui`, 4 pruebas del parser y
+comprobación contra la base real de duplicados (23505) y borrado bloqueado
+(23503). **No visto en pantalla.**
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

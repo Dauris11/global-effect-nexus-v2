@@ -232,7 +232,8 @@
     "financialStatements": "Estados financieros",
     "accountingClosing": "Cierre contable",
     "commandShortcutMac": "⌘K",
-    "assignedSubjects": "Mis materias"
+    "assignedSubjects": "Mis materias",
+    "universities": "Universidades"
   },
   "landing": {
     "enter": "Acceder",
@@ -6919,6 +6920,96 @@
       "aprobada": "Aprobada",
       "reprobada": "Reprobada",
       "retirada": "Retirada"
+    }
+  },
+  "catalog": {
+    "title": "Universidades y pénsum",
+    "back": "Volver",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "university": {
+      "new": "Nueva universidad",
+      "acronym": "Siglas",
+      "name": "Nombre",
+      "regime": "Régimen",
+      "status": "Estado",
+      "empty": "Todavía no hay universidades",
+      "counts": "{careers} carreras · {students} estudiantes"
+    },
+    "regime": {
+      "cuatrimestre": "Cuatrimestral",
+      "trimestre": "Trimestral",
+      "semestre": "Semestral"
+    },
+    "status": {
+      "active": "Activa",
+      "inactive": "Inactiva"
+    },
+    "career": {
+      "title": "Carreras",
+      "new": "Nueva carrera",
+      "name": "Nombre de la carrera",
+      "empty": "Esta universidad aún no tiene carreras",
+      "counts": "{pensums} pénsums · {students} estudiantes"
+    },
+    "pensum": {
+      "title": "Pénsum",
+      "new": "Nuevo pénsum",
+      "version": "Versión o año del plan",
+      "versionLabel": "Plan {version}",
+      "currentLabel": "Vigencia",
+      "current": "Vigente",
+      "old": "Anterior",
+      "empty": "Esta carrera aún no tiene pénsum",
+      "noSubjects": "Este pénsum no tiene materias cargadas",
+      "totals": "{subjects} materias · {credits} créditos · {students} estudiantes",
+      "period": "Período",
+      "code": "Código",
+      "subject": "Materia",
+      "creditsShort": "Créd.",
+      "prereq": "Prerrequisitos",
+      "none": "Ninguno",
+      "remove": "Quitar {name}",
+      "load": "Cargar materias",
+      "loadButton": "Cargar lista",
+      "loadPlaceholder": "ISC-101 ; Introducción a la programación ; 4 ; 1 ;\nISC-201 ; Estructuras de datos ; 3 ; 2 ; ISC-101",
+      "loadHelp": "Una materia por línea: código ; nombre ; créditos ; período ; prerrequisitos (separados por coma). Créditos vacíos valen 3. Si un código ya existe, se actualiza.",
+      "loaded": "{count} materias cargadas.",
+      "rejected": "No se pudieron leer las líneas: {lines}."
+    },
+    "errors": {
+      "no_permitido": "No tienes permiso para cambiar el catálogo.",
+      "no_encontrado": "No se encontró lo que intentas cambiar.",
+      "dato_invalido": "Revisa los datos: falta algo o no tiene el formato esperado.",
+      "duplicado": "Ya existe una con ese nombre o código.",
+      "error": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "link": {
+      "title": "Universidad, carrera y pénsum",
+      "university": "Universidad",
+      "career": "Carrera",
+      "pensum": "Pénsum",
+      "matricula": "Matrícula",
+      "none": "Sin elegir",
+      "save": "Guardar",
+      "manage": "Administrar el catálogo",
+      "saved": "Guardado."
+    },
+    "progress": {
+      "title": "Avance en el pénsum",
+      "credits": "{approved} de {total} créditos aprobados ({percent} %)",
+      "subjects": "Materias del pénsum",
+      "code": "Código",
+      "subject": "Materia",
+      "creditsShort": "Créd.",
+      "state": "Estado",
+      "aprobada": "Aprobada",
+      "cursando": "Cursando",
+      "pendiente": "Pendiente",
+      "noPensum": "Aún no tiene pénsum asignado: elige universidad, carrera y plan arriba para ver su avance.",
+      "emptyPensum": "El pénsum elegido todavía no tiene materias cargadas.",
+      "regime": "Régimen: {regime}"
     }
   }
 }

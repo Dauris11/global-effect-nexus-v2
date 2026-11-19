@@ -137,6 +137,14 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/academico/periodos",
             icono: CalendarDays,
           },
+          // Catálogo universidad → carrera → pénsum: de aquí sale el avance de
+          // cada becado en su carrera (fase 2 del expediente).
+          {
+            etiqueta: "universities",
+            href: "/academico/universidades",
+            icono: Landmark,
+            permiso: "academico.leer",
+          },
         ],
       },
       {

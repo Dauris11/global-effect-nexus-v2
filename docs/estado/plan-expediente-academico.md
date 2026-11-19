@@ -22,7 +22,7 @@ la siguiente.
 | # | Fase | Necesita del usuario | Estado |
 |---|---|---|---|
 | 1 | Etapas del expediente: historial de cada cambio de estado (quién, cuándo, desde dónde) | — | **Hecha** (migración `0090`) |
-| 2 | Catálogo: universidad (régimen cuatrimestre/trimestre/semestre) → carrera → pénsum → materias con créditos; matrícula, universidad, carrera y pénsum por estudiante | — | Pendiente |
+| 2 | Catálogo: universidad (régimen cuatrimestre/trimestre/semestre) → carrera → pénsum → materias con créditos; matrícula, universidad, carrera y pénsum por estudiante | — | **Hecha** (migración `0095`; faltan los pénsums reales: los aporta el usuario) |
 | 3 | Notas por período a mano: promedio del período, índice acumulado ponderado por créditos, alertas (reprobadas, promedio bajo) | — | Pendiente |
 | 4 | Importaciones con IA/OCR: récord de notas de la academia, pénsum en PDF, listado de notas del cuatrimestre (se empareja por matrícula y luego nombre; **siempre pasa por una pantalla de revisión**, nunca escribe notas directo) | Récord de notas, pénsum y listado de notas | Esperando documentos |
 | 5 | Servicio mensual: foto del estudiante → aprobación de administración → cumplió / no cumplió por mes en el expediente (extiende `registro_servicio`) | — | Pendiente |

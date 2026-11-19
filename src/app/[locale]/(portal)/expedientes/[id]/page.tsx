@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { FichaFamilia, FichaInformacion, FichaPerfil, FichaSalud } from "@/components/expedientes/detalle/fichas";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
 import { textoAntiguedad } from "@/components/expedientes/detalle/antiguedad-texto";
+import { arbolCatalogo, catalogoDelEstudiante } from "@/server/universidades/consultas";
 import { Tab360, TabPensum, TabRecord, TabUniversidad } from "@/components/expedientes/detalle/tab-academica";
 import { TabPatrocinio, TabSeguimiento } from "@/components/expedientes/detalle/tab-seguimiento";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
@@ -116,7 +117,7 @@ export default async function PaginaExpediente({
 
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
-  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento] = await Promise.all([
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
     inscripcionesDelEstudiante(expediente.id),
@@ -124,6 +125,8 @@ export default async function PaginaExpediente({
     cuentaVinculada(expediente.id),
     puedeEditar ? cuentasEstudianteSinVincular() : Promise.resolve([]),
     seguimientoDelEstudiante(expediente.id),
+    catalogoDelEstudiante(expediente.id),
+    puedeEditar ? arbolCatalogo() : Promise.resolve(null),
   ]);
 
   const tiempo = textoAntiguedad(expediente.fecha_ingreso, (k, v) => t(k as never, v as never), idioma);
@@ -187,9 +190,9 @@ export default async function PaginaExpediente({
           profile: <FichaPerfil e={expediente} />,
           family: <FichaFamilia e={expediente} />,
           health: <FichaSalud e={expediente} />,
-          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} />,
+          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} arbol={arbol} puedeAdministrar={usuarioTienePermiso(usuario, "academico.escribir")} />,
           record: <TabRecord notas={notas} />,
-          curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} />,
+          curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} />,
           g360: <Tab360 datos={historial360} />,
           followUp: <TabSeguimiento e={expediente} seg={seguimiento} />,
           sponsorship: <TabPatrocinio seg={seguimiento} />,
