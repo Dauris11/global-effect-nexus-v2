@@ -1896,6 +1896,26 @@
       "enrollmentChartTitle": "Credit load by subject",
       "enrollmentChartHint": "Distribution of your active subjects",
       "creditsSeries": "Credits"
+    },
+    "fullCalendar": {
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "today": "Today",
+      "filterAll": "All",
+      "filterClasses": "Classes",
+      "filterTasks": "Assignments",
+      "filterMeetings": "Meetings",
+      "filterEvents": "Events",
+      "filterRequests": "Requests",
+      "dayTitle": "Day · {date}",
+      "dayEmpty": "No activities scheduled for this day.",
+      "origin": {
+        "clase": "Class",
+        "asignacion": "Assignment / Exam",
+        "reunion": "Meeting",
+        "evento": "Event",
+        "solicitud": "Request"
+      }
     }
   },
   "teacherPortal": {

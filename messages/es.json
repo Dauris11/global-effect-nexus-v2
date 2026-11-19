@@ -1896,6 +1896,26 @@
       "enrollmentChartTitle": "Carga de créditos por materia",
       "enrollmentChartHint": "Distribución de tus asignaturas activas",
       "creditsSeries": "Créditos"
+    },
+    "fullCalendar": {
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "today": "Hoy",
+      "filterAll": "Todos",
+      "filterClasses": "Clases",
+      "filterTasks": "Tareas",
+      "filterMeetings": "Reuniones",
+      "filterEvents": "Eventos",
+      "filterRequests": "Trámites",
+      "dayTitle": "Día · {date}",
+      "dayEmpty": "No hay actividades programadas para este día.",
+      "origin": {
+        "clase": "Clase",
+        "asignacion": "Tarea / Examen",
+        "reunion": "Reunión",
+        "evento": "Evento",
+        "solicitud": "Trámite"
+      }
     }
   },
   "teacherPortal": {
