@@ -120,11 +120,6 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/academico/clases-360",
             icono: Sparkles,
           },
-          {
-            etiqueta: "assignedSubjects",
-            href: "/portal/profesor/materias",
-            icono: Library,
-          },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
           { etiqueta: "history", href: "/academico/historial", icono: BarChart3 },
           {
@@ -517,11 +512,6 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "classes360",
             href: "/academico/clases-360",
             icono: Sparkles,
-          },
-          {
-            etiqueta: "assignedSubjects",
-            href: "/portal/profesor/materias",
-            icono: Library,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
           {

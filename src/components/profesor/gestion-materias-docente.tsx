@@ -17,16 +17,17 @@ import {
 import { useTranslations } from "next-intl";
 
 import { AsistenciaClase360 } from "@/components/academico/asistencia-clase-360";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { NOTA_APROBADA } from "@/lib/notas";
-import { CUADRO } from "@/lib/paleta";
+import { AZUL, AZUL_OSCURO, CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { calificarEntregaMoodleAction } from "@/server/moodle/acciones";
 import {
@@ -97,6 +98,7 @@ export function GestionMateriasDocente({
   const entregasPendientes = entregas.filter(
     (e) => e.estado === "entregado" || e.estado === "tarde",
   );
+  const entregasCalificadas = entregas.length - entregasPendientes.length;
 
   if (materias.length === 0) {
     return (
@@ -108,8 +110,62 @@ export function GestionMateriasDocente({
     );
   }
 
+  const serieInscritos = [...materias]
+    .map((m) => ({
+      nombre: m.nombre.length > 20 ? `${m.nombre.slice(0, 19)}…` : m.nombre,
+      valor: (inscritosPorMateria[m.id] ?? []).length,
+      color: AZUL,
+    }))
+    .sort((a, b) => b.valor - a.valor)
+    .slice(0, 6);
+
+  const serieEntregas = [
+    { nombre: tProf("chartPending"), valor: entregasPendientes.length, color: AZUL_OSCURO },
+    { nombre: tProf("chartGraded"), valor: entregasCalificadas, color: AZUL },
+  ];
+
   return (
     <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">{tProf("chartEnrolledTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GraficaBarras datos={serieInscritos} vacio={tProf("chartEmpty")} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">{tProf("chartSubmissionsTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid items-center gap-3 sm:grid-cols-2">
+              <GraficaAnillo
+                datos={serieEntregas}
+                total={entregas.length}
+                etiquetaTotal=""
+                vacio={tProf("chartEmpty")}
+              />
+              <ul className="divide-y divide-linea">
+                {serieEntregas.map((fila) => (
+                  <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: fila.color }}
+                    />
+                    <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                    <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* ── 1. Bandeja de entregas pendientes de calificar en materias asignadas ── */}
       <Card>
         <CardContent className="pt-5">
