@@ -680,7 +680,7 @@ export async function calificarInscripcionMateria(
     }>(
       `UPDATE inscripcion i
           SET nota_final = $2,
-              estado = $3::estado_inscripcion,
+              estado = $3,
               updated_at = now()
          FROM materia m, estudiante e
         WHERE i.id = $1
