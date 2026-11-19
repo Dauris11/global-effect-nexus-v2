@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Script from "next/script";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { AplicadorApariencia } from "@/components/apariencia/aplicador-apariencia";
@@ -128,7 +129,9 @@ export default async function LayoutPortal({
     <>
       {/* Antes de pintar: sin esto la página sale clara un instante y luego se
           oscurece. El aplicador de abajo lo retira al salir del portal. */}
-      <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />
+      <Script id="apariencia-portal" strategy="afterInteractive">
+        {SCRIPT_APARIENCIA}
+      </Script>
       <AplicadorApariencia />
       <AppShell
         rol={usuario.rol}

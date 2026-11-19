@@ -66,7 +66,7 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
           // `key` con el número: la campana se balancea una vez al llegar un
           // aviso nuevo, no en bucle. Avisar sin insistir.
           <BellRing
-            key={sinLeer}
+            key={`icono-${sinLeer}`}
             className="animate-campaneo size-5 origin-top text-marca-500"
           />
         ) : (
@@ -77,7 +77,7 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
           // El número, no solo el punto: «tienes avisos» y «tienes doce» son
           // dos cosas distintas para quien decide si mirar ahora o después.
           <span
-            key={sinLeer}
+            key={`contador-${sinLeer}`}
             className="animate-contador absolute top-1 right-1 flex min-w-5 items-center justify-center rounded-full border-2 border-background bg-tinta px-1 text-[10px] font-semibold text-background"
           >
             {sinLeer > 9 ? "9+" : sinLeer}
