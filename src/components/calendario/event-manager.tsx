@@ -499,7 +499,7 @@ export function EventManager({
       <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span>{t("count", { n: visibles.length })}</span>
         {(aviso || moviendo) && (
-          <span className="font-medium text-[#187a99]">
+          <span className="font-medium text-marca-600">
             · {moviendo ? t("saving") : aviso}
           </span>
         )}
@@ -574,7 +574,7 @@ function Chip({
   onQuitar: () => void;
 }) {
   return (
-    <Badge className="gap-1 bg-[#2096BA]/15 text-[11px] text-[#187a99]">
+    <Badge className="gap-1 bg-marca-500/15 text-[11px] text-marca-600">
       {nombre}
       {/* La X de quitar el filtro no tenía ninguna clase: quedaba en 12×12px,
           la diana más pequeña de todo el sistema y justo la que se usa con el
@@ -584,7 +584,7 @@ function Chip({
         type="button"
         onClick={onQuitar}
         aria-label={nombre}
-        className="-mr-1 flex size-6 items-center justify-center rounded-full transition-colors hover:bg-[#2096BA]/25"
+        className="-mr-1 flex size-6 items-center justify-center rounded-full transition-colors hover:bg-marca-500/25"
       >
         <X className="size-3" />
       </button>
@@ -613,7 +613,7 @@ function FiltroMenu({
           <Filter className="size-4" />
           <span>{etiqueta}</span>
           {elegidas.length > 0 && (
-            <Badge className="ml-1 bg-[#2096BA]/15 px-1.5 text-[10px] text-[#187a99]">
+            <Badge className="ml-1 bg-marca-500/15 px-1.5 text-[10px] text-marca-600">
               {elegidas.length}
             </Badge>
           )}
@@ -753,7 +753,7 @@ function Pildora({
             )}
 
             <div className="flex flex-wrap gap-1">
-              <Badge className="bg-[#2096BA]/15 text-[10px] text-[#187a99]">
+              <Badge className="bg-marca-500/15 text-[10px] text-marca-600">
                 {t(`origin.${LLAVE_ORIGEN[entrada.origen]}`)}
               </Badge>
             </div>
@@ -827,7 +827,7 @@ function VistaMes({
                 className={cn(
                   "flex size-6 items-center justify-center rounded-full text-xs",
                   dia === hoy
-                    ? "bg-[#2096BA] font-bold text-white"
+                    ? "bg-marca-500 font-bold text-white"
                     : delMes
                       ? "text-muted-foreground"
                       : "text-muted-foreground/50",
@@ -945,7 +945,7 @@ function VistaSemana({
                   key={dia}
                   className={cn(
                     "border-r p-2 text-center last:border-r-0",
-                    dia === hoy && "bg-[#2096BA]/10",
+                    dia === hoy && "bg-marca-500/10",
                   )}
                 >
                   <p className="text-[11px] font-semibold capitalize">
@@ -955,7 +955,7 @@ function VistaSemana({
                     className={cn(
                       "text-xs tabular-nums",
                       dia === hoy
-                        ? "font-bold text-[#187a99]"
+                        ? "font-bold text-marca-600"
                         : "text-muted-foreground",
                     )}
                   >
@@ -1011,7 +1011,7 @@ function VistaSemana({
                   onDrop={() => onSoltar(dia, etiquetaHora(hora))}
                   className={cn(
                     "hover:bg-accent/40 space-y-0.5 border-r p-1 transition-colors last:border-r-0",
-                    dia === hoy && "bg-[#2096BA]/5",
+                    dia === hoy && "bg-marca-500/5",
                   )}
                 >
                   {enLaHora(porDia.get(dia), hora).map((entrada) => (
@@ -1109,7 +1109,7 @@ function VistaDia({
             <p
               className={cn(
                 "text-muted-foreground w-14 shrink-0 border-r p-2 text-[11px] tabular-nums",
-                dia === hoy && "bg-[#2096BA]/5",
+                dia === hoy && "bg-marca-500/5",
               )}
             >
               {etiquetaHora(hora)}

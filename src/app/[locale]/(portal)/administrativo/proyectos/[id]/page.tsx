@@ -94,6 +94,7 @@ export default async function PaginaDetalleProyectoGantt({
       progreso: tarea.progreso,
       hito: tarea.es_hito,
       tono: tarea.estado === "completada" ? "apagado" : "marca",
+      dependenciasIds: tarea.dependencias_ids,
     });
     porFase.set(titulo, seccion);
   }

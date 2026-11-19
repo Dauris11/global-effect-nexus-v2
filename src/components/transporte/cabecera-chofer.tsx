@@ -1,0 +1,221 @@
+"use client";
+
+import {
+  AlertTriangle,
+  Bus,
+  CalendarDays,
+  Clock,
+  Navigation,
+  Play,
+  Receipt,
+  Square,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link } from "@/i18n/navigation";
+import type {
+  TransporteHorario,
+  TransporteParada,
+  TransporteViaje,
+} from "@/lib/transporte";
+
+export function CabeceraChofer({
+  viajeActivo,
+  horarioSeleccionadoId,
+  horariosDisponibles,
+  paradas,
+  posicionGps,
+  cargando,
+  alCambiarHorario,
+  alCambiarParadaManual,
+  alIniciarViaje,
+  alFinalizarViaje,
+  alAbrirIncidencia,
+}: {
+  viajeActivo: TransporteViaje | null;
+  horarioSeleccionadoId: string;
+  horariosDisponibles: TransporteHorario[];
+  paradas: TransporteParada[];
+  posicionGps: {
+    lat: number;
+    lng: number;
+    rumbo: number;
+    velocidad: number;
+  } | null;
+  cargando: boolean;
+  alCambiarHorario: (id: string) => void;
+  alCambiarParadaManual: (paradaId: string) => void;
+  alIniciarViaje: () => void;
+  alFinalizarViaje: () => void;
+  alAbrirIncidencia: () => void;
+}) {
+  const t = useTranslations("transport");
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-linea pb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-10 items-center justify-center rounded-control bg-marca-50 text-marca-600">
+            <Bus className="size-5" />
+          </span>
+          <div>
+            <h2 className="texto-titulo-tarjeta">{t("driverCockpit")}</h2>
+          </div>
+        </div>
+
+        <Badge
+          variant={
+            viajeActivo?.estado === "en_curso"
+              ? "marca"
+              : viajeActivo?.estado === "averiado"
+                ? "destructive"
+                : "neutra"
+          }
+        >
+          {viajeActivo ? t(`status.${viajeActivo.estado}`) : t("standby")}
+        </Badge>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {!viajeActivo ? (
+          <div className="space-y-2">
+            <Label>{t("selectTrip")}</Label>
+            <Select
+              value={horarioSeleccionadoId}
+              onValueChange={alCambiarHorario}
+              disabled={cargando}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("chooseTripPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {horariosDisponibles.map((h) => (
+                  <SelectItem key={h.id} value={h.id}>
+                    {h.nombre} ({h.hora_salida})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-control bg-muted/60 p-3.5 text-sm">
+              <p className="font-semibold text-tinta">
+                {viajeActivo.horario_nombre}
+              </p>
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-tinta-2">
+                <span className="flex items-center gap-1">
+                  <Clock className="size-3" /> {t("departure")}:{" "}
+                  {viajeActivo.hora_salida}
+                </span>
+                {posicionGps && (
+                  <span className="flex items-center gap-1 font-medium text-marca-600">
+                    <Navigation className="size-3" />{" "}
+                    {Math.round(posicionGps.velocidad)} km/h
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {paradas.length > 0 && (
+              <div className="space-y-1.5">
+                <Label>{t("manualStopSelectorLabel")}</Label>
+                <Select
+                  value={viajeActivo.parada_actual_id ?? undefined}
+                  onValueChange={alCambiarParadaManual}
+                  disabled={cargando}
+                >
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder={t("selectStopPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {paradas.map((p) => (
+                      <SelectItem key={p.id} value={p.id} className="text-xs">
+                        {p.orden}. {p.nombre}{" "}
+                        {p.referencia ? `(${p.referencia})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-3">
+        {!viajeActivo ? (
+          <Button
+            size="lg"
+            onClick={alIniciarViaje}
+            disabled={cargando || !horarioSeleccionadoId}
+            className="h-16 w-full text-base font-semibold"
+          >
+            <Play className="mr-2 size-5 fill-current" />
+            {t("startTrip")}
+          </Button>
+        ) : (
+          <>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={alFinalizarViaje}
+              disabled={cargando}
+              className="h-14 w-full border-linea text-base font-semibold"
+            >
+              <Square className="mr-2 size-5 fill-current" />
+              {t("finishTrip")}
+            </Button>
+
+            <Button
+              size="lg"
+              variant="destructive"
+              onClick={alAbrirIncidencia}
+              disabled={cargando}
+              className="h-12 w-full text-sm font-semibold"
+            >
+              <AlertTriangle className="mr-2 size-4" />
+              {t("reportBreakdownButton")}
+            </Button>
+          </>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-linea pt-3">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+        >
+          <Link href="/administrativo/solicitudes?tipo=compra">
+            <Receipt className="size-3.5" />
+            <span>{t("requestMaintenanceOrPurchase")}</span>
+          </Link>
+        </Button>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+        >
+          <Link href="/reuniones">
+            <CalendarDays className="size-3.5" />
+            <span>{t("viewMeetings")}</span>
+          </Link>
+        </Button>
+      </div>
+    </Card>
+  );
+}

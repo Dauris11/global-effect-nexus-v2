@@ -120,29 +120,28 @@ export function TarjetaSolicitud({
 
           <p className="mt-1 truncate text-sm font-bold">{solicitud.titulo}</p>
 
-          <p className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <FilaDatos className="mt-1 text-xs">
             {mostrarSolicitante && solicitud.solicitante && (
-              <span className="flex items-center gap-1">
-                <User className="size-3" />
+              <Dato icono={User} className="text-xs">
                 {solicitud.solicitante}
-              </span>
+              </Dato>
             )}
             {solicitud.estudiante && solicitud.estudiante !== solicitud.solicitante && (
-              <span>{t("meta.student", { nombre: solicitud.estudiante })}</span>
+              <span className="text-muted-foreground">
+                {t("meta.student", { nombre: solicitud.estudiante })}
+              </span>
             )}
             {solicitud.monto !== null && (
-              <span className="flex items-center gap-1">
-                <DollarSign className="size-3" />
+              <Dato icono={DollarSign} className="text-xs">
                 {montoUsd(solicitud.monto)}
-              </span>
+              </Dato>
             )}
             {solicitud.fecha_requerida && (
-              <span className="flex items-center gap-1">
-                <CalendarDays className="size-3" />
+              <Dato icono={CalendarDays} className="text-xs">
                 {fechaConHora(solicitud.fecha_requerida, solicitud.hora_preferida, locale)}
-              </span>
+              </Dato>
             )}
-          </p>
+          </FilaDatos>
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-2">
@@ -285,7 +284,7 @@ export function TarjetaSolicitud({
               {error && (
                 <p
                   role="alert"
-                  className="flex items-center gap-2 rounded-lg bg-[#171A1D] px-3 py-2 text-xs text-white"
+                  className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
                 >
                   <AlertCircle className="size-3.5 shrink-0" />
                   {error}

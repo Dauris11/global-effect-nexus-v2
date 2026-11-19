@@ -149,6 +149,7 @@ export default async function PaginaGantt({
       fin: b.fin,
       detalle: b.detalle,
       editable,
+      dependenciasIds: b.dependencias_ids,
       progreso: b.clase === "proyecto" ? parseInt(b.detalle ?? "0", 10) : undefined,
       tono: CERRADAS.includes(b.estado)
         ? "apagado"

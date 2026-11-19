@@ -6549,7 +6549,8 @@
     "period": "Term",
     "all": "All",
     "families": "What to draw",
-    "noSelection": "Pick a term"
+    "noSelection": "Pick a term",
+    "dependsOn": "Depends on"
   },
   "historial360": {
     "title": "Global Effect 360",

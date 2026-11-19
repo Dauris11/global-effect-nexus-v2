@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { visualDeInscripcion } from "@/components/estudiante/prematricula-estado";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dato } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { cn } from "@/lib/utils";
 import {
@@ -199,24 +200,21 @@ function TarjetaOferta({
       {/* Horario, aula y profesor solo si existen: son opcionales en la
           materia y una línea de guiones no informa de nada. */}
       {(materia.horario || materia.aula || materia.profesor) && (
-        <div className="texto-meta mt-2 flex flex-col gap-1">
+        <div className="mt-2 flex flex-col gap-1">
           {materia.horario && (
-            <span className="flex items-center gap-1.5">
-              <Clock className="size-3.5 shrink-0" />
-              <span className="truncate">{materia.horario}</span>
-            </span>
+            <Dato icono={Clock} className="text-xs">
+              {materia.horario}
+            </Dato>
           )}
           {materia.aula && (
-            <span className="flex items-center gap-1.5">
-              <MapPin className="size-3.5 shrink-0" />
-              <span className="truncate">{materia.aula}</span>
-            </span>
+            <Dato icono={MapPin} className="text-xs">
+              {materia.aula}
+            </Dato>
           )}
           {materia.profesor && (
-            <span className="flex items-center gap-1.5">
-              <User className="size-3.5 shrink-0" />
-              <span className="truncate">{materia.profesor}</span>
-            </span>
+            <Dato icono={User} className="text-xs">
+              {materia.profesor}
+            </Dato>
           )}
         </div>
       )}

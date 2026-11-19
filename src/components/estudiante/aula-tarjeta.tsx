@@ -11,6 +11,7 @@ import {
 import { BotonBuzonMoodle } from "@/components/estudiante/boton-buzon-moodle";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dato } from "@/components/ui/dato";
 import type { Locale } from "@/i18n/routing";
 import { ENTREGA_VENCIDA, ESTADO_ENTREGA } from "@/lib/estado-entrega";
 import { fechaConHora } from "@/lib/fechas";
@@ -127,26 +128,22 @@ export function TarjetaAsignacion({
 
       {(evaluable || fila.fecha_entrega || enlazable) && (
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-linea pt-4">
-          <div className="texto-meta flex min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 flex-col gap-1">
             {evaluable && (
-              <span
-                className={cn(
-                  "flex items-center gap-1.5",
-                  vencida && "font-medium text-tinta",
-                )}
+              <Dato
+                icono={CalendarClock}
+                className={cn("text-xs", vencida && "font-medium text-tinta")}
               >
-                <CalendarClock className="size-4 shrink-0" aria-hidden />
                 {fila.fecha_vencimiento
                   ? `${textos.due} ${fechaConHora(fila.fecha_vencimiento, null, idioma)}`
                   : textos.noDue}
-              </span>
+              </Dato>
             )}
 
             {fila.fecha_entrega && (
-              <span className="flex items-center gap-1.5">
-                <Check className="size-4 shrink-0" aria-hidden />
+              <Dato icono={Check} className="text-xs">
                 {textos.delivered} {fechaConHora(fila.fecha_entrega, null, idioma)}
-              </span>
+              </Dato>
             )}
 
             {enlazable && (

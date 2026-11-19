@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { AccionesMateria } from "@/components/global360/acciones-materia";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dato } from "@/components/ui/dato";
 import { Progress } from "@/components/ui/progress";
 import type { Materia360Matricula } from "@/lib/moodle";
 import { cn } from "@/lib/utils";
@@ -141,20 +142,5 @@ export function MatriculaCuatrimestral360({
         })}
       </ul>
     </section>
-  );
-}
-
-function Dato({
-  icono: Icono,
-  children,
-}: {
-  icono: React.ComponentType<{ className?: string }>;
-  children: React.ReactNode;
-}) {
-  return (
-    <span className="flex items-center gap-2">
-      <Icono className="size-4 shrink-0 text-tinta-3" />
-      <span className="min-w-0 truncate">{children}</span>
-    </span>
   );
 }

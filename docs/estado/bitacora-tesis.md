@@ -583,6 +583,62 @@ junta varios recibos todavía no se puede emparejar con varios asientos.
 
 ---
 
+## 18 nov 2026 — Cierre de Portal Estudiantil/Académico, Dependencias Gantt, Modularización de Transporte y Limpieza UI (Gabriela)
+
+**Qué se pidió.** Cerrar los puntos pendientes del apartado de estudiantes y
+maestros (tope de créditos según pautas de la universidad del becado,
+parametrización de la nota mínima de Global Effect 360, protección en servidor
+contra retiros bajo el mínimo de 2 clases, filtros por materia y estado en Aula
+Virtual y retiro del estado `standby_tecnico`), además de las tareas pendientes
+de Operaciones/Gantt, Transporte/Chofer, Calendario y limpieza UI, dejando
+intactos los módulos asignados a Dauris (**Habitudes**, **Contabilidad**,
+**OCR** y **Expedientes**).
+
+**Decisiones y motivo.**
+1. *Tope de créditos por pauta de universidad (`UCATECI`, `UNPHU`, `UASD`, `UTESA`).*
+   En lugar de un número único fijo, `topeCreditosDeUniversidad` detecta la
+   institución registrada en `estudiante.universidad` (por siglas o nombre
+   completo) y aplica el tope oficial de cada universidad (`UCATECI`: 24 cr.,
+   `UNPHU`: 22 cr., `UASD`: 20 cr., `UTESA`: 24 cr., general: 24 cr.), todos
+   parametrizables en `/configuracion/parametros`. La comprobación ocurre dentro
+   del propio `INSERT` de `inscribirseEnMateria` para evitar condiciones de
+   carrera.
+2. *Protección en servidor del mínimo de 2 clases (`MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE`).*
+   Tanto `quitarseDeMateria` (carrera) como `retirarPrematricula` (Global Effect
+   360) impiden en SQL que un estudiante universitario baje de 2 clases activas
+   una vez cumplido el mínimo o iniciado el período académico. Para cambiar una
+   materia de carrera cuando ya tiene 2, inscribe primero la nueva (pasando a 3)
+   y luego retira la anterior (quedando en 2).
+3. *Filtros combinados en Aula Virtual (`?materia=&estado=`).* Ambos filtros
+   viven en la URL como enlaces de servidor, permitiendo compartir la vista y
+   combinar asignatura + estado sin perder el filtro activo al cambiar el otro.
+4. *Retiro de `standby_tecnico` (`0086`).* Tras el cierre de los cursos técnicos
+   (`0047`), `standby_tecnico` se sacó de `ESTADOS_ESTUDIANTE` y de los filtros
+   del embudo activo, migrando cualquier fila existente a `postulado` y
+   conservando su entrada en `ESTADO_VISUAL` como respaldo visual para registros
+   históricos.
+5. *Dependencias `tarea_dependencia` en Gantt y modularización de cabina del chofer.*
+   `LineaTiempo` dibuja conectores SVG curvos entre tareas dependientes y
+   permite saltar a las predecesoras desde el panel de detalle; `panel-chofer.tsx`
+   se partió en `cabecera-chofer.tsx`, `pasajeros-chofer.tsx` y
+   `dialogo-incidencia-chofer.tsx`.
+
+**Reparto de trabajo en GitHub (para coordinación con Dauris).**
+- **Hecho por Gabriela en esta entrega:** Portal del Estudiante, Portal Docente y
+  Académico (`360` y materias), Parámetros institucionales de becas/créditos,
+  Línea de Tiempo Gantt (`tarea_dependencia`), Cabina del Chofer modularizada,
+  limpieza de tokens en Calendario y Solicitudes, y retiro de componentes
+  huérfanos.
+- **Reservado para Dauris (sin tocar):** `Habitudes`, `Contabilidad`, `OCR` y
+  `Expedientes`.
+
+**Verificación.** `node scripts/auditar-i18n.mjs` (5,526 claves simétricas
+`es`/`en`), `node scripts/auditar-ui.mjs` (0 arcoíris, 0 hex sueltos, 0
+degradados) y `node --test scripts/probar-academico-360.mjs` (12/12 pruebas
+unitarias en verde).
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

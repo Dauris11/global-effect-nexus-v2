@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { AlertCircle, ExternalLink, X } from "lucide-react";
+import { AlertCircle, ExternalLink, GitBranch, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 
 /** Columna de nombres: queda fija mientras el eje se desplaza. */
 const ANCHO_ETIQUETA = 224;
+const ALTO_CABECERA_SECCION = 32;
+const ALTO_FILA_BARRA = 56;
 
 const TONO: Record<TonoBarra, string> = {
   marca: "bg-marca-500 text-white",
@@ -102,6 +104,7 @@ export function LineaTiempo({
     [secciones],
   );
   const todas = useMemo(() => visibles.flatMap((s) => s.barras), [visibles]);
+  const porId = useMemo(() => new Map(todas.map((b) => [b.id, b])), [todas]);
   const elegida = todas.find((b) => claveDe(b) === seleccion) ?? null;
 
   const fechasDe = (barra: BarraTiempo): Fechas => {
@@ -109,6 +112,69 @@ export function LineaTiempo({
     if (arrastre?.clave === clave) return derivar(arrastre);
     return cambios[clave] ?? { inicio: barra.inicio, fin: barra.fin };
   };
+
+  const altoCabeceraEje = escala === "periodo" ? 28 : 56;
+
+  const geometriaDependencias = useMemo(() => {
+    const posiciones = new Map<
+      string,
+      { xInicio: number; xFin: number; yCentro: number; clave: string }
+    >();
+    let cursorY = altoCabeceraEje;
+
+    for (const seccion of visibles) {
+      cursorY += ALTO_CABECERA_SECCION;
+      for (const barra of seccion.barras) {
+        const f =
+          arrastre?.clave === claveDe(barra)
+            ? derivar(arrastre)
+            : (cambios[claveDe(barra)] ?? { inicio: barra.inicio, fin: barra.fin });
+        const xInicio = diasEntre(inicio, f.inicio) * px;
+        const ancho = barra.hito ? px : (diasEntre(f.inicio, f.fin) + 1) * px;
+        posiciones.set(barra.id, {
+          xInicio,
+          xFin: xInicio + ancho,
+          yCentro: cursorY + ALTO_FILA_BARRA / 2,
+          clave: claveDe(barra),
+        });
+        cursorY += ALTO_FILA_BARRA;
+      }
+    }
+
+    const aristas: {
+      id: string;
+      d: string;
+      resaltada: boolean;
+    }[] = [];
+
+    for (const barra of todas) {
+      if (!barra.dependenciasIds || barra.dependenciasIds.length === 0) continue;
+      const destino = posiciones.get(barra.id);
+      if (!destino) continue;
+
+      for (const origenId of barra.dependenciasIds) {
+        const origen = posiciones.get(origenId);
+        if (!origen) continue;
+
+        const x1 = origen.xFin;
+        const y1 = origen.yCentro;
+        const x2 = Math.max(0, destino.xInicio - 4);
+        const y2 = destino.yCentro;
+        const codo = Math.max(18, Math.abs(x2 - x1) * 0.45);
+        const d = `M ${x1} ${y1} C ${x1 + codo} ${y1}, ${x2 - codo} ${y2}, ${x2} ${y2}`;
+        const resaltada =
+          seleccion === origen.clave || seleccion === destino.clave;
+
+        aristas.push({
+          id: `${origenId}->${barra.id}`,
+          d,
+          resaltada,
+        });
+      }
+    }
+
+    return { altoTotal: cursorY, aristas };
+  }, [visibles, todas, arrastre, cambios, inicio, px, altoCabeceraEje, seleccion]);
 
   const indiceHoy = diasEntre(inicio, hoy);
   const hayHoy = indiceHoy >= 0 && indiceHoy < totalDias;
@@ -347,9 +413,63 @@ export function LineaTiempo({
             </span>
           )}
 
+          {geometriaDependencias.aristas.length > 0 && (
+            <svg
+              aria-hidden
+              width={anchoPista}
+              height={geometriaDependencias.altoTotal}
+              style={{ left: ANCHO_ETIQUETA }}
+              className="pointer-events-none absolute top-0 z-15 overflow-visible"
+            >
+              <defs>
+                <marker
+                  id="flecha-dep-normal"
+                  viewBox="0 0 8 8"
+                  refX="6"
+                  refY="4"
+                  markerWidth="5"
+                  markerHeight="5"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 1 L 7 4 L 0 7 z" fill="var(--color-marca-600)" />
+                </marker>
+                <marker
+                  id="flecha-dep-activa"
+                  viewBox="0 0 8 8"
+                  refX="6"
+                  refY="4"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 1 L 7 4 L 0 7 z" fill="var(--color-tinta)" />
+                </marker>
+              </defs>
+              {geometriaDependencias.aristas.map((arista) => (
+                <path
+                  key={arista.id}
+                  d={arista.d}
+                  fill="none"
+                  stroke={
+                    arista.resaltada
+                      ? "var(--color-tinta)"
+                      : "var(--color-marca-600)"
+                  }
+                  strokeWidth={arista.resaltada ? 2 : 1.5}
+                  strokeDasharray={arista.resaltada ? undefined : "4 3"}
+                  markerEnd={
+                    arista.resaltada
+                      ? "url(#flecha-dep-activa)"
+                      : "url(#flecha-dep-normal)"
+                  }
+                />
+              ))}
+            </svg>
+          )}
+
           {visibles.map((seccion) => (
             <section key={seccion.clave}>
-              <div className="flex border-b border-linea bg-muted/50">
+              <div className="flex h-8 border-b border-linea bg-muted/50">
                 <p
                   className="texto-meta sticky left-0 z-10 flex items-center justify-between bg-muted/50 px-3 py-1.5 font-medium uppercase"
                   style={{ width: ANCHO_ETIQUETA }}
@@ -392,6 +512,15 @@ export function LineaTiempo({
                           />
                         )}
                         <span className="truncate">{barra.titulo}</span>
+                        {barra.dependenciasIds && barra.dependenciasIds.length > 0 && (
+                          <span
+                            title={`${t("dependsOn")}: ${barra.dependenciasIds.length}`}
+                            className="ml-auto inline-flex shrink-0 items-center gap-0.5 rounded-full bg-marca-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-marca-700"
+                          >
+                            <GitBranch className="size-2.5" aria-hidden />
+                            {barra.dependenciasIds.length}
+                          </span>
+                        )}
                       </p>
                       <p className="texto-meta truncate">
                         {[barra.claseEtiqueta, barra.grupo]
@@ -592,6 +721,31 @@ export function LineaTiempo({
               <div className="col-span-2">
                 <dt className="sr-only">{elegida.claseEtiqueta}</dt>
                 <dd className="font-medium text-tinta">{elegida.detalle}</dd>
+              </div>
+            )}
+            {elegida.dependenciasIds && elegida.dependenciasIds.length > 0 && (
+              <div className="col-span-2 sm:col-span-4">
+                <dt className="texto-meta flex items-center gap-1.5">
+                  <GitBranch className="size-3.5 text-marca-600" aria-hidden />
+                  {t("dependsOn")}
+                </dt>
+                <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                  {elegida.dependenciasIds.map((depId) => {
+                    const predecesora = porId.get(depId);
+                    if (!predecesora) return null;
+                    return (
+                      <button
+                        key={depId}
+                        type="button"
+                        onClick={() => setSeleccion(claveDe(predecesora))}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-marca-500/15 px-2.5 py-1 text-xs font-medium text-marca-700 transition-colors hover:bg-marca-500/25"
+                      >
+                        <GitBranch className="size-3" aria-hidden />
+                        <span>{predecesora.titulo}</span>
+                      </button>
+                    );
+                  })}
+                </dd>
               </div>
             )}
           </dl>

@@ -36,6 +36,8 @@ export type BarraTiempo = {
   enlace?: string;
   /** Qué hay que atender: se dice con un icono, no con un color. */
   aviso?: boolean;
+  /** Identificadores de las tareas predecesoras (`tarea_dependencia.tarea_origen_id`). */
+  dependenciasIds?: string[];
 };
 
 export type SeccionTiempo = {

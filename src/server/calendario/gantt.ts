@@ -61,6 +61,8 @@ export type Barra = {
   estado: string;
   /** Una línea corta de contexto: entregas recibidas, progreso, inscritos. */
   detalle: string | null;
+  /** Tareas predecesoras de las que depende esta barra (`tarea_dependencia`). */
+  dependencias_ids?: string[];
 };
 
 export type Familia_Resultado = {
@@ -224,7 +226,8 @@ export async function familiaOperaciones(
             p.fecha_inicio::text AS inicio,
             p.fecha_fin::text    AS fin,
             p.estado,
-            coalesce(p.progreso, 0)::text || '%' AS detalle
+            coalesce(p.progreso, 0)::text || '%' AS detalle,
+            ARRAY[]::text[] AS dependencias_ids
        FROM proyecto p
       WHERE p.fecha_inicio IS NOT NULL
         AND p.fecha_fin IS NOT NULL
@@ -239,7 +242,12 @@ export async function familiaOperaciones(
             coalesce(t.fecha_inicio, t.created_at::date)::text,
             t.fecha_limite::text,
             t.estado,
-            t.prioridad
+            t.prioridad,
+            ARRAY(
+              SELECT td.tarea_origen_id::text
+                FROM tarea_dependencia td
+               WHERE td.tarea_destino_id = t.id
+            ) AS dependencias_ids
        FROM tarea t
        LEFT JOIN proyecto pr ON pr.id = t.proyecto_id
       WHERE t.fecha_limite IS NOT NULL

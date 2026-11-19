@@ -6549,7 +6549,8 @@
     "period": "Período",
     "all": "Todo",
     "families": "Qué dibujar",
-    "noSelection": "Elige un período"
+    "noSelection": "Elige un período",
+    "dependsOn": "Depende de"
   },
   "historial360": {
     "title": "Global Effect 360",
