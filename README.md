@@ -21,7 +21,7 @@
 >
 > **Hecho:** landing pública y login por portal; portales de estudiante, docente, administrativo y contabilidad; Académico y Global Effect 360 (aula virtual); Expedientes con OCR y **historial de etapas**; Contabilidad dominicana (ASFL); Solicitudes y aprobaciones; Patrocinadores; Servicios mensuales; **Transporte** con mapa en vivo, GPS del chofer y recorrido real; Habitudes; Inventario con QR; y **Elly AI**.
 >
-> **Elly AI** (asistente por rol) funciona con **Gemini** (u OpenAI, con una variable) y tiene capas de seguridad (alcance solo de la Fundación, rechazo de código/JSON/órdenes, datos como no confiables). La base de conocimiento la edita administración. **Cartas mensuales a patrocinadores:** el agente revisa y traduce lo que los becados escriben al buzón de la Fundación, y el cumplimiento del mes se deriva solo en la planilla de servicios; falta conectar un buzón real (ver `entregables-expediente.md`, sección E).
+> **Elly AI** (asistente por rol) funciona con **Gemini**, **Groq** u **OpenAI** (se elige con una variable) y tiene capas de seguridad (alcance solo de la Fundación, rechazo de código/JSON/órdenes, datos como no confiables). La base de conocimiento la edita administración. **Cartas mensuales a patrocinadores:** el agente revisa y traduce lo que los becados escriben al buzón de la Fundación, y el cumplimiento del mes se deriva solo en la planilla de servicios; falta conectar un buzón real (ver `entregables-expediente.md`, sección E).
 >
 > **Sistema visual:** norma en [`docs/09-sistema-visual.md`](docs/09-sistema-visual.md) (turquesa `#2096BA`, Inter; si una pantalla y el documento no coinciden, gana el documento).
 >
@@ -98,7 +98,8 @@ cp .env.example .env.local
 | `SUPABASE_STORAGE_BUCKET` | Bucket de documentos y expedientes | `documentos` |
 | `RESEND_API_KEY` · `RESEND_FROM` | Envío de correos (aviso de tarea asignada) | panel de Resend |
 | `N8N_WEBHOOK_URL` | Webhook de automatizaciones (CRM/notificaciones) | instancia de n8n |
-| `IA_PROVEEDOR` | Qué proveedor usa Elly AI: `gemini` (capa gratuita, por ahora) u `openai` | tú eliges |
+| `IA_PROVEEDOR` | Qué proveedor usa Elly AI: `gemini` (capa gratuita, por ahora), `groq` (plan gratuito) u `openai` (de pago) | tú eliges |
+| `GROQ_API_KEY` · `GROQ_MODEL` · `GROQ_MODEL_VISION` | Elly AI con Groq. No lee PDF; el OCR de imágenes exige un modelo de visión en `GROQ_MODEL_VISION` | [console.groq.com/keys](https://console.groq.com/keys) |
 | `GEMINI_API_KEY` · `GEMINI_MODEL` | Elly AI con Gemini | [Google AI Studio](https://aistudio.google.com/apikey) |
 | `OPENAI_API_KEY` · `OPENAI_MODEL` | Elly AI con OpenAI (**la API no es gratis**: la cuenta necesita saldo) | [platform.openai.com](https://platform.openai.com/api-keys) |
 | `CORREO_ENTRANTE_SECRET` | Secreto con el que el buzón de la Fundación llama a `/api/correo/entrante` (cartas a patrocinadores) | cualquier cadena larga y aleatoria |

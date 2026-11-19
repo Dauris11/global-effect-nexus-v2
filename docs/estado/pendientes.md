@@ -1672,3 +1672,15 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [ ] Para usar OpenAI: cargar saldo en la cuenta, poner `IA_PROVEEDOR=openai` y
       correr `npx tsx scripts/probar-modelo-vivo.ts`. Para cambiar de proveedor
       en Vercel basta cambiar esa variable y redesplegar.
+
+- [x] Elly AI admite **Groq** (plan gratuito) como tercera opción: reutiliza el
+      adaptador de Chat Completions (`src/lib/openai-cliente.ts` ahora es una
+      fábrica) con otra dirección, clave (`GROQ_API_KEY`) y modelo
+      (`llama-3.3-70b-versatile`). Selección probada en los cinco casos de
+      configuración.
+- [ ] Probar Groq en vivo: poner `GROQ_API_KEY`, `IA_PROVEEDOR=groq` y correr
+      `npx tsx scripts/probar-modelo-vivo.ts`. Falta comprobar con una clave real
+      las llamadas a herramientas con Llama (pueden fallar más que en GPT/Gemini),
+      los límites del plan gratuito y cómo trata Groq los datos enviados.
+- [ ] Groq no lee PDF y para imágenes necesita `GROQ_MODEL_VISION`; sin eso el OCR
+      responde «ilegible» y se captura a mano.

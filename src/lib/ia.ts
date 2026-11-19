@@ -1,5 +1,5 @@
 import { ErrorModelo } from "@/lib/gemini";
-import { hayClaveIA, llamarModelo, modeloIA } from "@/lib/modelo-ia";
+import { capacidadesIA, hayClaveIA, llamarModelo, modeloIA } from "@/lib/modelo-ia";
 
 /**
  * Cliente del modelo para los asistentes del sistema.
@@ -216,7 +216,13 @@ export async function leerDocumento(
 ): Promise<LecturaDocumento> {
   if (!hayClaveIA()) return { estado: "sin_clave" };
 
-  const modelo = modeloIA();
+  // Algunos proveedores no leen PDF o no tienen modelo de visión (Groq). Se dice
+  // «ilegible» y la pantalla manda a capturarlo a mano, que es lo correcto.
+  const lee = capacidadesIA();
+
+  if (archivo.mime === "application/pdf" ? !lee.pdf : !lee.imagen) return { estado: "ilegible" };
+
+  const modelo = modeloIA(undefined, { vision: true });
 
   try {
     const respuesta = await llamarModelo({

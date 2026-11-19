@@ -895,6 +895,33 @@ saldo.
 
 ---
 
+## 19 nov 2026 — Groq como tercera opción de proveedor
+
+**Petición.** Agregar Groq como otra opción gratuita para las pruebas.
+
+**Decisiones y por qué.**
+- Groq expone la **misma API que OpenAI** (Chat Completions), así que no se
+  escribió un tercer adaptador: `openai-cliente.ts` pasó a ser una fábrica
+  (`crearClienteChat`) que recibe dirección, variable de la clave y modelo, y
+  `groq-cliente.ts` es una configuración de unas pocas líneas. `modelo-ia.ts`
+  elige entre `gemini`, `groq` y `openai` con `IA_PROVEEDOR`.
+- **Modelo por defecto `llama-3.3-70b-versatile`**, de los de producción que
+  lista la documentación oficial de Groq y con llamadas a herramientas.
+- **Limitaciones declaradas, no ocultas:** Groq no lee PDF y las imágenes solo con
+  un modelo de visión que debe indicarse (`GROQ_MODEL_VISION`); no se adivinó un
+  identificador. Sin eso, el OCR responde «ilegible» y la pantalla pide capturar a
+  mano. Un modelo guardado de otro proveedor en la configuración de un agente se
+  ignora.
+- **No se afirman cifras del plan gratuito ni la política de datos de Groq:** la
+  documentación consultada no las mostraba; se dejó como tarea comprobarlas en la
+  consola con una clave real.
+
+**Verificación.** `tsc`, `lint`, `build`, las 58 pruebas y un script que ejercita
+la elección de proveedor y de modelo en cinco configuraciones. **Groq en vivo: sin
+probar** (aún no hay clave).
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

@@ -33,7 +33,7 @@
 | **Resend** | Envío de correos (notificaciones de tareas, patrocinadores) | `RESEND_API_KEY`, `RESEND_FROM` |
 | **n8n** | Webhooks a CRM / orquestación de notificaciones | `N8N_WEBHOOK_URL` |
 | **GENIALiA** | CRM institucional (sincronización de contactos/leads vía n8n) | (a través de n8n) |
-| **IA (OpenAI o Gemini)** | Elly AI: chat con herramientas, OCR de expedientes y revisión/traducción de cartas, por REST con `fetch`, sin SDK. `src/lib/modelo-ia.ts` elige el proveedor con `IA_PROVEEDOR` (`gemini` por ahora: capa gratuita; `openai` listo, requiere saldo) | `IA_PROVEEDOR`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OPENAI_API_KEY`, `OPENAI_MODEL` |
+| **IA (Gemini, Groq u OpenAI)** | Elly AI: chat con herramientas, OCR de expedientes y revisión/traducción de cartas, por REST con `fetch`, sin SDK. `src/lib/modelo-ia.ts` elige el proveedor con `IA_PROVEEDOR`: `gemini` y `groq` tienen plan gratuito; `openai` requiere saldo. Groq y OpenAI comparten adaptador (Chat Completions) | `IA_PROVEEDOR`, `GEMINI_*`, `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_MODEL_VISION`, `OPENAI_*` |
 
 Plantilla completa en [`.env.example`](../.env.example).
 
