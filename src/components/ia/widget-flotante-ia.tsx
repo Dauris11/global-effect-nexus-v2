@@ -118,24 +118,25 @@ export function WidgetFlotanteIA({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const toggleAbierto = () => {
-    setAbierto((prev) => {
-      const nuevo = !prev;
-      if (nuevo) void miConsumoIA().then(setConsumo).catch(() => {});
+    const nuevo = !abierto;
+    setAbierto(nuevo);
 
-      if (nuevo && !historialCargadoRef.current) {
-        historialCargadoRef.current = true;
-        setCargandoHistorial(true);
-        obtenerHistorialWidget()
-          .then((datos) => {
-            setMensajes(datos);
-          })
-          .catch(() => {})
-          .finally(() => {
-            setCargandoHistorial(false);
-          });
-      }
-      return nuevo;
-    });
+    if (nuevo) {
+      void miConsumoIA().then(setConsumo).catch(() => {});
+    }
+
+    if (nuevo && !historialCargadoRef.current) {
+      historialCargadoRef.current = true;
+      setCargandoHistorial(true);
+      obtenerHistorialWidget()
+        .then((datos) => {
+          setMensajes(datos);
+        })
+        .catch(() => {})
+        .finally(() => {
+          setCargandoHistorial(false);
+        });
+    }
   };
 
   // Desplazar al último mensaje automáticamente
