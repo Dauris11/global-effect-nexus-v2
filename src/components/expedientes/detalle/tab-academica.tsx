@@ -7,6 +7,7 @@ import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
 import { Historial360 } from "@/components/expedientes/historial-360";
 import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { VincularCatalogo } from "@/components/universidades/vincular-catalogo";
 import { Badge } from "@/components/ui/badge";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -61,6 +62,12 @@ export async function TabUniversidad({
         />
       </Seccion>
       <Seccion titulo={tc("link.title")}>
+        {catalogo.universidad && (
+          <div className="mb-4 flex items-center gap-3">
+            <LogoUniversidad siglas={catalogo.universidad.siglas} url={catalogo.universidad.logo} className="size-12" />
+            <p className="font-semibold">{catalogo.universidad.nombre}</p>
+          </div>
+        )}
         {arbol && mensajes ? (
           <NextIntlClientProvider messages={mensajes}>
             <VincularCatalogo

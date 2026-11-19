@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import {
   BotonQuitarMateria,
   FormCargaMaterias,
@@ -62,7 +63,12 @@ export default async function PaginaCarrera({
   return (
     <div className="animate-entrada mx-auto max-w-4xl space-y-6">
       <EncabezadoPagina
-        titulo={`${carrera.siglas} · ${carrera.nombre}`}
+        titulo={
+          <span className="inline-flex items-center gap-3">
+            <LogoUniversidad siglas={carrera.siglas} url={carrera.logo} className="size-10" />
+            {carrera.siglas} · {carrera.nombre}
+          </span>
+        }
         acciones={
           <Button asChild variant="outline" size="sm">
             <Link href={`/academico/universidades/${carrera.universidad_id}`}>

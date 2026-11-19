@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { VincularCuenta } from "@/components/expedientes/vincular-cuenta";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ export async function PortadaExpediente({
   cuentasLibres,
   puedeEditar,
   tiempo,
+  universidadCatalogo,
 }: {
   expediente: Pick<
     ExpedienteCompleto,
@@ -58,6 +60,8 @@ export async function PortadaExpediente({
   cuenta: CuentaVinculada | null;
   cuentasLibres: CuentaSinVincular[];
   puedeEditar: boolean;
+  /** Universidad elegida del catálogo, con su logo; `null` si aún no se eligió. */
+  universidadCatalogo: { siglas: string; logo: string | null } | null;
   /** «1 año y 8 meses» en la Fundación, ya redactado; `null` sin fecha de ingreso. */
   tiempo: string | null;
 }) {
@@ -95,7 +99,16 @@ export async function PortadaExpediente({
           </div>
 
           <FilaDatos>
-            {estudios && <Dato icono={GraduationCap}>{estudios}</Dato>}
+            {universidadCatalogo ? (
+              <Dato icono={GraduationCap}>
+                <span className="inline-flex items-center gap-2">
+                  <LogoUniversidad siglas={universidadCatalogo.siglas} url={universidadCatalogo.logo} className="size-6" />
+                  {estudios ?? universidadCatalogo.siglas}
+                </span>
+              </Dato>
+            ) : (
+              estudios && <Dato icono={GraduationCap}>{estudios}</Dato>
+            )}
             {expediente.programa && <Dato icono={BookOpen}>{expediente.programa}</Dato>}
             {expediente.cedula && <Dato icono={IdCard}>{expediente.cedula}</Dato>}
             {expediente.fecha_ingreso ? (

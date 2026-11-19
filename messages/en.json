@@ -7073,14 +7073,17 @@
       "loadPlaceholder": "ISC-101 ; Introduction to programming ; 4 ; 1 ;\nISC-201 ; Data structures ; 3 ; 2 ; ISC-101",
       "loadHelp": "One subject per line: code ; name ; credits ; term ; prerequisites (comma-separated). Empty credits count as 3. An existing code is updated.",
       "loaded": "{count} subjects loaded.",
-      "rejected": "These lines could not be read: {lines}."
+      "rejected": "These lines could not be read: {lines}.",
+      "fromFile": "Load from a file (.csv or .txt)"
     },
     "errors": {
       "no_permitido": "You don't have permission to change the catalog.",
       "no_encontrado": "What you are trying to change was not found.",
       "dato_invalido": "Check the data: something is missing or in the wrong format.",
       "duplicado": "One with that name or code already exists.",
-      "error": "It could not be saved. Try again."
+      "error": "It could not be saved. Try again.",
+      "logo_invalido": "The logo must be PNG, JPG or WebP.",
+      "logo_grande": "The logo is larger than 1 MB."
     },
     "link": {
       "title": "University, program and curriculum",
@@ -7123,6 +7126,11 @@
       "confirmedBadge": "Rules verified",
       "pendingBadge": "Rules to be confirmed",
       "summary": "Points: {points} · Passes from {min} · Withdrawn: {withdrawn} · {rounding}"
+    },
+    "logo": {
+      "label": "Logo (PNG, JPG or WebP)",
+      "help": "Up to 1 MB. Without a logo the acronym is shown.",
+      "remove": "Remove the current logo"
     }
   }
 }

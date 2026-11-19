@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { urlDeAvatar } from "@/lib/supabase/almacen";
 
 /**
  * Lecturas del catálogo universidad → carrera → pénsum → materias. Los tipos
@@ -13,6 +14,7 @@ export type UniversidadCatalogo = {
   nombre: string;
   regimen: Regimen;
   activa: boolean;
+  logo: string | null;
   carreras: number;
   estudiantes: number;
 };
@@ -47,13 +49,15 @@ export type MateriaPensum = {
 };
 
 export async function universidadesCatalogo(): Promise<UniversidadCatalogo[]> {
-  return consultar<UniversidadCatalogo>(
-    `SELECT u.id, u.siglas, u.nombre, u.regimen, u.activa,
+  const filas = await consultar<Omit<UniversidadCatalogo, "logo"> & { logo_ruta: string | null }>(
+    `SELECT u.id, u.siglas, u.nombre, u.regimen, u.activa, u.logo_ruta,
             (SELECT count(*)::int FROM carrera c WHERE c.universidad_id = u.id) AS carreras,
             (SELECT count(*)::int FROM estudiante e WHERE e.universidad_id = u.id) AS estudiantes
        FROM universidad u
       ORDER BY u.activa DESC, u.siglas`,
   );
+
+  return filas.map(({ logo_ruta, ...u }) => ({ ...u, logo: urlDeAvatar(logo_ruta) }));
 }
 
 export async function carrerasDeUniversidad(universidadId: string): Promise<CarreraCatalogo[]> {
@@ -77,21 +81,33 @@ export type ReglasUniversidad = {
 };
 
 export async function universidadPorId(id: string) {
-  return consultarUna<{ id: string; siglas: string; nombre: string; regimen: Regimen; activa: boolean } & ReglasUniversidad>(
-    `SELECT id, siglas, nombre, regimen, activa, puntos_por_letra, letra_minima_aprobar,
+  const fila = await consultarUna<{ id: string; siglas: string; nombre: string; regimen: Regimen; activa: boolean; logo_ruta: string | null } & ReglasUniversidad>(
+    `SELECT id, siglas, nombre, regimen, activa, logo_ruta, puntos_por_letra, letra_minima_aprobar,
             retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas
        FROM universidad WHERE id = $1`,
     [id],
   );
+
+  if (!fila) return null;
+
+  const { logo_ruta, ...resto } = fila;
+
+  return { ...resto, logo: urlDeAvatar(logo_ruta) };
 }
 
 export async function carreraPorId(id: string) {
-  return consultarUna<{ id: string; nombre: string; activa: boolean; universidad_id: string; siglas: string; regimen: Regimen }>(
-    `SELECT c.id, c.nombre, c.activa, c.universidad_id, u.siglas, u.regimen
+  const fila = await consultarUna<{ id: string; nombre: string; activa: boolean; universidad_id: string; siglas: string; regimen: Regimen; logo_ruta: string | null }>(
+    `SELECT c.id, c.nombre, c.activa, c.universidad_id, u.siglas, u.regimen, u.logo_ruta
        FROM carrera c JOIN universidad u ON u.id = c.universidad_id
       WHERE c.id = $1`,
     [id],
   );
+
+  if (!fila) return null;
+
+  const { logo_ruta, ...resto } = fila;
+
+  return { ...resto, logo: urlDeAvatar(logo_ruta) };
 }
 
 export async function pensumsDeCarrera(carreraId: string): Promise<PensumCatalogo[]> {
@@ -141,7 +157,7 @@ export async function arbolCatalogo(): Promise<ArbolCatalogo> {
 /** El catálogo elegido por un estudiante y su avance sobre el pénsum. */
 export type CatalogoDelEstudiante = {
   matricula: string | null;
-  universidad: { id: string; siglas: string; nombre: string; regimen: Regimen } | null;
+  universidad: { id: string; siglas: string; nombre: string; regimen: Regimen; logo: string | null } | null;
   carrera: { id: string; nombre: string } | null;
   pensum: { id: string; version: string } | null;
   materias: (MateriaPensum & { estado: "aprobada" | "cursando" | "pendiente" })[];
@@ -159,6 +175,7 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
   const base = await consultarUna<{
     matricula: string | null;
     uni_id: string | null;
+    logo_ruta: string | null;
     siglas: string | null;
     uni_nombre: string | null;
     regimen: Regimen | null;
@@ -167,7 +184,7 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
     pensum_id: string | null;
     version: string | null;
   }>(
-    `SELECT e.matricula, u.id AS uni_id, u.siglas, u.nombre AS uni_nombre, u.regimen,
+    `SELECT e.matricula, u.id AS uni_id, u.logo_ruta, u.siglas, u.nombre AS uni_nombre, u.regimen,
             c.id AS carrera_id, c.nombre AS carrera_nombre,
             p.id AS pensum_id, p.version
        FROM estudiante e
@@ -180,7 +197,7 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
 
   const vacio: CatalogoDelEstudiante = {
     matricula: base?.matricula ?? null,
-    universidad: base?.uni_id && base.siglas ? { id: base.uni_id, siglas: base.siglas, nombre: base.uni_nombre ?? "", regimen: base.regimen ?? "cuatrimestre" } : null,
+    universidad: base?.uni_id && base.siglas ? { id: base.uni_id, logo: urlDeAvatar(base.logo_ruta), siglas: base.siglas, nombre: base.uni_nombre ?? "", regimen: base.regimen ?? "cuatrimestre" } : null,
     carrera: base?.carrera_id ? { id: base.carrera_id, nombre: base.carrera_nombre ?? "" } : null,
     pensum: base?.pensum_id ? { id: base.pensum_id, version: base.version ?? "" } : null,
     materias: [],

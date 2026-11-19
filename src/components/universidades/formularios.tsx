@@ -128,6 +128,7 @@ export function FormUniversidad({
 }: {
   universidad?: {
     id: string; siglas: string; nombre: string; regimen: string; activa: boolean;
+    logo: string | null;
     puntos_por_letra: Record<string, number>; letra_minima_aprobar: string;
     retirada_cuenta_en_divisor: boolean; redondeo_indice: string; reglas_confirmadas: boolean;
   };
@@ -156,6 +157,18 @@ export function FormUniversidad({
                 ))}
               </select>
             </Campo>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`u-logo-${k}`}>{t("logo.label")}</Label>
+            <input id={`u-logo-${k}`} name="logo" type="file" accept="image/png,image/jpeg,image/webp"
+              className="block w-full text-sm file:mr-3 file:rounded-control file:border file:border-linea-fuerte file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium" />
+            <p className="texto-meta">{t("logo.help")}</p>
+            {universidad?.logo && (
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="quitar_logo" value="si" className="size-4" />
+                {t("logo.remove")}
+              </label>
+            )}
           </div>
           <p className="text-sm font-semibold">{t("rules.title")}</p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -273,6 +286,19 @@ export function FormCargaMaterias({ pensumId }: { pensumId: string }) {
       <Campo id="carga-lista" etiqueta={t("pensum.load")}>
         <Textarea id="carga-lista" name="lista" required rows={6} placeholder={t("pensum.loadPlaceholder")} className="font-mono text-sm" />
       </Campo>
+      {/* Lee un .csv/.txt (p. ej. exportado de Excel con «;») y lo pone en el cuadro
+          para revisarlo antes de cargar. No sube el archivo al servidor. */}
+      <div className="space-y-1.5">
+        <Label htmlFor="carga-archivo">{t("pensum.fromFile")}</Label>
+        <input id="carga-archivo" type="file" accept=".csv,.txt,.tsv,text/plain,text/csv"
+          className="block w-full text-sm file:mr-3 file:rounded-control file:border file:border-linea-fuerte file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium"
+          onChange={async (e) => {
+            const archivo = e.target.files?.[0];
+            const cuadro = document.getElementById("carga-lista") as HTMLTextAreaElement | null;
+
+            if (archivo && cuadro && archivo.size <= 200_000) cuadro.value = await archivo.text();
+          }} />
+      </div>
       <p className="texto-meta">{t("pensum.loadHelp")}</p>
     </Cascaron>
   );

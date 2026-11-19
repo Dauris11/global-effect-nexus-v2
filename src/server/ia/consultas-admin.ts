@@ -241,6 +241,9 @@ export async function documentosDeConocimiento(
   agentesVisibles: readonly string[] | null,
 ): Promise<DocumentoConocimiento[]> {
   const dias = Number((await parametros())["asistente.dias_sin_verificar"]);
+  // Los agentes se leen con una subconsulta y no con array_agg(agentes)[1]: agregar
+  // arreglos da uno bidimensional, indexar con [1] devuelve NULL y la página
+  // reventaba al recorrerlos.
   const filas = await consultar<{
     documento_id: string;
     titulo: string | null;
@@ -253,7 +256,11 @@ export async function documentosDeConocimiento(
     activo: boolean;
   }>(
     `SELECT fuente_id AS documento_id, max(titulo) AS titulo, max(fuente) AS fuente,
-            max(version) AS version, (array_agg(agentes))[1] AS agentes,
+            max(version) AS version,
+            -- Los agentes son iguales en todos los fragmentos del documento.
+            (SELECT g.agentes FROM fragmento_conocimiento g
+              WHERE g.fuente_id = fragmento_conocimiento.fuente_id
+              ORDER BY g.orden, g.created_at LIMIT 1) AS agentes,
             count(*) AS fragmentos, max(verificado_el)::text AS verificado_el,
             (max(verificado_el) IS NULL
                OR max(verificado_el) < current_date - $2::int) AS sin_verificar,
@@ -270,7 +277,7 @@ export async function documentosDeConocimiento(
     titulo: f.titulo ?? "—",
     fuente: f.fuente,
     version: f.version,
-    agentes: f.agentes,
+    agentes: f.agentes ?? [],
     fragmentos: Number(f.fragmentos),
     verificadoEl: f.verificado_el,
     sinVerificar: f.sin_verificar,

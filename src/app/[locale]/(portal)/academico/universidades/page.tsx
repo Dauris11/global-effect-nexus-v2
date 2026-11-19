@@ -3,6 +3,7 @@ import { ChevronRight, Landmark } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FormUniversidad } from "@/components/universidades/formularios";
 import { Badge } from "@/components/ui/badge";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -51,9 +52,7 @@ export default async function PaginaUniversidades({ params }: { params: Promise<
           {universidades.map((u) => (
             <li key={u.id}>
               <Link href={`/academico/universidades/${u.id}`} className="flex items-center gap-3 p-4 hover:bg-muted">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-700">
-                  <Landmark className="size-5" />
-                </span>
+                <LogoUniversidad siglas={u.siglas} url={u.logo} className="size-12" />
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{u.siglas}</span>
                   <span className="texto-meta block truncate">{u.nombre}</span>

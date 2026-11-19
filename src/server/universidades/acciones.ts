@@ -8,6 +8,7 @@ import { consultarUna, enTransaccion } from "@/lib/db";
 import { leerPuntosPorLetra } from "@/lib/indice-academico";
 import { leerListaDePensum } from "@/lib/pensum";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { subirAvatar } from "@/lib/supabase/almacen";
 
 /**
  * Escrituras del catálogo universidad → carrera → pénsum → materias.
@@ -27,6 +28,8 @@ export type EstadoCatalogo = {
     | "no_encontrado"
     | "dato_invalido"
     | "duplicado"
+    | "logo_invalido"
+    | "logo_grande"
     | "error";
   /** Materias cargadas / líneas rechazadas, para la carga por lista. */
   cargadas?: number;
@@ -42,6 +45,22 @@ async function conPermiso(permiso: "catalogo.escribir" | "expedientes.escribir")
   const usuario = await requerirUsuario();
 
   return usuarioTienePermiso(usuario, permiso) ? usuario : null;
+}
+
+const MAXIMO_LOGO = 1024 * 1024;
+
+/**
+ * El tipo que declara el navegador no basta: se mira la firma del archivo. Solo
+ * PNG, JPEG y WebP; SVG queda fuera a propósito porque puede llevar scripts.
+ */
+function extensionDeLogo(bytes: Uint8Array): "png" | "jpg" | "webp" | null {
+  const es = (...firma: number[]) => firma.every((b, i) => bytes[i] === b);
+
+  if (es(0x89, 0x50, 0x4e, 0x47)) return "png";
+  if (es(0xff, 0xd8, 0xff)) return "jpg";
+  if (es(0x52, 0x49, 0x46, 0x46) && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return "webp";
+
+  return null;
 }
 
 /** Los códigos de error únicos de Postgres se dicen como «duplicado». */
@@ -75,6 +94,22 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
     return { estado: "dato_invalido" };
   }
 
+  // El logo se valida ANTES de escribir nada: un logo malo no debe dejar la
+  // universidad creada a medias.
+  const archivo = d.get("logo");
+  let logo: { bytes: Uint8Array; extension: "png" | "jpg" | "webp"; tipo: string } | null = null;
+
+  if (archivo instanceof File && archivo.size > 0) {
+    if (archivo.size > MAXIMO_LOGO) return { estado: "logo_grande" };
+
+    const bytes = new Uint8Array(await archivo.arrayBuffer());
+    const extension = extensionDeLogo(bytes);
+
+    if (!extension) return { estado: "logo_invalido" };
+    logo = { bytes, extension, tipo: extension === "jpg" ? "image/jpeg" : `image/${extension}` };
+  }
+  const quitarLogo = d.get("quitar_logo") === "si";
+
   try {
     const fila = id
       ? await consultarUna<{ id: string }>(
@@ -93,12 +128,25 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
 
     if (!fila) return { estado: "no_encontrado" };
 
+    if (logo) {
+      const ruta = `universidades/${fila.id}.${logo.extension}`;
+      const subida = await subirAvatar(ruta, new File([logo.bytes as BlobPart], `${fila.id}.${logo.extension}`, { type: logo.tipo }));
+
+      // La universidad ya está guardada; si la subida falla se avisa, y el logo se
+      // puede reintentar editándola.
+      if (!subida.ok) return { estado: "error" };
+      // `?v=` para que el navegador no enseñe el logo anterior desde su caché.
+      await consultarUna(`UPDATE universidad SET logo_ruta = $2 WHERE id = $1 RETURNING id`, [fila.id, `${ruta}?v=${Date.now()}`]);
+    } else if (quitarLogo && id) {
+      await consultarUna(`UPDATE universidad SET logo_ruta = NULL WHERE id = $1 RETURNING id`, [id]);
+    }
+
     await registrar({
       usuarioId: usuario.id,
       accion: id ? "universidad.editada" : "universidad.creada",
       entidad: "universidad",
       entidadId: fila.id,
-      datos: { siglas, regimen, activa, puntos, letraMinima, retirada, redondeo, confirmadas },
+      datos: { siglas, regimen, activa, puntos, letraMinima, retirada, redondeo, confirmadas, logo: logo ? "subido" : quitarLogo ? "quitado" : "igual" },
     });
   } catch (error) {
     if (esDuplicado(error)) return { estado: "duplicado" };

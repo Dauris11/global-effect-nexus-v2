@@ -130,7 +130,9 @@ Funcionalidades:
   Universidad del expediente se elige universidad, carrera, pénsum y matrícula;
   la pestaña Pénsum muestra el avance (créditos aprobados / total) cruzando el
   pénsum con las inscripciones y el historial. Una materia solo cuenta como
-  aprobada si el sistema la vio aprobada.
+  aprobada si el sistema la vio aprobada. Cada universidad lleva su logo (subida
+  validada, bucket público `avatares/universidades/`), que se ve también en el
+  expediente de sus estudiantes.
 - **Pénsum y graduación:** el récord de notas muestra las notas reales por período
   con su índice; el pénsum y la fecha de graduación dependen del catálogo de
   universidades (fase 2) y de los documentos con OCR (fase 4) y se dicen

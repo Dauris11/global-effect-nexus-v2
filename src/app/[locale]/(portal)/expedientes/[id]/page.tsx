@@ -180,6 +180,7 @@ export default async function PaginaExpediente({
         cuentasLibres={cuentasLibres}
         puedeEditar={puedeEditar}
         tiempo={tiempo}
+        universidadCatalogo={catalogo.universidad}
       />
 
       <PestanasDetalle

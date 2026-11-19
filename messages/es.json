@@ -7073,14 +7073,17 @@
       "loadPlaceholder": "ISC-101 ; Introducción a la programación ; 4 ; 1 ;\nISC-201 ; Estructuras de datos ; 3 ; 2 ; ISC-101",
       "loadHelp": "Una materia por línea: código ; nombre ; créditos ; período ; prerrequisitos (separados por coma). Créditos vacíos valen 3. Si un código ya existe, se actualiza.",
       "loaded": "{count} materias cargadas.",
-      "rejected": "No se pudieron leer las líneas: {lines}."
+      "rejected": "No se pudieron leer las líneas: {lines}.",
+      "fromFile": "Cargar desde un archivo (.csv o .txt)"
     },
     "errors": {
       "no_permitido": "No tienes permiso para cambiar el catálogo.",
       "no_encontrado": "No se encontró lo que intentas cambiar.",
       "dato_invalido": "Revisa los datos: falta algo o no tiene el formato esperado.",
       "duplicado": "Ya existe una con ese nombre o código.",
-      "error": "No se pudo guardar. Inténtalo de nuevo."
+      "error": "No se pudo guardar. Inténtalo de nuevo.",
+      "logo_invalido": "El logo debe ser PNG, JPG o WebP.",
+      "logo_grande": "El logo pesa más de 1 MB."
     },
     "link": {
       "title": "Universidad, carrera y pénsum",
@@ -7123,6 +7126,11 @@
       "confirmedBadge": "Reglas verificadas",
       "pendingBadge": "Reglas por confirmar",
       "summary": "Puntos: {points} · Aprueba desde {min} · Retirada: {withdrawn} · {rounding}"
+    },
+    "logo": {
+      "label": "Logo (PNG, JPG o WebP)",
+      "help": "Hasta 1 MB. Si no hay logo se muestran las siglas.",
+      "remove": "Quitar el logo actual"
     }
   }
 }

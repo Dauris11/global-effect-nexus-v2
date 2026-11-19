@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FormCarrera, FormUniversidad } from "@/components/universidades/formularios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
       />
 
       <div className="flex flex-wrap items-center gap-2">
+        <LogoUniversidad siglas={universidad.siglas} url={universidad.logo} className="size-14" />
         <Badge variant="neutra">{t(`regime.${universidad.regimen}`)}</Badge>
         {!universidad.activa && <Badge variant="neutra">{t("status.inactive")}</Badge>}
         <Badge variant={universidad.reglas_confirmadas ? "marca" : "neutra"}>
