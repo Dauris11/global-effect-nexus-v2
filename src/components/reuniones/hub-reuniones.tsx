@@ -57,8 +57,10 @@ import type {
   Reunion,
   TipoReunion,
 } from "@/lib/reuniones";
+import { SalaLlamadaEmbebida } from "@/components/reuniones/sala-llamada-embebida";
 import {
   agendarReunionAction,
+  cambiarEstadoLlamadaAction,
   guardarMinutaReunionAction,
   cancelarReunionAction,
 } from "@/server/reuniones/acciones";
@@ -68,21 +70,31 @@ export function HubReuniones({
   candidatos,
   metricas,
   usuarioActualId,
+  nombreUsuario,
   puedeGestionar,
   puedeAgendar,
   abrirAgendarAlCargar = false,
+  salaInicialId,
 }: {
   reunionesIniciales: Reunion[];
   candidatos: CandidatoParticipante[];
   metricas: MetricasReuniones;
   usuarioActualId: string;
+  nombreUsuario?: string;
   puedeGestionar: boolean;
   puedeAgendar: boolean;
   abrirAgendarAlCargar?: boolean;
+  salaInicialId?: string;
 }) {
   const t = useTranslations("reuniones");
   const router = useRouter();
   const [reuniones, setReuniones] = useState<Reunion[]>(reunionesIniciales);
+  const [salaActiva, setSalaActiva] = useState<Reunion | null>(
+    () =>
+      (salaInicialId
+        ? reunionesIniciales.find((r) => r.id === salaInicialId)
+        : null) ?? null,
+  );
   // La lista local sigue a la del servidor: tras agendar se refresca la página
   // y la reunión llega con sus participantes reales (los ids que luego usa la
   // minuta para el pase de asistencia).
@@ -383,6 +395,15 @@ export function HubReuniones({
         </Card>
       </div>
 
+      {/* Sala de videollamada embebida en vivo */}
+      {salaActiva && (
+        <SalaLlamadaEmbebida
+          reunion={salaActiva}
+          nombreUsuario={nombreUsuario ?? "Participante"}
+          alCerrar={() => setSalaActiva(null)}
+        />
+      )}
+
       {/* Barra de controles, filtros y acción de agendar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2">
@@ -610,6 +631,75 @@ export function HubReuniones({
 
                   {/* Acciones */}
                   <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-linea/60">
+                    {r.modalidad !== "presencial" &&
+                      r.estado !== "cancelada" &&
+                      r.estado !== "realizada" && (
+                        <>
+                          {esAnfitrionOAdmin && r.estado === "programada" && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isPending}
+                              onClick={() => {
+                                startTransition(async () => {
+                                  const res = await cambiarEstadoLlamadaAction(
+                                    r.id,
+                                    "en_curso",
+                                  );
+                                  if (res.exito) {
+                                    setSalaActiva(r);
+                                    router.refresh();
+                                  }
+                                });
+                              }}
+                              className="h-9 min-h-[36px] gap-1.5 text-xs"
+                            >
+                              <Video className="size-3.5" />
+                              <span>{t("liveRoom.startCall")}</span>
+                            </Button>
+                          )}
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={r.estado === "en_curso" ? "default" : "outline"}
+                            onClick={() => {
+                              setSalaActiva(r);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className="h-9 min-h-[36px] gap-1.5 text-xs"
+                          >
+                            <Video className="size-3.5" />
+                            <span>{t("liveRoom.joinInWeb")}</span>
+                          </Button>
+
+                          {esAnfitrionOAdmin && r.estado === "en_curso" && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={isPending}
+                              onClick={() => {
+                                startTransition(async () => {
+                                  await cambiarEstadoLlamadaAction(
+                                    r.id,
+                                    "realizada",
+                                  );
+                                  if (salaActiva?.id === r.id) {
+                                    setSalaActiva(null);
+                                  }
+                                  router.refresh();
+                                });
+                              }}
+                              className="h-9 min-h-[36px] gap-1.5 text-xs"
+                            >
+                              <CheckCircle2 className="size-3.5" />
+                              <span>{t("liveRoom.endCall")}</span>
+                            </Button>
+                          )}
+                        </>
+                      )}
+
                     {esAnfitrionOAdmin && r.estado !== "cancelada" && (
                       <Button
                         type="button"

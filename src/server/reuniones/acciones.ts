@@ -13,6 +13,7 @@ import type {
   ModalidadReunion,
   TipoReunion,
 } from "@/lib/reuniones";
+import { generarEnlaceSalaVirtual } from "@/lib/reuniones-sala";
 
 export type CodigoErrorReunion =
   | "no_permitido"
@@ -93,7 +94,11 @@ export async function agendarReunionAction(
   const descripcion = String(formData.get("descripcion") ?? "").trim();
   const tipo = (String(formData.get("tipo") ?? "coordinacion")) as TipoReunion;
   const modalidad = (String(formData.get("modalidad") ?? "presencial")) as ModalidadReunion;
-  const lugarOEnlace = String(formData.get("lugar_o_enlace") ?? "").trim();
+  const lugarManual = String(formData.get("lugar_o_enlace") ?? "").trim();
+  const lugarOEnlace =
+    !lugarManual && (modalidad === "virtual" || modalidad === "hibrida")
+      ? generarEnlaceSalaVirtual()
+      : lugarManual;
   const fecha = String(formData.get("fecha") ?? "").trim();
   const horaInicio = String(formData.get("hora_inicio") ?? "").trim();
   const horaFin = String(formData.get("hora_fin") ?? "").trim();
@@ -452,5 +457,83 @@ export async function cancelarReunionAction(
   } catch (error) {
     console.error("[reuniones] error cancelando reunión", error);
     return { error: "error_cancelar" };
+  }
+}
+
+/**
+ * Cambia el estado de una llamada virtual/híbrida a `en_curso` (en vivo) o
+ * `realizada` (finalizada). Solo el organizador o quien tenga `reuniones.gestionar`.
+ */
+export async function cambiarEstadoLlamadaAction(
+  reunionId: string,
+  nuevoEstado: "en_curso" | "realizada",
+): Promise<EstadoAccionReunion> {
+  const usuario = await requerirUsuario();
+  const gestiona = usuarioTienePermiso(usuario, "reuniones.gestionar");
+
+  if (!reunionId) return { error: "no_encontrada" };
+  if (nuevoEstado !== "en_curso" && nuevoEstado !== "realizada") {
+    return { error: "error_actualizar" };
+  }
+
+  try {
+    const salaFallback = generarEnlaceSalaVirtual(reunionId);
+    const actualizada = await enTransaccion(async (cliente) => {
+      const { rows } = await cliente.query<{
+        id: string;
+        titulo: string;
+        modalidad: string;
+        lugar_o_enlace: string | null;
+      }>(
+        `UPDATE reunion
+            SET estado = $2,
+                lugar_o_enlace = CASE
+                  WHEN $2 = 'en_curso'
+                   AND modalidad IN ('virtual', 'hibrida')
+                   AND (lugar_o_enlace IS NULL OR trim(lugar_o_enlace) = '')
+                  THEN $4
+                  ELSE lugar_o_enlace
+                END,
+                actualizado_en = now()
+          WHERE id = $1
+            AND estado <> 'cancelada'
+            AND ($3::boolean OR organizador_usuario_id = $5)
+          RETURNING id, titulo, modalidad, lugar_o_enlace`,
+        [reunionId, nuevoEstado, gestiona, salaFallback, usuario.id],
+      );
+
+      const fila = rows[0];
+      if (!fila) return null;
+
+      if (nuevoEstado === "en_curso") {
+        await avisarConvocados(
+          cliente,
+          reunionId,
+          usuario.id,
+          `[EN VIVO] ${fila.titulo}`,
+          fila.lugar_o_enlace ?? "",
+        );
+      }
+
+      return fila;
+    });
+
+    if (!actualizada) return { error: "sin_permiso_modificar" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: nuevoEstado === "en_curso" ? "reunion.iniciada" : "reunion.finalizada",
+      entidad: "reunion",
+      entidadId: reunionId,
+    });
+
+    revalidatePath("/[locale]/reuniones", "page");
+    revalidatePath("/[locale]/portal/estudiante", "page");
+    revalidatePath("/[locale]/portal/profesor", "page");
+
+    return { exito: true, reunionId };
+  } catch (error) {
+    console.error("[reuniones] error cambiando estado de llamada", error);
+    return { error: "error_actualizar" };
   }
 }
