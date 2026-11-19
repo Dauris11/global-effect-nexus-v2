@@ -147,6 +147,7 @@ export async function entregarTareaMoodleAction(
       const subida = await subirEntrega(
         `entregas/${asignacionId}/${estudiante.id}.${extension === "jpeg" ? "jpg" : extension}`,
         archivo,
+        FORMATOS_ENTREGA[extension],
       );
       if (!subida.ok) return { ok: false, mensaje: "error" };
 
@@ -235,6 +236,7 @@ export async function entregarTareaMoodleAction(
     // ninguna ruta y no refrescaba nada. La bandeja del docente es clases-360.
     revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
     revalidatePath("/[locale]/portal/profesor", "page");
+    revalidatePath("/[locale]/portal/profesor/materias", "page");
     revalidatePath("/[locale]/academico/clases-360", "page");
 
     return { ok: true, mensaje: vencida ? "entregada_tarde" : "entregada" };

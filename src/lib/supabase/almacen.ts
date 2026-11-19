@@ -50,6 +50,7 @@ async function subir(
   ruta: string,
   archivo: File,
   upsert: boolean,
+  contentType?: string,
 ): Promise<{ ok: true; ruta: string } | { ok: false }> {
   const { url, secreto } = credenciales();
 
@@ -58,7 +59,7 @@ async function subir(
     headers: {
       apikey: secreto,
       Authorization: `Bearer ${secreto}`,
-      "Content-Type": archivo.type,
+      "Content-Type": contentType || archivo.type || "application/octet-stream",
       "x-upsert": upsert ? "true" : "false",
     },
     body: await archivo.arrayBuffer(),
@@ -136,8 +137,9 @@ export const MAXIMO_ENTREGA = 10 * 1024 * 1024;
 export async function subirEntrega(
   ruta: string,
   archivo: File,
+  contentType?: string,
 ): Promise<{ ok: true; ruta: string } | { ok: false }> {
-  return subir(DOCUMENTOS, ruta, archivo, true);
+  return subir(DOCUMENTOS, ruta, archivo, true, contentType);
 }
 
 /**
