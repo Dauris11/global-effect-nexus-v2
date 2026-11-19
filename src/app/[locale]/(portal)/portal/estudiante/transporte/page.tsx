@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bus, CalendarCheck, Clock, Navigation, Users } from "lucide-react";
+import { CalendarCheck, Navigation, Users } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -84,39 +84,6 @@ export default async function PaginaTransporteEstudiante({
             paradas={paradasRuta}
             vivienda={vivienda}
           />
-
-          {/* Información de paradas y orden del viaje */}
-          <div className="rounded-card border border-linea bg-card p-5 shadow-card">
-            <h3 className="texto-titulo-tarjeta flex items-center gap-2">
-              <Bus className="size-4 text-marca-500" />
-              {t("routeStopsTitle")}
-            </h3>
-            <p className="mt-1 text-xs text-tinta-2">
-              {t("routeStopsSubtitle")}
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {paradasRuta.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-start gap-3 rounded-control border border-linea bg-muted/30 p-3 text-sm"
-                >
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-marca-500/15 font-bold text-marca-600">
-                    {p.orden}
-                  </span>
-                  <div>
-                    <p className="font-semibold text-tinta">{p.nombre}</p>
-                    {p.referencia && (
-                      <p className="texto-meta">{p.referencia}</p>
-                    )}
-                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-marca-700">
-                      <Clock className="size-3" />+{p.minutos_estimados} min
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </TabsContent>
 
         {/* Pestaña 3: personas que inscribí */}

@@ -622,6 +622,14 @@ intactos los módulos asignados a Dauris (**Habitudes**, **Contabilidad**,
    permite saltar a las predecesoras desde el panel de detalle; `panel-chofer.tsx`
    se partió en `cabecera-chofer.tsx`, `pasajeros-chofer.tsx` y
    `dialogo-incidencia-chofer.tsx`.
+6. *Mapa en vivo de transporte con motor cinemático TIMOB y circuito universitario (`0087`).*
+   Se reemplazaron las teselas CARTO (que exigían API key) por OpenStreetMap libre,
+   se actualizaron las paradas oficiales al circuito urbano de La Vega (**Edificio
+   Fundación Global Effect**, **UNPHU**, **UASD**, **UCATECI** y **UTESA**) con
+   polilínea vial OSRM de 162 puntos, telemetría cinemática continua, relojes de
+   arribo estimado (ETA) y filtros de enfoque rápido por universidad. Asimismo,
+   el logo e isotipo de `sidebar.tsx` y `topbar.tsx` quedaron estáticos y no
+   cliqueables en todos los portales.
 
 **Reparto de trabajo en GitHub (para coordinación con Dauris).**
 - **Hecho por Gabriela en esta entrega:** Portal del Estudiante, Portal Docente y

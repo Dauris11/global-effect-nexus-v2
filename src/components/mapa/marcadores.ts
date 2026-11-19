@@ -12,17 +12,16 @@ import { enlaceComoLlegar } from "@/lib/la-vega-geografia";
  */
 
 /**
- * CARTO Positron / Dark Matter: base gris sin colores de carretera que
- * compitan con el turquesa de los marcadores. La de OSM estándar pintaba el
- * mapa de amarillos y rosas y los liceos se perdían.
+ * Teselas oficiales de OpenStreetMap (100 % libres, sin marca de agua ni API key,
+ * igual que en el motor cartográfico de TIMOB).
  */
 export const TESELAS = {
-  claro: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  oscuro: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  claro: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  oscuro: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 } as const;
 
 export const ATRIBUCION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
 
 /**
  * Trazos de iconos de lucide (ISC), copiados tal cual: un `divIcon` necesita
