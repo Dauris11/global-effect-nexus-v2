@@ -47,8 +47,20 @@ function crearPool(): Pool {
   });
 }
 
-export const pool = globalThis.__poolGlobalEffect ?? crearPool();
-globalThis.__poolGlobalEffect = pool;
+function obtenerPool(): Pool {
+  if (!globalThis.__poolGlobalEffect) {
+    globalThis.__poolGlobalEffect = crearPool();
+  }
+  return globalThis.__poolGlobalEffect;
+}
+
+export const pool: Pool = new Proxy({} as Pool, {
+  get(_objetivo, propiedad) {
+    const instancia = obtenerPool();
+    const valor = Reflect.get(instancia, propiedad, instancia);
+    return typeof valor === "function" ? valor.bind(instancia) : valor;
+  },
+});
 
 /**
  * Lanza una consulta parametrizada y devuelve las filas.
