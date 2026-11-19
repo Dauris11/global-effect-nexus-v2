@@ -133,6 +133,7 @@ export default async function PaginaInicio({
   const destinos: DestinoPortal[] = [
     { icono: "portal", titulo: t("access_portal_title"), texto: t("access_portal_desc"), href: "/login" },
     { icono: "comida", titulo: t("access_meals_title"), texto: t("access_meals_desc"), href: "/comida" },
+    { icono: "transporte", titulo: t("access_transport_title"), texto: t("access_transport_desc"), href: "/transporte" },
     {
       icono: "solicitudes",
       titulo: t("access_requests_title"),
@@ -156,6 +157,7 @@ export default async function PaginaInicio({
         roles={roles}
         textos={{
           comida: t("navMealsShort"),
+          transporte: t("navTransportShort"),
           acceder: t("enter"),
           abrirMenu: t("menuOpen"),
           cerrarMenu: t("menuClose"),

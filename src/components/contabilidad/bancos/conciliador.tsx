@@ -54,24 +54,33 @@ export function Conciliador({
   const t = useTranslations("contab.conciliacion");
   const idioma = useLocale() === "en" ? "en" : "es";
   const [extracto, setExtracto] = useState<string | null>(null);
-  const [linea, setLinea] = useState<string | null>(null);
+  const [lineas, setLineas] = useState<string[]>([]);
   const [estado, enviar, enviando] = useActionState(async (previo: EstadoBanco, datos: FormData) => {
     const resultado = await conciliarPartida(previo, datos);
     if (resultado.estado === "ok") {
       setExtracto(null);
-      setLinea(null);
+      setLineas([]);
     }
     return resultado;
   }, INICIAL);
   const error = useError(estado);
+
+  const toggleLinea = (id: string) => {
+    setLineas((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   const elegido = banco.find((b) => b.id === extracto) ?? null;
   // Con una transacción elegida, primero los asientos del mismo monto.
   const ordenados = elegido
     ? [...libros].sort((a, b) => Number(mismoMonto(b.monto, elegido.monto)) - Number(mismoMonto(a.monto, elegido.monto)))
     : libros;
-  const asiento = libros.find((l) => l.id === linea) ?? null;
-  const listo = elegido !== null && asiento !== null && mismoMonto(elegido.monto, asiento.monto);
+
+  const seleccionados = libros.filter((l) => lineas.includes(l.id));
+  const sumaLibros = seleccionados.reduce((acc, l) => acc + Number(l.monto), 0);
+  const diferencia = elegido ? Number(elegido.monto) - sumaLibros : 0;
+  const listo = elegido !== null && seleccionados.length > 0 && Math.abs(diferencia) < 0.005;
 
   const opcion = "flex min-h-11 cursor-pointer items-start gap-3 px-4 py-3 has-[:checked]:bg-marca-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring";
 
@@ -96,7 +105,7 @@ export function Conciliador({
                       checked={extracto === b.id}
                       onChange={() => {
                         setExtracto(b.id);
-                        setLinea(null);
+                        setLineas([]);
                       }}
                       className="mt-1 size-5 shrink-0 accent-marca-500"
                     />
@@ -123,16 +132,17 @@ export function Conciliador({
             <ul className="divide-y divide-linea overflow-hidden rounded-card border border-linea bg-card shadow-card">
               {ordenados.map((l) => {
                 const coincide = elegido !== null && mismoMonto(l.monto, elegido.monto);
+                const seleccionada = lineas.includes(l.id);
                 return (
-                  <li key={l.id} className={cn(elegido && !coincide && "opacity-60")}>
+                  <li key={l.id} className={cn(elegido && !coincide && !seleccionada && "opacity-60")}>
                     <label className={opcion}>
                       <input
-                        type="radio"
+                        type="checkbox"
                         name="linea"
                         value={l.id}
-                        checked={linea === l.id}
-                        onChange={() => setLinea(l.id)}
-                        className="mt-1 size-5 shrink-0 accent-marca-500"
+                        checked={seleccionada}
+                        onChange={() => toggleLinea(l.id)}
+                        className="mt-1 size-5 shrink-0 rounded accent-marca-500"
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-tinta">{l.concepto}</span>
@@ -155,9 +165,26 @@ export function Conciliador({
         </section>
       </div>
 
+      {/* Barra de totales cuando hay líneas seleccionadas */}
+      {seleccionados.length > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-linea bg-card p-3 shadow-card">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{t("variosAsientos", { n: seleccionados.length })}</Badge>
+            <span className="text-sm font-medium text-tinta">
+              {t("sumaSeleccionada", { suma: sumaLibros.toFixed(2) })}
+            </span>
+          </div>
+          {elegido && !listo && (
+            <span className="text-sm font-semibold text-destructivo">
+              {t("diferencia", { dif: Math.abs(diferencia).toFixed(2) })}
+            </span>
+          )}
+        </div>
+      )}
+
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{t("conciliadaOk")}</AvisoOk>}
-      {elegido && asiento && !listo && <p className="texto-meta">{t("montosDistintos")}</p>}
+      {elegido && seleccionados.length > 0 && !listo && <p className="texto-meta">{t("montosDistintos")}</p>}
 
       <div className="flex justify-end">
         <Button type="submit" disabled={!listo || enviando}>

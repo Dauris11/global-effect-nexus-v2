@@ -10,6 +10,8 @@ const UUID =
 const LIMITE_POR_MINUTO = 60;
 const VENTANA_MS = 60_000;
 
+export const dynamic = "force-dynamic";
+
 /**
  * Rastreo en vivo de un viaje. Es público a propósito (lo consume la puerta
  * `/transporte` sin sesión), así que no devuelve ids internos del chofer.
