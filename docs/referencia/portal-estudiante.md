@@ -1,7 +1,7 @@
 # Documentación Técnica — Área de Estudiantes (Portal Estudiantil)
 
 Referencia completa de las rutas, reglas de negocio, capa servidor y componentes
-del **Portal del Estudiante** en **Global Effect Nexus**.
+del **Portal del Estudiante** en **Portal GlobalEffect**.
 
 ---
 

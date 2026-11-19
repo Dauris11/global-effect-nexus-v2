@@ -10,7 +10,7 @@ export function generarEnlaceSalaVirtual(semilla?: string): string {
   const base = semilla
     ? semilla.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12)
     : crypto.randomUUID().replace(/-/g, "").slice(0, 12);
-  return `https://meet.jit.si/GlobalEffectNexus-${base}`;
+  return `https://meet.jit.si/PortalGlobalEffect-${base}`;
 }
 
 export function esSalaEmbebible(url: string | null | undefined): boolean {
