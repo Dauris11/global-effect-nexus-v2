@@ -58,7 +58,7 @@ export const estudianteDeUsuario = cache(async function estudianteDeUsuario(
     universidad: string | null;
   }>(
     `SELECT e.id,
-            COALESCE(e.nombre, u.nombre) AS nombre,
+            COALESCE(NULLIF(u.nombre, ''), e.nombre) AS nombre,
             COALESCE(e.tipo::text, 'becado') AS tipo,
             COALESCE(e.estado::text, 'activo') AS estado,
             e.universidad

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   Camera,
@@ -25,6 +26,71 @@ import { guardarPerfil, type EstadoPerfil } from "@/server/perfil/acciones";
 const MAXIMO_DESCRIPCION = 280;
 
 /**
+ * Redimensiona y normaliza cualquier imagen seleccionada por el usuario a un
+ * cuadrado o proporción máxima de 360x360 en JPEG (~30–50 KB), evitando que
+ * fotografías de cámara (> 2 MB) fallen al subir y garantizando persistencia.
+ */
+async function normalizarImagenAvatar(archivo: File): Promise<{
+  dataUrl: string;
+  archivoNormalizado: File;
+} | null> {
+  return new Promise((resolver) => {
+    const lector = new FileReader();
+    lector.onload = () => {
+      const resultado = typeof lector.result === "string" ? lector.result : null;
+      if (!resultado) {
+        resolver(null);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const maxLado = 360;
+        const escala = Math.min(
+          1,
+          maxLado / Math.max(img.width || 1, img.height || 1),
+        );
+        const ancho = Math.max(1, Math.round(img.width * escala));
+        const alto = Math.max(1, Math.round(img.height * escala));
+
+        const lienzo = document.createElement("canvas");
+        lienzo.width = ancho;
+        lienzo.height = alto;
+        const ctx = lienzo.getContext("2d");
+        if (!ctx) {
+          resolver(null);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, ancho, alto);
+        const dataUrl = lienzo.toDataURL("image/jpeg", 0.86);
+        lienzo.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolver({
+                dataUrl,
+                archivoNormalizado: archivo,
+              });
+              return;
+            }
+            const nuevoArchivo = new File([blob], "avatar.jpg", {
+              type: "image/jpeg",
+            });
+            resolver({ dataUrl, archivoNormalizado: nuevoArchivo });
+          },
+          "image/jpeg",
+          0.86,
+        );
+      };
+      img.onerror = () => resolver(null);
+      img.src = resultado;
+    };
+    lector.onerror = () => resolver(null);
+    lector.readAsDataURL(archivo);
+  });
+}
+
+/**
  * Perfil propio: foto, nombre, presentación e idioma.
  */
 export function FormularioPerfil({
@@ -40,52 +106,110 @@ export function FormularioPerfil({
   fotoActual: string | null;
 }) {
   const t = useTranslations("profile");
-  const [estado, enviar, enviando] = useActionState<EstadoPerfil, FormData>(
-    guardarPerfil,
-    { estado: "inicial" },
-  );
+  const router = useRouter();
+  const [enviando, iniciarTransicion] = useTransition();
+  const [estado, setEstado] = useState<EstadoPerfil>({ estado: "inicial" });
 
+  const [nombreValor, setNombreValor] = useState(nombre);
+  const [idiomaValor, setIdiomaValor] = useState(idioma);
   const [texto, setTexto] = useState(descripcion ?? "");
   const [previa, setPrevia] = useState<string | null>(null);
-  const inicial = nombre.trim().charAt(0).toUpperCase() || "?";
+  const [archivoFoto, setArchivoFoto] = useState<File | null>(null);
+  const [fotoDataUrl, setFotoDataUrl] = useState<string | null>(null);
 
-  const porcentajeBio = Math.min(100, Math.round((texto.length / MAXIMO_DESCRIPCION) * 100));
+  const inicial = nombreValor.trim().charAt(0).toUpperCase() || "?";
+
+  const porcentajeBio = Math.min(
+    100,
+    Math.round((texto.length / MAXIMO_DESCRIPCION) * 100),
+  );
+
+  const manejarSeleccionFoto = async (
+    evento: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const archivo = evento.target.files?.[0];
+    if (!archivo) {
+      setPrevia(null);
+      setArchivoFoto(null);
+      setFotoDataUrl(null);
+      return;
+    }
+
+    setEstado({ estado: "inicial" });
+    setPrevia(URL.createObjectURL(archivo));
+    setArchivoFoto(archivo);
+
+    const normalizada = await normalizarImagenAvatar(archivo);
+    if (normalizada) {
+      setPrevia(normalizada.dataUrl);
+      setFotoDataUrl(normalizada.dataUrl);
+      setArchivoFoto(normalizada.archivoNormalizado);
+    }
+  };
+
+  const manejarEnvio = (evento: React.FormEvent<HTMLFormElement>) => {
+    evento.preventDefault();
+
+    const datos = new FormData();
+    datos.set("nombre", nombreValor);
+    datos.set("idioma", idiomaValor);
+    datos.set("descripcion", texto);
+    if (archivoFoto) {
+      datos.set("foto", archivoFoto);
+    }
+    if (fotoDataUrl) {
+      datos.set("foto_data_url", fotoDataUrl);
+    }
+
+    iniciarTransicion(async () => {
+      const resultado = await guardarPerfil(estado, datos);
+      setEstado(resultado);
+      if (resultado.estado === "ok") {
+        router.refresh();
+      }
+    });
+  };
 
   return (
-    <form action={enviar} className="space-y-6">
+    <form onSubmit={manejarEnvio} className="space-y-6">
+      <input type="hidden" name="foto_data_url" value={fotoDataUrl ?? ""} />
+
       {/* Selector e inspección de Avatar */}
-      <div className="p-4 rounded-2xl bg-muted/80 dark:bg-slate-900/40 border border-linea/80 dark:border-slate-800 flex flex-wrap items-center gap-5 transition-all">
+      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-linea/80 bg-muted/80 p-4 transition-all">
         <label
           htmlFor="perfil-foto"
           className="group relative cursor-pointer focus-within:outline-none"
         >
-          <div className="relative size-24 shrink-0 rounded-2xl overflow-hidden ring-4 ring-marca-500/20 group-hover:ring-marca-500/40 transition-all shadow-card bg-marca-50 flex items-center justify-center text-3xl font-semibold text-marca-700">
+          <div className="relative flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-marca-50 text-3xl font-semibold text-marca-700 shadow-card ring-4 ring-marca-500/20 transition-all group-hover:ring-marca-500/40">
             {previa ?? fotoActual ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={previa ?? fotoActual ?? ""}
-                alt=""
-                className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                alt={nombreValor}
+                className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
             ) : (
               <span>{inicial}</span>
             )}
-            <div className="absolute inset-0 bg-[#171A1D]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+            <div className="absolute inset-0 flex items-center justify-center bg-tinta/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Camera className="size-6" />
             </div>
           </div>
-          <span className="absolute -bottom-1 -right-1 bg-[#2096BA] text-white p-1.5 rounded-full shadow-md border-2 border-white dark:border-slate-950 group-hover:scale-110 transition-transform">
+          <span className="absolute -right-1 -bottom-1 rounded-full border-2 border-card bg-marca-500 p-1.5 text-white shadow-card transition-transform group-hover:scale-110">
             <ImagePlus className="size-3.5" />
           </span>
         </label>
 
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex items-center gap-2">
-            <Label htmlFor="perfil-foto" className="font-semibold text-sm cursor-pointer">
+            <Label
+              htmlFor="perfil-foto"
+              className="cursor-pointer text-sm font-semibold"
+            >
               {t("photo")}
             </Label>
             {previa && (
-              <span className="text-[10px] bg-[#2096BA]/15 text-[#187a99] font-medium px-2 py-0.5 rounded-full">
+              <span className="rounded-full bg-marca-500/15 px-2 py-0.5 text-[10px] font-medium text-marca-600">
                 {t("preview")}
               </span>
             )}
@@ -95,11 +219,8 @@ export function FormularioPerfil({
             name="foto"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            className="cursor-pointer text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#2096BA]/10 file:text-[#187a99] hover:file:bg-[#2096BA]/20 border-linea dark:border-slate-800"
-            onChange={(evento) => {
-              const archivo = evento.target.files?.[0];
-              setPrevia(archivo ? URL.createObjectURL(archivo) : null);
-            }}
+            className="cursor-pointer border-linea text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-marca-500/10 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-marca-600 hover:file:bg-marca-500/20"
+            onChange={manejarSeleccionFoto}
           />
         </div>
       </div>
@@ -107,37 +228,45 @@ export function FormularioPerfil({
       {/* Nombre e Idioma */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="perfil-nombre" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
-            <User className="size-3.5 text-[#2096BA]" />
+          <Label
+            htmlFor="perfil-nombre"
+            className="flex items-center gap-1.5 text-xs font-medium text-tinta-2"
+          >
+            <User className="size-3.5 text-marca-500" />
             {t("fieldName")}
           </Label>
           <Input
             id="perfil-nombre"
             name="nombre"
-            defaultValue={nombre}
+            value={nombreValor}
+            onChange={(e) => setNombreValor(e.target.value)}
             required
             maxLength={120}
             aria-invalid={estado.estado === "nombre_vacio" || undefined}
-            className="h-10 rounded-xl border-linea focus-visible:ring-[#2096BA]/30 dark:border-slate-800"
+            className="h-10 rounded-xl border-linea focus-visible:ring-marca-500/30"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="perfil-idioma" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
-            <Globe className="size-3.5 text-[#2096BA]" />
+          <Label
+            htmlFor="perfil-idioma"
+            className="flex items-center gap-1.5 text-xs font-medium text-tinta-2"
+          >
+            <Globe className="size-3.5 text-marca-500" />
             {t("fieldLanguage")}
           </Label>
           <div className="relative">
             <select
               id="perfil-idioma"
               name="idioma"
-              defaultValue={idioma}
-              className="h-10 w-full rounded-xl border border-linea dark:border-slate-800 bg-card dark:bg-slate-950 px-3 pr-8 text-sm shadow-xs outline-none focus-visible:border-[#2096BA] focus-visible:ring-[3px] focus-visible:ring-[#2096BA]/20 transition-all appearance-none cursor-pointer"
+              value={idiomaValor}
+              onChange={(e) => setIdiomaValor(e.target.value)}
+              className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-linea bg-card px-3 pr-8 text-sm shadow-xs outline-none transition-all focus-visible:border-marca-500 focus-visible:ring-[3px] focus-visible:ring-marca-500/20"
             >
               <option value="es">🇪🇸 {t("language.es")}</option>
               <option value="en">🇺🇸 {t("language.en")}</option>
             </select>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-tinta-3">
               ▼
             </span>
           </div>
@@ -147,15 +276,18 @@ export function FormularioPerfil({
       {/* Bio / Presentación */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="perfil-bio" className="flex items-center gap-1.5 font-medium text-xs text-tinta-2 dark:text-slate-300">
-            <FileText className="size-3.5 text-[#2096BA]" />
+          <Label
+            htmlFor="perfil-bio"
+            className="flex items-center gap-1.5 text-xs font-medium text-tinta-2"
+          >
+            <FileText className="size-3.5 text-marca-500" />
             {t("fieldBio")}
           </Label>
-          <span className="text-[11px] font-mono text-slate-400 dark:text-muted-foreground">
+          <span className="font-mono text-[11px] text-tinta-3">
             {texto.length} / {MAXIMO_DESCRIPCION}
           </span>
         </div>
-        
+
         <Textarea
           id="perfil-bio"
           name="descripcion"
@@ -164,14 +296,16 @@ export function FormularioPerfil({
           maxLength={MAXIMO_DESCRIPCION}
           rows={3}
           aria-invalid={estado.estado === "descripcion_larga" || undefined}
-          className="rounded-xl border-linea dark:border-slate-800 focus-visible:ring-[#2096BA]/30 resize-none text-sm"
+          className="resize-none rounded-xl border-linea text-sm focus-visible:ring-marca-500/30"
         />
 
         {/* Barra de progreso de caracteres */}
-        <div className="h-1.5 w-full bg-muted dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className={`h-full transition-all duration-300 rounded-full ${
-              texto.length > MAXIMO_DESCRIPCION * 0.9 ? "bg-[#0a6a8a]" : "bg-[#2096BA]"
+            className={`h-full rounded-full transition-all duration-300 ${
+              texto.length > MAXIMO_DESCRIPCION * 0.9
+                ? "bg-marca-700"
+                : "bg-marca-500"
             }`}
             style={{ width: `${porcentajeBio}%` }}
           />
@@ -182,16 +316,16 @@ export function FormularioPerfil({
       {estado.estado !== "inicial" && (
         <div
           role="alert"
-          className={`p-3.5 rounded-xl text-xs font-medium flex items-center gap-2.5 transition-all ${
+          className={`flex items-center gap-2.5 rounded-xl p-3.5 text-xs font-medium transition-all ${
             estado.estado === "ok"
-              ? "bg-[#2096BA]/15 text-[#187a99] dark:text-[#5FB8D4] border border-[#2096BA]/30"
-              : "bg-[#171A1D] text-white border border-slate-700"
+              ? "border border-marca-500/30 bg-marca-500/15 text-marca-600"
+              : "border border-linea bg-tinta text-background"
           }`}
         >
           {estado.estado === "ok" ? (
-            <CheckCircle2 className="size-4 text-[#187a99] dark:text-[#5FB8D4] shrink-0" />
+            <CheckCircle2 className="size-4 shrink-0 text-marca-600" />
           ) : (
-            <AlertCircle className="size-4 text-slate-300 shrink-0" />
+            <AlertCircle className="size-4 shrink-0 text-background/80" />
           )}
           <span>
             {estado.estado === "ok"
@@ -214,13 +348,11 @@ export function FormularioPerfil({
         <Button
           type="submit"
           disabled={enviando}
-          className="inline-flex items-center justify-center gap-2 bg-[#2096BA] hover:bg-[#187a99] active:bg-[#0a6a8a] text-white font-medium px-5 py-2.5 rounded-xl shadow-xs hover:shadow-md transition-all active:scale-[0.99] cursor-pointer"
+          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-marca-500 px-5 py-2.5 font-medium text-white shadow-xs transition-all hover:bg-marca-600 active:scale-[0.99] active:bg-marca-700"
         >
           {enviando ? (
             <Loader2 className="size-4 animate-spin" />
           ) : estado.estado === "ok" ? (
-            // El "guardado" ya lo dice el cambio de icono, que es la señal que
-            // sobrevive en blanco y negro. Teñirlo además rompía la paleta.
             <Check className="size-4" />
           ) : (
             <Save className="size-4" />
@@ -231,5 +363,3 @@ export function FormularioPerfil({
     </form>
   );
 }
-
-

@@ -100,6 +100,14 @@ export async function subirAvatar(
 export function urlDeAvatar(ruta: string | null): string | null {
   if (!ruta) return null;
 
+  if (
+    ruta.startsWith("data:image/") ||
+    ruta.startsWith("http://") ||
+    ruta.startsWith("https://")
+  ) {
+    return ruta;
+  }
+
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   return base ? `${base}/storage/v1/object/public/${AVATARES}/${ruta}` : null;
