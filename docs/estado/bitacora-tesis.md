@@ -949,6 +949,36 @@ falla con «sin saldo», como se esperaba).
 
 ---
 
+## 19 nov 2026 — Mapa del sitio como buscador y voz para Elly AI
+
+**Peticiones.** (1) Que el mapa del sitio ayude a encontrar cada cosa y que se vea
+dónde está la base de conocimiento del agente; (2) que Elly reciba preguntas e
+instrucciones por voz y que pueda hablar con los usuarios.
+
+**Mapa del sitio.** El mapa ya se derivaba de los menús, pero no incluía el menú de
+Configuración (de ahí que la base de conocimiento no apareciera) y era una lista
+larga. Se rehízo como buscador con «cómo llegar», derivado de `menuDe` y de
+`ajustesDeUsuario`, con búsqueda tolerante (tildes, plurales, palabras vacías). Al
+revisarlo con los menús reales se vio que las cartas a patrocinadores no estaban en
+ningún menú y se añadieron. **La base de conocimiento está en Configuración →
+Ajustes → Conocimiento (`/configuracion/conocimiento`).**
+
+**Voz.** Se eligió la **Web Speech API del navegador** para dictar y para hablar:
+gratis, sin clave y sin depender del proveedor de IA. La lógica que se puede probar
+(limpiar el texto para leerlo —sin asteriscos, rutas ni emoji—, trocearlo porque
+Chrome corta locuciones largas, elegir la voz latinoamericana) es pura y está
+probada. «Conversación por voz» une las dos mitades: lo dictado se envía al
+terminar y la respuesta se lee; al empezar a dictar se calla la lectura para que el
+micrófono no oiga a Elly. Lo dictado entra al chat como cualquier pregunta, con las
+mismas revisiones de seguridad.
+
+**Límites declarados.** No se probó en un navegador real. El dictado lo procesa el
+servicio del navegador (en Chrome, Google), lo que importa para la política de datos
+con estudiantes. Firefox no tiene reconocimiento de voz. Una alternativa que
+resolvería ambos es transcribir en el servidor con Whisper de Groq.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

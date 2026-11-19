@@ -397,6 +397,13 @@ Funcionalidades:
 - Prompts rápidos sugeridos (botones de acceso directo).
 - Respuestas en español, claras y concisas.
 - Botón de reiniciar conversación.
+- **Voz** (en el widget y en los chats de pantalla completa): botón de micrófono
+  para **dictar** la pregunta, interruptor de **conversación por voz** (lo dictado
+  se envía solo al terminar y la respuesta se lee en voz alta) y botón de **leer**
+  en cada respuesta. Usa la Web Speech API del navegador, sin clave ni servidor
+  propio. Limitaciones: el dictado lo procesa el servicio de voz del navegador
+  (en Chrome, el de Google); Firefox no tiene reconocimiento de voz, así que ahí
+  solo funciona leer; no se ha probado todavía en un navegador real.
 - **Alcance y seguridad (aplican a todos los chats de IA):**
   - El agente lo decide el servidor con el rol de la sesión; cada rol tiene una
     lista cerrada de herramientas con el permiso vuelto a comprobar, y toda
@@ -537,16 +544,21 @@ Funcionalidades:
 ## MÓDULO 27: MAPA DE NAVEGACIÓN (SITEMAP)
 *Ruta: /sitemap*
 
-Visualización jerárquica de toda la estructura de navegación.
+Un buscador «¿Dónde está…?» y el menú de cada rol, todo derivado de los menús
+reales (sin listas escritas a mano: un módulo nuevo aparece solo).
 
 Funcionalidades:
-- Portales principales con sub-módulos navegables:
-  - Portal Estudiante
-  - Portal Profesor
-  - Portal Administrativo
-  - Portal Contabilidad
-- Módulos compartidos (Dashboard, Calendario, Inscripción Comida).
-- Flujos de navegación automáticos documentados.
+- **Buscador:** escribe una o varias palabras («base de conocimiento», «cuotas de
+  la IA», «permisos»). Ignora tildes, plurales y palabras vacías, y ordena por
+  cuántas palabras acierta cada pantalla. Cada resultado dice **cómo llegar** (el
+  camino por los menús, p. ej. *Configuración › Ajustes › Conocimiento*), la
+  ruta, qué roles la ven y si **tu cuenta puede abrirla**.
+- **Incluye los ajustes de Configuración** (permisos, parámetros, IA, base de
+  conocimiento, auditoría…), que no están en la barra lateral y el mapa antiguo
+  no mostraba.
+- **Menú de cada rol** en bloques plegables (se abre el del rol de quien mira):
+  áreas, módulos y ajustes, con la ruta de cada uno.
+- Zona pública (inicio, comida, acceso).
 
 ## MÓDULO 28: PROGRAMA GLOBAL 360 Y AULA VIRTUAL (ESTILO MOODLE)
 *Rutas: /portal/estudiante/global-360, /portal/estudiante/aula-virtual, /academico/clases-360, /academico/prematricula*

@@ -4,6 +4,7 @@ import { AlertCircle, ArrowUpRight, Check } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
+import { BotonLeer, type TextosVoz } from "@/components/ia/controles-voz";
 import { TarjetaAccionIA, type TarjetaAccion } from "@/components/ia/tarjeta-accion";
 import { AiOrb, type EstadoOrbe } from "@/components/ui/ai-orb";
 import { cn } from "@/lib/utils";
@@ -32,9 +33,12 @@ export type MensajeLocal = MensajeWidget & {
 export function MensajeIA({
   mensaje,
   alNavegar,
+  voz,
 }: {
   mensaje: MensajeLocal;
   alNavegar: (accion: AccionSugerida) => void;
+  /** Leer la respuesta en voz alta; solo si el navegador sabe hablar. */
+  voz?: { hablando: boolean; leer: () => void; textos: TextosVoz };
 }) {
   const t = useTranslations("widgetIA");
   const reducido = useReducedMotion() ?? false;
@@ -80,11 +84,16 @@ export function MensajeIA({
           </div>
         )}
 
-        {mensaje.hora && (
-          <p className={cn("mt-1 text-[11px]", mio ? "text-background/70" : "text-tinta-3")}>
-            {mensaje.hora}
-          </p>
-        )}
+        <div className="mt-1 flex items-center justify-between gap-2">
+          {mensaje.hora ? (
+            <p className={cn("text-[11px]", mio ? "text-background/70" : "text-tinta-3")}>{mensaje.hora}</p>
+          ) : (
+            <span />
+          )}
+          {!mio && voz && mensaje.contenido && (
+            <BotonLeer hablando={voz.hablando} alPulsar={voz.leer} textos={voz.textos} />
+          )}
+        </div>
       </div>
     </motion.div>
   );

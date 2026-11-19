@@ -123,6 +123,7 @@
     "sponsors": "Sponsors",
     "sponsorList": "List",
     "scholarships": "Scholarships",
+    "sponsorLetters": "Letters to sponsors",
     "accounting": "Accounting",
     "calendar": "Calendar",
     "meetings": "Meetings",
@@ -2751,6 +2752,46 @@
       "public": "Public routes"
     },
     "sourceHint": "This screen carries no hand-written list: it walks the same menu that draws the sidebar, for all seven roles. A new module shows up here on its own.",
+    "settingsArea": "Settings (Configuration)",
+    "byRole": "Each role's menu",
+    "sourceBadge": "Updates itself",
+    "finder": {
+      "title": "Where is…?",
+      "placeholder": "Type what you look for: “knowledge base”, “AI quotas”, “permissions”…",
+      "help": "Type one or more words. I will tell you which menu it is in and whether your account can open it.",
+      "empty": "Nothing found with those words. Try a single one, such as “mail”, “grades” or “AI”.",
+      "howTo": "How to get there",
+      "open": "Open",
+      "locked": "Your account cannot open it",
+      "roles": "Seen by",
+      "results": "Results"
+    },
+    "settingsDesc": {
+      "general": "Summary of the system settings.",
+      "staff": "Adding and managing staff.",
+      "permissions": "What each role can do and the per-person exceptions.",
+      "visibility": "Which menus and features each role sees.",
+      "parameters": "Scholarship rules, canteen hours, letter deadline day…",
+      "landing": "Public home page announcements.",
+      "ia": "Usage, quotas, models and agents of Elly AI.",
+      "knowledge": "The documents Elly AI agents consult: uploaded, edited, enabled and verified here.",
+      "activity": "Recent activity: who did what and when.",
+      "audit": "The system's audit log.",
+      "appearance": "Accent colour, theme and profile photo."
+    },
+    "settingsKeys": {
+      "general": "settings home",
+      "staff": "staff users employees invite",
+      "permissions": "permissions roles access exceptions",
+      "visibility": "visibility menus hide block",
+      "parameters": "parameters rules scholarship canteen letters deadline index hours",
+      "landing": "landing home hero announcements",
+      "ia": "elly ai artificial intelligence agents quotas model tokens usage",
+      "knowledge": "knowledge base documents rules manuals agents ai elly upload edit",
+      "activity": "activity log history",
+      "audit": "audit log security",
+      "appearance": "appearance profile theme colour accent photo"
+    },
     "moduleCount": "{count, plural, one {# module} other {# modules}}",
     "public": {
       "title": "Public area",
@@ -5746,6 +5787,19 @@
     "unknownPerson": "deleted account",
     "fiscalNote": "Tax parameters (VAT, withholdings, social security rates) have effective dates and a legal source, and are edited separately:",
     "fiscalLink": "Accounting settings"
+  },
+  "voice": {
+    "start": "Speak",
+    "stop": "Stop listening",
+    "notSupported": "Your browser does not support voice dictation. Try Chrome or Edge.",
+    "modeOn": "Turn on voice conversation",
+    "modeOff": "Turn off voice conversation",
+    "read": "Read aloud",
+    "stopReading": "Stop reading",
+    "listening": "Listening…",
+    "speaking": "Speaking…",
+    "permission": "Allow the microphone in your browser to dictate.",
+    "noSpeech": "I did not hear you. Please try again."
   },
   "widgetIA": {
     "botonFlotante": "Open AI assistant",

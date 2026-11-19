@@ -123,6 +123,7 @@
     "sponsors": "Patrocinadores",
     "sponsorList": "Lista",
     "scholarships": "Becas",
+    "sponsorLetters": "Cartas a patrocinadores",
     "accounting": "Contabilidad",
     "calendar": "Calendario",
     "meetings": "Reuniones",
@@ -2751,6 +2752,46 @@
       "public": "Rutas públicas"
     },
     "sourceHint": "Esta pantalla no lleva ninguna lista escrita a mano: recorre el mismo menú que dibuja la barra lateral, para los siete roles. Un módulo nuevo aparece aquí solo.",
+    "settingsArea": "Ajustes (Configuración)",
+    "byRole": "El menú de cada rol",
+    "sourceBadge": "Se actualiza solo",
+    "finder": {
+      "title": "¿Dónde está…?",
+      "placeholder": "Escribe lo que buscas: «base de conocimiento», «cuotas de la IA», «permisos»…",
+      "help": "Escribe una o varias palabras. Te digo en qué menú está y si tu cuenta puede abrirlo.",
+      "empty": "No encontré nada con esas palabras. Prueba con una sola, por ejemplo «correo», «notas» o «IA».",
+      "howTo": "Cómo llegar",
+      "open": "Abrir",
+      "locked": "Tu cuenta no puede abrirlo",
+      "roles": "Lo ven",
+      "results": "Resultados"
+    },
+    "settingsDesc": {
+      "general": "Resumen de los ajustes del sistema.",
+      "staff": "Alta y gestión del personal.",
+      "permissions": "Qué puede hacer cada rol y las excepciones por persona.",
+      "visibility": "Qué menús y funciones ve cada rol.",
+      "parameters": "Reglas de la beca, horario del comedor, día límite de las cartas…",
+      "landing": "Anuncios de la portada pública.",
+      "ia": "Uso, cuotas, modelos y agentes de Elly AI.",
+      "knowledge": "Los documentos que consultan los agentes de Elly AI: se cargan, editan, activan y verifican aquí.",
+      "activity": "Actividad reciente: quién hizo qué y cuándo.",
+      "audit": "Bitácora de auditoría del sistema.",
+      "appearance": "Color de acento, tema y foto de perfil."
+    },
+    "settingsKeys": {
+      "general": "configuracion inicio",
+      "staff": "personal usuarios empleados invitar",
+      "permissions": "permisos roles acceso excepciones",
+      "visibility": "visibilidad menus ocultar bloquear",
+      "parameters": "parametros reglas beca comedor cartas limite indice horario",
+      "landing": "portada landing hero anuncios",
+      "ia": "elly ia inteligencia artificial agentes cuotas modelo tokens consumo",
+      "knowledge": "base de conocimiento documentos normas manuales agentes ia elly cargar editar",
+      "activity": "actividad registro historial",
+      "audit": "auditoria bitacora log seguridad",
+      "appearance": "apariencia perfil tema color acento foto"
+    },
     "moduleCount": "{count, plural, one {# módulo} other {# módulos}}",
     "public": {
       "title": "Zona pública",
@@ -5746,6 +5787,19 @@
     "unknownPerson": "cuenta eliminada",
     "fiscalNote": "Los parámetros fiscales (ITBIS, retenciones, tasas de TSS) tienen vigencia y fuente legal, y se editan aparte:",
     "fiscalLink": "Configuración contable"
+  },
+  "voice": {
+    "start": "Hablar",
+    "stop": "Dejar de escuchar",
+    "notSupported": "Tu navegador no permite dictar por voz. Prueba con Chrome o Edge.",
+    "modeOn": "Activar conversación por voz",
+    "modeOff": "Desactivar conversación por voz",
+    "read": "Leer en voz alta",
+    "stopReading": "Detener la lectura",
+    "listening": "Escuchando…",
+    "speaking": "Hablando…",
+    "permission": "Permite el micrófono en tu navegador para poder dictar.",
+    "noSpeech": "No te escuché. Inténtalo otra vez."
   },
   "widgetIA": {
     "botonFlotante": "Abrir asistente de IA",

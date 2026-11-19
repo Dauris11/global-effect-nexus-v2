@@ -58,6 +58,7 @@ export default async function PaginaChatIA({
 
   const usuario = await requerirUsuario();
   const t = await getTranslations({ locale, namespace: "aiChat" });
+  const tv = await getTranslations({ locale, namespace: "voice" });
 
   if (!usuarioTienePermiso(usuario, "ia.usar")) {
     return (
@@ -88,6 +89,20 @@ export default async function PaginaChatIA({
       <Card>
         <CardContent className="pt-5">
           <ChatIA
+            idioma={idioma}
+            voz={{
+              iniciar: tv("start"),
+              detener: tv("stop"),
+              noSoportada: tv("notSupported"),
+              modoActivar: tv("modeOn"),
+              modoDesactivar: tv("modeOff"),
+              leer: tv("read"),
+              detenerLectura: tv("stopReading"),
+              escuchando: tv("listening"),
+              hablando: tv("speaking"),
+              permiso: tv("permission"),
+              sinVoz: tv("noSpeech"),
+            }}
             accion={preguntarAlAsistenteInterno}
             maximo={MAXIMO_CARACTERES_PREGUNTA}
             sugerencias={[

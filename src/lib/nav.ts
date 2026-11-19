@@ -13,6 +13,7 @@ import {
   HandCoins,
   Inbox,
   Landmark,
+  Mail,
   Home,
   Library,
   ListTodo,
@@ -195,6 +196,14 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/patrocinadores/becas",
             icono: GraduationCap,
             permiso: "patrocinadores.leer",
+          },
+          // Las cartas de los becados a sus patrocinadores: antes solo se llegaba
+          // por un botón de la lista, y lo que no está en un menú no se encuentra.
+          {
+            etiqueta: "sponsorLetters",
+            href: "/patrocinadores/correos",
+            icono: Mail,
+            permiso: "patrocinadores.escribir",
           },
         ],
       },

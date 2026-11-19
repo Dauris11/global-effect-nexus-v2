@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, HelpCircle, Lock, Mic, MicOff, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
+import { AlertCircle, HelpCircle, Lock, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
@@ -12,6 +12,8 @@ import {
   type MensajeLocal,
   type PasoVisible,
 } from "@/components/ia/mensaje-ia";
+import { BotonMicrofono, InterruptorModoVoz, type TextosVoz } from "@/components/ia/controles-voz";
+import { useDictado, useHabla, useModoVoz } from "@/components/ia/use-voz";
 import { MedidorConsumo, type ConsumoVisible } from "@/components/ia/medidor-consumo";
 import type { TarjetaAccion } from "@/components/ia/tarjeta-accion";
 import { AiOrb, type EstadoOrbe } from "@/components/ui/ai-orb";
@@ -53,31 +55,6 @@ const ERRORES: Record<string, string> = {
   entradaInvalida: "errorEntrada",
 };
 
-// Definición de tipos para Web Speech API
-interface SpeechRecognitionEventLike extends Event {
-  results: {
-    [index: number]: {
-      [index: number]: {
-        transcript: string;
-      };
-    };
-  };
-}
-
-interface SpeechRecognitionLike extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start: () => void;
-  stop: () => void;
-  abort: () => void;
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-}
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
-
 export function WidgetFlotanteIA({
   usuario,
 }: {
@@ -104,21 +81,37 @@ export function WidgetFlotanteIA({
   const [textoEntrada, setTextoEntrada] = useState("");
   const [errorAlerta, setErrorAlerta] = useState<string | null>(null);
 
-  // Estados del comando de voz
-  const [grabandoVoz, setGrabandoVoz] = useState(false);
-  const [soportaVoz] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return Boolean(
-      (window as unknown as { SpeechRecognition?: SpeechRecognitionConstructor })
-        .SpeechRecognition ||
-        (
-          window as unknown as {
-            webkitSpeechRecognition?: SpeechRecognitionConstructor;
-          }
-        ).webkitSpeechRecognition,
-    );
+  // Voz: dictar (voz → texto) y hablar (texto → voz), ambas del navegador.
+  const tv = useTranslations("voice");
+  const textosVoz: TextosVoz = {
+    iniciar: t("iniciarVoz"),
+    detener: t("detenerVoz"),
+    noSoportada: t("vozNoSoportada"),
+    modoActivar: tv("modeOn"),
+    modoDesactivar: tv("modeOff"),
+    leer: tv("read"),
+    detenerLectura: tv("stopReading"),
+    escuchando: tv("listening"),
+    hablando: tv("speaking"),
+    permiso: tv("permission"),
+    sinVoz: tv("noSpeech"),
+  };
+  const habla = useHabla(usuario.idioma);
+  const [modoVoz, setModoVoz] = useModoVoz();
+  // Las funciones del dictado se crean antes que `handleEnviar`: se llega a ella
+  // por una referencia que se actualiza en cada render.
+  const modoVozRef = useRef(modoVoz);
+  const enviarRef = useRef<(texto: string) => void>(() => {});
+  const dictado = useDictado({
+    idioma: usuario.idioma,
+    alParcial: (texto) => setTextoEntrada(texto),
+    alFinal: (texto) => {
+      setTextoEntrada(texto);
+
+      // En conversación por voz, lo dictado se envía solo al terminar de hablar.
+      if (modoVozRef.current) enviarRef.current(texto);
+    },
   });
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const historialCargadoRef = useRef(false);
 
   const finalMensajesRef = useRef<HTMLDivElement>(null);
@@ -170,71 +163,20 @@ export function WidgetFlotanteIA({
     return () => window.removeEventListener("abrir-widget-ia", handleAbrir);
   }, []);
 
-  // Inicializar Web Speech API para comandos de voz
-  useEffect(() => {
-    if (typeof window === "undefined" || !soportaVoz) return;
-
-    const SpeechClass =
-      (window as unknown as { SpeechRecognition?: SpeechRecognitionConstructor })
-        .SpeechRecognition ||
-      (
-        window as unknown as {
-          webkitSpeechRecognition?: SpeechRecognitionConstructor;
-        }
-      ).webkitSpeechRecognition;
-
-    if (!SpeechClass) return;
-
-    try {
-      const recognition = new SpeechClass();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = usuario.idioma === "en" ? "en-US" : "es-DO";
-
-      recognition.onresult = (evento: SpeechRecognitionEventLike) => {
-        const transcripcion = Array.from({ length: 1 }, (_, i) => evento.results[i])
-          .map((r) => r[0].transcript)
-          .join("");
-
-        setTextoEntrada(transcripcion);
-      };
-
-      recognition.onerror = () => {
-        setGrabandoVoz(false);
-      };
-
-      recognition.onend = () => {
-        setGrabandoVoz(false);
-      };
-
-      recognitionRef.current = recognition;
-    } catch {
-      // Ignorar fallo de inicio de audio
-    }
-
-    return () => {
-      recognitionRef.current?.abort();
-    };
-  }, [soportaVoz, usuario.idioma]);
-
   const toggleGrabacionVoz = () => {
-    if (!recognitionRef.current) {
+    if (!dictado.soporta) {
       setErrorAlerta(t("vozNoSoportada"));
       return;
     }
 
     setErrorAlerta(null);
 
-    if (grabandoVoz) {
-      recognitionRef.current.stop();
-      setGrabandoVoz(false);
+    if (dictado.escuchando) {
+      dictado.detener();
     } else {
-      try {
-        recognitionRef.current.start();
-        setGrabandoVoz(true);
-      } catch {
-        setGrabandoVoz(false);
-      }
+      // Se calla la lectura en curso: si no, el micrófono oiría a Elly.
+      habla.parar();
+      dictado.iniciar();
     }
   };
 
@@ -244,10 +186,8 @@ export function WidgetFlotanteIA({
     const contenidoAEnviar = (textoManual ?? textoEntrada).trim();
     if (!contenidoAEnviar || enviando) return;
 
-    if (grabandoVoz) {
-      recognitionRef.current?.stop();
-      setGrabandoVoz(false);
-    }
+    if (dictado.escuchando) dictado.detener();
+    habla.parar();
 
     setErrorAlerta(null);
     setTextoEntrada("");
@@ -330,6 +270,9 @@ export function WidgetFlotanteIA({
         pintar();
       });
 
+      // Conversación por voz: la respuesta se lee al terminar de llegar.
+      if (modoVozRef.current && texto.trim()) habla.hablar(texto);
+
       if (texto.trim() || tarjetas.length > 0 || pasos.length > 0) {
         setMensajes((prev) => [
           ...prev,
@@ -350,6 +293,11 @@ export function WidgetFlotanteIA({
       setEnviando(false);
     }
   };
+
+  useEffect(() => {
+    modoVozRef.current = modoVoz;
+    enviarRef.current = (texto) => void handleEnviar(undefined, texto);
+  });
 
   const handleLimpiar = async () => {
     if (!window.confirm(t("confirmarLimpiar"))) return;
@@ -437,7 +385,7 @@ export function WidgetFlotanteIA({
   // quien espera, y lo que anuncia el lector de pantalla (aria-live).
   const estadoOrbe: EstadoOrbe = errorAlerta
     ? "error"
-    : grabandoVoz
+    : dictado.escuchando
       ? "listening"
       : enviando
         ? estadoEnVivo(enVivo)
@@ -618,7 +566,12 @@ export function WidgetFlotanteIA({
                 </div>
               ) : (
                 mensajes.map((m) => (
-                  <MensajeIA key={m.id} mensaje={m} alNavegar={ejecutarNavegacion} />
+                  <MensajeIA
+                    key={m.id}
+                    mensaje={m}
+                    alNavegar={ejecutarNavegacion}
+                    voz={habla.soporta ? { hablando: habla.hablando, leer: () => (habla.hablando ? habla.parar() : habla.hablar(m.contenido)), textos: textosVoz } : undefined}
+                  />
                 ))
               )}
 
@@ -674,19 +627,14 @@ export function WidgetFlotanteIA({
 
             <form onSubmit={(e) => void handleEnviar(e)} className="border-linea border-t p-3">
               <div className="border-linea-fuerte focus-within:border-marca-500 focus-within:ring-marca-500 flex items-end gap-1 rounded-card border p-1 focus-within:ring-1">
-                <button
-                  type="button"
-                  onClick={toggleGrabacionVoz}
-                  aria-pressed={grabandoVoz}
-                  aria-label={grabandoVoz ? t("detenerVoz") : t("iniciarVoz")}
-                  title={soportaVoz ? (grabandoVoz ? t("detenerVoz") : t("iniciarVoz")) : t("vozNoSoportada")}
-                  className={cn(
-                    "focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2",
-                    grabandoVoz ? "bg-marca-50 text-marca-700" : "text-tinta-3 hover:bg-muted hover:text-tinta",
-                  )}
-                >
-                  {grabandoVoz ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-                </button>
+                <BotonMicrofono
+                  escuchando={dictado.escuchando}
+                  soporta={dictado.soporta}
+                  alPulsar={toggleGrabacionVoz}
+                  textos={textosVoz}
+                />
+
+                {habla.soporta && <InterruptorModoVoz activo={modoVoz} alCambiar={setModoVoz} textos={textosVoz} />}
 
                 <textarea
                   ref={textareaRef}

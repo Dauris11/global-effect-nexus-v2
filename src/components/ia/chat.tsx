@@ -1,9 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { AlertCircle, Info, Send, Sparkles } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
+import { BotonLeer, BotonMicrofono, InterruptorModoVoz, type TextosVoz } from "@/components/ia/controles-voz";
+import { useDictado, useHabla, useModoVoz } from "@/components/ia/use-voz";
 import { AiOrb } from "@/components/ui/ai-orb";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +46,8 @@ export function ChatIA({
   accion,
   sugerencias = [],
   textos,
+  idioma = "es",
+  voz,
 }: {
   mensajes: readonly MensajeVisible[];
   /** Tope de caracteres, calculado en el servidor. */
@@ -64,6 +68,10 @@ export function ChatIA({
    * de arranque y se remata a mano.
    */
   sugerencias?: readonly string[];
+  /** Idioma de la persona: el de la voz que habla y el del dictado. */
+  idioma?: "es" | "en";
+  /** Textos de los controles de voz; sin ellos, el chat no ofrece voz. */
+  voz?: TextosVoz;
   textos: {
     placeholder: string;
     enviar: string;
@@ -90,6 +98,73 @@ export function ChatIA({
   const formulario = useRef<HTMLFormElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
   const finalDeLista = useRef<HTMLDivElement>(null);
+
+  // Voz: dictar y hablar, ambas del navegador (ver `use-voz.ts`).
+  const habla = useHabla(idioma);
+  const [modoVoz, setModoVoz] = useModoVoz();
+  const [idLeyendo, setIdLeyendo] = useState<string | null>(null);
+  const modoVozRef = useRef(modoVoz);
+  const dictado = useDictado({
+    idioma,
+    alParcial: (texto) => {
+      if (campo.current) campo.current.value = texto;
+    },
+    alFinal: (texto) => {
+      if (campo.current) campo.current.value = texto;
+
+      // En conversación por voz, lo dictado se envía solo al terminar de hablar.
+      if (modoVozRef.current) formulario.current?.requestSubmit();
+    },
+  });
+
+  // La respuesta llega como un mensaje nuevo al final de la lista (la acción
+  // revalida la ruta). Se lee solo si es POSTERIOR al montaje: al abrir la
+  // pantalla no se lee el historial.
+  const largoPrevio = useRef(mensajes.length);
+
+  useEffect(() => {
+    modoVozRef.current = modoVoz;
+  });
+
+  useEffect(() => {
+    const ultimo = mensajes.at(-1);
+
+    if (mensajes.length > largoPrevio.current && ultimo?.rol === "assistant" && modoVozRef.current) {
+      habla.hablar(ultimo.contenido);
+      // Se marca el mensaje que suena: una locución automática también se corta desde su botón.
+      setIdLeyendo(ultimo.id);
+    }
+
+    largoPrevio.current = mensajes.length;
+    // `habla.hablar` es estable por idioma; solo importa el cambio de mensajes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mensajes]);
+
+  const alternarLectura = (item: MensajeVisible) => {
+    if (habla.hablando && idLeyendo === item.id) {
+      habla.parar();
+      setIdLeyendo(null);
+
+      return;
+    }
+
+    dictado.detener();
+    habla.hablar(item.contenido);
+    setIdLeyendo(item.id);
+  };
+
+  const alternarMicrofono = () => {
+    if (dictado.escuchando) {
+      dictado.detener();
+
+      return;
+    }
+
+    // Se calla la lectura: si no, el micrófono oiría a Elly.
+    habla.parar();
+    setIdLeyendo(null);
+    dictado.iniciar();
+  };
 
   // Al recibir respuesta se limpia el campo. `useActionState` devuelve un objeto
   // nuevo en cada envío, así que el efecto vuelve a dispararse aunque el estado
@@ -153,14 +228,18 @@ export function ChatIA({
                 <p className="text-[15px] break-words whitespace-pre-wrap">
                   {item.contenido}
                 </p>
-                <p
-                  className={cn(
-                    "mt-1 text-xs",
-                    mio ? "text-background/70" : "text-tinta-3",
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <p className={cn("text-xs", mio ? "text-background/70" : "text-tinta-3")}>
+                    {item.hora}
+                  </p>
+                  {!mio && voz && habla.soporta && item.contenido && (
+                    <BotonLeer
+                      hablando={habla.hablando && idLeyendo === item.id}
+                      alPulsar={() => alternarLectura(item)}
+                      textos={voz}
+                    />
                   )}
-                >
-                  {item.hora}
-                </p>
+                </div>
               </div>
             </motion.div>
           );
@@ -240,7 +319,24 @@ export function ChatIA({
           aria-label={textos.placeholder}
         />
 
-        <div className="flex justify-end">
+        {voz && dictado.error && (
+          <p role="status" className="text-sm font-medium">
+            {dictado.error === "permiso" ? voz.permiso : dictado.error === "sin_voz" ? voz.sinVoz : voz.noSoportada}
+          </p>
+        )}
+
+        <div className="flex items-center justify-end gap-1">
+          {voz && (
+            <>
+              <BotonMicrofono
+                escuchando={dictado.escuchando}
+                soporta={dictado.soporta}
+                alPulsar={alternarMicrofono}
+                textos={voz}
+              />
+              {habla.soporta && <InterruptorModoVoz activo={modoVoz} alCambiar={setModoVoz} textos={voz} />}
+            </>
+          )}
           <Button
             type="submit"
             cargando={enviando}

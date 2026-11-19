@@ -52,6 +52,7 @@ export default async function PaginaChatEstudiante({
 
   const usuario = await requerirRol(["estudiante"]);
   const t = await getTranslations({ locale, namespace: "studentPortal" });
+  const tv = await getTranslations({ locale, namespace: "voice" });
 
   if (!usuarioTienePermiso(usuario, "ia.usar")) {
     return (
@@ -83,6 +84,20 @@ export default async function PaginaChatEstudiante({
       </div>
 
       <ChatIA
+        idioma={idioma}
+        voz={{
+          iniciar: tv("start"),
+          detener: tv("stop"),
+          noSoportada: tv("notSupported"),
+          modoActivar: tv("modeOn"),
+          modoDesactivar: tv("modeOff"),
+          leer: tv("read"),
+          detenerLectura: tv("stopReading"),
+          escuchando: tv("listening"),
+          hablando: tv("speaking"),
+          permiso: tv("permission"),
+          sinVoz: tv("noSpeech"),
+        }}
         accion={preguntarAlAsistente}
         maximo={MAXIMO_CARACTERES_PREGUNTA}
         mensajes={mensajes.map((mensaje) => ({

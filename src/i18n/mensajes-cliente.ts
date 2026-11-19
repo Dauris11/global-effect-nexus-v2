@@ -27,6 +27,8 @@ const ESPACIOS_BASE = [
   "notifications",
   // El widget flotante de IA vive en el armazón y está presente en todas las vistas
   "widgetIA",
+  // Voz de Elly AI (dictar y leer en voz alta): la usa el widget del armazón.
+  "voice",
   // Espacio del módulo de contabilidad para filtros, pestañas y estados
   "contab",
   // Espacio del aula virtual Moodle y matrícula 360

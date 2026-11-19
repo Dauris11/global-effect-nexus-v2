@@ -1700,3 +1700,20 @@ módulo) — esto es solo la cola de pendientes concretos.
       cuando Groq falla, y fallará con `sin_clave` hasta cargar crédito.
 - [ ] Poner en Vercel las variables de `.env.vercel` (IA, secretos de cartas y las
       de Supabase), borrar ese archivo y redesplegar.
+
+- [x] Mapa del sitio rehecho como buscador «¿Dónde está…?» con «cómo llegar»,
+      ajustes de Configuración incluidos y menús por rol plegables; las cartas a
+      patrocinadores entran al menú de Patrocinadores (`src/server/mapa-sitio/`,
+      `src/components/sitemap/`). Probado con los menús reales; falta verlo en
+      pantalla.
+- [x] Voz de Elly AI: dictar (micrófono), conversación por voz y leer respuestas
+      (`src/lib/voz.ts` probado con `node --test scripts/probar-voz.mjs`;
+      `use-voz.ts` y `controles-voz.tsx` en el widget y en `ChatIA`).
+- [ ] **Voz sin probar en un navegador real:** hay que probar el micrófono (permiso,
+      es-DO), la lectura (voces del equipo, trozos largos) y el modo conversación
+      en Chrome/Edge/Safari. Firefox no dicta. El audio dictado lo procesa el
+      servicio de voz del navegador (en Chrome, Google): decidir si es aceptable
+      con estudiantes. Alternativa para Firefox y privacidad: transcribir en el
+      servidor con Whisper de Groq (la cuenta ya lo tiene).
+- [ ] Contabilidad puede abrir `/configuracion/conocimiento` para su agente, pero no
+      hay entrada en su menú que lo muestre.
