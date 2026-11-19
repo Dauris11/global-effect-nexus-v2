@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
+import { GraficoProgresoGlobal360 } from "@/components/estudiante/graficos-modulos-estudiante";
 import { AsistenciaEstudiante360 } from "@/components/global360/asistencia-estudiante";
 import { MatriculaCuatrimestral360 } from "@/components/estudiante/matricula-cuatrimestral-360";
 import {
@@ -81,7 +82,7 @@ export default async function PaginaGlobal360({
 
   const [t, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "global360" }),
-    mensajesCliente(["global360"]),
+    mensajesCliente(["global360", "studentPortal"]),
   ]);
 
   const [materias, avance, ventana, catalogoMatricula, asistencia] = await Promise.all([
@@ -167,6 +168,17 @@ export default async function PaginaGlobal360({
         <StatCard icono={CircleDashed} valor={porDar.length} etiqueta={t("pending")} />
         <StatCard icono={CircleCheck} valor={dadas.length} etiqueta={t("taken")} />
       </div>
+
+      <NextIntlClientProvider messages={mensajes}>
+        <GraficoProgresoGlobal360
+          dadas={dadas.length}
+          pendientes={porDar.length}
+          asistencia={asistencia.map((a) => ({
+            materia: a.materia,
+            porcentaje: a.porcentaje,
+          }))}
+        />
+      </NextIntlClientProvider>
 
       {ventana && <TandasPeriodo360 ventana={ventana} tandas={tandas} />}
 

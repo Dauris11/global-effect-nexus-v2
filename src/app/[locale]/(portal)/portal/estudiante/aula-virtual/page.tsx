@@ -16,6 +16,7 @@ import {
   TarjetaAsignacion,
   type TextosAsignacion,
 } from "@/components/estudiante/aula-tarjeta";
+import { GraficoEstadoAulaVirtual } from "@/components/estudiante/graficos-modulos-estudiante";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -198,6 +199,13 @@ export default async function PaginaAulaVirtual({
             />
           ))}
         </div>
+
+        <GraficoEstadoAulaVirtual
+          pendientes={cuenta("pendiente")}
+          entregadas={cuenta("entregado")}
+          calificadas={cuenta("calificado")}
+          vencidas={cuenta("vencida")}
+        />
 
         <section className="space-y-6">
           <h2 className="texto-titulo-seccion">{t("classroom.assignmentsTitle")}</h2>
