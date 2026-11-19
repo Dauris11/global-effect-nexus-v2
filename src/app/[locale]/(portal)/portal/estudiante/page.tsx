@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import {
-  AlertCircle,
-  BookOpen,
-  Bot,
-  Bus,
-  CalendarDays,
-  Inbox,
-  MonitorPlay,
-  Sparkles,
-  Star,
-  Users,
-} from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -27,10 +16,6 @@ import {
 } from "@/components/estudiante/dashboard-secciones-estudiante";
 import { agruparPorPeriodo } from "@/components/estudiante/periodos";
 import { TarjetaProximo } from "@/components/estudiante/tarjeta-proximo";
-import {
-  AccesosPortal,
-  type AccesoPortal,
-} from "@/components/layout/banner-portal";
 import { BannerLlamadasActivas } from "@/components/reuniones/banner-llamadas-activas";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -42,9 +27,6 @@ import {
   GPA_PRUEBA_ACADEMICA,
   promedio,
 } from "@/lib/notas";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import {
   condicionEnLaFundacion,
@@ -184,73 +166,6 @@ export default async function PortalEstudiante({
         (a.estado_entrega === null || a.estado_entrega === "pendiente"),
     ) ?? null;
 
-  const accesos: AccesoPortal[] = [
-    {
-      href: "/portal/estudiante/aula-virtual",
-      icono: MonitorPlay,
-      titulo: t("classroom.title"),
-      texto: t("classroom.description"),
-    },
-    {
-      href: "/portal/estudiante/calificaciones",
-      icono: Star,
-      titulo: t("gradesSubTitle"),
-      texto: t("gradesSubDesc"),
-    },
-    {
-      href: "/portal/estudiante/global-360",
-      icono: Sparkles,
-      titulo: t("global360Title"),
-      texto: t("global360Desc"),
-    },
-    {
-      href: "/portal/estudiante/prematricula",
-      icono: BookOpen,
-      titulo: t("mySubjectsTitle"),
-      texto: t("mySubjectsDesc"),
-    },
-    {
-      href: "/portal/estudiante/transporte",
-      icono: Bus,
-      titulo: t("transportTitle"),
-      texto: t("transportDesc"),
-    },
-    {
-      href: "/portal/estudiante/calendario",
-      icono: CalendarDays,
-      titulo: t("agenda.title"),
-      texto: t("agenda.description"),
-    },
-    {
-      href: "/portal/estudiante/solicitudes",
-      icono: Inbox,
-      titulo: t("requestsTitle"),
-      texto: t("requestsDesc"),
-    },
-    ...(usuarioTienePermiso(usuario, "reuniones.leer")
-      ? [
-          {
-            href: "/reuniones",
-            icono: Users,
-            titulo: t("meetingsTitle"),
-            texto: t("meetingsDesc"),
-          },
-        ]
-      : []),
-    // El chat solo se ofrece a quien tiene el permiso: su pantalla lo
-    // comprueba igual, pero un acceso que lleva a "no disponible" sobra.
-    ...(usuarioTienePermiso(usuario, "ia.usar")
-      ? [
-          {
-            href: "/portal/estudiante/chat",
-            icono: Bot,
-            titulo: t("chat.title"),
-            texto: t("chat.description"),
-          },
-        ]
-      : []),
-  ];
-
   return (
     <div className="animate-entrada space-y-10 md:space-y-12">
       <div className="space-y-6">
@@ -303,8 +218,6 @@ export default async function PortalEstudiante({
         evento={eventos[0] ?? null}
         locale={idioma}
       />
-
-      <AccesosPortal accesos={accesos} />
 
       <NextIntlClientProvider messages={mensajes}>
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
