@@ -50,12 +50,18 @@ export function ElegirMaterias({
   materias,
   periodo,
   abierta,
+  topeCreditos = 24,
+  universidadPauta = null,
 }: {
   materias: readonly MateriaOfertada[];
   /** Nombre del período de la ventana, para decir de cuál se habla. */
   periodo: string;
   /** Si la ventana está abierta AHORA. Lo calcula la base, no el navegador. */
   abierta: boolean;
+  /** Tope máximo de créditos por período según la universidad del estudiante. */
+  topeCreditos?: number;
+  /** Sigla o nombre de la universidad del estudiante (UCATECI, UNPHU, UASD, UTESA). */
+  universidadPauta?: string | null;
 }) {
   const t = useTranslations("studentPortal");
 
@@ -115,7 +121,16 @@ export function ElegirMaterias({
                 {t("subjectsPage.enrol.chosen", { count: elegidas.length })}
               </p>
               <p className="texto-meta">
-                {t("subjectsPage.enrol.chosenCredits", { credits: creditos })}
+                {universidadPauta
+                  ? t("subjectsPage.enrol.chosenCreditsUniversityCap", {
+                      credits: creditos,
+                      max: topeCreditos,
+                      university: universidadPauta,
+                    })
+                  : t("subjectsPage.enrol.chosenCreditsCap", {
+                      credits: creditos,
+                      max: topeCreditos,
+                    })}
               </p>
             </div>
           </div>
@@ -264,11 +279,15 @@ function BotonMatricula({ id, elegida }: { id: string; elegida: boolean }) {
             ? t("subjectsPage.enrol.errClosed")
             : estado.estado === "repetida"
               ? t("subjectsPage.enrol.errRepeated")
-              : estado.estado === "sin_ficha"
-                ? t("subjectsPage.enrol.errNoRecord")
-                : estado.estado === "bloqueada"
-                  ? t("subjectsPage.enrol.errLocked")
-                  : t("subjectsPage.enrol.errGeneric")}
+              : estado.estado === "tope_creditos"
+                ? t("subjectsPage.enrol.errCreditCap")
+                : estado.estado === "minimo_clases"
+                  ? t("subjectsPage.enrol.errMinClasses")
+                  : estado.estado === "sin_ficha"
+                    ? t("subjectsPage.enrol.errNoRecord")
+                    : estado.estado === "bloqueada"
+                      ? t("subjectsPage.enrol.errLocked")
+                      : t("subjectsPage.enrol.errGeneric")}
         </p>
       )}
     </form>

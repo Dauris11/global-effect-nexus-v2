@@ -325,7 +325,7 @@ export async function listarCandidatosParticipantes(filtro?: {
       : consultar<{ id: string; nombre: string; email: string }>(
           `SELECT id, nombre, coalesce(email, '') AS email
            FROM estudiante
-           WHERE estado IN ('activo', 'academia_liderazgo', 'postulado', 'standby_tecnico')
+           WHERE estado IN ('activo', 'academia_liderazgo', 'postulado')
            ORDER BY nombre ASC LIMIT 200`
         ),
   ]);

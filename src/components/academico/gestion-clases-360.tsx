@@ -30,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { NOTA_APROBADA } from "@/lib/notas";
 import { CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
@@ -78,6 +79,7 @@ export function GestionClases360({
   entregasPorAsignacion = {},
   claseInicialId = null,
   seccionInicial = null,
+  notaMinima360 = NOTA_APROBADA,
 }: {
   clases: readonly Clase360[];
   asistencia: AsistenciaDeClases;
@@ -98,6 +100,8 @@ export function GestionClases360({
   puedeCalificar: boolean;
   claseInicialId?: string | null;
   seccionInicial?: "asistencia" | "alumnos" | "tarea" | "publicaciones" | null;
+  /** Nota mínima aprobatoria de Global Effect 360 (`becas.nota_minima_360`). */
+  notaMinima360?: number;
 }) {
   const t = useTranslations("academic.classes360");
   const [abierto, setAbierto] = useState<string | null>(
@@ -284,6 +288,7 @@ export function GestionClases360({
                     <TablaInscritos
                       filas={inscritosPorClase[clase.id] ?? []}
                       puedeCalificar={puedeCalificar}
+                      notaMinima={notaMinima360}
                     />
                   )}
                 </li>
@@ -306,9 +311,11 @@ export function GestionClases360({
 function TablaInscritos({
   filas,
   puedeCalificar,
+  notaMinima,
 }: {
   filas: readonly InscritoEn360[];
   puedeCalificar: boolean;
+  notaMinima: number;
 }) {
   const t = useTranslations("academic.classes360");
 
@@ -324,7 +331,12 @@ function TablaInscritos({
     <div className="border-linea mt-3 border-t pt-3">
       <ul className="space-y-1.5">
         {filas.map((fila) => (
-          <FilaInscrito key={fila.id} fila={fila} puedeCalificar={puedeCalificar} />
+          <FilaInscrito
+            key={fila.id}
+            fila={fila}
+            puedeCalificar={puedeCalificar}
+            notaMinima={notaMinima}
+          />
         ))}
       </ul>
     </div>

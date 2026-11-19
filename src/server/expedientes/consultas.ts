@@ -205,8 +205,7 @@ export async function cifrasExpedientes(): Promise<CifrasExpedientes> {
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE estado = 'activo')::int AS activos,
             count(*) FILTER (WHERE estado IN ('reclutado', 'postulado',
-                                              'academia_liderazgo',
-                                              'standby_tecnico'))::int AS en_proceso,
+                                              'academia_liderazgo'))::int AS en_proceso,
             count(*) FILTER (WHERE estado = 'graduado')::int AS graduados
        FROM estudiante`,
   );

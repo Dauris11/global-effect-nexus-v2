@@ -32,12 +32,16 @@ import {
  */
 export const TIPOS_ESTUDIANTE = ["becado"] as const;
 
-/** Los cuatro primeros son el embudo de entrada; los otros cuatro, la vida académica. */
+/**
+ * Los tres primeros son el embudo de entrada; los otros cuatro, la vida
+ * académica. `standby_tecnico` se retiró del embudo activo tras el cierre de
+ * los cursos técnicos (0047/0086); su entrada visual se conserva en
+ * `ESTADO_VISUAL` por compatibilidad con registros históricos.
+ */
 export const ESTADOS_ESTUDIANTE = [
   "reclutado",
   "postulado",
   "academia_liderazgo",
-  "standby_tecnico",
   "activo",
   "inactivo",
   "graduado",

@@ -1691,9 +1691,13 @@
         "removing": "Quitando…",
         "chosen": "{count, plural, =0 {Sin materias elegidas} =1 {# materia elegida} other {# materias elegidas}}",
         "chosenCredits": "{credits} créditos",
+        "chosenCreditsCap": "{credits} / {max} créditos",
+        "chosenCreditsUniversityCap": "{credits} / {max} créditos · Pauta {university}",
         "noLimitHint": "No hay tope de créditos ni de cupos: si tu programa tiene alguno, revísalo con coordinación.",
         "errClosed": "La prematrícula ya no está abierta.",
         "errRepeated": "Ya estás inscrito en esa materia.",
+        "errCreditCap": "Con esta materia superarías el tope de créditos permitido por las pautas de tu universidad.",
+        "errMinClasses": "Como estudiante universitario debes mantener al menos 2 clases inscritas en el cuatrimestre (inscribe otra materia antes de quitar esta).",
         "errNoRecord": "Tu ficha todavía no está enlazada. Habla con coordinación.",
         "errLocked": "Esa materia ya no se puede quitar desde aquí.",
         "errGeneric": "No se pudo completar. Inténtalo otra vez."
@@ -1772,6 +1776,8 @@
       "errEmpty": "No has elegido ningún archivo.",
       "errNotYours": "Esa tarea no es de una de tus clases.",
       "errGeneric": "No se pudo subir. Inténtalo otra vez.",
+      "filterSubjectLabel": "Filtrar por materia",
+      "filterAllSubjects": "Todas las materias",
       "filterLabel": "Filtrar por estado",
       "filterAll": "Todas",
       "filterEmpty": "Nada en este estado",
@@ -2209,6 +2215,7 @@
     "errAlreadyPassed": "Ya aprobaste esta materia.",
     "errTandaTaken": "Ya tienes una materia en esta tanda. Quítala primero si quieres cambiarla.",
     "errNoCapacity": "Esta materia ya no tiene cupo.",
+    "errMinClasses": "El período ya inició y como universitario debes mantener al menos 2 clases inscritas.",
     "fieldTanda": "Tanda",
     "fieldTandaPlaceholder": "Elige la tanda",
     "errTanda": "Elige la tanda 1 o la 2.",
@@ -5535,6 +5542,26 @@
       "becas_nota_minima_360": {
         "label": "Nota aprobatoria en Global Effect 360",
         "hint": "Mínimo para aprobar cada materia del programa."
+      },
+      "becas_creditos_maximos_ucateci": {
+        "label": "Créditos máximos · UCATECI",
+        "hint": "Tope de créditos por cuatrimestre según pauta de la Universidad Católica del Cibao (UCATECI)."
+      },
+      "becas_creditos_maximos_unphu": {
+        "label": "Créditos máximos · UNPHU",
+        "hint": "Tope de créditos por período según pauta de la Universidad Nacional Pedro Henríquez Ureña (UNPHU)."
+      },
+      "becas_creditos_maximos_uasd": {
+        "label": "Créditos máximos · UASD",
+        "hint": "Tope de créditos por semestre según pauta de la Universidad Autónoma de Santo Domingo (UASD)."
+      },
+      "becas_creditos_maximos_utesa": {
+        "label": "Créditos máximos · UTESA",
+        "hint": "Tope de créditos por cuatrimestre según pauta de la Universidad Tecnológica de Santiago (UTESA)."
+      },
+      "becas_creditos_maximos_cuatrimestre": {
+        "label": "Créditos máximos · General",
+        "hint": "Tope de créditos por período cuando el expediente no especifica una de las cuatro universidades anteriores."
       },
       "asistente_dias_sin_verificar": {
         "label": "Días antes de pedir revisar una norma",

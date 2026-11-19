@@ -33,7 +33,7 @@ const SELECT =
   "border-linea-fuerte focus-visible:border-ring focus-visible:ring-ring/50 h-11 w-full rounded-control border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm text-tinta";
 
 /** Estados de expediente que todavía están en el embudo. */
-const EMBUDO = ["reclutado", "postulado", "academia_liderazgo", "standby_tecnico"];
+const EMBUDO = ["reclutado", "postulado", "academia_liderazgo"];
 
 /**
  * Formulario de una solicitud nueva. Uno solo para los dos lados.

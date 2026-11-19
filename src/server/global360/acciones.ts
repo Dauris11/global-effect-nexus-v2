@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso, requerirRol } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
 import { aDia, esDiaValido } from "@/lib/periodos";
+import { MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE } from "@/lib/reglas-academicas";
 import { docentesAsignables } from "@/server/academico/consultas";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 
@@ -34,6 +36,7 @@ export type EstadoPrematricula = {
     | "ya_aprobada"
     | "ya_tiene_materia_en_tanda"
     | "sin_cupo"
+    | "minimo_clases"
     | "invalida"
     | "error";
 };
@@ -220,23 +223,79 @@ export async function retirarPrematricula(
   if (!esUuid(materiaId)) return { estado: "invalida" };
 
   // Solo lo prematriculado, nunca lo que ya está cursando o aprobado: eso no lo
-  // deshace el estudiante desde su portal.
+  // deshace el estudiante desde su portal. Si ya inició el período y el
+  // estudiante es universitario, no puede bajar del mínimo obligatorio de 2 clases.
   const borrada = await consultarUna<{ id: string }>(
     `DELETE FROM inscripcion_360 i
-      USING ventana_prematricula v
+      USING ventana_prematricula v, periodo p
       WHERE i.estudiante_id = $1
         AND i.materia_id = $2
         AND i.estado = 'prematriculada'
         AND v.periodo_id = i.periodo_id
+        AND p.id = i.periodo_id
         AND v.ronda = i.ronda
         AND v.activa
         AND now() >= v.abre
         AND now() <  v.cierra
+        AND (
+          NOT $3::boolean
+          OR ${SQL_HOY_RD} < p.fecha_inicio
+          OR (
+            SELECT (SELECT count(*)::int FROM inscripcion ic
+                     WHERE ic.estudiante_id = $1
+                       AND ic.periodo_id = i.periodo_id
+                       AND ic.estado <> 'retirada')
+                 + (SELECT count(*)::int FROM inscripcion_360 i3
+                     WHERE i3.estudiante_id = $1
+                       AND i3.periodo_id = i.periodo_id
+                       AND i3.estado <> 'retirada')
+          ) > $4
+        )
     RETURNING i.id`,
-    [estudiante.id, materiaId],
+    [
+      estudiante.id,
+      materiaId,
+      estudiante.esUniversitario,
+      MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE,
+    ],
   );
 
-  if (!borrada) return { estado: "cerrada" };
+  if (!borrada) {
+    if (estudiante.esUniversitario) {
+      const bloqueadaPorMinimo = await consultarUna<{ bloqueada: boolean }>(
+        `SELECT (
+                  ${SQL_HOY_RD} >= p.fecha_inicio
+                  AND (
+                    (SELECT count(*)::int FROM inscripcion ic
+                      WHERE ic.estudiante_id = $1
+                        AND ic.periodo_id = i.periodo_id
+                        AND ic.estado <> 'retirada')
+                    +
+                    (SELECT count(*)::int FROM inscripcion_360 i3
+                      WHERE i3.estudiante_id = $1
+                        AND i3.periodo_id = i.periodo_id
+                        AND i3.estado <> 'retirada')
+                  ) <= $3
+                ) AS bloqueada
+           FROM inscripcion_360 i
+           JOIN ventana_prematricula v
+             ON v.periodo_id = i.periodo_id
+            AND v.ronda = i.ronda
+            AND v.activa
+            AND now() >= v.abre
+            AND now() <  v.cierra
+           JOIN periodo p ON p.id = i.periodo_id
+          WHERE i.estudiante_id = $1
+            AND i.materia_id = $2
+            AND i.estado = 'prematriculada'`,
+        [estudiante.id, materiaId, MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE],
+      );
+      if (bloqueadaPorMinimo?.bloqueada) {
+        return { estado: "minimo_clases" };
+      }
+    }
+    return { estado: "cerrada" };
+  }
 
   await registrar({
     usuarioId: usuario.id,

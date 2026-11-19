@@ -93,6 +93,7 @@ const MENSAJE_ERROR = {
   ya_aprobada: "errAlreadyPassed",
   ya_tiene_materia_en_tanda: "errTandaTaken",
   sin_cupo: "errNoCapacity",
+  minimo_clases: "errMinClasses",
   sin_ficha: "errNoRecord",
   invalida: "errGeneric",
   error: "errGeneric",

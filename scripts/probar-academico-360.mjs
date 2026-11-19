@@ -10,9 +10,12 @@ import {
   validarPeriodo,
 } from "../src/lib/periodos.ts";
 import { calcularNotaFinal } from "../src/lib/nota-final.ts";
+import { aprobada } from "../src/lib/notas.ts";
 import {
+  detectarUniversidadConvenio,
   esEstudianteUniversitario,
   evaluarMinimoCuatrimestral,
+  topeCreditosDeUniversidad,
 } from "../src/lib/reglas-academicas.ts";
 
 test("esDiaValido acepta fechas reales y rechaza fechas inexistentes", () => {
@@ -221,5 +224,54 @@ test("evaluarMinimoCuatrimestral exige al menos 2 clases solo a universitarios",
   assert.equal(uniCumplido.tomadas, 2);
   assert.equal(uniCumplido.faltantes, 0);
   assert.equal(uniCumplido.cumplido, true);
+});
+
+test("detectarUniversidadConvenio y topeCreditosDeUniversidad aplican las pautas de UCATECI, UNPHU, UASD y UTESA", () => {
+  assert.equal(detectarUniversidadConvenio("UCATECI"), "UCATECI");
+  assert.equal(
+    detectarUniversidadConvenio("Universidad Católica del Cibao (UCATECI)"),
+    "UCATECI",
+  );
+  assert.equal(
+    detectarUniversidadConvenio("Universidad Nacional Pedro Henríquez Ureña"),
+    "UNPHU",
+  );
+  assert.equal(detectarUniversidadConvenio("UASD - Recinto La Vega"), "UASD");
+  assert.equal(detectarUniversidadConvenio("UTESA"), "UTESA");
+  assert.equal(detectarUniversidadConvenio("Otra institución"), null);
+
+  assert.deepEqual(topeCreditosDeUniversidad("UCATECI"), {
+    universidad: "UCATECI",
+    etiquetaUniversidad: "UCATECI",
+    tope: 24,
+  });
+  assert.deepEqual(topeCreditosDeUniversidad("UNPHU"), {
+    universidad: "UNPHU",
+    etiquetaUniversidad: "UNPHU",
+    tope: 22,
+  });
+  assert.deepEqual(topeCreditosDeUniversidad("UASD"), {
+    universidad: "UASD",
+    etiquetaUniversidad: "UASD",
+    tope: 20,
+  });
+  assert.deepEqual(topeCreditosDeUniversidad("UTESA"), {
+    universidad: "UTESA",
+    etiquetaUniversidad: "UTESA",
+    tope: 24,
+  });
+
+  // Respeta sobrescritura desde parámetros institucionales
+  assert.equal(
+    topeCreditosDeUniversidad("UASD", { "becas.creditos_maximos_uasd": "18" }).tope,
+    18,
+  );
+});
+
+test("aprobada evalúa contra 70 por defecto o contra el umbral parametrizado de Global Effect 360", () => {
+  assert.equal(aprobada(70), true);
+  assert.equal(aprobada(69.9), false);
+  assert.equal(aprobada(75, 80), false);
+  assert.equal(aprobada(80, 80), true);
 });
 

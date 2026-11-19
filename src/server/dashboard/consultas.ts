@@ -50,11 +50,11 @@ export async function cifrasPanel(): Promise<CifrasPanel> {
               WHERE estado = ANY($1))                               AS tareas,
             (SELECT count(*)::int FROM patrocinador
               WHERE estado = 'activo')                              AS patrocinadores,
-            -- Los cuatro primeros estados de estudiante son el embudo de
+            -- Los tres primeros estados de estudiante son el embudo de
             -- reclutamiento, no gente que ya estudia: cuentan aparte.
             (SELECT count(*)::int FROM estudiante
               WHERE estado IN ('reclutado', 'postulado',
-                               'academia_liderazgo', 'standby_tecnico')) AS reclutamiento`,
+                               'academia_liderazgo')) AS reclutamiento`,
     [ABIERTAS],
   );
 

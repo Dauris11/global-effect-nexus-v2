@@ -78,8 +78,8 @@ export function colorDeLetra(letra: Letra): string {
   return tramoDeLetra(letra).color;
 }
 
-export function aprobada(nota: number): boolean {
-  return nota >= NOTA_APROBADA;
+export function aprobada(nota: number, notaMinima: number = NOTA_APROBADA): boolean {
+  return nota >= notaMinima;
 }
 
 /**

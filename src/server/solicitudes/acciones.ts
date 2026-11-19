@@ -190,7 +190,7 @@ export async function crearSolicitudInterna(
         const existe = await cliente.query(
           `SELECT 1 FROM estudiante
             WHERE id = $1
-              AND (NOT $2 OR estado IN ('reclutado', 'postulado', 'academia_liderazgo', 'standby_tecnico'))`,
+              AND (NOT $2 OR estado IN ('reclutado', 'postulado', 'academia_liderazgo'))`,
           [estudianteId, soloEmbudo],
         );
         if (!existe.rowCount) return "invalido" as const;
@@ -506,7 +506,7 @@ export async function avanzarSolicitud(
           `UPDATE estudiante
               SET estado = 'activo'::estado_estudiante
             WHERE id = $1
-              AND estado IN ('reclutado', 'postulado', 'academia_liderazgo', 'standby_tecnico')`,
+              AND estado IN ('reclutado', 'postulado', 'academia_liderazgo')`,
           [solicitud.estudiante_id],
         );
       }

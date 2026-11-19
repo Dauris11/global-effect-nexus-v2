@@ -32,9 +32,11 @@ type Decision = "aprobada" | "reprobada";
 export function FilaInscrito({
   fila,
   puedeCalificar,
+  notaMinima = NOTA_APROBADA,
 }: {
   fila: InscritoEn360;
   puedeCalificar: boolean;
+  notaMinima?: number;
 }) {
   const t = useTranslations("academic.classes360");
   const idioma = useLocale() as Locale;
@@ -54,7 +56,7 @@ export function FilaInscrito({
   const sugerida: Decision | null =
     valor === null || !Number.isFinite(valor)
       ? null
-      : valor >= NOTA_APROBADA
+      : valor >= notaMinima
         ? "aprobada"
         : "reprobada";
   const decision = elegida ?? sugerida;

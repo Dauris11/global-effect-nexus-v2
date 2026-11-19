@@ -341,7 +341,7 @@ export async function estudiantesParaSolicitud(
     `SELECT id, nombre, estado::text AS estado
        FROM estudiante
       WHERE NOT $1
-         OR estado IN ('reclutado', 'postulado', 'academia_liderazgo', 'standby_tecnico')
+         OR estado IN ('reclutado', 'postulado', 'academia_liderazgo')
       ORDER BY nombre
       LIMIT 1000`,
     [soloEmbudo],

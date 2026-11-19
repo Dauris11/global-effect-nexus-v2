@@ -15,6 +15,7 @@ import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
 import { fechaCorta } from "@/lib/fechas";
+import { topeCreditosDeUniversidad } from "@/lib/reglas-academicas";
 import {
   inscripcionesDelEstudiante,
   type InscripcionDelEstudiante,
@@ -28,6 +29,7 @@ import {
   tandasDelEstudiante,
   ventanaVigente,
 } from "@/server/global360/consultas";
+import { parametros } from "@/server/parametros/consultas";
 import { asistenciaMateriasDelEstudiante } from "@/server/profesor/asistencia";
 
 export async function generateMetadata({
@@ -80,11 +82,17 @@ export default async function PaginaMisMaterias({
 
   const t = await getTranslations({ locale, namespace: "studentPortal" });
 
-  const [inscripciones, ventana, asistenciaMaterias] = await Promise.all([
+  const [inscripciones, ventana, asistenciaMaterias, valoresParametros] = await Promise.all([
     inscripcionesDelEstudiante(estudiante.id),
     ventanaVigente(),
     estudiante.id ? asistenciaMateriasDelEstudiante(estudiante.id) : Promise.resolve([]),
+    parametros(),
   ]);
+
+  const pautaCreditos = topeCreditosDeUniversidad(
+    estudiante.universidad,
+    valoresParametros,
+  );
 
   const cumplimiento = await cumplimientoCuatrimestralEstudiante(
     estudiante.id,
@@ -167,6 +175,8 @@ export default async function PaginaMisMaterias({
             materias={oferta}
             periodo={ventana.periodo}
             abierta={ventana.abierta}
+            topeCreditos={pautaCreditos.tope}
+            universidadPauta={pautaCreditos.etiquetaUniversidad}
           />
         </NextIntlClientProvider>
       )}

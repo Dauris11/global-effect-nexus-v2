@@ -34,6 +34,11 @@ export const DEFINICIONES = [
   { clave: "becas.asistencia_minima", grupo: "becas", tipo: "numero", defecto: 80, minimo: 0, maximo: 100, decimales: 0 },
   { clave: "becas.horas_servicio_mes", grupo: "becas", tipo: "numero", defecto: 8, minimo: 0, maximo: 60, decimales: 0 },
   { clave: "becas.nota_minima_360", grupo: "becas", tipo: "numero", defecto: 70, minimo: 0, maximo: 100, decimales: 0 },
+  { clave: "becas.creditos_maximos_ucateci", grupo: "becas", tipo: "numero", defecto: 24, minimo: 1, maximo: 60, decimales: 0 },
+  { clave: "becas.creditos_maximos_unphu", grupo: "becas", tipo: "numero", defecto: 22, minimo: 1, maximo: 60, decimales: 0 },
+  { clave: "becas.creditos_maximos_uasd", grupo: "becas", tipo: "numero", defecto: 20, minimo: 1, maximo: 60, decimales: 0 },
+  { clave: "becas.creditos_maximos_utesa", grupo: "becas", tipo: "numero", defecto: 24, minimo: 1, maximo: 60, decimales: 0 },
+  { clave: "becas.creditos_maximos_cuatrimestre", grupo: "becas", tipo: "numero", defecto: 24, minimo: 1, maximo: 60, decimales: 0 },
   { clave: "asistente.dias_sin_verificar", grupo: "asistente", tipo: "numero", defecto: 90, minimo: 7, maximo: 730, decimales: 0 },
   { clave: "contacto.correo", grupo: "contacto", tipo: "correo", defecto: "info@globaleffect.org" },
 ] as const satisfies readonly DefinicionParametro[];

@@ -5,7 +5,13 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirRol } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
+import { SQL_HOY_RD } from "@/lib/fecha-rd";
+import {
+  MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE,
+  topeCreditosDeUniversidad,
+} from "@/lib/reglas-academicas";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Matrícula universitaria del estudiante: elegir sus materias del período.
@@ -37,11 +43,13 @@ import { estudianteDeUsuario } from "@/server/estudiantes/portal";
  * programas con la misma ventana de prematrícula, y si uno la comprobara de
  * otra manera, tarde o temprano uno de los dos la comprobaría mal.
  *
- * NO HAY TOPE DE CRÉDITOS NI DE CUPOS, y no es un olvido: `materia` no tiene
- * columna de capacidad y no existe ningún máximo de créditos escrito en la base
- * ni en la especificación. Inventar aquí un número sería inventar una norma
- * académica. La pantalla enseña el total de créditos elegidos para que se vea, y
- * quien tenga que ponerle tope lo decide y entonces se implementa.
+ * 4. TOPE DE CRÉDITOS POR UNIVERSIDAD Y MÍNIMO CUATRIMESTRAL. El máximo de
+ *    créditos por período se rige por las pautas de la universidad en la que
+ *    estudia el becado (UCATECI, UNPHU, UASD o UTESA), parametrizable en
+ *    `/configuracion/parametros`, y se comprueba dentro del propio INSERT. Al
+ *    retirarse, si el estudiante es universitario se impide en servidor bajar
+ *    del mínimo obligatorio de 2 clases (`MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE`)
+ *    una vez alcanzado el mínimo o iniciado el período.
  */
 
 export type EstadoMatricula = {
@@ -51,6 +59,8 @@ export type EstadoMatricula = {
     | "cerrada"
     | "sin_ficha"
     | "repetida"
+    | "tope_creditos"
+    | "minimo_clases"
     | "bloqueada"
     | "invalida"
     | "error";
@@ -72,6 +82,12 @@ export async function inscribirseEnMateria(
 
   if (!esUuid(materiaId)) return { estado: "invalida" };
 
+  const valoresParametros = await parametros();
+  const { tope: topeCreditos } = topeCreditosDeUniversidad(
+    estudiante.universidad,
+    valoresParametros,
+  );
+
   try {
     const creada = await consultarUna<{ id: string }>(
       `INSERT INTO inscripcion (estudiante_id, materia_id, periodo_id)
@@ -84,27 +100,61 @@ export async function inscribirseEnMateria(
           AND now() <  v.cierra
         WHERE m.id = $2
           AND m.estado = 'activa'
+          AND (
+            SELECT coalesce(sum(coalesce(m2.creditos, 0)), 0)
+              FROM inscripcion i2
+              JOIN materia m2 ON m2.id = i2.materia_id
+             WHERE i2.estudiante_id = $1
+               AND i2.periodo_id = m.periodo_id
+               AND i2.estado = 'activa'
+          ) + coalesce(m.creditos, 0) <= $3
         LIMIT 1
        ON CONFLICT (estudiante_id, materia_id, periodo_id) DO NOTHING
        RETURNING id`,
-      [estudiante.id, materiaId],
+      [estudiante.id, materiaId, topeCreditos],
     );
 
     if (!creada) {
       /*
-       * No haber escrito nada puede ser dos cosas muy distintas —la ventana
-       * cerró, o ya la tenía— y al estudiante hay que decirle cuál. Se
-       * distingue con una consulta, no adivinando.
+       * No haber escrito nada puede ser tres cosas distintas —ya la tenía,
+       * supera el tope de créditos del período o la ventana cerró— y al
+       * estudiante hay que decirle cuál con una consulta.
        */
-      const yaLaTiene = await consultarUna<{ id: string }>(
-        `SELECT i.id
-           FROM inscripcion i
-          WHERE i.estudiante_id = $1
-            AND i.materia_id = $2`,
-        [estudiante.id, materiaId],
+      const causa = await consultarUna<{
+        ya_la_tiene: boolean;
+        excede_creditos: boolean;
+      }>(
+        `SELECT EXISTS (
+                  SELECT 1
+                    FROM inscripcion i
+                   WHERE i.estudiante_id = $1
+                     AND i.materia_id = $2
+                ) AS ya_la_tiene,
+                EXISTS (
+                  SELECT 1
+                    FROM materia m
+                    JOIN ventana_prematricula v
+                      ON v.periodo_id = m.periodo_id
+                     AND v.activa
+                     AND now() >= v.abre
+                     AND now() <  v.cierra
+                   WHERE m.id = $2
+                     AND m.estado = 'activa'
+                     AND (
+                       SELECT coalesce(sum(coalesce(m2.creditos, 0)), 0)
+                         FROM inscripcion i2
+                         JOIN materia m2 ON m2.id = i2.materia_id
+                        WHERE i2.estudiante_id = $1
+                          AND i2.periodo_id = m.periodo_id
+                          AND i2.estado = 'activa'
+                     ) + coalesce(m.creditos, 0) > $3
+                ) AS excede_creditos`,
+        [estudiante.id, materiaId, topeCreditos],
       );
 
-      return { estado: yaLaTiene ? "repetida" : "cerrada" };
+      if (causa?.ya_la_tiene) return { estado: "repetida" };
+      if (causa?.excede_creditos) return { estado: "tope_creditos" };
+      return { estado: "cerrada" };
     }
 
     await registrar({
@@ -153,30 +203,104 @@ export async function quitarseDeMateria(
 
   const borrada = await consultarUna<{ id: string }>(
     `DELETE FROM inscripcion i
-      USING ventana_prematricula v
+      USING ventana_prematricula v, periodo p
       WHERE i.estudiante_id = $1
         AND i.materia_id = $2
         AND i.estado = 'activa'
         AND v.periodo_id = i.periodo_id
+        AND p.id = i.periodo_id
         AND v.activa
         AND now() >= v.abre
         AND now() <  v.cierra
+        AND (
+          NOT $3::boolean
+          OR (
+            (
+              SELECT (SELECT count(*)::int FROM inscripcion ic
+                       WHERE ic.estudiante_id = $1
+                         AND ic.periodo_id = i.periodo_id
+                         AND ic.estado <> 'retirada')
+                   + (SELECT count(*)::int FROM inscripcion_360 i3
+                       WHERE i3.estudiante_id = $1
+                         AND i3.periodo_id = i.periodo_id
+                         AND i3.estado <> 'retirada')
+            ) > $4
+          )
+          OR (
+            ${SQL_HOY_RD} < p.fecha_inicio
+            AND (
+              SELECT (SELECT count(*)::int FROM inscripcion ic
+                       WHERE ic.estudiante_id = $1
+                         AND ic.periodo_id = i.periodo_id
+                         AND ic.estado <> 'retirada')
+                   + (SELECT count(*)::int FROM inscripcion_360 i3
+                       WHERE i3.estudiante_id = $1
+                         AND i3.periodo_id = i.periodo_id
+                         AND i3.estado <> 'retirada')
+            ) < $4
+          )
+        )
     RETURNING i.id`,
-    [estudiante.id, materiaId],
+    [
+      estudiante.id,
+      materiaId,
+      estudiante.esUniversitario,
+      MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE,
+    ],
   );
 
   if (!borrada) {
-    // Otra vez dos causas distintas: o la ventana cerró, o la materia ya no
-    // está en un estado que el estudiante pueda deshacer.
-    const cerrada = await consultarUna<{ estado: string }>(
-      `SELECT estado FROM inscripcion
-        WHERE estudiante_id = $1 AND materia_id = $2`,
+    // Tres causas posibles: la materia ya no está activa, el estudiante
+    // universitario bajaría del mínimo de 2 clases, o la ventana cerró.
+    const situacion = await consultarUna<{
+      estado: string;
+      ventana_abierta: boolean;
+      total_clases: number;
+      periodo_iniciado: boolean;
+    }>(
+      `SELECT i.estado,
+              EXISTS (
+                SELECT 1
+                  FROM ventana_prematricula v
+                 WHERE v.periodo_id = i.periodo_id
+                   AND v.activa
+                   AND now() >= v.abre
+                   AND now() <  v.cierra
+              ) AS ventana_abierta,
+              (
+                (SELECT count(*)::int FROM inscripcion ic
+                  WHERE ic.estudiante_id = $1
+                    AND ic.periodo_id = i.periodo_id
+                    AND ic.estado <> 'retirada')
+                +
+                (SELECT count(*)::int FROM inscripcion_360 i3
+                  WHERE i3.estudiante_id = $1
+                    AND i3.periodo_id = i.periodo_id
+                    AND i3.estado <> 'retirada')
+              ) AS total_clases,
+              (${SQL_HOY_RD} >= p.fecha_inicio) AS periodo_iniciado
+         FROM inscripcion i
+         JOIN periodo p ON p.id = i.periodo_id
+        WHERE i.estudiante_id = $1
+          AND i.materia_id = $2`,
       [estudiante.id, materiaId],
     );
 
-    return {
-      estado: cerrada && cerrada.estado !== "activa" ? "bloqueada" : "cerrada",
-    };
+    if (situacion && situacion.estado !== "activa") {
+      return { estado: "bloqueada" };
+    }
+    if (
+      situacion &&
+      situacion.ventana_abierta &&
+      estudiante.esUniversitario &&
+      situacion.total_clases <= MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE &&
+      (situacion.periodo_iniciado ||
+        situacion.total_clases >= MINIMO_CLASES_UNIVERSITARIO_CUATRIMESTRE)
+    ) {
+      return { estado: "minimo_clases" };
+    }
+
+    return { estado: "cerrada" };
   }
 
   await registrar({

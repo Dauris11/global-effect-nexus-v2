@@ -1,6 +1,7 @@
 import { consultar, consultarUna } from "@/lib/db";
 import type { TurnoIA } from "@/lib/ia";
 import { NOTA_APROBADA, promedio } from "@/lib/notas";
+import { topeCreditosDeUniversidad } from "@/lib/reglas-academicas";
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import {
   condicionEnLaFundacion,
@@ -9,6 +10,7 @@ import {
   notasDelEstudiante,
   type EstudianteDeSesion,
 } from "@/server/estudiantes/portal";
+import { parametros } from "@/server/parametros/consultas";
 
 /**
  * Chat con el asistente, en el ámbito estudiantil.
@@ -145,13 +147,22 @@ export async function instruccionesPara(
   estudiante: EstudianteDeSesion,
   idioma: "es" | "en",
 ): Promise<string> {
-  const [materias, notas, notas360, condicion, asignaciones] = await Promise.all([
-    materiasInscritas(estudiante.id),
-    notasDelEstudiante(estudiante.id),
-    notas360DelEstudiante(estudiante.id),
-    condicionEnLaFundacion(estudiante.id, 3),
-    asignacionesDelEstudiante(estudiante.id),
-  ]);
+  const [materias, notas, notas360, condicion, asignaciones, valoresParametros] =
+    await Promise.all([
+      materiasInscritas(estudiante.id),
+      notasDelEstudiante(estudiante.id),
+      notas360DelEstudiante(estudiante.id),
+      condicionEnLaFundacion(estudiante.id, 3),
+      asignacionesDelEstudiante(estudiante.id),
+      parametros(),
+    ]);
+
+  const notaMinima360 =
+    Number(valoresParametros["becas.nota_minima_360"]) || NOTA_APROBADA;
+  const pautaCreditos = topeCreditosDeUniversidad(
+    estudiante.universidad,
+    valoresParametros,
+  );
 
   const valores = notas.map((nota) => nota.nota);
   // El índice sale de los de cada fila, no de convertir el promedio: el
@@ -181,8 +192,8 @@ export async function instruccionesPara(
     "- No opinas sobre el trabajo de sus docentes.",
     `- Respondes en ${idioma === "en" ? "inglés" : "español"}, breve y en tono cercano. Si la respuesta cabe en dos frases, no escribas cinco.`,
     "",
-    `Estudiante: ${estudiante.nombre} (becado universitario, estado ${estudiante.estado}).`,
-    `Índice académico: ${indice === null ? "sin historial" : indice.toFixed(2)} sobre 4.00. Promedio: ${media === null ? "sin historial" : media.toFixed(1)} sobre 100 (se aprueba con ${NOTA_APROBADA}).`,
+    `Estudiante: ${estudiante.nombre} (becado universitario${pautaCreditos.etiquetaUniversidad ? ` en ${pautaCreditos.etiquetaUniversidad}` : ""}, estado ${estudiante.estado}).`,
+    `Índice académico: ${indice === null ? "sin historial" : indice.toFixed(2)} sobre 4.00. Promedio: ${media === null ? "sin historial" : media.toFixed(1)} sobre 100 (universidad se aprueba con ${NOTA_APROBADA}; Global Effect 360 se aprueba con ${notaMinima360}; tope de matrícula universitaria según pauta ${pautaCreditos.etiquetaUniversidad ?? "general"}: ${pautaCreditos.tope} créditos por período).`,
     lista(
       "Materias inscritas:",
       materias.map((materia) =>

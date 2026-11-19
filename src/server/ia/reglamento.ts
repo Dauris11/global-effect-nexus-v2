@@ -16,6 +16,7 @@ export function reglamento(p: ValoresParametros): string {
 REGLAMENTO INSTITUCIONAL Y POLÍTICA DE BECAS (FUNDACIÓN GLOBAL EFFECT - LA VEGA, RD):
 1. REQUISITOS DE PERMANENCIA EN LA BECA:
    - Becados Universitarios: Mantener un índice académico (GPA) igual o superior a ${p["becas.indice_minimo"]} sobre 4.00.
+   - Carga Académica Universitaria: Cursar al menos 2 clases obligatorias por cuatrimestre. El tope máximo de créditos por período se rige por las pautas de la universidad del estudiante: UCATECI (${p["becas.creditos_maximos_ucateci"]} cr.), UNPHU (${p["becas.creditos_maximos_unphu"]} cr.), UASD (${p["becas.creditos_maximos_uasd"]} cr.) y UTESA (${p["becas.creditos_maximos_utesa"]} cr.); general (${p["becas.creditos_maximos_cuatrimestre"]} cr.).
    - Global Effect 360: Calificación mínima aprobatoria de ${p["becas.nota_minima_360"]} puntos en cada materia.
    - Asistencia a Clases y Talleres: Mínimo ${p["becas.asistencia_minima"]}% de asistencia obligatoria. Las faltas injustificadas ponen en riesgo la beca.
    - Servicio Comunitario Mensual: ${p["becas.horas_servicio_mes"]} horas mensuales obligatorias en proyectos aprobados por la Fundación.

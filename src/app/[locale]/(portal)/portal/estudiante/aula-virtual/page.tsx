@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import {
   Award,
+  BookOpen,
   Check,
   ClipboardCheck,
   Clock,
+  Layers,
   ListTodo,
   TriangleAlert,
 } from "lucide-react";
@@ -92,9 +94,9 @@ export default async function PaginaAulaVirtual({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ estado?: string }>;
+  searchParams: Promise<{ estado?: string; materia?: string }>;
 }) {
-  const [{ locale }, { estado }] = await Promise.all([params, searchParams]);
+  const [{ locale }, { estado, materia }] = await Promise.all([params, searchParams]);
   const idioma: Locale = locale === "en" ? "en" : "es";
   const filtro = esFiltro(estado) ? estado : null;
 
@@ -130,12 +132,33 @@ export default async function PaginaAulaVirtual({
     }),
   );
 
-  const evaluables = asignaciones.filter(
+  const materiasDisponibles = Array.from(
+    new Set(asignaciones.map((fila) => fila.materia)),
+  ).sort((a, b) => a.localeCompare(b));
+  const materiaActiva =
+    materia && materiasDisponibles.includes(materia) ? materia : null;
+
+  const asignacionesPorMateria = materiaActiva
+    ? asignaciones.filter((fila) => fila.materia === materiaActiva)
+    : asignaciones;
+
+  const evaluables = asignacionesPorMateria.filter(
     (fila) => fila.tipo === "tarea" || fila.tipo === "examen",
   );
-  const recursos = asignaciones.filter(
+  const recursos = asignacionesPorMateria.filter(
     (fila) => fila.tipo === "material" || fila.tipo === "anuncio",
   );
+
+  const enlaceFiltro = (siguiente: {
+    estado: Filtro | null;
+    materia: string | null;
+  }) => {
+    const qs = new URLSearchParams();
+    if (siguiente.materia) qs.set("materia", siguiente.materia);
+    if (siguiente.estado) qs.set("estado", siguiente.estado);
+    const query = qs.toString();
+    return query ? `${RUTA}?${query}` : RUTA;
+  };
 
   const cuenta = (clave: Filtro) => evaluables.filter(FILTROS[clave].cumple).length;
   const visibles = filtro ? evaluables.filter(FILTROS[filtro].cumple) : evaluables;
@@ -179,24 +202,44 @@ export default async function PaginaAulaVirtual({
         <section className="space-y-6">
           <h2 className="texto-titulo-seccion">{t("classroom.assignmentsTitle")}</h2>
 
-          {evaluables.length > 0 && (
-            <FilaChips etiqueta={t("classroom.filterLabel")}>
-              <ChipFiltro
-                icono={ListTodo}
-                etiqueta={t("classroom.filterAll")}
-                activo={filtro === null}
-                href={RUTA}
-              />
-              {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
+          {materiasDisponibles.length > 0 && (
+            <div className="space-y-3">
+              <FilaChips etiqueta={t("classroom.filterSubjectLabel")}>
                 <ChipFiltro
-                  key={clave}
-                  icono={FILTROS[clave].icono}
-                  etiqueta={etiquetas[clave]}
-                  activo={filtro === clave}
-                  href={`${RUTA}?estado=${clave}`}
+                  icono={Layers}
+                  etiqueta={t("classroom.filterAllSubjects")}
+                  activo={materiaActiva === null}
+                  href={enlaceFiltro({ estado: filtro, materia: null })}
                 />
-              ))}
-            </FilaChips>
+                {materiasDisponibles.map((nombreMateria) => (
+                  <ChipFiltro
+                    key={nombreMateria}
+                    icono={BookOpen}
+                    etiqueta={nombreMateria}
+                    activo={materiaActiva === nombreMateria}
+                    href={enlaceFiltro({ estado: filtro, materia: nombreMateria })}
+                  />
+                ))}
+              </FilaChips>
+
+              <FilaChips etiqueta={t("classroom.filterLabel")}>
+                <ChipFiltro
+                  icono={ListTodo}
+                  etiqueta={t("classroom.filterAll")}
+                  activo={filtro === null}
+                  href={enlaceFiltro({ estado: null, materia: materiaActiva })}
+                />
+                {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
+                  <ChipFiltro
+                    key={clave}
+                    icono={FILTROS[clave].icono}
+                    etiqueta={etiquetas[clave]}
+                    activo={filtro === clave}
+                    href={enlaceFiltro({ estado: clave, materia: materiaActiva })}
+                  />
+                ))}
+              </FilaChips>
+            </div>
           )}
 
           {evaluables.length === 0 ? (

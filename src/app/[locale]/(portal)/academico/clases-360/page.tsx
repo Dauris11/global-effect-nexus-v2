@@ -6,11 +6,13 @@ import { GestionClases360 } from "@/components/academico/gestion-clases-360";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
+import { NOTA_APROBADA } from "@/lib/notas";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import { iniciarInscripcionesVigentes } from "@/server/global360/consultas";
+import { parametros } from "@/server/parametros/consultas";
 import { asistenciaDeClases360 } from "@/server/profesor/asistencia";
 import {
   asignacionesDeClases360,
@@ -95,6 +97,7 @@ export default async function PaginaClases360({
     periodosDeTarea,
     asignacionesPorClase,
     mensajes,
+    valoresParametros,
   ] = await Promise.all([
     cifrasDocente(docenteId),
     clases360(docenteId),
@@ -104,7 +107,11 @@ export default async function PaginaClases360({
     periodosParaTareas360(docenteId),
     asignacionesDeClases360(docenteId),
     mensajesCliente(["academic"]),
+    parametros(),
   ]);
+
+  const notaMinima360 =
+    Number(valoresParametros["becas.nota_minima_360"]) || NOTA_APROBADA;
 
   const porClase = await Promise.all(
     clases.map(async (clase) => [clase.id, await inscritosDeClase360(clase.id)] as const),
@@ -172,6 +179,7 @@ export default async function PaginaClases360({
           }
           claseInicialId={claseInicialId ?? null}
           seccionInicial={seccionInicial ?? null}
+          notaMinima360={notaMinima360}
         />
       </NextIntlClientProvider>
     </div>

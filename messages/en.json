@@ -1691,9 +1691,13 @@
         "removing": "Removing…",
         "chosen": "{count, plural, =0 {No subjects chosen} =1 {# subject chosen} other {# subjects chosen}}",
         "chosenCredits": "{credits} credits",
+        "chosenCreditsCap": "{credits} / {max} credits",
+        "chosenCreditsUniversityCap": "{credits} / {max} credits · {university} guideline",
         "noLimitHint": "There is no credit cap or seat limit here: if your programme has one, check it with coordination.",
         "errClosed": "Pre-enrolment is no longer open.",
         "errRepeated": "You are already enrolled in that subject.",
+        "errCreditCap": "Adding this subject would exceed the credit limit allowed by your university’s guidelines.",
+        "errMinClasses": "As a university student you must keep at least 2 enrolled classes in the term (enrol in another subject before removing this one).",
         "errNoRecord": "Your record isn't linked yet. Talk to coordination.",
         "errLocked": "That subject can no longer be removed from here.",
         "errGeneric": "Couldn't complete. Try again."
@@ -1772,6 +1776,8 @@
       "errEmpty": "You have not chosen a file.",
       "errNotYours": "That task is not from one of your classes.",
       "errGeneric": "Could not upload. Try again.",
+      "filterSubjectLabel": "Filter by subject",
+      "filterAllSubjects": "All subjects",
       "filterLabel": "Filter by status",
       "filterAll": "All",
       "filterEmpty": "Nothing with this status",
@@ -2209,6 +2215,7 @@
     "errAlreadyPassed": "You have already passed this subject.",
     "errTandaTaken": "You already have a subject in this block. Remove it first if you want to change it.",
     "errNoCapacity": "This subject has no seats left.",
+    "errMinClasses": "The term has already started and as a university student you must keep at least 2 enrolled classes.",
     "fieldTanda": "Block",
     "fieldTandaPlaceholder": "Choose the block",
     "errTanda": "Choose block 1 or 2.",
@@ -5535,6 +5542,26 @@
       "becas_nota_minima_360": {
         "label": "Passing grade in Global Effect 360",
         "hint": "Minimum to pass each subject of the program."
+      },
+      "becas_creditos_maximos_ucateci": {
+        "label": "Maximum credits · UCATECI",
+        "hint": "Credit limit per quarter according to UCATECI academic guidelines."
+      },
+      "becas_creditos_maximos_unphu": {
+        "label": "Maximum credits · UNPHU",
+        "hint": "Credit limit per term according to UNPHU academic guidelines."
+      },
+      "becas_creditos_maximos_uasd": {
+        "label": "Maximum credits · UASD",
+        "hint": "Credit limit per semester according to UASD academic guidelines."
+      },
+      "becas_creditos_maximos_utesa": {
+        "label": "Maximum credits · UTESA",
+        "hint": "Credit limit per quarter according to UTESA academic guidelines."
+      },
+      "becas_creditos_maximos_cuatrimestre": {
+        "label": "Maximum credits · General",
+        "hint": "Default credit limit per term when none of the four universities above is specified."
       },
       "asistente_dias_sin_verificar": {
         "label": "Days before asking for a rule to be reviewed",
