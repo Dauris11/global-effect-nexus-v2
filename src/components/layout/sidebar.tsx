@@ -171,13 +171,10 @@ export function Sidebar({
           )}
         >
           {/* El logo real cuando hay sitio y el isotipo —el globo— cuando la
-              barra está replegada. `Image` con tamaño fijo: es un archivo de
-              `public/` y no hace falta configurar dominios. */}
-          <Link
-            href="/"
-            title={tComun("appName")}
+              barra está replegada. Solo identidad visual: sin enlace ni acción. */}
+          <div
             className={cn(
-              "flex shrink-0 items-center rounded-control focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+              "pointer-events-none flex shrink-0 items-center select-none",
               nombresVisibles ? "min-w-0 flex-1" : "",
             )}
           >
@@ -200,7 +197,7 @@ export function Sidebar({
                 className="size-10"
               />
             )}
-          </Link>
+          </div>
 
           {(nombresVisibles) && (
             <>

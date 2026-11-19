@@ -141,13 +141,9 @@ export function TopBar({
         desplazada ? "border-b border-linea shadow-card" : "border-b border-transparent",
       )}
     >
-      <Link
-        href="/"
-        title={tComun("appName")}
-        className="shrink-0 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
-      >
+      <div className="pointer-events-none shrink-0 select-none md:hidden">
         <Image src="/isotipo.webp" alt={tComun("appName")} width={212} height={212} className="size-10" />
-      </Link>
+      </div>
 
       {/* La píldora de búsqueda, centrada en el espacio libre. */}
       <div className="hidden flex-1 justify-center md:flex">
