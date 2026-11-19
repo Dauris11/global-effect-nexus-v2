@@ -348,3 +348,56 @@ export async function listarCandidatosParticipantes(filtro?: {
 
   return [...listaPersonal, ...listaEstudiantes];
 }
+
+export type ReunionActivaBanner = {
+  id: string;
+  titulo: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  modalidad: string;
+  lugar_o_enlace: string | null;
+  estado: string;
+  organizador_nombre: string;
+};
+
+/**
+ * Reuniones en curso (`en_curso`) visibles para este usuario, para mostrar
+ * el banner de llamadas activas en cualquier portal y permitir entrar en vivo.
+ */
+export async function reunionesActivasParaUsuario({
+  usuarioId,
+  rol,
+}: {
+  usuarioId: string;
+  rol: Rol;
+}): Promise<ReunionActivaBanner[]> {
+  const esSuper = rol === "super_admin" || rol === "admin";
+  return consultar<ReunionActivaBanner>(
+    `SELECT DISTINCT r.id,
+            r.titulo,
+            to_char(r.fecha, 'YYYY-MM-DD') AS fecha,
+            to_char(r.hora_inicio, 'HH24:MI') AS hora_inicio,
+            to_char(r.hora_fin, 'HH24:MI') AS hora_fin,
+            r.modalidad,
+            r.lugar_o_enlace,
+            r.estado,
+            u.nombre AS organizador_nombre
+       FROM reunion r
+       JOIN usuario u ON u.id = r.organizador_usuario_id
+       LEFT JOIN reunion_participante rp ON rp.reunion_id = r.id
+       LEFT JOIN estudiante est ON est.id = r.estudiante_id
+       LEFT JOIN estudiante est_p ON est_p.id = rp.estudiante_id
+      WHERE r.estado = 'en_curso'
+        AND r.modalidad IN ('virtual', 'hibrida')
+        AND (
+          $1::boolean
+          OR r.organizador_usuario_id = $2
+          OR rp.usuario_id = $2
+          OR est.usuario_id = $2
+          OR est_p.usuario_id = $2
+        )
+      ORDER BY fecha, hora_inicio`,
+    [esSuper, usuarioId],
+  );
+}

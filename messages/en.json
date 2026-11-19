@@ -6328,6 +6328,21 @@
         "error_actualizar": "Error updating the meeting.",
         "error_cancelar": "Error cancelling the meeting."
       }
+    },
+    "liveRoom": {
+      "liveBadge": "Live",
+      "embeddedHint": "Video call embedded inside the platform",
+      "openExternal": "Open separately",
+      "expand": "Expand room",
+      "collapse": "Collapse room",
+      "leave": "Leave room",
+      "externalOnlyTitle": "This meeting uses an external link",
+      "externalOnlyHint": "The external provider blocks embedding the call inside another page; you can join in a new tab.",
+      "joinExternalNow": "Open external call",
+      "activeCallsTitle": "Active calls now",
+      "joinInWeb": "Join call",
+      "startCall": "Start call",
+      "endCall": "End call"
     }
   },
   "verComo": {

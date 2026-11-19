@@ -31,6 +31,7 @@ import {
   AccesosPortal,
   type AccesoPortal,
 } from "@/components/layout/banner-portal";
+import { BannerLlamadasActivas } from "@/components/reuniones/banner-llamadas-activas";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import type { Locale } from "@/i18n/routing";
@@ -54,6 +55,7 @@ import {
   notasDelEstudiante,
   reunionesEstudiante,
 } from "@/server/estudiantes/portal";
+import { reunionesActivasParaUsuario } from "@/server/reuniones/consultas";
 import { solicitudesDe } from "@/server/solicitudes/consultas";
 
 export async function generateMetadata({
@@ -104,6 +106,7 @@ export default async function PortalEstudiante({
     asignaciones,
     cumplimiento,
     reuniones,
+    llamadasActivas,
     mensajes,
   ] = await Promise.all([
     materiasInscritas(estudiante.id),
@@ -117,6 +120,7 @@ export default async function PortalEstudiante({
       estudiante.esUniversitario,
     ),
     reunionesEstudiante(usuario.id, estudiante.id),
+    reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
     mensajesCliente(["studentPortal", "requests"]),
   ]);
 
@@ -280,6 +284,8 @@ export default async function PortalEstudiante({
         ) : null}
 
         <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} enlazar />
+
+        <BannerLlamadasActivas activas={llamadasActivas} />
       </div>
 
       <NextIntlClientProvider messages={mensajes}>

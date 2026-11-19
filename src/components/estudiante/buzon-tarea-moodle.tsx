@@ -150,21 +150,21 @@ export function BuzonTareaMoodle({
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {asignacion.vencida ? (
                 <span className="inline-flex items-center gap-1 rounded-md bg-[#B4342B]/10 px-2.5 py-1 text-xs font-semibold text-[#B4342B]">
-                  <AlertCircle className="size-3.5" />
+                  <AlertCircle className="size-3.5 shrink-0" />
                   {t("overdueNotice")}
                 </span>
               ) : asignacion.fecha_vencimiento ? (
                 <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs text-tinta/80">
-                  <Clock className="size-3.5 text-marca-500" />
+                  <Clock className="size-3.5 shrink-0 text-marca-500" />
                   {t("dueUntil")}: {fechaHoraRD(asignacion.fecha_vencimiento, locale)}
                 </span>
               ) : null}
 
               <span className="inline-flex items-center gap-1 rounded-md bg-marca-50 px-2.5 py-1 text-xs font-bold text-marca-600">
-                <Award className="size-3.5" />
+                <Award className="size-3.5 shrink-0" />
                 {asignacion.puntaje_maximo} {t("pointsLabel")}
               </span>
             </div>
@@ -343,8 +343,8 @@ export function BuzonTareaMoodle({
                   <div className="flex size-12 items-center justify-center rounded-full bg-card shadow-xs text-marca-500">
                     <Upload className="size-6" />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-tinta">
+                  <div className="min-w-0 max-w-full">
+                    <p className="break-all text-sm font-semibold text-tinta">
                       {archivoSeleccionado
                         ? archivoSeleccionado.name
                         : t("uploadFilePrompt")}

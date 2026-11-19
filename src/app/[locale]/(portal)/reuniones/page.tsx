@@ -35,10 +35,10 @@ export default async function PaginaReuniones({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ agendar?: string }>;
+  searchParams: Promise<{ agendar?: string; sala?: string }>;
 }) {
   const { locale } = await params;
-  const { agendar } = await searchParams;
+  const { agendar, sala } = await searchParams;
 
   const usuario = await requerirPermiso("reuniones.leer");
   const puedeGestionar = usuarioTienePermiso(usuario, "reuniones.gestionar");
@@ -62,9 +62,11 @@ export default async function PaginaReuniones({
           candidatos={candidatos}
           metricas={metricas}
           usuarioActualId={usuario.id}
+          nombreUsuario={usuario.nombre}
           puedeGestionar={puedeGestionar}
           puedeAgendar={puedeAgendar}
-          abrirAgendarAlCargar={agendar === "true"}
+          abrirAgendarAlCargar={agendar === "true" || agendar === "1"}
+          salaInicialId={sala}
         />
       </NextIntlClientProvider>
     </div>

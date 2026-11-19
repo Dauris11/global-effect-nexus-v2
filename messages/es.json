@@ -6328,6 +6328,21 @@
         "error_actualizar": "Error al actualizar la reunión.",
         "error_cancelar": "Error al cancelar la reunión."
       }
+    },
+    "liveRoom": {
+      "liveBadge": "En vivo",
+      "embeddedHint": "Videollamada integrada en la plataforma",
+      "openExternal": "Abrir aparte",
+      "expand": "Ampliar sala",
+      "collapse": "Reducir sala",
+      "leave": "Salir de la sala",
+      "externalOnlyTitle": "Esta reunión usa un enlace externo",
+      "externalOnlyHint": "El proveedor externo bloquea abrir la llamada dentro de otra página; puedes unirte en una pestaña nueva.",
+      "joinExternalNow": "Abrir llamada externa",
+      "activeCallsTitle": "Llamadas activas ahora",
+      "joinInWeb": "Entrar a la llamada",
+      "startCall": "Iniciar llamada",
+      "endCall": "Finalizar llamada"
     }
   },
   "verComo": {

@@ -102,11 +102,11 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
       </Button>
 
       <Dialog open={abierto} onOpenChange={setAbierto}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader className="mb-2">
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-tinta">
-              <UploadCloud className="size-5 text-marca-600" />
-              <span>{fila.titulo}</span>
+        <DialogContent className="max-h-[92vh] w-[95vw] max-w-4xl overflow-y-auto p-5 sm:max-w-4xl sm:p-7">
+          <DialogHeader className="mb-2 pr-6">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-tinta leading-snug">
+              <UploadCloud className="size-5 shrink-0 text-marca-600" />
+              <span className="break-words">{fila.titulo}</span>
             </DialogTitle>
           </DialogHeader>
 

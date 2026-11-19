@@ -5,6 +5,12 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Videollamadas embebidas en Reuniones, banner de llamadas activas y buzón Moodle ampliado (19 nov 2026):**
+      - **Salas de videollamada integradas en la web (`src/lib/reuniones-sala.ts`, `src/components/reuniones/sala-llamada-embebida.tsx`, `hub-reuniones.tsx`, `reuniones/page.tsx`):** al agendar reuniones `virtual` o `hibrida` sin enlace manual se genera automáticamente una sala de Jitsi Meet (`https://meet.jit.si/GlobalEffectNexus-...`); nueva acción `cambiarEstadoLlamadaAction` (`src/server/reuniones/acciones.ts`) para iniciar (`en_curso`, con notificación a convocados) o finalizar (`realizada`) la llamada, y visor embebido en `/reuniones` con deep-link `?sala=<id>`, pantalla expandible y respaldo en pestaña externa para enlaces de Google Meet/Zoom.
+      - **Banner «Llamadas activas ahora» (`src/server/reuniones/consultas.ts`, `src/components/reuniones/banner-llamadas-activas.tsx`, `portal/estudiante/page.tsx`, `portal/profesor/page.tsx`):** `reunionesActivasParaUsuario` muestra en el inicio de estudiantes y docentes las reuniones en curso en las que participan, con entrada en 1 clic a la sala en vivo.
+      - **Buzón de entregas Moodle ampliado (`src/components/estudiante/boton-buzon-moodle.tsx`, `buzon-tarea-moodle.tsx`):** ampliación del modal a `w-[95vw] sm:max-w-4xl max-h-[92vh]` y ajuste `flex-wrap`/`break-words` para evitar cortes en títulos, badges y nombres de archivo.
+      - **Documentación del Portal del Estudiante (`docs/referencia/portal-estudiante.md`):** referencia completa de arquitectura, rutas, capa servidor, componentes y reglas académicas del área estudiantil.
+
 - [x] **Dashboard gráfico e interactivo del Portal del Estudiante y semáforo de Condición (19 nov 2026):**
       - **Etiqueta «Inicio» (`messages/{es,en}.json`):** sustitución de «Mi portal» por «Inicio» / «Home» en `nav.studentPortal` y `studentPortal.eyebrow`.
       - **Inicio interactivo y KPIs animados (`src/components/estudiante/dashboard-inicio-estudiante.tsx`, `src/server/estudiantes/portal.ts`, `portal/estudiante/page.tsx`):**

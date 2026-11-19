@@ -11,6 +11,7 @@ import {
 import { getTranslations } from "next-intl/server";
 
 import { AccesosPortal, BannerPortal } from "@/components/layout/banner-portal";
+import { BannerLlamadasActivas } from "@/components/reuniones/banner-llamadas-activas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import {
   entregasPorRevisar,
   materiasDelDocente,
 } from "@/server/profesor/consultas";
+import { reunionesActivasParaUsuario } from "@/server/reuniones/consultas";
 
 /** Cuántas entregas pendientes se enumeran antes de mandar al módulo. */
 const ENTREGAS_VISIBLES = 5;
@@ -83,7 +85,7 @@ export default async function PortalProfesor({
 
   await iniciarInscripcionesVigentes();
 
-  const [t, tAcad, cifras, materias, clases, entregas] =
+  const [t, tAcad, cifras, materias, clases, entregas, llamadasActivas] =
     await Promise.all([
       getTranslations({ locale, namespace: "teacherPortal" }),
       getTranslations({ locale, namespace: "academic" }),
@@ -91,6 +93,7 @@ export default async function PortalProfesor({
       materiasDelDocente(docenteId),
       clases360(docenteId),
       entregasPorRevisar(docenteId, ENTREGAS_VISIBLES),
+      reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
     ]);
 
   // Las notas puestas no están en `cifrasDocente` y no hace falta otra
@@ -123,6 +126,8 @@ export default async function PortalProfesor({
           { valor: String(cifras.por_revisar), etiqueta: t("stats.toReview") },
         ]}
       />
+
+      <BannerLlamadasActivas activas={llamadasActivas} />
 
       {/* Va antes que nada más cuando hay algo: es lo único de esta pantalla
           con alguien esperando al otro lado. Con cero no se dibuja — el KPI ya
