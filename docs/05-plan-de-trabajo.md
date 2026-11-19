@@ -10,7 +10,7 @@
 | **S1** | BD: Identidad, RBAC y transversales + seed | 20–31 jul 2026 |
 | **S2** | BD: Estudiante (normalizado) y Académico | 03–14 ago 2026 |
 | **S3** | BD: dominios restantes | 17–28 ago 2026 |
-| **S4** | Backend núcleo: Auth.js, RBAC, i18n | 31 ago–11 sep 2026 |
+| **S4** | Backend núcleo: Supabase Auth, RBAC, i18n | 31 ago–11 sep 2026 |
 | **S5** | Expedientes (+ OCR) y Dashboard | 14–25 sep 2026 |
 | **S6** | Académico (módulos) y portales | 28 sep–09 oct 2026 |
 | **S7** | Patrocinio y Finanzas | 12–23 oct 2026 |
@@ -26,7 +26,7 @@
 La **capa de base de datos está adelantada** respecto al cronograma: el diseño y despliegue previstos en S0–S3 ya están hechos y verificados en Supabase.
 
 - ✅ Diseño ER, normalización 1NF–3NF, diccionario de datos.
-- ✅ Migraciones `0001`–`0012` desplegadas (36 tablas, RBAC, pgvector para IA).
+- ✅ Migraciones `0001`–`0090` desplegadas (85 tablas en el esquema `public`, RBAC, pgvector para IA). Las primeras doce dejaron 36 tablas; el resto vino con cada módulo.
 - ✅ Seed de roles, permisos y datos de prueba.
 
 ## 3. Próximos pasos
@@ -67,7 +67,7 @@ Cada módulo = migración (ya lista) + queries parametrizadas + validación Zod 
 | **S1** | BD Identidad y transversales | 2026-07-20 → 2026-07-31 | ✅ Hecho |
 | **S2** | BD Estudiante y Academico | 2026-08-03 → 2026-08-14 | ✅ Hecho |
 | **S3** | BD Dominios restantes | 2026-08-17 → 2026-08-28 | ✅ Hecho |
-| **S4** | Backend nucleo (auth, RBAC, i18n) | 2026-08-31 → 2026-09-11 | ▶️ En curso |
+| **S4** | Backend nucleo (auth, RBAC, i18n) | 2026-08-31 → 2026-09-11 | ✅ Hecho |
 | **S5** | Expedientes y Dashboard | 2026-09-14 → 2026-09-25 | ✅ Hecho |
 | **S6** | Academico (modulos) y portales | 2026-09-28 → 2026-10-09 | ✅ Hecho |
 | **S7** | Patrocinio y Finanzas | 2026-10-12 → 2026-10-23 | 🟦 Backend listo · UI pendiente |
@@ -78,7 +78,7 @@ Cada módulo = migración (ya lista) + queries parametrizadas + validación Zod 
 | **S12** | Migracion, QA y Seguridad | 2026-12-21 → 2027-01-01 | ⏳ Pendiente |
 | **S13** | Despliegue y Tesis | 2027-01-04 → 2027-01-15 | ⏳ Pendiente |
 
-> **Estado del backend:** S0–S3 (BD) ✅. S4 (núcleo) ✅ en curso. **La capa de dominio backend de S5–S11 está construida** (`src/server/*`): consultas parametrizadas + Server Actions con `requirePermission` por módulo. Falta la **UI** de los módulos de S7, S10 y S11 (S8 se replanteó como Solicitudes y aprobaciones) (pantallas, formularios, gráficos).
+> **Estado del backend:** S0–S3 (BD) ✅. S4 (núcleo) ✅. **La capa de dominio backend de S5–S11 está construida** (`src/server/*`): consultas parametrizadas + Server Actions con `requirePermission` por módulo. Falta la **UI** de los módulos de S7, S10 y S11 (S8 se replanteó como Solicitudes y aprobaciones) (pantallas, formularios, gráficos).
 
 > **Estado de la UI:** las pantallas están construidas —**login**, **panel**, **landing**, `/comida`, **Expedientes (S5)**, **Administrativo completo (S9)** y **Académico con los portales por rol (S6)**— y los módulos restantes reutilizan los mismos componentes de `src/components/ui/`: lo que falta es pantalla, no estructura.
 >
@@ -187,7 +187,7 @@ Integraciones backend: `lib/anthropic.ts` (chat/traducción/OCR), `lib/email.ts`
 ---
 
 ## S4 — Backend nucleo (auth, RBAC, i18n)
-**Fase:** Backend · **Fechas:** 2026-08-31 → 2026-09-11 · **Estimado:** 12 días · **Estado: ▶️ EN CURSO**
+**Fase:** Backend · **Fechas:** 2026-08-31 → 2026-09-11 · **Estimado:** 12 días · **Estado: ✅ COMPLETADO**
 
 > META SMART Especifico: Montar autenticacion, control de acceso y la base transversal sobre la BD. Medible: Login con Supabase Auth, proteccion por rol en proxy, helper requirePermission()/can(), capa de queries, i18n operativo y subida de archivos. Alcanzable: equipo de 2, stack Next.js 16 + Supabase + pg. Relevante: avanza el entregable de tesis. Temporal: 2 semanas.
 

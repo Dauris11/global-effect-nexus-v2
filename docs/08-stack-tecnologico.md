@@ -1,6 +1,6 @@
 # Stack Tecnológico — Global Effect Nexus
 
-> Stack **definitivo** del proyecto (fuente de verdad). Actualiza y consolida lo indicado en [01 · Visión](01-vision-y-alcance.md) y [02 · Arquitectura](02-arquitectura-tecnica.md). Última actualización: 2026-07-11.
+> Stack **definitivo** del proyecto (fuente de verdad). Actualiza y consolida lo indicado en [01 · Visión](01-vision-y-alcance.md) y [02 · Arquitectura](02-arquitectura-tecnica.md). Última actualización: 2026-11-19 (se corrigieron validación, estado de cliente y formularios para que coincidan con `package.json`).
 
 ## 1. Tabla del stack
 
@@ -16,12 +16,12 @@
 | **Animación** | motion (LazyMotion + domAnimation + `m`) + `@formkit/auto-animate` | Animaciones ligeras y listas auto-animadas. |
 | **Mapas** | Leaflet + react-leaflet + OpenStreetMap | Sin Mapbox ni Google Maps. |
 | **Gráficas** | Recharts + SVG propio para PDF | Dashboards y reportes. |
-| **Validación** | Zod (servidor) | Validación en la frontera (Server Actions). |
+| **Validación** | A mano en cada Server Action | Sin Zod: cada acción vuelve a comprobar uuid, enums, rangos y tamaños de lo que llega (un `select` o un `FormData` se pueden manipular). |
 | **Imágenes** | `sharp` (servidor) + Canvas API (compresión en cliente) | Redimensionado/optimización server-side. |
 | **Iconos** | `lucide-react` | Emojis prohibidos como iconos. |
 | **Fuente** | Montserrat (oficial de urbangroup.do) | Auto-hospedada vía `next/font`. |
-| **Datos/estado (cliente)** | TanStack React Query | Caché, invalidación y mutaciones. |
-| **Formularios** | React Hook Form + Zod | `@hookform/resolvers`. |
+| **Datos/estado (cliente)** | Server Components + Server Actions + `revalidatePath` | Sin TanStack React Query: el servidor entrega los datos y las acciones refrescan las rutas. |
+| **Formularios** | `<form action>` con Server Actions y `useActionState` | Sin React Hook Form; los formularios largos usan `FormularioGuiado`. |
 | **Fechas** | date-fns | Localización por idioma. |
 | **Integraciones** | n8n · Resend · GENIALiA (CRM) · Anthropic | Webhooks, emails, CRM y traducción/IA. |
 
@@ -88,7 +88,7 @@ src/
 ├─ i18n/                       # routing · request · navigation (es/en)
 └─ middleware.ts               # i18n + sesión + protección de rutas
 messages/                      # es.json · en.json · fr.json · it.json
-db/                            # migraciones .sql (0001–0031) + seed + README
+db/                            # migraciones .sql (0001–0090) + seed + README
 docs/                          # esta documentación
 ```
 

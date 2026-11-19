@@ -19,7 +19,7 @@
 └───────────────┬────────────────────────────────────────────┘
                 │  pg (node-postgres), consultas $1,$2…
 ┌───────────────▼────────────────────────────────────────────┐
-│  PostgreSQL 17 (Supabase) — 37 tablas, RBAC, pgvector       │
+│  PostgreSQL 17 (Supabase) — 85 tablas, RBAC, pgvector       │
 │  + Storage (documentos)                                      │
 └────────────────────────────────────────────────────────────┘
 ```

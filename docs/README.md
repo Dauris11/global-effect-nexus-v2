@@ -9,7 +9,7 @@ Toda la documentación del proyecto está centralizada en esta carpeta: **un arc
 |---|---|---|
 | 01 | [Visión y Alcance](01-vision-y-alcance.md) | Propósito, stack, roles, alcance y estado del proyecto. |
 | 02 | [Arquitectura Técnica](02-arquitectura-tecnica.md) | Capas, estructura de carpetas y decisiones de arquitectura. |
-| 03 | [Módulos Funcionales](03-modulos-funcionales.md) | Catálogo de los 27 módulos, portales y flujos automatizados. |
+| 03 | [Módulos Funcionales](03-modulos-funcionales.md) | Catálogo de los 31 módulos, portales y flujos automatizados. |
 | 04 | [Modelo de Datos](04-modelo-de-datos/) | ERD, DFD, diccionario de datos y normalización. |
 | 05 | [Plan de Trabajo](05-plan-de-trabajo.md) | Cronograma, próximos pasos y backlog de los 14 sprints. |
 | 06 | [Plan de Entregas](06-plan-de-entregas.md) | Guía para producir las entregas de la tesis (E2–E6). |
@@ -26,7 +26,7 @@ Toda la documentación del proyecto está centralizada en esta carpeta: **un arc
 - [Diagrama Entidad-Relación](04-modelo-de-datos/diagrama-entidad-relacion.md) — ERD Mermaid (global + por dominio) y matriz de relaciones.
 - [Diagrama de Flujo de Datos (DFD)](04-modelo-de-datos/diagrama-flujo-datos.md) — contexto y procesos (Cuarta Entrega).
 - [Diccionario de Datos](04-modelo-de-datos/diccionario-de-datos.md) — generado desde la BD real.
-  ⚠️ Refleja el esquema hasta la migración `0019`, más el retiro de psicología (`0030`) y las solicitudes (`0031`); falta regenerarlo desde la BD tras `0020`–`0029`.
+  ⚠️ Refleja el esquema hasta la migración `0019`, más el retiro de psicología (`0030`) y las solicitudes (`0031`). **Faltan en él** las migraciones `0020`–`0029` y `0032`–`0090` (transporte, Habitudes, inventario, Global 360, contabilidad, `estudiante_etapa`…); hay que regenerarlo desde la BD (85 tablas hoy).
 - [Normalización y Escalabilidad](04-modelo-de-datos/normalizacion-y-escalabilidad.md) — SMART, 1NF–3NF, escalabilidad e IA.
 - Formatos de diagrama: [`esquema.dbml`](04-modelo-de-datos/esquema.dbml) (dbdiagram.io) · [`diagrama-flujo-datos.drawio`](04-modelo-de-datos/diagrama-flujo-datos.drawio) (draw.io).
 
@@ -34,7 +34,7 @@ Toda la documentación del proyecto está centralizada en esta carpeta: **un arc
 
 | Carpeta | Contenido |
 |---|---|
-| [`estado/`](estado/) | Documentos vivos de avance: [progreso por pantalla](estado/progreso.md), [pendientes](estado/pendientes.md), [plan por etapas](estado/plan-etapas.md) e [inventario frente a fases](estado/inventario-vs-fases.md). |
+| [`estado/`](estado/) | Documentos vivos de avance: [progreso por pantalla](estado/progreso.md), [pendientes](estado/pendientes.md), [plan por etapas](estado/plan-etapas.md) e [inventario frente a fases](estado/inventario-vs-fases.md), [plan del expediente académico](estado/plan-expediente-academico.md) y [lo que falta entregar para cerrarlo](estado/entregables-expediente.md). |
 | [`referencia/`](referencia/) | Descripciones funcionales vigentes: [módulos por portal](referencia/modulos-por-portal.md) y [dependencias](referencia/dependencias.md). |
 | [`prompts/`](prompts/) | Prompts operativos para los agentes de IA, como el [rediseño de app web](prompts/rediseno-app-web.md). |
 | [`prototipo-base44/`](prototipo-base44/) | **Histórico, no normativo:** los documentos del prototipo v1 sobre Base44 (React + Vite). Ver su [README](prototipo-base44/README.md). |
@@ -45,17 +45,19 @@ Toda la documentación del proyecto está centralizada en esta carpeta: **un arc
 
 | Ubicación | Contenido |
 |---|---|
-| [`../db/migrations/`](../db/migrations/) | Migraciones SQL numeradas por dominio (`0001`–`0031`; `0014` = integración con Supabase Auth; `0030` retira psicología; `0031` = solicitudes y aprobaciones). |
+| [`../db/migrations/`](../db/migrations/) | Migraciones SQL numeradas por dominio (`0001`–`0090`; `0014` = integración con Supabase Auth; `0030` retira psicología; `0031` = solicitudes y aprobaciones; `0047` fin de cursos técnicos; `0065` roles definitivos; `0089` historial GPS; `0090` etapas del expediente). |
 | [`../db/seed.sql`](../db/seed.sql) | Datos semilla: roles, permisos, usuario maestro, datos de prueba. |
 | [`../db/README.md`](../db/README.md) | Guía de despliegue y verificación de la base de datos. |
 | `../.env.example` | Plantilla de variables de entorno. |
 
-## Estado del proyecto (2026-08-06)
+## Estado del proyecto (2026-11-19)
 
-- ✅ **S0–S3 (Base de datos):** diseñada, normalizada (1NF–3NF), desplegada y verificada en Supabase — 36 tablas, RBAC, pgvector.
+- ✅ **S0–S3 (Base de datos):** diseñada, normalizada (1NF–3NF), desplegada y verificada en Supabase — RBAC, pgvector; hoy 85 tablas en `public` tras 90 migraciones.
 - ✅ **Documentación de cimientos** completa (visión, arquitectura, módulos, ERD, DFD, diccionario, normalización, plan) + [stack definitivo](08-stack-tecnologico.md).
 - ✅ **Migración de stack:** Next.js 16, Tailwind CSS 4 (CSS-first), Supabase Auth, i18n `es/en`, y libs nuevas (Leaflet, motion, sharp, Resend).
-- ▶️ **S4 — Backend núcleo (en curso):** Supabase Auth + RBAC (`proxy.ts` + `requirePermission`), login, capa `server/` por dominio, Storage y layout del portal. Build y lint en verde.
+- ✅ **S4 — Backend núcleo:** Supabase Auth + RBAC (`proxy.ts` + `requerirPermiso`), login, capa `server/` por dominio, Storage y layout del portal. Build y lint en verde.
+- ✅ **Transporte institucional (módulo 31):** mapa en vivo, cabina del chofer y recorrido real guardado (`0064`–`0089`).
+- 🔄 **Expediente académico por fases:** fase 1 hecha (`0090`); siguen catálogo universidad/carrera/pénsum, notas, OCR, servicio y reunión mensual y sanciones.
 - ✅ **S5 — Expedientes y Panel:** CRUD de expedientes por pestañas, detalle con GPA y gráficos, OCR con IA y panel principal armado por permisos.
 - ✅ **S9 — Administrativo y Calendario:** Kanban con automatizaciones (correo + evento espejo), proyectos con avance calculado, personal y calendario mensual.
 - ✅ **S6 — Académico y portales por rol:** materias, cursos, calificaciones, historial, prematrícula y períodos (los cursos técnicos y sus calificaciones se retiraron en la `0047`); **Portal Estudiante** y **Portal Profesor**, con el vínculo docente ↔ usuario resuelto por FK en la migración `0019`.
@@ -73,7 +75,7 @@ Ver los próximos pasos en [Plan de Trabajo](05-plan-de-trabajo.md).
 ## Resumen de la base de datos
 
 - **Motor:** PostgreSQL 17 (Supabase). SQL a mano, sin ORM, consultas parametrizadas.
-- **37 tablas · 351 columnas · 7 enums · 44 FKs · 20 triggers.** (Sin contar `_migracion`, tabla de control del runner. Cifras recalculadas tras `0030` y `0031`: salen tres tablas de psicología y entran `solicitud` y `solicitud_paso`.)
+- **85 tablas · 833 columnas · 8 enums · 154 FKs · 33 triggers** en el esquema `public` (sin contar `_migracion`, tabla de control del runner). Cifras leídas de la base el 2026-11-19; el esquema `contabilidad` va aparte.
 - **Extensiones:** `pgcrypto`, `citext`, `pg_trgm`, `vector` (pgvector 0.8, índice HNSW).
 - **Extensibilidad:** columna `metadata JSONB` en las 14 entidades principales.
 - **Credenciales semilla:** las seis cuentas de demostración comparten la contraseña

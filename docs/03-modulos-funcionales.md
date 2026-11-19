@@ -24,13 +24,13 @@ envío de correos e internacionalización (español / inglés).
 
 TECNOLOGÍAS PRINCIPALES
 ─────────────────────────────────────────────────────────────────
-- Frontend: Next.js (App Router) + React + TypeScript + Tailwind CSS + shadcn/ui
+- Frontend: Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui
 - Enrutamiento: App Router de Next.js (rutas por archivos)
-- Estado/Datos: TanStack React Query (caché, invalidación, mutaciones)
-- Base de datos: PostgreSQL con pg (node-postgres) y SQL parametrizado
-- Autenticación: Auth.js (NextAuth) con credenciales + sesiones JWT y RBAC
+- Estado/Datos: Server Components y Server Actions con `revalidatePath`
+- Base de datos: PostgreSQL 17 (Supabase) con pg (node-postgres) y SQL parametrizado
+- Autenticación: Supabase Auth (email + contraseña) con RBAC propio sobre la tabla `usuario`
 - Internacionalización: next-intl (español / inglés)
-- Validación: React Hook Form + Zod
+- Validación: a mano en cada Server Action (sin Zod ni React Hook Form)
 - Iconos: Lucide React
 - Gráficos: Recharts (barras, circulares, áreas, radiales)
 - Fechas: date-fns con localización en español
@@ -50,10 +50,12 @@ Cada usuario ve un menú lateral diferente según su rol:
   docente        → Portal docente: clases de Global 360, tareas y nota final
   contabilidad   → Transacciones, reportes financieros, gastos
   habitudes      → Postulación de candidatos al expediente
+  dir_habitudes  → Dirección del programa Habitudes
+  chofer         → Cabina del chofer: viajes y pasajeros de transporte
 
-La autenticación es gestionada por el módulo propio de autenticación
-(Auth.js con credenciales y sesiones JWT). Los usuarios se invitan,
-no se registran directamente.
+Las funciones fuera del rol (por ejemplo dar clases de 360) se controlan
+por permiso, no por rol. La autenticación la gestiona Supabase Auth; los
+usuarios se invitan, no se registran directamente.
 
 ## MÓDULO 1: PÁGINA DE INICIO (Landing Pública)
 *Ruta: /*
@@ -110,6 +112,14 @@ Funcionalidades:
   becado universitario: el `regular` de curso técnico se retiró en la `0047`.
 - Buscador inteligente con dropdown en tiempo real (BuscadorEstudiantes).
 - Filtros por estado y por carrera.
+- Etapas: Habitudes llena el expediente del postulante (`reclutado` →
+  `postulado`); en la academia de liderazgo (último filtro) y de ahí en
+  adelante lo lleva administración. Cada alta y cada cambio de estado queda en
+  `estudiante_etapa` (quién, cuándo, desde qué estado; migración `0090`).
+- En desarrollo por fases (ver `docs/estado/plan-expediente-academico.md`):
+  catálogo universidad → carrera → pénsum, notas por período con promedio e
+  índice acumulado, importación con OCR de récord de notas y listados
+  universitarios, servicio y reunión mensual por expediente, y sanciones.
 
 OCR CON INTELIGENCIA ARTIFICIAL:
 - Permite subir imagen o PDF del expediente físico del estudiante.
@@ -542,6 +552,26 @@ Funcionalidades:
 - **Optimización Mobile-First y Escaneo In Situ:**
   - Interfaz 100% responsiva y optimizada para teléfonos móviles.
   - Lector de QR con la cámara del dispositivo para auditorías rápidas en las instalaciones: el personal escanea la etiqueta pegada al activo e inmediatamente ve su ficha, fotos y responsable asignado.
+
+## MÓDULO 31: TRANSPORTE INSTITUCIONAL
+*Rutas: /transporte (público), /portal/estudiante/transporte, /portal/chofer*
+
+Guagua de la Fundación entre el edificio de la Fundación y los recintos
+universitarios de La Vega (UNPHU, UASD, UCATECI y UTESA).
+
+Funcionalidades:
+- **Inscripción del estudiante:** recurrente por día de la semana o puntual por
+  fecha, con parada de abordaje y destino; invitados y pasajeros asistidos.
+- **Cabina del chofer:** inicia y finaliza el viaje, pasa lista, reporta
+  incidencias y transmite su GPS (`watchPosition`) con la pantalla encendida.
+- **Mapa en vivo:** Leaflet sobre OpenStreetMap, ruta institucional con ETA por
+  parada y marcador de la guagua; consulta pública `/api/transporte/posicion`
+  con tope de frecuencia por IP y sin ids internos.
+- **Recorrido real:** cada posición se guarda en `transporte_posicion` (máximo
+  una cada 5 s por viaje, tope aplicado en el servidor) y el mapa dibuja los
+  últimos 1500 puntos como línea punteada sobre la ruta.
+- **Límite conocido:** el GPS del navegador puede suspenderse con el teléfono
+  bloqueado; seguimiento fiable en segundo plano exigiría una app móvil.
 
 ## PORTALES POR ROL (Dashboards)
 ─────────────────────────────────────────────────────────────────

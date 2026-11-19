@@ -1,6 +1,6 @@
 # Visión y Alcance — Global Effect Nexus
 
-> Documento de visión del proyecto: propósito, alcance funcional, roles y estado. Última actualización: 2026-10-24 (fin de los cursos técnicos).
+> Documento de visión del proyecto: propósito, alcance funcional, roles y estado. Última actualización: 2026-11-19 (transporte con historial GPS y plan del expediente académico).
 
 ## 1. Visión general
 
@@ -95,9 +95,11 @@ Cada usuario ve un menú lateral distinto según su rol. Los usuarios se **invit
 
 ## 5. Estado del proyecto
 
-- ✅ **Base de datos:** 39 migraciones aplicadas, esquema `contabilidad` con bitácora SHA-256 encadenada, cajas chicas, arqueos por denominación, retenciones DGII y asignación a programas.
+- ✅ **Base de datos:** 90 archivos de migración aplicados (85 tablas en `public`), esquema `contabilidad` con bitácora SHA-256 encadenada, cajas chicas, arqueos por denominación, retenciones DGII y asignación a programas.
 - ✅ **Contabilidad y Finanzas:** Fase 1 a 4 completadas (bancos, recibos, proveedores, cuentas por pagar, Gantt de vencimientos, cajas chicas/operativas, arqueos, exportación DGII 606 e importador bancario en Excel .xlsx).
-- ✅ **Validaciones de calidad:** Build Next.js 16 (Turbopack) 100% verde (106 rutas), ESLint sin errores, i18n simétrico en 2,548 claves y suite de pruebas contables superada.
+- ✅ **Validaciones de calidad:** Build Next.js 16 (Turbopack) 100% verde, ESLint sin errores, i18n simétrico en 5,548 claves y suite de pruebas contables superada.
+- ✅ **Transporte institucional** (módulo 31): rutas, horarios, viajes en vivo con GPS del chofer y recorrido real guardado (`0064`–`0089`).
+- 🔄 **Expediente académico por fases** (ver [plan](estado/plan-expediente-academico.md)): etapas con historial (`0090`, hecha); catálogo universidad → carrera → pénsum, notas por período, importaciones con OCR, servicio y reunión mensual y sanciones (pendientes).
 - 🔄 **Nuevas directrices en ampliación de alcance:** Torre de control del colaborador, gestor de tareas tipo Claude, inventario de activos con QR mobile, Global 360 Moodle-like y Habitudes colaborativo docente.
 
 Ver el [plan de trabajo](05-plan-de-trabajo.md) y [docs/estado/pendientes.md](estado/pendientes.md) para el detalle de tareas.

@@ -106,6 +106,13 @@ export async function actualizarExpediente(
 
   try {
     await enTransaccion(async (cliente) => {
+      // Se lee antes del UPDATE (y se bloquea la fila) para registrar el paso
+      // de etapa solo si el estado cambió de verdad.
+      const previo = await cliente.query<{ estado: string }>(
+        `SELECT estado FROM estudiante WHERE id = $1 FOR UPDATE`,
+        [id],
+      );
+
       const actualizado = await cliente.query(
         `UPDATE estudiante
             SET nombre = $2,
@@ -170,6 +177,15 @@ export async function actualizarExpediente(
       );
 
       if (actualizado.rowCount === 0) throw new Error("NO_EXISTE");
+
+      if (previo.rows[0]?.estado !== estado) {
+        await cliente.query(
+          `INSERT INTO estudiante_etapa
+             (estudiante_id, estado_anterior, estado_nuevo, usuario_id)
+           VALUES ($1, $2::estado_estudiante, $3::estado_estudiante, $4)`,
+          [id, previo.rows[0]?.estado ?? null, estado, usuario.id],
+        );
+      }
 
       const rawLat = datos.get("latitud");
       const rawLng = datos.get("longitud");
@@ -442,6 +458,12 @@ export async function crearExpediente(
       const id = fila.rows[0]?.id;
 
       if (!id) throw new Error("el expediente no devolvió id");
+
+      await cliente.query(
+        `INSERT INTO estudiante_etapa (estudiante_id, estado_anterior, estado_nuevo, usuario_id)
+         VALUES ($1, NULL, $2::estado_estudiante, $3)`,
+        [id, estado, usuario.id],
+      );
 
       const rawLat = datos.get("latitud");
       const rawLng = datos.get("longitud");

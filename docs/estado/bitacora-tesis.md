@@ -659,6 +659,59 @@ unitarias en verde).
 
 ---
 
+## 19 nov 2026 — Historial GPS del transporte y primera fase del expediente académico
+
+**Petición.** (1) Convertir en integración real una guía de seguimiento de
+guagua con Leaflet y GPS del teléfono; (2) desarrollar por fases el expediente
+académico: recorrido Habitudes → academia → universidad, catálogo de
+universidades con carreras y pénsum, notas por período, OCR de récords y
+listados, servicio y reunión mensual, sanciones.
+
+**Qué se encontró.** La guía ya estaba casi toda construida (Leaflet, mapa en
+vivo, GPS del chofer, API de posición, tablas de viaje). Faltaba lo único que
+la guía pedía y el repositorio no tenía: **conservar cada punto del recorrido**.
+Del expediente ya existían los estados del embudo y el permiso
+`expedientes.postular`; no existían universidad, carrera, pénsum ni matrícula.
+
+**Decisiones y por qué.**
+- **Historial en tabla propia** (`transporte_posicion`, `0089`) y no solo la
+  última posición en `transporte_viaje`: sin puntos no se puede reconstruir
+  dónde estuvo la guagua. El tope de un punto cada 5 s se aplica **en el
+  servidor**, porque un cliente modificado podría inflar la tabla.
+- **Recorrido en el mapa** dentro de la respuesta que el mapa ya sondea cada
+  4 s (últimos 1500 puntos), en vez de un endpoint nuevo: menos superficie
+  pública y una sola consulta.
+- **Expediente por fases, empezando por lo que no necesita documentos**
+  (`docs/estado/plan-expediente-academico.md`). La fase 1 es el historial de
+  etapas (`estudiante_etapa`, `0090`): quién movió a cada estudiante y cuándo,
+  base de las alertas y sanciones.
+- **Las notas leídas por OCR nunca se guardan directo:** pasan por una pantalla
+  de revisión y se emparejan por matrícula y después por nombre.
+- **Descarte = `inactivo` con motivo**, no un valor nuevo del ENUM:
+  `db:migrate` corre cada archivo en una transacción y `ALTER TYPE … ADD VALUE`
+  no puede usarse en la misma transacción.
+- **Universidades:** UCATECI, UNPHU, UTESA y UASD; «UCteci» se leyó como
+  repetición de UCATECI y la que el solicitante no recordaba como UASD
+  (suposición, por confirmar).
+
+**Revisión de la documentación maestra.** Se contrastó con el código y la base
+y se corrigió: cifras de la base (85 tablas, 833 columnas, 8 enums, 154 FKs,
+33 triggers; antes 36–37), rango de migraciones (`0001`–`0090`), 31 módulos (se
+añadió Transporte, que no figuraba), roles `dir_habitudes` y `chofer`, y el
+stack: el catálogo decía Auth.js, React Query, React Hook Form y Zod, y el
+proyecto usa Supabase Auth, Server Actions y validación manual (ninguna de esas
+librerías está en `package.json`). S4 figuraba «en curso» y está completo.
+**Sigue desfasado:** el diccionario de datos (llega a `0019`) hay que
+regenerarlo desde la base.
+
+**Verificación.** `tsc`, `lint`, `build`, `i18n:check` (5,548 claves) y
+`audit:ui` en verde; migraciones `0087`–`0090` aplicadas. **Limitaciones:** no
+probado en navegador con un viaje real, y el GPS web se suspende con el
+teléfono bloqueado (un seguimiento fiable pediría app móvil). Sin pruebas
+automatizadas del dominio.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

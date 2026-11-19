@@ -1583,3 +1583,24 @@ módulo) — esto es solo la cola de pendientes concretos.
       Se borraron las cifras de la Fundación, el listado de módulos y la
       actividad de `audit_log` del portal viejo; si se quiere recuperar la
       lectura de `audit_log`, hay que construirle su propia pantalla.
+
+- [x] Transporte: historial de posiciones GPS (migración `0089`,
+      `transporte_posicion`). `actualizarPosicionViaje` guarda un punto por
+      viaje cada ≥ 5 s (tope en el servidor) con la precisión del GPS;
+      `recorridoDelViaje` lo lee.
+- [x] Transporte: el mapa dibuja el recorrido real (línea punteada de tinta,
+      últimos 1500 puntos) en vivo y en viajes terminados.
+- [ ] Transporte: el GPS web se suspende
+      con el teléfono bloqueado: para fiabilidad total haría falta app móvil.
+
+- [x] Expediente académico, fase 1: `estudiante_etapa` (migración `0090`)
+      registra cada alta y cada cambio de estado. Plan completo en
+      `docs/estado/plan-expediente-academico.md`.
+- [ ] Expediente académico, fases 2-7 (catálogo universidad/carrera/pénsum,
+      notas por período, importaciones OCR, servicio mensual, reunión mensual,
+      sanciones). La 4 espera el pénsum, el récord de notas y el listado de
+      notas de la universidad.
+- [ ] Documentación maestra: regenerar `04-modelo-de-datos/diccionario-de-datos.md`,
+      el ERD y `esquema.dbml` desde la base (85 tablas; el diccionario llega a
+      la `0019`). Lo que debe entregarse para cerrar el expediente está en
+      `docs/estado/entregables-expediente.md`.
