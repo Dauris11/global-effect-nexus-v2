@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0029 · Foto del estudiante en el expediente
+-- PORTAL GLOBALEFFECT — 0029 · Foto del estudiante en el expediente
 -- ================================================================
 -- Mismo patrón que `usuario.foto_url` (migración 0026): se guarda la
 -- RUTA dentro del bucket `avatares`, no la URL completa, porque el host

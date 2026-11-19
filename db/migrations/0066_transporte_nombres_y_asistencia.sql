@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0066 · Transporte: nombres cortos e inscripción de terceros
+-- PORTAL GLOBALEFFECT — 0066 · Transporte: nombres cortos e inscripción de terceros
 -- ================================================================
 -- 1. Los cuatro turnos pasan a llevar un nombre corto y definido; la hora
 --    ya se muestra al lado en cada selector, así que no se repite en el nombre.

@@ -40,7 +40,7 @@ export const PROGRAMAS_INSTITUCIONALES = [
   {
     codigo: "administrativo",
     nombre: "Gestión Administrativa y Legal",
-    descripcion: "Asesoría contable, legal, licencias, plataforma Nexus y gobernanza.",
+    descripcion: "Asesoría contable, legal, licencias, Portal GlobalEffect y gobernanza.",
   },
 ] as const;
 

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0005 · Estudiantes (expediente normalizado)
+-- PORTAL GLOBALEFFECT — 0005 · Estudiantes (expediente normalizado)
 -- ================================================================
 -- La entidad estudiante se descompone en tablas hijas para cumplir
 -- 2NF/3NF: datos familiares (1:N), vivienda, salud y socioeconómico

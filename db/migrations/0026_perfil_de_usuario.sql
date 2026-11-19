@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0026 · Perfil editable por su dueño
+-- PORTAL GLOBALEFFECT — 0026 · Perfil editable por su dueño
 -- ================================================================
 -- Cada cuenta puede personalizar su perfil, sea del rol que sea: la
 -- foto, el nombre con el que quiere que la llamen y una descripción

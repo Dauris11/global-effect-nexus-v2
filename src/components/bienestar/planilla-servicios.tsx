@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, Minus, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Badge } from "@/components/ui/badge";
+import type { EstadoCarta } from "@/lib/correos-patrocinador";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { marcarServicio } from "@/server/bienestar/acciones";
@@ -97,7 +99,7 @@ export function PlanillaServicios({
       {/* La tabla se desplaza dentro de su caja y no empuja la página: con dos
           columnas de casillas y nombres largos, a 360px no cabe de otra forma. */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[760px] text-sm">
           <thead>
             <tr className="text-muted-foreground border-b text-left text-xs">
               <th className="w-10 py-2 font-medium">#</th>
@@ -109,6 +111,8 @@ export function PlanillaServicios({
               <th className="w-32 py-2 text-center font-medium">
                 {t("meeting")}
               </th>
+              <th className="w-40 py-2 text-center font-medium">{t("letter")}</th>
+              <th className="w-28 py-2 text-center font-medium">{t("fulfilled")}</th>
             </tr>
           </thead>
 
@@ -144,6 +148,21 @@ export function PlanillaServicios({
                       activa={puedeEscribir}
                       etiqueta={`${t("meeting")} · ${fila.nombre}`}
                       alPulsar={() => marcar(fila, "reunion")}
+                    />
+                  </td>
+
+                  {/* La carta no se marca: se deriva de lo que llegó al buzón. */}
+                  <td className="py-2 text-center">
+                    <EstadoDeCarta estado={fila.correo} />
+                  </td>
+
+                  <td className="py-2 text-center">
+                    <Cumplio
+                      cumplio={
+                        marcas.servicio &&
+                        marcas.reunion &&
+                        (fila.correo === "cumplio" || fila.correo === "no_aplica")
+                      }
                     />
                   </td>
                 </tr>
@@ -190,5 +209,38 @@ function Casilla({
       aria-label={etiqueta}
       className="size-4 accent-[#2096BA] disabled:opacity-50"
     />
+  );
+}
+
+const VISUAL_CARTA = {
+  cumplio: { icono: CheckCircle2, variante: "marca" },
+  en_revision: { icono: Clock, variante: "neutra" },
+  tardia: { icono: AlertCircle, variante: "solida" },
+  no_envio: { icono: XCircle, variante: "solida" },
+  no_aplica: { icono: Minus, variante: "neutra" },
+} as const satisfies Record<EstadoCarta, { icono: unknown; variante: string }>;
+
+/** Estado de la carta con icono y texto: no depende del color para entenderse. */
+function EstadoDeCarta({ estado }: { estado: EstadoCarta }) {
+  const t = useTranslations("monthlyServices");
+  const { icono: Icono, variante } = VISUAL_CARTA[estado];
+
+  return (
+    <Badge variant={variante} className="gap-1">
+      <Icono className="size-3" />
+      {t(`letterStatus.${estado}`)}
+    </Badge>
+  );
+}
+
+/** Cumplió el mes: servicio, reunión y carta (si tiene patrocinador). */
+function Cumplio({ cumplio }: { cumplio: boolean }) {
+  const t = useTranslations("monthlyServices");
+
+  return (
+    <Badge variant={cumplio ? "marca" : "solida"} className="gap-1">
+      {cumplio ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
+      {cumplio ? t("yes") : t("no")}
+    </Badge>
   );
 }

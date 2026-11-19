@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BookOpen, CheckCheck, EyeOff, Eye, Trash2, TriangleAlert } from "lucide-react";
+import { BookOpen, CheckCheck, EyeOff, Eye, Pencil, Trash2, TriangleAlert } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -11,16 +11,20 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
-import { redirect } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { AGENTES_CLAVES } from "@/lib/ia-conocimiento";
 import { TARJETA } from "@/lib/paleta";
-import { PORTAL_POR_ROL, usuarioTienePermiso } from "@/lib/rbac";
+import { PORTAL_POR_ROL } from "@/lib/rbac";
 import {
   alternarDocumento,
   eliminarDocumento,
   marcarVerificado,
 } from "@/server/ia/acciones-conocimiento";
 import { documentosDeConocimiento } from "@/server/ia/consultas-admin";
+import {
+  agentesGestionables,
+  puedeGestionarAgentes,
+} from "@/server/ia/permisos-conocimiento";
 import { parametros } from "@/server/parametros/consultas";
 
 export async function generateMetadata({
@@ -37,7 +41,8 @@ export async function generateMetadata({
 /**
  * Base de conocimiento de los agentes. `ia.administrar` ve y carga para todos;
  * Contabilidad (`contabilidad.configurar`) solo para `agente_contabilidad`, que
- * es su normativa y la que ella sabe cuándo cambia.
+ * es su normativa y la que ella sabe cuándo cambia; `admin` (`ia.conocimiento`)
+ * solo para `agente_estudiante`.
  */
 export default async function PaginaConocimiento({
   params,
@@ -47,14 +52,11 @@ export default async function PaginaConocimiento({
   const { locale } = await params;
   const usuario = await requerirUsuario();
 
-  const todos = usuarioTienePermiso(usuario, "ia.administrar");
-  const soloContabilidad = !todos && usuarioTienePermiso(usuario, "contabilidad.configurar");
+  const visibles = agentesGestionables(usuario);
 
-  if (!todos && !soloContabilidad) {
+  if (visibles !== null && visibles.length === 0) {
     redirect({ href: PORTAL_POR_ROL[usuario.rol], locale });
   }
-
-  const visibles = todos ? null : ["agente_contabilidad"];
 
   const [t, documentos, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "iaAdmin" }),
@@ -126,6 +128,14 @@ export default async function PaginaConocimiento({
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  {puedeGestionarAgentes(usuario, doc.agentes) && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/configuracion/conocimiento/${doc.documentoId}`}>
+                        <Pencil className="size-4" />
+                        {t("knowledge.edit")}
+                      </Link>
+                    </Button>
+                  )}
                   <AccionDocumento accion={marcarVerificado} id={doc.documentoId} icono={<CheckCheck className="size-4" />} texto={t("knowledge.markVerified")} />
                   <AccionDocumento
                     accion={alternarDocumento}

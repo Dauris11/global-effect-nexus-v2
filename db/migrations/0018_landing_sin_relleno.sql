@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0018 · Hero de la landing sin relleno
+-- PORTAL GLOBALEFFECT — 0018 · Hero de la landing sin relleno
 -- ================================================================
 -- La migración 0015 sembró tres "diapositivas por defecto" en
 -- `landing_slide`. La intención era buena —que el panel tuviera algo

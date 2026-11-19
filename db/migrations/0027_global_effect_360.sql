@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0027 · Global Effect 360
+-- PORTAL GLOBALEFFECT — 0027 · Global Effect 360
 -- ================================================================
 -- Programa de materias técnicas que los BECADOS UNIVERSITARIOS deben
 -- cursar a lo largo de su carrera: cuatro obligatorias y el resto

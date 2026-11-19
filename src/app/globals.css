@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /**
- * Global Effect Nexus — tokens de diseño. La norma está en
+ * Portal GlobalEffect — tokens de diseño. La norma está en
  * docs/09-sistema-visual.md; este archivo la hace compilable.
  *
  * REGLA DURA DE MARCA: el sitio entero se pinta con cuatro cosas —azul claro
@@ -373,7 +373,7 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   }
 }
 /**
- * Sistema de movimiento — Global Effect Nexus (docs/09-sistema-visual.md §2.8)
+ * Sistema de movimiento — Portal GlobalEffect (docs/09-sistema-visual.md §2.8)
  *
  * REGLA: las animaciones viven aquí y los componentes las nombran; nadie
  * inventa una en un módulo. Ninguna rebota, ninguna pasa de 300 ms salvo las

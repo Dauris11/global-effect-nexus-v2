@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0028 · Tareas de las tres unidades,
+-- PORTAL GLOBALEFFECT — 0028 · Tareas de las tres unidades,
 --                              semestre o cuatrimestre, y docente de 360
 -- ================================================================
 -- Tres cambios que van juntos porque los pide el mismo trabajo: que el

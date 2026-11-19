@@ -1,5 +1,5 @@
 /**
- * Motor de cálculos contables y fiscales dominicanos (Global Effect Nexus).
+ * Motor de cálculos contables y fiscales dominicanos (Portal GlobalEffect).
  * Funciones puras con precisión decimal exacta para las calculadoras del ERP.
  */
 

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0056 · Chat Interno y Flujo de Comprobantes
+-- PORTAL GLOBALEFFECT — 0056 · Chat Interno y Flujo de Comprobantes
 -- ================================================================
 -- Canales de comunicación interna (directos, grupos, departamentos e hilos por caso),
 -- mensajes estructurados, soporte para comprobantes fotográficos de gastos de campo

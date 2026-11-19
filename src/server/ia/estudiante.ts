@@ -1,5 +1,6 @@
 import { consultar, consultarUna } from "@/lib/db";
 import type { TurnoIA } from "@/lib/ia";
+import { envolverDatos } from "@/lib/ia-seguridad";
 import { NOTA_APROBADA, promedio } from "@/lib/notas";
 import { topeCreditosDeUniversidad } from "@/lib/reglas-academicas";
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
@@ -192,6 +193,10 @@ export async function instruccionesPara(
     "- No opinas sobre el trabajo de sus docentes.",
     `- Respondes en ${idioma === "en" ? "inglés" : "español"}, breve y en tono cercano. Si la respuesta cabe en dos frases, no escribas cinco.`,
     "",
+    // Todo lo de abajo viene de la base y parte lo escribió gente (títulos de
+    // tareas, nombres de materias y de docentes): va como DATO, con las etiquetas
+    // nuestras desarmadas, y nunca como instrucciones.
+    envolverDatos([
     `Estudiante: ${estudiante.nombre} (becado universitario${pautaCreditos.etiquetaUniversidad ? ` en ${pautaCreditos.etiquetaUniversidad}` : ""}, estado ${estudiante.estado}).`,
     `Índice académico: ${indice === null ? "sin historial" : indice.toFixed(2)} sobre 4.00. Promedio: ${media === null ? "sin historial" : media.toFixed(1)} sobre 100 (universidad se aprueba con ${NOTA_APROBADA}; Global Effect 360 se aprueba con ${notaMinima360}; tope de matrícula universitaria según pauta ${pautaCreditos.etiquetaUniversidad ?? "general"}: ${pautaCreditos.tope} créditos por período).`,
     lista(
@@ -245,6 +250,7 @@ export async function instruccionesPara(
           `${mes.mes}: servicio ${mes.hizo_servicio ? "cumplido" : "sin cumplir"}, reunión ${mes.asistio_reunion ? "asistida" : "sin asistir"}`,
       ),
     ),
+    ].join("\n")),
   ].join("\n");
 }
 

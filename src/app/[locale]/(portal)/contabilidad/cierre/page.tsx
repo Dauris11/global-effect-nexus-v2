@@ -7,7 +7,7 @@ import {
 import { VistaCierre } from "@/components/contabilidad/cierre/vista-cierre";
 
 export const metadata = {
-  title: "Cierre Contable y Períodos — Contabilidad | Global Effect Nexus",
+  title: "Cierre Contable y Períodos — Contabilidad | Portal GlobalEffect",
 };
 
 export default async function PaginaCierreContable() {

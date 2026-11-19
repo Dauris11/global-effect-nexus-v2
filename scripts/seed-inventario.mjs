@@ -141,7 +141,7 @@ try {
       codigo: activo.codigo,
       nombre: activo.nombre,
       institucion: "Fundación Global Effect",
-      verificacion: "nexus.globaleffect.org/inventario/" + activo.codigo,
+      verificacion: "portal.globaleffect.org/inventario/" + activo.codigo,
     });
 
     const res = await db.query(
@@ -185,7 +185,7 @@ try {
     await db.query(
       `INSERT INTO public.inventario_historial (
         activo_id, usuario_id, accion, ubicacion_nueva, estado_nuevo, notas
-      ) VALUES ($1, $2, 'creacion', $3, $4, 'Alta patrimonial inicial en Global Effect Nexus')
+      ) VALUES ($1, $2, 'creacion', $3, $4, 'Alta patrimonial inicial en Portal GlobalEffect')
       ON CONFLICT DO NOTHING`,
       [activoId, adminId, activo.ubicacion, activo.estado]
     );

@@ -39,7 +39,7 @@ export async function generateMetadata({
 }
 
 /**
- * Tablero de Nexus AI: cuánto se usa, quién, con qué modelo y qué hizo el
+ * Tablero de Elly AI: cuánto se usa, quién, con qué modelo y qué hizo el
  * agente. Solo metadatos: el contenido de las conversaciones no se muestra.
  * Aquí también se fijan cuotas, precios y la configuración de cada agente.
  */

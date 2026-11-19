@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0008 · Psicología (confidencial)
+-- PORTAL GLOBALEFFECT — 0008 · Psicología (confidencial)
 -- ================================================================
 -- Citas y seguimientos, notas confidenciales aisladas y perfil
 -- psicológico. El contenido sensible vive separado del expediente

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0051 · Contabilidad: Fase 3 (Impuestos DGII y Calculadoras)
+-- PORTAL GLOBALEFFECT — 0051 · Contabilidad: Fase 3 (Impuestos DGII y Calculadoras)
 -- ================================================================
 -- Fase 3 de docs/prompts/plan-contabilidad-erp.md:
 --   1. Calendario de obligaciones fiscales (IR-3, IR-17, 606 a 609, IT-1, ISFL-01).

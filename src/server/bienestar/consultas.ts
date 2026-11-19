@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import type { EstadoCarta } from "@/lib/correos-patrocinador";
 
 /**
  * Servicio comunitario y reunión mensual: la planilla del mes.
@@ -26,6 +27,8 @@ export type FilaServicio = {
   hizo_servicio: boolean;
   asistio_reunion: boolean;
   notas: string | null;
+  /** Carta mensual al patrocinador, DERIVADA de `correo_patrocinador` (nadie la marca a mano). */
+  correo: EstadoCarta;
 };
 
 /**
@@ -43,10 +46,25 @@ export async function planillaDelMes(mes: string): Promise<FilaServicio[]> {
             e.tipo::text AS tipo,
             coalesce(r.hizo_servicio, FALSE)   AS hizo_servicio,
             coalesce(r.asistio_reunion, FALSE) AS asistio_reunion,
-            r.notas
+            r.notas,
+            CASE
+              WHEN NOT EXISTS (SELECT 1 FROM asignacion_beca a
+                                WHERE a.estudiante_id = e.id AND a.estado = 'activo')
+                THEN 'no_aplica'
+              WHEN c.ok   THEN 'cumplio'
+              WHEN c.rev  THEN 'en_revision'
+              WHEN c.tarde THEN 'tardia'
+              ELSE 'no_envio'
+            END AS correo
        FROM estudiante e
        LEFT JOIN registro_servicio r
               ON r.estudiante_id = e.id AND r.mes = $1
+       LEFT JOIN LATERAL (
+              SELECT bool_or(estado = 'reenviado' AND a_tiempo)               AS ok,
+                     bool_or(estado = 'retenido'  AND a_tiempo)               AS rev,
+                     bool_or(estado IN ('reenviado', 'retenido') AND NOT a_tiempo) AS tarde
+                FROM correo_patrocinador
+               WHERE estudiante_id = e.id AND mes = $1) c ON TRUE
       WHERE e.estado = 'activo'
       ORDER BY e.nombre`,
     [mes],

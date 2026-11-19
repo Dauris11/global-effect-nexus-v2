@@ -50,6 +50,7 @@ const ERRORES: Record<string, string> = {
   limite: "errorLimite",
   inactivo: "errorInactivo",
   mensajeLargo: "errorLargo",
+  entradaInvalida: "errorEntrada",
 };
 
 // Definición de tipos para Web Speech API
@@ -322,7 +323,8 @@ export function WidgetFlotanteIA({
         } else if (evento.t === "consumo") {
           setConsumo({ usados: evento.usados, tope: evento.tope, aviso: evento.aviso });
         } else if (evento.t === "error") {
-          setErrorAlerta(t("errorGenerico"));
+          // El 429 de la capa gratuita se explica: reintentar en un minuto sí sirve.
+          setErrorAlerta(t(evento.codigo === "limite" ? "errorLimite" : "errorGenerico"));
         }
 
         pintar();

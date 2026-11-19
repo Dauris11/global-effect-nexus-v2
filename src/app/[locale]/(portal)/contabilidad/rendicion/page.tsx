@@ -9,7 +9,7 @@ import { listarTerceros } from "@/server/contabilidad/terceros/consultas";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("contab.rendicion");
-  return { title: `${t("titulo")} | Global Effect Nexus` };
+  return { title: `${t("titulo")} | Portal GlobalEffect` };
 }
 
 export default async function PaginaRendicionCuentas({

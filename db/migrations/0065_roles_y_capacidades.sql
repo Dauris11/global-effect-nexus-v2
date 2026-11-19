@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0065 · Roles definitivos y permisos de capacidad
+-- PORTAL GLOBALEFFECT — 0065 · Roles definitivos y permisos de capacidad
 -- ================================================================
 -- La Fundación opera con estos roles y solo estos:
 --

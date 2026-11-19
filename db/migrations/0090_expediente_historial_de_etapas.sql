@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0090 · Historial de etapas del expediente
+-- PORTAL GLOBALEFFECT — 0090 · Historial de etapas del expediente
 -- ================================================================
 -- El expediente recorre Habitudes → postulado → academia de liderazgo →
 -- universidad (activo) o descarte (inactivo). Hasta hoy solo guardaba el

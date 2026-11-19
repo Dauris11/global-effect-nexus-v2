@@ -1,7 +1,15 @@
-import Anthropic from "@anthropic-ai/sdk";
-
+import {
+  ErrorGemini,
+  type BloqueLlamada,
+  type BloqueResultado,
+  type MensajeModelo,
+  type ParametrosModelo,
+  type RespuestaModelo,
+} from "@/lib/gemini";
+import { flujoGemini, hayClaveGemini } from "@/lib/gemini-cliente";
 import type { UsoIA } from "@/lib/ia";
 import type { EventoTurno } from "@/lib/ia-eventos";
+import { envolverDatos } from "@/lib/ia-seguridad";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -27,41 +35,22 @@ import type { Herramienta, UsuarioHerramienta } from "@/server/ia/herramientas/t
  *   4. El permiso se vuelve a comprobar aquí aunque la lista ya esté filtrada.
  *
  * El proveedor del modelo se inyecta para poder probar el bucle sin red ni
- * clave (`scripts/probar-nexus-ai.ts`).
+ * clave (`scripts/probar-elly-ai.ts`).
  */
 
 export type FlujoModelo = {
   alTexto: (aviso: (texto: string) => void) => void;
-  final: () => Promise<Anthropic.Message>;
+  final: () => Promise<RespuestaModelo>;
 };
 
-export type ProveedorModelo = (
-  parametros: Anthropic.MessageCreateParamsNonStreaming,
-) => FlujoModelo;
+export type ProveedorModelo = (parametros: ParametrosModelo) => FlujoModelo;
 
 /** Tope de vueltas: un modelo que encadena herramientas sin parar no gasta sin límite. */
 const MAXIMO_PASOS = 6;
 
-/** Marca la última herramienta: la caché cubre desde el principio hasta ese punto. */
-function conCache(herramientas: Anthropic.Tool[]): Anthropic.Tool[] {
-  return herramientas.map((h, i) =>
-    i === herramientas.length - 1 ? { ...h, cache_control: { type: "ephemeral" } } : h,
-  );
-}
-
-export function proveedorAnthropic(): ProveedorModelo | null {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-
-  const cliente = new Anthropic();
-
-  return (parametros) => {
-    const flujo = cliente.messages.stream(parametros);
-
-    return {
-      alTexto: (aviso) => void flujo.on("text", aviso),
-      final: () => flujo.finalMessage(),
-    };
-  };
+/** Proveedor real (Gemini), o `null` si falta la clave. */
+export function proveedorGemini(): ProveedorModelo | null {
+  return hayClaveGemini() ? (parametros) => flujoGemini(parametros) : null;
 }
 
 export type ResultadoTurno = {
@@ -92,9 +81,9 @@ export async function ejecutarTurno({
   modelo: string;
   maximoTokens: number;
   emitir: (evento: EventoTurno) => void;
-}): Promise<ResultadoTurno | { error: "rechazada" | "fallo" }> {
+}): Promise<ResultadoTurno | { error: "rechazada" | "fallo" | "limite" | "sin_clave" }> {
   const visibles = herramientasVisibles(usuario);
-  const mensajes: Anthropic.MessageParam[] = turnos.map((t) => ({
+  const mensajes: MensajeModelo[] = turnos.map((t) => ({
     role: t.rol,
     content: t.contenido,
   }));
@@ -110,12 +99,9 @@ export async function ejecutarTurno({
     const flujo = proveedor({
       model: modelo,
       max_tokens: maximoTokens,
-      // Prompt caching del prefijo fijo (instrucciones y herramientas): se paga
-      // entero una vez y las vueltas siguientes lo leen de la caché.
-      system: [{ type: "text", text: sistema, cache_control: { type: "ephemeral" } }],
+      system: sistema,
       messages: mensajes,
-      ...(visibles.length > 0 ? { tools: conCache(definiciones(visibles)) } : {}),
-      output_config: { effort: "low" },
+      ...(visibles.length > 0 ? { tools: definiciones(visibles) } : {}),
     });
 
     flujo.alTexto((fragmento) => {
@@ -123,7 +109,17 @@ export async function ejecutarTurno({
       emitir({ t: "delta", texto: fragmento });
     });
 
-    const respuesta = await flujo.final();
+    let respuesta: RespuestaModelo;
+
+    try {
+      respuesta = await flujo.final();
+    } catch (error) {
+      // 429 de la capa gratuita: se distingue para decírselo a la persona.
+      if (error instanceof ErrorGemini && error.tipo === "limite") return { error: "limite" };
+      if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { error: "sin_clave" };
+
+      throw error;
+    }
 
     entrada += respuesta.usage.input_tokens;
     salida += respuesta.usage.output_tokens;
@@ -134,7 +130,7 @@ export async function ejecutarTurno({
 
     mensajes.push({ role: "assistant", content: respuesta.content });
 
-    const resultados: Anthropic.ToolResultBlockParam[] = [];
+    const resultados: BloqueResultado[] = [];
 
     for (const bloque of respuesta.content) {
       if (bloque.type !== "tool_use") continue;
@@ -155,8 +151,10 @@ export async function ejecutarTurno({
         type: "tool_result",
         tool_use_id: bloque.id,
         is_error: resultado.error,
-        // Dato no confiable: ver la regla de seguridad del prompt base.
-        content: `<datos_no_confiables>\n${resultado.texto}\n</datos_no_confiables>`,
+        // Dato no confiable. `envolverDatos` desarma cualquier etiqueta nuestra
+        // dentro del texto: sin eso, un fragmento o una tarea podría cerrar el
+        // bloque y seguir escribiendo como si fuera una instrucción.
+        content: envolverDatos(resultado.texto),
       });
     }
 
@@ -179,7 +177,7 @@ async function atender({
   conversacionId,
   emitir,
 }: {
-  bloque: Anthropic.ToolUseBlock;
+  bloque: BloqueLlamada;
   visibles: readonly Herramienta[];
   usuario: UsuarioHerramienta;
   idioma: "es" | "en";

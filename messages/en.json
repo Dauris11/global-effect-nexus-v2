@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Global Effect Nexus",
+    "appName": "Portal GlobalEffect",
     "foundation": "Global Effect Foundation",
     "buildingTag": "Under construction",
     "buildingTitle": "This module is not built yet",
@@ -92,7 +92,7 @@
     }
   },
   "home": {
-    "title": "Global Effect Nexus",
+    "title": "Portal GlobalEffect",
     "subtitle": "Management platform for the Global Effect Foundation"
   },
   "auth": {
@@ -286,13 +286,13 @@
     "faqEyebrow": "Institutional Portal",
     "faqTitle": "Frequently asked questions",
     "faqLead": "The portal is for active students and Foundation staff. Something else? Write to us.",
-    "faq_q1_title": "Who can access the Nexus portal?",
+    "faq_q1_title": "Who can access the Portal GlobalEffect?",
     "faq_q1_desc": "Active students, teachers and Foundation staff. There is no open sign-up: coordination creates every account.",
     "faq_q2_title": "How do I sign up for lunch?",
     "faq_q2_desc": "Every day from {apertura} to {cierre}, on the meals page or in your portal. That way the kitchen only cooks what will be served.",
     "faq_q3_title": "Where do I see my grades and requests?",
     "faq_q3_desc": "With their institutional account. There they see their grades by term and request certificates, letters, leave or a meeting with administration.",
-    "faq_q4_title": "What does staff do in Nexus?",
+    "faq_q4_title": "What does staff do in the Portal GlobalEffect?",
     "faq_q4_desc": "Each role has its own portal: grades and classes for teachers; tasks, projects, lunch and reports for administration.",
     "eventsSearchPlaceholder": "Search events by title or location...",
     "eventsFilterAll": "All",
@@ -301,7 +301,7 @@
     "access_portal_tag": "Staff portal",
     "access_meals_tag": "Open service",
     "footerAccessNote": "Access for active students and authorized staff.",
-    "footerVersion": "Nexus institutional portal v1.0",
+    "footerVersion": "Portal GlobalEffect v1.0",
     "heroPrev": "Previous",
     "heroNext": "Next",
     "menuOpen": "Open menu",
@@ -1814,6 +1814,7 @@
       "errorLimit": "You have reached this hour's question limit. Please try again later.",
       "errorNoKey": "The assistant is not configured in this environment. Let the Foundation team know.",
       "errorRefused": "The assistant can't answer that. Try asking it another way, or write to coordination.",
+      "errorInput": "Your message looks like it contains code, structured data or instructions for the AI. Write it as a normal question.",
       "error": "Couldn't answer right now. Please try again.",
       "forbidden": "The assistant is not available for your account",
       "forbiddenHint": "Your profile doesn't have the assistant enabled. Write to the Foundation's coordination team if you think it should."
@@ -2270,8 +2271,68 @@
       "projectsEmpty": "No projects with tasks"
     }
   },
+  "sponsorMail": {
+    "title": "Letters to sponsors",
+    "pending": "To review ({n})",
+    "emptyTitle": "No letters waiting",
+    "bySponsor": "By sponsor · {mes}",
+    "noSponsors": "No sponsors with active scholars yet",
+    "noSubject": "(no subject)",
+    "unknownStudent": "Unidentified sender",
+    "onTime": "On time",
+    "late": "Late",
+    "unverified": "Unverified sender",
+    "translation": "Translation",
+    "original": "Original text",
+    "approve": "Approve and send",
+    "reject": "Reject",
+    "reprocess": "Review again",
+    "link": "Link",
+    "linkStudent": "Choose student",
+    "viewMail": "Letters",
+    "state": {
+      "sin_identificar": "Unidentified",
+      "sin_patrocinador": "No sponsor",
+      "retenido": "Held"
+    },
+    "reasons": {
+      "dinero": "Asks for money",
+      "telefono": "Asks for a phone",
+      "ropa_objetos": "Asks for clothes or items",
+      "chisme_fundacion": "Gossip or complaint about the Foundation",
+      "datos_personales": "Personal data",
+      "otro": "Other reason",
+      "remitente_no_verificado": "Unverified sender",
+      "traduccion_sospechosa": "Links, amounts or contacts in the text",
+      "clasificador_no_disponible": "Not reviewed by the AI",
+      "adjuntos": "Has attachments"
+    },
+    "letterStatus": {
+      "cumplio": "Sent",
+      "en_revision": "Under review",
+      "tardia": "Late",
+      "no_envio": "Did not send",
+      "no_aplica": "No sponsor"
+    },
+    "language": "Language of the letters",
+    "languageEs": "Spanish",
+    "languageEn": "English"
+  },
   "monthlyServices": {
     "eyebrow": "Student life",
+    "letter": "Letter to sponsor",
+    "fulfilled": "Fulfilled",
+    "yes": "Yes",
+    "no": "No",
+    "showAll": "Everyone",
+    "onlyPending": "Only those who did not comply",
+    "letterStatus": {
+      "cumplio": "Sent",
+      "en_revision": "Under review",
+      "tardia": "Late",
+      "no_envio": "Did not send",
+      "no_aplica": "No sponsor"
+    },
     "title": "Monthly services",
     "description": "Community service and meeting attendance, month by month.",
     "month": "Month",
@@ -2280,6 +2341,7 @@
     "student": "Student",
     "program": "Programme",
     "stats": {
+      "letter": "With sponsor letter",
       "called": "Called",
       "service": "Completed service",
       "meeting": "Attended the meeting"
@@ -2703,6 +2765,7 @@
     "errorLimit": "You have hit the hourly question limit. It is a spending cap: try again in a while.",
     "errorNoKey": "The assistant is not configured: a valid API key is missing. Let the technical team know.",
     "errorRefused": "The assistant declined to answer that. Try asking it another way.",
+    "errorInput": "Your message looks like it contains code, structured data or instructions for the AI. Write it as a normal question.",
     "error": "Could not answer. Please try again.",
     "forbidden": "You do not have access to the assistant",
     "forbiddenHint": "The “ia.usar” permission is required. Ask coordination for it."
@@ -5085,8 +5148,8 @@
     }
   },
   "iaAdmin": {
-    "eyebrow": "Nexus AI",
-    "title": "Nexus AI usage and settings",
+    "eyebrow": "Elly AI",
+    "title": "Elly AI usage and settings",
     "subtitle": "How much the assistant is used, by whom, and what it did. Metadata only: conversations are not shown.",
     "stats": {
       "tokens": "Tokens this month",
@@ -5128,7 +5191,7 @@
     },
     "prices": {
       "title": "Prices per model",
-      "hint": "USD per million tokens. Copy the current price from Anthropic's page: none is made up here. Without a price, cost is not calculated.",
+      "hint": "USD per million tokens. Copy the current price from the model provider's page: none is made up here. On Gemini's free tier there is no cost. Without a price, cost is not calculated.",
       "model": "Model",
       "input": "Input",
       "output": "Output",
@@ -5187,7 +5250,16 @@
       "textHint": "Paste the text. It is split into fragments by paragraph and not sent to any third party.",
       "upload": "Upload document",
       "uploaded": "Document uploaded.",
+      "save": "Save changes",
+      "saved": "Changes saved.",
+      "edit": "Edit",
+      "editTitle": "Edit document",
+      "back": "Back to documents",
       "error": {
+        "codigo": "The text looks like code, JSON or tags. Paste plain text only.",
+        "instrucciones": "The text contains commands aimed at the AI or role markers. Rewrite it as information.",
+        "etiquetas": "The text contains a reserved system tag.",
+        "caracteres": "The text has invisible or control characters. Copy it again as plain text.",
         "invalido": "Missing data: title, source, agents and text.",
         "no_permitido": "You do not have permission for those agents.",
         "largo": "The text is too long; split it into parts.",
@@ -5507,6 +5579,10 @@
         "title": "AI assistant",
         "hint": "How the assistant treats the rules it consults."
       },
+      "correos": {
+        "title": "Letters to sponsors",
+        "hint": "The mail agent reads the letters scholars send to the Foundation mailbox and delivers them to their sponsor."
+      },
       "contacto": {
         "title": "Public contact",
         "hint": "Details anyone visiting the home page sees."
@@ -5561,6 +5637,14 @@
         "label": "Days before asking for a rule to be reviewed",
         "hint": "After this period, the assistant warns that the rule has not been reviewed."
       },
+      "correos_dia_limite": {
+        "label": "Letter deadline day",
+        "hint": "Up to this day of the month (inclusive, La Vega time) a letter counts as on time. After that it is late."
+      },
+      "correos_reenvio_automatico": {
+        "label": "Forward clean letters automatically",
+        "hint": "1 = the agent forwards them by itself; 0 = they wait for administration approval (recommended during the pilot)."
+      },
       "contacto_correo": {
         "label": "Contact email",
         "hint": "It shows in the home page footer and in the sponsors section."
@@ -5587,7 +5671,7 @@
   },
   "widgetIA": {
     "botonFlotante": "Open AI assistant",
-    "titulo": "Nexus AI",
+    "titulo": "Elly AI",
     "subtitulo": "Institutional Assistant",
     "cerrar": "Close assistant",
     "minimizar": "Minimize",
@@ -5626,8 +5710,9 @@
     "errorLimite": "You made too many requests in a row. Wait a moment and try again.",
     "errorInactivo": "The assistant for your role is turned off for now.",
     "errorLargo": "The message is too long.",
+    "errorEntrada": "Your message looks like it contains code, structured data or instructions for the AI. Write it as a normal question.",
     "tarjeta": {
-      "titulo": "Nexus AI proposes",
+      "titulo": "Elly AI proposes",
       "aprobar": "Approve",
       "rechazar": "Reject",
       "trabajando": "Working…",
@@ -6530,6 +6615,7 @@
       "habitudes_recursos_leer": "View Habitudes resources",
       "habitudes_recursos_subir": "Upload Habitudes resources",
       "habitudes_supervisar": "Supervise Habitudes",
+      "ia_conocimiento": "Edit the student assistant's knowledge base",
       "ia_administrar": "Manage the AI",
       "ia_usar": "Use the AI assistant",
       "inventario_auditar": "Audit inventory",

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0068 · Asistencia por clase de Global Effect 360
+-- PORTAL GLOBALEFFECT — 0068 · Asistencia por clase de Global Effect 360
 -- ================================================================
 -- Las clases tienen SESIONES que programa el personal administrativo
 -- (`academico.escribir`); el profesor de la clase marca presente o ausente a

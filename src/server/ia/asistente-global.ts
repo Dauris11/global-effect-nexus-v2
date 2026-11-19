@@ -16,6 +16,7 @@ import {
   type Rol,
 } from "@/lib/rbac";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import { revisarEntrada } from "@/lib/ia-seguridad";
 import { conversarComo } from "@/server/ia/agente";
 import { reglamentoActual } from "@/server/ia/reglamento";
 import {
@@ -458,14 +459,20 @@ export async function enviarMensajeWidget({
 }): Promise<RespuestaEnvioWidget> {
   const usuario = await requerirUsuario();
 
-  const texto = contenido.trim();
-  if (!texto) {
+  const crudo = contenido.trim();
+  if (!crudo) {
     return { ok: false, error: "mensajeVacio" };
   }
 
-  if (texto.length > MAXIMO_CARACTERES_PREGUNTA) {
+  if (crudo.length > MAXIMO_CARACTERES_PREGUNTA) {
     return { ok: false, error: "mensajeLargo" };
   }
+
+  // Aquí y no solo en `conversarComo`: la rama de «acciones» no llama al modelo
+  // pero sí guarda el texto, que luego se reenvía como historial.
+  const revision = revisarEntrada(crudo);
+  if (!revision.ok) return { ok: false, error: "entradaInvalida" };
+  const texto = revision.texto;
 
   // REGLA FUNDAMENTAL: Los estudiantes NO tienen modo de acción activo.
   // Solo tienen disponible consultas normativas y académicas.
@@ -528,6 +535,7 @@ export async function enviarMensajeWidget({
 
     if (res.estado === "cuota") return { ok: false, error: "cuota" };
     if (res.estado === "limite") return { ok: false, error: "limite" };
+    if (res.estado === "entrada_invalida") return { ok: false, error: "entradaInvalida" };
 
     if (res.estado === "ok") {
       respuestaTexto = res.texto;
@@ -571,6 +579,7 @@ export async function enviarMensajeWidget({
 
     if (res.estado === "cuota") return { ok: false, error: "cuota" };
     if (res.estado === "limite") return { ok: false, error: "limite" };
+    if (res.estado === "entrada_invalida") return { ok: false, error: "entradaInvalida" };
 
     if (res.estado === "ok") {
       respuestaTexto = res.texto;

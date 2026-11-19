@@ -11,7 +11,7 @@ import { consultar } from "@/lib/db";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("contab.nomina");
-  return { title: `${t("titulo")} | Global Effect Nexus` };
+  return { title: `${t("titulo")} | Portal GlobalEffect` };
 }
 
 export default async function PaginaNomina() {

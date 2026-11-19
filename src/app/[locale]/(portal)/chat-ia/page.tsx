@@ -120,6 +120,7 @@ export default async function PaginaChatIA({
               errorSinPermiso: t("forbidden"),
               errorSinClave: t("errorNoKey"),
               errorRechazada: t("errorRefused"),
+              errorEntrada: t("errorInput"),
               error: t("error"),
             }}
           />

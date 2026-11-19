@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0041 · Torre de Control del Colaborador,
+-- PORTAL GLOBALEFFECT — 0041 · Torre de Control del Colaborador,
 -- Asignación de Proyectos por Rol y Rendición de Gastos con OCR
 -- ================================================================
 -- Requerimientos de la Fundación Global Effect:

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0030 · Fin del departamento de Psicología
+-- PORTAL GLOBALEFFECT — 0030 · Fin del departamento de Psicología
 -- ================================================================
 -- En octubre de 2026 la Fundación cerró el departamento de
 -- Psicología. Lo que hacía pasa a la parte administrativa, y el

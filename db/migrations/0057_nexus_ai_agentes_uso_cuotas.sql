@@ -1,7 +1,7 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0057 · Nexus AI: agentes, uso y cuotas
+-- PORTAL GLOBALEFFECT — 0057 · Elly AI: agentes, uso y cuotas
 -- ================================================================
--- Fase 1 de docs/estado/plan-nexus-ai.md. Solo cimientos:
+-- Fase 1 de docs/estado/plan-elly-ai.md. Solo cimientos:
 --   • ai_agente        configuración editable de cada agente por rol
 --   • ai_precio_modelo precios por modelo, para estimar el costo
 --   • ai_uso           una fila por llamada al modelo (medidor de tokens)

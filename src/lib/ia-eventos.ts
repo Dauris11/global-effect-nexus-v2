@@ -14,7 +14,7 @@ export type EventoTurno =
     }
   | { t: "aprobacion"; accionId: string; herramienta: string; resumen: string }
   | { t: "fin"; texto: string; entrada: number; salida: number }
-  | { t: "error"; codigo: "sin_clave" | "rechazada" | "fallo" };
+  | { t: "error"; codigo: "sin_clave" | "rechazada" | "limite" | "fallo" };
 
 export type EventoConsumo = {
   t: "consumo";

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Global Effect Nexus",
+    "appName": "Portal GlobalEffect",
     "foundation": "Fundación Global Effect",
     "buildingTag": "En construcción",
     "buildingTitle": "Este módulo todavía no está construido",
@@ -92,7 +92,7 @@
     }
   },
   "home": {
-    "title": "Global Effect Nexus",
+    "title": "Portal GlobalEffect",
     "subtitle": "Plataforma de gestión de la Fundación Global Effect"
   },
   "auth": {
@@ -286,13 +286,13 @@
     "faqEyebrow": "Portal Institucional",
     "faqTitle": "Preguntas frecuentes",
     "faqLead": "El portal es para estudiantes activos y personal de la Fundación. ¿Otra duda? Escríbenos.",
-    "faq_q1_title": "¿Quiénes pueden acceder al portal Nexus?",
+    "faq_q1_title": "¿Quiénes pueden acceder al Portal GlobalEffect?",
     "faq_q1_desc": "Estudiantes activos, docentes y personal de la Fundación. No hay registro abierto: coordinación crea cada cuenta.",
     "faq_q2_title": "¿Cómo me inscribo al almuerzo?",
     "faq_q2_desc": "Cada día, de {apertura} a {cierre}, desde la página de comida o tu portal. Así la cocina prepara solo lo que se va a servir.",
     "faq_q3_title": "¿Dónde veo mis notas y trámites?",
     "faq_q3_desc": "Con su cuenta institucional. Ahí ve sus notas por período y pide constancias, cartas, permisos o una cita con administración.",
-    "faq_q4_title": "¿Qué hace el personal en Nexus?",
+    "faq_q4_title": "¿Qué hace el personal en el Portal GlobalEffect?",
     "faq_q4_desc": "Cada rol tiene su portal: notas y clases para docentes; tareas, proyectos, comedor y reportes para administración.",
     "eventsSearchPlaceholder": "Buscar eventos por nombre o lugar...",
     "eventsFilterAll": "Todos",
@@ -301,7 +301,7 @@
     "access_portal_tag": "Portal institucional",
     "access_meals_tag": "Servicio abierto",
     "footerAccessNote": "Acceso para estudiantes activos y personal autorizado.",
-    "footerVersion": "Portal institucional Nexus v1.0",
+    "footerVersion": "Portal GlobalEffect v1.0",
     "heroPrev": "Anterior",
     "heroNext": "Siguiente",
     "menuOpen": "Abrir menú",
@@ -1814,6 +1814,7 @@
       "errorLimit": "Has alcanzado el límite de preguntas de esta hora. Vuelve a intentarlo más tarde.",
       "errorNoKey": "El asistente no está configurado en este entorno. Avisa al equipo de la Fundación.",
       "errorRefused": "El asistente no puede responder a eso. Prueba a preguntarlo de otra forma o escríbele a coordinación.",
+      "errorInput": "Tu mensaje parece contener código, datos estructurados o instrucciones para la IA. Escríbelo como una pregunta normal.",
       "error": "No se pudo responder ahora mismo. Inténtalo de nuevo.",
       "forbidden": "El asistente no está disponible para tu cuenta",
       "forbiddenHint": "Tu perfil no tiene habilitado el uso del asistente. Escríbele a la coordinación de la Fundación si crees que debería estarlo."
@@ -2270,8 +2271,68 @@
       "projectsEmpty": "Sin proyectos con tareas"
     }
   },
+  "sponsorMail": {
+    "title": "Cartas a patrocinadores",
+    "pending": "Por revisar ({n})",
+    "emptyTitle": "No hay cartas esperando",
+    "bySponsor": "Por patrocinador · {mes}",
+    "noSponsors": "Todavía no hay patrocinadores con becados activos",
+    "noSubject": "(sin asunto)",
+    "unknownStudent": "Remitente sin identificar",
+    "onTime": "A tiempo",
+    "late": "Tardía",
+    "unverified": "Remitente sin verificar",
+    "translation": "Traducción",
+    "original": "Texto original",
+    "approve": "Aprobar y enviar",
+    "reject": "Rechazar",
+    "reprocess": "Volver a revisar",
+    "link": "Vincular",
+    "linkStudent": "Elegir estudiante",
+    "viewMail": "Cartas",
+    "state": {
+      "sin_identificar": "Sin identificar",
+      "sin_patrocinador": "Sin patrocinador",
+      "retenido": "Retenida"
+    },
+    "reasons": {
+      "dinero": "Pide dinero",
+      "telefono": "Pide teléfono",
+      "ropa_objetos": "Pide ropa u objetos",
+      "chisme_fundacion": "Chisme o queja de la Fundación",
+      "datos_personales": "Datos personales",
+      "otro": "Otro motivo",
+      "remitente_no_verificado": "Remitente no verificado",
+      "traduccion_sospechosa": "Enlaces, cifras o contactos en el texto",
+      "clasificador_no_disponible": "Sin revisión de la IA",
+      "adjuntos": "Trae adjuntos"
+    },
+    "letterStatus": {
+      "cumplio": "Enviada",
+      "en_revision": "En revisión",
+      "tardia": "Tardía",
+      "no_envio": "No envió",
+      "no_aplica": "Sin patrocinador"
+    },
+    "language": "Idioma de las cartas",
+    "languageEs": "Español",
+    "languageEn": "Inglés"
+  },
   "monthlyServices": {
     "eyebrow": "Vida estudiantil",
+    "letter": "Carta al patrocinador",
+    "fulfilled": "Cumplió",
+    "yes": "Sí",
+    "no": "No",
+    "showAll": "Todos",
+    "onlyPending": "Solo los que no cumplieron",
+    "letterStatus": {
+      "cumplio": "Enviada",
+      "en_revision": "En revisión",
+      "tardia": "Tardía",
+      "no_envio": "No envió",
+      "no_aplica": "Sin patrocinador"
+    },
     "title": "Servicios mensuales",
     "description": "Servicio comunitario y asistencia a la reunión, mes a mes.",
     "month": "Mes",
@@ -2280,6 +2341,7 @@
     "student": "Estudiante",
     "program": "Programa",
     "stats": {
+      "letter": "Con carta al patrocinador",
       "called": "Convocados",
       "service": "Cumplieron servicio",
       "meeting": "Asistieron a la reunión"
@@ -2703,6 +2765,7 @@
     "errorLimit": "Has llegado al límite de preguntas por hora. Es un tope de gasto: vuelve a intentarlo en un rato.",
     "errorNoKey": "El asistente no está configurado: falta una clave de API válida. Avisa al equipo técnico.",
     "errorRefused": "El asistente ha declinado responder a eso. Prueba a preguntarlo de otra forma.",
+    "errorInput": "Tu mensaje parece contener código, datos estructurados o instrucciones para la IA. Escríbelo como una pregunta normal.",
     "error": "No se pudo responder. Inténtalo otra vez.",
     "forbidden": "No tienes acceso al asistente",
     "forbiddenHint": "Hace falta el permiso «ia.usar». Pídelo a la coordinación."
@@ -5085,8 +5148,8 @@
     }
   },
   "iaAdmin": {
-    "eyebrow": "Nexus AI",
-    "title": "Uso y configuración de Nexus AI",
+    "eyebrow": "Elly AI",
+    "title": "Uso y configuración de Elly AI",
     "subtitle": "Cuánto se usa el asistente, quién lo usa y qué hizo. Solo metadatos: las conversaciones no se muestran.",
     "stats": {
       "tokens": "Tokens este mes",
@@ -5128,7 +5191,7 @@
     },
     "prices": {
       "title": "Precios por modelo",
-      "hint": "USD por millón de tokens. Copia el precio vigente de la página de Anthropic: aquí no se inventa ninguno. Sin precio, el costo no se calcula.",
+      "hint": "USD por millón de tokens. Copia el precio vigente de la página del proveedor del modelo: aquí no se inventa ninguno. En la capa gratuita de Gemini no hay costo. Sin precio, el costo no se calcula.",
       "model": "Modelo",
       "input": "Entrada",
       "output": "Salida",
@@ -5187,7 +5250,16 @@
       "textHint": "Pega el texto. Se corta en fragmentos por párrafos y no se envía a ningún tercero.",
       "upload": "Cargar documento",
       "uploaded": "Documento cargado.",
+      "save": "Guardar cambios",
+      "saved": "Cambios guardados.",
+      "edit": "Editar",
+      "editTitle": "Editar documento",
+      "back": "Volver a los documentos",
       "error": {
+        "codigo": "El texto parece contener código, JSON o etiquetas. Pega solo texto normal.",
+        "instrucciones": "El texto contiene órdenes dirigidas a la IA o marcadores de rol. Reescríbelo como información.",
+        "etiquetas": "El texto contiene una etiqueta reservada del sistema.",
+        "caracteres": "El texto tiene caracteres invisibles o de control. Cópialo de nuevo como texto plano.",
         "invalido": "Faltan datos: título, fuente, agentes y texto.",
         "no_permitido": "No tienes permiso para esos agentes.",
         "largo": "El texto es demasiado largo; divídelo en partes.",
@@ -5507,6 +5579,10 @@
         "title": "Asistente de IA",
         "hint": "Cómo trata el asistente la normativa que consulta."
       },
+      "correos": {
+        "title": "Cartas a patrocinadores",
+        "hint": "El agente de correos lee las cartas que los becados mandan al buzón de la Fundación y las entrega a su patrocinador."
+      },
       "contacto": {
         "title": "Contacto público",
         "hint": "Datos que ve cualquiera que visite la portada."
@@ -5561,6 +5637,14 @@
         "label": "Días antes de pedir revisar una norma",
         "hint": "Pasado este plazo, el asistente avisa de que la norma no se ha revisado."
       },
+      "correos_dia_limite": {
+        "label": "Día límite de la carta",
+        "hint": "Hasta este día del mes (inclusive, hora de La Vega) la carta cuenta a tiempo. Después queda como tardía."
+      },
+      "correos_reenvio_automatico": {
+        "label": "Reenviar las cartas limpias automáticamente",
+        "hint": "1 = el agente las reenvía solo; 0 = esperan la aprobación de administración (recomendado durante el piloto)."
+      },
       "contacto_correo": {
         "label": "Correo de contacto",
         "hint": "Sale en el pie de la portada y en la sección de patrocinadores."
@@ -5587,7 +5671,7 @@
   },
   "widgetIA": {
     "botonFlotante": "Abrir asistente de IA",
-    "titulo": "Nexus AI",
+    "titulo": "Elly AI",
     "subtitulo": "Asistente Institucional",
     "cerrar": "Cerrar asistente",
     "minimizar": "Minimizar",
@@ -5626,8 +5710,9 @@
     "errorLimite": "Hiciste muchas consultas seguidas. Espera un poco e inténtalo de nuevo.",
     "errorInactivo": "El asistente de tu rol está desactivado por ahora.",
     "errorLargo": "El mensaje es demasiado largo.",
+    "errorEntrada": "Tu mensaje parece contener código, datos estructurados o instrucciones para la IA. Escríbelo como una pregunta normal.",
     "tarjeta": {
-      "titulo": "Nexus AI propone",
+      "titulo": "Elly AI propone",
       "aprobar": "Aprobar",
       "rechazar": "Rechazar",
       "trabajando": "Procesando…",
@@ -6530,6 +6615,7 @@
       "habitudes_recursos_leer": "Ver recursos de Habitudes",
       "habitudes_recursos_subir": "Subir recursos de Habitudes",
       "habitudes_supervisar": "Supervisar Habitudes",
+      "ia_conocimiento": "Editar el conocimiento del asistente de estudiantes",
       "ia_administrar": "Administrar la IA",
       "ia_usar": "Usar el asistente de IA",
       "inventario_auditar": "Auditar el inventario",

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0012 · Inteligencia Artificial
+-- PORTAL GLOBALEFFECT — 0012 · Inteligencia Artificial
 -- ================================================================
 -- Soporte para los asistentes de IA del sistema:
 --   • Historial de conversaciones (Chat IA interno y estudiantil).

@@ -1,20 +1,16 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { ErrorGemini } from "@/lib/gemini";
+import { hayClaveGemini, llamarGemini, modeloGemini } from "@/lib/gemini-cliente";
 
 /**
- * Cliente de Anthropic para los asistentes del sistema.
+ * Cliente del modelo (Gemini) para los asistentes del sistema.
  *
- * Se usa el SDK oficial (`@anthropic-ai/sdk`) y no `fetch` a mano: el SDK ya
- * trae reintentos, tiempos de espera y los tipos de la respuesta, que aquí hay
- * que leer con cuidado —`content` es una unión de bloques, no un texto—.
+ * Se habla con la API REST de Gemini con `fetch` (ver `gemini-cliente.ts`): sin
+ * paquete que mantener, y pasar de la capa gratuita a un plan de pago es la
+ * misma API con facturación activada. El modelo sale de `GEMINI_MODEL`.
  *
- * El modelo sale de `ANTHROPIC_MODEL`, y por defecto es el que ya eligió
- * `.env.example`: `claude-sonnet-5`. Para lo que hace este asistente —responder
- * sobre unas materias y unas notas que le llegan ya resueltas en el contexto—
- * rinde igual que un Opus y cuesta bastante menos, que en una fundación importa.
- *
- * Ojo con cambiar esa variable: la petición usa `output_config.effort`, que los
- * modelos anteriores a la generación 5 no aceptan y devuelven 400. Si se apunta
- * a uno viejo, el chat responde "no se pudo responder" en cada pregunta.
+ * ⚠ En la capa GRATUITA Google puede usar lo que se envía para mejorar sus
+ * productos (y personas pueden revisarlo); en un plan de pago no. Todo lo que
+ * pasa por aquí —notas del estudiante, cédulas, cartas— se envía a Google.
  *
  * Lo que este archivo NO hace: buscar en `fragmento_conocimiento` con
  * embeddings. Ese RAG es del sprint S11 y necesita un modelo de embeddings que
@@ -23,14 +19,7 @@ import Anthropic from "@anthropic-ai/sdk";
  * falta para responder sobre sus materias y sus notas.
  */
 
-const MODELO = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
-
-/**
- * Techo de salida. Ojo: en `claude-opus-5` el razonamiento y el texto de la
- * respuesta comparten este presupuesto, así que quedarse corto no recorta la
- * respuesta: la trunca a media frase. 4096 da aire de sobra para el largo que
- * pide `docs/09-sistema-visual.md` en una respuesta de chat.
- */
+/** Techo de salida de una respuesta de chat. */
 const MAXIMO_TOKENS = 4096;
 
 /**
@@ -68,6 +57,8 @@ export type EstadoChat = {
     | "sin_permiso"
     | "sin_clave"
     | "rechazada"
+    // La pregunta traía código, JSON, etiquetas u órdenes para la IA.
+    | "entrada_invalida"
     | "error";
 };
 
@@ -96,16 +87,9 @@ export type RespuestaIA =
     }
   | { estado: "sin_clave" }
   | { estado: "rechazada" }
+  // El proveedor limitó la frecuencia (429): común en la capa gratuita.
+  | { estado: "limite" }
   | { estado: "fallo" };
-
-let cliente: Anthropic | null = null;
-
-function obtenerCliente(): Anthropic | null {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
-  if (!cliente) cliente = new Anthropic();
-
-  return cliente;
-}
 
 /**
  * Una vuelta de conversación con el asistente.
@@ -123,49 +107,28 @@ export async function conversar(
   turnos: readonly TurnoIA[],
   opciones: OpcionesIA = {},
 ): Promise<RespuestaIA> {
-  const anthropic = obtenerCliente();
-
   // Sin clave el chat se apaga solo y lo dice. Es el caso de un despliegue de
   // desarrollo con `.env.local` a medio llenar.
-  if (!anthropic) return { estado: "sin_clave" };
+  if (!hayClaveGemini()) return { estado: "sin_clave" };
 
-  const modelo = opciones.modelo ?? MODELO;
+  const modelo = modeloGemini(opciones.modelo);
   const inicio = Date.now();
 
   try {
-    const respuesta = await anthropic.messages.create({
+    const respuesta = await llamarGemini({
       model: modelo,
       max_tokens: opciones.maximoTokens ?? MAXIMO_TOKENS,
       system: sistema,
-      messages: turnos.map((turno) => ({
-        role: turno.rol,
-        content: turno.contenido,
-      })),
-      /*
-       * `effort: "low"` con el razonamiento en automático. Es el ajuste barato
-       * recomendado para este modelo: responde igual de bien en preguntas de
-       * este tipo y gasta bastante menos. Apagar el razonamiento del todo
-       * saldría más caro en errores —a veces se le escapan etiquetas internas
-       * en el texto— que lo que ahorra.
-       */
-      output_config: { effort: "low" },
+      messages: turnos.map((turno) => ({ role: turno.rol, content: turno.contenido })),
     });
 
-    /*
-     * `stop_reason` se mira ANTES del contenido: en un rechazo `content` puede
-     * venir vacío, y leer `content[0]` a ciegas rompería la acción.
-     *
-     * Un rechazo se le explica al estudiante y ahí acaba; no se reintenta en
-     * otro modelo. El reintento automático de la API es una función del nivel
-     * Opus y ataría este archivo a ese modelo, cuando con preguntas académicas
-     * un rechazo es raro y "pregúntalo de otra forma o escribe a coordinación"
-     * es una salida razonable.
-     */
+    // `stop_reason` se mira ANTES del contenido: en un bloqueo `content` viene
+    // vacío, y leer `content[0]` a ciegas rompería la acción. Un bloqueo se le
+    // explica a la persona y ahí acaba; no se reintenta con otro modelo.
     if (respuesta.stop_reason === "refusal") return { estado: "rechazada" };
 
     const texto = respuesta.content
-      .filter((bloque) => bloque.type === "text")
-      .map((bloque) => bloque.text)
+      .flatMap((bloque) => (bloque.type === "text" ? [bloque.text] : []))
       .join("\n")
       .trim();
 
@@ -184,20 +147,15 @@ export async function conversar(
       },
     };
   } catch (error) {
-    // Se registra en el servidor y al estudiante se le da un mensaje corto: el
-    // detalle del error de la API no le sirve de nada y puede filtrar datos de
-    // la petición.
+    // Se registra en el servidor y a la persona se le da un mensaje corto: el
+    // detalle del error de la API no le sirve de nada y puede filtrar datos.
     console.error("[ia] fallo al conversar", error);
 
-    /*
-     * Una clave inválida o caducada se trata como "no configurado" y no como
-     * fallo pasajero: decirle al estudiante "inténtalo de nuevo" cuando ningún
-     * reintento va a funcionar lo deja probando en bucle. `sin_clave` le dice
-     * que avise al equipo, que es lo único que resuelve esto.
-     */
-    if (error instanceof Anthropic.AuthenticationError) {
-      return { estado: "sin_clave" };
-    }
+    if (error instanceof ErrorGemini && error.tipo === "limite") return { estado: "limite" };
+
+    // Clave inválida = «no configurado», no fallo pasajero: decir «inténtalo de
+    // nuevo» cuando ningún reintento va a funcionar deja a la gente en bucle.
+    if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { estado: "sin_clave" };
 
     return { estado: "fallo" };
   }
@@ -207,7 +165,7 @@ export async function conversar(
  * ────────────────────────────────────────────────────────────────────────────
  * LECTURA DE DOCUMENTOS (OCR)
  *
- * Segundo uso del cliente de Anthropic: sacar campos de una cédula o de una
+ * Segundo uso del cliente del modelo: sacar campos de una cédula o de una
  * ficha escaneada para PRECARGAR un formulario. Precargar, no rellenar: lo que
  * devuelve el modelo se enseña para que una persona lo confirme, y por eso
  * viaja con su nivel de confianza.
@@ -223,8 +181,8 @@ export async function conversar(
  *      devuelve el JSON que le pides casi siempre, y "casi" no es una garantía:
  *      cada campo se comprueba por separado y lo que no encaje se descarta en
  *      vez de llegar al formulario.
- *   3. **`effort: "low"` y pocos tokens.** Es transcribir lo que se ve, no
- *      razonar; el presupuesto largo solo daría ocasión de inventar.
+ *   3. **Pocos tokens.** Es transcribir lo que se ve, no razonar; el
+ *      presupuesto largo solo daría ocasión de inventar.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -258,13 +216,13 @@ export async function leerDocumento(
   instrucciones: string,
   peticion: string,
 ): Promise<LecturaDocumento> {
-  const anthropic = obtenerCliente();
+  if (!hayClaveGemini()) return { estado: "sin_clave" };
 
-  if (!anthropic) return { estado: "sin_clave" };
+  const modelo = modeloGemini();
 
   try {
-    const respuesta = await anthropic.messages.create({
-      model: MODELO,
+    const respuesta = await llamarGemini({
+      model: modelo,
       // Corto a propósito: la respuesta es un JSON de cuatro campos. Un techo
       // amplio no mejora una transcripción, solo da sitio a la invención.
       max_tokens: 600,
@@ -273,38 +231,17 @@ export async function leerDocumento(
         {
           role: "user",
           content: [
-            archivo.mime === "application/pdf"
-              ? {
-                  type: "document",
-                  source: {
-                    type: "base64",
-                    media_type: "application/pdf",
-                    data: archivo.base64,
-                  },
-                }
-              : {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: archivo.mime as
-                      | "image/jpeg"
-                      | "image/png"
-                      | "image/webp",
-                    data: archivo.base64,
-                  },
-                },
+            { type: "archivo", mime: archivo.mime, base64: archivo.base64 },
             { type: "text", text: peticion },
           ],
         },
       ],
-      output_config: { effort: "low" },
     });
 
     if (respuesta.stop_reason === "refusal") return { estado: "rechazada" };
 
     const texto = respuesta.content
-      .filter((bloque) => bloque.type === "text")
-      .map((bloque) => bloque.text)
+      .flatMap((bloque) => (bloque.type === "text" ? [bloque.text] : []))
       .join("\n")
       .trim();
 
@@ -315,13 +252,11 @@ export async function leerDocumento(
     // pantalla lo dice de otra manera («búscalo a mano»).
     if (!datos) return { estado: "ilegible" };
 
-    return { estado: "ok", datos, modelo: MODELO };
+    return { estado: "ok", datos, modelo };
   } catch (error) {
     console.error("[ia] fallo al leer el documento", error);
 
-    if (error instanceof Anthropic.AuthenticationError) {
-      return { estado: "sin_clave" };
-    }
+    if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { estado: "sin_clave" };
 
     return { estado: "fallo" };
   }

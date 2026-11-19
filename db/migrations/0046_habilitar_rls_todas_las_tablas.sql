@@ -6,7 +6,7 @@
 -- no autorizados vía la API REST pública de PostgREST y resolver las alertas
 -- del Database Linter de Supabase (rls_disabled_in_public).
 --
--- Nota de arquitectura: La aplicación Global Effect Nexus consulta y opera
+-- Nota de arquitectura: La aplicación Portal GlobalEffect consulta y opera
 -- mediante conexión directa PostgreSQL con 'pg' como rol postgres (superuser),
 -- el cual cuenta con atributo BYPASSRLS por diseño, manteniendo íntegro el
 -- funcionamiento del ERP a la vez que sella el acceso HTTP anónimo exterior.

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0055 · Servicios Compartidos Base
+-- PORTAL GLOBALEFFECT — 0055 · Servicios Compartidos Base
 -- ================================================================
 -- Rol 'colaborador' (operativo: choferes, cocina, auxiliares, mantenimiento),
 -- departamentos institucionales y membresías, y soporte para Notificaciones

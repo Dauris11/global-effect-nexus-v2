@@ -36,8 +36,8 @@ export function EtiquetaQrImprimible({
       JSON.stringify({
         codigo,
         nombre,
-        nexus: "global-effect-nexus",
-        verificar: `https://nexus.globaleffect.org/inventario/${codigo}`,
+        portal: "portal-globaleffect",
+        verificar: `https://portal.globaleffect.org/inventario/${codigo}`,
       }),
       {
         width: 320,

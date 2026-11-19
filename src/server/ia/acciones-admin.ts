@@ -8,7 +8,7 @@ import { consultarUna } from "@/lib/db";
 import { ROLES } from "@/lib/rbac";
 
 /**
- * Escrituras del tablero de Nexus AI: cuotas, precios y configuración de agentes.
+ * Escrituras del tablero de Elly AI: cuotas, precios y configuración de agentes.
  * Solo `ia.administrar`, y todo queda en `audit_log`.
  */
 

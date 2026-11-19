@@ -82,6 +82,7 @@ export async function preguntarAlAsistente(
   if (respuesta.estado === "cuota" || respuesta.estado === "limite") {
     return { estado: "limite" };
   }
+  if (respuesta.estado === "entrada_invalida") return { estado: "entrada_invalida" };
   if (respuesta.estado === "sin_clave") return { estado: "sin_clave" };
   if (respuesta.estado === "rechazada") return { estado: "rechazada" };
   if (respuesta.estado === "fallo") return { estado: "error" };

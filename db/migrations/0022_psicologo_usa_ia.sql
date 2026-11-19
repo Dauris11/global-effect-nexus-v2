@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0022 · El psicólogo puede usar la IA
+-- PORTAL GLOBALEFFECT — 0022 · El psicólogo puede usar la IA
 -- ================================================================
 -- El módulo de Psicología incorpora el OCR para identificar al joven a
 -- partir de un documento escaneado (03-modulos-funcionales, MÓDULO 3).

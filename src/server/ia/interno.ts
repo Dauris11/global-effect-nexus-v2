@@ -1,5 +1,6 @@
 import { consultar, consultarUna } from "@/lib/db";
 import type { TurnoIA } from "@/lib/ia";
+import { envolverDatos } from "@/lib/ia-seguridad";
 import { UMBRAL_BANDA } from "@/lib/notas";
 import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 import { resumenDeNotas } from "@/server/academico/consultas";
@@ -176,7 +177,7 @@ export async function instruccionesInternas(
       ? ""
       : `\n${titulo}\n${lineas.map((linea) => `- ${linea}`).join("\n")}`;
 
-  return [
+  const reglas = [
     "Eres el asistente interno de la Fundación Global Effect, para su equipo de trabajo.",
     "Ayudas a entender cómo va la institución con los datos agregados que te llegan abajo, y a redactar o resumir cuando te lo piden.",
     "",
@@ -186,7 +187,10 @@ export async function instruccionesInternas(
     "- No hablas de estudiantes concretos ni de personal concreto: no recibes nombres ni expedientes. Para una persona, remite a su expediente en el sistema.",
     "- No des consejo legal, médico ni psicológico.",
     `- Respondes en ${idioma === "en" ? "inglés" : "español"}, breve y directo. Si la respuesta cabe en dos frases, no escribas cinco.`,
-    "",
+  ].join("\n");
+
+  // Datos de la base (nombres de proyectos, eventos…): referencia, no órdenes.
+  const datos = [
     `Quien pregunta: ${usuario.nombre}, con el rol ${usuario.rol}.`,
     "",
     "Cifras generales:",
@@ -248,6 +252,8 @@ export async function instruccionesInternas(
   ]
     .filter((bloque) => bloque !== "")
     .join("\n");
+
+  return `${reglas}\n\n${envolverDatos(datos)}`;
 }
 
 /** Historial en el formato que espera el cliente de IA. */

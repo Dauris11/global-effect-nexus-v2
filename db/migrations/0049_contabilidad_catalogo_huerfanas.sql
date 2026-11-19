@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0049 · Catálogo: cuentas sin padre
+-- PORTAL GLOBALEFFECT — 0049 · Catálogo: cuentas sin padre
 -- ================================================================
 -- Tres cuentas se crearon sin `padre_id` (0037 y 0039) y quedaban
 -- fuera del árbol: no sumaban en los subtotales de la balanza ni en

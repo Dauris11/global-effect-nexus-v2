@@ -104,6 +104,7 @@ export default async function PaginaChatEstudiante({
           errorSinPermiso: t("chat.forbidden"),
           errorSinClave: t("chat.errorNoKey"),
           errorRechazada: t("chat.errorRefused"),
+          errorEntrada: t("chat.errorInput"),
           error: t("chat.error"),
         }}
       />

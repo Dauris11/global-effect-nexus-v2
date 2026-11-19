@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0004 · Patrocinio
+-- PORTAL GLOBALEFFECT — 0004 · Patrocinio
 -- ================================================================
 -- Patrocinadores de la fundación. Se crea antes que estudiante
 -- porque estudiante.patrocinador_id referencia esta tabla.

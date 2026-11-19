@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0086 · Retirar estado standby_tecnico activo
+-- PORTAL GLOBALEFFECT — 0086 · Retirar estado standby_tecnico activo
 -- ================================================================
 -- Tras el cierre de los cursos técnicos (0047), el estado
 -- `standby_tecnico` dejó de formar parte del embudo activo de

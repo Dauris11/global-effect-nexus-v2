@@ -1,11 +1,11 @@
-// Pruebas de Nexus AI (fases 1-4): motor con proveedor falso, permisos por rol,
-// cadena SHA-256, cuotas y base de conocimiento. No llama a la API de Anthropic.
-// Uso: npx tsx scripts/probar-nexus-ai.ts
+// Pruebas de Elly AI (fases 1-4): motor con proveedor falso, permisos por rol,
+// cadena SHA-256, cuotas y base de conocimiento. No llama a la API del modelo.
+// Uso: npx tsx scripts/probar-elly-ai.ts
 import { config } from "dotenv";
 
 config({ path: ".env.local" });
 
-import type Anthropic from "@anthropic-ai/sdk";
+import type { BloqueLlamada, BloqueTexto, ParametrosModelo, RespuestaModelo } from "../src/lib/gemini";
 
 const { consultar, consultarUna, pool } = await import("../src/lib/db");
 const { ejecutarTurno } = await import("../src/server/ia/motor");
@@ -29,7 +29,7 @@ const usuario = await consultarUna<{ id: string }>(
 );
 if (!usuario) throw new Error("No hay un usuario admin activo para probar");
 
-const marca = `prueba-nexus-${Date.now()}`;
+const marca = `prueba-elly-${Date.now()}`;
 const creadas: string[] = [];
 
 // ── 1. Agente por rol: los 8 roles tienen agente y existe en la tabla ─────────
@@ -57,23 +57,20 @@ prueba(
 );
 
 // ── 3. Motor con proveedor falso ──────────────────────────────────────────────
-type Guion = Anthropic.Message[];
-const mensaje = (content: Anthropic.ContentBlock[], stop: Anthropic.Message["stop_reason"]): Anthropic.Message =>
-  ({
-    id: "msg_falso",
-    type: "message",
-    role: "assistant",
-    model: "falso",
-    content,
-    stop_reason: stop,
-    stop_sequence: null,
-    usage: { input_tokens: 100, output_tokens: 20, cache_read_input_tokens: 5 },
-  }) as unknown as Anthropic.Message;
+type Guion = RespuestaModelo[];
+const mensaje = (
+  content: (BloqueTexto | BloqueLlamada)[],
+  stop: RespuestaModelo["stop_reason"],
+): RespuestaModelo => ({
+  content,
+  stop_reason: stop,
+  usage: { input_tokens: 100, output_tokens: 20, cache_read_input_tokens: 5 },
+});
 
 function proveedorDe(guion: Guion) {
   let i = 0;
-  const vistos: Anthropic.MessageCreateParamsNonStreaming[] = [];
-  const proveedor = (p: Anthropic.MessageCreateParamsNonStreaming) => {
+  const vistos: ParametrosModelo[] = [];
+  const proveedor = (p: ParametrosModelo) => {
     vistos.push(p);
     const m = guion[i++]!;
     return {
@@ -99,13 +96,13 @@ const eventos: unknown[] = [];
 const guion: Guion = [
   mensaje(
     [
-      { type: "text", text: "Reviso la norma. ", citations: null } as Anthropic.ContentBlock,
-      { type: "tool_use", id: "t1", name: "crear_tarea", input: { titulo: marca, limite: "2026-12-01" } } as Anthropic.ContentBlock,
-      { type: "tool_use", id: "t2", name: "borrar_evidencia", input: {} } as Anthropic.ContentBlock,
+      { type: "text", text: "Reviso la norma. " },
+      { type: "tool_use", id: "t1", name: "crear_tarea", input: { titulo: marca, limite: "2026-12-01" } },
+      { type: "tool_use", id: "t2", name: "borrar_evidencia", input: {} },
     ],
     "tool_use",
   ),
-  mensaje([{ type: "text", text: "Te propuse la tarea; apruébala abajo.", citations: null } as Anthropic.ContentBlock], "end_turn"),
+  mensaje([{ type: "text", text: "Te propuse la tarea; apruébala abajo." }], "end_turn"),
 ];
 const { proveedor, vistos } = proveedorDe(guion);
 
@@ -148,7 +145,7 @@ if (rechazada) creadas.push(rechazada.id);
 prueba("una herramienta inexistente se rechaza y se anota", rechazada?.estado === "rechazada");
 prueba(
   "el modelo recibió solo las herramientas de su rol",
-  (vistos[0]?.tools ?? []).every((t) => "name" in t && nombres("admin").includes(t.name)),
+  (vistos[0]?.tools ?? []).every((t) => nombres("admin").includes(t.name)),
 );
 prueba(
   "el resultado de una herramienta viaja como dato no confiable",
@@ -157,8 +154,8 @@ prueba(
 
 // Un estudiante que "pide" crear_tarea no la tiene
 const { proveedor: provEst } = proveedorDe([
-  mensaje([{ type: "tool_use", id: "x", name: "crear_tarea", input: { titulo: marca } } as Anthropic.ContentBlock], "tool_use"),
-  mensaje([{ type: "text", text: "no puedo", citations: null } as Anthropic.ContentBlock], "end_turn"),
+  mensaje([{ type: "tool_use", id: "x", name: "crear_tarea", input: { titulo: marca } }], "tool_use"),
+  mensaje([{ type: "text", text: "no puedo" }], "end_turn"),
 ]);
 const estEventos: unknown[] = [];
 await ejecutarTurno({
@@ -237,5 +234,5 @@ const final = await verificarCadena();
 prueba("tras limpiar, la cadena vuelve a ser válida", final.ok, `${final.filas} filas`);
 
 await pool.end();
-console.log(fallos === 0 ? "\n✓ Nexus AI: todas las pruebas pasan" : `\n✗ ${fallos} prueba(s) fallan`);
+console.log(fallos === 0 ? "\n✓ Elly AI: todas las pruebas pasan" : `\n✗ ${fallos} prueba(s) fallan`);
 process.exit(fallos === 0 ? 0 : 1);

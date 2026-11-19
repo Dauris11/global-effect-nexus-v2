@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0060 · Visibilidad de menús por rol
+-- PORTAL GLOBALEFFECT — 0060 · Visibilidad de menús por rol
 -- ================================================================
 -- El administrador maestro decide qué ven los demás roles.
 --

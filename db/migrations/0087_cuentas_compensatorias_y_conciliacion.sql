@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0086 · Cuentas compensatorias y conciliación 1-a-N
+-- PORTAL GLOBALEFFECT — 0086 · Cuentas compensatorias y conciliación 1-a-N
 -- ================================================================
 -- 1. Cuentas de naturaleza contraria:
 --    Añade `naturaleza` ('deudora', 'acreedora') y `es_compensatoria` (boolean)

@@ -1,6 +1,7 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { agenteDeRol, type ClaveAgente } from "@/lib/ia-agentes";
 import { conversar, type RespuestaIA, type TurnoIA, type UsoIA } from "@/lib/ia";
+import { ensamblarSistema, revisarEntrada, type MotivoRechazo } from "@/lib/ia-seguridad";
 import type { Rol } from "@/lib/rbac";
 
 /**
@@ -17,7 +18,11 @@ import type { Rol } from "@/lib/rbac";
 
 export type UsuarioIA = { id: string; rol: Rol };
 
-export type RespuestaAgente = RespuestaIA | { estado: "cuota" } | { estado: "limite" };
+export type RespuestaAgente =
+  | RespuestaIA
+  | { estado: "cuota" }
+  | { estado: "limite" }
+  | { estado: "entrada_invalida"; motivo: MotivoRechazo };
 
 export type ConfigAgente = {
   clave: ClaveAgente;
@@ -86,6 +91,20 @@ export async function conversarComo(
   turnos: readonly TurnoIA[],
   conversacionId: string | null = null,
 ): Promise<RespuestaAgente> {
+  // La última pregunta es lo único que escribió la persona: se revisa ANTES de
+  // gastar una llamada. Las anteriores ya pasaron por aquí cuando se enviaron.
+  let turnosLimpios = turnos;
+  const ultima = turnos.at(-1);
+
+  if (ultima?.rol === "user") {
+    const revision = revisarEntrada(ultima.contenido);
+
+    if (!revision.ok) return { estado: "entrada_invalida", motivo: revision.motivo };
+
+    // Al modelo le llega el texto ya normalizado, no el original.
+    turnosLimpios = [...turnos.slice(0, -1), { ...ultima, contenido: revision.texto }];
+  }
+
   const config = await configDelAgente(usuario.rol);
   const acceso = await verificarAcceso(usuario, config);
 
@@ -93,9 +112,11 @@ export async function conversarComo(
   if (acceso === "cuota") return { estado: "cuota" };
   if (acceso === "limite") return { estado: "limite" };
 
+  // `ensamblarSistema` pone el bloque fijo de alcance y seguridad AL FINAL,
+  // detrás de las instrucciones que el administrador puede editar.
   const respuesta = await conversar(
-    config.instrucciones ? `${sistema}\n\n${config.instrucciones}` : sistema,
-    turnos,
+    ensamblarSistema(sistema, config.instrucciones),
+    turnosLimpios,
     {
       modelo: config.modelo ?? undefined,
       maximoTokens: config.maximoTokens ?? undefined,

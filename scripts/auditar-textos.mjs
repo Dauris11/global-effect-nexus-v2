@@ -49,7 +49,7 @@ const ATRIBUTOS = new Set([
 /** Marca, símbolos y valores técnicos: no son texto que traducir. */
 const PERMITIDO = [
   /^[\s\d\p{P}\p{S}]+$/u,
-  /^(Global Effect|Global Effect Nexus|GE|Nexus|Supabase|Google|Resend|PDF|OCR|IA|MIA)$/,
+  /^(Global Effect|Portal GlobalEffect|Elly AI|Elly|GlobalEffect|GE|Supabase|Google|Resend|PDF|OCR|IA|MIA)$/,
   /^[a-z][a-z0-9-]*$/,
   /^\{/,
 ];

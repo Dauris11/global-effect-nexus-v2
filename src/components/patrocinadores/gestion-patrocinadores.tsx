@@ -246,6 +246,7 @@ function Formulario({
   alTerminar: () => void;
 }) {
   const t = useTranslations("sponsors");
+  const tc = useTranslations("sponsorMail");
   const [estado, enviar, enviando] = useActionState<
     EstadoPatrocinador,
     FormData
@@ -350,6 +351,20 @@ function Formulario({
                 defaultValue={patrocinador?.pais ?? ""}
                 maxLength={80}
               />
+            </div>
+
+            {/* Idioma de la traducción de las cartas de sus becados. */}
+            <div>
+              <Label htmlFor={`s-idioma-${clave}`}>{tc("language")}</Label>
+              <select
+                id={`s-idioma-${clave}`}
+                name="idioma"
+                defaultValue={patrocinador?.idioma ?? "en"}
+                className="border-linea-fuerte bg-background h-11 w-full rounded-control border px-3 text-[15px]"
+              >
+                <option value="en">{tc("languageEn")}</option>
+                <option value="es">{tc("languageEs")}</option>
+              </select>
             </div>
           </div>
         </PasoFormulario>

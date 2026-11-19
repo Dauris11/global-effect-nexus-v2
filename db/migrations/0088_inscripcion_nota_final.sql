@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0088 · Nota final y actualización en inscripción
+-- PORTAL GLOBALEFFECT — 0088 · Nota final y actualización en inscripción
 -- ================================================================
 -- Agrega `nota_final` y `updated_at` a `public.inscripcion` para que el
 -- docente pueda cerrar la calificación final de las materias asignadas y

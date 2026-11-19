@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0037 · Contabilidad: proveedores, facturas,
+-- PORTAL GLOBALEFFECT — 0037 · Contabilidad: proveedores, facturas,
 -- cuentas por pagar y pagos
 -- ================================================================
 -- Fase 3 de docs/prompts/portal-contabilidad.md (allí, 0036).

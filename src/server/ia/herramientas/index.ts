@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type { HerramientaModelo } from "@/lib/gemini";
 
 import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 
@@ -27,7 +27,7 @@ export function buscarHerramienta(nombre: string): Herramienta | undefined {
   return HERRAMIENTAS.find((h) => h.nombre === nombre);
 }
 
-export function definiciones(lista: readonly Herramienta[]): Anthropic.Tool[] {
+export function definiciones(lista: readonly Herramienta[]): HerramientaModelo[] {
   return lista.map((h) => ({
     name: h.nombre,
     description: h.descripcion,

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0053 · Contabilidad Fase 5:
+-- PORTAL GLOBALEFFECT — 0053 · Contabilidad Fase 5:
 -- Nómina, Activos Fijos e Inventario
 -- ================================================================
 -- Fundación Global Effect (La Vega, RD) — ASFL Ley 122-05

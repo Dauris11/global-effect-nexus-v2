@@ -77,6 +77,7 @@ export function ChatIA({
     errorSinPermiso: string;
     errorSinClave: string;
     errorRechazada: string;
+    errorEntrada: string;
     error: string;
   };
 }) {
@@ -113,6 +114,7 @@ export function ChatIA({
     sin_permiso: textos.errorSinPermiso,
     sin_clave: textos.errorSinClave,
     rechazada: textos.errorRechazada,
+    entrada_invalida: textos.errorEntrada,
     error: textos.error,
   }[estado.estado];
 

@@ -11,7 +11,7 @@ import {
 import { VistaReportes } from "@/components/contabilidad/reportes/vista-reportes";
 
 export const metadata = {
-  title: "Estados Financieros y Reportes — Contabilidad | Global Effect Nexus",
+  title: "Estados Financieros y Reportes — Contabilidad | Portal GlobalEffect",
 };
 
 export default async function PaginaReportesContables() {

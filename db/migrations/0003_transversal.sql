@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0003 · Dominio transversal
+-- PORTAL GLOBALEFFECT — 0003 · Dominio transversal
 -- ================================================================
 -- Documentos (metadatos de archivos), notificaciones internas y
 -- bitácora de auditoría. Servicios usados por el resto de dominios.

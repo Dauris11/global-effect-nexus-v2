@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { obtenerUsuarioActual } from "@/lib/auth";
 import { FUNCION_ASISTENTE } from "@/lib/nav";
 import { MAXIMO_CARACTERES_PREGUNTA } from "@/lib/ia";
+import { ensamblarSistema, revisarEntrada } from "@/lib/ia-seguridad";
 import {
   configDelAgente,
   miConsumo,
@@ -12,7 +13,8 @@ import {
 import { prepararTurno } from "@/server/ia/contexto";
 import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import type { EventoFlujo } from "@/lib/ia-eventos";
-import { ejecutarTurno, proveedorAnthropic } from "@/server/ia/motor";
+import { ejecutarTurno, proveedorGemini } from "@/server/ia/motor";
+import { modeloGemini } from "@/lib/gemini-cliente";
 
 /**
  * Chat del asistente con respuesta en vivo.
@@ -25,7 +27,6 @@ import { ejecutarTurno, proveedorAnthropic } from "@/server/ia/motor";
  * el cuerpo de la petición solo trae el texto, nunca un agente ni un rol.
  */
 
-const MODELO_POR_DEFECTO = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
 const MAXIMO_TOKENS = 4096;
 
 export const maxDuration = 60;
@@ -36,13 +37,24 @@ export async function POST(peticion: NextRequest) {
   if (!usuario) return new NextResponse("No autorizado", { status: 401 });
 
   const cuerpo = (await peticion.json().catch(() => null)) as { contenido?: unknown } | null;
-  const contenido = typeof cuerpo?.contenido === "string" ? cuerpo.contenido.trim() : "";
+  const crudo = typeof cuerpo?.contenido === "string" ? cuerpo.contenido.trim() : "";
 
-  if (!contenido) return NextResponse.json({ error: "mensajeVacio" }, { status: 400 });
+  if (!crudo) return NextResponse.json({ error: "mensajeVacio" }, { status: 400 });
 
-  if (contenido.length > MAXIMO_CARACTERES_PREGUNTA) {
+  if (crudo.length > MAXIMO_CARACTERES_PREGUNTA) {
     return NextResponse.json({ error: "mensajeLargo" }, { status: 400 });
   }
+
+  // Código, JSON, etiquetas, marcadores de rol u órdenes a la IA: se rechaza
+  // antes de gastar una llamada. Es la primera capa, no la única (ver
+  // `ia-seguridad.ts`).
+  const revision = revisarEntrada(crudo);
+
+  if (!revision.ok) {
+    return NextResponse.json({ error: "entradaInvalida", motivo: revision.motivo }, { status: 400 });
+  }
+
+  const contenido = revision.texto;
 
   // El administrador maestro puede BLOQUEAR el asistente para un rol: sin botón
   // y también sin la ruta, que es lo que usaría quien armara la petición a mano.
@@ -63,7 +75,7 @@ export async function POST(peticion: NextRequest) {
     return NextResponse.json({ error: codigo }, { status: 429 });
   }
 
-  const proveedor = proveedorAnthropic();
+  const proveedor = proveedorGemini();
 
   if (!proveedor) return NextResponse.json({ error: "sin_clave" }, { status: 503 });
 
@@ -85,9 +97,10 @@ export async function POST(peticion: NextRequest) {
           idioma: usuario.idioma,
           agente: config.clave,
           conversacionId: turno.conversacionId,
-          sistema: config.instrucciones ? `${turno.sistema}\n\n${config.instrucciones}` : turno.sistema,
+          sistema: ensamblarSistema(turno.sistema, config.instrucciones),
           turnos: turno.turnos,
-          modelo: config.modelo ?? MODELO_POR_DEFECTO,
+          // Un modelo guardado que no sea de Gemini se ignora (ver `modeloGemini`).
+          modelo: modeloGemini(config.modelo),
           maximoTokens: config.maximoTokens ?? MAXIMO_TOKENS,
           emitir,
         });

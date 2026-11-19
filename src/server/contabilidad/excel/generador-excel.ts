@@ -26,7 +26,7 @@ export async function crearLibroExcel(params: {
   totales?: Record<string, number | string>;
 }): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Global Effect Nexus";
+  workbook.creator = "Portal GlobalEffect";
   workbook.created = new Date();
 
   const worksheet = workbook.addWorksheet(params.tituloHoja, {

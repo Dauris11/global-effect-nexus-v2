@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0025 · Confidencialidad de psicología
+-- PORTAL GLOBALEFFECT — 0025 · Confidencialidad de psicología
 -- ================================================================
 -- El expediente del estudiante y todo lo clínico dejan de ser datos
 -- compartidos entre portales y pasan a ser de psicología, con

@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { AZUL, BLANCO } from "@/lib/paleta";
 
 /**
- * Manifiesto de aplicación web (PWA) de Global Effect Nexus.
+ * Manifiesto de aplicación web (PWA) de Portal GlobalEffect.
  *
  * Configura la plataforma para abrirse como aplicación nativa en dispositivos
  * móviles (iOS / Android) al agregarse a la pantalla de inicio:
@@ -13,8 +13,8 @@ import { AZUL, BLANCO } from "@/lib/paleta";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Global Effect Nexus",
-    short_name: "Nexus",
+    name: "Portal GlobalEffect",
+    short_name: "GlobalEffect",
     description: "ERP Institucional de la Fundación Global Effect",
     start_url: "/es/bandeja",
     display: "standalone",

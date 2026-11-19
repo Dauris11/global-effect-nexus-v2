@@ -499,7 +499,7 @@ try {
     ["solicitud", "Tu solicitud cambió de estado", "Coordinación actualizó tu solicitud.", "/portal/estudiante/solicitudes"],
     ["tarea", "Tienes una tarea por vencer", "Una tarea vence en los próximos 3 días.", "/administrativo/tareas"],
     ["reunion", "Reunión programada", "Te invitaron a una reunión de coordinación.", "/administrativo/reuniones"],
-    ["sistema", "Bienvenido a Global Effect Nexus", "Tu cuenta está activa y lista para usar.", "/"],
+    ["sistema", "Bienvenido al Portal GlobalEffect", "Tu cuenta está activa y lista para usar.", "/"],
   ];
   await sembrar("notificacion", Object.entries(todos).flatMap(([rol, usuario_id]) => NOTIS.map(([tipo, titulo, mensaje, enlace], k) => ({
     id: uid(`not:${rol}:${k}`), usuario_id, titulo, mensaje, tipo, enlace, leida: k === 3 || (k === 1 && rol.length % 2 === 0),

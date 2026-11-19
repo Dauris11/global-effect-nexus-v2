@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0019 · Vínculo docente ↔ usuario
+-- PORTAL GLOBALEFFECT — 0019 · Vínculo docente ↔ usuario
 -- ================================================================
 -- El Portal Profesor (ClickUp S6 · #400) tiene que responder a una
 -- pregunta que hoy la base de datos no puede contestar: "¿cuáles de

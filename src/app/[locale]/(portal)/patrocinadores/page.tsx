@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Building2, Globe, HandCoins, Search, Users, X } from "lucide-react";
+import { Building2, Globe, HandCoins, Mail, Search, Users, X } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -73,18 +73,32 @@ export default async function PaginaPatrocinadores({
 
   const filtros = { busqueda, tipo: tipoOk, estado: estadoOk };
 
+  const tCartas = await getTranslations({ locale, namespace: "sponsorMail" });
+
   const [t, filas, resumen, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "sponsors" }),
     directorioPatrocinadores(filtros),
     resumenDePatrocinio(filtros),
-    mensajesCliente(["sponsors"]),
+    mensajesCliente(["sponsors", "sponsorMail"]),
   ]);
 
   const hayFiltro = Boolean(busqueda || tipoOk || estadoOk);
 
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina titulo={t("title")} />
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          usuarioTienePermiso(usuario, "patrocinadores.escribir") ? (
+            <Button asChild variant="outline">
+              <Link href="/patrocinadores/correos">
+                <Mail className="size-4" />
+                {tCartas("viewMail")}
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0020 · Noticias del sitio público
+-- PORTAL GLOBALEFFECT — 0020 · Noticias del sitio público
 -- ================================================================
 -- La landing ya tiene una sección configurable por administración —el
 -- carrusel del hero, en `landing_slide` (0015)— y otra que sale sola de

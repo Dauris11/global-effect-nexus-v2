@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0047 · Fin de los cursos técnicos
+-- PORTAL GLOBALEFFECT — 0047 · Fin de los cursos técnicos
 -- ================================================================
 -- En octubre de 2026 la Fundación dejó de impartir cursos técnicos.
 -- Lo único que queda de formación propia es Global Effect 360, que

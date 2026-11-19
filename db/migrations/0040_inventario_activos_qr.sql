@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0040 · Inventario de Activos Físicos con QR
+-- PORTAL GLOBALEFFECT — 0040 · Inventario de Activos Físicos con QR
 -- y Auditoría Móvil In Situ
 -- ================================================================
 -- Módulo 30: Control patrimonial de mobiliario, equipos tecnológicos,

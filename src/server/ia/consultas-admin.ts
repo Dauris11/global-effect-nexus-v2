@@ -2,7 +2,7 @@ import { consultar, consultarUna } from "@/lib/db";
 import { parametros } from "@/server/parametros/consultas";
 
 /**
- * Lecturas del tablero de Nexus AI. Solo metadatos de uso y de acciones: el
+ * Lecturas del tablero de Elly AI. Solo metadatos de uso y de acciones: el
  * CONTENIDO de las conversaciones no sale de aquí. Dirección ve cuánto y cómo se
  * usa, no qué le preguntó cada persona al asistente.
  */
@@ -276,4 +276,57 @@ export async function documentosDeConocimiento(
     sinVerificar: f.sin_verificar,
     activo: f.activo,
   }));
+}
+
+export type DocumentoEditable = {
+  documentoId: string;
+  titulo: string;
+  fuente: string;
+  version: string;
+  vigenteHasta: string;
+  verificadoEl: string;
+  agentes: string[];
+  texto: string;
+};
+
+/**
+ * Un documento listo para editar: los fragmentos se vuelven a unir por `orden`
+ * (separados por línea en blanco, que es como `trocear` los cortó). Los
+ * documentos anteriores a la 0091 se numeraron por orden físico de inserción;
+ * quien edita ve el texto completo antes de guardar.
+ */
+export async function documentoParaEditar(
+  documentoId: string,
+): Promise<DocumentoEditable | null> {
+  const filas = await consultar<{
+    titulo: string | null;
+    fuente: string | null;
+    version: string | null;
+    agentes: string[];
+    vigente_hasta: string | null;
+    verificado_el: string | null;
+    contenido: string;
+  }>(
+    `SELECT titulo, fuente, version, agentes, contenido,
+            vigente_hasta::text AS vigente_hasta, verificado_el::text AS verificado_el
+       FROM fragmento_conocimiento
+      WHERE fuente_id = $1 AND fuente_tipo = 'documento'
+      ORDER BY orden, created_at, id`,
+    [documentoId],
+  );
+
+  const primera = filas[0];
+
+  if (!primera) return null;
+
+  return {
+    documentoId,
+    titulo: primera.titulo ?? "",
+    fuente: primera.fuente ?? "",
+    version: primera.version ?? "",
+    vigenteHasta: primera.vigente_hasta ?? "",
+    verificadoEl: primera.verificado_el ?? "",
+    agentes: primera.agentes,
+    texto: filas.map((f) => f.contenido).join("\n\n"),
+  };
 }

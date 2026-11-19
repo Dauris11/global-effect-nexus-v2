@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0062 · Proyectos Avanzados, Fases y Gantt
+-- PORTAL GLOBALEFFECT — 0062 · Proyectos Avanzados, Fases y Gantt
 -- ================================================================
 -- Extiende el modelo de operaciones (0009 y 0041) para dar soporte al
 -- visualizador interactivo Gantt, subtareas, hitos, fases estructuradas,

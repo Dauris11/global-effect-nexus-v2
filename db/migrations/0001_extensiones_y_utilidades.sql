@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0001 · Extensiones y utilidades base
+-- PORTAL GLOBALEFFECT — 0001 · Extensiones y utilidades base
 -- Motor: PostgreSQL 17 (Supabase)
 -- ================================================================
 -- Este script habilita las extensiones necesarias y crea la

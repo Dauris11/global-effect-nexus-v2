@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type { EsquemaHerramienta } from "@/lib/gemini";
 
 import type { Permiso, Rol, UsuarioConPermisos } from "@/lib/rbac";
 
@@ -31,7 +31,7 @@ export type ResultadoHerramienta = {
 export type Herramienta = {
   nombre: string;
   descripcion: string;
-  esquema: Anthropic.Tool["input_schema"];
+  esquema: EsquemaHerramienta;
   nivel: Nivel;
   /** Roles que la VEN. El modelo de otro rol no sabe que existe. */
   roles: readonly Rol[];
@@ -55,7 +55,7 @@ export type Herramienta = {
  * Lo que el agente NO puede hacer, con o sin aprobación (prompt de IA, §4).
  *
  * No hay herramienta con ninguno de estos nombres y la prueba
- * `scripts/probar-nexus-ai.ts` falla si alguien la añade. Contabilizar en un
+ * `scripts/probar-elly-ai.ts` falla si alguien la añade. Contabilizar en un
  * periodo cerrado, borrar evidencia, presentar a la DGII, tocar permisos y
  * apagar la bitácora no pueden ser algo que un modelo decida.
  */

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0069 · Notas de 360 por período, con peso y decisión
+-- PORTAL GLOBALEFFECT — 0069 · Notas de 360 por período, con peso y decisión
 -- ================================================================
 -- Hasta ahora las tareas de una clase de 360 colgaban de la materia, no del
 -- cuatrimestre: quien repetía la materia en otro período heredaba las tareas,

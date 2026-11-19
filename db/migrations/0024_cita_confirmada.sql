@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0024 · Confirmación de la cita solicitada
+-- PORTAL GLOBALEFFECT — 0024 · Confirmación de la cita solicitada
 -- ================================================================
 -- La migración 0021 dejó que el joven pida cita desde su portal
 -- (`solicitada_por_estudiante`, `motivo_estudiante`), pero no dejó

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0035 · Contabilidad: cadena de la bitácora,
+-- PORTAL GLOBALEFFECT — 0035 · Contabilidad: cadena de la bitácora,
 -- nada se borra y períodos cerrados
 -- ================================================================
 -- La 0033 dejó la bitácora con cuatro fallos que la hacían inútil

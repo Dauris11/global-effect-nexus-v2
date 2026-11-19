@@ -1,7 +1,7 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0059 · Automatización de Contabilidad y RLS
+-- PORTAL GLOBALEFFECT — 0059 · Automatización de Contabilidad y RLS
 -- ================================================================
--- Fases 5 a 7 de docs/estado/plan-nexus-ai.md.
+-- Fases 5 a 7 de docs/estado/plan-elly-ai.md.
 --
 --   • comprobante_recibido guarda la clasificación sugerida y si la
 --     contadora la aceptó sin tocarla: de ahí salen las métricas de

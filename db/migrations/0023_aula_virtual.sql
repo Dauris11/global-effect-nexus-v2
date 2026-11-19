@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0021 · Aula Virtual
+-- PORTAL GLOBALEFFECT — 0021 · Aula Virtual
 -- ================================================================
 
 CREATE TYPE tipo_asignacion AS ENUM ('tarea', 'examen', 'material', 'anuncio');

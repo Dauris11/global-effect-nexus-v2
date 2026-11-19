@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0036 · Contabilidad: bancos, libros,
+-- PORTAL GLOBALEFFECT — 0036 · Contabilidad: bancos, libros,
 -- recibos, transferencias y conciliación
 -- ================================================================
 -- Fase 2 de docs/prompts/portal-contabilidad.md (allí figura como

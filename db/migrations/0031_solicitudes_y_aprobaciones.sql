@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0031 · Solicitudes y aprobaciones
+-- PORTAL GLOBALEFFECT — 0031 · Solicitudes y aprobaciones
 -- ================================================================
 -- Con psicología fuera (0030), lo que el estudiante pedía —una cita—
 -- se lo pide ahora a administración, y no siempre es una cita: una

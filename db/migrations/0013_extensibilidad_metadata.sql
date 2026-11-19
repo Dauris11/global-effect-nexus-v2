@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0013 · Extensibilidad (puerta abierta)
+-- PORTAL GLOBALEFFECT — 0013 · Extensibilidad (puerta abierta)
 -- ================================================================
 -- Agrega una columna `metadata JSONB` a las entidades principales
 -- para permitir modificaciones/campos futuros SIN alterar el esquema

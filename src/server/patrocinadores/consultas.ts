@@ -22,6 +22,8 @@ export type PatrocinadorFila = {
   email: string | null;
   telefono: string | null;
   pais: string | null;
+  /** Idioma al que se traducen las cartas de sus becados. */
+  idioma: "es" | "en";
   estado: string;
   monto_mensual: number;
   notas: string | null;
@@ -54,6 +56,7 @@ export async function directorioPatrocinadores({
             p.email::text AS email,
             p.telefono,
             p.pais,
+            p.idioma,
             p.estado,
             coalesce(p.monto_mensual, 0)::float8 AS monto_mensual,
             p.notas,

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0006 · Académico
+-- PORTAL GLOBALEFFECT — 0006 · Académico
 -- ================================================================
 -- Períodos, materias, cursos técnicos, matrícula (inscripcion),
 -- calificaciones detalladas e historial académico consolidado (GPA).

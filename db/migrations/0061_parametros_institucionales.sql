@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0061 · Parámetros institucionales
+-- PORTAL GLOBALEFFECT — 0061 · Parámetros institucionales
 -- ================================================================
 -- Cierra el pendiente de /configuracion: «no existe tabla donde
 -- guardarlos». Los parámetros que antes estaban escritos en el código

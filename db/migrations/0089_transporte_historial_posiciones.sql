@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0089 · Historial de posiciones GPS del viaje
+-- PORTAL GLOBALEFFECT — 0089 · Historial de posiciones GPS del viaje
 -- ================================================================
 -- `transporte_viaje` solo guarda la última posición. Esta tabla conserva cada
 -- punto (con precisión) para poder reconstruir el recorrido real de un viaje.

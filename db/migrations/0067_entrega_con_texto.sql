@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0067 · Entregas con texto escrito
+-- PORTAL GLOBALEFFECT — 0067 · Entregas con texto escrito
 -- ================================================================
 -- Una tarea de 360 se puede resolver subiendo un documento o escribiendo la
 -- respuesta en la propia plataforma. `comentario_estudiante` es una nota al

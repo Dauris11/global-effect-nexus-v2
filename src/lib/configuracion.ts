@@ -24,7 +24,7 @@ export const AJUSTES = [
   { clave: "parameters", href: "/configuracion/parametros", permiso: "usuarios.administrar", roles: ["admin", "super_admin"] },
   { clave: "landing", href: "/configuracion/landing", permiso: "landing.administrar" },
   { clave: "ia", href: "/configuracion/ia", permiso: "ia.administrar" },
-  { clave: "knowledge", href: "/configuracion/conocimiento", permiso: "ia.administrar" },
+  { clave: "knowledge", href: "/configuracion/conocimiento", permiso: "ia.conocimiento" },
   { clave: "activity", href: "/configuracion/actividad", permiso: "usuarios.administrar", soloMaestro: true },
   { clave: "audit", href: "/configuracion/auditoria", permiso: "usuarios.administrar", soloMaestro: true },
   { clave: "appearance", href: "/perfil", permiso: "usuarios.administrar", roles: ROLES },

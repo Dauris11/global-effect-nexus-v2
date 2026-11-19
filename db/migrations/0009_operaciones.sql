@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0009 · Operaciones
+-- PORTAL GLOBALEFFECT — 0009 · Operaciones
 -- ================================================================
 -- Proyectos, tareas (Kanban) con asignación N:M, eventos de
 -- calendario y registro mensual de servicio comunitario.

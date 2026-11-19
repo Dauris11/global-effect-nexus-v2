@@ -1,7 +1,7 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0058 · Nexus AI: conocimiento por agente y cadena
+-- PORTAL GLOBALEFFECT — 0058 · Elly AI: conocimiento por agente y cadena
 -- ================================================================
--- Fases 3 y 4 de docs/estado/plan-nexus-ai.md.
+-- Fases 3 y 4 de docs/estado/plan-elly-ai.md.
 --
 --   • fragmento_conocimiento pasa de tabla vacía a base de conocimiento:
 --     cada fragmento declara QUÉ AGENTES pueden recuperarlo. Por defecto

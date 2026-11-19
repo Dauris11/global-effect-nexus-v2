@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0017 · Idiomas soportados: solo es/en
+-- PORTAL GLOBALEFFECT — 0017 · Idiomas soportados: solo es/en
 -- ================================================================
 -- Revierte la ampliación que hizo 0014 (es/en/fr/it) y deja los dos
 -- idiomas que la Fundación realmente usa: español para la operación

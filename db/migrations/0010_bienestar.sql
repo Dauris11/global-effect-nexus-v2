@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0010 · Bienestar (inscripción de almuerzo)
+-- PORTAL GLOBALEFFECT — 0010 · Bienestar (inscripción de almuerzo)
 -- ================================================================
 -- Inscripción diaria pública al almuerzo. Sin login. La validación
 -- de horario (≤ 8:30 AM) y de no duplicado se aplica en la capa

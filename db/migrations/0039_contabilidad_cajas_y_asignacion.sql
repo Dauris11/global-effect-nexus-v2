@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0039 · Contabilidad: Cajas, Arqueos, Reposición
+-- PORTAL GLOBALEFFECT — 0039 · Contabilidad: Cajas, Arqueos, Reposición
 -- y Asignación Dual de Facturas (Persona y Programa)
 -- ================================================================
 -- Fase 4 de docs/prompts/portal-contabilidad.md y requerimientos del

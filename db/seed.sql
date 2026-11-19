@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — SEMBRADO INICIAL (SEED)
+-- PORTAL GLOBALEFFECT — SEMBRADO INICIAL (SEED)
 -- Motor: PostgreSQL 17 (Supabase)
 -- Ejecutar DESPUÉS de aplicar todas las migraciones (0001–0031).
 -- Idempotente: usa ON CONFLICT para poder re-ejecutarse.

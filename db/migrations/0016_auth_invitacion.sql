@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0016 · Login solo por invitación (+ OAuth Google)
+-- PORTAL GLOBALEFFECT — 0016 · Login solo por invitación (+ OAuth Google)
 -- ================================================================
 -- Refuerza la regla "los usuarios se invitan, no se registran":
 -- la identidad de Supabase Auth (email/contraseña o Google) SOLO se

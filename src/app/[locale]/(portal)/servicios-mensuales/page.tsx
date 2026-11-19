@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CalendarCheck, HeartHandshake, Search, Users } from "lucide-react";
+import { CalendarCheck, HeartHandshake, Mail, Search, Users } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { VACIO } from "@/lib/paleta";
 import {
@@ -56,10 +57,10 @@ export default async function PaginaServiciosMensuales({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; faltan?: string }>;
 }) {
   const { locale } = await params;
-  const { mes } = await searchParams;
+  const { mes, faltan } = await searchParams;
 
   const usuario = await requerirPermiso("operaciones.leer");
   const puedeEscribir = usuarioTienePermiso(usuario, "operaciones.escribir");
@@ -77,6 +78,22 @@ export default async function PaginaServiciosMensuales({
     resumenDelMes(elegido),
     mensajesCliente(["monthlyServices", "comida"]),
   ]);
+
+  // «Los que no cumplieron»: falta el servicio, la reunión o la carta al
+  // patrocinador. Es la lista que se le da a administración cada mes.
+  const soloFaltan = faltan === "1";
+  const aplicanCarta = filas.filter((f) => f.correo !== "no_aplica").length;
+  const conCarta = filas.filter((f) => f.correo === "cumplio").length;
+  const visibles = soloFaltan
+    ? filas.filter(
+        (f) =>
+          !f.hizo_servicio ||
+          !f.asistio_reunion ||
+          f.correo === "no_envio" ||
+          f.correo === "tardia" ||
+          f.correo === "en_revision",
+      )
+    : filas;
 
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
@@ -125,7 +142,7 @@ export default async function PaginaServiciosMensuales({
         </Button>
       </form>
 
-      <div className="grid gap-3 sm:grid-cols-3 print:hidden">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
         <CifraAcademica
           valor={resumen.total}
           etiqueta={t("stats.called")}
@@ -150,11 +167,27 @@ export default async function PaginaServiciosMensuales({
           etiqueta={t("stats.meeting")}
           icono={CalendarCheck}
         />
+        <CifraAcademica
+          valor={aplicanCarta > 0 ? `${Math.round((conCarta / aplicanCarta) * 100)}%` : "—"}
+          etiqueta={t("stats.letter")}
+          icono={Mail}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2 print:hidden">
+        <Button asChild variant={soloFaltan ? "outline" : "default"} size="sm">
+          <Link href={{ pathname: "/servicios-mensuales", query: { mes: elegido } }}>{t("showAll")}</Link>
+        </Button>
+        <Button asChild variant={soloFaltan ? "default" : "outline"} size="sm">
+          <Link href={{ pathname: "/servicios-mensuales", query: { mes: elegido, faltan: "1" } }}>
+            {t("onlyPending")}
+          </Link>
+        </Button>
       </div>
 
       <Card className="print:border-0 print:shadow-none">
         <CardContent className="pt-5">
-          {filas.length === 0 ? (
+          {visibles.length === 0 ? (
             <div className={VACIO.contenedor}>
               <span className={`${VACIO.icono} print:hidden`}>
                 <Users className="size-6" />
@@ -164,7 +197,7 @@ export default async function PaginaServiciosMensuales({
           ) : (
             <NextIntlClientProvider messages={mensajes}>
               <PlanillaServicios
-                filas={filas}
+                filas={visibles}
                 mes={elegido}
                 puedeEscribir={puedeEscribir}
               />

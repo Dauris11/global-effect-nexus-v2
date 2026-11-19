@@ -9,7 +9,7 @@
  * estarlo, se quita de aquí.
  */
 
-export type GrupoParametro = "comedor" | "becas" | "asistente" | "contacto";
+export type GrupoParametro = "comedor" | "becas" | "asistente" | "correos" | "contacto";
 
 export type DefinicionParametro =
   | { clave: string; grupo: GrupoParametro; tipo: "hora"; defecto: string }
@@ -25,7 +25,7 @@ export type DefinicionParametro =
     }
   | { clave: string; grupo: GrupoParametro; tipo: "correo"; defecto: string };
 
-export const GRUPOS: readonly GrupoParametro[] = ["comedor", "becas", "asistente", "contacto"];
+export const GRUPOS: readonly GrupoParametro[] = ["comedor", "becas", "asistente", "correos", "contacto"];
 
 export const DEFINICIONES = [
   { clave: "comedor.apertura", grupo: "comedor", tipo: "hora", defecto: "06:00" },
@@ -40,6 +40,10 @@ export const DEFINICIONES = [
   { clave: "becas.creditos_maximos_utesa", grupo: "becas", tipo: "numero", defecto: 24, minimo: 1, maximo: 60, decimales: 0 },
   { clave: "becas.creditos_maximos_cuatrimestre", grupo: "becas", tipo: "numero", defecto: 24, minimo: 1, maximo: 60, decimales: 0 },
   { clave: "asistente.dias_sin_verificar", grupo: "asistente", tipo: "numero", defecto: 90, minimo: 7, maximo: 730, decimales: 0 },
+  // Día del mes hasta el que cuenta la carta al patrocinador (inclusive, hora RD).
+  { clave: "correos.dia_limite", grupo: "correos", tipo: "numero", defecto: 20, minimo: 1, maximo: 28, decimales: 0 },
+  // 1 = las cartas limpias se reenvían solas; 0 = esperan la aprobación de administración.
+  { clave: "correos.reenvio_automatico", grupo: "correos", tipo: "numero", defecto: 0, minimo: 0, maximo: 1, decimales: 0 },
   { clave: "contacto.correo", grupo: "contacto", tipo: "correo", defecto: "info@globaleffect.org" },
 ] as const satisfies readonly DefinicionParametro[];
 

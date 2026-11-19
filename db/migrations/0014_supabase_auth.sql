@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0014 · Integración con Supabase Auth
+-- PORTAL GLOBALEFFECT — 0014 · Integración con Supabase Auth
 -- ================================================================
 -- Migra la autenticación de credenciales propias (Auth.js) a
 -- Supabase Auth. Supabase gestiona `auth.users` (email + contraseña);

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0050 · Contabilidad: Fase 2 (Terceros, Donaciones y Compras)
+-- PORTAL GLOBALEFFECT — 0050 · Contabilidad: Fase 2 (Terceros, Donaciones y Compras)
 -- ================================================================
 -- Fase 2 de docs/prompts/plan-contabilidad-erp.md:
 --   1. Tercero unificado (donante/patrocinador, proveedor, empleado)

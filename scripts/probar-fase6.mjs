@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 // ============================================================
 // SUITE DE PRUEBAS UNITARIAS — FASE 6: ESTADOS FINANCIEROS Y CIERRE
-// Global Effect Nexus (ASFL Ley 122-05)
+// Portal GlobalEffect (ASFL Ley 122-05)
 // ============================================================
 
 test("Fase 6: Ecuación fundamental del Balance General (Activo = Pasivo + Patrimonio + Superávit)", () => {

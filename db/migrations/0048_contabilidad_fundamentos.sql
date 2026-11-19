@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0048 · Contabilidad: fundamentos (Fase 1)
+-- PORTAL GLOBALEFFECT — 0048 · Contabilidad: fundamentos (Fase 1)
 -- ================================================================
 -- Fase 1 de docs/prompts/plan-contabilidad-erp.md. Sobre lo que ya
 -- dejaron las 0032–0039 (partida doble, períodos, bitácora con

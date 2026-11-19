@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0063 · Torre de control por usuario
+-- PORTAL GLOBALEFFECT — 0063 · Torre de control por usuario
 -- ================================================================
 -- La 0041 repartía proyectos por ROL (`proyecto_rol`) y `proyecto.responsable`
 -- era texto libre. Con eso no se puede contestar "¿qué lleva Fulano?": un

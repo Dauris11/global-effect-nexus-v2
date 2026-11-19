@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0044 · Agenda Institucional de Reuniones
+-- PORTAL GLOBALEFFECT — 0044 · Agenda Institucional de Reuniones
 -- ================================================================
 -- Sustitución definitiva del antiguo módulo de psicología (cerrado en 0030):
 -- Las agendas de citas individuales pasan a ser agendas de reuniones

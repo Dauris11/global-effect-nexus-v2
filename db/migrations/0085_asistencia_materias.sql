@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0085 · Asistencia por materia asignada
+-- PORTAL GLOBALEFFECT — 0085 · Asistencia por materia asignada
 -- ================================================================
 -- Extiende el pase de lista a las materias académicas (`materia`) asignadas a
 -- un profesor (`profesor_usuario_id`), de forma simétrica a `sesion_360` y

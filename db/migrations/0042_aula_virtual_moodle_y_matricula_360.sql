@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0042 · Aula Virtual Estilo Moodle y
+-- PORTAL GLOBALEFFECT — 0042 · Aula Virtual Estilo Moodle y
 -- Matrícula Cuatrimestral Obligatoria Global Effect 360
 -- ================================================================
 -- Requerimientos de la Fundación Global Effect y Tesis de Grado:

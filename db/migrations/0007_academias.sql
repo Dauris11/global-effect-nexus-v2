@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0007 · Academias (programas extracurriculares)
+-- PORTAL GLOBALEFFECT — 0007 · Academias (programas extracurriculares)
 -- ================================================================
 -- Programas de liderazgo/habilidades y sus materiales educativos.
 -- ================================================================

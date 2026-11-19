@@ -54,7 +54,7 @@ async function seed() {
     await client.query(
       `UPDATE public.materia_360
           SET horario = 'Sábados 9:00 AM - 1:00 PM',
-              aula = 'Salón Multiusos Nexus',
+              aula = 'Salón Multiusos',
               cupo_maximo = 30,
               docente_id = $1
         WHERE codigo = 'G360-EXCEL' OR nombre ILIKE '%Excel%'`,

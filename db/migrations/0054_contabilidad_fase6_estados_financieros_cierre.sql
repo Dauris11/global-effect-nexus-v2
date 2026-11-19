@@ -1,5 +1,5 @@
 -- ============================================================
--- GLOBAL EFFECT NEXUS — MIGRACIÓN 0054
+-- PORTAL GLOBALEFFECT — MIGRACIÓN 0054
 -- Fase 6 ERP Contabilidad: Reportes, Estados Financieros y Cierre
 -- Entidad: Fundación Global Effect (ASFL Ley 122-05)
 -- ============================================================

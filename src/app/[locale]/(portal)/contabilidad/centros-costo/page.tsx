@@ -9,7 +9,7 @@ import { listarCentrosCosto } from "@/server/contabilidad/centros-costo/consulta
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("contab.centrosCosto");
-  return { title: `${t("titulo")} | Global Effect Nexus` };
+  return { title: `${t("titulo")} | Portal GlobalEffect` };
 }
 
 export default async function PaginaCentrosCosto() {

@@ -1,5 +1,5 @@
 -- ============================================================
--- GLOBAL EFFECT NEXUS — MIGRACIÓN 0052
+-- PORTAL GLOBALEFFECT — MIGRACIÓN 0052
 -- Fase 4 ERP Contabilidad: Fondos, Centros de Costo y Presupuesto
 -- Entidad: Fundación Global Effect (ASFL Ley 122-05)
 -- ============================================================

@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0038 · Asistente de IA para todos los roles
+-- PORTAL GLOBALEFFECT — 0038 · Asistente de IA para todos los roles
 -- ================================================================
 -- El asistente de IA pasa a estar disponible como widget flotante en
 -- todos los portales y departamentos. El rol estudiante lo utiliza

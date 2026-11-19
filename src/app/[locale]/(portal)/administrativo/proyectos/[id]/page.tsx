@@ -34,7 +34,7 @@ export async function generateMetadata({
   const proyecto = await proyectoParaGantt(id);
   if (!proyecto) return { title: t("projects.notFound") };
 
-  return { title: `Gantt: ${proyecto.nombre} · Global Effect Nexus` };
+  return { title: `Gantt: ${proyecto.nombre} · Portal GlobalEffect` };
 }
 
 export default async function PaginaDetalleProyectoGantt({

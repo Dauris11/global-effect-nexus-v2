@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0002 · Identidad y control de acceso (RBAC)
+-- PORTAL GLOBALEFFECT — 0002 · Identidad y control de acceso (RBAC)
 -- ================================================================
 -- Roles, permisos granulares, su relación N:M y los usuarios del
 -- sistema. Base de la autenticación (Auth.js) y la autorización.

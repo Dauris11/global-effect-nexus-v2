@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0070 · Solicitud de compra con cotización
+-- PORTAL GLOBALEFFECT — 0070 · Solicitud de compra con cotización
 -- ================================================================
 -- Todo el personal y el estudiantado pueden pedir a contabilidad que
 -- compre algo, adjuntando la cotización. Es un tipo NUEVO (`compra`) y

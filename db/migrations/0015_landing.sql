@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0015 · Landing pública configurable
+-- PORTAL GLOBALEFFECT — 0015 · Landing pública configurable
 -- ================================================================
 -- Contenido editable por el administrador para la página de inicio:
 -- las diapositivas (publicidad) del hero rotativo. Las estadísticas y

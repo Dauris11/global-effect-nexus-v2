@@ -60,6 +60,8 @@ export async function guardarPatrocinador(
   const email = String(datos.get("email") ?? "").trim().slice(0, 160);
   const telefono = String(datos.get("telefono") ?? "").trim().slice(0, 40);
   const pais = String(datos.get("pais") ?? "").trim().slice(0, 80);
+  // Idioma de las cartas de sus becados; cualquier otro valor cae al inglés.
+  const idioma = String(datos.get("idioma") ?? "en") === "es" ? "es" : "en";
   const estado = String(datos.get("estado") ?? "activo");
   const notas = String(datos.get("notas") ?? "").trim().slice(0, 900);
   const montoTexto = String(datos.get("monto") ?? "").trim();
@@ -85,18 +87,18 @@ export async function guardarPatrocinador(
               SET nombre = $2, tipo = $3::tipo_patrocinador,
                   email = NULLIF($4, '')::citext, telefono = NULLIF($5, ''),
                   pais = NULLIF($6, ''), estado = $7,
-                  monto_mensual = $8, notas = NULLIF($9, '')
+                  monto_mensual = $8, notas = NULLIF($9, ''), idioma = $10
             WHERE id = $1
           RETURNING id`,
-          [id, nombre, tipoOk, email, telefono, pais, estadoOk, monto, notas],
+          [id, nombre, tipoOk, email, telefono, pais, estadoOk, monto, notas, idioma],
         )
       : await consultarUna<{ id: string }>(
           `INSERT INTO patrocinador
-                  (nombre, tipo, email, telefono, pais, estado, monto_mensual, notas)
+                  (nombre, tipo, email, telefono, pais, estado, monto_mensual, notas, idioma)
            VALUES ($1, $2::tipo_patrocinador, NULLIF($3, '')::citext, NULLIF($4, ''),
-                   NULLIF($5, ''), $6, $7, NULLIF($8, ''))
+                   NULLIF($5, ''), $6, $7, NULLIF($8, ''), $9)
            RETURNING id`,
-          [nombre, tipoOk, email, telefono, pais, estadoOk, monto, notas],
+          [nombre, tipoOk, email, telefono, pais, estadoOk, monto, notas, idioma],
         );
 
     if (!guardado) return { estado: "no_encontrado" };

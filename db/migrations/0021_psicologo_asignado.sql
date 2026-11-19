@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0021 · Psicólogo asignado al estudiante
+-- PORTAL GLOBALEFFECT — 0021 · Psicólogo asignado al estudiante
 -- ================================================================
 -- Hasta ahora `cita_psicologia.psicologo_id` se llenaba solo cuando el
 -- propio psicólogo creaba la cita desde su módulo. Cuando el joven la

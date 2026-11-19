@@ -1,5 +1,5 @@
 -- ================================================================
--- GLOBAL EFFECT NEXUS — 0087 · Circuito Universitario de Transporte (TIMOB)
+-- PORTAL GLOBALEFFECT — 0087 · Circuito Universitario de Transporte (TIMOB)
 -- ================================================================
 -- Actualiza las rutas y paradas oficiales del transporte institucional
 -- para conectar en vivo el Edificio Fundación Global Effect con las
