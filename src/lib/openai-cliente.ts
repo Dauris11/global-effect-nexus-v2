@@ -31,6 +31,8 @@ export type ConfigProveedorChat = {
   esDeEsteProveedor: (modelo: string) => boolean;
   /** Admite PDF como parte del mensaje (`file`). */
   aceptaPdf: boolean;
+  /** Parámetros propios de ciertos modelos (p. ej. esfuerzo de razonamiento). */
+  extraPorModelo?: (modelo: string) => Record<string, unknown>;
 };
 
 export function crearClienteChat(c: ConfigProveedorChat) {
@@ -52,7 +54,9 @@ export function crearClienteChat(c: ConfigProveedorChat) {
 
     if (!clave) throw new ErrorModelo("sin_clave", `Falta ${c.claveEnv}`);
 
-    const cuerpoPeticion = JSON.stringify(construirPeticionOpenAI(parametros, flujo));
+    const cuerpoPeticion = JSON.stringify(
+      construirPeticionOpenAI(parametros, flujo, c.extraPorModelo?.(parametros.model)),
+    );
 
     // 500/502/503/504 son pasajeros: dos reintentos cortos. El 429 y los errores
     // de clave o de petición no se reintentan.

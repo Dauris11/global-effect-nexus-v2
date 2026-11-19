@@ -70,8 +70,13 @@ function mensajeDe(m: MensajeModelo): Mensaje[] {
   return salida;
 }
 
-export function construirPeticionOpenAI(p: ParametrosModelo, flujo: boolean): Record<string, unknown> {
+export function construirPeticionOpenAI(
+  p: ParametrosModelo,
+  flujo: boolean,
+  extra: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
+    ...extra,
     model: p.model,
     messages: mensajesDe(p),
     max_completion_tokens: p.max_tokens,

@@ -12,8 +12,13 @@ import { crearClienteChat } from "@/lib/openai-cliente";
  * El resto (chat con herramientas, cartas) funciona con el modelo de texto.
  */
 
-/** Modelo de producción de Groq con llamadas a herramientas. Se cambia con `GROQ_MODEL`. */
-export const MODELO_GROQ_POR_DEFECTO = "llama-3.3-70b-versatile";
+/**
+ * Modelo con llamadas a herramientas, VERIFICADO en vivo con la cuenta del
+ * proyecto el 19 nov 2026 (`llama-3.3-70b-versatile` ya no existía allí: 404).
+ * Se cambia con `GROQ_MODEL`; los disponibles se listan con
+ * `GET https://api.groq.com/openai/v1/models`.
+ */
+export const MODELO_GROQ_POR_DEFECTO = "openai/gpt-oss-120b";
 
 export const clienteGroq = crearClienteChat({
   nombre: "Groq",
@@ -24,4 +29,7 @@ export const clienteGroq = crearClienteChat({
   modeloVisionEnv: "GROQ_MODEL_VISION",
   esDeEsteProveedor: (m) => /^(llama|meta-llama\/|openai\/gpt-oss|qwen\/|moonshotai\/|gemma)/.test(m),
   aceptaPdf: false,
+  // Los gpt-oss razonan, y ese razonamiento gasta el mismo presupuesto de salida
+  // que la respuesta: en «low» queda sitio para el JSON del OCR y de las cartas.
+  extraPorModelo: (m) => (m.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {}),
 });

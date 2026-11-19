@@ -64,11 +64,15 @@ export type ParametrosModelo = {
   tools?: HerramientaModelo[];
   /** Obliga a llamar a esta herramienta (y solo a esa). */
   forzar?: string;
+  /** Qué tipo de archivo trae el mensaje: solo se prueban proveedores que lo lean. */
+  requiere?: "pdf" | "imagen";
 };
 
 export type RespuestaModelo = {
   content: (BloqueTexto | BloqueLlamada)[];
   stop_reason: "end_turn" | "tool_use" | "refusal" | "max_tokens";
+  /** Modelo que de verdad respondió (con respaldo puede no ser el primero). */
+  modelo?: string;
   usage: { input_tokens: number; output_tokens: number; cache_read_input_tokens?: number };
 };
 

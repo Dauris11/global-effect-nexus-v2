@@ -137,7 +137,7 @@ export async function conversar(
       texto,
       tokens: respuesta.usage.output_tokens,
       uso: {
-        modelo,
+        modelo: respuesta.modelo ?? modelo,
         entrada: respuesta.usage.input_tokens,
         salida: respuesta.usage.output_tokens,
         cache: respuesta.usage.cache_read_input_tokens ?? 0,
@@ -230,6 +230,7 @@ export async function leerDocumento(
       // Corto a propósito: la respuesta es un JSON de cuatro campos. Un techo
       // amplio no mejora una transcripción, solo da sitio a la invención.
       max_tokens: 600,
+      requiere: archivo.mime === "application/pdf" ? "pdf" : "imagen",
       system: instrucciones,
       messages: [
         {
@@ -256,7 +257,7 @@ export async function leerDocumento(
     // pantalla lo dice de otra manera («búscalo a mano»).
     if (!datos) return { estado: "ilegible" };
 
-    return { estado: "ok", datos, modelo };
+    return { estado: "ok", datos, modelo: respuesta.modelo ?? modelo };
   } catch (error) {
     console.error("[ia] fallo al leer el documento", error);
 

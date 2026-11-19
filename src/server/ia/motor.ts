@@ -94,6 +94,8 @@ export async function ejecutarTurno({
   let salida = 0;
   let cache = 0;
   let propuestas = 0;
+  // Con respaldo entre proveedores, el que respondió puede no ser el primero.
+  let modeloReal = modelo;
 
   for (let paso = 0; paso < MAXIMO_PASOS; paso++) {
     const flujo = proveedor({
@@ -121,6 +123,7 @@ export async function ejecutarTurno({
       throw error;
     }
 
+    modeloReal = respuesta.modelo ?? modeloReal;
     entrada += respuesta.usage.input_tokens;
     salida += respuesta.usage.output_tokens;
     cache += respuesta.usage.cache_read_input_tokens ?? 0;
@@ -164,7 +167,7 @@ export async function ejecutarTurno({
   return {
     texto: texto.trim(),
     propuestas,
-    uso: { modelo, entrada, salida, cache, latenciaMs: Date.now() - inicio },
+    uso: { modelo: modeloReal, entrada, salida, cache, latenciaMs: Date.now() - inicio },
   };
 }
 

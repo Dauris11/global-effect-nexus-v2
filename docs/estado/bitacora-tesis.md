@@ -922,6 +922,33 @@ probar** (aún no hay clave).
 
 ---
 
+## 19 nov 2026 — Groq y OpenAI combinados: cadena con respaldo
+
+**Petición.** Usar a la vez la clave de OpenAI y la de Groq.
+
+**Decisiones y por qué.**
+- «Combinadas» se resolvió como **cadena con respaldo**, no como reparto al azar:
+  `IA_PROVEEDOR=groq,openai` usa Groq (gratis) y, si falla por cualquier causa
+  (límite de frecuencia, sin saldo, caída, una llamada a herramienta mal
+  formada), prueba con OpenAI. Los proveedores sin clave se saltan.
+- La lógica es **pura y está aparte** (`src/lib/respaldo.ts`) para probarla con
+  proveedores falsos. En un flujo, **si ya se mostró texto no se cambia de
+  proveedor a mitad**: no se puede desescribir y se mezclarían dos voces.
+- Cada proveedor usa **su propio modelo**: el modelo pedido solo vale si es suyo.
+  El OCR salta a los proveedores capaces de leer ese tipo de archivo (Groq no lee
+  PDF). La respuesta lleva el modelo que de verdad respondió, y el medidor de uso
+  lo registra.
+- **Hallazgo en vivo:** `llama-3.3-70b-versatile` ya no existe en la cuenta de Groq
+  (404); se listó `/models` y se eligió `openai/gpt-oss-120b`, con razonamiento
+  bajo para que no consuma el presupuesto de salida.
+- La cuenta de OpenAI sigue sin saldo; como respaldo no aporta hasta cargarla.
+
+**Verificación.** 65 pruebas, entre ellas 7 del respaldo; en vivo, la cadena
+responde con Groq y, al romper a propósito el modelo de Groq, cae a OpenAI (que
+falla con «sin saldo», como se esperaba).
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

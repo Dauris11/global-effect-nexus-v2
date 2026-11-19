@@ -1678,9 +1678,19 @@ módulo) — esto es solo la cola de pendientes concretos.
       fábrica) con otra dirección, clave (`GROQ_API_KEY`) y modelo
       (`llama-3.3-70b-versatile`). Selección probada en los cinco casos de
       configuración.
-- [ ] Probar Groq en vivo: poner `GROQ_API_KEY`, `IA_PROVEEDOR=groq` y correr
-      `npx tsx scripts/probar-modelo-vivo.ts`. Falta comprobar con una clave real
-      las llamadas a herramientas con Llama (pueden fallar más que en GPT/Gemini),
-      los límites del plan gratuito y cómo trata Groq los datos enviados.
+- [x] Groq probado en vivo (19 nov): chat, llamada forzada y flujo funcionan con
+      `openai/gpt-oss-120b` (`llama-3.3-70b-versatile` ya no existe en la cuenta:
+      404). Falta comprobar los límites del plan gratuito y cómo trata Groq los
+      datos enviados.
 - [ ] Groq no lee PDF y para imágenes necesita `GROQ_MODEL_VISION`; sin eso el OCR
       responde «ilegible» y se captura a mano.
+
+- [x] **Respaldo entre proveedores:** `IA_PROVEEDOR` es una lista ordenada
+      (`groq,openai`); si el primero falla, se prueba el siguiente
+      (`src/lib/respaldo.ts`, probado con proveedores falsos y en vivo). En un
+      flujo, si ya salió texto no se cambia a mitad. El modelo que respondió se
+      guarda en el medidor de uso.
+- [ ] OpenAI sigue sin saldo: en la cadena `groq,openai` solo actúa como respaldo
+      cuando Groq falla, y fallará con `sin_clave` hasta cargar crédito.
+- [ ] Poner en Vercel las variables de `.env.vercel` (IA, secretos de cartas y las
+      de Supabase), borrar ese archivo y redesplegar.

@@ -98,7 +98,7 @@ cp .env.example .env.local
 | `SUPABASE_STORAGE_BUCKET` | Bucket de documentos y expedientes | `documentos` |
 | `RESEND_API_KEY` · `RESEND_FROM` | Envío de correos (aviso de tarea asignada) | panel de Resend |
 | `N8N_WEBHOOK_URL` | Webhook de automatizaciones (CRM/notificaciones) | instancia de n8n |
-| `IA_PROVEEDOR` | Qué proveedor usa Elly AI: `gemini` (capa gratuita, por ahora), `groq` (plan gratuito) u `openai` (de pago) | tú eliges |
+| `IA_PROVEEDOR` | Lista ordenada de proveedores de Elly AI, p. ej. `groq,openai`: usa el primero y, si falla, el siguiente. Opciones: `groq` y `gemini` (gratuitos), `openai` (de pago) | tú eliges |
 | `GROQ_API_KEY` · `GROQ_MODEL` · `GROQ_MODEL_VISION` | Elly AI con Groq. No lee PDF; el OCR de imágenes exige un modelo de visión en `GROQ_MODEL_VISION` | [console.groq.com/keys](https://console.groq.com/keys) |
 | `GEMINI_API_KEY` · `GEMINI_MODEL` | Elly AI con Gemini | [Google AI Studio](https://aistudio.google.com/apikey) |
 | `OPENAI_API_KEY` · `OPENAI_MODEL` | Elly AI con OpenAI (**la API no es gratis**: la cuenta necesita saldo) | [platform.openai.com](https://platform.openai.com/api-keys) |

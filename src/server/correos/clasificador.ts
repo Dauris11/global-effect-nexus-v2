@@ -85,7 +85,7 @@ export async function clasificarCarta(
               (SELECT ($2 * usd_entrada_mtok + $3 * usd_salida_mtok + $4 * usd_cache_lectura_mtok) / 1000000.0
                  FROM ai_precio_modelo WHERE modelo = $1)`,
       [
-        modelo,
+        respuesta.modelo ?? modelo,
         respuesta.usage.input_tokens,
         respuesta.usage.output_tokens,
         respuesta.usage.cache_read_input_tokens ?? 0,
