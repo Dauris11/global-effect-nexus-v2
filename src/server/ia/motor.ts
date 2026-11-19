@@ -1,12 +1,12 @@
 import {
-  ErrorGemini,
+  ErrorModelo,
   type BloqueLlamada,
   type BloqueResultado,
   type MensajeModelo,
   type ParametrosModelo,
   type RespuestaModelo,
 } from "@/lib/gemini";
-import { flujoGemini, hayClaveGemini } from "@/lib/gemini-cliente";
+import { flujoModelo, hayClaveIA } from "@/lib/modelo-ia";
 import type { UsoIA } from "@/lib/ia";
 import type { EventoTurno } from "@/lib/ia-eventos";
 import { envolverDatos } from "@/lib/ia-seguridad";
@@ -48,9 +48,9 @@ export type ProveedorModelo = (parametros: ParametrosModelo) => FlujoModelo;
 /** Tope de vueltas: un modelo que encadena herramientas sin parar no gasta sin límite. */
 const MAXIMO_PASOS = 6;
 
-/** Proveedor real (Gemini), o `null` si falta la clave. */
-export function proveedorGemini(): ProveedorModelo | null {
-  return hayClaveGemini() ? (parametros) => flujoGemini(parametros) : null;
+/** Proveedor real (OpenAI o Gemini, ver `modelo-ia.ts`), o `null` si falta la clave. */
+export function proveedorModelo(): ProveedorModelo | null {
+  return hayClaveIA() ? (parametros) => flujoModelo(parametros) : null;
 }
 
 export type ResultadoTurno = {
@@ -115,8 +115,8 @@ export async function ejecutarTurno({
       respuesta = await flujo.final();
     } catch (error) {
       // 429 de la capa gratuita: se distingue para decírselo a la persona.
-      if (error instanceof ErrorGemini && error.tipo === "limite") return { error: "limite" };
-      if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { error: "sin_clave" };
+      if (error instanceof ErrorModelo && error.tipo === "limite") return { error: "limite" };
+      if (error instanceof ErrorModelo && error.tipo === "sin_clave") return { error: "sin_clave" };
 
       throw error;
     }

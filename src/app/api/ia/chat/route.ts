@@ -13,8 +13,8 @@ import {
 import { prepararTurno } from "@/server/ia/contexto";
 import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import type { EventoFlujo } from "@/lib/ia-eventos";
-import { ejecutarTurno, proveedorGemini } from "@/server/ia/motor";
-import { modeloGemini } from "@/lib/gemini-cliente";
+import { ejecutarTurno, proveedorModelo } from "@/server/ia/motor";
+import { modeloIA } from "@/lib/modelo-ia";
 
 /**
  * Chat del asistente con respuesta en vivo.
@@ -75,7 +75,7 @@ export async function POST(peticion: NextRequest) {
     return NextResponse.json({ error: codigo }, { status: 429 });
   }
 
-  const proveedor = proveedorGemini();
+  const proveedor = proveedorModelo();
 
   if (!proveedor) return NextResponse.json({ error: "sin_clave" }, { status: 503 });
 
@@ -99,8 +99,8 @@ export async function POST(peticion: NextRequest) {
           conversacionId: turno.conversacionId,
           sistema: ensamblarSistema(turno.sistema, config.instrucciones),
           turnos: turno.turnos,
-          // Un modelo guardado que no sea de Gemini se ignora (ver `modeloGemini`).
-          modelo: modeloGemini(config.modelo),
+          // Un modelo guardado de otro proveedor se ignora (ver `modeloIA`).
+          modelo: modeloIA(config.modelo),
           maximoTokens: config.maximoTokens ?? MAXIMO_TOKENS,
           emitir,
         });

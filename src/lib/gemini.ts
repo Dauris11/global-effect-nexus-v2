@@ -72,14 +72,14 @@ export type RespuestaModelo = {
   usage: { input_tokens: number; output_tokens: number; cache_read_input_tokens?: number };
 };
 
-export type TipoErrorGemini = "limite" | "sin_clave" | "fallo";
+export type TipoErrorModelo = "limite" | "sin_clave" | "fallo";
 
-export class ErrorGemini extends Error {
+export class ErrorModelo extends Error {
   // Campo explícito y no «parameter property»: Node, al ejecutar las pruebas,
   // quita los tipos sin compilar y no admite esa sintaxis.
-  tipo: TipoErrorGemini;
+  tipo: TipoErrorModelo;
 
-  constructor(tipo: TipoErrorGemini, mensaje: string) {
+  constructor(tipo: TipoErrorModelo, mensaje: string) {
     super(mensaje);
     this.tipo = tipo;
   }
@@ -397,7 +397,7 @@ export class AnalizadorSse {
 // ── Errores ──────────────────────────────────────────────────────────────────
 
 /** Qué quiere decir un estado HTTP de Gemini para el resto del sistema. */
-export function clasificarErrorHttp(estado: number, cuerpo: string): TipoErrorGemini {
+export function clasificarErrorHttp(estado: number, cuerpo: string): TipoErrorModelo {
   if (estado === 429) return "limite";
   if (/API key not valid|API_KEY_INVALID|API key expired|API_KEY_/i.test(cuerpo)) return "sin_clave";
   if (estado === 401 || estado === 403) return "sin_clave";

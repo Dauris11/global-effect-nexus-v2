@@ -5,7 +5,7 @@ import {
   type VeredictoCorreo,
 } from "@/lib/correos-patrocinador";
 import type { HerramientaModelo } from "@/lib/gemini";
-import { hayClaveGemini, llamarGemini, modeloGemini } from "@/lib/gemini-cliente";
+import { hayClaveIA, llamarModelo, modeloIA } from "@/lib/modelo-ia";
 import { envolverDatos } from "@/lib/ia-seguridad";
 
 /**
@@ -57,13 +57,13 @@ export async function clasificarCarta(
   texto: string,
   idiomaDestino: "es" | "en",
 ): Promise<VeredictoCorreo | null> {
-  if (!hayClaveGemini()) return null;
+  if (!hayClaveIA()) return null;
 
   const inicio = Date.now();
-  const modelo = modeloGemini();
+  const modelo = modeloIA();
 
   try {
-    const respuesta = await llamarGemini({
+    const respuesta = await llamarModelo({
       model: modelo,
       max_tokens: 4096,
       system: SISTEMA,

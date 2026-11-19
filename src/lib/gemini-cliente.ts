@@ -4,7 +4,7 @@ import {
   AnalizadorSse,
   clasificarErrorHttp,
   construirPeticion,
-  ErrorGemini,
+  ErrorModelo,
   respuestaDeAcumulado,
   respuestaDeJson,
   type ParametrosModelo,
@@ -43,7 +43,7 @@ export function modeloGemini(solicitado?: string | null): string {
 async function peticion(parametros: ParametrosModelo, flujo: boolean): Promise<Response> {
   const clave = process.env.GEMINI_API_KEY?.trim();
 
-  if (!clave) throw new ErrorGemini("sin_clave", "Falta GEMINI_API_KEY");
+  if (!clave) throw new ErrorModelo("sin_clave", "Falta GEMINI_API_KEY");
 
   const operacion = flujo ? "streamGenerateContent?alt=sse" : "generateContent";
 
@@ -69,11 +69,11 @@ async function peticion(parametros: ParametrosModelo, flujo: boolean): Promise<R
       continue;
     }
 
-    throw new ErrorGemini(clasificarErrorHttp(respuesta.status, cuerpo), `Gemini ${respuesta.status}: ${cuerpo}`);
+    throw new ErrorModelo(clasificarErrorHttp(respuesta.status, cuerpo), `Gemini ${respuesta.status}: ${cuerpo}`);
   }
 }
 
-/** Una llamada completa, sin flujo. Lanza `ErrorGemini` con el tipo de fallo. */
+/** Una llamada completa, sin flujo. Lanza `ErrorModelo` con el tipo de fallo. */
 export async function llamarGemini(parametros: ParametrosModelo): Promise<RespuestaModelo> {
   return respuestaDeJson(await (await peticion(parametros, false)).json());
 }
@@ -93,7 +93,7 @@ export function flujoGemini(parametros: ParametrosModelo): {
       const respuesta = await peticion(parametros, true);
       const lector = respuesta.body?.getReader();
 
-      if (!lector) throw new ErrorGemini("fallo", "Gemini no devolvió flujo");
+      if (!lector) throw new ErrorModelo("fallo", "Gemini no devolvió flujo");
 
       const analizador = new AnalizadorSse();
       const decodificador = new TextDecoder();

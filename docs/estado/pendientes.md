@@ -1663,3 +1663,12 @@ módulo) — esto es solo la cola de pendientes concretos.
       sus productos; en el gratuito sí).
 - [ ] Poner `GEMINI_API_KEY` y `GEMINI_MODEL` en las variables de entorno de
       Vercel (cuenta personal) y redesplegar.
+
+- [x] Elly AI admite **OpenAI** además de Gemini (`src/lib/openai*.ts`,
+      `modelo-ia.ts`, variable `IA_PROVEEDOR`). Probado con respuestas simuladas
+      (`node --test scripts/probar-openai.mjs`). **En vivo no funcionó:** la cuenta
+      de OpenAI respondió `credit_balance_exhausted` (la API de OpenAI no es
+      gratis; hay que cargar saldo). Mientras tanto queda activo Gemini.
+- [ ] Para usar OpenAI: cargar saldo en la cuenta, poner `IA_PROVEEDOR=openai` y
+      correr `npx tsx scripts/probar-modelo-vivo.ts`. Para cambiar de proveedor
+      en Vercel basta cambiar esa variable y redesplegar.

@@ -864,6 +864,37 @@ real.
 
 ---
 
+## 19 nov 2026 — Elly AI con dos proveedores intercambiables (Gemini y OpenAI)
+
+**Petición.** Cambiar a una clave de OpenAI porque se necesitaba una IA con API
+gratuita para las pruebas.
+
+**Qué se encontró.** La clave de OpenAI es válida y su cuenta tiene `gpt-4o-mini`,
+pero responde `credit_balance_exhausted`: **la API de OpenAI no tiene capa
+gratuita**, hay que cargar saldo. En cambio Gemini sí la tiene.
+
+**Decisiones y por qué.**
+- Como las formas internas del asistente ya eran neutrales (mensajes,
+  herramientas, respuestas), se añadió un adaptador de OpenAI
+  (`src/lib/openai.ts` puro y `openai-cliente.ts`) y una puerta única
+  (`modelo-ia.ts`) que elige el proveedor con `IA_PROVEEDOR`. Cambiar de uno a
+  otro es una variable de entorno, no código; esto evita rehacer el trabajo cuando
+  llegue la clave definitiva, sea la que sea.
+- Diferencias de OpenAI atendidas: la respuesta de una herramienta es un mensaje
+  `tool` que debe seguir al del asistente; los argumentos llegan como texto por
+  trozos y se unen por índice; se usa `max_completion_tokens`; y un 429 puede ser
+  límite de frecuencia o falta de saldo (este último se trata como «no
+  configurado», porque esperar no lo arregla).
+- Se dejó **Gemini activo** (`IA_PROVEEDOR=gemini`) porque es el que funciona sin
+  pagar. OpenAI queda listo para activarse al cargar saldo.
+
+**Verificación.** 58 pruebas (`probar-openai`, `probar-gemini`, cartas, seguridad
+y 360), y `scripts/probar-modelo-vivo.ts` contra la API activa (Gemini: chat,
+llamada forzada y flujo correctos). **OpenAI en vivo: sin probar** por falta de
+saldo.
+
+---
+
 ## Pendiente de registrar (se completará al cerrar cada etapa)
 
 - Nada por registrar de las etapas 1 a 4: todas tienen su entrada. Las pruebas contra base real y navegador siguen pendientes (ver limitaciones de cada una).

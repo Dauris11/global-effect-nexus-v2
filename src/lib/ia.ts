@@ -1,16 +1,14 @@
-import { ErrorGemini } from "@/lib/gemini";
-import { hayClaveGemini, llamarGemini, modeloGemini } from "@/lib/gemini-cliente";
+import { ErrorModelo } from "@/lib/gemini";
+import { hayClaveIA, llamarModelo, modeloIA } from "@/lib/modelo-ia";
 
 /**
- * Cliente del modelo (Gemini) para los asistentes del sistema.
+ * Cliente del modelo para los asistentes del sistema.
  *
- * Se habla con la API REST de Gemini con `fetch` (ver `gemini-cliente.ts`): sin
- * paquete que mantener, y pasar de la capa gratuita a un plan de pago es la
- * misma API con facturación activada. El modelo sale de `GEMINI_MODEL`.
- *
- * ⚠ En la capa GRATUITA Google puede usar lo que se envía para mejorar sus
- * productos (y personas pueden revisarlo); en un plan de pago no. Todo lo que
- * pasa por aquí —notas del estudiante, cédulas, cartas— se envía a Google.
+ * Habla con OpenAI o con Gemini por REST con `fetch` (ver `modelo-ia.ts`): sin
+ * paquete que mantener, y cambiar de proveedor es una variable de entorno
+ * (`IA_PROVEEDOR`). Todo lo que pasa por aquí —notas del estudiante, cédulas,
+ * cartas— se envía a un tercero; en la capa GRATUITA de Gemini, además, Google
+ * puede usarlo para mejorar sus productos.
  *
  * Lo que este archivo NO hace: buscar en `fragmento_conocimiento` con
  * embeddings. Ese RAG es del sprint S11 y necesita un modelo de embeddings que
@@ -109,13 +107,13 @@ export async function conversar(
 ): Promise<RespuestaIA> {
   // Sin clave el chat se apaga solo y lo dice. Es el caso de un despliegue de
   // desarrollo con `.env.local` a medio llenar.
-  if (!hayClaveGemini()) return { estado: "sin_clave" };
+  if (!hayClaveIA()) return { estado: "sin_clave" };
 
-  const modelo = modeloGemini(opciones.modelo);
+  const modelo = modeloIA(opciones.modelo);
   const inicio = Date.now();
 
   try {
-    const respuesta = await llamarGemini({
+    const respuesta = await llamarModelo({
       model: modelo,
       max_tokens: opciones.maximoTokens ?? MAXIMO_TOKENS,
       system: sistema,
@@ -151,11 +149,11 @@ export async function conversar(
     // detalle del error de la API no le sirve de nada y puede filtrar datos.
     console.error("[ia] fallo al conversar", error);
 
-    if (error instanceof ErrorGemini && error.tipo === "limite") return { estado: "limite" };
+    if (error instanceof ErrorModelo && error.tipo === "limite") return { estado: "limite" };
 
     // Clave inválida = «no configurado», no fallo pasajero: decir «inténtalo de
     // nuevo» cuando ningún reintento va a funcionar deja a la gente en bucle.
-    if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { estado: "sin_clave" };
+    if (error instanceof ErrorModelo && error.tipo === "sin_clave") return { estado: "sin_clave" };
 
     return { estado: "fallo" };
   }
@@ -216,12 +214,12 @@ export async function leerDocumento(
   instrucciones: string,
   peticion: string,
 ): Promise<LecturaDocumento> {
-  if (!hayClaveGemini()) return { estado: "sin_clave" };
+  if (!hayClaveIA()) return { estado: "sin_clave" };
 
-  const modelo = modeloGemini();
+  const modelo = modeloIA();
 
   try {
-    const respuesta = await llamarGemini({
+    const respuesta = await llamarModelo({
       model: modelo,
       // Corto a propósito: la respuesta es un JSON de cuatro campos. Un techo
       // amplio no mejora una transcripción, solo da sitio a la invención.
@@ -256,7 +254,7 @@ export async function leerDocumento(
   } catch (error) {
     console.error("[ia] fallo al leer el documento", error);
 
-    if (error instanceof ErrorGemini && error.tipo === "sin_clave") return { estado: "sin_clave" };
+    if (error instanceof ErrorModelo && error.tipo === "sin_clave") return { estado: "sin_clave" };
 
     return { estado: "fallo" };
   }

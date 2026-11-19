@@ -33,7 +33,7 @@
 | **Resend** | Envío de correos (notificaciones de tareas, patrocinadores) | `RESEND_API_KEY`, `RESEND_FROM` |
 | **n8n** | Webhooks a CRM / orquestación de notificaciones | `N8N_WEBHOOK_URL` |
 | **GENIALiA** | CRM institucional (sincronización de contactos/leads vía n8n) | (a través de n8n) |
-| **Gemini (Google)** | Elly AI: chat con herramientas, OCR de expedientes y revisión/traducción de cartas, por REST con `fetch` (`src/lib/gemini*.ts`, sin SDK) | `GEMINI_API_KEY`, `GEMINI_MODEL` |
+| **IA (OpenAI o Gemini)** | Elly AI: chat con herramientas, OCR de expedientes y revisión/traducción de cartas, por REST con `fetch`, sin SDK. `src/lib/modelo-ia.ts` elige el proveedor con `IA_PROVEEDOR` (`gemini` por ahora: capa gratuita; `openai` listo, requiere saldo) | `IA_PROVEEDOR`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OPENAI_API_KEY`, `OPENAI_MODEL` |
 
 Plantilla completa en [`.env.example`](../.env.example).
 
