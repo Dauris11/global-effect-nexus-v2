@@ -326,6 +326,9 @@ export type MateriaDelDocente = {
   /** Matriculados activos en la materia y tareas que tiene puestas. */
   inscritos: number;
   tareas: number;
+  /** Inscritos con nota final registrada y promedio de la materia. */
+  con_nota: number;
+  promedio: number | null;
 };
 
 /**
@@ -353,7 +356,16 @@ export async function materiasDelDocente(
               WHERE i.materia_id = m.id
                 AND i.estado <> 'retirada') AS inscritos,
             (SELECT count(*)::int FROM asignacion a WHERE a.materia_id = m.id
-                                                      AND a.tipo IN ('tarea', 'examen')) AS tareas
+                                                      AND a.tipo IN ('tarea', 'examen')) AS tareas,
+            (SELECT count(*)::int
+               FROM inscripcion i
+              WHERE i.materia_id = m.id
+                AND i.estado <> 'retirada'
+                AND i.nota_final IS NOT NULL) AS con_nota,
+            (SELECT round(avg(i.nota_final), 2)::float8
+               FROM inscripcion i
+              WHERE i.materia_id = m.id
+                AND i.estado <> 'retirada') AS promedio
        FROM materia m
        LEFT JOIN periodo p ON p.id = m.periodo_id
       WHERE ($1::uuid IS NULL OR m.profesor_usuario_id = $1)
@@ -370,28 +382,85 @@ export type InscritoEnMateria = {
   periodo: string | null;
   periodo_id: string;
   nota_final: number | null;
+  /** Nota final sugerida con las tareas evaluables de la materia (`calcularNotaFinal`). */
+  notaPropuesta: number | null;
+  entregadas: number;
+  tareas: number;
 };
 
-/** Estudiantes inscritos en una materia asignada al docente. */
+type FilaInscritoMateria = Omit<
+  InscritoEnMateria,
+  "notaPropuesta" | "entregadas" | "tareas"
+>;
+
+/** Las tareas evaluables de cada inscripción en una materia asignada. */
+async function tareasPorInscripcionMateria(
+  materiaId: string,
+): Promise<Map<string, FilaTareaDeInscrito[]>> {
+  const tareas = await consultar<FilaTareaDeInscrito>(
+    `SELECT i.id AS inscripcion_id,
+            a.tipo::text AS tipo,
+            a.peso::float8 AS peso,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            a.fecha_vencimiento,
+            d.calificacion::float8 AS calificacion,
+            coalesce(d.estado IN ('entregado', 'tarde', 'calificado'), false) AS entregada
+       FROM inscripcion i
+       JOIN asignacion a
+         ON a.materia_id = i.materia_id
+        AND a.tipo IN ('tarea', 'examen')
+        AND (a.periodo_id IS NULL OR a.periodo_id = i.periodo_id)
+       LEFT JOIN entrega_estudiante d
+         ON d.asignacion_id = a.id AND d.estudiante_id = i.estudiante_id
+      WHERE i.materia_id = $1
+        AND i.estado <> 'retirada'`,
+    [materiaId],
+  );
+
+  const porInscripcion = new Map<string, FilaTareaDeInscrito[]>();
+  for (const tarea of tareas) {
+    const lista = porInscripcion.get(tarea.inscripcion_id) ?? [];
+    lista.push(tarea);
+    porInscripcion.set(tarea.inscripcion_id, lista);
+  }
+
+  return porInscripcion;
+}
+
+/** Estudiantes inscritos en una materia asignada al docente, con avance y nota propuesta. */
 export async function inscritosDeMateria(
   materiaId: string,
 ): Promise<InscritoEnMateria[]> {
-  return consultar<InscritoEnMateria>(
-    `SELECT i.id,
-            e.id AS estudiante_id,
-            e.nombre,
-            i.estado::text AS estado,
-            p.nombre AS periodo,
-            i.periodo_id,
-            i.nota_final::float8 AS nota_final
-       FROM inscripcion i
-       JOIN estudiante e ON e.id = i.estudiante_id
-       LEFT JOIN periodo p ON p.id = i.periodo_id
-      WHERE i.materia_id = $1
-        AND i.estado <> 'retirada'
-      ORDER BY e.nombre`,
-    [materiaId],
-  );
+  const [inscritos, porInscripcion] = await Promise.all([
+    consultar<FilaInscritoMateria>(
+      `SELECT i.id,
+              e.id AS estudiante_id,
+              e.nombre,
+              i.estado::text AS estado,
+              p.nombre AS periodo,
+              i.periodo_id,
+              i.nota_final::float8 AS nota_final
+         FROM inscripcion i
+         JOIN estudiante e ON e.id = i.estudiante_id
+         LEFT JOIN periodo p ON p.id = i.periodo_id
+        WHERE i.materia_id = $1
+          AND i.estado <> 'retirada'
+        ORDER BY e.nombre`,
+      [materiaId],
+    ),
+    tareasPorInscripcionMateria(materiaId),
+  ]);
+
+  return inscritos.map((inscrito) => {
+    const suyas = porInscripcion.get(inscrito.id) ?? [];
+
+    return {
+      ...inscrito,
+      notaPropuesta: proponer(suyas),
+      entregadas: suyas.filter((t) => t.entregada).length,
+      tareas: suyas.length,
+    };
+  });
 }
 
 /** Asignaciones publicadas en cada materia universitaria asignada al docente. */
@@ -436,6 +505,8 @@ export async function entregasDeMaterias(
   return consultar<EntregaPorRevisar & { asignacion_id: string }>(
     `SELECT d.id,
             d.asignacion_id,
+            a.materia_id,
+            a.materia_360_id,
             a.titulo AS asignacion,
             m.nombre AS unidad,
             e.nombre AS estudiante,
@@ -460,6 +531,8 @@ export async function entregasDeMaterias(
 export type EntregaPorRevisar = {
   id: string;
   asignacion_id?: string;
+  materia_id?: string | null;
+  materia_360_id?: string | null;
   asignacion: string;
   unidad: string;
   estudiante: string;
@@ -487,6 +560,8 @@ export async function entregasDeClases360(
   return consultar<EntregaPorRevisar & { asignacion_id: string }>(
     `SELECT d.id,
             d.asignacion_id,
+            a.materia_id,
+            a.materia_360_id,
             a.titulo AS asignacion,
             m3.nombre AS unidad,
             e.nombre AS estudiante,
@@ -521,6 +596,9 @@ export async function entregasPorRevisar(
 ): Promise<EntregaPorRevisar[]> {
   return consultar<EntregaPorRevisar>(
     `SELECT d.id,
+            d.asignacion_id,
+            a.materia_id,
+            a.materia_360_id,
             a.titulo AS asignacion,
             coalesce(mu.nombre, m3.nombre, '—') AS unidad,
             e.nombre AS estudiante,

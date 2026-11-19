@@ -119,9 +119,12 @@ export default async function PaginaClases360({
 
   // Un enlace firmado por entrega. Se piden en paralelo: son llamadas HTTP a
   // Storage y encadenarlas sumaría una ida y vuelta por cada una.
+  const entregas360Pendientes = entregasBrutas.filter(
+    (e) => e.materia_360_id != null,
+  );
   const [entregas, todasEntregas] = await Promise.all([
     Promise.all(
-      entregasBrutas.map(async (entrega) => ({
+      entregas360Pendientes.map(async (entrega) => ({
         ...entrega,
         enlace: await enlaceDeDocumento(entrega.archivo_url),
       })),

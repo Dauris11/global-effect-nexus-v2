@@ -94,11 +94,20 @@ export default async function PortalProfesor({
     ]);
 
   // Las notas puestas no están en `cifrasDocente` y no hace falta otra
-  // consulta: cada clase ya trae las suyas y sumarlas aquí es gratis.
-  const notas = clases.reduce((total, clase) => total + clase.con_nota, 0);
+  // consulta: cada clase 360 y materia asignada ya trae las suyas.
+  const notas =
+    clases.reduce((total, clase) => total + clase.con_nota, 0) +
+    materias.reduce((total, materia) => total + materia.con_nota, 0);
 
   const activas = clases.filter((clase) => clase.activa);
   const vacio = materias.length === 0 && clases.length === 0;
+
+  const enlaceRevision = (entrega: (typeof entregas)[number]) =>
+    entrega.materia_id
+      ? `/portal/profesor/materias?materia=${entrega.materia_id}&accion=publicaciones#materia-${entrega.materia_id}`
+      : entrega.materia_360_id
+        ? `/academico/clases-360?clase=${entrega.materia_360_id}&accion=publicaciones#clase-${entrega.materia_360_id}`
+        : "/academico/clases-360";
 
   return (
     <div className="animate-entrada space-y-6">
@@ -153,7 +162,7 @@ export default async function PortalProfesor({
                     </span>
                   </div>
                   <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs text-marca-600 hover:text-marca-700">
-                    <Link href="/academico/clases-360">
+                    <Link href={enlaceRevision(entrega)}>
                       {t("reviewSubmission")}
                     </Link>
                   </Button>
@@ -350,24 +359,42 @@ export default async function PortalProfesor({
                             <span>
                               {tAcad("subjects.tasks")}: <b>{materia.tareas}</b>
                             </span>
+                            <span>
+                              {t("gradesCount", { count: materia.con_nota })}
+                            </span>
+                            <span>
+                              {materia.promedio === null
+                                ? t("noGradesYet")
+                                : t("averageShort", {
+                                    value: materia.promedio.toFixed(1),
+                                  })}
+                            </span>
                           </p>
                         </div>
 
                         <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                           <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia`}>
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia#materia-${materia.id}`}>
                               <CalendarCheck className="size-3.5" />
                               {t("takeAttendance")}
                             </Link>
                           </Button>
                           <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea`}>
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea#materia-${materia.id}`}>
                               <ClipboardList className="size-3.5" />
                               {t("assignTask")}
                             </Link>
                           </Button>
+                          {materia.tareas > 0 && (
+                            <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                              <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=publicaciones#materia-${materia.id}`}>
+                                <ClipboardList className="size-3.5" />
+                                {t("viewPosts")} ({materia.tareas})
+                              </Link>
+                            </Button>
+                          )}
                           <Button asChild size="sm" variant="ghost" className="h-8 text-xs text-marca-600 hover:text-marca-700">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos`}>
+                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos#materia-${materia.id}`}>
                               {t("manageClass")}
                             </Link>
                           </Button>

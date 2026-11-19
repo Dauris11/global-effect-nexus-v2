@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { registrar } from "@/lib/auditoria";
-import { requerirPermiso, requerirRol } from "@/lib/auth";
+import { requerirRol, requerirUsuario } from "@/lib/auth";
 import { consultar, consultarUna, enTransaccion } from "@/lib/db";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { MAXIMO_ENTREGA, subirEntrega } from "@/lib/supabase/almacen";
@@ -252,7 +252,14 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function calificarEntregaMoodleAction(
   datos: FormData,
 ): Promise<ResultadoMoodle> {
-  const usuario = await requerirPermiso("calificaciones.registrar");
+  const usuario = await requerirUsuario();
+  if (
+    !usuarioTienePermiso(usuario, "calificaciones.registrar") &&
+    !usuarioTienePermiso(usuario, "docencia.impartir") &&
+    !usuarioTienePermiso(usuario, "academico.escribir")
+  ) {
+    return { ok: false, mensaje: "no_existe" };
+  }
 
   const entregaId = String(datos.get("entrega_id") ?? "").trim();
   const calificacion = parseFloat(String(datos.get("calificacion") ?? "0"));
@@ -368,6 +375,7 @@ export async function calificarEntregaMoodleAction(
     });
 
     revalidatePath("/[locale]/portal/profesor", "page");
+    revalidatePath("/[locale]/portal/profesor/materias", "page");
     revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
     revalidatePath("/[locale]/academico/clases-360", "page");
 

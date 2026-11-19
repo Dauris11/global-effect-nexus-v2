@@ -630,6 +630,18 @@ intactos los módulos asignados a Dauris (**Habitudes**, **Contabilidad**,
    arribo estimado (ETA) y filtros de enfoque rápido por universidad. Asimismo,
    el logo e isotipo de `sidebar.tsx` y `topbar.tsx` quedaron estáticos y no
    cliqueables en todos los portales.
+7. *Persistencia de foto de perfil y pulido integral del Portal Docente.*
+   En `formulario-perfil.tsx` y `acciones.ts`, cualquier imagen seleccionada se
+   normaliza en cliente con `<canvas>` (`360×360` JPEG) y se conserva en estado de
+   React durante el envío, subiéndose al bucket `avatares` con versión `?v=` y
+   sincronizando `estudiante.foto_url`. En el Portal Docente (`/portal/profesor`,
+   `/portal/profesor/materias` y `/academico/clases-360`), se separaron las
+   bandejas de entregas pendientes de 360 y de materias asignadas, se añadieron
+   deep-links exactos desde el inicio del profesor, se completó el formulario de
+   tareas de materias con enlace de recurso y rúbrica, se añadió el cálculo de
+   cumplimiento y nota propuesta (`calcularNotaFinal`) con botón «Usar propuesta»
+   en `inscritosDeMateria`, y se integraron en `notasDelEstudiante` las notas
+   finales cerradas por el docente en `inscripcion`.
 
 **Reparto de trabajo en GitHub (para coordinación con Dauris).**
 - **Hecho por Gabriela en esta entrega:** Portal del Estudiante, Portal Docente y

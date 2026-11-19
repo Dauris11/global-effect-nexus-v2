@@ -171,20 +171,48 @@ export async function notasDelEstudiante(
     letra: string | null;
     gpa: number | null;
   }>(
-    // periodo_id sale del periodo que se llame igual que el cuatrimestre, y solo
-    // cae al texto si no existe, para que un cuatrimestre acabe en un único grupo.
-    `SELECT h.id::text AS id,
-            h.nota_numerica::float8 AS nota,
-            'universidad' AS origen,
-            h.materia AS materia,
-            h.cuatrimestre AS periodo,
-            coalesce(p.id::text, h.cuatrimestre) AS periodo_id,
-            h.nota_letra AS letra,
-            h.gpa::float8 AS gpa
-       FROM historial_calificacion h
-       LEFT JOIN periodo p ON p.nombre = h.cuatrimestre
-      WHERE h.estudiante_id = $1
-      ORDER BY h.cuatrimestre DESC, h.materia`,
+    // Une el historial universitario cerrado con las materias asignadas cuya
+    // nota final ya cerró el docente en `inscripcion`, evitando duplicados si
+    // coordinación ya volcó esa misma materia y período a `historial_calificacion`.
+    `SELECT id, nota, origen, materia, periodo, periodo_id, letra, gpa
+       FROM (
+         SELECT h.id::text AS id,
+                h.nota_numerica::float8 AS nota,
+                'universidad' AS origen,
+                h.materia AS materia,
+                h.cuatrimestre AS periodo,
+                coalesce(p.id::text, h.cuatrimestre) AS periodo_id,
+                h.nota_letra AS letra,
+                h.gpa::float8 AS gpa
+           FROM historial_calificacion h
+           LEFT JOIN periodo p ON p.nombre = h.cuatrimestre
+          WHERE h.estudiante_id = $1
+
+         UNION ALL
+
+         SELECT i.id::text AS id,
+                i.nota_final::float8 AS nota,
+                'universidad' AS origen,
+                m.nombre AS materia,
+                coalesce(p.nombre, 'Actual') AS periodo,
+                coalesce(p.id::text, 'actual') AS periodo_id,
+                NULL::text AS letra,
+                NULL::float8 AS gpa
+           FROM inscripcion i
+           JOIN materia m ON m.id = i.materia_id
+           LEFT JOIN periodo p ON p.id = i.periodo_id
+          WHERE i.estudiante_id = $1
+            AND i.nota_final IS NOT NULL
+            AND i.estado IN ('aprobada', 'reprobada')
+            AND NOT EXISTS (
+              SELECT 1
+                FROM historial_calificacion h
+               WHERE h.estudiante_id = i.estudiante_id
+                 AND lower(h.materia) = lower(m.nombre)
+                 AND (p.nombre IS NULL OR h.cuatrimestre = p.nombre)
+            )
+       ) notas_carrera
+      ORDER BY periodo DESC, materia`,
     [estudianteId],
   );
 
