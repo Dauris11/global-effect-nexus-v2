@@ -385,7 +385,7 @@ export async function mayorGeneral(f: FiltroLibros): Promise<FilaMayor[]> {
        SELECT m.id AS mayor_id, m.codigo AS mayor_codigo, m.nombre AS mayor_nombre, am.ruta,
               h.id, h.codigo, h.nombre,
               coalesce(v.debe, 0) AS debe, coalesce(v.haber, 0) AS haber,
-              CASE WHEN h.tipo IN ('activo', 'gasto')
+              CASE WHEN coalesce(h.naturaleza, CASE WHEN h.tipo IN ('activo', 'gasto') THEN 'deudora' ELSE 'acreedora' END) = 'deudora'
                    THEN coalesce(v.debe_total, 0) - coalesce(v.haber_total, 0)
                    ELSE coalesce(v.haber_total, 0) - coalesce(v.debe_total, 0) END AS saldo,
               (v.debe_total <> 0 OR v.haber_total <> 0) IS TRUE AS con_algo

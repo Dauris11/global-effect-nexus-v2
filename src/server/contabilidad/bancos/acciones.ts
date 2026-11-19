@@ -217,33 +217,72 @@ export async function conciliarPartida(_previo: EstadoBanco, datos: FormData): P
 
   const cuenta = texto(datos, "cuenta", 40);
   const extracto = texto(datos, "extracto", 40);
-  const linea = texto(datos, "linea", 40);
-  if (!esUuid(cuenta) || !esUuid(extracto) || !esUuid(linea)) return { estado: "datos_invalidos" };
+
+  // Soporta una o varias líneas (conciliación 1-a-1 y 1-a-varios)
+  const lineasEntrada = datos.getAll("linea").concat(datos.getAll("lineas")).map((v) => String(v).trim()).filter(Boolean);
+  const lineas = Array.from(new Set(lineasEntrada));
+
+  if (!esUuid(cuenta) || !esUuid(extracto) || lineas.length === 0 || lineas.some((l) => !esUuid(l))) {
+    return { estado: "datos_invalidos" };
+  }
 
   try {
     await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       await fijarAccion(cliente, "conciliar");
-      const { rows } = await cliente.query<{ cuadra: boolean }>(
-        `SELECT e.monto = (l.debe - l.haber) AS cuadra
+
+      // 1. Bloquear y verificar el extracto (que no esté ya conciliado)
+      const { rows: extractos } = await cliente.query<{ id: string; monto: string }>(
+        `SELECT e.id, e.monto::text AS monto
            FROM contabilidad.extracto_linea e
-           JOIN contabilidad.cuenta_bancaria cb ON cb.id = e.cuenta_id
-           JOIN contabilidad.asiento_linea l ON l.id = $3 AND l.cuenta_id = cb.cuenta_contable_id
+          WHERE e.id = $1 AND e.cuenta_id = $2
+            AND NOT EXISTS (
+              SELECT 1 FROM contabilidad.conciliacion_partida p
+               WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+            )
+          FOR UPDATE`,
+        [extracto, cuenta],
+      );
+      if (!extractos[0]) throw new RechazoBanco("datos_invalidos");
+      const extractoFila = extractos[0];
+
+      // 2. Bloquear y verificar las líneas de asiento
+      const { rows: filasAsiento } = await cliente.query<{ id: string; monto: string }>(
+        `SELECT l.id, (l.debe - l.haber)::text AS monto
+           FROM contabilidad.asiento_linea l
+           JOIN contabilidad.cuenta_bancaria cb ON cb.id = $1 AND l.cuenta_id = cb.cuenta_contable_id
            JOIN contabilidad.asiento a ON a.id = l.asiento_id AND NOT a.anulado
-          WHERE e.id = $2 AND e.cuenta_id = $1
-            AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
-                             WHERE p.anulado_en IS NULL
-                               AND (p.extracto_linea_id = e.id OR p.asiento_linea_id = l.id))
-            FOR UPDATE OF e, l`,
-        [cuenta, extracto, linea],
+          WHERE l.id = ANY($2::uuid[])
+            AND NOT EXISTS (
+              SELECT 1 FROM contabilidad.conciliacion_partida p
+               WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL
+            )
+          FOR UPDATE OF l`,
+        [cuenta, lineas],
       );
-      if (!rows[0]) throw new RechazoBanco("datos_invalidos");
-      if (!rows[0].cuadra) throw new RechazoBanco("montos_distintos");
-      await cliente.query(
-        `INSERT INTO contabilidad.conciliacion_partida
-           (cuenta_id, extracto_linea_id, asiento_linea_id, conciliado_por)
-         VALUES ($1, $2, $3, $4)`,
-        [cuenta, extracto, linea, usuario.id],
+
+      if (filasAsiento.length !== lineas.length) throw new RechazoBanco("datos_invalidos");
+
+      // 3. Comprobar que la suma de las líneas de asiento sea exactamente igual al monto del extracto
+      const sumaAsientos = filasAsiento.reduce((acc, f) => acc + Number(f.monto), 0);
+      const montoExtracto = Number(extractoFila.monto);
+      if (Math.abs(sumaAsientos - montoExtracto) > 0.005) {
+        throw new RechazoBanco("montos_distintos");
+      }
+
+      // 4. Insertar todas las partidas en el mismo grupo de conciliación
+      const { rows: [grupo] } = await cliente.query<{ id: string }>(
+        `SELECT gen_random_uuid() AS id`
       );
+      const grupoId = grupo.id;
+
+      for (const lineaId of lineas) {
+        await cliente.query(
+          `INSERT INTO contabilidad.conciliacion_partida
+             (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [cuenta, extracto, lineaId, grupoId, usuario.id],
+        );
+      }
     });
     refrescar();
     return { estado: "ok" };
@@ -267,7 +306,11 @@ export async function anularPartida(_previo: EstadoBanco, datos: FormData): Prom
       await cliente.query(
         `UPDATE contabilidad.conciliacion_partida
             SET anulado_en = now(), anulado_por = $2
-          WHERE id = $1 AND anulado_en IS NULL`,
+          WHERE grupo_id = (
+            SELECT coalesce(grupo_id, id)
+              FROM contabilidad.conciliacion_partida
+             WHERE id = $1
+          ) AND anulado_en IS NULL`,
         [id, usuario.id],
       );
     });

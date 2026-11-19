@@ -207,6 +207,8 @@ export async function obtenerBalanceGeneral(filtros?: {
     codigo: string;
     nombre: string;
     tipo: "activo" | "pasivo" | "patrimonio" | "ingreso" | "gasto";
+    naturaleza?: "deudora" | "acreedora";
+    es_compensatoria?: boolean;
     padre_id: string | null;
     admite_movimiento: boolean;
     total_debe: string;
@@ -217,6 +219,8 @@ export async function obtenerBalanceGeneral(filtros?: {
        c.codigo,
        c.nombre,
        c.tipo,
+       coalesce(c.naturaleza, CASE WHEN c.tipo IN ('activo', 'gasto') THEN 'deudora' ELSE 'acreedora' END) AS naturaleza,
+       coalesce(c.es_compensatoria, false) AS es_compensatoria,
        c.padre_id,
        c.admite_movimiento,
        -- FILTER: el LEFT JOIN al asiento no descarta la línea cuando su
@@ -230,7 +234,7 @@ export async function obtenerBalanceGeneral(filtros?: {
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha <= $1
        ${filtroExtra}
-     GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.padre_id, c.admite_movimiento
+     GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.naturaleza, c.es_compensatoria, c.padre_id, c.admite_movimiento
      ORDER BY c.codigo ASC`,
     params,
   );
@@ -261,8 +265,8 @@ export async function obtenerBalanceGeneral(filtros?: {
 
     let saldo = 0;
     if (r.tipo === "activo") {
-      // Depreciación acumulada u otras reguladoras de activo se restan
-      if (r.codigo.startsWith("1.2.09") || r.codigo.startsWith("1.2.01.02")) {
+      // Cuentas compensatorias/reguladoras de activo (ej. depreciación acumulada) restan en el activo
+      if (r.es_compensatoria || r.naturaleza === "acreedora" || r.codigo.startsWith("1.2.09") || r.codigo.startsWith("1.2.01.02")) {
         saldo = -(haber - debe); // Presentación negativa en activo
       } else {
         saldo = debe - haber;

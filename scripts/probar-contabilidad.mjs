@@ -497,6 +497,47 @@ async function probarConciliacion(usuarioId) {
     } else {
       fallar("(l3) re-conciliar tras anular", `rowCount=${reConciliada.rowCount}`);
     }
+
+    // 5. Conciliación 1-a-varios: un extracto admite múltiples líneas de asiento en el mismo grupo
+    const { rows: lineasExtra } = await c.query(
+      `SELECT id FROM contabilidad.asiento_linea
+        WHERE id <> $1
+        LIMIT 2`,
+      [lineaAsiento.id],
+    );
+    if (lineasExtra.length >= 2) {
+      const { rows: [extMulti] } = await c.query(
+        `INSERT INTO contabilidad.extracto_linea
+           (cuenta_id, fecha, descripcion, referencia, monto, clave, importado_por)
+         VALUES ($1, CURRENT_DATE, 'DEPOSITO MULTIPLE 1-N', 'REF-1N-0086', 5000.00, 'ref:test-1n-0086', $2)
+         RETURNING id`,
+        [cuenta.id, usuarioId],
+      );
+      const { rows: [grupoRow] } = await c.query(`SELECT gen_random_uuid() AS id`);
+      const grupoTest = grupoRow.id;
+      await c.query(
+        `INSERT INTO contabilidad.conciliacion_partida
+           (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [cuenta.id, extMulti.id, lineasExtra[0].id, grupoTest, usuarioId],
+      );
+      await c.query(
+        `INSERT INTO contabilidad.conciliacion_partida
+           (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [cuenta.id, extMulti.id, lineasExtra[1].id, grupoTest, usuarioId],
+      );
+      const { rows: [conteoGrupo] } = await c.query(
+        `SELECT count(*)::int AS total FROM contabilidad.conciliacion_partida
+          WHERE grupo_id = $1 AND anulado_en IS NULL`,
+        [grupoTest],
+      );
+      if (conteoGrupo.total === 2) {
+        pasar("(l4) conciliación uno-a-varios admite múltiples líneas en un mismo extracto y grupo");
+      } else {
+        fallar("(l4) conciliación uno-a-varios", `total=${conteoGrupo.total}`);
+      }
+    }
   });
 }
 

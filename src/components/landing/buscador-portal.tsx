@@ -2,6 +2,7 @@
 
 import {
   BookOpen,
+  Bus,
   ChevronRight,
   DollarSign,
   GraduationCap,
@@ -39,6 +40,7 @@ import { cn } from "@/lib/utils";
 const ICONOS = {
   portal: LogIn,
   comida: UtensilsCrossed,
+  transporte: Bus,
   solicitudes: Inbox,
   estudiantes: GraduationCap,
   profesores: BookOpen,

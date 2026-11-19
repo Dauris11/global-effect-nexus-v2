@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Menu, UtensilsCrossed, X } from "lucide-react";
+import { Bus, Menu, UtensilsCrossed, X } from "lucide-react";
 
 import {
   BuscadorPortal,
@@ -47,6 +47,7 @@ export function Navbar({
   roles: readonly DestinoPortal[];
   textos: {
     comida: string;
+    transporte: string;
     acceder: string;
     abrirMenu: string;
     cerrarMenu: string;
@@ -135,6 +136,14 @@ export function Navbar({
             {textos.comida}
           </Link>
 
+          <Link
+            href="/transporte"
+            className="hidden h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:flex"
+          >
+            <Bus className="size-4" />
+            {textos.transporte}
+          </Link>
+
           <Button asChild>
             <Link href="/login">{textos.acceder}</Link>
           </Button>
@@ -177,6 +186,15 @@ export function Navbar({
                 >
                   <UtensilsCrossed className="size-4" />
                   {textos.comida}
+                </Link>
+
+                <Link
+                  href="/transporte"
+                  onClick={() => setAbierto(false)}
+                  className="flex h-11 items-center gap-2 px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                >
+                  <Bus className="size-4" />
+                  {textos.transporte}
                 </Link>
               </nav>
             )}
