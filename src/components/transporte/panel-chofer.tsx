@@ -104,6 +104,7 @@ export function PanelChofer({
             lng,
             rumbo,
             velocidadKmh: velocidad,
+            precisionM: pos.coords.accuracy,
           });
         }
       },

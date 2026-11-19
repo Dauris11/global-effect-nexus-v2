@@ -63,6 +63,7 @@ export function MapaTransporteCliente({
   const marcadorGuaguaRef = useRef<L.Marker | null>(null);
   const capaRutaCasingRef = useRef<L.Polyline | null>(null);
   const capaRutaLineaRef = useRef<L.Polyline | null>(null);
+  const capaRecorridoRef = useRef<L.Polyline | null>(null);
   const marcadorInsigniaRutaRef = useRef<L.Marker | null>(null);
   const marcadoresParadasRef = useRef<Map<string, L.Marker>>(new Map());
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
@@ -503,6 +504,34 @@ export function MapaTransporteCliente({
     // Solo re-creamos capas base cuando cambian las paradas o la vivienda
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paradas, vivienda, geoCoords]);
+
+  // Recorrido real (GPS) sobre el trazado institucional. Va aparte de la capa
+  // de ruta para repintarse con cada sondeo sin reconstruir paradas.
+  const recorrido = viaje?.recorrido;
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa) return;
+
+    if (!recorrido || recorrido.length < 2) {
+      capaRecorridoRef.current?.remove();
+      capaRecorridoRef.current = null;
+      return;
+    }
+
+    if (capaRecorridoRef.current) {
+      capaRecorridoRef.current.setLatLngs(recorrido);
+      return;
+    }
+    capaRecorridoRef.current = L.polyline(recorrido, {
+      color: TINTA,
+      weight: 3,
+      opacity: 0.85,
+      dashArray: "2 6",
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: false,
+    }).addTo(mapa);
+  }, [recorrido, paradas]);
 
   // 3. Actualizar dinámicamente las etiquetas de ETA en los nodos de parada cada segundo
   useEffect(() => {

@@ -139,12 +139,13 @@ export async function obtenerViajePorId(
   );
   if (!viaje) return null;
 
-  const [incidencias, paradas] = await Promise.all([
+  const [incidencias, paradas, recorrido] = await Promise.all([
     incidenciasDelViaje(viaje.id),
     paradasDelHorario(viaje.horario_id),
+    recorridoDelViaje(viaje.id),
   ]);
 
-  return { ...viaje, incidencias, paradas };
+  return { ...viaje, incidencias, paradas, recorrido };
 }
 
 /**
@@ -391,4 +392,26 @@ export async function invitadosDeUsuario(
       ORDER BY d.fecha, h.hora_salida, d.nombre_beneficiario`,
     [usuarioId],
   );
+}
+
+/**
+ * Recorrido real de un viaje, en orden. Se limita a los últimos puntos porque
+ * el mapa lo sondea cada 4 s y un viaje largo acumula miles.
+ */
+export async function recorridoDelViaje(
+  viajeId: string,
+  limite = 1500,
+): Promise<[number, number][]> {
+  const filas = await consultar<{ lat: number; lng: number }>(
+    `SELECT lat, lng FROM (
+       SELECT lat::float8 AS lat, lng::float8 AS lng, registrado_en
+         FROM transporte_posicion
+        WHERE viaje_id = $1
+        ORDER BY registrado_en DESC
+        LIMIT $2
+     ) ultimos
+     ORDER BY registrado_en`,
+    [viajeId, limite],
+  );
+  return filas.map((f) => [f.lat, f.lng]);
 }

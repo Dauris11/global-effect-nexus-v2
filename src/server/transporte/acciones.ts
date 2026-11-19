@@ -357,6 +357,8 @@ export async function actualizarPosicionViaje(datos: {
   lng: number;
   rumbo?: number;
   velocidadKmh?: number;
+  /** Precisión del GPS en metros (`coords.accuracy`). */
+  precisionM?: number;
   paradaActualId?: string | null;
 }): Promise<{ ok: boolean }> {
   const usuario = await requerirPermiso("transporte.operar");
@@ -392,6 +394,29 @@ export async function actualizarPosicionViaje(datos: {
         usuario.id,
       ],
     );
+
+    if (fila) {
+      // El tope de 5 s se aplica aquí y no en el cliente: así un dispositivo
+      // modificado no puede inflar el historial.
+      await consultarUna(
+        `INSERT INTO transporte_posicion
+           (viaje_id, lat, lng, precision_m, rumbo, velocidad_kmh)
+         SELECT $1, $2, $3, $4, $5, $6
+          WHERE NOT EXISTS (
+            SELECT 1 FROM transporte_posicion
+             WHERE viaje_id = $1
+               AND registrado_en > now() - interval '5 seconds')
+         RETURNING id`,
+        [
+          datos.viajeId,
+          datos.lat,
+          datos.lng,
+          Number.isFinite(datos.precisionM) ? datos.precisionM : null,
+          datos.rumbo ?? null,
+          datos.velocidadKmh ?? null,
+        ],
+      );
+    }
 
     return { ok: Boolean(fila) };
   } catch (error) {

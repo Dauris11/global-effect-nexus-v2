@@ -69,6 +69,8 @@ export type TransporteViaje = {
   iniciado_en: string | null;
   finalizado_en: string | null;
   incidencias?: TransporteIncidencia[];
+  /** Puntos GPS reales [lat, lng] en orden; los últimos si el viaje es largo. */
+  recorrido?: [number, number][];
 };
 
 export type TransporteInscripcionRecurrente = {
