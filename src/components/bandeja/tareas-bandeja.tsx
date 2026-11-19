@@ -1,26 +1,18 @@
-import { CalendarClock, FolderKanban, ListTodo } from "lucide-react";
+import { ListTodo } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { TarjetaBandeja } from "@/components/bandeja/tarjeta-bandeja";
-import { Badge } from "@/components/ui/badge";
-import { Dato, FilaDatos } from "@/components/ui/dato";
-import { EstadoVacio } from "@/components/ui/estado-vacio";
-import { Link } from "@/i18n/navigation";
+import { TareasBandejaInteractiva } from "@/components/bandeja/tareas-bandeja-interactiva";
 import type { Locale } from "@/i18n/routing";
-import { fechaCorta } from "@/lib/fechas";
-import { PRIORIDAD } from "@/lib/paleta";
 import type { TareaTorre } from "@/lib/torre-control";
-import { cn } from "@/lib/utils";
-
-const MAXIMO = 8;
 
 /**
  * Las tareas abiertas de la persona, por vencimiento.
  *
  * `tareasDeUsuario` ya las trae con las vencidas primero y luego por fecha
- * límite, así que aquí solo se quitan las cerradas. La vencida se destaca con
- * tinta (borde y etiqueta) y no con rojo: el rojo es del semáforo y solo se
- * usa para el estado de una entidad.
+ * límite. El wrapper lee las traducciones en servidor y pasa el contenido a
+ * `TareasBandejaInteractiva` para filtrar por urgencia/vencimiento o
+ * completar tareas sin salir de la bandeja.
  */
 export function TareasBandeja({
   tareas,
@@ -32,58 +24,34 @@ export function TareasBandeja({
   const t = useTranslations("bandeja");
   const tPrioridad = useTranslations("torre.priority");
 
-  const abiertas = tareas.filter((tarea) => tarea.estado !== "completada");
-
   return (
     <TarjetaBandeja
       icono={ListTodo}
       titulo={t("tasks.title")}
       verTodo={{ href: "/administrativo/tareas", etiqueta: t("seeAll") }}
     >
-      {abiertas.length === 0 ? (
-        <EstadoVacio icono={ListTodo} titulo={t("tasks.empty")} />
-      ) : (
-        <ul>
-          {abiertas.slice(0, MAXIMO).map((tarea) => (
-            <li
-              key={tarea.id}
-              className={cn(
-                "-mx-2 flex items-start gap-3 border-b border-linea px-2 py-3 last:border-b-0",
-                tarea.vencida && "border-l-2 border-l-tinta bg-muted/40",
-              )}
-            >
-              <span
-                aria-hidden
-                className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", PRIORIDAD[tarea.prioridad].punto)}
-              />
-
-              <Link
-                href="/administrativo/tareas"
-                className="group min-w-0 flex-1 space-y-1 rounded-control p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <p className="truncate text-sm font-semibold text-tinta transition-colors group-hover:text-marca-600">
-                  {tarea.titulo}
-                </p>
-                <FilaDatos>
-                  <Dato icono={CalendarClock}>
-                    {tarea.fecha_limite ? fechaCorta(tarea.fecha_limite, idioma) : t("tasks.noDate")}
-                  </Dato>
-                  <Dato icono={FolderKanban}>{tarea.proyecto_nombre ?? t("tasks.noProject")}</Dato>
-                </FilaDatos>
-              </Link>
-
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                {tarea.vencida && (
-                  <Badge className="bg-tinta text-background">{t("tasks.overdue")}</Badge>
-                )}
-                <Badge className={PRIORIDAD[tarea.prioridad].clases}>
-                  {tPrioridad(tarea.prioridad)}
-                </Badge>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <TareasBandejaInteractiva
+        tareasIniciales={tareas}
+        idioma={idioma}
+        etiquetas={{
+          vacio: t("tasks.empty"),
+          vacioFiltro: t("tasks.emptyFiltered"),
+          vencida: t("tasks.overdue"),
+          sinFecha: t("tasks.noDate"),
+          sinProyecto: t("tasks.noProject"),
+          todas: t("tasks.filterAll"),
+          vencidas: t("tasks.filterOverdue"),
+          urgentes: t("tasks.filterUrgent"),
+          completar: t("tasks.markDone"),
+          error: t("tasks.updateError"),
+          prioridades: {
+            baja: tPrioridad("baja"),
+            media: tPrioridad("media"),
+            alta: tPrioridad("alta"),
+            urgente: tPrioridad("urgente"),
+          },
+        }}
+      />
     </TarjetaBandeja>
   );
 }

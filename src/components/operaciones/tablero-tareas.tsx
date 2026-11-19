@@ -9,13 +9,16 @@ import {
   Loader2,
   Plus,
   Save,
+  Search,
   Users,
+  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import {
   AccionesFormulario,
   FormularioGuiado,
@@ -27,7 +30,15 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
 import { COLUMNAS, type Columna } from "@/lib/operaciones";
-import { ALERTA_RIESGO, ANIMACION, PRIORIDAD } from "@/lib/paleta";
+import {
+  ALERTA_RIESGO,
+  ANIMACION,
+  AZUL,
+  AZUL_OSCURO,
+  AZUL_SUAVE,
+  NEUTRO,
+  PRIORIDAD,
+} from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   crearTarea,
@@ -81,11 +92,70 @@ export function TableroTareas({
    */
   const [movidas, setMovidas] = useState<Record<string, Columna>>({});
   const [arrastrada, setArrastrada] = useState<string | null>(null);
+  const [columnaHover, setColumnaHover] = useState<Columna | null>(null);
   const [fallo, setFallo] = useState(false);
   const [, empezar] = useTransition();
 
+  const [busqueda, setBusqueda] = useState("");
+  const [proyectoFiltro, setProyectoFiltro] = useState<string>("todos");
+  const [prioridadFiltro, setPrioridadFiltro] = useState<string>("todas");
+  const [soloVencidas, setSoloVencidas] = useState(false);
+
   const estadoDe = (tarea: TareaTablero) =>
     movidas[tarea.id] ?? (tarea.estado as Columna);
+
+  const texto = busqueda.trim().toLowerCase();
+  const hayFiltros =
+    texto.length > 0 ||
+    proyectoFiltro !== "todos" ||
+    prioridadFiltro !== "todas" ||
+    soloVencidas;
+
+  const tareasFiltradas = tareas.filter((tarea) => {
+    if (soloVencidas && !tarea.vencida) return false;
+    if (prioridadFiltro !== "todas" && tarea.prioridad !== prioridadFiltro) return false;
+    if (proyectoFiltro === "__sin__") {
+      if (tarea.proyecto_id !== null) return false;
+    } else if (proyectoFiltro !== "todos" && tarea.proyecto_id !== proyectoFiltro) {
+      return false;
+    }
+    if (texto.length > 0) {
+      const enTitulo = tarea.titulo.toLowerCase().includes(texto);
+      const enDesc = tarea.descripcion?.toLowerCase().includes(texto) ?? false;
+      const enAsig = tarea.asignados?.toLowerCase().includes(texto) ?? false;
+      if (!enTitulo && !enDesc && !enAsig) return false;
+    }
+    return true;
+  });
+
+  const totalVencidas = tareas.filter((tarea) => tarea.vencida).length;
+
+  const COLOR_COLUMNA: Record<Columna, string> = {
+    por_hacer: NEUTRO,
+    en_progreso: AZUL,
+    en_revision: AZUL_SUAVE,
+    completada: AZUL_OSCURO,
+  };
+
+  const serieEstado = COLUMNAS.map((col) => ({
+    nombre: t(`taskStatus.${col}`),
+    valor: tareasFiltradas.filter((tarea) => estadoDe(tarea) === col).length,
+    color: COLOR_COLUMNA[col],
+  }));
+
+  const conteoPorProyecto = new Map<string, number>();
+  for (const tarea of tareasFiltradas) {
+    const nombre = tarea.proyecto ?? t("board.noProject");
+    conteoPorProyecto.set(nombre, (conteoPorProyecto.get(nombre) ?? 0) + 1);
+  }
+  const serieProyectos = [...conteoPorProyecto.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([nombre, valor], idx) => ({
+      nombre: nombre.length > 20 ? `${nombre.slice(0, 19)}…` : nombre,
+      valor,
+      color: idx === 0 ? AZUL_OSCURO : AZUL,
+    }));
 
   function mover(id: string, destino: Columna) {
     if (!puedeEscribir) return;
@@ -119,18 +189,102 @@ export function TableroTareas({
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {puedeEscribir && !nueva && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setNueva(true)}
-            className="transition-transform duration-150 active:scale-95"
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative min-w-48 flex-1 sm:max-w-64">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder={t("board.searchPlaceholder")}
+              className="h-9 pl-8 text-sm"
+            />
+          </div>
+
+          <select
+            aria-label={t("task.project")}
+            value={proyectoFiltro}
+            onChange={(e) => setProyectoFiltro(e.target.value)}
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-card px-2.5 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
           >
-            <Plus className="size-3.5" />
-            {t("tasks.new")}
-          </Button>
-        )}
+            <option value="todos">{t("board.allProjects")}</option>
+            <option value="__sin__">{t("board.noProject")}</option>
+            {proyectos.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+
+          <select
+            aria-label={t("task.priority")}
+            value={prioridadFiltro}
+            onChange={(e) => setPrioridadFiltro(e.target.value)}
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-card px-2.5 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+          >
+            <option value="todas">{t("board.allPriorities")}</option>
+            {(["urgente", "alta", "media", "baja"] as const).map((p) => (
+              <option key={p} value={p}>
+                {t(`priority.${p}`)}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={() => setSoloVencidas((v) => !v)}
+            className={cn(
+              "inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors",
+              soloVencidas
+                ? "border-marca-500 bg-marca-50 text-marca-700"
+                : "border-input bg-card text-tinta-2 hover:bg-muted/50",
+            )}
+          >
+            <span>{t("board.onlyOverdue")}</span>
+            <Badge className="bg-muted text-tinta text-[10px]">{totalVencidas}</Badge>
+          </button>
+
+          {hayFiltros && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setBusqueda("");
+                setProyectoFiltro("todos");
+                setPrioridadFiltro("todas");
+                setSoloVencidas(false);
+              }}
+              className="h-9 gap-1 text-xs"
+            >
+              <X className="size-3.5" />
+              {t("board.clearFilters")}
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 sm:justify-end">
+          {hayFiltros && (
+            <span className="text-muted-foreground text-xs tabular-nums">
+              {t("board.showingCount", {
+                visibles: tareasFiltradas.length,
+                total: tareas.length,
+              })}
+            </span>
+          )}
+          {puedeEscribir && !nueva && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setNueva(true)}
+              className="transition-transform duration-150 active:scale-95"
+            >
+              <Plus className="size-3.5" />
+              {t("tasks.new")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {fallo && (
@@ -152,21 +306,74 @@ export function TableroTareas({
         </Card>
       )}
 
+      {tareas.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("board.chartStatusTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieEstado}
+                  total={tareasFiltradas.length}
+                  etiquetaTotal=""
+                  vacio={t("board.chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieEstado.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("board.chartProjectsTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieProyectos} vacio={t("board.chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNAS.map((columna) => {
-          const dentro = tareas.filter((tarea) => estadoDe(tarea) === columna);
+          const dentro = tareasFiltradas.filter((tarea) => estadoDe(tarea) === columna);
+          const enHover = columnaHover === columna && arrastrada !== null;
 
           return (
             <div
               key={columna}
               onDragOver={(evento) => {
-                if (puedeEscribir) evento.preventDefault();
+                if (puedeEscribir) {
+                  evento.preventDefault();
+                  if (columnaHover !== columna) setColumnaHover(columna);
+                }
+              }}
+              onDragLeave={() => {
+                if (columnaHover === columna) setColumnaHover(null);
               }}
               onDrop={() => {
                 if (arrastrada) mover(arrastrada, columna);
                 setArrastrada(null);
+                setColumnaHover(null);
               }}
-              className="bg-muted/30 min-h-32 rounded-xl p-3 transition-colors"
+              className={cn(
+                "bg-muted/30 min-h-32 rounded-xl p-3 transition-all",
+                enHover && "bg-marca-50/40 ring-2 ring-marca-500/40",
+              )}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold uppercase">

@@ -537,6 +537,7 @@ export async function guardarAsignacionProyectosRolesAction(
 
     revalidatePath("/administrativo/proyectos");
     revalidatePath("/administrativo/proyectos/roles");
+    revalidatePath("/administrativo/tareas/hoy");
     return { ok: true };
   } catch (error) {
     console.error("[proyectos] Error al asignar roles al proyecto:", error);

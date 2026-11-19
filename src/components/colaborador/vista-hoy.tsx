@@ -22,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GraficaAnillo } from "@/components/dashboard/graficas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   AccionesFormulario,
@@ -32,7 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { fechaCorta } from "@/lib/fechas";
-import { ALERTA_RIESGO } from "@/lib/paleta";
+import { ALERTA_RIESGO, AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
 import type {
   BitacoraEntrada,
   EstadoTareaColaborador,
@@ -80,6 +81,7 @@ export function VistaHoy({
   }
   const [fallo, setFallo] = useState(false);
   const [filtro, setFiltro] = useState<"todas" | EstadoTareaColaborador>("todas");
+  const [proyectoFiltro, setProyectoFiltro] = useState<string | null>(null);
   const [dialogoNuevaAbierto, setDialogoNuevaAbierto] = useState(false);
   const [dialogoBitacoraAbierto, setDialogoBitacoraAbierto] = useState(false);
   const [tareaSeleccionadaBitacora, setTareaSeleccionadaBitacora] = useState<string>("");
@@ -129,9 +131,35 @@ export function VistaHoy({
   };
 
   const tareasFiltradas = tareas.filter((item) => {
+    if (proyectoFiltro && item.proyecto_id !== proyectoFiltro) return false;
     if (filtro === "todas") return true;
     return item.estado === filtro;
   });
+
+  // Se calculan sobre la lista viva para que las métricas reaccionen al avance optimista.
+  const pendientesVivas = tareas.filter((item) => item.estado === "por_hacer").length;
+  const enProgresoVivas = tareas.filter(
+    (item) => item.estado === "en_progreso" || item.estado === "en_revision",
+  ).length;
+
+  const serieHoy = [
+    { nombre: t("filterTodo"), valor: pendientesVivas, color: NEUTRO },
+    {
+      nombre: t("filterDoing"),
+      valor: tareas.filter((item) => item.estado === "en_progreso").length,
+      color: AZUL,
+    },
+    {
+      nombre: t("filterReview"),
+      valor: tareas.filter((item) => item.estado === "en_revision").length,
+      color: AZUL_SUAVE,
+    },
+    {
+      nombre: t("filterDone"),
+      valor: tareas.filter((item) => item.estado === "completada").length,
+      color: AZUL_OSCURO,
+    },
+  ];
 
   const formatearHoras = (minutos: number) => {
     const h = Math.floor(minutos / 60);
@@ -154,8 +182,8 @@ export function VistaHoy({
             </span>
             <ListTodo className="size-4 text-marca-500" />
           </div>
-          <div className="mt-2 text-2xl font-bold text-tinta">
-            {resumen.pendientes}
+          <div className="mt-2 text-2xl font-bold text-tinta tabular-nums">
+            {pendientesVivas}
           </div>
         </div>
 
@@ -166,8 +194,8 @@ export function VistaHoy({
             </span>
             <Flame className="size-4 text-marca-500" />
           </div>
-          <div className="mt-2 text-2xl font-bold text-tinta">
-            {resumen.enProgreso}
+          <div className="mt-2 text-2xl font-bold text-tinta tabular-nums">
+            {enProgresoVivas}
           </div>
         </div>
 
@@ -196,6 +224,38 @@ export function VistaHoy({
         </div>
       </div>
 
+      {/* 1b. Progreso visual de tareas del día */}
+      {tareas.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">{t("chartProgressTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid items-center gap-4 sm:grid-cols-2">
+              <GraficaAnillo
+                datos={serieHoy}
+                total={tareas.length}
+                etiquetaTotal=""
+                vacio={t("chartEmpty")}
+              />
+              <ul className="divide-y divide-linea">
+                {serieHoy.map((fila) => (
+                  <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: fila.color }}
+                    />
+                    <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                    <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 2. Programas Asignados a mi Rol */}
       {proyectosAsignados.length > 0 && (
         <div className="rounded-xl border border-marca-500/20 bg-marca-50 p-4">
@@ -207,15 +267,39 @@ export function VistaHoy({
             {t("assignedProgramsSubtitle")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {proyectosAsignados.map((p) => (
-              <span
-                key={p.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-marca-500/30 bg-card px-2.5 py-1 text-xs font-medium text-tinta shadow-2xs"
+            {proyectoFiltro && (
+              <button
+                type="button"
+                onClick={() => setProyectoFiltro(null)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-linea-fuerte bg-card px-2.5 py-1 text-xs font-medium text-tinta-2 shadow-2xs transition-colors hover:bg-muted/50"
               >
-                <span className="size-1.5 rounded-full bg-marca-500" />
-                {p.nombre}
-              </span>
-            ))}
+                {t("clearProgramFilter")}
+              </button>
+            )}
+            {proyectosAsignados.map((p) => {
+              const activo = proyectoFiltro === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setProyectoFiltro(activo ? null : p.id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium shadow-2xs transition-colors",
+                    activo
+                      ? "border-marca-500 bg-marca-500 text-white"
+                      : "border-marca-500/30 bg-card text-tinta hover:border-marca-500",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      activo ? "bg-white" : "bg-marca-500",
+                    )}
+                  />
+                  {p.nombre}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

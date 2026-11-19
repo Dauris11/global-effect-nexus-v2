@@ -22,8 +22,11 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { ActivoInventario, CategoriaActivo, EstadoActivo } from "@/lib/inventario";
+import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { eliminarActivoAction } from "@/server/inventario/acciones";
 
@@ -54,7 +57,7 @@ export function TablaActivos({
 
   const [busqueda, setBusqueda] = useState("");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>("todas");
-  const [estadoSeleccionado] = useState<string>("todos");
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>("todos");
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
@@ -138,8 +141,87 @@ export function TablaActivos({
     }
   };
 
+  const serieEstado = useMemo(
+    () => [
+      {
+        nombre: t("estados.operativo"),
+        valor: filtrados.filter((a) => a.estado === "operativo").length,
+        color: AZUL,
+      },
+      {
+        nombre: t("estados.mantenimiento"),
+        valor: filtrados.filter((a) => a.estado === "mantenimiento").length,
+        color: AZUL_SUAVE,
+      },
+      {
+        nombre: t("estados.prestado"),
+        valor: filtrados.filter((a) => a.estado === "prestado").length,
+        color: AZUL_OSCURO,
+      },
+      {
+        nombre: t("estados.baja"),
+        valor: filtrados.filter((a) => a.estado === "baja").length,
+        color: NEUTRO,
+      },
+    ],
+    [filtrados, t],
+  );
+
+  const serieCategorias = useMemo(
+    () =>
+      (["herramientas", "tecnologia", "mobiliario", "electrodomesticos", "vehiculos", "otros"] as const)
+        .map((cat) => ({
+          nombre: t(`categorias.${cat}`),
+          valor: filtrados.filter((a) => a.categoria === cat).length,
+          color: AZUL,
+        }))
+        .filter((f) => f.valor > 0),
+    [filtrados, t],
+  );
+
   return (
     <div className="flex flex-col gap-4">
+      {activos.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartStatusTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieEstado}
+                  total={filtrados.length}
+                  etiquetaTotal=""
+                  vacio={t("chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieEstado.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartCategoryTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieCategorias} vacio={t("chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
       {errorEliminar && (
         <div className="flex items-center gap-2 rounded-xl border border-linea-fuerte bg-muted p-3 text-xs font-semibold text-tinta">
           <AlertCircle className="size-4 shrink-0 text-tinta" />
@@ -160,7 +242,21 @@ export function TablaActivos({
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            aria-label={t("todosEstados")}
+            value={estadoSeleccionado}
+            onChange={(e) => setEstadoSeleccionado(e.target.value)}
+            className="rounded-xl border border-linea bg-card px-3 py-2 text-xs font-medium text-tinta outline-none transition-colors focus:border-marca-500"
+          >
+            <option value="todos">{t("todosEstados")}</option>
+            {(["operativo", "mantenimiento", "prestado", "baja"] as const).map((est) => (
+              <option key={est} value={est}>
+                {t(`estados.${est}`)}
+              </option>
+            ))}
+          </select>
+
           {puedeAuditar && (
             <Link
               href="/administrativo/inventario/escanear"
