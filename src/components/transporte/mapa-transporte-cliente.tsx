@@ -94,23 +94,21 @@ export function MapaTransporteCliente({
   );
 
   // Si el chofer reporta GPS real, proyectamos su coordenada sobre el trazado
+  const latChofer = viaje?.lat_actual ?? null;
+  const lngChofer = viaje?.lng_actual ?? null;
   const progresoEfectivo = useMemo(() => {
     if (
       tieneGpsChoferEnVivo &&
-      typeof viaje?.lat_actual === "number" &&
-      typeof viaje?.lng_actual === "number"
+      typeof latChofer === "number" &&
+      typeof lngChofer === "number"
     ) {
-      return proyectarCoordenadaEnRuta(
-        geoCoords,
-        viaje.lat_actual,
-        viaje.lng_actual,
-      );
+      return proyectarCoordenadaEnRuta(geoCoords, latChofer, lngChofer);
     }
     return simulacion.progreso;
   }, [
     tieneGpsChoferEnVivo,
-    viaje?.lat_actual,
-    viaje?.lng_actual,
+    latChofer,
+    lngChofer,
     geoCoords,
     simulacion.progreso,
   ]);
