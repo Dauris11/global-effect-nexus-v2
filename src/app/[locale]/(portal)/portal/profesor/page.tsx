@@ -2,28 +2,37 @@ import type { Metadata } from "next";
 import {
   BookOpen,
   CalendarCheck,
-  CalendarDays,
   ClipboardList,
   Library,
   Sparkles,
   Users,
 } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { AccesosPortal, BannerPortal } from "@/components/layout/banner-portal";
+import {
+  DashboardGraficoDocente,
+  KpisAnimadosDocente,
+} from "@/components/profesor/dashboard-inicio-docente";
 import { BannerLlamadasActivas } from "@/components/reuniones/banner-llamadas-activas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import type { Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { requerirDocencia } from "@/lib/auth";
+import { claveDia } from "@/lib/fechas";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import { iniciarInscripcionesVigentes } from "@/server/global360/consultas";
 import {
+  agendaDocente,
   cifrasDocente,
   clases360,
+  entregasCalificadasDocente,
   entregasPorRevisar,
   materiasDelDocente,
 } from "@/server/profesor/consultas";
@@ -70,6 +79,7 @@ export default async function PortalProfesor({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const idioma: Locale = locale === "en" ? "en" : "es";
 
   const usuario = await requerirDocencia();
 
@@ -78,23 +88,47 @@ export default async function PortalProfesor({
     ? usuario.id
     : null;
 
-  // `/academico/materias` pide `academico.leer`. Quien imparte por permiso sin
-  // ser docente (Habitudes) no lo tiene: el enlace le rebotaba a su portal.
-  const veMaterias = usuarioTienePermiso(usuario, "academico.leer");
-  const veReuniones = usuarioTienePermiso(usuario, "reuniones.leer");
-
   await iniciarInscripcionesVigentes();
 
-  const [t, tAcad, cifras, materias, clases, entregas, llamadasActivas] =
-    await Promise.all([
-      getTranslations({ locale, namespace: "teacherPortal" }),
-      getTranslations({ locale, namespace: "academic" }),
-      cifrasDocente(docenteId),
-      materiasDelDocente(docenteId),
-      clases360(docenteId),
-      entregasPorRevisar(docenteId, ENTREGAS_VISIBLES),
-      reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
-    ]);
+  const [
+    t,
+    tAcad,
+    mensajes,
+    cifras,
+    materias,
+    clases,
+    entregas,
+    calificadas,
+    actividadesAgenda,
+    llamadasActivas,
+  ] = await Promise.all([
+    getTranslations({ locale, namespace: "teacherPortal" }),
+    getTranslations({ locale, namespace: "academic" }),
+    mensajesCliente(["teacherPortal"]),
+    cifrasDocente(docenteId),
+    materiasDelDocente(docenteId),
+    clases360(docenteId),
+    entregasPorRevisar(docenteId, ENTREGAS_VISIBLES),
+    entregasCalificadasDocente(docenteId),
+    agendaDocente(docenteId, usuario.id),
+    reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
+  ]);
+
+  const hoyIso = claveDia();
+  const resumenClasesGrafico = [
+    ...clases.map((c) => ({
+      id: c.id,
+      nombre: c.nombre,
+      inscritos: c.inscritos,
+      con_nota: c.con_nota,
+    })),
+    ...materias.map((m) => ({
+      id: m.id,
+      nombre: m.nombre,
+      inscritos: m.inscritos,
+      con_nota: m.con_nota,
+    })),
+  ];
 
   // Las notas puestas no están en `cifrasDocente` y no hace falta otra
   // consulta: cada clase 360 y materia asignada ya trae las suyas.
@@ -114,20 +148,34 @@ export default async function PortalProfesor({
 
   return (
     <div className="animate-entrada space-y-6">
-      <BannerPortal
-        rol="docente"
-        icono={BookOpen}
-        titulo={t("greeting", { name: usuario.nombre })}
-        insignia={t("eyebrow")}
-        kpis={[
-          { valor: String(cifras.clases_360), etiqueta: t("stats.classes360") },
-          { valor: String(cifras.estudiantes), etiqueta: t("stats.students") },
-          { valor: String(notas), etiqueta: t("stats.grades") },
-          { valor: String(cifras.por_revisar), etiqueta: t("stats.toReview") },
-        ]}
-      />
+      <div className="space-y-6">
+        <EncabezadoPagina
+          titulo={t("greeting", { name: usuario.nombre })}
+          subtitulo={t("summary")}
+        />
+
+        <NextIntlClientProvider messages={mensajes}>
+          <KpisAnimadosDocente
+            totalClases={cifras.clases_360 + materias.length}
+            estudiantes={cifras.estudiantes}
+            notas={notas}
+            porRevisar={cifras.por_revisar}
+          />
+        </NextIntlClientProvider>
+      </div>
 
       <BannerLlamadasActivas activas={llamadasActivas} />
+
+      <NextIntlClientProvider messages={mensajes}>
+        <DashboardGraficoDocente
+          resumenClases={resumenClasesGrafico}
+          porRevisar={cifras.por_revisar}
+          calificadas={calificadas}
+          actividades={actividadesAgenda}
+          hoyIso={hoyIso}
+          locale={idioma}
+        />
+      </NextIntlClientProvider>
 
       {/* Va antes que nada más cuando hay algo: es lo único de esta pantalla
           con alguien esperando al otro lado. Con cero no se dibuja — el KPI ya
@@ -177,54 +225,6 @@ export default async function PortalProfesor({
           </CardContent>
         </Card>
       )}
-
-      <AccesosPortal
-        accesos={[
-          {
-            href: "/academico/clases-360",
-            icono: Sparkles,
-            color: CUADRO.marca,
-            titulo: t("shortcuts.classes360.label"),
-            texto: t("shortcuts.classes360.hint"),
-          },
-          {
-            href: "/portal/profesor/materias",
-            icono: Library,
-            color: CUADRO.marca,
-            titulo: t("shortcuts.assignedSubjects.label"),
-            texto: t("shortcuts.assignedSubjects.hint"),
-          },
-          ...(veMaterias
-            ? [
-                {
-                  href: "/academico/materias",
-                  icono: BookOpen,
-                  color: CUADRO.marca,
-                  titulo: t("shortcuts.subjects.label"),
-                  texto: t("shortcuts.subjects.hint"),
-                },
-              ]
-            : []),
-          {
-            href: "/calendario",
-            icono: CalendarDays,
-            color: CUADRO.marca,
-            titulo: t("shortcuts.calendar.label"),
-            texto: t("shortcuts.calendar.hint"),
-          },
-          ...(veReuniones
-            ? [
-                {
-                  href: "/reuniones",
-                  icono: Users,
-                  color: CUADRO.marca,
-                  titulo: t("shortcuts.meetings.label"),
-                  texto: t("shortcuts.meetings.hint"),
-                },
-              ]
-            : []),
-        ]}
-      />
 
       {vacio ? (
         <Card>

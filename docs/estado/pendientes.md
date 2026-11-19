@@ -5,6 +5,10 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Dashboard gráfico e interactivo del Portal Docente (19 nov 2026):**
+      - **KPIs animados y retiro de accesos rápidos redundantes (`src/components/profesor/dashboard-inicio-docente.tsx`, `portal/profesor/page.tsx`):** `KpisAnimadosDocente` añade conteo animado, barra de progreso y enlaces directos para Clases, Estudiantes, Notas finales y Por revisar; se eliminó la rejilla `<AccesosPortal />` del inicio docente.
+      - **Gráficos y calendario interactivo (`src/server/profesor/consultas.ts`, `dashboard-inicio-docente.tsx`):** gráfico de barras comparando inscritos frente a notas finales cerradas por clase (`BarChart`), gráfico de anillo de entregas por revisar vs calificadas (`PieChart`) y calendario mensual interactivo (`agendaDocente` con reuniones, vencimientos de tareas y eventos).
+
 - [x] **Videollamadas embebidas en Reuniones, banner de llamadas activas y buzón Moodle ampliado (19 nov 2026):**
       - **Salas de videollamada integradas en la web (`src/lib/reuniones-sala.ts`, `src/components/reuniones/sala-llamada-embebida.tsx`, `hub-reuniones.tsx`, `reuniones/page.tsx`):** al agendar reuniones `virtual` o `hibrida` sin enlace manual se genera automáticamente una sala de Jitsi Meet (`https://meet.jit.si/GlobalEffectNexus-...`); nueva acción `cambiarEstadoLlamadaAction` (`src/server/reuniones/acciones.ts`) para iniciar (`en_curso`, con notificación a convocados) o finalizar (`realizada`) la llamada, y visor embebido en `/reuniones` con deep-link `?sala=<id>`, pantalla expandible y respaldo en pestaña externa para enlaces de Google Meet/Zoom.
       - **Banner «Llamadas activas ahora» (`src/server/reuniones/consultas.ts`, `src/components/reuniones/banner-llamadas-activas.tsx`, `portal/estudiante/page.tsx`, `portal/profesor/page.tsx`):** `reunionesActivasParaUsuario` muestra en el inicio de estudiantes y docentes las reuniones en curso en las que participan, con entrada en 1 clic a la sala en vivo.

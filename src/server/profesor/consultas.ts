@@ -679,3 +679,158 @@ export async function cifrasDocente(
 
   return fila ?? { clases_360: 0, estudiantes: 0, por_revisar: 0 };
 }
+
+/** Total de entregas ya calificadas en las clases y materias del docente. */
+export async function entregasCalificadasDocente(
+  docenteId: string | null,
+): Promise<number> {
+  const fila = await consultarUna<{ total: number }>(
+    `SELECT count(*)::int AS total
+       FROM entrega_estudiante d
+       JOIN asignacion a ON a.id = d.asignacion_id
+       LEFT JOIN materia mu ON mu.id = a.materia_id
+       LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
+      WHERE d.estado = 'calificado'
+        AND ($1::uuid IS NULL
+             OR mu.profesor_usuario_id = $1
+             OR m3.docente_id = $1)`,
+    [docenteId],
+  );
+  return fila?.total ?? 0;
+}
+
+export type ActividadCalendarioDocente = {
+  id: string;
+  categoria: "reunion" | "tarea" | "evento";
+  titulo: string;
+  subtitulo: string;
+  fecha: string; // YYYY-MM-DD
+  hora: string | null;
+  href: string;
+};
+
+/**
+ * Actividades del calendario del docente: vencimientos de tareas publicadas,
+ * reuniones convocadas y eventos institucionales próximos.
+ */
+export async function agendaDocente(
+  docenteId: string | null,
+  usuarioId: string,
+): Promise<ActividadCalendarioDocente[]> {
+  const [tareas, reuniones, eventos] = await Promise.all([
+    consultar<{
+      id: string;
+      titulo: string;
+      materia: string;
+      fecha: string;
+      hora: string | null;
+      origen: "g360" | "materia";
+      unidad_id: string;
+    }>(
+      `SELECT a.id,
+              a.titulo,
+              coalesce(mu.nombre, m3.nombre, 'Clase') AS materia,
+              to_char(a.fecha_vencimiento AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD') AS fecha,
+              to_char(a.fecha_vencimiento AT TIME ZONE 'America/Santo_Domingo', 'HH24:MI') AS hora,
+              CASE WHEN a.materia_360_id IS NOT NULL THEN 'g360' ELSE 'materia' END AS origen,
+              coalesce(a.materia_360_id, a.materia_id) AS unidad_id
+         FROM asignacion a
+         LEFT JOIN materia mu ON mu.id = a.materia_id
+         LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
+        WHERE a.fecha_vencimiento IS NOT NULL
+          AND a.fecha_vencimiento BETWEEN (now() - interval '30 days')
+                                      AND (now() + interval '90 days')
+          AND ($1::uuid IS NULL
+               OR mu.profesor_usuario_id = $1
+               OR m3.docente_id = $1)
+        ORDER BY a.fecha_vencimiento`,
+      [docenteId],
+    ),
+    consultar<{
+      id: string;
+      titulo: string;
+      modalidad: string;
+      fecha: string;
+      hora: string;
+    }>(
+      `SELECT DISTINCT r.id,
+              r.titulo,
+              r.modalidad,
+              to_char(r.fecha, 'YYYY-MM-DD') AS fecha,
+              to_char(r.hora_inicio, 'HH24:MI') AS hora
+         FROM reunion r
+         LEFT JOIN reunion_participante rp ON rp.reunion_id = r.id
+        WHERE r.estado <> 'cancelada'
+          AND r.fecha BETWEEN (${SQL_HOY_RD} - interval '30 days')::date
+                          AND (${SQL_HOY_RD} + interval '90 days')::date
+          AND ($1::uuid IS NULL
+               OR r.organizador_usuario_id = $2
+               OR rp.usuario_id = $2)
+        ORDER BY fecha, hora`,
+      [docenteId, usuarioId],
+    ),
+    consultar<{
+      id: string;
+      titulo: string;
+      ubicacion: string | null;
+      tipo: string;
+      fecha: string;
+      hora: string | null;
+    }>(
+      `SELECT id,
+              titulo,
+              ubicacion,
+              tipo,
+              to_char(fecha, 'YYYY-MM-DD') AS fecha,
+              to_char(hora_inicio, 'HH24:MI') AS hora
+         FROM evento
+        WHERE estado <> 'cancelado'
+          AND fecha BETWEEN (${SQL_HOY_RD} - interval '15 days')::date
+                        AND (${SQL_HOY_RD} + interval '90 days')::date
+        ORDER BY fecha`,
+    ),
+  ]);
+
+  const lista: ActividadCalendarioDocente[] = [];
+
+  for (const r of reuniones) {
+    lista.push({
+      id: `reu-${r.id}`,
+      categoria: "reunion",
+      titulo: r.titulo,
+      subtitulo: r.modalidad,
+      fecha: r.fecha,
+      hora: r.hora,
+      href: "/reuniones",
+    });
+  }
+
+  for (const t of tareas) {
+    lista.push({
+      id: `tar-${t.id}`,
+      categoria: "tarea",
+      titulo: t.titulo,
+      subtitulo: t.materia,
+      fecha: t.fecha,
+      hora: t.hora,
+      href:
+        t.origen === "g360"
+          ? `/academico/clases-360?clase=${t.unidad_id}&accion=publicaciones`
+          : `/portal/profesor/materias?materia=${t.unidad_id}&accion=publicaciones`,
+    });
+  }
+
+  for (const ev of eventos) {
+    lista.push({
+      id: `ev-${ev.id}`,
+      categoria: "evento",
+      titulo: ev.titulo,
+      subtitulo: ev.ubicacion ?? ev.tipo,
+      fecha: ev.fecha,
+      hora: ev.hora ? ev.hora.slice(0, 5) : null,
+      href: "/calendario",
+    });
+  }
+
+  return lista;
+}

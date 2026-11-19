@@ -2100,6 +2100,33 @@
       "finalGradeError": "Could not save grade (0 to 100).",
       "tasksProgress": "Tasks: {done}/{total}",
       "attendancePct": "{pct}% attendance"
+    },
+    "dashboard": {
+      "classesHint": "360 classes and active subjects",
+      "studentsHint": "Currently enrolled students",
+      "gradesHint": "Final grades closed",
+      "toReviewHint": "Submissions awaiting grading",
+      "classesChartTitle": "Students and final grades per class",
+      "classesChartHint": "Enrolled students vs closed final grades",
+      "enrolledSeries": "Enrolled",
+      "gradesSeries": "Final grades",
+      "noClassesChart": "You do not have active classes to chart yet.",
+      "reviewsChartTitle": "Grading status",
+      "reviewsChartHint": "{pending} to review · {graded} graded",
+      "toReviewSeries": "To review",
+      "gradedSeries": "Graded",
+      "reviewedPct": "Reviewed",
+      "noSubmissionsYet": "There are no student submissions yet.",
+      "calendarTitle": "Teacher calendar",
+      "calendarSubtitle": "Meetings, assignment due dates and events",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "catMeeting": "Meetings",
+      "catTask": "Due dates",
+      "catEvent": "Events",
+      "dayTitle": "Schedule · {date}",
+      "dayEmpty": "No activities scheduled for this day.",
+      "viewFullCalendar": "View full calendar"
     }
   },
   "modules": {
