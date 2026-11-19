@@ -782,7 +782,7 @@ export async function agendaDocente(
               ubicacion,
               tipo,
               to_char(fecha, 'YYYY-MM-DD') AS fecha,
-              to_char(hora_inicio, 'HH24:MI') AS hora
+              hora_inicio AS hora
          FROM evento
         WHERE estado <> 'cancelado'
           AND fecha BETWEEN (${SQL_HOY_RD} - interval '15 days')::date
