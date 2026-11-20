@@ -9,7 +9,6 @@ import { Dato, FilaDatos } from "@/components/ui/dato";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { llevaCuenta, visualDeEstado } from "@/lib/expedientes";
-import { GPA_PRUEBA_ACADEMICA } from "@/lib/notas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
 import type { FilaExpediente } from "@/server/expedientes/consultas";
@@ -28,10 +27,13 @@ export async function TarjetasExpedientes({
   filas,
   idioma,
   puedeEscribir,
+  umbral,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
   puedeEscribir: boolean;
+  /** Índice por debajo del cual se marca en riesgo (parámetro becas.indice_minimo). */
+  umbral: number;
 }) {
   const t = await getTranslations("records");
 
@@ -39,7 +41,7 @@ export async function TarjetasExpedientes({
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       {filas.map((fila) => {
         const visual = visualDeEstado(fila.estado);
-        const enRiesgo = fila.indice !== null && fila.indice < GPA_PRUEBA_ACADEMICA;
+        const enRiesgo = fila.indice !== null && fila.indice < umbral;
 
         return (
           <li

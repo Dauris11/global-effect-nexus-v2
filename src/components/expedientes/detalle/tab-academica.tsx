@@ -7,19 +7,21 @@ import { Historial360 } from "@/components/expedientes/historial-360";
 import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
 import { ArchivosAcademicos } from "@/components/universidades/archivos-academicos";
+import { RecordPorCuatrimestre } from "@/components/expedientes/detalle/record-nativo";
+import { RegistrarCalificaciones } from "@/components/expedientes/detalle/registrar-calificaciones";
 import { GraduaViva } from "@/components/expedientes/detalle/gradua-viva";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { fechaLarga } from "@/lib/fechas";
-import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
+import { promedio } from "@/lib/notas";
 import type { AsignacionDelEstudiante } from "@/server/estudiantes/aula";
 import type { InscripcionDelEstudiante } from "@/server/estudiantes/academico";
 import type { Historial360 as Datos360 } from "@/server/estudiantes/historial-360";
 import type { NotaDelEstudiante } from "@/server/estudiantes/portal";
 import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
 import type { SeguimientoExpediente } from "@/server/expedientes/seguimiento";
-import type { ArchivoAcademico, CatalogoDelEstudiante } from "@/server/universidades/consultas";
+import type { ArchivoAcademico, CatalogoDelEstudiante, RecordNativo } from "@/server/universidades/consultas";
 
 /**
  * Las pestañas académicas del expediente: universidad, récord de notas, pénsum y
@@ -88,8 +90,39 @@ export async function Tab360({ datos }: { datos: Datos360 }) {
   return datos.periodos.length === 0 ? <Vacio>{t("v2.empty360")}</Vacio> : <Historial360 datos={datos} />;
 }
 
-export async function TabRecord({ notas }: { notas: NotaDelEstudiante[] }) {
+export async function TabRecord({
+  notas,
+  record,
+  indice,
+  umbral,
+  puedeEditar,
+}: {
+  notas: NotaDelEstudiante[];
+  /** Récord nativo por cuatrimestre; `null` si el estudiante solo tiene el historial anterior. */
+  record: RecordNativo | null;
+  indice: number | null;
+  umbral: number;
+  puedeEditar: boolean;
+}) {
   const t = await getTranslations("records");
+
+  // Con resultados nativos (el gradua leído y las calificaciones que se suban) el
+  // récord se arma de ellos, por cuatrimestre y con filtros; el historial anterior
+  // queda solo para quien aún no tiene.
+  if (record) {
+    return (
+      <Seccion titulo={t("v2.record.title")}>
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <p className="texto-meta">{t("detail.subjectsCount", { count: record.total })}</p>
+          <div className="text-right">
+            <p className="text-2xl leading-none font-bold">{indice === null ? "—" : indice.toFixed(2)}</p>
+            <p className="texto-meta mt-1">{t("v2.record.cumulative")} · {t("detail.gpaScale")}</p>
+          </div>
+        </div>
+        <RecordPorCuatrimestre record={record} umbral={umbral} puedeEditar={puedeEditar} />
+      </Seccion>
+    );
+  }
 
   if (notas.length === 0) return <Vacio>{t("v2.record.empty")}</Vacio>;
 
@@ -97,7 +130,7 @@ export async function TabRecord({ notas }: { notas: NotaDelEstudiante[] }) {
 
   for (const n of notas) porPeriodo.set(n.periodo, [...(porPeriodo.get(n.periodo) ?? []), n]);
 
-  const acumulado = promedio(notas.map((n) => n.gpa));
+  const acumulado = indice ?? promedio(notas.map((n) => n.gpa));
   // `notasDelEstudiante` ordena del período más reciente al más antiguo; la
   // gráfica de evolución se lee al revés.
   const tendencia = [...porPeriodo.entries()]
@@ -117,7 +150,7 @@ export async function TabRecord({ notas }: { notas: NotaDelEstudiante[] }) {
         <div className="mt-4">
           <GraficaTendencia
             datos={tendencia}
-            umbral={GPA_PRUEBA_ACADEMICA}
+            umbral={umbral}
             etiquetas={{ indice: t("detail.gpa"), umbral: t("detail.threshold"), vacio: t("detail.evolutionEmpty") }}
           />
         </div>
@@ -193,6 +226,12 @@ export async function TabPensum({
         />
         {catalogo.pensum ? <GraduaViva catalogo={catalogo} /> : <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>}
       </Seccion>
+
+      {puedeEditar && (
+        <Seccion titulo={tc("grades.title")}>
+          <RegistrarCalificaciones estudianteId={e.id} />
+        </Seccion>
+      )}
 
       <Seccion titulo={tc("files.gradTitle")}>
         <ArchivosAcademicos destino="estudiante" id={e.id} archivos={archivos} tipos={["gradua", "record_notas"]} puedeEscribir={puedeEditar} />

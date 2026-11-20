@@ -1,3 +1,4 @@
+import { indiceDelEstudiante } from "@/server/academico/indice";
 import type { Metadata } from "next";
 import { CalendarRange, Layers, Star } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
@@ -81,7 +82,7 @@ export default async function PaginaCalificaciones({
   const promedioGeneral = promedio(todas);
   // El índice es el promedio de los índices de cada fila, no una conversión del
   // promedio: en el historial universitario cada fila trae el suyo ya escrito.
-  const indice = promedio(notas.map((nota) => nota.gpa));
+  const indice = (await indiceDelEstudiante(estudiante?.id ?? null)) ?? promedio(notas.map((nota) => nota.gpa));
   const aprobadas = todas.filter(aprobada).length;
 
   const periodos = agruparPorPeriodo(notas);

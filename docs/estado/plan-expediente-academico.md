@@ -23,14 +23,35 @@ la siguiente.
 |---|---|---|---|
 | 1 | Etapas del expediente: historial de cada cambio de estado (quién, cuándo, desde dónde) | — | **Hecha** (migración `0090`) |
 | 2 | Catálogo: universidad (régimen cuatrimestre/trimestre/semestre) → carrera → pénsum → materias con créditos; matrícula, universidad, carrera y pénsum por estudiante | — | **Hecha** (migración `0095`; pénsum de UCATECI ISC cargado; faltan los demás) |
-| 3 | Notas por período a mano: promedio del período, índice acumulado ponderado por créditos, alertas (reprobadas, promedio bajo) | — | Pendiente |
-| 4 | Importaciones con IA/OCR: récord de notas de la academia, pénsum en PDF, listado de notas del cuatrimestre (se empareja por matrícula y luego nombre; **siempre pasa por una pantalla de revisión**, nunca escribe notas directo) | Récord de notas, pénsum y listado de notas | Esperando documentos |
+| 3 | Resultados por materia nativos (un intento = materia + año + ronda): índice por período y acumulado según las reglas de cada universidad, alertas (reprobadas, retiradas, índice bajo el mínimo), récord filtrable por cuatrimestre, registro de calificaciones por cuatrimestre | — | **Hecha** (migraciones `0099`–`0101`) |
+| 4 | Importaciones. **Gradua (UCATECI): hecha** — carga inicial que reconstruye al estudiante y alimenta el formato nativo. **Pénsum en PDF** y **listado de notas del cuatrimestre**: pendientes (necesitan una muestra del listado). Récord de la academia: pendiente | Listado de notas del cuatrimestre | Parcial |
 | 5 | Servicio mensual: foto del estudiante → aprobación de administración → cumplió / no cumplió por mes en el expediente (extiende `registro_servicio`) | — | Pendiente |
 | 6 | Reunión mensual: lista de activos, asistencia, PDF exportable, conteo de inasistencias (extiende `reunion`) | — | Pendiente |
 | 7a | Carta mensual al patrocinador: buzón → Elly AI (revisa y traduce) → patrocinador; cumplimiento derivado en la planilla | Elegir el buzón y conectarlo (ver `entregables-expediente.md`) | **Hecha** (migración `0092`) |
 | 7b | Sanciones: umbrales configurables sobre las fases 3, 5 y 6 | Reglas de sanción | Pendiente |
 
 ## Decisiones tomadas
+
+- **Importación del gradua sin pantalla de revisión (decisión cambiada, 20 nov 2026).**
+  Se había dicho que toda importación pasaría por una revisión. Para el gradua se
+  escribe directo porque no hay interpretación que revisar: el texto del PDF se
+  extrae de forma determinista (no es OCR ni IA), se rechaza si no es un gradua de
+  la universidad del estudiante o si la matrícula es de otra persona, se avisa si
+  el nombre o la versión del plan no cuadran, y el índice que calcula el sistema se
+  compara con el que declara el propio reporte (con el gradua real de UCATECI
+  coinciden: 3,56). Todo es reversible: quitar el archivo quita lo leído. La
+  pantalla de revisión **sigue obligatoria** para lo que sí se interpreta (OCR o IA
+  de récords, pénsums y listados).
+- **Modelo nativo.** El gradua sirve para reconstruir al estudiante al entrar al
+  sistema y para aprender el esquema de cada universidad; lo que queda es
+  `resultado_materia` (un intento por materia, año y ronda). Después solo se suben
+  calificaciones y el pénsum, el índice y las alertas se recalculan al mostrarse.
+  El estado de una materia es el de su intento más reciente.
+- **Un solo índice y un solo umbral.** El índice es el nativo (reglas de la
+  universidad del estudiante) y, sin resultados nativos, el promedio del historial
+  anterior. El umbral de «en riesgo» es el parámetro `becas.indice_minimo`; antes el
+  código usaba 2,00 fijo y el reglamento 3,00.
+- **Un lector de gradua por universidad** (`LECTORES_GRADUA`): hoy solo UCATECI.
 
 - **Universidades iniciales:** UCATECI, UNPHU, UTESA y UASD (las cuatro del
   circuito de transporte y de `reglas-academicas.ts`). «UCteci» se leyó como

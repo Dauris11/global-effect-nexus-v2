@@ -12,6 +12,7 @@ import {
   type EstudianteDeSesion,
 } from "@/server/estudiantes/portal";
 import { parametros } from "@/server/parametros/consultas";
+import { indiceDelEstudiante } from "@/server/academico/indice";
 import { catalogoDelEstudiante } from "@/server/universidades/consultas";
 
 /**
@@ -171,7 +172,7 @@ export async function instruccionesPara(
   // El índice sale de los de cada fila, no de convertir el promedio: el
   // historial universitario trae el suyo guardado (ver `notasDelEstudiante`).
   // Solo de la carrera: las notas de 360 se listan aparte y no entran en él.
-  const indice = promedio(notas.map((nota) => nota.gpa));
+  const indice = (await indiceDelEstudiante(estudiante.id)) ?? promedio(notas.map((nota) => nota.gpa));
   const media = promedio(valores);
 
   const pendientes = asignaciones.filter(

@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { etiquetaPeriodo } from "@/lib/gradua";
 import { calcularIndice, RETIRADA, type ReglasIndice, type ResultadoIndice } from "@/lib/indice-academico";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 
@@ -209,7 +210,7 @@ function estadoDeLetra(letra: string, reglas: ReglasIndice & { letraMinima: stri
 
 /**
  * Cruza el pénsum con todo lo que se sabe del estudiante, en este orden de
- * confianza: el gradua oficial de su universidad (`avance_pensum`), las notas
+ * confianza: los resultados nativos (el gradua leído y las calificaciones que se suban), las notas
  * que ya tiene el sistema (`historial_calificacion`) y, por último, sus
  * inscripciones. Lo que no aparece en ninguna queda «pendiente»: nunca se da por
  * aprobada una materia que nadie vio aprobada. Se calcula al mostrarlo, así que
@@ -279,8 +280,12 @@ export async function catalogoDelEstudiante(estudianteId: string | null): Promis
 
   const [materias, avance, historial, inscripciones, ultimoGradua] = await Promise.all([
     materiasDePensum(base.pensum_id),
-    consultar<{ codigo: string; detalle: string | null; nombre: string; creditos: number; puntos: number; periodo: string | null; letra: string | null }>(
-      `SELECT codigo, detalle, nombre, creditos, puntos, periodo, letra FROM avance_pensum WHERE estudiante_id = $1`,
+    // El intento MÁS RECIENTE de cada materia es su estado vigente: una retirada que
+    // se vuelve a cursar deja de figurar como retirada.
+    consultar<{ codigo: string; detalle: string | null; nombre: string; creditos: number; puntos: number | null; anio: number; ronda: number; letra: string; fuente: string }>(
+      `SELECT DISTINCT ON (codigo) codigo, detalle, nombre, creditos, puntos, anio, ronda, letra, fuente
+         FROM resultado_materia WHERE estudiante_id = $1
+        ORDER BY codigo, anio DESC, ronda DESC`,
       [estudianteId],
     ),
     consultar<{ materia: string; cuatrimestre: string; nota_letra: string; estado: string }>(
@@ -316,8 +321,16 @@ export async function catalogoDelEstudiante(estudianteId: string | null): Promis
     const base0 = { ...m, letra: null, periodo: null, puntos: null, detalle: null, fuente: null };
     const a = avancePorCodigo.get(m.codigo.toUpperCase());
 
-    if (a?.letra) {
-      return { ...m, estado: estadoDeLetra(a.letra, reglas), letra: a.letra, periodo: a.periodo, puntos: a.puntos, detalle: a.detalle, fuente: "gradua" as const };
+    if (a) {
+      return {
+        ...m,
+        estado: estadoDeLetra(a.letra, reglas),
+        letra: a.letra,
+        periodo: etiquetaPeriodo(a.anio, a.ronda),
+        puntos: a.puntos ?? (a.letra.toUpperCase() === RETIRADA ? 0 : (reglas.puntosPorLetra[a.letra.toUpperCase()] ?? 0) * a.creditos),
+        detalle: a.detalle,
+        fuente: a.fuente === "gradua" ? ("gradua" as const) : ("sistema" as const),
+      };
     }
 
     const h = historialPorNombre.get(normalizar(m.nombre));
@@ -346,8 +359,9 @@ export async function catalogoDelEstudiante(estudianteId: string | null): Promis
   // de las materias que el gradua no cubre.
   const codigosDelPensum = new Set(materias.map((m) => m.codigo.toUpperCase()));
   const items = [
-    ...avance.filter((a) => a.letra).map((a) => ({ creditos: a.creditos, resultado: a.letra as string })),
-    ...conAvance.filter((m) => m.fuente === "sistema" && m.letra).map((m) => ({ creditos: m.creditos, resultado: m.letra as string })),
+    ...avance.map((a) => ({ creditos: a.creditos, resultado: a.letra })),
+    // Del historial anterior solo lo que los resultados nativos no cubren.
+    ...conAvance.filter((m) => m.fuente === "sistema" && m.letra && !avancePorCodigo.has(m.codigo.toUpperCase())).map((m) => ({ creditos: m.creditos, resultado: m.letra as string })),
   ];
 
   return {
@@ -393,4 +407,98 @@ export async function archivoAcademicoPorId(id: string) {
     `SELECT ruta, estudiante_id, pensum_id, tipo FROM archivo_academico WHERE id = $1`,
     [id],
   );
+}
+
+/** Un intento de cursar una materia, tal como se enseña en el récord. */
+export type IntentoMateria = {
+  id: string;
+  codigo: string;
+  nombre: string;
+  detalle: string | null;
+  creditos: number;
+  periodo: string;
+  letra: string;
+  nota: number | null;
+  fuente: "gradua" | "calificaciones" | "manual";
+  estado: EstadoMateria;
+  /** Aprobada pero con la letra mínima: no es un problema todavía, pero está en el límite. */
+  enLimite: boolean;
+  /** Es el intento más reciente de su materia (el que decide su estado actual). */
+  vigente: boolean;
+};
+
+export type RecordNativo = {
+  periodos: { periodo: string; indice: number | null; creditos: number; intentos: IntentoMateria[] }[];
+  total: number;
+};
+
+/**
+ * El récord nativo: todos los intentos del estudiante agrupados por cuatrimestre,
+ * del más reciente al más antiguo, con el índice de cada período según las reglas
+ * de su universidad. Es lo que permite filtrar por cuatrimestre y ver las malas
+ * calificaciones. `null` si el estudiante no tiene resultados nativos.
+ */
+export async function recordNativoDelEstudiante(estudianteId: string | null): Promise<RecordNativo | null> {
+  if (!estudianteId) return null;
+
+  const [filas, uni] = await Promise.all([
+    consultar<{ id: string; codigo: string; nombre: string; detalle: string | null; creditos: number; anio: number; ronda: number; letra: string; nota: string | null; fuente: IntentoMateria["fuente"] }>(
+      `SELECT id, codigo, nombre, detalle, creditos, anio, ronda, letra, nota_numerica::text AS nota, fuente
+         FROM resultado_materia WHERE estudiante_id = $1 ORDER BY anio DESC, ronda DESC, codigo`,
+      [estudianteId],
+    ),
+    consultarUna<{ puntos_por_letra: Record<string, number>; letra_minima_aprobar: string; retirada_cuenta_en_divisor: boolean; redondeo_indice: "truncar" | "redondear" }>(
+      `SELECT u.puntos_por_letra, u.letra_minima_aprobar, u.retirada_cuenta_en_divisor, u.redondeo_indice
+         FROM estudiante e JOIN universidad u ON u.id = e.universidad_id WHERE e.id = $1`,
+      [estudianteId],
+    ),
+  ]);
+
+  if (filas.length === 0 || !uni) return null;
+
+  const reglas = {
+    puntosPorLetra: uni.puntos_por_letra,
+    retiradaCuentaEnDivisor: uni.retirada_cuenta_en_divisor,
+    redondeo: uni.redondeo_indice,
+    letraMinima: uni.letra_minima_aprobar,
+  };
+  // Las filas vienen del período más reciente al más antiguo: la primera de cada
+  // código es su intento vigente.
+  const vigentes = new Set<string>();
+  const intentos: IntentoMateria[] = filas.map((f) => {
+    const vigente = !vigentes.has(f.codigo);
+
+    vigentes.add(f.codigo);
+
+    const estado = estadoDeLetra(f.letra, reglas);
+
+    return {
+      id: f.id,
+      codigo: f.codigo,
+      nombre: f.nombre,
+      detalle: f.detalle,
+      creditos: f.creditos,
+      periodo: etiquetaPeriodo(f.anio, f.ronda),
+      letra: f.letra,
+      nota: f.nota === null ? null : Number(f.nota),
+      fuente: f.fuente,
+      estado,
+      enLimite: estado === "aprobada" && f.letra.toUpperCase() === reglas.letraMinima.toUpperCase(),
+      vigente,
+    };
+  });
+
+  const grupos = new Map<string, IntentoMateria[]>();
+
+  for (const i of intentos) grupos.set(i.periodo, [...(grupos.get(i.periodo) ?? []), i]);
+
+  return {
+    total: intentos.length,
+    periodos: [...grupos.entries()].map(([periodo, lista]) => ({
+      periodo,
+      indice: calcularIndice(lista.map((i) => ({ creditos: i.creditos, resultado: i.letra })), reglas).indice,
+      creditos: lista.filter((i) => i.letra.toUpperCase() !== RETIRADA).reduce((n, i) => n + i.creditos, 0),
+      intentos: lista,
+    })),
+  };
 }

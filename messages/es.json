@@ -7178,12 +7178,57 @@
         "no_es_pdf": "El archivo debe ser un PDF.",
         "grande": "El archivo pesa más de 10 MB.",
         "error": "No se pudo subir. Inténtalo de nuevo.",
-        "gradua_ilegible": "No parece un gradua de UCATECI («Validación de asignaturas cursadas según pénsum»). No se guardó.",
-        "matricula_distinta": "La matrícula del PDF no es la de este estudiante. No se guardó."
+        "gradua_ilegible": "No parece un gradua de {university} («Validación de asignaturas cursadas según pénsum»). No se guardó.",
+        "matricula_distinta": "La matrícula del PDF no es la de este estudiante. No se guardó.",
+        "sin_universidad": "Primero elige la universidad del estudiante: cada universidad imprime su gradua distinto.",
+        "sin_lector": "Todavía no sabemos leer el gradua de {university}. No se guardó."
       },
       "gradTitle": "Gradua y récord del estudiante",
       "pensumTitle": "PDF oficial del pénsum",
-      "read": "Gradua leído: {rows} materias con resultado, {pending} sin cursar{index}. El pénsum ya está actualizado."
+      "read": "Gradua leído: {rows} materias con resultado, {pending} sin cursar{index}. El pénsum ya está actualizado.",
+      "warnings": {
+        "nombre_distinto": "El nombre del reporte no coincide con el del estudiante; revisa que sea suyo.",
+        "version_distinta": "La versión del plan del reporte no es la del pénsum elegido.",
+        "pensum_asignado": "Se asignó el pénsum según la versión del reporte."
+      }
+    },
+    "record": {
+      "period": "Cuatrimestre",
+      "allPeriods": "Todos los cuatrimestres",
+      "onlyProblems": "Solo con problemas (reprobadas, retiradas y en el límite)",
+      "nothing": "No hay materias con esos filtros.",
+      "periodIndex": "Índice del período",
+      "grade": "Nota",
+      "atLimit": "En el límite",
+      "previousAttempt": "Intento anterior",
+      "remove": "Quitar este resultado"
+    },
+    "grades": {
+      "title": "Registrar calificaciones del cuatrimestre",
+      "year": "Año",
+      "term": "Cuatrimestre",
+      "termOption": "Cuatrimestre {n}",
+      "list": "Calificaciones",
+      "placeholder": "ISC101 ; A ; 95\nCIM001 ; B\nHUM008 ; R",
+      "help": "Una materia por línea: código ; letra ; nota (opcional). Usa R para una materia retirada. Si todo cuadra con el pénsum y las letras de la universidad se guarda; si una línea falla, no se guarda ninguna.",
+      "save": "Guardar calificaciones",
+      "saved": "{count} calificaciones guardadas. El pénsum, el índice y las alertas ya están actualizados.",
+      "unknown": "No son del pénsum de este estudiante o su letra no existe en su universidad: {codes}.",
+      "errors": {
+        "no_permitido": "No tienes permiso para registrar calificaciones.",
+        "no_encontrado": "No se encontró al estudiante.",
+        "sin_pensum": "Primero elige la universidad, la carrera y el pénsum del estudiante.",
+        "periodo_invalido": "El año o el cuatrimestre no son válidos.",
+        "vacio": "No hay ninguna línea que leer.",
+        "invalido": "Hay líneas que no se pudieron guardar; no se guardó ninguna.",
+        "error": "No se pudo guardar. Inténtalo de nuevo."
+      }
+    },
+    "alerts": {
+      "title": "Alertas académicas",
+      "lowIndex": "Índice {index}, por debajo del mínimo de {min}: observación académica.",
+      "failed": "{count, plural, one {# materia reprobada} other {# materias reprobadas}}: {subjects}.",
+      "withdrawn": "{count, plural, one {# materia retirada} other {# materias retiradas}} sin volver a cursar: {subjects}."
     }
   }
 }

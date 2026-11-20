@@ -1060,6 +1060,19 @@ Wikimedia Commons (`db/datos/logos/ORIGEN.md`). (11) El «gradua» del estudiant
 el PDF del pénsum se guardan en un bucket privado con descarga auditada; su
 lectura automática queda para la fase 4, con revisión humana.
 
+**Complemento (migraciones `0099`–`0101`).** (12) El gradua deja de ser un archivo
+guardado y pasa a ser la carga inicial que reconstruye al estudiante: se lee de
+forma determinista, se valida y se convierte en el formato nativo (un intento por
+materia, año y ronda). A partir de ahí el pénsum, el índice y las alertas se
+derivan al mostrarse, de modo que solo hay que subir calificaciones. (13) Con el
+gradua real de UCATECI el índice calculado por el sistema (746 puntos / 209
+créditos, la retirada cuenta en el divisor, truncado) coincide con el del reporte
+oficial (3,56): ese cruce validó las reglas de la universidad. (14) Se unificó el
+índice y el umbral de riesgo, que estaban calculados de tres maneras distintas.
+(15) Se cambió la decisión de pasar toda importación por una pantalla de revisión:
+no aplica al gradua (extracción determinista con validaciones y reversible) y se
+mantiene para OCR/IA.
+
 ---
 
 ## Pendiente de registrar (se completará al cerrar cada etapa)

@@ -20,8 +20,9 @@ export type FilaGradua = {
   nombre: string;
   creditos: number;
   puntos: number;
-  /** «R2 2023»: período dentro del año y año. `null` si no hay. */
-  periodo: string | null;
+  /** Año y ronda del cuatrimestre (R1/R2/R3 → 1/2/3). */
+  anio: number;
+  ronda: number;
   /** A, B, C, D, F, P (seminario) o R (retirada). `null` si no hay resultado. */
   letra: string | null;
 };
@@ -111,7 +112,8 @@ export function leerGradua(paginas: readonly string[]): LecturaGradua | null {
       nombre,
       creditos: Number(creditos),
       puntos: Number(puntos),
-      periodo: `R${rondaPeriodo} ${anio}`,
+      anio: Number(anio),
+      ronda: Number(rondaPeriodo),
       letra,
     });
   }
@@ -122,3 +124,39 @@ export function leerGradua(paginas: readonly string[]): LecturaGradua | null {
 
 /** Solo dígitos: «2023-0253» y «20230253» son la misma matrícula. */
 export const soloDigitos = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "");
+
+const NUMERAL = ["I", "II", "III"];
+
+/** «2026-II»: como se nombran los períodos en el resto del sistema. */
+export const etiquetaPeriodo = (anio: number, ronda: number) => `${anio}-${NUMERAL[ronda - 1] ?? ronda}`;
+
+/** Lo contrario: «2026-II» → { anio: 2026, ronda: 2 }; `null` si no tiene esa forma. */
+export function leerEtiquetaPeriodo(texto: string): { anio: number; ronda: number } | null {
+  const m = /^(\d{4})-(I{1,3}|[123])$/i.exec(texto.trim());
+
+  if (!m) return null;
+
+  const ronda = /^\d$/.test(m[2]) ? Number(m[2]) : m[2].length;
+
+  return { anio: Number(m[1]), ronda };
+}
+
+/** «ISC-R-2-2019» y «ISC-R2-2019» son el mismo plan: se comparan sin signos ni mayúsculas. */
+export const normalizarVersion = (v: string | null | undefined) => (v ?? "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+
+/** Dos nombres se parecen si uno contiene al otro, sin acentos ni mayúsculas. */
+export function nombresParecidos(a: string | null | undefined, b: string | null | undefined): boolean {
+  const n = (x: string | null | undefined) => (x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z ]/gi, "").trim().toLowerCase();
+  const x = n(a);
+  const y = n(b);
+
+  return x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x));
+}
+
+/**
+ * Qué lector sabe leer el gradua de cada universidad, por siglas. Cada una imprime
+ * el suyo; al llegar otra se añade aquí con el mismo resultado y nada más cambia.
+ */
+export const LECTORES_GRADUA: Record<string, (paginas: readonly string[]) => LecturaGradua | null> = {
+  UCATECI: leerGradua,
+};

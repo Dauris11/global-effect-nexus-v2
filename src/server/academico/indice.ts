@@ -1,0 +1,64 @@
+import { consultarUna } from "@/lib/db";
+import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
+import { parametros } from "@/server/parametros/consultas";
+import type { CatalogoDelEstudiante } from "@/server/universidades/consultas";
+
+/**
+ * UN solo índice y UN solo umbral para todo el sistema.
+ *
+ * Antes la lista de expedientes promediaba el GPA del historial, el pénsum
+ * calculaba otro con las reglas de la universidad y el código comparaba contra un
+ * 2,00 fijo mientras el reglamento (y el parámetro `becas.indice_minimo`) decían
+ * 3,00. Ahora el índice es el nativo —las reglas de la universidad del estudiante
+ * sobre sus resultados— y, solo si no tiene resultados nativos, el promedio del
+ * historial anterior; y el umbral es el parámetro editable.
+ */
+
+/** Por debajo de este índice el estudiante está en observación académica. */
+export async function umbralDeIndice(): Promise<number> {
+  const n = Number((await parametros())["becas.indice_minimo"]);
+
+  return Number.isFinite(n) && n > 0 ? n : GPA_PRUEBA_ACADEMICA;
+}
+
+/** Índice del estudiante, o `null` si no tiene ni resultados nativos ni historial. */
+export async function indiceDelEstudiante(estudianteId: string | null): Promise<number | null> {
+  if (!estudianteId) return null;
+
+  const fila = await consultarUna<{ nativo: number | null; historial: number | null }>(
+    `SELECT indice_estudiante($1)::float8 AS nativo,
+            (SELECT round(avg(gpa), 2)::float8 FROM historial_calificacion WHERE estudiante_id = $1) AS historial`,
+    [estudianteId],
+  );
+
+  return fila?.nativo ?? fila?.historial ?? null;
+}
+
+export type AlertaAcademica =
+  | { tipo: "indice_bajo"; indice: number; umbral: number }
+  | { tipo: "reprobadas"; materias: string[] }
+  | { tipo: "retiradas"; materias: string[] };
+
+/**
+ * Alertas que se derivan al mirar el expediente, sin tabla de avisos que se pueda
+ * quedar vieja: en cuanto entra una calificación, la alerta aparece o desaparece.
+ * Una materia retirada que ya se volvió a cursar deja de contar (el estado es el
+ * del intento más reciente).
+ */
+export function alertasAcademicas(catalogo: CatalogoDelEstudiante, indice: number | null, umbral: number): AlertaAcademica[] {
+  const alertas: AlertaAcademica[] = [];
+  const nombres = (estado: "reprobada" | "retirada") => catalogo.materias.filter((m) => m.estado === estado).map((m) => `${m.codigo} ${m.nombre}`);
+
+  if (indice !== null && indice < umbral) alertas.push({ tipo: "indice_bajo", indice, umbral });
+
+  const reprobadas = nombres("reprobada");
+  const retiradas = nombres("retirada");
+
+  if (reprobadas.length > 0) alertas.push({ tipo: "reprobadas", materias: reprobadas });
+  if (retiradas.length > 0) alertas.push({ tipo: "retiradas", materias: retiradas });
+
+  return alertas;
+}
+
+/** Promedio de GPA de unas notas, para los sitios que aún solo tienen el historial. */
+export const promedioDeNotas = (gpas: readonly number[]) => promedio(gpas);

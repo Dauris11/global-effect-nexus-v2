@@ -1,3 +1,4 @@
+import { indiceDelEstudiante, umbralDeIndice } from "@/server/academico/indice";
 import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
@@ -24,7 +25,6 @@ import { requerirRol } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
 import {
   aprobada,
-  GPA_PRUEBA_ACADEMICA,
   promedio,
 } from "@/lib/notas";
 import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
@@ -145,7 +145,10 @@ export default async function PortalEstudiante({
   const promedioGeneral = promedio(todasLasNotas);
   // Promedio de los índices de cada fila, que en el historial universitario
   // vienen guardados; ver `notasDelEstudiante`.
-  const indice = promedio(notas.map((nota) => nota.gpa));
+  // El mismo índice que ve administración: el nativo (reglas de su universidad) y,
+  // solo sin resultados nativos, el promedio del historial anterior.
+  const [indiceNativo, umbralIndice] = await Promise.all([indiceDelEstudiante(estudiante.id), umbralDeIndice()]);
+  const indice = indiceNativo ?? promedio(notas.map((nota) => nota.gpa));
   const aprobadas = todasLasNotas.filter(aprobada).length;
   const creditos = materias.reduce(
     (total, materia) => total + (materia.creditos ?? 0),
@@ -186,7 +189,7 @@ export default async function PortalEstudiante({
         {/* Prueba académica: el aviso solo aparece si el índice ya está por
             debajo del mínimo, nunca cuando aún no hay historial. Es el aviso
             grave del sistema: tinta, no rojo. */}
-        {indice !== null && indice < GPA_PRUEBA_ACADEMICA ? (
+        {indice !== null && indice < umbralIndice ? (
           <div
             role="alert"
             className="flex items-start gap-3 rounded-control bg-tinta p-4 text-background"

@@ -7,10 +7,10 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { soloDigitos, type LecturaGradua } from "@/lib/gradua";
+import { nombresParecidos, normalizarVersion, soloDigitos, type LecturaGradua } from "@/lib/gradua";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { borrarDocumento, MAXIMO_ENTREGA, subirMaterial } from "@/lib/supabase/almacen";
-import { escribirAvance, leerGraduaDeBytes } from "@/server/universidades/gradua-importar";
+import { escribirResultados, leerGraduaDeBytes } from "@/server/universidades/gradua-importar";
 
 /**
  * Subir y quitar los PDF académicos: el «gradua» (validación de asignaturas) y el
@@ -35,9 +35,20 @@ export type EstadoArchivo = {
     | "grande"
     | "gradua_ilegible"
     | "matricula_distinta"
+    | "sin_universidad"
+    | "sin_lector"
     | "error";
-  /** Solo si el archivo era un gradua y se leyó: lo que dijo. */
-  lectura?: { filas: number; noCursadas: number; indiceReportado: number | null; creditos: number | null };
+  /** Para decir de qué universidad no hay lector. */
+  universidad?: string;
+  /** Solo si el archivo era un gradua y se leyó: lo que dijo y qué se avisó. */
+  lectura?: {
+    filas: number;
+    noCursadas: number;
+    indiceReportado: number | null;
+    creditos: number | null;
+    /** Avisos que no impiden guardar: `nombre_distinto`, `version_distinta`, `pensum_asignado`. */
+    avisos: string[];
+  };
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,16 +78,37 @@ export async function subirArchivoAcademico(_p: EstadoArchivo, d: FormData): Pro
   // no se guarda nada y se dice por qué. Subirlo «para que figure» sin que cambie el
   // pénsum era justo lo que parecía no hacer nada.
   let lectura: LecturaGradua | null = null;
+  const avisos: string[] = [];
+  let estudiante: { matricula: string | null; nombre: string; siglas: string | null; pensum_id: string | null; pensum_version: string | null; universidad_id: string | null } | null = null;
 
   if (tipo === "gradua") {
-    lectura = await leerGraduaDeBytes(bytes);
+    estudiante = await consultarUna(
+      `SELECT e.matricula, e.nombre, u.siglas, e.pensum_id, p.version AS pensum_version, e.universidad_id
+         FROM estudiante e
+         LEFT JOIN universidad u ON u.id = e.universidad_id
+         LEFT JOIN pensum p ON p.id = e.pensum_id
+        WHERE e.id = $1`,
+      [id],
+    );
 
-    if (!lectura) return { estado: "gradua_ilegible" };
+    if (!estudiante) return { estado: "no_encontrado" };
+    // Cada universidad imprime su gradua distinto: hay que saber cuál es la del estudiante.
+    if (!estudiante.siglas) return { estado: "sin_universidad" };
 
-    const est = await consultarUna<{ matricula: string | null }>(`SELECT matricula FROM estudiante WHERE id = $1`, [id]);
+    const leido = await leerGraduaDeBytes(bytes, estudiante.siglas);
 
-    if (est?.matricula && soloDigitos(est.matricula) !== soloDigitos(lectura.matricula)) {
+    if (leido === "sin_lector") return { estado: "sin_lector", universidad: estudiante.siglas };
+    if (!leido) return { estado: "gradua_ilegible", universidad: estudiante.siglas };
+
+    lectura = leido;
+
+    // Otra persona: se rechaza. La matrícula es lo que identifica; el nombre solo avisa.
+    if (estudiante.matricula && soloDigitos(estudiante.matricula) !== soloDigitos(lectura.matricula)) {
       return { estado: "matricula_distinta" };
+    }
+    if (!nombresParecidos(lectura.nombre, estudiante.nombre)) avisos.push("nombre_distinto");
+    if (estudiante.pensum_version && normalizarVersion(lectura.version) !== normalizarVersion(estudiante.pensum_version)) {
+      avisos.push("version_distinta");
     }
   }
 
@@ -103,7 +135,30 @@ export async function subirArchivoAcademico(_p: EstadoArchivo, d: FormData): Pro
       );
       const nuevo = r.rows[0].id;
 
-      if (lectura) await escribirAvance(c, id, nuevo, lectura);
+      if (lectura) {
+        await escribirResultados(c, id, nuevo, lectura);
+
+        // Sin matrícula, se anota la del reporte, pero solo si el nombre también
+        // concuerda: adoptarla de otra persona sería dejar el expediente mal marcado.
+        if (!estudiante?.matricula && !avisos.includes("nombre_distinto")) {
+          await c.query(`UPDATE estudiante SET matricula = $2 WHERE id = $1 AND matricula IS NULL`, [id, lectura.matricula]);
+        }
+
+        // Sin pénsum elegido, la versión del reporte lo resuelve si coincide con un
+        // plan del catálogo de SU universidad.
+        if (!estudiante?.pensum_id) {
+          const r2 = await c.query<{ id: string; carrera_id: string }>(
+            `SELECT p.id, p.carrera_id FROM pensum p JOIN carrera c ON c.id = p.carrera_id
+              WHERE c.universidad_id = $1 AND regexp_replace(upper(p.version), '[^A-Z0-9]', '', 'g') = $2`,
+            [estudiante?.universidad_id, normalizarVersion(lectura.version)],
+          );
+
+          if (r2.rows.length === 1) {
+            await c.query(`UPDATE estudiante SET carrera_id = $2, pensum_id = $3 WHERE id = $1 AND pensum_id IS NULL`, [id, r2.rows[0].carrera_id, r2.rows[0].id]);
+            avisos.push("pensum_asignado");
+          }
+        }
+      }
 
       return nuevo;
     });
@@ -134,6 +189,7 @@ export async function subirArchivoAcademico(_p: EstadoArchivo, d: FormData): Pro
           noCursadas: lectura.noCursadas,
           indiceReportado: lectura.indiceReportado,
           creditos: lectura.creditosReportados,
+          avisos,
         }
       : undefined,
   };
@@ -157,7 +213,7 @@ export async function quitarArchivoAcademico(_p: EstadoArchivo, d: FormData): Pr
   if (!usuarioTienePermiso(usuario, permiso)) return { estado: "no_permitido" };
 
   // Quitar un gradua quita también el avance que se leyó de él.
-  await consultarUna(`DELETE FROM avance_pensum WHERE archivo_id = $1 RETURNING id`, [id]);
+  await consultarUna(`DELETE FROM resultado_materia WHERE archivo_id = $1 RETURNING id`, [id]);
   await consultarUna(`DELETE FROM archivo_academico WHERE id = $1 RETURNING id`, [id]);
   await borrarDocumento(fila.ruta);
   await registrar({

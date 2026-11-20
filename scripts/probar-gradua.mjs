@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { leerGradua, soloDigitos } from "../src/lib/gradua.ts";
+import { etiquetaPeriodo, leerEtiquetaPeriodo, leerGradua, nombresParecidos, normalizarVersion, soloDigitos } from "../src/lib/gradua.ts";
 
 // Texto sintético con la forma del reporte de UCATECI (sin datos de nadie).
 const PAGINA = [
@@ -49,11 +49,11 @@ test("una electiva se guarda bajo su cupo con el detalle de la materia real", ()
   assert.equal(e.creditos, 2);
 });
 
-test("retirada (R) y seminario (P) conservan su letra; el período queda como R2 2026", () => {
+test("retirada (R) y seminario (P) conservan su letra; el período queda como 2026-II", () => {
   const g = leerGradua([PAGINA]);
   const r = g.filas.find((f) => f.codigo === "HUM008");
   assert.equal(r.letra, "R");
-  assert.equal(r.periodo, "R2 2026");
+  assert.equal(etiquetaPeriodo(r.anio, r.ronda), "2026-II");
   assert.equal(g.filas.find((f) => f.codigo === "ISC031").letra, "P");
 });
 
@@ -63,4 +63,23 @@ test("algo que no es un gradua da null", () => {
 
 test("la matrícula se compara por dígitos", () => {
   assert.equal(soloDigitos("2023-0253"), soloDigitos("20230253"));
+});
+
+test("los períodos se escriben y se leen como 2026-II", () => {
+  assert.equal(etiquetaPeriodo(2024, 1), "2024-I");
+  assert.equal(etiquetaPeriodo(2025, 3), "2025-III");
+  assert.deepEqual(leerEtiquetaPeriodo("2026-II"), { anio: 2026, ronda: 2 });
+  assert.deepEqual(leerEtiquetaPeriodo("2026-3"), { anio: 2026, ronda: 3 });
+  assert.equal(leerEtiquetaPeriodo("2026-IV"), null);
+});
+
+test("ISC-R-2-2019 e ISC-R2-2019 son el mismo plan", () => {
+  assert.equal(normalizarVersion("ISC-R-2-2019"), normalizarVersion("isc-r2-2019"));
+  assert.notEqual(normalizarVersion("ISC-R2-2019"), normalizarVersion("ISC-R2-2022"));
+});
+
+test("el nombre del reporte se compara sin acentos y por contención", () => {
+  assert.ok(nombresParecidos("DAURIS SANTANA", "Dauris Santana"));
+  assert.ok(nombresParecidos("MARÍA DE LOS ANGELES PÉREZ", "Maria Perez") === false);
+  assert.ok(nombresParecidos("Ashley Cabrera", "DAURIS SANTANA") === false);
 });

@@ -84,7 +84,7 @@ export function ArchivosAcademicos({
           {estado.estado !== "inicial" && estado.estado !== "ok" && (
             <p role="alert" className={ALERTA_RIESGO.contenedor}>
               <AlertCircle className={ALERTA_RIESGO.icono} />
-              <span className={ALERTA_RIESGO.texto}>{t(`files.errors.${estado.estado}`)}</span>
+              <span className={ALERTA_RIESGO.texto}>{t(`files.errors.${estado.estado}`, { university: estado.universidad ?? "" })}</span>
             </p>
           )}
           {estado.estado === "ok" && (
@@ -98,6 +98,16 @@ export function ArchivosAcademicos({
                   })
                 : t("files.done")}
             </p>
+          )}
+          {estado.estado === "ok" && estado.lectura && estado.lectura.avisos.length > 0 && (
+            <ul className="space-y-1 text-sm">
+              {estado.lectura.avisos.map((a) => (
+                <li key={a} className="flex items-start gap-2">
+                  <AlertCircle className="mt-0.5 size-4 shrink-0 text-tinta-3" />
+                  {t(`files.warnings.${a}`)}
+                </li>
+              ))}
+            </ul>
           )}
           <Button type="submit" size="sm" disabled={enviando}>
             {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}

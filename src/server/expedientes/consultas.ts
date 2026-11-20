@@ -2,7 +2,7 @@ import { consultar, consultarUna } from "@/lib/db";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { FAMILIA_FIJA, type EstadoEstudiante } from "@/lib/expedientes";
 import type { OrdenExpediente, SituacionExpediente } from "@/lib/filtros-expedientes";
-import { GPA_PRUEBA_ACADEMICA } from "@/lib/notas";
+import { umbralDeIndice } from "@/server/academico/indice";
 
 /**
  * Lista de expedientes para el módulo del equipo.
@@ -76,7 +76,7 @@ const DESDE_EXPEDIENTES = `
  * Cada filtro es un parámetro anulable dentro del WHERE, no SQL armado a
  * trozos: la consulta es siempre la misma cadena y ningún valor puede acabar
  * concatenado. La situación se compara con literales fijos; el umbral de
- * "en riesgo" es la prueba académica (GPA_PRUEBA_ACADEMICA = 2.00). "Sin
+ * "en riesgo" es el índice por debajo del parámetro becas.indice_minimo. "Sin
  * cuenta" solo mira a los activos: son los únicos que deben tenerla
  * (`ESTADO_CON_CUENTA`), así que en ellos falta y en los demás no.
  */
@@ -89,18 +89,18 @@ const DONDE_EXPEDIENTES = `
         AND ($2::text IS NULL OR e.estado::text = $2)
         AND ($3::text IS NULL OR coalesce(uc.siglas, e.universidad) = $3)
         AND ($4::text IS NULL
-             OR ($4 = 'en_riesgo'  AND h.indice < $5)
-             OR ($4 = 'sin_notas'  AND h.indice IS NULL)
+             OR ($4 = 'en_riesgo'  AND coalesce(indice_estudiante(e.id), h.indice) < $5)
+             OR ($4 = 'sin_notas'  AND coalesce(indice_estudiante(e.id), h.indice) IS NULL)
              OR ($4 = 'sin_cuenta' AND e.estado = 'activo' AND e.usuario_id IS NULL)
              OR ($4 = 'sin_foto'   AND e.foto_url IS NULL))`;
 
-function parametrosFiltro(filtros: FiltrosExpedientes) {
+function parametrosFiltro(filtros: FiltrosExpedientes, umbral: number) {
   return [
     filtros.busqueda ?? null,
     filtros.estado ?? null,
     filtros.universidad ?? null,
     filtros.situacion ?? null,
-    GPA_PRUEBA_ACADEMICA,
+    umbral,
   ];
 }
 
@@ -110,8 +110,8 @@ function parametrosFiltro(filtros: FiltrosExpedientes) {
  */
 const ORDEN_SQL: Record<OrdenExpediente, string> = {
   nombre: "e.nombre",
-  indice_alto: "h.indice DESC NULLS LAST, e.nombre",
-  indice_bajo: "h.indice ASC NULLS LAST, e.nombre",
+  indice_alto: "coalesce(indice_estudiante(e.id), h.indice) DESC NULLS LAST, e.nombre",
+  indice_bajo: "coalesce(indice_estudiante(e.id), h.indice) ASC NULLS LAST, e.nombre",
   ingreso_reciente: "e.fecha_ingreso DESC NULLS LAST, e.nombre",
 };
 
@@ -136,6 +136,7 @@ export async function listaExpedientes({
   pagina?: number;
 } = {}): Promise<FilaExpediente[]> {
   const salto = (Math.max(1, pagina) - 1) * porPagina;
+  const umbral = await umbralDeIndice();
 
   const filas = await consultar<FilaExpediente>(
     `SELECT e.id,
@@ -151,13 +152,13 @@ export async function listaExpedientes({
             e.grupo::int AS grupo,
             e.foto_url,
             e.usuario_id IS NOT NULL AS con_cuenta,
-            h.indice,
+            coalesce(indice_estudiante(e.id), h.indice) AS indice,
             coalesce(h.evaluaciones, 0) AS evaluaciones
        ${DESDE_EXPEDIENTES}
        ${DONDE_EXPEDIENTES}
       ORDER BY ${ORDEN_SQL[orden]}
       LIMIT $6 OFFSET $7`,
-    [...parametrosFiltro(filtros), porPagina, salto],
+    [...parametrosFiltro(filtros, umbral), porPagina, salto],
   );
 
   return filas.map((f) => ({ ...f, universidad_logo: urlDeAvatar(f.universidad_logo) }));
@@ -178,7 +179,7 @@ export async function contarExpedientes(
     `SELECT count(*)::int AS total
        ${DESDE_EXPEDIENTES}
        ${DONDE_EXPEDIENTES}`,
-    parametrosFiltro(filtros),
+    parametrosFiltro(filtros, await umbralDeIndice()),
   );
 
   return fila?.total ?? 0;

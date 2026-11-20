@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { llevaCuenta, visualDeEstado } from "@/lib/expedientes";
-import { GPA_PRUEBA_ACADEMICA } from "@/lib/notas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
 import type { FilaExpediente } from "@/server/expedientes/consultas";
@@ -25,10 +24,13 @@ export async function ListaExpedientes({
   filas,
   idioma,
   puedeEscribir,
+  umbral,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
   puedeEscribir: boolean;
+  /** Índice por debajo del cual se marca en riesgo (parámetro becas.indice_minimo). */
+  umbral: number;
 }) {
   const t = await getTranslations("records");
 
@@ -85,7 +87,7 @@ export async function ListaExpedientes({
                 )}
               </td>
               <td className="px-4 py-2.5 text-right">
-                <Indice indice={fila.indice} />
+                <Indice indice={fila.indice} umbral={umbral} />
               </td>
               <td className="px-4 py-2.5">
                 <Cuenta fila={fila} textos={{ con: t("lista.conCuenta"), sin: t("lista.sinCuenta") }} />
@@ -124,7 +126,7 @@ export async function ListaExpedientes({
                 <span className="block truncate font-semibold">{fila.nombre}</span>
                 <span className="flex flex-wrap items-center gap-2">
                   <Estado estado={fila.estado} texto={t(`status.${fila.estado}`)} />
-                  <Indice indice={fila.indice} />
+                  <Indice indice={fila.indice} umbral={umbral} />
                 </span>
                 {fila.universidad && (
                   <span className="texto-meta flex items-center gap-1.5 truncate">
@@ -153,10 +155,10 @@ function Estado({ estado, texto }: { estado: string; texto: string }) {
 }
 
 /** El índice, con la señal SEMAFORO y su icono cuando cae bajo la prueba académica. */
-function Indice({ indice }: { indice: number | null }) {
+function Indice({ indice, umbral }: { indice: number | null; umbral: number }) {
   if (indice === null) return <span className="texto-meta">—</span>;
 
-  const enRiesgo = indice < GPA_PRUEBA_ACADEMICA;
+  const enRiesgo = indice < umbral;
 
   return (
     <span

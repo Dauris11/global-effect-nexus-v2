@@ -7178,12 +7178,57 @@
         "no_es_pdf": "The file must be a PDF.",
         "grande": "The file is larger than 10 MB.",
         "error": "It could not be uploaded. Try again.",
-        "gradua_ilegible": "This does not look like a UCATECI graduation check. It was not saved.",
-        "matricula_distinta": "The student ID in the PDF is not this student's. It was not saved."
+        "gradua_ilegible": "This does not look like a {university} graduation check. It was not saved.",
+        "matricula_distinta": "The student ID in the PDF is not this student's. It was not saved.",
+        "sin_universidad": "First choose the student's university: each university prints its graduation check differently.",
+        "sin_lector": "We cannot read {university}'s graduation check yet. It was not saved."
       },
       "gradTitle": "Student's graduation check and record",
       "pensumTitle": "Official curriculum PDF",
-      "read": "Graduation check read: {rows} subjects with a result, {pending} not taken{index}. The curriculum is updated."
+      "read": "Graduation check read: {rows} subjects with a result, {pending} not taken{index}. The curriculum is updated.",
+      "warnings": {
+        "nombre_distinto": "The name in the report does not match the student's; check that it is theirs.",
+        "version_distinta": "The plan version in the report is not the chosen curriculum's.",
+        "pensum_asignado": "The curriculum was assigned from the report's version."
+      }
+    },
+    "record": {
+      "period": "Term",
+      "allPeriods": "All terms",
+      "onlyProblems": "Problems only (failed, withdrawn and borderline)",
+      "nothing": "No subjects match these filters.",
+      "periodIndex": "Term index",
+      "grade": "Grade",
+      "atLimit": "Borderline",
+      "previousAttempt": "Earlier attempt",
+      "remove": "Remove this result"
+    },
+    "grades": {
+      "title": "Enter the term's grades",
+      "year": "Year",
+      "term": "Term",
+      "termOption": "Term {n}",
+      "list": "Grades",
+      "placeholder": "ISC101 ; A ; 95\nCIM001 ; B\nHUM008 ; R",
+      "help": "One subject per line: code ; letter ; grade (optional). Use R for a withdrawn subject. If everything matches the curriculum and the university's letters it is saved; if one line fails, none is saved.",
+      "save": "Save grades",
+      "saved": "{count} grades saved. The curriculum, the index and the alerts are already updated.",
+      "unknown": "Not in this student's curriculum or the letter does not exist at their university: {codes}.",
+      "errors": {
+        "no_permitido": "You don't have permission to enter grades.",
+        "no_encontrado": "The student was not found.",
+        "sin_pensum": "First choose the student's university, program and curriculum.",
+        "periodo_invalido": "The year or term is not valid.",
+        "vacio": "There is no line to read.",
+        "invalido": "Some lines could not be saved; none was saved.",
+        "error": "It could not be saved. Try again."
+      }
+    },
+    "alerts": {
+      "title": "Academic alerts",
+      "lowIndex": "Index {index}, below the minimum of {min}: academic observation.",
+      "failed": "{count, plural, one {# failed subject} other {# failed subjects}}: {subjects}.",
+      "withdrawn": "{count, plural, one {# withdrawn subject} other {# withdrawn subjects}} not retaken: {subjects}."
     }
   }
 }
