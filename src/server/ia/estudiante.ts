@@ -12,6 +12,7 @@ import {
   type EstudianteDeSesion,
 } from "@/server/estudiantes/portal";
 import { parametros } from "@/server/parametros/consultas";
+import { catalogoDelEstudiante } from "@/server/universidades/consultas";
 
 /**
  * Chat con el asistente, en el ámbito estudiantil.
@@ -148,7 +149,7 @@ export async function instruccionesPara(
   estudiante: EstudianteDeSesion,
   idioma: "es" | "en",
 ): Promise<string> {
-  const [materias, notas, notas360, condicion, asignaciones, valoresParametros] =
+  const [materias, notas, notas360, condicion, asignaciones, valoresParametros, catalogo] =
     await Promise.all([
       materiasInscritas(estudiante.id),
       notasDelEstudiante(estudiante.id),
@@ -156,6 +157,7 @@ export async function instruccionesPara(
       condicionEnLaFundacion(estudiante.id, 3),
       asignacionesDelEstudiante(estudiante.id),
       parametros(),
+      catalogoDelEstudiante(estudiante.id),
     ]);
 
   const notaMinima360 =
@@ -178,6 +180,16 @@ export async function instruccionesPara(
       (fila.estado_entrega ?? "pendiente") === "pendiente",
   );
 
+  // Avance en el pénsum: lo aprobado sale del sistema (inscripciones aprobadas e
+  // historial), así que el asistente no debe presentarlo como un récord oficial.
+  // «Disponibles» son las pendientes cuyos prerrequisitos ya están aprobados.
+  const aprobadas = new Set(catalogo.materias.filter((m) => m.estado === "aprobada").map((m) => m.codigo));
+  const disponibles = catalogo.materias
+    .filter((m) => m.estado === "pendiente" && m.prerrequisitos.every((p) => aprobadas.has(p)))
+    .slice(0, 15);
+  const porcentaje =
+    catalogo.creditosTotales > 0 ? Math.round((catalogo.creditosAprobados / catalogo.creditosTotales) * 100) : 0;
+
   const lista = (titulo: string, lineas: readonly string[]) =>
     lineas.length === 0 ? "" : `\n${titulo}\n${lineas.map((l) => `- ${l}`).join("\n")}`;
 
@@ -199,6 +211,16 @@ export async function instruccionesPara(
     envolverDatos([
     `Estudiante: ${estudiante.nombre} (becado universitario${pautaCreditos.etiquetaUniversidad ? ` en ${pautaCreditos.etiquetaUniversidad}` : ""}, estado ${estudiante.estado}).`,
     `Índice académico: ${indice === null ? "sin historial" : indice.toFixed(2)} sobre 4.00. Promedio: ${media === null ? "sin historial" : media.toFixed(1)} sobre 100 (universidad se aprueba con ${NOTA_APROBADA}; Global Effect 360 se aprueba con ${notaMinima360}; tope de matrícula universitaria según pauta ${pautaCreditos.etiquetaUniversidad ?? "general"}: ${pautaCreditos.tope} créditos por período).`,
+    catalogo.carrera
+      ? `Carrera: ${catalogo.carrera.nombre}${catalogo.universidad ? ` en ${catalogo.universidad.siglas}` : ""}${catalogo.pensum ? `, plan ${catalogo.pensum.version}` : ""}.`
+      : "Carrera: aún no registrada en el sistema.",
+    catalogo.pensum && catalogo.materias.length > 0
+      ? `Avance en el pénsum según el sistema: ${catalogo.creditosAprobados} de ${catalogo.creditosTotales} créditos aprobados (${porcentaje} %). Es un cálculo del sistema, no el récord oficial de la universidad; las electivas aprobadas pueden no estar contadas. Para el dato oficial, remite a la universidad.`
+      : "",
+    lista(
+      "Materias del pénsum que ya podría cursar (prerrequisitos aprobados):",
+      disponibles.map((m) => `${m.codigo} · ${m.nombre} · ${m.creditos} créditos${m.periodo_sugerido ? ` · período sugerido ${m.periodo_sugerido}` : ""}`),
+    ),
     lista(
       "Materias inscritas:",
       materias.map((materia) =>

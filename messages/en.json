@@ -7122,7 +7122,19 @@
       "pendiente": "Pending",
       "noPensum": "No curriculum assigned yet: choose university, program and plan above to see progress.",
       "emptyPensum": "The chosen curriculum has no subjects loaded yet.",
-      "regime": "Term system: {regime}"
+      "regime": "Term system: {regime}",
+      "generalIndex": "General index",
+      "graduaMatches": "The graduation check uploaded on {date} reports {index} and the system computes the same: the university's rules match.",
+      "graduaDiffers": "The graduation check uploaded on {date} reports {reported} and the system computes {computed}. There are newer grades or the university's rules need review.",
+      "outsidePensum": "Subjects in the graduation check that are not in the chosen curriculum: {codes}.",
+      "noGradua": "The graduation check has not been uploaded yet: progress comes only from the system's grades. Upload it below.",
+      "period": "Plan term {n}",
+      "noPeriod": "No suggested term",
+      "points": "Points",
+      "periodGrade": "Term and grade",
+      "periodTotal": "Taken this term",
+      "reprobada": "Failed",
+      "retirada": "Withdrawn"
     },
     "rules": {
       "title": "This university's grading rules",
@@ -7165,10 +7177,13 @@
         "no_encontrado": "The owner of the file was not found.",
         "no_es_pdf": "The file must be a PDF.",
         "grande": "The file is larger than 10 MB.",
-        "error": "It could not be uploaded. Try again."
+        "error": "It could not be uploaded. Try again.",
+        "gradua_ilegible": "This does not look like a UCATECI graduation check. It was not saved.",
+        "matricula_distinta": "The student ID in the PDF is not this student's. It was not saved."
       },
       "gradTitle": "Student's graduation check and record",
-      "pensumTitle": "Official curriculum PDF"
+      "pensumTitle": "Official curriculum PDF",
+      "read": "Graduation check read: {rows} subjects with a result, {pending} not taken{index}. The curriculum is updated."
     }
   }
 }

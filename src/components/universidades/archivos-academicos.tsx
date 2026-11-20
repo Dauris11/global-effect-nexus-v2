@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { AlertCircle, FileText, Loader2, Trash2, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { CLASE_SELECT } from "@/components/universidades/formularios";
@@ -87,7 +87,18 @@ export function ArchivosAcademicos({
               <span className={ALERTA_RIESGO.texto}>{t(`files.errors.${estado.estado}`)}</span>
             </p>
           )}
-          {estado.estado === "ok" && <p role="status" className="text-sm">{t("files.done")}</p>}
+          {estado.estado === "ok" && (
+            <p role="status" className="flex items-start gap-2 text-sm font-medium">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-marca-700" />
+              {estado.lectura
+                ? t("files.read", {
+                    rows: estado.lectura.filas,
+                    pending: estado.lectura.noCursadas,
+                    index: estado.lectura.indiceReportado != null ? ` · ${estado.lectura.indiceReportado.toFixed(2)}` : "",
+                  })
+                : t("files.done")}
+            </p>
+          )}
           <Button type="submit" size="sm" disabled={enviando}>
             {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
             {t("files.upload")}

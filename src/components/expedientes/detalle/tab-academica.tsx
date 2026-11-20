@@ -7,6 +7,7 @@ import { Historial360 } from "@/components/expedientes/historial-360";
 import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
 import { ArchivosAcademicos } from "@/components/universidades/archivos-academicos";
+import { GraduaViva } from "@/components/expedientes/detalle/gradua-viva";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
@@ -190,7 +191,7 @@ export async function TabPensum({
             { etiqueta: t("v2.curriculum.approvedCredits"), valor: creditos > 0 ? String(creditos) : null },
           ]}
         />
-        {catalogo.pensum ? <AvancePensum catalogo={catalogo} /> : <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>}
+        {catalogo.pensum ? <GraduaViva catalogo={catalogo} /> : <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>}
       </Seccion>
 
       <Seccion titulo={tc("files.gradTitle")}>
@@ -214,54 +215,5 @@ export async function TabPensum({
         />
       </Seccion>
     </>
-  );
-}
-
-/**
- * Avance sobre el pénsum elegido. El porcentaje sale de créditos aprobados sobre
- * créditos del plan, y una materia solo cuenta si el sistema la vio aprobada
- * (inscripción aprobada o historial consolidado): lo que no casa queda pendiente.
- */
-async function AvancePensum({ catalogo }: { catalogo: CatalogoDelEstudiante }) {
-  const t = await getTranslations("catalog");
-  const { creditosAprobados: ap, creditosTotales: tot, materias } = catalogo;
-  const pct = tot > 0 ? Math.round((ap / tot) * 100) : 0;
-
-  if (materias.length === 0) return <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("progress.emptyPensum")}</p>;
-
-  return (
-    <div className="mt-4 space-y-4">
-      <div>
-        <p className="text-sm font-medium">{t("progress.credits", { approved: ap, total: tot, percent: pct })}</p>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full bg-marca-500" style={{ width: `${pct}%` }} />
-        </div>
-        {catalogo.universidad && <p className="texto-meta mt-2">{t("progress.regime", { regime: t(`regime.${catalogo.universidad.regimen}`) })}</p>}
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[420px] text-sm">
-          <thead>
-            <tr className="border-b border-linea text-left text-xs text-tinta-3">
-              <th className="py-2 font-medium">{t("progress.code")}</th>
-              <th className="py-2 font-medium">{t("progress.subject")}</th>
-              <th className="w-16 py-2 text-right font-medium">{t("progress.creditsShort")}</th>
-              <th className="w-28 py-2 text-right font-medium">{t("progress.state")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-linea">
-            {materias.map((m) => (
-              <tr key={m.id}>
-                <td className="py-2 pr-2 font-medium">{m.codigo}</td>
-                <td className="py-2 pr-2 break-words">{m.nombre}</td>
-                <td className="py-2 text-right tabular-nums">{m.creditos}</td>
-                <td className="py-2 text-right">
-                  <Badge variant={m.estado === "aprobada" ? "marca" : "neutra"}>{t(`progress.${m.estado}`)}</Badge>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
   );
 }

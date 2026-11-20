@@ -58,7 +58,8 @@
     "recharts": "^3.9.1",
     "sharp": "^0.34.4",
     "tailwind-merge": "^3.6.0",
-    "thinking-orbs": "^0.3.2"
+    "thinking-orbs": "^0.3.2",
+    "unpdf": "^2.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",

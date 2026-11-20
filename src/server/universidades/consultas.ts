@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { calcularIndice, RETIRADA, type ReglasIndice, type ResultadoIndice } from "@/lib/indice-academico";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 
 /**
@@ -154,24 +155,75 @@ export async function arbolCatalogo(): Promise<ArbolCatalogo> {
   return { universidades, carreras, pensums };
 }
 
+/** Cómo está una materia del pénsum para un estudiante. */
+export type EstadoMateria = "aprobada" | "reprobada" | "retirada" | "cursando" | "pendiente";
+
+export type MateriaConAvance = MateriaPensum & {
+  estado: EstadoMateria;
+  /** Resultado (A, B, C, D, F, P o R) y período en que se cursó, si se conocen. */
+  letra: string | null;
+  periodo: string | null;
+  puntos: number | null;
+  /** Electiva: la materia real que ocupó el cupo. */
+  detalle: string | null;
+  /** De dónde sale el resultado: el gradua oficial o las notas del sistema. */
+  fuente: "gradua" | "sistema" | null;
+};
+
 /** El catálogo elegido por un estudiante y su avance sobre el pénsum. */
 export type CatalogoDelEstudiante = {
   matricula: string | null;
   universidad: { id: string; siglas: string; nombre: string; regimen: Regimen; logo: string | null } | null;
   carrera: { id: string; nombre: string } | null;
   pensum: { id: string; version: string } | null;
-  materias: (MateriaPensum & { estado: "aprobada" | "cursando" | "pendiente" })[];
+  materias: MateriaConAvance[];
   creditosTotales: number;
   creditosAprobados: number;
+  /** Índice según las reglas de la universidad; `null` sin resultados o sin reglas. */
+  indice: ResultadoIndice | null;
+  reglas: (ReglasIndice & { letraMinima: string; confirmadas: boolean }) | null;
+  /** Lo que declara el último gradua leído, para compararlo con `indice`. */
+  gradua: { indiceReportado: number | null; creditosReportados: number | null; subidoEl: string | null; fueraDelPensum: string[] } | null;
 };
 
+const normalizar = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "").toLowerCase();
+
 /**
- * Cruza el pénsum con las inscripciones del estudiante. Una materia casa por
- * código (sin distinguir mayúsculas ni espacios) y, si la inscripción no trae
- * código, por nombre normalizado. Lo que no casa queda «pendiente»: nunca se
- * da por aprobada una materia que el sistema no vio aprobar.
+ * Estado de una materia a partir de su resultado. `R` es retirada y `P` un
+ * seminario aprobado sin puntos; el resto se compara con la letra mínima de la
+ * universidad. Una letra que sus reglas no conocen no se adivina: queda pendiente.
  */
-export async function catalogoDelEstudiante(estudianteId: string): Promise<CatalogoDelEstudiante> {
+function estadoDeLetra(letra: string, reglas: ReglasIndice & { letraMinima: string }): EstadoMateria {
+  const l = letra.toUpperCase();
+
+  if (l === RETIRADA) return "retirada";
+  if (l === "P") return "aprobada";
+
+  const valor = reglas.puntosPorLetra[l];
+  const minimo = reglas.puntosPorLetra[reglas.letraMinima];
+
+  if (valor === undefined || minimo === undefined) return "pendiente";
+
+  return valor >= minimo ? "aprobada" : "reprobada";
+}
+
+/**
+ * Cruza el pénsum con todo lo que se sabe del estudiante, en este orden de
+ * confianza: el gradua oficial de su universidad (`avance_pensum`), las notas
+ * que ya tiene el sistema (`historial_calificacion`) y, por último, sus
+ * inscripciones. Lo que no aparece en ninguna queda «pendiente»: nunca se da por
+ * aprobada una materia que nadie vio aprobada. Se calcula al mostrarlo, así que
+ * se actualiza solo cuando entran notas nuevas o se sube un gradua más reciente.
+ */
+export async function catalogoDelEstudiante(estudianteId: string | null): Promise<CatalogoDelEstudiante> {
+  const vacio: CatalogoDelEstudiante = {
+    matricula: null, universidad: null, carrera: null, pensum: null, materias: [],
+    creditosTotales: 0, creditosAprobados: 0, indice: null, reglas: null, gradua: null,
+  };
+
+  // Una cuenta sin ficha enlazada no tiene catálogo.
+  if (!estudianteId) return vacio;
+
   const base = await consultarUna<{
     matricula: string | null;
     uni_id: string | null;
@@ -179,12 +231,19 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
     siglas: string | null;
     uni_nombre: string | null;
     regimen: Regimen | null;
+    puntos_por_letra: Record<string, number> | null;
+    letra_minima_aprobar: string | null;
+    retirada_cuenta_en_divisor: boolean | null;
+    redondeo_indice: "truncar" | "redondear" | null;
+    reglas_confirmadas: boolean | null;
     carrera_id: string | null;
     carrera_nombre: string | null;
     pensum_id: string | null;
     version: string | null;
   }>(
     `SELECT e.matricula, u.id AS uni_id, u.logo_ruta, u.siglas, u.nombre AS uni_nombre, u.regimen,
+            u.puntos_por_letra, u.letra_minima_aprobar, u.retirada_cuenta_en_divisor,
+            u.redondeo_indice, u.reglas_confirmadas,
             c.id AS carrera_id, c.nombre AS carrera_nombre,
             p.id AS pensum_id, p.version
        FROM estudiante e
@@ -195,58 +254,116 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
     [estudianteId],
   );
 
-  const vacio: CatalogoDelEstudiante = {
+  const reglas = base?.puntos_por_letra
+    ? {
+        puntosPorLetra: base.puntos_por_letra,
+        retiradaCuentaEnDivisor: base.retirada_cuenta_en_divisor ?? true,
+        redondeo: base.redondeo_indice ?? "truncar",
+        letraMinima: base.letra_minima_aprobar ?? "D",
+        confirmadas: base.reglas_confirmadas ?? false,
+      }
+    : null;
+
+  const resultado: CatalogoDelEstudiante = {
+    ...vacio,
     matricula: base?.matricula ?? null,
-    universidad: base?.uni_id && base.siglas ? { id: base.uni_id, logo: urlDeAvatar(base.logo_ruta), siglas: base.siglas, nombre: base.uni_nombre ?? "", regimen: base.regimen ?? "cuatrimestre" } : null,
+    universidad: base?.uni_id && base.siglas
+      ? { id: base.uni_id, logo: urlDeAvatar(base.logo_ruta), siglas: base.siglas, nombre: base.uni_nombre ?? "", regimen: base.regimen ?? "cuatrimestre" }
+      : null,
     carrera: base?.carrera_id ? { id: base.carrera_id, nombre: base.carrera_nombre ?? "" } : null,
     pensum: base?.pensum_id ? { id: base.pensum_id, version: base.version ?? "" } : null,
-    materias: [],
-    creditosTotales: 0,
-    creditosAprobados: 0,
+    reglas,
   };
 
-  if (!base?.pensum_id) return vacio;
+  if (!base?.pensum_id || !reglas) return resultado;
 
-  // Dos fuentes: las inscripciones del sistema (activa / aprobada) y el
-  // historial consolidado, que es donde cae lo aprobado en cuatrimestres
-  // anteriores. Retirada y reprobada no cuentan como avance.
-  const [materias, inscripciones] = await Promise.all([
+  const [materias, avance, historial, inscripciones, ultimoGradua] = await Promise.all([
     materiasDePensum(base.pensum_id),
+    consultar<{ codigo: string; detalle: string | null; nombre: string; creditos: number; puntos: number; periodo: string | null; letra: string | null }>(
+      `SELECT codigo, detalle, nombre, creditos, puntos, periodo, letra FROM avance_pensum WHERE estudiante_id = $1`,
+      [estudianteId],
+    ),
+    consultar<{ materia: string; cuatrimestre: string; nota_letra: string; estado: string }>(
+      `SELECT materia, cuatrimestre, nota_letra, estado FROM historial_calificacion WHERE estudiante_id = $1 ORDER BY cuatrimestre`,
+      [estudianteId],
+    ),
     consultar<{ codigo: string | null; nombre: string; estado: string }>(
       `SELECT m.codigo, m.nombre, i.estado
          FROM inscripcion i JOIN materia m ON m.id = i.materia_id
-        WHERE i.estudiante_id = $1 AND i.estado IN ('activa', 'aprobada')
-       UNION ALL
-       SELECT NULL, h.materia, 'aprobada'
-         FROM historial_calificacion h
-        WHERE h.estudiante_id = $1 AND h.estado = 'aprobada'`,
+        WHERE i.estudiante_id = $1`,
+      [estudianteId],
+    ),
+    consultarUna<{ resumen: { indiceReportado: number | null; creditosReportados: number | null } | null; created_at: string }>(
+      `SELECT resumen, created_at::text AS created_at FROM archivo_academico
+        WHERE estudiante_id = $1 AND tipo = 'gradua' AND resumen IS NOT NULL
+        ORDER BY created_at DESC LIMIT 1`,
       [estudianteId],
     ),
   ]);
 
-  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "").toLowerCase();
-  const estados = new Map<string, string>();
-
-  // Aprobada gana sobre cursando si hubiera dos filas de la misma materia.
-  const peso = (e: string) => (e === "aprobada" ? 2 : 1);
+  const avancePorCodigo = new Map(avance.map((a) => [a.codigo.toUpperCase(), a]));
+  // Si una materia se cursó más de una vez gana el último período (están ordenadas).
+  const historialPorNombre = new Map(historial.map((h) => [normalizar(h.materia), h]));
+  const inscripcionPorClave = new Map<string, string>();
 
   for (const i of inscripciones) {
-    for (const clave of [i.codigo ? `c:${norm(i.codigo)}` : null, `n:${norm(i.nombre)}`]) {
-      if (clave && peso(i.estado) >= peso(estados.get(clave) ?? "")) estados.set(clave, i.estado);
+    for (const clave of [i.codigo ? `c:${normalizar(i.codigo)}` : null, `n:${normalizar(i.nombre)}`]) {
+      if (clave) inscripcionPorClave.set(clave, i.estado);
     }
   }
 
-  const conEstado = materias.map((m) => {
-    const e = estados.get(`c:${norm(m.codigo)}`) ?? estados.get(`n:${norm(m.nombre)}`);
+  const conAvance: MateriaConAvance[] = materias.map((m) => {
+    const base0 = { ...m, letra: null, periodo: null, puntos: null, detalle: null, fuente: null };
+    const a = avancePorCodigo.get(m.codigo.toUpperCase());
 
-    return { ...m, estado: (e === "aprobada" ? "aprobada" : e ? "cursando" : "pendiente") as "aprobada" | "cursando" | "pendiente" };
+    if (a?.letra) {
+      return { ...m, estado: estadoDeLetra(a.letra, reglas), letra: a.letra, periodo: a.periodo, puntos: a.puntos, detalle: a.detalle, fuente: "gradua" as const };
+    }
+
+    const h = historialPorNombre.get(normalizar(m.nombre));
+
+    if (h) {
+      return {
+        ...m,
+        estado: estadoDeLetra(h.nota_letra, reglas),
+        letra: h.nota_letra,
+        periodo: h.cuatrimestre,
+        puntos: (reglas.puntosPorLetra[h.nota_letra.toUpperCase()] ?? 0) * m.creditos,
+        detalle: null,
+        fuente: "sistema" as const,
+      };
+    }
+
+    const i = inscripcionPorClave.get(`c:${normalizar(m.codigo)}`) ?? inscripcionPorClave.get(`n:${normalizar(m.nombre)}`);
+    const estado: EstadoMateria =
+      i === "aprobada" ? "aprobada" : i === "reprobada" ? "reprobada" : i === "retirada" ? "retirada" : i === "activa" ? "cursando" : "pendiente";
+
+    return { ...base0, estado };
   });
 
+  // El índice usa TODO lo que tiene resultado: lo del gradua (incluidas filas que
+  // no están en el pénsum elegido, p. ej. convalidaciones) y las notas del sistema
+  // de las materias que el gradua no cubre.
+  const codigosDelPensum = new Set(materias.map((m) => m.codigo.toUpperCase()));
+  const items = [
+    ...avance.filter((a) => a.letra).map((a) => ({ creditos: a.creditos, resultado: a.letra as string })),
+    ...conAvance.filter((m) => m.fuente === "sistema" && m.letra).map((m) => ({ creditos: m.creditos, resultado: m.letra as string })),
+  ];
+
   return {
-    ...vacio,
-    materias: conEstado,
-    creditosTotales: conEstado.reduce((n, m) => n + m.creditos, 0),
-    creditosAprobados: conEstado.filter((m) => m.estado === "aprobada").reduce((n, m) => n + m.creditos, 0),
+    ...resultado,
+    materias: conAvance,
+    creditosTotales: conAvance.reduce((n, m) => n + m.creditos, 0),
+    creditosAprobados: conAvance.filter((m) => m.estado === "aprobada").reduce((n, m) => n + m.creditos, 0),
+    indice: items.length > 0 ? calcularIndice(items, reglas) : null,
+    gradua: ultimoGradua?.resumen
+      ? {
+          indiceReportado: ultimoGradua.resumen.indiceReportado,
+          creditosReportados: ultimoGradua.resumen.creditosReportados,
+          subidoEl: ultimoGradua.created_at.slice(0, 10),
+          fueraDelPensum: avance.filter((a) => !codigosDelPensum.has(a.codigo.toUpperCase())).map((a) => a.codigo),
+        }
+      : null,
   };
 }
 

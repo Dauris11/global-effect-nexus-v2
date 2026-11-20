@@ -264,6 +264,34 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     puede: conPermiso("usuarios.administrar"),
   },
   {
+    identificadores: ["universidades", "universidad", "pensum", "pénsum", "carreras", "plan de estudios", "logo"],
+    etiqueta: "Universidades y pénsum",
+    descripcion: "Catálogo de universidades, carreras, pénsums y sus materias con créditos; reglas de calificación de cada universidad.",
+    ruta: "/academico/universidades",
+    puede: conPermiso("catalogo.leer"),
+  },
+  {
+    identificadores: ["cartas", "cartas a patrocinadores", "correos a patrocinadores", "cartas mensuales"],
+    etiqueta: "Cartas a patrocinadores",
+    descripcion: "Cartas mensuales de los becados a sus patrocinadores: revisión, traducción y envío.",
+    ruta: "/patrocinadores/correos",
+    puede: conPermiso("patrocinadores.escribir"),
+  },
+  {
+    identificadores: ["servicios mensuales", "planilla", "servicio comunitario", "reunion mensual"],
+    etiqueta: "Servicios mensuales",
+    descripcion: "Planilla del mes: servicio comunitario, asistencia a la reunión y carta al patrocinador de cada becado.",
+    ruta: "/servicios-mensuales",
+    puede: conPermiso("operaciones.leer"),
+  },
+  {
+    identificadores: ["base de conocimiento", "conocimiento", "documentos del asistente", "entrenar al asistente"],
+    etiqueta: "Base de conocimiento del asistente",
+    descripcion: "Documentos que usa Elly AI para responder; se cargan, editan y verifican por agente.",
+    ruta: "/configuracion/conocimiento",
+    puede: conPermiso("ia.conocimiento"),
+  },
+  {
     identificadores: [
       "expedientes",
       "estudiantes",
