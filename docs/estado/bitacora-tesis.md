@@ -1051,6 +1051,15 @@ reporte solo cuadra con 746 puntos / 209 créditos truncado, se dejó como
 hipótesis sin confirmar. (8) Se sembraron 17 documentos de prueba de la base de
 conocimiento con casos de borde para medir a Elly AI.
 
+**Complemento (migraciones `0097` y `0098`).** (9) Se detectó una inconsistencia:
+el expediente guardaba la universidad como texto libre mientras el catálogo era
+otra fuente. Ahora se elige del catálogo (desplegables en cascada) y el servidor
+valida la cadena; el texto antiguo se conserva solo hasta que alguien elija del
+catálogo. (10) Los logos de las universidades salen del sitio oficial o de
+Wikimedia Commons (`db/datos/logos/ORIGEN.md`). (11) El «gradua» del estudiante y
+el PDF del pénsum se guardan en un bucket privado con descarga auditada; su
+lectura automática queda para la fase 4, con revisión humana.
+
 ---
 
 ## Pendiente de registrar (se completará al cerrar cada etapa)

@@ -120,3 +120,18 @@ export function textosEdicion(t: Traductor) {
 
   };
 }
+
+/** Textos de los desplegables de universidad, carrera y pénsum (espacio `catalog`). */
+export function textosCatalogo(t: (clave: string, valores?: Record<string, string>) => string) {
+  return {
+    university: t("link.university"),
+    career: t("link.career"),
+    pensum: t("link.pensum"),
+    matricula: t("link.matricula"),
+    none: t("link.none"),
+    legacy: t("link.legacy", { text: "{text}" }),
+    plan: t("pensum.versionLabel", { version: "{version}" }),
+    previous: t("pensum.old"),
+    invalid: t("link.invalid"),
+  };
+}

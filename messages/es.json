@@ -1069,7 +1069,7 @@
       "photoHint": "JPG, PNG o WEBP, máximo 2 MB.",
       "status": "Estado",
       "program": "Programa o carrera",
-      "whereStudies": "Dónde estudia",
+      "whereStudies": "Recinto o sede",
       "university": "Universidad",
       "entryDate": "Fecha de ingreso",
       "group": "Grupo",
@@ -1283,13 +1283,13 @@
       "sections": {
         "personal": "Datos personales",
         "contact": "Contacto",
-        "studies": "Estudios e ingreso",
+        "studies": "Ingreso a la Fundación",
         "story": "Historia y situación",
         "habitudes": "Habitudes",
         "family": "Familia",
         "housing": "Vivienda",
         "health": "Salud y emergencias",
-        "whereStudies": "Dónde estudia"
+        "whereStudies": "Recinto o sede"
       },
       "empty360": "Este estudiante todavía no tiene clases de Global Effect 360.",
       "record": {
@@ -1337,7 +1337,16 @@
         "until": "hasta {date}"
       }
     },
-    "sinFoto": "Sin foto"
+    "sinFoto": "Sin foto",
+    "quick": {
+      "label": "Acciones rápidas del expediente",
+      "edit": "Editar expediente",
+      "uploadGradua": "Subir el gradua o el récord",
+      "careerCurriculum": "Ver el pénsum de su carrera",
+      "sponsor": "Patrocinador: {name}",
+      "letters": "Cartas a patrocinadores",
+      "monthly": "Servicios del mes"
+    }
   },
   "academic": {
     "eyebrow": "Académico",
@@ -7094,7 +7103,11 @@
       "none": "Sin elegir",
       "save": "Guardar",
       "manage": "Administrar el catálogo",
-      "saved": "Guardado."
+      "saved": "Guardado.",
+      "legacy": "Antes figuraba escrito a mano: «{text}». Elige una universidad del catálogo para vincularla.",
+      "invalid": "La universidad, la carrera y el pénsum elegidos no concuerdan. Revisa los tres desplegables.",
+      "edit": "Cambiar en la edición del expediente",
+      "unlinked": "Sin vincular al catálogo: «{text}»"
     },
     "progress": {
       "title": "Avance en el pénsum",
@@ -7131,6 +7144,31 @@
       "label": "Logo (PNG, JPG o WebP)",
       "help": "Hasta 1 MB. Si no hay logo se muestran las siglas.",
       "remove": "Quitar el logo actual"
+    },
+    "files": {
+      "title": "Archivos",
+      "none": "Todavía no hay archivos.",
+      "typeLabel": "Qué es",
+      "file": "Archivo PDF",
+      "help": "Solo PDF, hasta 10 MB. Por ahora se guarda el archivo para consultarlo; leerlo automáticamente llegará con una pantalla de revisión.",
+      "upload": "Subir",
+      "remove": "Quitar este archivo",
+      "done": "Archivo subido.",
+      "uploaded": "Subido por {name} el {date}",
+      "type": {
+        "gradua": "Gradua (validación de asignaturas)",
+        "record_notas": "Récord de notas",
+        "pensum_pdf": "Pénsum oficial"
+      },
+      "errors": {
+        "no_permitido": "No tienes permiso para subir archivos aquí.",
+        "no_encontrado": "No se encontró a quién pertenece el archivo.",
+        "no_es_pdf": "El archivo debe ser un PDF.",
+        "grande": "El archivo pesa más de 10 MB.",
+        "error": "No se pudo subir. Inténtalo de nuevo."
+      },
+      "gradTitle": "Gradua y récord del estudiante",
+      "pensumTitle": "PDF oficial del pénsum"
     }
   }
 }

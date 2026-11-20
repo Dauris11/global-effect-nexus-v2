@@ -1,3 +1,4 @@
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { TriangleAlert, UserCheck, UserX } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -75,7 +76,10 @@ export async function ListaExpedientes({
                 <Estado estado={fila.estado} texto={t(`status.${fila.estado}`)} />
               </td>
               <td className="max-w-56 px-4 py-2.5">
-                <span className="block truncate">{fila.universidad ?? "—"}</span>
+                <span className="flex items-center gap-2 truncate">
+                  {fila.universidad_logo && <LogoUniversidad siglas={fila.universidad ?? ""} url={fila.universidad_logo} className="size-6" />}
+                  <span className="truncate">{fila.universidad ?? "—"}</span>
+                </span>
                 {fila.programa && (
                   <span className="texto-meta block truncate">{fila.programa}</span>
                 )}
@@ -123,7 +127,10 @@ export async function ListaExpedientes({
                   <Indice indice={fila.indice} />
                 </span>
                 {fila.universidad && (
-                  <span className="texto-meta block truncate">{fila.universidad}</span>
+                  <span className="texto-meta flex items-center gap-1.5 truncate">
+                    {fila.universidad_logo && <LogoUniversidad siglas={fila.universidad} url={fila.universidad_logo} className="size-4" />}
+                    {fila.universidad}
+                  </span>
                 )}
               </span>
             </Link>

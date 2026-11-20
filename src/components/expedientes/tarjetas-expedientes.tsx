@@ -1,3 +1,4 @@
+import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { GraduationCap, TrendingUp, TriangleAlert, UserX } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -73,11 +74,18 @@ export async function TarjetasExpedientes({
                 </p>
 
                 <FilaDatos className="flex-col items-start gap-y-1.5">
-                  {fila.universidad && (
-                    <Dato icono={GraduationCap} className="max-w-full">
-                      {fila.universidad}
-                    </Dato>
-                  )}
+                  {fila.universidad &&
+                    (fila.universidad_logo ? (
+                      // Con logo, el logo hace de icono: siglas y escudo, no el nombre largo.
+                      <span className="flex max-w-full items-center gap-2 text-sm">
+                        <LogoUniversidad siglas={fila.universidad} url={fila.universidad_logo} className="size-6" />
+                        <span className="truncate font-medium">{fila.universidad}</span>
+                      </span>
+                    ) : (
+                      <Dato icono={GraduationCap} className="max-w-full">
+                        {fila.universidad}
+                      </Dato>
+                    ))}
 
                   <Dato
                     icono={enRiesgo ? TriangleAlert : TrendingUp}

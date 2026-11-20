@@ -1,5 +1,6 @@
 "use client";
 
+import { CamposCatalogo, type CatalogoDelFormulario } from "@/components/expedientes/campos-catalogo";
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -118,7 +119,7 @@ export type TextosFormulario = {
   ocr?: Record<string, string>;
 };
 
-export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
+export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormulario; catalogo?: CatalogoDelFormulario }) {
   /**
    * Lo que leyó el documento, para precargar los campos.
    *
@@ -175,7 +176,7 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
 
         <form action={enviarAlta} className="space-y-4">
           <FormularioGuiado key={version}>
-            <CamposExpediente textos={textos} valores={leido ?? undefined} />
+            <CamposExpediente textos={textos} valores={leido ?? undefined} catalogo={catalogo} />
 
             {/* El único error que la acción distingue por campo es el nombre
                 vacío, y es el que se puede arreglar sin salir de aquí: se dice
@@ -188,7 +189,9 @@ export function FormularioExpediente({ textos }: { textos: TextosFormulario }) {
                 <span className={ALERTA_RIESGO.texto}>
                   {alta.estado === "invalido"
                     ? textos.faltaNombre
-                    : textos.error}
+                    : alta.estado === "catalogo_invalido" && catalogo
+                      ? catalogo.textos.invalid
+                      : textos.error}
                 </span>
               </p>
             )}
@@ -349,11 +352,14 @@ export function CamposExpediente({
   valores,
   soloLectura = false,
   campoFoto,
+  catalogo,
 }: {
   textos: TextosFormulario;
   valores?: ValoresExpediente;
   soloLectura?: boolean;
   campoFoto?: React.ReactNode;
+  /** Universidades, carreras y pénsums elegibles; sin él, el texto antiguo en solo lectura. */
+  catalogo?: CatalogoDelFormulario;
 }) {
   const familiares = valores?.familiares;
 
@@ -448,23 +454,30 @@ export function CamposExpediente({
               opciones={ESTADOS_ESTUDIANTE.map((v) => ({ valor: v, texto: textos.estados[v] }))}
               disabled={soloLectura}
             />
-            <Campo
-              nombre="programa"
-              etiqueta={textos.campos.program}
-              valorPredeterminado={valores?.programa}
-              soloLectura={soloLectura}
-            />
+            {/* Con catálogo, universidad, carrera y pénsum son desplegables; sin él
+                (vista previa de solo lectura) se enseña el texto antiguo. */}
+            {catalogo ? (
+              <CamposCatalogo catalogo={catalogo} valores={valores} soloLectura={soloLectura} />
+            ) : (
+              <>
+                <Campo
+                  nombre="programa"
+                  etiqueta={textos.campos.program}
+                  valorPredeterminado={valores?.programa}
+                  soloLectura
+                />
+                <Campo
+                  nombre="universidad"
+                  etiqueta={textos.campos.university}
+                  valorPredeterminado={valores?.universidad}
+                  soloLectura
+                />
+              </>
+            )}
             <Campo
               nombre="donde_estudia"
               etiqueta={textos.campos.whereStudies}
               valorPredeterminado={valores?.donde_estudia}
-              soloLectura={soloLectura}
-            />
-
-            <Campo
-              nombre="universidad"
-              etiqueta={textos.campos.university}
-              valorPredeterminado={valores?.universidad}
               soloLectura={soloLectura}
             />
 

@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { FAMILIA_FIJA, type EstadoEstudiante } from "@/lib/expedientes";
 import type { OrdenExpediente, SituacionExpediente } from "@/lib/filtros-expedientes";
 import { GPA_PRUEBA_ACADEMICA } from "@/lib/notas";
@@ -25,7 +26,10 @@ export type FilaExpediente = {
   telefono: string | null;
   estado: string;
   programa: string | null;
+  /** Siglas de la universidad del catálogo o, sin catálogo, el texto antiguo. */
   universidad: string | null;
+  /** URL del logo; solo si la universidad es del catálogo y tiene logo. */
+  universidad_logo: string | null;
   fecha_ingreso: string | null;
   /** Número del grupo (cohorte); `null` = sin asignar. */
   grupo: number | null;
@@ -63,7 +67,10 @@ const DESDE_EXPEDIENTES = `
                      count(*)::int AS evaluaciones
                 FROM historial_calificacion
                GROUP BY estudiante_id
-            ) h ON h.estudiante_id = e.id`;
+            ) h ON h.estudiante_id = e.id
+       -- Universidad del catálogo: da las siglas y el logo. Sin catálogo se usa el
+       -- texto antiguo de estudiante.universidad.
+       LEFT JOIN universidad uc ON uc.id = e.universidad_id`;
 
 /*
  * Cada filtro es un parámetro anulable dentro del WHERE, no SQL armado a
@@ -77,9 +84,10 @@ const DONDE_EXPEDIENTES = `
       WHERE ($1::text IS NULL OR e.nombre ILIKE '%' || $1 || '%'
                               OR e.cedula ILIKE '%' || $1 || '%'
                               OR e.programa ILIKE '%' || $1 || '%'
-                              OR e.universidad ILIKE '%' || $1 || '%')
+                              OR e.universidad ILIKE '%' || $1 || '%'
+                              OR uc.siglas ILIKE '%' || $1 || '%')
         AND ($2::text IS NULL OR e.estado::text = $2)
-        AND ($3::text IS NULL OR e.universidad = $3)
+        AND ($3::text IS NULL OR coalesce(uc.siglas, e.universidad) = $3)
         AND ($4::text IS NULL
              OR ($4 = 'en_riesgo'  AND h.indice < $5)
              OR ($4 = 'sin_notas'  AND h.indice IS NULL)
@@ -129,7 +137,7 @@ export async function listaExpedientes({
 } = {}): Promise<FilaExpediente[]> {
   const salto = (Math.max(1, pagina) - 1) * porPagina;
 
-  return consultar<FilaExpediente>(
+  const filas = await consultar<FilaExpediente>(
     `SELECT e.id,
             e.nombre,
             e.cedula,
@@ -137,7 +145,8 @@ export async function listaExpedientes({
             e.telefono,
             e.estado::text AS estado,
             e.programa,
-            e.universidad,
+            coalesce(uc.siglas, e.universidad) AS universidad,
+            uc.logo_ruta AS universidad_logo,
             e.fecha_ingreso::text AS fecha_ingreso,
             e.grupo::int AS grupo,
             e.foto_url,
@@ -150,6 +159,8 @@ export async function listaExpedientes({
       LIMIT $6 OFFSET $7`,
     [...parametrosFiltro(filtros), porPagina, salto],
   );
+
+  return filas.map((f) => ({ ...f, universidad_logo: urlDeAvatar(f.universidad_logo) }));
 }
 
 /**
@@ -176,10 +187,12 @@ export async function contarExpedientes(
 /** Las universidades que aparecen en algún expediente, para el filtro. */
 export async function universidadesDeExpedientes(): Promise<string[]> {
   const filas = await consultar<{ universidad: string }>(
-    `SELECT DISTINCT universidad
-       FROM estudiante
-      WHERE universidad IS NOT NULL AND btrim(universidad) <> ''
-      ORDER BY universidad`,
+    `SELECT DISTINCT coalesce(uc.siglas, e.universidad) AS universidad
+       FROM estudiante e
+       LEFT JOIN universidad uc ON uc.id = e.universidad_id
+      WHERE coalesce(uc.siglas, e.universidad) IS NOT NULL
+        AND btrim(coalesce(uc.siglas, e.universidad)) <> ''
+      ORDER BY 1`,
   );
 
   return filas.map((fila) => fila.universidad);
@@ -249,6 +262,10 @@ export type ExpedienteCompleto = {
   programa: string | null;
   donde_estudia: string | null;
   universidad: string | null;
+  universidad_id: string | null;
+  carrera_id: string | null;
+  pensum_id: string | null;
+  matricula: string | null;
   fecha_ingreso: string | null;
   /** Número del grupo (cohorte); `null` = sin asignar. */
   grupo: number | null;
@@ -323,6 +340,10 @@ export async function obtenerExpediente(
             e.programa,
             e.donde_estudia,
             e.universidad,
+            e.universidad_id::text AS universidad_id,
+            e.carrera_id::text AS carrera_id,
+            e.pensum_id::text AS pensum_id,
+            e.matricula,
             e.fecha_ingreso::text AS fecha_ingreso,
             e.grupo::int AS grupo,
             e.centro_educativo,

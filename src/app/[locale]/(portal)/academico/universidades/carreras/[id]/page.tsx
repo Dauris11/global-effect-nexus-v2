@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ArchivosAcademicos } from "@/components/universidades/archivos-academicos";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import {
   BotonQuitarMateria,
@@ -20,7 +21,7 @@ import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { usuarioTienePermiso } from "@/lib/rbac";
-import { carreraPorId, materiasDePensum, pensumsDeCarrera } from "@/server/universidades/consultas";
+import { archivosAcademicos, carreraPorId, materiasDePensum, pensumsDeCarrera } from "@/server/universidades/consultas";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -58,7 +59,9 @@ export default async function PaginaCarrera({
   ]);
   const puedeEscribir = usuarioTienePermiso(usuario, "catalogo.escribir");
   const actual = pensums.find((p) => p.id === pensumElegido) ?? pensums[0] ?? null;
-  const materias = actual ? await materiasDePensum(actual.id) : [];
+  const [materias, archivos] = actual
+    ? await Promise.all([materiasDePensum(actual.id), archivosAcademicos("pensum", actual.id)])
+    : [[], []];
 
   return (
     <div className="animate-entrada mx-auto max-w-4xl space-y-6">
@@ -153,6 +156,9 @@ export default async function PaginaCarrera({
                 )}
 
                 {puedeEscribir && <FormCargaMaterias pensumId={actual.id} />}
+
+                <h2 className="texto-titulo-seccion">{t("files.pensumTitle")}</h2>
+                <ArchivosAcademicos destino="pensum" id={actual.id} archivos={archivos} tipos={["pensum_pdf"]} puedeEscribir={puedeEscribir} />
               </section>
             )}
           </>

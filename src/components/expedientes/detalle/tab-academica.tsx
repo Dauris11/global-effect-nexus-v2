@@ -1,16 +1,15 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { NextIntlClientProvider } from "next-intl";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
 import { Historial360 } from "@/components/expedientes/historial-360";
 import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
+import { ArchivosAcademicos } from "@/components/universidades/archivos-academicos";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
-import { VincularCatalogo } from "@/components/universidades/vincular-catalogo";
 import { Badge } from "@/components/ui/badge";
-import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { Link } from "@/i18n/navigation";
 import { fechaLarga } from "@/lib/fechas";
 import { GPA_PRUEBA_ACADEMICA, promedio } from "@/lib/notas";
 import type { AsignacionDelEstudiante } from "@/server/estudiantes/aula";
@@ -19,7 +18,7 @@ import type { Historial360 as Datos360 } from "@/server/estudiantes/historial-36
 import type { NotaDelEstudiante } from "@/server/estudiantes/portal";
 import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
 import type { SeguimientoExpediente } from "@/server/expedientes/seguimiento";
-import type { ArbolCatalogo, CatalogoDelEstudiante } from "@/server/universidades/consultas";
+import type { ArchivoAcademico, CatalogoDelEstudiante } from "@/server/universidades/consultas";
 
 /**
  * Las pestañas académicas del expediente: universidad, récord de notas, pénsum y
@@ -33,34 +32,20 @@ export async function TabUniversidad({
   inscripciones,
   asignaciones,
   catalogo,
-  arbol,
+  puedeEditar,
   puedeAdministrar,
 }: {
   e: ExpedienteCompleto;
   inscripciones: InscripcionDelEstudiante[];
   asignaciones: AsignacionDelEstudiante[];
   catalogo: CatalogoDelEstudiante;
-  /** Solo se pide para quien puede editar el expediente; `null` = solo lectura. */
-  arbol: ArbolCatalogo | null;
+  puedeEditar: boolean;
   puedeAdministrar: boolean;
 }) {
-  const [t, tc, mensajes] = await Promise.all([
-    getTranslations("records"),
-    getTranslations("catalog"),
-    arbol ? mensajesCliente(["catalog"]) : Promise.resolve(null),
-  ]);
+  const [t, tc] = await Promise.all([getTranslations("records"), getTranslations("catalog")]);
 
   return (
     <>
-      <Seccion titulo={t("v2.sections.whereStudies")}>
-        <Filas
-          filas={[
-            { etiqueta: t("field.university"), valor: e.universidad },
-            { etiqueta: t("field.program"), valor: e.programa },
-            { etiqueta: t("field.whereStudies"), valor: e.donde_estudia },
-          ]}
-        />
-      </Seccion>
       <Seccion titulo={tc("link.title")}>
         {catalogo.universidad && (
           <div className="mb-4 flex items-center gap-3">
@@ -68,29 +53,26 @@ export async function TabUniversidad({
             <p className="font-semibold">{catalogo.universidad.nombre}</p>
           </div>
         )}
-        {arbol && mensajes ? (
-          <NextIntlClientProvider messages={mensajes}>
-            <VincularCatalogo
-              estudianteId={e.id}
-              arbol={arbol}
-              puedeAdministrar={puedeAdministrar}
-              inicial={{
-                universidadId: catalogo.universidad?.id ?? "",
-                carreraId: catalogo.carrera?.id ?? "",
-                pensumId: catalogo.pensum?.id ?? "",
-                matricula: catalogo.matricula ?? "",
-              }}
-            />
-          </NextIntlClientProvider>
-        ) : (
-          <Filas
-            filas={[
-              { etiqueta: tc("link.university"), valor: catalogo.universidad?.siglas },
-              { etiqueta: tc("link.career"), valor: catalogo.carrera?.nombre },
-              { etiqueta: tc("link.pensum"), valor: catalogo.pensum ? tc("pensum.versionLabel", { version: catalogo.pensum.version }) : null },
-              { etiqueta: tc("link.matricula"), valor: catalogo.matricula },
-            ]}
-          />
+        <Filas
+          filas={[
+            { etiqueta: tc("link.university"), valor: catalogo.universidad?.siglas },
+            { etiqueta: tc("link.career"), valor: catalogo.carrera?.nombre },
+            { etiqueta: tc("link.pensum"), valor: catalogo.pensum ? tc("pensum.versionLabel", { version: catalogo.pensum.version }) : null },
+            { etiqueta: tc("link.matricula"), valor: catalogo.matricula },
+            { etiqueta: t("field.whereStudies"), valor: e.donde_estudia },
+          ]}
+        />
+        {/* Texto antiguo sin catálogo: se enseña como inconsistencia a resolver. */}
+        {!catalogo.universidad && e.universidad && (
+          <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">
+            {tc("link.unlinked", { text: e.universidad })}
+          </p>
+        )}
+        {puedeEditar && (
+          <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium text-marca-700">
+            <Link href={`/expedientes/${e.id}?editar=1`} className="hover:underline">{tc("link.edit")}</Link>
+            {puedeAdministrar && <Link href="/academico/universidades" className="hover:underline">{tc("link.manage")}</Link>}
+          </div>
         )}
       </Seccion>
       <MateriasUniversidad inscripciones={inscripciones} />
@@ -183,6 +165,8 @@ export async function TabPensum({
   seg,
   tiempo,
   catalogo,
+  archivos,
+  puedeEditar,
 }: {
   e: ExpedienteCompleto;
   inscripciones: InscripcionDelEstudiante[];
@@ -190,8 +174,10 @@ export async function TabPensum({
   catalogo: CatalogoDelEstudiante;
   /** «1 año y 8 meses», ya redactado, o `null` sin fecha de ingreso. */
   tiempo: string | null;
+  archivos: ArchivoAcademico[];
+  puedeEditar: boolean;
 }) {
-  const [t, idioma] = await Promise.all([getTranslations("records"), getLocale()]);
+  const [t, tc, idioma] = await Promise.all([getTranslations("records"), getTranslations("catalog"), getLocale()]);
   const lang = idioma === "en" ? "en" : "es";
   const graduado = e.estado === "graduado";
   const creditos = inscripciones.filter((i) => i.estado === "aprobada").reduce((n, i) => n + (i.creditos ?? 0), 0);
@@ -201,12 +187,14 @@ export async function TabPensum({
       <Seccion titulo={t("v2.curriculum.title")}>
         <Filas
           filas={[
-            { etiqueta: t("field.university"), valor: e.universidad },
-            { etiqueta: t("field.program"), valor: e.programa },
             { etiqueta: t("v2.curriculum.approvedCredits"), valor: creditos > 0 ? String(creditos) : null },
           ]}
         />
         {catalogo.pensum ? <AvancePensum catalogo={catalogo} /> : <p className="mt-4 rounded-control bg-marca-50 px-4 py-3 text-sm text-marca-700">{t("v2.curriculum.pending")}</p>}
+      </Seccion>
+
+      <Seccion titulo={tc("files.gradTitle")}>
+        <ArchivosAcademicos destino="estudiante" id={e.id} archivos={archivos} tipos={["gradua", "record_notas"]} puedeEscribir={puedeEditar} />
       </Seccion>
 
       <Seccion titulo={t("v2.graduation.title")}>
@@ -218,9 +206,6 @@ export async function TabPensum({
         </div>
         <Filas
           filas={[
-            { etiqueta: t("field.entryDate"), valor: e.fecha_ingreso ? fechaLarga(e.fecha_ingreso, lang) : null },
-            { etiqueta: t("v2.tenureLabel"), valor: tiempo },
-            { etiqueta: t("field.group"), valor: e.grupo ? String(e.grupo) : t("v2.noGroup") },
             {
               etiqueta: t("v2.graduation.date"),
               valor: seg.graduadoEl ? fechaLarga(seg.graduadoEl, lang) : graduado ? t("v2.graduation.noDate") : null,

@@ -22,7 +22,8 @@ function enumerado(t: Awaited<ReturnType<typeof getTranslations>>, grupo: string
   return valor ? (t.has(`${grupo}.${valor}`) ? t(`${grupo}.${valor}` as never) : valor) : null;
 }
 
-export async function FichaInformacion({ e }: { e: ExpedienteCompleto }) {
+/** `tiempo`: «1 año y 8 meses» en la Fundación, ya redactado, o `null` sin fecha de ingreso. */
+export async function FichaInformacion({ e, tiempo }: { e: ExpedienteCompleto; tiempo: string | null }) {
   const { t, idioma } = await contexto();
 
   return (
@@ -55,10 +56,8 @@ export async function FichaInformacion({ e }: { e: ExpedienteCompleto }) {
       <Seccion titulo={t("v2.sections.studies")}>
         <Filas
           filas={[
-            { etiqueta: t("field.university"), valor: e.universidad },
-            { etiqueta: t("field.program"), valor: e.programa },
-            { etiqueta: t("field.whereStudies"), valor: e.donde_estudia },
             { etiqueta: t("field.entryDate"), valor: e.fecha_ingreso ? fechaLarga(e.fecha_ingreso, idioma) : null },
+            { etiqueta: t("v2.tenureLabel"), valor: tiempo },
             { etiqueta: t("field.group"), valor: e.grupo ? String(e.grupo) : t("v2.noGroup") },
             { etiqueta: t("field.notes"), valor: e.notas_adicionales, largo: true },
           ]}

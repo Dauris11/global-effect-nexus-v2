@@ -103,7 +103,7 @@ export async function PortadaExpediente({
               <Dato icono={GraduationCap}>
                 <span className="inline-flex items-center gap-2">
                   <LogoUniversidad siglas={universidadCatalogo.siglas} url={universidadCatalogo.logo} className="size-6" />
-                  {estudios ?? universidadCatalogo.siglas}
+                  {universidadCatalogo.siglas}
                 </span>
               </Dato>
             ) : (

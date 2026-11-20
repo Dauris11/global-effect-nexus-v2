@@ -249,3 +249,31 @@ export async function catalogoDelEstudiante(estudianteId: string): Promise<Catal
     creditosAprobados: conEstado.filter((m) => m.estado === "aprobada").reduce((n, m) => n + m.creditos, 0),
   };
 }
+
+export type ArchivoAcademico = {
+  id: string;
+  tipo: "gradua" | "record_notas" | "pensum_pdf";
+  nombre: string;
+  tamano: number;
+  created_at: string;
+  subido_por_nombre: string | null;
+};
+
+/** Los PDF de un estudiante o de un pénsum, del más reciente al más antiguo. */
+export async function archivosAcademicos(destino: "estudiante" | "pensum", id: string): Promise<ArchivoAcademico[]> {
+  return consultar<ArchivoAcademico>(
+    `SELECT a.id, a.tipo, a.nombre, a.tamano, a.created_at::text AS created_at, u.nombre AS subido_por_nombre
+       FROM archivo_academico a LEFT JOIN usuario u ON u.id = a.subido_por
+      WHERE ${destino === "pensum" ? "a.pensum_id" : "a.estudiante_id"} = $1
+      ORDER BY a.created_at DESC`,
+    [id],
+  );
+}
+
+/** Para la ruta de descarga: la ruta del bucket y a quién pertenece. */
+export async function archivoAcademicoPorId(id: string) {
+  return consultarUna<{ ruta: string; estudiante_id: string | null; pensum_id: string | null; tipo: string }>(
+    `SELECT ruta, estudiante_id, pensum_id, tipo FROM archivo_academico WHERE id = $1`,
+    [id],
+  );
+}

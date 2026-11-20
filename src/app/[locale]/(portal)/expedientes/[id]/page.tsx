@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import { ArrowLeft, FileQuestion } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { FichaFamilia, FichaInformacion, FichaPerfil, FichaSalud } from "@/components/expedientes/detalle/fichas";
+import { AccionesRapidasExpediente } from "@/components/expedientes/acciones-rapidas-expediente";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
 import { textoAntiguedad } from "@/components/expedientes/detalle/antiguedad-texto";
-import { arbolCatalogo, catalogoDelEstudiante } from "@/server/universidades/consultas";
+import { archivosAcademicos, arbolCatalogo, catalogoDelEstudiante } from "@/server/universidades/consultas";
 import { Tab360, TabPensum, TabRecord, TabUniversidad } from "@/components/expedientes/detalle/tab-academica";
 import { TabPatrocinio, TabSeguimiento } from "@/components/expedientes/detalle/tab-seguimiento";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
 import { FormularioEdicionExpediente } from "@/components/expedientes/formulario-edicion-expediente";
 import { PortadaExpediente } from "@/components/expedientes/portada-expediente";
-import { textosEdicion } from "@/components/expedientes/textos-edicion";
+import { textosCatalogo, textosEdicion } from "@/components/expedientes/textos-edicion";
 import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
 import { requerirPermiso } from "@/lib/auth";
@@ -60,7 +63,7 @@ export default async function PaginaExpediente({
   const { editar, seccion } = await searchParams;
 
   const usuario = await requerirPermiso("expedientes.leer");
-  const [t, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "records" }), getLocale()]);
+  const [t, tc, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "records" }), getTranslations({ locale, namespace: "catalog" }), getLocale()]);
   const idioma = idiomaCrudo === "en" ? "en" : "es";
 
   const expediente = await obtenerExpediente(id);
@@ -117,7 +120,8 @@ export default async function PaginaExpediente({
 
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
-  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol] = await Promise.all([
+  const mensajes = await mensajesCliente(["records", "catalog"]);
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
     inscripcionesDelEstudiante(expediente.id),
@@ -127,6 +131,7 @@ export default async function PaginaExpediente({
     seguimientoDelEstudiante(expediente.id),
     catalogoDelEstudiante(expediente.id),
     puedeEditar ? arbolCatalogo() : Promise.resolve(null),
+    archivosAcademicos("estudiante", expediente.id),
   ]);
 
   const tiempo = textoAntiguedad(expediente.fecha_ingreso, (k, v) => t(k as never, v as never), idioma);
@@ -138,6 +143,7 @@ export default async function PaginaExpediente({
   const inicial = (visibles as readonly string[]).includes(pedida) ? pedida : "info";
 
   return (
+    <NextIntlClientProvider messages={mensajes}>
     <div className="animate-entrada space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
@@ -183,17 +189,34 @@ export default async function PaginaExpediente({
         universidadCatalogo={catalogo.universidad}
       />
 
+      <AccionesRapidasExpediente
+        id={expediente.id}
+        puedeEditar={puedeEditar}
+        carreraId={catalogo.carrera?.id ?? null}
+        pensumId={catalogo.pensum?.id ?? null}
+        puedeVerCatalogo={usuarioTienePermiso(usuario, "catalogo.leer")}
+        patrocinador={(() => {
+          const a = seguimiento.asignaciones.find((x) => x.activa);
+
+          return a ? { id: a.patrocinador_id, nombre: a.patrocinador } : null;
+        })()}
+        puedeVerPatrocinadores={usuarioTienePermiso(usuario, "patrocinadores.leer")}
+        puedeEscribirPatrocinadores={usuarioTienePermiso(usuario, "patrocinadores.escribir")}
+        puedeVerPlanilla={usuarioTienePermiso(usuario, "operaciones.leer")}
+      />
+
       <PestanasDetalle
+        key={inicial}
         inicial={inicial}
         pestanas={visibles.map((clave) => ({ clave, etiqueta: t(`v2.tabs.${clave}`) }))}
         contenido={{
-          info: <FichaInformacion e={expediente} />,
+          info: <FichaInformacion e={expediente} tiempo={tiempo} />,
           profile: <FichaPerfil e={expediente} />,
           family: <FichaFamilia e={expediente} />,
           health: <FichaSalud e={expediente} />,
-          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} arbol={arbol} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />,
+          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />,
           record: <TabRecord notas={notas} />,
-          curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} />,
+          curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />,
           g360: <Tab360 datos={historial360} />,
           followUp: <TabSeguimiento e={expediente} seg={seguimiento} />,
           sponsorship: <TabPatrocinio seg={seguimiento} />,
@@ -204,10 +227,12 @@ export default async function PaginaExpediente({
               puedeEditar={puedeEditar}
               editarInicial={puedeEditar}
               textos={textosEdicion(t)}
+              catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
             />
           ),
         }}
       />
     </div>
+    </NextIntlClientProvider>
   );
 }

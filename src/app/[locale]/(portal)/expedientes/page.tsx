@@ -6,6 +6,8 @@ import {
   FiltrosExpedientes,
   SelectorVista,
 } from "@/components/expedientes/filtros-expedientes";
+import { textosCatalogo } from "@/components/expedientes/textos-edicion";
+import { arbolCatalogo } from "@/server/universidades/consultas";
 import { FormularioExpediente } from "@/components/expedientes/formulario-expediente";
 import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
 import { TarjetasExpedientes } from "@/components/expedientes/tarjetas-expedientes";
@@ -94,7 +96,7 @@ export default async function PaginaExpedientes({
     situacion: consulta.situacion,
   };
 
-  const [cifras, filas, total, universidades] = await Promise.all([
+  const [cifras, filas, total, universidades, arbol, tc] = await Promise.all([
     cifrasExpedientes(),
     listaExpedientes({
       ...filtros,
@@ -104,6 +106,8 @@ export default async function PaginaExpedientes({
     }),
     contarExpedientes(filtros),
     universidadesDeExpedientes(),
+    puedeEscribir ? arbolCatalogo() : Promise.resolve(null),
+    getTranslations({ locale, namespace: "catalog" }),
   ]);
 
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -115,6 +119,7 @@ export default async function PaginaExpedientes({
         acciones={
           puedeEscribir && (
             <FormularioExpediente
+              catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
               textos={{
                 nuevo: t("new"),
                 titulo: t("form.title"),

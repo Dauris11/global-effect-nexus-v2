@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { redirigir } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
-import { enTransaccion, consultarUna } from "@/lib/db";
+import { consultar, enTransaccion, consultarUna } from "@/lib/db";
 import { requerirUsuario } from "@/lib/auth";
 import {
   esEstadoEstudiante,
@@ -16,9 +16,10 @@ import {
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
-import { subirAvatar } from "@/lib/supabase/almacen";
+import { borrarDocumento, subirAvatar } from "@/lib/supabase/almacen";
 import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { leerDocumentoDeIdentidad } from "@/server/ia/ocr";
+import { resolverCatalogo } from "@/server/universidades/catalogo-estudiante";
 
 /**
  * Guardado del expediente: la escritura de S5, alta y edición.
@@ -47,6 +48,7 @@ export type EstadoExpediente = {
     | "invalido"
     | "foto_invalida"
     | "foto_grande"
+    | "catalogo_invalido"
     | "error";
 };
 
@@ -117,6 +119,11 @@ export async function actualizarExpediente(
         [id],
       );
 
+      // Universidad, carrera y pénsum del catálogo (ya no son texto libre).
+      const catalogo = await resolverCatalogo(cliente, datos);
+
+      if (!catalogo) throw new Error("CATALOGO_INVALIDO");
+
       const actualizado = await cliente.query(
         `UPDATE estudiante
             SET nombre = $2,
@@ -130,9 +137,12 @@ export async function actualizarExpediente(
                 sexo_documento = $10,
                 religion = $11,
                 estado = $12::estado_estudiante,
-                programa = $13,
+                -- Texto espejo: con catálogo elegido se escribe; sin catálogo se
+                -- conserva lo antiguo, salvo que antes viniera de un catálogo que
+                -- ahora se quitó (entonces queda vacío, no desfasado).
+                programa = CASE WHEN $13::text IS NOT NULL THEN $13 WHEN carrera_id IS NOT NULL THEN NULL ELSE programa END,
                 donde_estudia = $14,
-                universidad = $15,
+                universidad = CASE WHEN $15::text IS NOT NULL THEN $15 WHEN universidad_id IS NOT NULL THEN NULL ELSE universidad END,
                 fecha_ingreso = $16::date,
                 centro_educativo = $17,
                 director_centro = $18,
@@ -147,7 +157,11 @@ export async function actualizarExpediente(
                 -- Solo el estado activo conserva el vínculo a usuario: al
                 -- pasar a suspendido, retirado o graduado se suelta la cuenta.
                 usuario_id = CASE WHEN $27 THEN usuario_id ELSE NULL END,
-                grupo = $28
+                grupo = $28,
+                universidad_id = $29::uuid,
+                carrera_id = $30::uuid,
+                pensum_id = $31::uuid,
+                matricula = $32
           WHERE id = $1
           RETURNING id`,
         [
@@ -163,9 +177,9 @@ export async function actualizarExpediente(
           texto("sexo_documento"),
           texto("religion"),
           estado,
-          texto("programa"),
+          catalogo.carrera,
           texto("donde_estudia"),
-          texto("universidad"),
+          catalogo.siglas,
           texto("fecha_ingreso"),
           texto("centro_educativo"),
           texto("director_centro"),
@@ -179,6 +193,10 @@ export async function actualizarExpediente(
           rutaFoto,
           llevaCuenta(estado),
           grupo,
+          catalogo.universidadId,
+          catalogo.carreraId,
+          catalogo.pensumId,
+          texto("matricula"),
         ],
       );
 
@@ -329,6 +347,9 @@ export async function actualizarExpediente(
     if (error instanceof Error && error.message === "NO_EXISTE") {
       return { estado: "no_encontrado" };
     }
+    if (error instanceof Error && error.message === "CATALOGO_INVALIDO") {
+      return { estado: "catalogo_invalido" };
+    }
     console.error("[expedientes] no se pudo guardar la edición:", error);
     return { estado: "error" };
   }
@@ -412,6 +433,10 @@ export async function crearExpediente(
 
   try {
     creado = await enTransaccion(async (cliente) => {
+      const catalogo = await resolverCatalogo(cliente, datos);
+
+      if (!catalogo) throw new Error("CATALOGO_INVALIDO");
+
       const fila = await cliente.query<{ id: string }>(
         `INSERT INTO estudiante (
            nombre, cedula, email, telefono, fecha_nacimiento, lugar_nacimiento,
@@ -420,12 +445,13 @@ export async function crearExpediente(
            centro_educativo, director_centro, facilitador_habitudes,
            breve_historia_habitudes, amonestaciones, solicitudes_pendientes,
            envio_correo_patrocinador, asistio_reunion_mensual,
-           notas_adicionales, grupo
+           notas_adicionales, grupo, universidad_id, carrera_id, pensum_id, matricula
          ) VALUES (
            $1, $2, $3, $4, $5::date, $6, $7, $8::genero, $9, $10,
            $11::estado_estudiante, $12, $13, $14,
            $15::date, $16, $17, $18, $19, $20, $21,
-           coalesce($22, 'pendiente'), coalesce($23, 'no'), $24, $25
+           coalesce($22, 'pendiente'), coalesce($23, 'no'), $24, $25,
+           $26::uuid, $27::uuid, $28::uuid, $29
          )
          RETURNING id`,
         // Los dos `coalesce` de la sentencia repiten los DEFAULT de la 0005
@@ -449,9 +475,9 @@ export async function crearExpediente(
           texto("sexo_documento"),
           texto("religion"),
           estado,
-          texto("programa"),
+          catalogo.carrera,
           texto("donde_estudia"),
-          texto("universidad"),
+          catalogo.siglas,
           texto("fecha_ingreso"),
           texto("centro_educativo"),
           texto("director_centro"),
@@ -463,6 +489,10 @@ export async function crearExpediente(
           texto("asistio_reunion_mensual"),
           texto("notas_adicionales"),
           grupo,
+          catalogo.universidadId,
+          catalogo.carreraId,
+          catalogo.pensumId,
+          texto("matricula"),
         ],
       );
 
@@ -571,6 +601,9 @@ export async function crearExpediente(
       return { id };
     });
   } catch (error) {
+    if (error instanceof Error && error.message === "CATALOGO_INVALIDO") {
+      return { estado: "catalogo_invalido" };
+    }
     console.error("[expedientes] no se pudo crear el expediente:", error);
     return { estado: "error" };
   }
@@ -674,6 +707,11 @@ export async function eliminarExpediente(
   }
 
   let borrado: { id: string } | null;
+  // Las filas de `archivo_academico` se van con el expediente (CASCADE), pero los
+  // PDF viven en el bucket: se anotan antes para borrarlos después.
+  const rutasPdf = (
+    await consultar<{ ruta: string }>(`SELECT ruta FROM archivo_academico WHERE estudiante_id = $1`, [id])
+  ).map((f) => f.ruta);
 
   try {
     // El propio expediente sí se lleva sus cinco perfiles y sus familiares
@@ -689,6 +727,8 @@ export async function eliminarExpediente(
   }
 
   if (!borrado) return { estado: "no_encontrado" };
+
+  await Promise.all(rutasPdf.map((ruta) => borrarDocumento(ruta)));
 
   await registrar({
     usuarioId: usuario.id,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import type { CatalogoDelFormulario } from "@/components/expedientes/campos-catalogo";
+import { useActionState, useState, useTransition } from "react";
 import {
   AlertCircle,
   Camera,
@@ -62,6 +63,7 @@ export function FormularioEdicionExpediente({
   puedeEditar,
   editarInicial = false,
   textos,
+  catalogo,
 }: {
   expediente: ExpedienteCompleto;
   /** URL pública de la foto actual, o `null` para dibujar la inicial. */
@@ -70,11 +72,30 @@ export function FormularioEdicionExpediente({
   /** Abre ya en modo edición, para cuando se llega con `?editar=1` desde la vista rápida. */
   editarInicial?: boolean;
   textos: TextosEdicion;
+  /** Opciones del catálogo para los desplegables; sin él, el texto antiguo en solo lectura. */
+  catalogo?: CatalogoDelFormulario;
 }) {
-  const [estado, enviar, enviando] = useActionState<EstadoExpediente, FormData>(
+  const [estado, enviarAccion, enviandoAccion] = useActionState<EstadoExpediente, FormData>(
     actualizarExpediente,
     { estado: "inicial" },
   );
+  const [, iniciar] = useTransition();
+  const enviando = enviandoAccion;
+
+  /**
+   * El envío NO usa `<form action>`: React 19 reinicia el formulario al terminar
+   * una acción y deja en blanco los campos controlados que no vuelve a
+   * sincronizar —el pénsum y la carrera aparecían vacíos recién guardados—. Con
+   * `onSubmit` y una transición el formulario conserva lo que escribió quien
+   * edita, y si el guardado falla no pierde nada. La validación nativa
+   * (`required`) corre antes del `onSubmit`.
+   */
+  const enviar = (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    const datos = new FormData(ev.currentTarget, (ev.nativeEvent as SubmitEvent).submitter);
+
+    iniciar(() => enviarAccion(datos));
+  };
 
   const [editando, setEditando] = useState(editarInicial);
   const [previa, setPrevia] = useState<string | null>(null);
@@ -88,7 +109,7 @@ export function FormularioEdicionExpediente({
   };
 
   return (
-    <form action={enviar} className="space-y-4">
+    <form onSubmit={enviar} className="space-y-4">
       <input type="hidden" name="id" value={expediente.id} />
 
       {!puedeEditar && (
@@ -191,6 +212,7 @@ export function FormularioEdicionExpediente({
         textos={textos}
         valores={expediente}
         soloLectura={soloLectura}
+        catalogo={catalogo}
       />
 
       {estado.estado !== "inicial" && (
@@ -213,6 +235,8 @@ export function FormularioEdicionExpediente({
               ? textos.savedEdit
               : estado.estado === "invalido"
                 ? textos.faltaNombre
+                : estado.estado === "catalogo_invalido" && catalogo
+                ? catalogo.textos.invalid
                 : estado.estado === "foto_invalida"
                 ? textos.photoInvalid
                 : estado.estado === "foto_grande"
