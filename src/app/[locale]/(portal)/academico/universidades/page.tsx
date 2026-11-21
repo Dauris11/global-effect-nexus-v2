@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { ChevronRight, Landmark } from "lucide-react";
+import { ChevronRight, Landmark, ScanSearch } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FormUniversidad } from "@/components/universidades/formularios";
 import { Badge } from "@/components/ui/badge";
+import { variantesBoton } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
@@ -37,7 +38,17 @@ export default async function PaginaUniversidades({ params }: { params: Promise<
 
   return (
     <div className="animate-entrada mx-auto max-w-4xl space-y-6">
-      <EncabezadoPagina titulo={t("title")} />
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          usuarioTienePermiso(usuario, "expedientes.escribir") ? (
+            <Link href="/academico/universidades/calificaciones" className={variantesBoton({ size: "sm" })}>
+              <ScanSearch className="size-4" />
+              {t("upload.open")}
+            </Link>
+          ) : undefined
+        }
+      />
 
       {puedeEscribir && (
         <NextIntlClientProvider messages={mensajes}>

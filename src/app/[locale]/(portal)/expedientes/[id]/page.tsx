@@ -8,7 +8,7 @@ import { AlertasAcademicas } from "@/components/expedientes/alertas-academicas";
 import { AccionesRapidasExpediente } from "@/components/expedientes/acciones-rapidas-expediente";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
 import { textoAntiguedad } from "@/components/expedientes/detalle/antiguedad-texto";
-import { alertasAcademicas, indiceDelEstudiante, umbralDeIndice } from "@/server/academico/indice";
+import { alertasAcademicas, indiceDelEstudiante, umbralesDeUniversidad } from "@/server/academico/indice";
 import { archivosAcademicos, arbolCatalogo, catalogoDelEstudiante, recordNativoDelEstudiante } from "@/server/universidades/consultas";
 import { Tab360, TabPensum, TabRecord, TabUniversidad } from "@/components/expedientes/detalle/tab-academica";
 import { TabPatrocinio, TabSeguimiento } from "@/components/expedientes/detalle/tab-seguimiento";
@@ -123,7 +123,7 @@ export default async function PaginaExpediente({
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
   const mensajes = await mensajesCliente(["records", "catalog"]);
-  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbral] = await Promise.all([
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
     inscripcionesDelEstudiante(expediente.id),
@@ -136,9 +136,10 @@ export default async function PaginaExpediente({
     archivosAcademicos("estudiante", expediente.id),
     recordNativoDelEstudiante(expediente.id),
     indiceDelEstudiante(expediente.id),
-    umbralDeIndice(),
+    umbralesDeUniversidad(expediente.id),
   ]);
-  const alertas = alertasAcademicas(catalogo, indice, umbral);
+  const ultimo = record?.periodos[0];
+  const alertas = alertasAcademicas(catalogo, indice, umbrales.acumulado, ultimo ? { periodo: ultimo.periodo, indice: ultimo.indice, umbral: umbrales.periodo } : null);
 
   const tiempo = textoAntiguedad(expediente.fecha_ingreso, (k, v) => t(k as never, v as never), idioma);
   const foto = urlDeAvatar(expediente.foto_url);
@@ -223,7 +224,7 @@ export default async function PaginaExpediente({
           family: <FichaFamilia e={expediente} />,
           health: <FichaSalud e={expediente} />,
           university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />,
-          record: <TabRecord notas={notas} record={record} indice={indice} umbral={umbral} puedeEditar={puedeEditar} />,
+          record: <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />,
           curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />,
           g360: <Tab360 datos={historial360} />,
           followUp: <TabSeguimiento e={expediente} seg={seguimiento} />,

@@ -21,6 +21,24 @@ export async function umbralDeIndice(): Promise<number> {
   return Number.isFinite(n) && n > 0 ? n : GPA_PRUEBA_ACADEMICA;
 }
 
+/**
+ * Umbrales de alerta de la universidad del estudiante: del acumulado y del último
+ * período. Cada universidad los define en su ficha; mientras estén sin definir se
+ * usa el global (`becas.indice_minimo`). `maximo` es la escala (UCATECI: 4,00).
+ */
+export async function umbralesDeUniversidad(estudianteId: string): Promise<{ acumulado: number; periodo: number; maximo: number | null }> {
+  const [global, fila] = await Promise.all([
+    umbralDeIndice(),
+    consultarUna<{ acumulado: number | null; periodo: number | null; maximo: number | null }>(
+      `SELECT u.indice_minimo_acumulado::float8 AS acumulado, u.indice_minimo_periodo::float8 AS periodo, u.indice_maximo::float8 AS maximo
+         FROM estudiante e JOIN universidad u ON u.id = e.universidad_id WHERE e.id = $1`,
+      [estudianteId],
+    ),
+  ]);
+
+  return { acumulado: fila?.acumulado ?? global, periodo: fila?.periodo ?? fila?.acumulado ?? global, maximo: fila?.maximo ?? null };
+}
+
 /** Índice del estudiante, o `null` si no tiene ni resultados nativos ni historial. */
 export async function indiceDelEstudiante(estudianteId: string | null): Promise<number | null> {
   if (!estudianteId) return null;
@@ -36,6 +54,7 @@ export async function indiceDelEstudiante(estudianteId: string | null): Promise<
 
 export type AlertaAcademica =
   | { tipo: "indice_bajo"; indice: number; umbral: number }
+  | { tipo: "indice_periodo_bajo"; periodo: string; indice: number; umbral: number }
   | { tipo: "reprobadas"; materias: string[] }
   | { tipo: "retiradas"; materias: string[] };
 
@@ -45,11 +64,21 @@ export type AlertaAcademica =
  * Una materia retirada que ya se volvió a cursar deja de contar (el estado es el
  * del intento más reciente).
  */
-export function alertasAcademicas(catalogo: CatalogoDelEstudiante, indice: number | null, umbral: number): AlertaAcademica[] {
+export function alertasAcademicas(
+  catalogo: CatalogoDelEstudiante,
+  indice: number | null,
+  umbral: number,
+  /** Índice del último período cargado y su umbral; sin esto no hay alerta de período. */
+  ultimoPeriodo?: { periodo: string; indice: number | null; umbral: number } | null,
+): AlertaAcademica[] {
   const alertas: AlertaAcademica[] = [];
   const nombres = (estado: "reprobada" | "retirada") => catalogo.materias.filter((m) => m.estado === estado).map((m) => `${m.codigo} ${m.nombre}`);
 
   if (indice !== null && indice < umbral) alertas.push({ tipo: "indice_bajo", indice, umbral });
+
+  if (ultimoPeriodo && ultimoPeriodo.indice !== null && ultimoPeriodo.indice < ultimoPeriodo.umbral) {
+    alertas.push({ tipo: "indice_periodo_bajo", periodo: ultimoPeriodo.periodo, indice: ultimoPeriodo.indice, umbral: ultimoPeriodo.umbral });
+  }
 
   const reprobadas = nombres("reprobada");
   const retiradas = nombres("retirada");

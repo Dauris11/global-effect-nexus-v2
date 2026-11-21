@@ -80,12 +80,18 @@ export type ReglasUniversidad = {
   retirada_cuenta_en_divisor: boolean;
   redondeo_indice: "truncar" | "redondear";
   reglas_confirmadas: boolean;
+  /** Escala del índice (UCATECI 4,00) y umbrales de alerta; null = sin definir. */
+  indice_maximo: number | null;
+  indice_minimo_periodo: number | null;
+  indice_minimo_acumulado: number | null;
 };
 
 export async function universidadPorId(id: string) {
   const fila = await consultarUna<{ id: string; siglas: string; nombre: string; regimen: Regimen; activa: boolean; logo_ruta: string | null } & ReglasUniversidad>(
     `SELECT id, siglas, nombre, regimen, activa, logo_ruta, puntos_por_letra, letra_minima_aprobar,
-            retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas
+            retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas,
+            indice_maximo::float8 AS indice_maximo, indice_minimo_periodo::float8 AS indice_minimo_periodo,
+            indice_minimo_acumulado::float8 AS indice_minimo_acumulado
        FROM universidad WHERE id = $1`,
     [id],
   );

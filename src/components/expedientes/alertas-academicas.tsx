@@ -21,6 +21,7 @@ export async function AlertasAcademicas({ alertas }: { alertas: AlertaAcademica[
           <AlertCircle className={ALERTA_RIESGO.icono} />
           <span className={ALERTA_RIESGO.texto}>
             {a.tipo === "indice_bajo" && t("lowIndex", { index: a.indice.toFixed(2), min: a.umbral.toFixed(2) })}
+            {a.tipo === "indice_periodo_bajo" && t("lowPeriodIndex", { period: a.periodo, index: a.indice.toFixed(2), min: a.umbral.toFixed(2) })}
             {a.tipo === "reprobadas" && t("failed", { count: a.materias.length, subjects: a.materias.join(", ") })}
             {a.tipo === "retiradas" && t("withdrawn", { count: a.materias.length, subjects: a.materias.join(", ") })}
           </span>

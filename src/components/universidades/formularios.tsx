@@ -131,6 +131,7 @@ export function FormUniversidad({
     logo: string | null;
     puntos_por_letra: Record<string, number>; letra_minima_aprobar: string;
     retirada_cuenta_en_divisor: boolean; redondeo_indice: string; reglas_confirmadas: boolean;
+    indice_maximo: number | null; indice_minimo_periodo: number | null; indice_minimo_acumulado: number | null;
   };
 }) {
   const t = useTranslations("catalog");
@@ -192,6 +193,19 @@ export function FormUniversidad({
               </select>
             </Campo>
           </div>
+          <p className="text-sm font-semibold">{t("rules.alertsTitle")}</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Campo id={`u-maximo-${k}`} etiqueta={t("rules.maxIndex")}>
+              <Input id={`u-maximo-${k}`} name="indice_maximo" inputMode="decimal" maxLength={5} defaultValue={universidad?.indice_maximo ?? ""} />
+            </Campo>
+            <Campo id={`u-minper-${k}`} etiqueta={t("rules.minPeriod")}>
+              <Input id={`u-minper-${k}`} name="minimo_periodo" inputMode="decimal" maxLength={5} defaultValue={universidad?.indice_minimo_periodo ?? ""} />
+            </Campo>
+            <Campo id={`u-minacu-${k}`} etiqueta={t("rules.minOverall")}>
+              <Input id={`u-minacu-${k}`} name="minimo_acumulado" inputMode="decimal" maxLength={5} defaultValue={universidad?.indice_minimo_acumulado ?? ""} />
+            </Campo>
+          </div>
+          <p className="texto-meta">{t("rules.alertsHelp")}</p>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="confirmadas" value="si" defaultChecked={universidad?.reglas_confirmadas} className="size-4" />
             {t("rules.confirmed")}

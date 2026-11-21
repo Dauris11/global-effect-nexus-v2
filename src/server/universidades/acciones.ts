@@ -73,6 +73,17 @@ function refrescar() {
   revalidatePath("/[locale]/expedientes/[id]", "page");
 }
 
+/** Número con hasta 2 decimales en [0, 99,99]; vacío es `null` (sin definir) y lo ilegible, `"invalido"`. */
+function numeroOpcional(d: FormData, campo: string, max: number): number | null | "invalido" {
+  const t = texto(d, campo, max).replace(",", ".");
+
+  if (t === "") return null;
+
+  const n = Number(t);
+
+  return Number.isFinite(n) && n >= 0 && n < 100 ? Math.round(n * 100) / 100 : "invalido";
+}
+
 export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promise<EstadoCatalogo> {
   const usuario = await conPermiso("catalogo.escribir");
 
@@ -89,8 +100,12 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
   const retirada = d.get("retirada") !== "no";
   const redondeo = texto(d, "redondeo", 12) === "redondear" ? "redondear" : "truncar";
   const confirmadas = d.get("confirmadas") === "si";
+  // Escala y umbrales de alerta: vacío = sin definir (se usa el umbral global).
+  const indiceMaximo = numeroOpcional(d, "indice_maximo", 10);
+  const minimoPeriodo = numeroOpcional(d, "minimo_periodo", 10);
+  const minimoAcumulado = numeroOpcional(d, "minimo_acumulado", 10);
 
-  if (!siglas || !nombre || !REGIMENES.includes(regimen) || (id && !UUID.test(id)) || !puntos || !(letraMinima in puntos)) {
+  if (!siglas || !nombre || !REGIMENES.includes(regimen) || (id && !UUID.test(id)) || !puntos || !(letraMinima in puntos) || indiceMaximo === "invalido" || minimoPeriodo === "invalido" || minimoAcumulado === "invalido" || (typeof indiceMaximo === "number" && ((typeof minimoPeriodo === "number" && minimoPeriodo > indiceMaximo) || (typeof minimoAcumulado === "number" && minimoAcumulado > indiceMaximo)))) {
     return { estado: "dato_invalido" };
   }
 
@@ -115,15 +130,17 @@ export async function guardarUniversidad(_p: EstadoCatalogo, d: FormData): Promi
       ? await consultarUna<{ id: string }>(
           `UPDATE universidad SET siglas = $2, nombre = $3, regimen = $4, activa = $5,
                   puntos_por_letra = $6::jsonb, letra_minima_aprobar = $7,
-                  retirada_cuenta_en_divisor = $8, redondeo_indice = $9, reglas_confirmadas = $10
+                  retirada_cuenta_en_divisor = $8, redondeo_indice = $9, reglas_confirmadas = $10,
+                  indice_maximo = $11, indice_minimo_periodo = $12, indice_minimo_acumulado = $13
             WHERE id = $1 RETURNING id`,
-          [id, siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas],
+          [id, siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas, indiceMaximo, minimoPeriodo, minimoAcumulado],
         )
       : await consultarUna<{ id: string }>(
           `INSERT INTO universidad (siglas, nombre, regimen, activa, puntos_por_letra, letra_minima_aprobar,
-                                   retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas)
-           VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9) RETURNING id`,
-          [siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas],
+                                   retirada_cuenta_en_divisor, redondeo_indice, reglas_confirmadas,
+                                   indice_maximo, indice_minimo_periodo, indice_minimo_acumulado)
+           VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+          [siglas, nombre, regimen, activa, JSON.stringify(puntos), letraMinima, retirada, redondeo, confirmadas, indiceMaximo, minimoPeriodo, minimoAcumulado],
         );
 
     if (!fila) return { estado: "no_encontrado" };
