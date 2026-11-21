@@ -7212,23 +7212,36 @@
       "remove": "Quitar este resultado"
     },
     "grades": {
-      "title": "Registrar calificaciones del cuatrimestre",
+      "title": "Poner las notas de un período",
+      "step1": "1. ¿De qué período son las notas?",
+      "step2": "2. Marca la nota de cada materia",
       "year": "Año",
       "term": "Cuatrimestre",
       "termOption": "Cuatrimestre {n}",
-      "list": "Calificaciones",
-      "placeholder": "ISC101 ; A ; 95\nCIM001 ; B\nHUM008 ; R",
-      "help": "Una materia por línea: código ; letra ; nota (opcional). Usa R para una materia retirada. Si todo cuadra con el pénsum y las letras de la universidad se guarda; si una línea falla, no se guarda ninguna.",
-      "save": "Guardar calificaciones",
-      "saved": "{count} calificaciones guardadas. El pénsum, el índice y las alertas ya están actualizados.",
-      "unknown": "No son del pénsum de este estudiante o su letra no existe en su universidad: {codes}.",
+      "missing": "{count, plural, one {Le falta 1 materia por cursar.} other {Le faltan # materias por cursar.}} Deja sin nota las que no quieras tocar.",
+      "nothingMissing": "No le faltan materias por cursar.",
+      "search": "Buscar una materia",
+      "showRetakes": "Mostrar también las reprobadas y retiradas (para volver a cursarlas)",
+      "noMatches": "No hay materias con ese nombre.",
+      "credits": "{count, plural, one {1 crédito} other {# créditos}}",
+      "failed": "reprobada",
+      "withdrawn": "retirada",
+      "gradeFor": "Nota de {subject}",
+      "scoreFor": "Número de {subject}",
+      "noGrade": "Sin nota",
+      "letterOption": "{letter} ({points} puntos)",
+      "withdrawnOption": "R · La retiró",
+      "score": "Número (opcional)",
+      "saveNone": "Marca al menos una nota",
+      "saveCount": "{count, plural, one {Guardar 1 nota} other {Guardar # notas}}",
+      "saved": "{count, plural, one {Se guardó 1 nota.} other {Se guardaron # notas.}} El plan de estudios, el índice y las alertas ya están al día.",
       "errors": {
-        "no_permitido": "No tienes permiso para registrar calificaciones.",
+        "no_permitido": "No tienes permiso para poner notas.",
         "no_encontrado": "No se encontró al estudiante.",
-        "sin_pensum": "Primero elige la universidad, la carrera y el pénsum del estudiante.",
+        "sin_pensum": "Primero hay que elegir la universidad, la carrera y el plan de estudios del estudiante.",
         "periodo_invalido": "El año o el cuatrimestre no son válidos.",
-        "vacio": "No hay ninguna línea que leer.",
-        "invalido": "Hay líneas que no se pudieron guardar; no se guardó ninguna.",
+        "vacio": "Marca al menos una nota.",
+        "invalido": "Alguna materia o nota no corresponde a este estudiante y no se guardó nada. Revisa y vuelve a intentarlo.",
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     },
@@ -7254,13 +7267,13 @@
           "3": "III"
         },
         "medium": "Medio",
-        "mediumFile": "PDF o foto",
-        "mediumList": "Pegar lista",
+        "mediumFile": "Subir PDF o foto",
+        "mediumList": "Pegar una lista",
         "file": "Archivo (PDF, JPG, PNG o WebP, hasta 5 MB)",
         "list": "Una fila por línea: matrícula ; nombre ; código ; letra ; nota",
-        "submit": "Leer y revisar",
+        "submit": "Leer el documento",
         "reading": "Leyendo el documento…",
-        "help": "El programa y la IA identifican a cada estudiante y su materia, y tú revisas antes de guardar nada. El archivo no se conserva."
+        "help": "El sistema lee el documento y busca a cada estudiante y su materia. Antes de guardar nada, tú revisas lo que entendió. El archivo no se guarda."
       },
       "errors": {
         "no_permitido": "No tienes permiso para cargar calificaciones.",
@@ -7284,19 +7297,19 @@
         "subject": "Materia",
         "grade": "Nota",
         "status": "Estado",
-        "ok": "Listo",
-        "unmatched": "Sin emparejar",
+        "ok": "Todo bien",
+        "unmatched": "No encontramos al estudiante",
         "matchedBy": {
-          "matricula": "Por matrícula",
-          "nombre": "Por nombre",
-          "manual": "A mano"
+          "matricula": "Encontrado por su matrícula",
+          "nombre": "Encontrado por su nombre",
+          "manual": "Elegido por ti"
         },
         "read": "Leído: {name} {id}",
         "confidence": "{value}% de confianza",
-        "choose": "Elegir estudiante",
-        "assign": "Asignar",
-        "confirm": "Confirmar y guardar notas",
-        "discard": "Descartar",
+        "choose": "¿Quién es?",
+        "assign": "Es este",
+        "confirm": "Guardar las notas",
+        "discard": "No guardar nada",
         "confirmed": "Carga confirmada: {notes} notas de {students} estudiantes.",
         "omitted": "{count, plural, one {# estudiante no se escribió porque tiene filas por revisar.} other {# estudiantes no se escribieron porque tienen filas por revisar.}}",
         "noStudent": "{count, plural, one {# fila sin estudiante no se escribió.} other {# filas sin estudiante no se escribieron.}}",
@@ -7315,7 +7328,7 @@
           "confirmada": "Confirmada",
           "descartada": "Descartada"
         },
-        "blocked": "Hay filas por revisar: esos estudiantes no se guardarán."
+        "blocked": "Hay filas con avisos. Solo se guardan las notas de los estudiantes que están completamente bien; revisa los avisos antes de guardar."
       },
       "problems": {
         "sin_estudiante": "No se encontró al estudiante",
@@ -7326,6 +7339,12 @@
         "letra_invalida": "La letra no existe en esta universidad",
         "repetida": "Materia repetida en la carga",
         "confianza_baja": "Lectura poco segura"
+      },
+      "intro": {
+        "title": "Cómo funciona",
+        "step1": "Elige la universidad y el período de las notas.",
+        "step2": "Sube la foto o el PDF del listado, o pega la lista.",
+        "step3": "Revisa lo que entendió el sistema y pulsa «Guardar las notas»."
       }
     }
   }

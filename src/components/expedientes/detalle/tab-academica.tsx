@@ -229,7 +229,13 @@ export async function TabPensum({
 
       {puedeEditar && (
         <Seccion titulo={tc("grades.title")}>
-          <RegistrarCalificaciones estudianteId={e.id} />
+          <RegistrarCalificaciones
+            estudianteId={e.id}
+            materias={catalogo.materias.flatMap((m) =>
+              m.estado === "aprobada" ? [] : [{ codigo: m.codigo, nombre: m.nombre, creditos: m.creditos, periodoSugerido: m.periodo_sugerido, estado: m.estado }],
+            )}
+            letras={Object.entries(catalogo.reglas?.puntosPorLetra ?? {}).map(([letra, puntos]) => ({ letra, puntos }))}
+          />
         </Seccion>
       )}
 

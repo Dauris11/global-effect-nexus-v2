@@ -7212,23 +7212,36 @@
       "remove": "Remove this result"
     },
     "grades": {
-      "title": "Enter the term's grades",
+      "title": "Enter the grades for a term",
+      "step1": "1. Which term are the grades from?",
+      "step2": "2. Mark the grade for each subject",
       "year": "Year",
       "term": "Term",
       "termOption": "Term {n}",
-      "list": "Grades",
-      "placeholder": "ISC101 ; A ; 95\nCIM001 ; B\nHUM008 ; R",
-      "help": "One subject per line: code ; letter ; grade (optional). Use R for a withdrawn subject. If everything matches the curriculum and the university's letters it is saved; if one line fails, none is saved.",
-      "save": "Save grades",
-      "saved": "{count} grades saved. The curriculum, the index and the alerts are already updated.",
-      "unknown": "Not in this student's curriculum or the letter does not exist at their university: {codes}.",
+      "missing": "{count, plural, one {1 subject left to take.} other {# subjects left to take.}} Leave blank the ones you do not want to change.",
+      "nothingMissing": "No subjects left to take.",
+      "search": "Search for a subject",
+      "showRetakes": "Also show failed and withdrawn subjects (to retake them)",
+      "noMatches": "No subjects with that name.",
+      "credits": "{count, plural, one {1 credit} other {# credits}}",
+      "failed": "failed",
+      "withdrawn": "withdrawn",
+      "gradeFor": "Grade for {subject}",
+      "scoreFor": "Score for {subject}",
+      "noGrade": "No grade",
+      "letterOption": "{letter} ({points} points)",
+      "withdrawnOption": "R · Withdrew",
+      "score": "Score (optional)",
+      "saveNone": "Mark at least one grade",
+      "saveCount": "{count, plural, one {Save 1 grade} other {Save # grades}}",
+      "saved": "{count, plural, one {1 grade saved.} other {# grades saved.}} The study plan, the index and the alerts are up to date.",
       "errors": {
-        "no_permitido": "You don't have permission to enter grades.",
+        "no_permitido": "You do not have permission to enter grades.",
         "no_encontrado": "The student was not found.",
-        "sin_pensum": "First choose the student's university, program and curriculum.",
+        "sin_pensum": "First choose the student's university, degree and study plan.",
         "periodo_invalido": "The year or term is not valid.",
-        "vacio": "There is no line to read.",
-        "invalido": "Some lines could not be saved; none was saved.",
+        "vacio": "Mark at least one grade.",
+        "invalido": "A subject or grade does not match this student and nothing was saved. Check and try again.",
         "error": "It could not be saved. Try again."
       }
     },
@@ -7254,13 +7267,13 @@
           "3": "III"
         },
         "medium": "Medium",
-        "mediumFile": "PDF or photo",
+        "mediumFile": "Upload a PDF or photo",
         "mediumList": "Paste a list",
         "file": "File (PDF, JPG, PNG or WebP, up to 5 MB)",
         "list": "One row per line: student ID ; name ; code ; letter ; score",
-        "submit": "Read and review",
+        "submit": "Read the document",
         "reading": "Reading the document…",
-        "help": "The program and the AI identify each student and subject, and you review before anything is saved. The file is not kept."
+        "help": "The system reads the document and looks up each student and subject. Before anything is saved, you review what it understood. The file is not kept."
       },
       "errors": {
         "no_permitido": "You do not have permission to upload grades.",
@@ -7284,19 +7297,19 @@
         "subject": "Subject",
         "grade": "Grade",
         "status": "Status",
-        "ok": "Ready",
-        "unmatched": "Unmatched",
+        "ok": "All good",
+        "unmatched": "We could not find the student",
         "matchedBy": {
-          "matricula": "By student ID",
-          "nombre": "By name",
-          "manual": "Manual"
+          "matricula": "Found by student ID",
+          "nombre": "Found by name",
+          "manual": "Chosen by you"
         },
         "read": "Read: {name} {id}",
         "confidence": "{value}% confidence",
-        "choose": "Choose student",
-        "assign": "Assign",
-        "confirm": "Confirm and save grades",
-        "discard": "Discard",
+        "choose": "Who is it?",
+        "assign": "It is this one",
+        "confirm": "Save the grades",
+        "discard": "Save nothing",
         "confirmed": "Upload confirmed: {notes} grades for {students} students.",
         "omitted": "{count, plural, one {# student was not written because they have rows to review.} other {# students were not written because they have rows to review.}}",
         "noStudent": "{count, plural, one {# row without a student was not written.} other {# rows without a student were not written.}}",
@@ -7315,7 +7328,7 @@
           "confirmada": "Confirmed",
           "descartada": "Discarded"
         },
-        "blocked": "Some rows need review: those students will not be saved."
+        "blocked": "Some rows have warnings. Only students whose rows are all fine are saved; check the warnings before saving."
       },
       "problems": {
         "sin_estudiante": "Student not found",
@@ -7326,6 +7339,12 @@
         "letra_invalida": "The letter does not exist at this university",
         "repetida": "Subject repeated in the upload",
         "confianza_baja": "Low-confidence reading"
+      },
+      "intro": {
+        "title": "How it works",
+        "step1": "Choose the university and the term of the grades.",
+        "step2": "Upload the photo or PDF of the list, or paste the list.",
+        "step3": "Check what the system understood and press “Save the grades”."
       }
     }
   }

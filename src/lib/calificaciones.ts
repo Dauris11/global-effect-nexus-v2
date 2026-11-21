@@ -26,7 +26,7 @@ export function leerCalificaciones(texto: string): LecturaCalificaciones {
     const nota = hayNota ? Number(notaTxt.replace(",", ".")) : null;
 
     const valida =
-      /^[A-Z]{3}\d{3}$/.test(cod) && /^[A-Z][+-]?$/.test(let_) && !vistos.has(cod) &&
+      /^[A-Z]{2,4}-?\d{2,4}(-?[A-Z])?$/.test(cod) && /^[A-Z][+-]?$/.test(let_) && !vistos.has(cod) &&
       (nota === null || (Number.isFinite(nota) && nota >= 0 && nota <= 100));
 
     if (!valida || items.length >= MAX) {
