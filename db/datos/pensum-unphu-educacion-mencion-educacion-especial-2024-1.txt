@@ -1,0 +1,63 @@
+# UNPHU · Educación, mención Educación Especial · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-educacion-mencion-educacion-especial_2024-1.pdf); los créditos cuadran con los totales impresos (184 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: EDU-741: Todas las Asignaturas
+EDU-176 ; Fundamentos Filosóficos e Históricos de la Educación ; 4 ; 1 ; 
+LET-104 ; Expresión Oral y Producción Escrita ; 3 ; 1 ; 
+LEX-110 ; Inglés Básico ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+BIO-101 ; Biología General ; 3 ; 1 ; 
+BIO-101-L ; Biología General Práctica ; 1 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+EDU-174 ; Fundamentos y Estructura del Currículum ; 3 ; 2 ; 
+PSI-100 ; Psicología General ; 3 ; 2 ; 
+SOC-105 ; Introducción a las Ciencias Sociales ; 2 ; 2 ; 
+LEX-117 ; Inglés II ; 3 ; 2 ; LEX-110
+HUM-160 ; Historia Dominicana ; 3 ; 2 ; 
+EDU-107 ; Técnicas del Estudio e Investigación ; 3 ; 2 ; 
+EDU-165 ; Tecnología de la Información Aplicada a la Educación ; 2 ; 2 ; 
+EDU-177 ; Proceso de Enseñanza- Aprendizaje ; 4 ; 3 ; EDU-174
+EDU-179 ; Ética Profesional Docente ; 2 ; 3 ; 
+EDU-188 ; Legislación Educativa Dominicana ; 2 ; 3 ; 
+EDU-707 ; Alteraciones en el Desarrollo ; 3 ; 3 ; 
+EDU-706 ; Evolución de la Educación Especial ; 4 ; 3 ; 
+PSI-227 ; Psicología del Desarrollo I ; 3 ; 3 ; PSI-100
+PSI-334 ; Psicología del Aprendizaje ; 3 ; 4 ; PSI-227
+EDU-183 ; Recursos para el Aprendizaje ; 3 ; 4 ; EDU-177
+EDU-727 ; Necesidades Específicas de Apoyo Educativo I ; 4 ; 4 ; EDU-706
+EDU-717 ; Planeamiento Didáctico en Educación Especial ; 4 ; 4 ; EDU-706
+EDU-175 ; Métodología de la Investigación Científica ; 3 ; 4 ; EDU-107
+EDU-709 ; Didáctica de la Lengua Española I en la Educación Especial ; 4 ; 5 ; EDU-174,EDU-177
+EDU-710 ; Didáctica de las Matemáticas I en la Educación Especial ; 4 ; 5 ; EDU-174,EDU-177
+EDU-735 ; Práctica Docente I- Observación ; 2 ; 5 ; 
+EDU-728 ; Necesidades Específicas de Apoyo Educativo II ; 4 ; 5 ; EDU-727
+EDU-199 ; Neurociencia y Aprendizaje ; 3 ; 5 ; BIO-101,BIO-101-L,PSI-334
+PSI-322 ; Técnica de Manejo Conductual ; 3 ; 5 ; PSI-334,EDU-707
+EDU-736 ; Práctica Docente II- Interacción ; 3 ; 6 ; EDU-735
+EDU-711 ; Didáctica de la Lengua Española II en la Educación Especial ; 3 ; 6 ; EDU-709
+EDU-712 ; Didáctica de las Matemáticas II en la Educación Especial ; 3 ; 6 ; EDU-710
+EDU-703 ; Lengua de Señas ; 4 ; 6 ; EDU-177,EDU-183,EDU-727,EDU-707
+EDU-705 ; Conocimiento del Entorno Natural y Social en la Educación Especial ; 4 ; 6 ; EDU-174,EDU-177,EDU-728
+EDU-737 ; Práctica Docente III- Manejo en el Aula ; 3 ; 7 ; EDU-736
+EDU-720 ; Problemas Emocionales y Conductuales I ; 4 ; 7 ; EDU-728
+EDU-704 ; Comunicación Aumentativa y Alternativa ; 4 ; 7 ; EDU-703,EDU-177,EDU-183,EDU-727,EDU-707
+EDU-719 ; Ayudas Técnicas en la Educación Especial ; 3 ; 7 ; EDU-728
+EDU-732 ; Arte en Educación Especial ; 4 ; 7 ; 
+EDU-721 ; Problemas Emocionales y Conductuales II ; 3 ; 8 ; EDU-720
+EDU-730 ; Educación Sexual y Diversidad Funcional ; 3 ; 8 ; EDU-720
+EDU-726 ; Música en Educación Especial ; 3 ; 8 ; EDU-732
+EDU-701 ; Educación Hospitalaria ; 4 ; 8 ; EDU-706,EDU-177,EDU-183
+EDU-738 ; Práctica Docente IV- Manejo en el Aula ; 4 ; 8 ; EDU-737
+EDU-308 ; Atención a la Diversidad ; 3 ; 8 ; 
+EDU-739 ; Práctica Docente V- Manejo en el Aula ; 4 ; 9 ; EDU-738
+EDU-383 ; Investigación Acción ; 2 ; 9 ; EDU-175
+EDU-198 ; Evaluación de los Aprendizajes ; 3 ; 9 ; EDU-174
+EDU-725 ; Relación Familia-Escuela- Comunidad ; 3 ; 9 ; EDU-308
+EDU-734 ; Movimiento y Psicomotricidad en Educación Especial ; 4 ; 9 ; EDU-732
+EDU-733 ; Orientación y Apoyo a la Educación Especial ; 3 ; 10 ; EDU-725
+EDU-740 ; Práctica Docente VI- Informe Final ; 2 ; 10 ; EDU-739
+EDU-743 ; Desarrollo Vocacional y Orientación Profesional ; 2 ; 10 ; EDU-308
+EDU-724 ; Métodos y Técnicas de Intervención Temprana ; 4 ; 10 ; EDU-721
+ELT-002 ; Electiva II ; 2 ; 10 ; EDU-308,EDU-734
+EDU-741 ; Trabajo de Grado ; 6 ; 11 ; 

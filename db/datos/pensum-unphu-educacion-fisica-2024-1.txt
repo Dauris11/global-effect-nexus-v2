@@ -1,0 +1,79 @@
+# UNPHU · Educación Física · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-educacion-fisica_2024-1.pdf); los créditos cuadran con los totales impresos (195 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# corregido en ELT-003: FI-221 → EFI-221 (errata del PDF)
+LET-104 ; Expresión Oral y Producción Escrita ; 3 ; 1 ; 
+MAT-114 ; Aritmética y Geometría ; 3 ; 1 ; 
+PSI-221 ; Psicología del Desarrollo de 0 a 6 años ; 2 ; 1 ; 
+EDU-107 ; Técnicas del Estudio e Investigación ; 3 ; 1 ; 
+SOC-105 ; Introducción a las Ciencias Sociales ; 2 ; 1 ; 
+BIO-101 ; Biología General ; 3 ; 1 ; 
+BIO-101-L ; Biología General Práctica ; 1 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+FIL-108 ; Filosofía General ; 2 ; 1 ; 
+EFI-116 ; Teoría e Historia de la Educación Física ; 3 ; 2 ; 
+PSI-201 ; Psicología del Aprendizaje para Educación Física ; 4 ; 2 ; 
+HUM-155 ; Historia Dominicana (Reseña) ; 3 ; 2 ; 
+EDU-176 ; Fundamentos Filosóficos e Históricos de la Educación ; 4 ; 2 ; FIL-108
+EDU-165 ; Tecnología de la Información Aplicada a la Educación ; 2 ; 2 ; 
+PSI-206 ; Psicología del Desarrollo de 6 a 12 años ; 2 ; 2 ; PSI-221
+EDU-174 ; Fundamentos y Estructura del Currículum ; 3 ; 2 ; 
+EDU-177 ; Procesos de Enseñanza- Aprendizaje ; 4 ; 3 ; EDU-174
+EDU-178 ; Práctica Docente I - Observación ; 2 ; 3 ; 
+EFI-117 ; Educación Motriz I ; 3 ; 3 ; PSI-206
+EFI-118 ; Recreación Educativa I ; 2 ; 3 ; 
+PSI-220 ; Psicología del Desarrollo Adolescente (12-18 años) ; 3 ; 3 ; PSI-206
+LEX-110 ; Inglés Básico ; 3 ; 3 ; 
+EDU-175 ; Metodología de la Investigación Científica ; 3 ; 3 ; EDU-107
+EDU-183 ; Recursos para el Aprendizaje ; 3 ; 4 ; EDU-177
+EDU-198 ; Evaluación de los Aprendizajes ; 3 ; 4 ; EDU-174
+EDU-189 ; Práctica Docente II – Interacción ; 3 ; 4 ; EDU-178
+EFI-206 ; Educación Motriz II ; 3 ; 4 ; PSI-206
+EFI-207 ; Recreación Educativa II ; 2 ; 4 ; EFI-118
+EFI-208 ; Atletismo I ; 3 ; 4 ; EFI-118
+EFI-225 ; Educación Física para la Primera Infancia ; 3 ; 4 ; PSI-221
+EDU-376 ; Gestión de aula ; 3 ; 5 ; EDU-177
+EFI-209 ; Atletismo II ; 3 ; 5 ; EFI-208
+EFI-218 ; Estructura y Función Corporal ; 3 ; 5 ; EFI-117
+EFI-219 ; Gimnasia I ; 3 ; 5 ; 
+EDU-457 ; Ética Profesional ; 2 ; 5 ; 
+EFI-220 ; Baloncesto I ; 3 ; 5 ; 
+EDU-581 ; Didáctica Especial Educación Física I ; 3 ; 6 ; EDU-376
+LEX-117 ; Inglés II ; 3 ; 6 ; LEX-110
+EFI-221 ; Actividad Física y su Base Metabólica ; 3 ; 6 ; EFI-218
+EFI-222 ; Futbol I ; 2 ; 6 ; 
+EFI-223 ; Gimnasia II ; 3 ; 6 ; EFI-219
+EFI-224 ; Baloncesto II ; 3 ; 6 ; EFI-220
+EFI-301 ; Educación Física y Nutrición ; 3 ; 7 ; EFI-221
+EFI-302 ; Futbol II ; 2 ; 7 ; EFI-222
+EDU-377 ; Práctica Docente III- Manejo en el Aula ; 3 ; 7 ; EDU-189
+EFI-303 ; Voleibol I ; 2 ; 7 ; 
+EDU-582 ; Didáctica Especial de la Educación Física II ; 3 ; 7 ; EDU-581
+EFI-304 ; Béisbol I ; 2 ; 7 ; 
+EDU-380 ; Innovación Educativa ; 3 ; 7 ; 
+EFI-305 ; Voleibol II ; 2 ; 8 ; EFI-303
+EFI-306 ; Análisis del Movimiento ; 3 ; 8 ; EFI-218
+EDU-188 ; Legislación Educativa Dominicana ; 2 ; 8 ; 
+EDU-199 ; Neurociencia y Aprendizaje ; 3 ; 8 ; PSI-201
+EDU-382 ; Pedagogía Social ; 2 ; 8 ; EDU-176
+EFI-308 ; Balonmano I ; 2 ; 8 ; 
+EFI-307 ; Beisbol II ; 2 ; 8 ; EFI-304
+EFI-401 ; Balonmano II ; 2 ; 9 ; EFI-308
+EFI-309 ; Natación ; 2 ; 9 ; 
+EFI-310 ; Deportes con Raqueta I ; 2 ; 9 ; 
+EFI-311 ; Actividad Física y Salud ; 3 ; 9 ; EFI-301
+ELT-002 ; Electiva II ; 2 ; 9 ; EFI-207,EFI-221,EFI-301
+EFI-402 ; Condición Física ; 2 ; 9 ; 
+EFI-404 ; Ajedrez ; 3 ; 9 ; 
+EDU-384 ; Práctica Docente IV-Manejo en el Aula ; 4 ; 10 ; EDU-377
+EDU-383 ; Investigación Acción ; 2 ; 10 ; EDU-175
+EFI-405 ; Teoría y Metodología del Entrenamiento Deportivo ; 3 ; 10 ; EFI-402
+EFI-403 ; Artes Marciales I ; 2 ; 10 ; 
+ELT-003 ; Electiva III ; 2 ; 10 ; EFI-207,EFI-221,EFI-301,EFI-311
+EFI-407 ; Deportes con Raqueta II ; 2 ; 10 ; EFI-310
+EDU-408 ; Práctica Docente V- Manejo en el Aula ; 4 ; 11 ; EDU-384
+EFI-406 ; Artes Marciales II ; 2 ; 11 ; EFI-403
+EFI-408 ; Administración y Supervisión de la Educación Física ; 2 ; 11 ; 
+EFI-409 ; Expresión Corporal y Danza ; 3 ; 11 ; 
+ELT-004 ; Electiva IV ; 2 ; 11 ; EFI-207,EFI-221,EFI-301,EFI-311,EFI-405
+EDU-409 ; Práctica Docente VI-Informe Final ; 2 ; 12 ; EDU-408

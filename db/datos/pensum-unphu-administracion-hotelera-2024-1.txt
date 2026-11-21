@@ -1,0 +1,80 @@
+# UNPHU · Administración Hotelera · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-administracion-hotelera_2024-1.pdf); los créditos cuadran con los totales impresos (223 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: ATH-372: Períodos del | ATH-602: Asignaturas
+ATH-103 ; Introducción al Turismo ; 3 ; 1 ; 
+ADM-105 ; Principios de Administración ; 3 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+ELT-001 ; Electiva I ; 1 ; 1 ; 
+FIL-104 ; Ética Formativa ; 2 ; 1 ; 
+EDU-107 ; Técnicas de Estudio e Investigación ; 3 ; 1 ; 
+LEX-131 ; Inglés Técnico I (Para Hoteleria) ; 3 ; 1 ; 
+CON-116 ; Fundamentos de Contabilidad ; 4 ; 2 ; MAT-060
+ADM-133 ; Métodos Cuantitativos para Negocios I ; 5 ; 2 ; MAT-060
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+ADM-106 ; Comportamiento Organizacional y Gestión Administrativa ; 3 ; 2 ; ADM-105
+ATH-125 ; Patrimonio Cultural Dominicano I (Folklore-Artesanía) ; 3 ; 2 ; ATH-103
+ATH-127 ; Ecoturismo ; 3 ; 2 ; ATH-103
+LEX-132 ; Inglés Técnico II (Para Hoteleria) ; 3 ; 2 ; LEX-131
+CON-117 ; Contabilidad Financiera ; 4 ; 3 ; CON-116
+ATH-126 ; Patrimonio Cultural Dominicano II (Monumentalismo) ; 3 ; 3 ; ATH-125
+ATH-122 ; Geografía Turística Mundial ; 3 ; 3 ; ATH-103
+ATH-257 ; Ciencias de la Alimentación ; 2 ; 3 ; 
+INF-200 ; Informática Básica y Cultural ; 2 ; 3 ; 
+INF-200-L ; Informática Básica y Cultural Práctica ; 1 ; 3 ; 
+HUM-160 ; Historia Dominicana ; 3 ; 3 ; 
+SOC-100 ; Introducción a la Sociología ; 3 ; 3 ; 
+LEX-133 ; Inglés Técnico III (Para Hoteleria) ; 3 ; 3 ; LEX-132
+CON-118 ; Contabilidad para Sociedades Comerciales ; 3 ; 4 ; CON-117
+ATH-200 ; Estructura Hotelera ; 3 ; 4 ; ATH-103
+ATH-210 ; Gastronomía I ; 3 ; 4 ; ATH-257
+ATH-211 ; Laboratorio Gastronomía I ; 2 ; 4 ; ATH-257
+ATH-130 ; Geografía Turística Dominicana ; 3 ; 4 ; ATH-122
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 4 ; 
+LEX-134 ; Inglés Técnico IV (Para Hoteleria) ; 3 ; 4 ; LEX-133
+CON-211 ; Contabilidad Hotelera I ; 3 ; 5 ; CON-118
+ATH-220 ; Gastronomía II ; 3 ; 5 ; ATH-210,ATH-211
+ATH-221 ; Laboratorio de Gastronomía II ; 2 ; 5 ; ATH-210,ATH-211
+ATH-227 ; Alojamiento y Hospitalidad ; 3 ; 5 ; ATH-200
+ECO-100 ; Introducción a la Economía ; 3 ; 5 ; 
+MER-100 ; Principios de Mercadotecnia ; 3 ; 5 ; 
+ADM-135 ; Instrumento de Toma de Decisiones para Negocios I ; 4 ; 5 ; MAT-060
+LEX-135 ; Inglés Técnico V (Para Hoteleria) ; 3 ; 5 ; LEX-134
+ATH-259 ; Gastronomía Dominicana ; 3 ; 6 ; ATH-220,ATH-221
+ATH-265 ; Laboratorio de Gastronomía Dominicana ; 2 ; 6 ; ATH-220,ATH-221
+ATH-311 ; Gestión Aeroportuaria ; 3 ; 6 ; ATH-103,ADM-106
+ADM-230 ; Administración y Supervisión de Personal ; 3 ; 6 ; ADM-106
+ATH-255 ; Controles Internos y Costos de Alimentos y Bebidas ; 2 ; 6 ; CON-118,CON-211
+ATH-372 ; Pasantia General ; 4 ; 6 ; 
+LEX-136 ; Ingles Avanzado I ; 3 ; 6 ; LEX-135
+CON-323 ; Interpretación de Estados Financieros en la Industria de la Hospitalidad ; 3 ; 7 ; ATH-255
+MER-207 ; Introducción al E-Marketing ; 3 ; 7 ; MER-100
+ATH-348 ; Administración de Agencias de Viajes y Servicios ; 2 ; 7 ; ATH-103
+DER-221 ; Legislación Turística y Hotelera ; 2 ; 7 ; ATH-103
+ATH-330 ; Mercadeo Turístico ; 3 ; 7 ; MER-100
+ATH-312 ; Ventas y Revenue Management ; 3 ; 7 ; ATH-227
+ELT-002 ; Electiva II ; 3 ; 7 ; 
+LEX-137 ; Inglés Avanzado II ; 3 ; 7 ; LEX-136
+DER-227 ; Principios de Derecho Laboral ; 3 ; 8 ; DER-221
+ATH-320 ; Transporte Turístico ; 2 ; 8 ; ATH-103
+ATH-321 ; Gestión de Bares ; 3 ; 8 ; ATH-200
+ATH-322 ; Laboratorio de Gestión de Bares ; 3 ; 8 ; ATH-200
+ATH-428 ; Pasantia Específica ; 6 ; 8 ; ATH-372
+ATH-365 ; Turismo Sostenible ; 2 ; 8 ; 
+LEX-138 ; Conversación Inglesa ; 3 ; 8 ; LEX-137
+ATH-313 ; Gestión de Convenciones y Eventos ; 3 ; 9 ; ATH-227
+ADM-335 ; Presupuesto en la Industria de la Hospitalidad ; 3 ; 9 ; CON-323
+ATH-332 ; Planificación y Evaluación de Proyectos Turisticos ; 3 ; 9 ; ECO-100
+ELT-003 ; Electiva III ; 3 ; 9 ; 
+ADM-143 ; Ética Profesional y Responsabilidad Social en los Negocios ; 2 ; 9 ; DER-227,FIL-104
+ATH-305 ; Gestión de Recursos y Destinos Turísticos ; 3 ; 9 ; ATH-365
+ATH-414 ; Turismo 4.0 ; 3 ; 9 ; ATH-103
+ATH-410 ; Gestión de Restaurantes ; 3 ; 10 ; ATH-259,ATH-265
+ATH-411 ; Laboratorio de Gestión de Restaurantes ; 3 ; 10 ; ATH-259,ATH-265
+ADM-144 ; Emprendimiento Gerencia Estratégica y Gestión de ; 3 ; 10 ; ADM-106
+ATH-429 ; Servicios Aplicados al Turismo y a la Hotelería ; 3 ; 10 ; ATH-332
+ATH-412 ; Relaciones Públicas Aplicadas al Turismo ; 3 ; 10 ; ATH-321
+ATH-475 ; Gerencia de calidad total en servicios ; 3 ; 10 ; 
+ATH-602 ; Trabajo de Grado (Plan de Empresas) ; 6 ; 11 ; 

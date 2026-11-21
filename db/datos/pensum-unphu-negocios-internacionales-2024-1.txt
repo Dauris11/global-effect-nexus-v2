@@ -1,0 +1,69 @@
+# UNPHU · Negocios Internacionales · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-negocios-internacionales_2024-1.pdf); los créditos cuadran con los totales impresos.
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+ADM-105 ; PRINCIPIOS DE ADMINISTRACIO N ; 3 ; 1 ; 
+CON-116 ; FUNDAMENTOS DE CONTABILIDAD ; 4 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+HUM-160 ; HISTORIA DOMINICANA ; 3 ; 1 ; 
+HUM-177 ; Geografía Mundial ; 3 ; 1 ; 
+LET-101 ; LENGUA ESPAÑOLA Y TÉCNICA DE LA EXPRESIÓN I ; 3 ; 1 ; 
+MAT-060 ; MATEMÁTICA BÁSICA ; 4 ; 1 ; 
+ORI-100 ; ORIENTACIÓN UNIVERSITARIA ; 1 ; 1 ; 
+ADM-106 ; COMPORTAMIE NTO ORGANIZACION AL Y GESTION ADMINISTRATIV A ; 3 ; 2 ; ADM-105
+ADM-133 ; METODOS CUANTITATIVOS PARA NEGOCIOS I ; 5 ; 2 ; MAT-060
+DER-001 ; EDUCACIÓN CONSTITUCION AL ; 3 ; 2 ; 
+ECO-103 ; PRINCIPIOS DE MICROECONOM IA ; 3 ; 2 ; ADM-105
+LET-102 ; LENGUA ESPAÑOLA Y TÉCNICA DE LA EXPRESIÓN II ; 3 ; 2 ; LET-101
+LEX-110 ; INGLES BASICO ; 3 ; 2 ; 
+MER-100 ; PRINCIPIOS DE MERCADOTECN IA ; 3 ; 2 ; 
+RNA-100 ; CONCIENCIA MEDIOAMBIENT AL ; 1 ; 2 ; 
+ADM-134 ; METODOS CUANTITATIVOS PARA NEGOCIOS II ; 5 ; 3 ; ADM-133
+ADM-135 ; INSTRUMENTOS DE TOMA DE DECISIONES PARA NEGOCIOS I ; 4 ; 3 ; MAT-060
+ECO-104 ; PRINCIPIOS DE MACROECONO MIA ; 3 ; 3 ; ECO-103
+INF-200 ; INFORMÁTICA BÁSICA Y CULTURAL ; 3 ; 3 ; 
+LEX-139 ; Inglés Básico II ; 3 ; 3 ; LEX-110
+NEG-100 ; Introducción a los Negocios Internacionales ; 3 ; 3 ; 
+SOC-100 ; INTRODUCCIÓN A LA SOCIOLOGÍA ; 3 ; 3 ; 
+ADM-136 ; INSTRUMENTOS DE TOMA DE DECISIONES PARA NEGOCIOS II ; 4 ; 4 ; ADM-135
+ADM-138 ; GESTION HUMANA Y LIDERAZGO ; 3 ; 4 ; ADM-106
+ADM-144 ; EMPRENDIMIEN TO ; 3 ; 4 ; ADM-106
+ADM-200 ; PROCESAMIENT O ELECTRÓNICO DE DATOS ; 3 ; 4 ; INF-200
+DER-227 ; PRINCIPIOS DE DERECHO LABORAL ; 3 ; 4 ; 
+LEX-225 ; Inglés Intermedio I ; 3 ; 4 ; LEX-139
+MER-203 ; MERCADOTECN IA AVANZADA ; 3 ; 4 ; MER-100
+ADM-143 ; ETICA PROFESIONAL Y RESPONSABILID AD SOCIAL EN LOS NEGOCIOS ; 2 ; 5 ; ADM-106,DER-227
+LEX-226 ; Inglés Intermedio II ; 3 ; 5 ; LEX-225
+MER-221 ; Mercadotecnia para Negocios Internacionales ; 4 ; 5 ; MER-203
+MER-222 ; Marketing Electrónico para Negocios Internacionales ; 4 ; 5 ; INF-200,MER-203
+NEG-105 ; Introducción al Derecho Económico Internacional ; 3 ; 5 ; ECO-104
+NEG-110 ; Relaciones Internacionales Contemporáneas ; 3 ; 5 ; ECO-104
+NEG-115 ; Fundamentos de la Comercialización ; 3 ; 5 ; MER-203
+LEX-227 ; Inglés Avanzado para Negocios Internacionales ; 3 ; 6 ; LEX-226
+MER-231 ; Investigación de Mercados para Negocios Internacionales ; 4 ; 6 ; MER-203
+NEG-120 ; Estrategias de Competitividad Internacional ; 3 ; 6 ; NEG-100
+NEG-125 ; Estrategias de Internacionalizaci on de Empresas ; 3 ; 6 ; NEG-100
+NEG-130 ; Estretegia de Marketing Internacional ; 3 ; 6 ; MER-221,NEG-115
+NEG-135 ; Logística y Cadena de Suministros ; 3 ; 6 ; NEG-100
+NEG-140 ; Business Intelligence ; 3 ; 6 ; INF-200,NEG-100
+LEX-304 ; Inglés Técnico para Negocios Internacionales I ; 3 ; 7 ; LEX-227
+NEG-145 ; Instituciones y Mercados Financieros Internacionales ; 3 ; 7 ; NEG-125
+NEG-150 ; International Business Topics ; 3 ; 7 ; NEG-125
+NEG-155 ; Investigación de Mercados Internacionales e Inteligencia Comercial ; 3 ; 7 ; MER-231,NEG-140
+NEG-160 ; Gestión de Compras Internacionales ; 3 ; 7 ; NEG-135
+NEG-165 ; Gestión de Aduanas ; 3 ; 7 ; NEG-135
+NEG-205 ; Técnicas de Negociación ; 3 ; 7 ; NEG-100
+LEX-305 ; Inglés Técnico para Negocios Internacionales II ; 3 ; 8 ; LEX-304
+NEG-170 ; Oportunidades de Negocios en Mercados Internacionales ; 3 ; 8 ; NEG-155
+NEG-175 ; Relación y Cooperación Internacional ; 3 ; 8 ; NEG-145
+NEG-180 ; Globalización y Comercio Internacional ; 3 ; 8 ; NEG-145
+NEG-185 ; Normativa Internacional Seguridad, Higiene y Calidad ; 3 ; 8 ; NEG-155
+NEG-190 ; Derecho Internacional Comercial ; 3 ; 8 ; NEG-105,NEG-155
+NEG-208 ; Operaciones de Importación y Exportación ; 3 ; 8 ; NEG-165
+ELT-002 ; Electiva II ; 3 ; 9 ; 
+LEX-306 ; Inglés Técnico para Negocios Internacionales III ; 3 ; 9 ; LEX-305
+NEG-195 ; Integracion Económica ; 3 ; 9 ; NEG-180
+NEG-200 ; Plan de Negocios Internacionales ; 3 ; 9 ; NEG-155,NEG-180,NEG-205
+NEG-201 ; Business With Europe And Middle East (Inglés) ; 3 ; 9 ; LEX-305,NEG-180
+NEG-202 ; Business With Asia (Inglés) ; 3 ; 9 ; LEX-305,NEG-180
+NEG-203 ; Business With The Americas (Inglés) ; 3 ; 9 ; LEX-305,NEG-180
+NEG-904 ; Curso Modular de Negocios Internacionales ; 12 ; 10 ; 

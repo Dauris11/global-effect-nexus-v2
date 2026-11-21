@@ -1,0 +1,58 @@
+# UNPHU · Mercadotecnia · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-mercadotecnia_2024-1.pdf); los créditos cuadran con los totales impresos (175 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: MER-903: Todas las asignaturas
+ADM-105 ; Principios de Administración ; 3 ; 1 ; 
+CON-116 ; Fundamentos de Contabilidad ; 4 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+HUM-160 ; Historia Dominicana ; 3 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+ADM-106 ; Comportamiento Organizacional y Gestión Administrativa ; 3 ; 2 ; ADM-105
+CON-117 ; Contabilidad Financiera ; 4 ; 2 ; CON-116
+ECO-103 ; Principios de Microeconomía ; 3 ; 2 ; ADM-105
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+ADM-133 ; Métodos Cuantitativos para Negocios I ; 5 ; 2 ; MAT-060
+RNA-100 ; Conciencia Medioambiental ; 1 ; 2 ; 
+INF-200 ; Informática Básica y Cultural ; 3 ; 3 ; 
+ECO-104 ; Principios de Macroeconomía ; 3 ; 3 ; ECO-103
+SOC-100 ; Introducción a la Sociología ; 3 ; 3 ; 
+ADM-134 ; Métodos Cuantitativos para Negocios II ; 5 ; 3 ; ADM-133
+ADM-135 ; Instrumentos de Toma de Decisiones para Negocios I ; 4 ; 3 ; MAT-060
+MER-100 ; Principios de Mercadotecnia ; 3 ; 3 ; 
+LEX-110 ; Inglés Básico ; 3 ; 4 ; 
+MER-207 ; Introducción al E-Marketing ; 3 ; 4 ; MER-100
+ADM-136 ; Instrumentos de Toma de Decisiones para Negocios II ; 4 ; 4 ; ADM-135
+MER-201 ; Sistema de Canales de Distribución ; 3 ; 4 ; MER-100
+MER-202 ; Psicología del Consumidor ; 3 ; 4 ; MER-100
+ADM-200 ; Procesamiento Electrónico de Datos ; 3 ; 4 ; INF-200
+MER-203 ; Mercadotecnia Avanzada ; 3 ; 5 ; MER-100
+MER-301 ; Introducción a la Investigación de Mercados ; 3 ; 5 ; MER-202
+ADM-139 ; Herramientas de Análisis Financiero I ; 4 ; 5 ; ADM-134
+MER-302 ; Introducción a la Publicidad ; 3 ; 5 ; MER-202
+LEX-223 ; Inglés Técnico para Negocios ; 3 ; 5 ; LEX-110
+MER-303 ; Marketing Electrónico ; 3 ; 5 ; MER-207
+DER-227 ; Principios de Derecho Laboral ; 3 ; 5 ; 
+MER-401 ; Administración de Ventas ; 3 ; 6 ; MER-201
+MER-208 ; Pronóstico y Presupuesto de Ventas para Productos y Servicios ; 3 ; 6 ; CON-117
+MER-402 ; Promoción de Ventas ; 3 ; 6 ; MER-302
+MER-403 ; Gestión y Desarrollo de Medios Publicitarios ; 3 ; 6 ; MER-302
+MER-404 ; Relaciones Públicas ; 3 ; 6 ; ADM-106
+MER-406 ; Trade Marketing ; 3 ; 6 ; MER-201
+MER-405 ; Investigación de Mercados ; 3 ; 6 ; MER-301
+MER-503 ; Diseño y Lanzamiento de Nuevo Producto ; 3 ; 7 ; MER-402,MER-405
+MER-564 ; Prácticas Supervisadas ; 3 ; 7 ; MER-402,MER-405
+MER-340 ; Análisis de Crédito Comercial ; 3 ; 7 ; ADM-139
+MER-601 ; Diseño de Campaña ; 3 ; 7 ; MER-403
+MER-502 ; Planificación de Mercados ; 3 ; 7 ; MER-406
+ADM-138 ; Gestión Humana y Liderazgo ; 3 ; 7 ; ADM-106
+ADM-143 ; Etica Profesional y Responsabilidad Social en los Negocios ; 2 ; 7 ; DER-227,ADM-106
+ADM-532 ; Administración y Presupuesto Empresarial ; 3 ; 8 ; ADM-106,CON-117
+MER-501 ; Marketing Social y Relacional ; 3 ; 8 ; MER-404
+MER-602 ; Mercadeo de Servicios ; 3 ; 8 ; MER-404
+MER-603 ; Mercadotecnia Internacional ; 3 ; 8 ; MER-502
+MER-604 ; Gerencia Estratégica de Mercadotecnía ; 3 ; 8 ; MER-502
+MER-605 ; Gerencia de Proyectos ; 4 ; 8 ; MER-503
+ELT-002 ; Electiva II ; 3 ; 8 ; MER-303,MER-403
+MER-903 ; Curso Modular de Mercadotecnia ; 12 ; 9 ; 

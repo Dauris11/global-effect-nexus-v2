@@ -1,0 +1,80 @@
+# UNPHU · Ingeniería Civil · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/ingenieria-civil_2024-1.pdf); los créditos cuadran con los totales impresos (237 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: ING-900: las Asignaturas
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+ING-100 ; Introducción a la Ingeniería Civil ; 2 ; 1 ; 
+BIO-244 ; Biología y Ambiente ; 3 ; 1 ; 
+MAT-160 ; Álgebra Superior ; 5 ; 1 ; 
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+HUM-160 ; Historia Dominicana ; 3 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+EDU-107 ; Técnicas del Estudio e Investigación ; 3 ; 2 ; 
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+MAT-170 ; Cálculo Diferencial e Integral I ; 3 ; 2 ; MAT-160
+MAT-180 ; Geometría Analítica ; 4 ; 2 ; MAT-160
+INF-158 ; Introducción a la Informática ; 5 ; 2 ; 
+ELT-002 ; Electiva II ; 3 ; 2 ; 
+FIS-211 ; Física General I ; 3 ; 3 ; MAT-160
+ING-224 ; Dibujo I ; 4 ; 3 ; 
+MAT-271 ; Cálculo Diferencial e integral II ; 3 ; 3 ; MAT-170
+MAT-365 ; Álgebra de Matrices ; 3 ; 3 ; MAT-160
+FIL-104 ; Ética Formativa ; 3 ; 3 ; 
+QUI-111 ; Química General I ; 3 ; 3 ; 
+QUI-111-L ; Química General I Práctica ; 1 ; 3 ; 
+FIS-212 ; Física General II ; 3 ; 4 ; FIS-211
+FIS-221 ; Laboratorio de Física General I ; 1 ; 4 ; FIS-211
+ING-111 ; Topografía I ; 4 ; 4 ; 
+MAT-173 ; Cálculo y Analítica III ; 3 ; 4 ; MAT-271
+ING-221 ; Mecánica Técnica I ; 4 ; 4 ; FIS-211,MAT-170
+ING-225 ; Dibujo II ; 4 ; 4 ; ING-224
+FIS-213 ; Física General III ; 3 ; 5 ; FIS-212
+FIS-222 ; Laboratorio de Física General II ; 1 ; 5 ; FIS-212,FIS-221
+ING-112 ; Topografía II ; 4 ; 5 ; ING-111
+ING-311 ; Resistencia de Materiales I ; 3 ; 5 ; ING-221,MAT-271
+ING-322 ; Mecánica Técnica II ; 3 ; 5 ; ING-221,MAT-271
+ING-336 ; Estática de las Construcciones I ; 3 ; 5 ; ING-221
+MAT-371 ; Ecuaciones Diferenciales ; 3 ; 5 ; MAT-173
+FIS-223 ; Laboratorio de Física General III ; 1 ; 6 ; FIS-213,FIS-222
+ING-301 ; Informatica Aplicada a la Ingeniería ; 3 ; 6 ; INF-158,ING-336,MAT-365
+ING-312 ; Resistencia de Materiales II ; 4 ; 6 ; ING-311,MAT-371
+ING-337 ; Estática de las Construcciones II ; 4 ; 6 ; ING-336,MAT-365
+ING-481 ; Mecánica de Suelos I ; 5 ; 6 ; ING-311
+MAT-420 ; Métodos Numéricos y Programación ; 3 ; 6 ; MAT-271
+ING-300 ; Geología ; 3 ; 7 ; FIS-212
+ING-401 ; Estructuras de Madera ; 3 ; 7 ; ING-312,ING-225
+ING-411 ; Hormigón Armado I ; 3 ; 7 ; ING-337
+ECO-100 ; Introducción a la Economía ; 3 ; 7 ; MAT-160
+ING-482 ; Mecánica de Suelos II ; 4 ; 7 ; ING-481
+MAT-330 ; Estadística para Ingenieros ; 3 ; 7 ; MAT-170
+ING-485 ; Diseño de Iluminación y Alambrado ; 3 ; 8 ; FIS-213
+ING-325 ; Mecánica de Fluidos ; 3 ; 8 ; ING-322,MAT-271
+ING-440 ; Materiales de Construcción ; 3 ; 8 ; ING-300,ING-411
+ING-425 ; Hormigón Armado II ; 4 ; 8 ; ING-411
+MAT-339 ; Inferencia Estadística ; 3 ; 8 ; MAT-330
+ING-403 ; Proyecto Integrador de Conocimientos I ; 4 ; 8 ; ING-411,ING-482,ING-401
+ING-402 ; Estructuras de Metal ; 3 ; 9 ; ING-312,ING-337
+ING-520 ; Fundaciones ; 3 ; 9 ; ING-411
+ING-421 ; Construcciones Civiles ; 3 ; 9 ; ING-482,ING-411
+ING-450 ; Hidrología ; 3 ; 9 ; ING-325,MAT-339
+ING-451 ; Hidráulica General ; 3 ; 9 ; ING-325
+ING-471 ; Carreteras I ; 3 ; 9 ; ING-112,ING-225
+ING-455 ; Acueductos y Alcantarillados I ; 3 ; 10 ; ING-450,ING-451
+ING-461 ; Hidráulica Aplicada I ; 3 ; 10 ; ING-451
+ING-472 ; Carreteras II ; 3 ; 10 ; ING-471
+ING-511 ; Presupuesto y Análisis de Costos ; 3 ; 10 ; ING-421
+ING-583 ; Movimiento de Tierras ; 3 ; 10 ; ING-471,ING-411,ING-482
+ELT-003 ; Electiva III ; 3 ; 10 ; ING-421,ECO-100,ING-471,ING-403
+ING-801 ; Normas y regulaciones de la Industria de la Construcción ; 2 ; 10 ; ING-421
+ING-405 ; Impacto Ambiental en Obras de Ingeniería ; 3 ; 11 ; BIO-244,ING-300
+ING-302 ; Informática Aplicada a la Ingeniería II ; 4 ; 11 ; ING-301,ING-520
+ING-504 ; Administración de Empresas de Ingeniería ; 3 ; 11 ; ING-421
+ELT-004 ; Electiva IV ; 3 ; 11 ; ING-337,ING-472,ING-461
+ING-556 ; Acueductos y Alcantarillados II ; 3 ; 11 ; ING-455
+ING-890 ; Proyecto Integrador de Conocimientos II ; 4 ; 11 ; ING-455,ING-520,ING-472,ING-511,ING-403
+ELT-005 ; Electiva V ; 3 ; 12 ; ING-455,ING-421,ELT-004
+ING-490 ; Metodología de la Investigación ; 3 ; 12 ; EDU-107,MAT-339
+ING-550 ; Saneamiento ; 3 ; 12 ; ING-455
+ING-555 ; Pasantía Estudiantil ; 4 ; 12 ; ING-403
+ING-900 ; Trabajo de Grado ; 6 ; 13 ; 

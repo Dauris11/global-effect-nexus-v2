@@ -1,0 +1,78 @@
+# UNPHU · Psicología Clínica · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-psicologia-clinica_2024-1.pdf); los créditos cuadran con los totales impresos (241 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: PSI-901: Todas las Asignaturas
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+PSI-102 ; Psicología General ; 4 ; 1 ; 
+SOC-100 ; Introduccion a la Sociología ; 3 ; 1 ; 
+EDU-107 ; Técnicas del estudio e Investigación ; 3 ; 1 ; 
+MED-459 ; Anatomía y Fisiología ; 3 ; 2 ; 
+INF-200 ; Informática Básica y Cutural ; 3 ; 2 ; 
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+HUM-160 ; Historia Dominicana ; 3 ; 2 ; 
+LEX-110 ; Inglés Básico ; 3 ; 2 ; 
+PSI-120 ; Historia de la Psicología ; 2 ; 2 ; PSI-102
+PSI-213 ; Métodos y Técnicas de Investigación en Psicología ; 3 ; 2 ; MAT-060,EDU-107
+PSI-216 ; Estadistica para Psicológos I ; 3 ; 2 ; MAT-060
+FIL-211 ; Introducción al Conocimiento Científico ; 3 ; 3 ; 
+PSI-223 ; Conducta Animal ; 2 ; 3 ; PSI-102
+LEX-124 ; Inglés Técnico para Psicología ; 3 ; 3 ; LEX-110
+PSI-202 ; Fundamentos de la Medición Psicológica ; 2 ; 3 ; PSI-102,PSI-216
+PSI-337 ; Neurociencia: Aprendizaje y Conducta ; 2 ; 3 ; PSI-102
+FIL-104 ; Ética formativa ; 2 ; 3 ; 
+PSI-227 ; Psicología del Desarrollo I ; 4 ; 3 ; PSI-102
+PSI-204 ; Pruebas Psicológicas ; 4 ; 4 ; PSI-202
+PSI-233 ; Teorías y Sistemas Contemporáneos en Psicología ; 2 ; 4 ; PSI-120
+PSI-230 ; Psicologia del Desarrollo II ; 4 ; 4 ; PSI-102,PSI-227
+PSI-331 ; Psicologia de la Percepción y Atención ; 3 ; 4 ; PSI-102
+PSI-219 ; Estadística para Psicólogos II ; 3 ; 4 ; PSI-213,PSI-216
+PSI-334 ; Psicología del Aprendizaje ; 3 ; 4 ; PSI-102
+PSI-399 ; Sexualidad Humana ; 2 ; 4 ; PSI-102,MED-459
+PSI-350 ; Psicología Social y Comunitaria ; 3 ; 5 ; PSI-102
+PSI-302 ; Encuestas y Escalas ; 3 ; 5 ; PSI-102
+ELT-002 ; Electiva II ; 3 ; 5 ; PSI-337
+PSI-525 ; Introduccion a los Estudios de Género ; 2 ; 5 ; PSI-399
+PSI-339 ; Psicología del Pensamiento y del Lenguaje ; 3 ; 5 ; PSI-102
+PSI-414 ; Psicología de la Personalidad ; 3 ; 5 ; PSI-102
+PSI-434 ; Estrategias de Mediación y Resolución de Conflictos ; 2 ; 5 ; PSI-102,SOC-100
+PSI-318 ; Modificación de Conducta ; 2 ; 6 ; PSI-202
+ELT-003 ; Electiva III ; 2 ; 6 ; PSI-102,PSI-350
+PSI-341 ; Psicopatología I ; 5 ; 6 ; PSI-102
+PSI-317 ; Diseños Multivariantes de Investigación ; 3 ; 6 ; PSI-213,PSI-204
+PSI-343 ; Psicología de la Motivación y Emoción ; 3 ; 6 ; PSI-102
+PSI-338 ; Psicofisiología ; 3 ; 6 ; MED-459,PSI-102
+PSI-527 ; Intervención en Crisis ; 3 ; 6 ; PSI-230,PSI-434,PSI-350
+PSI-424 ; Analisis y Modificacion de Conductas ; 3 ; 7 ; PSI-202
+PSI-307 ; Entrevista Clínica ; 4 ; 7 ; PSI-341
+PSI-441 ; Psicopatología II ; 5 ; 7 ; PSI-341
+PSI-412 ; Técnicas Proyectivas I ; 3 ; 7 ; PSI-414
+PSI-463 ; Psicoterapia Humanista ; 3 ; 7 ; PSI-102,PSI-414
+PSI-446 ; Psicología Jurídica ; 3 ; 7 ; PSI-414,PSI-350
+PSI-467 ; Terapia Psicodinámica ; 2 ; 7 ; PSI-414,PSI-341
+PSI-448 ; Pruebas Intelectuales y Neuropsicológicas ; 4 ; 8 ; PSI-338,PSI-317
+PSI-400 ; Exploración Clínica ; 3 ; 8 ; PSI-307
+PSI-449 ; Terapia Familiar ; 3 ; 8 ; PSI-307,PSI-441,PSI-424
+PSI-468 ; Terapia Sexual ; 3 ; 8 ; PSI-441,PSI-399,PSI-414
+PSI-417 ; Ténicas Proyectivas II ; 3 ; 8 ; PSI-412
+PSI-469 ; Psicofarmacología ; 3 ; 8 ; PSI-338,PSI-441
+PSI-419 ; Intervención Infanto-Juvenil ; 3 ; 8 ; PSI-441,PSI-307,PSI-424
+PSI-418 ; Evaluación de la Personalidad ; 4 ; 9 ; PSI-307,PSI-441,PSI-414
+PSI-489 ; Psicología Clínica y de la Salud ; 3 ; 9 ; PSI-338,PSI-441,PSI-469
+PSI-433 ; Adicciones: Modelo Explicativo y Abordaje ; 3 ; 9 ; PSI-338,PSI-441,PSI-469
+PSI-480 ; Terapia Cognitva-Conductual ; 4 ; 9 ; PSI-441,PSI-424
+PSI-427 ; Terapia de Grupo ; 3 ; 9 ; PSI-527
+PSI-486 ; Terapia de Juego Clínica ; 3 ; 9 ; PSI-230,PSI-419,PSI-424
+PSI-516 ; Psicología de las Enfermedades Terminales y Cuidados Paliativos ; 3 ; 9 ; PSI-441,PSI-414,PSI-469
+PSI-517 ; Habilidades Terapéuticas ; 3 ; 10 ; PSI-449,PSI-463,PSI-427
+PSI-514 ; Prácticas Supervisadas Clínica I ; 12 ; 10 ; PSI-307,PSI-400,PSI-412,PSI-417
+PSI-464 ; Técnicas de Terapia Breve ; 3 ; 10 ; PSI-400,PSI-527
+PSI-519 ; Anteproyecto Clínica I ; 4 ; 10 ; PSI-307,PSI-400,PSI-412,PSI-417
+PSI-515 ; Practicas Supervisadas Clínica II ; 12 ; 11 ; PSI-464,PSI-514,PSI-517,PSI-519
+PSI-492 ; Psicogerontología ; 3 ; 11 ; PSI-517
+PSI-507 ; Ética del Psicólogo Clínico ; 2 ; 11 ; PSI-464,PSI-514,PSI-517,PSI-519
+PSI-513 ; Anteproyecto Clínica II ; 4 ; 11 ; PSI-464,PSI-514
+PSI-901 ; Trabajo de Grado en Psicología Clínica ; 6 ; 12 ; 

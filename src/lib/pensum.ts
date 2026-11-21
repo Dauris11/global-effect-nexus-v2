@@ -21,6 +21,8 @@ export type LecturaPensum = {
 };
 
 const MAX_MATERIAS = 300;
+// Tope de créditos de una sola materia: el pénsum de Medicina de UNPHU tiene bloques clínicos de 28.
+const MAX_CREDITOS_MATERIA = 40;
 
 function entero(texto: string | undefined, min: number, max: number): number | null {
   const limpio = (texto ?? "").trim();
@@ -42,7 +44,7 @@ export function leerListaDePensum(texto: string): LecturaPensum {
 
     const campos = linea.split(/[;\t|]/).map((c) => c.trim());
     const [codigo, nombre, creditosTxt, periodoTxt, prereqTxt] = campos;
-    const creditos = creditosTxt === undefined || creditosTxt === "" ? 3 : entero(creditosTxt, 0, 20);
+    const creditos = creditosTxt === undefined || creditosTxt === "" ? 3 : entero(creditosTxt, 0, MAX_CREDITOS_MATERIA);
     const periodo = periodoTxt === undefined || periodoTxt === "" ? null : entero(periodoTxt, 1, 20);
     const clave = (codigo ?? "").toUpperCase();
 

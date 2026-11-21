@@ -1,0 +1,82 @@
+# UNPHU · Física orientada a la Educación Secundaria · plan 2024
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-fisica-orientada-a-la-educacion-secundaria.pdf); los créditos cuadran con los totales impresos.
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Nombres que el PDF corta; completados con el mismo código de otro pénsum de UNPHU: EDU-107: «TÉCNICAS DEL ESTUDIOS E» → «Técnicas del Estudios e Investigación» | LET-104: «EXPRESION ORAL Y» → «Expresión Oral y Producción Escrita» | EDU-175: «METODOLOGIA DE LA» → «Metodología de la Investigación Científica» | EDU-176: «FUNDAMENTOS FILOSOFICOS E» → «Fundamentos Filosóficos e Históricos de la Educación» | EDU-177: «PROCESO DE ENSEÑANZA-» → «Proceso de Enseñanza- Aprendizaje» | EDU-178: «PRACTICA DOCENTE I-» → «Práctica Docente I - Observación» | EDU-183: «RECURSOS PARA EL» → «Recursos para el Aprendizaje» | EDU-189: «PRACTICA DOCENTE II-» → «Práctica Docente II – Interacción» | EDU-198: «EVALUACION DE LOS» → «Evaluación de los Aprendizajes» | EDU-377: «PRACTICA DOCENTE III-» → «Práctica Docente III- Manejo en el Aula» | EDU-384: «PRACTICA DOCENTE IV-» → «Práctica Docente IV-Manejo en el Aula» | EDU-408: «PRACTICA DOCENTE V-» → «Práctica Docente V- Manejo en el Aula» | EDU-409: «PRACTICA DOCENTE VI-» → «Práctica Docente VI-Informe Final»
+BIO-100 ; BIOLOGIA GENERAL ; 3 ; 1 ; 
+BIO-100-L ; BIOLOGIA GENERAL- ; 0 ; 1 ; 
+EDU-107 ; Técnicas del Estudios e Investigación ; 3 ; 1 ; 
+EDU-165 ; TECNOLOGIA DE LA INFORMACION ; 2 ; 1 ; 
+FIL-108 ; FILOSOFIA GENERAL ; 2 ; 1 ; 
+LET-104 ; Expresión Oral y Producción Escrita ; 3 ; 1 ; 
+LEX-104 ; INGLES I ; 3 ; 1 ; 
+MAT-114 ; ARITMETICA Y GEOMETRIA ; 3 ; 1 ; 
+EDU-174 ; FUNDAMENTOS Y ESTRUCTURA ; 3 ; 2 ; 
+HUM-155 ; HISTORIA DOMINICANA ; 3 ; 2 ; 
+LEX-117 ; INGLÉS II ; 3 ; 2 ; LEX-104
+MAT-204 ; ALGEBRA SUPERIOR I ; 3 ; 2 ; MAT-114
+MAT-215 ; ESTADISTICA GENERAL ; 3 ; 2 ; MAT-114
+PSI-220 ; PSICOLOGIA DEL DESARROLLO ; 3 ; 2 ; 
+SOC-105 ; INTRODUCCION A LAS CIENCIAS ; 2 ; 2 ; FIL-108
+EDU-175 ; Metodología de la Investigación Científica ; 3 ; 3 ; MAT-215
+EDU-176 ; Fundamentos Filosóficos e Históricos de la Educación ; 4 ; 3 ; FIL-108
+EDU-177 ; Proceso de Enseñanza- Aprendizaje ; 4 ; 3 ; EDU-174
+EDU-178 ; Práctica Docente I - Observación ; 2 ; 3 ; 
+MAT-278 ; GEOMETRIA ANALITICA Y ; 4 ; 3 ; MAT-204
+PSI-334 ; PSICOLOGÍA DEL APRENDIZAJE ; 3 ; 3 ; PSI-220
+EDU-179 ; ETICA PROFESIONAL ; 2 ; 4 ; 
+EDU-183 ; Recursos para el Aprendizaje ; 3 ; 4 ; EDU-177
+EDU-188 ; LEGISLACION EDUCATIVA ; 2 ; 4 ; 
+EDU-189 ; Práctica Docente II – Interacción ; 3 ; 4 ; EDU-178
+FIS-114 ; INTRODUCCION A LA FISICA ; 4 ; 4 ; MAT-278
+MAT-239 ; CALCULO DIFERENCIAL ; 4 ; 4 ; MAT-278
+EDU-198 ; Evaluación de los Aprendizajes ; 3 ; 5 ; EDU-183
+EDU-199 ; NEUROCIENCIA Y APRENDIZAJE ; 3 ; 5 ; PSI-334
+FIS-210 ; MECANICA I ; 4 ; 5 ; FIS-114,MAT-239
+FIS-210-L ; MECANICA I- PRACTICA ; 0 ; 5 ; 
+FIS-215 ; FISICA EXPERIMENTAL I ; 2 ; 5 ; FIS-114
+FIS-215-L ; FISICA EXPERIMENTAL I- ; 0 ; 5 ; 
+MAT-315 ; CALCULO INTEGRAL ; 4 ; 5 ; MAT-239
+EDU-376 ; GESTION DE AULA ; 3 ; 6 ; EDU-198
+EDU-377 ; Práctica Docente III- Manejo en el Aula ; 3 ; 6 ; EDU-189
+FIS-312 ; FISICA EXPERIMENTAL II ; 2 ; 6 ; FIS-215
+FIS-312-L ; FISICA EXPERIMETNAL II- ; 0 ; 6 ; 
+FIS-321 ; MECÁNICA II ; 6 ; 6 ; FIS-210
+FIS-321-L ; MECÁNICA II - PRÁCTICA ; 0 ; 6 ; 
+MAT-390 ; CALCULO VECTORIAL ; 4 ; 6 ; MAT-315
+EDU-380 ; INNOVACION EDUCATIVA ; 3 ; 7 ; EDU-376
+FIS-342 ; FISICA EXPERIMENTAL III ; 2 ; 7 ; FIS-312
+FIS-342-L ; FISICA EXPERIMENTAL ; 0 ; 7 ; 
+FIS-344 ; ELECTRICIDAD Y MAGNETISMO ; 5 ; 7 ; FIS-321
+FIS-344-L ; ELECTRICIDAD Y MAGNETISMO- ; 0 ; 7 ; 
+FIS-346 ; FISICA COMPUTACIONAL ; 3 ; 7 ; FIS-321,MAT-390
+FIS-346-L ; FISICA COMPUTACIONAL ; 0 ; 7 ; 
+MAT-410 ; ECUACIONES DIFERENCIALES ; 4 ; 7 ; MAT-390
+EDU-382 ; PEDAGOGIA SOCIAL ; 2 ; 8 ; EDU-176
+EDU-449 ; FISICA Y SU DIDACTICA ; 3 ; 8 ; FIS-321
+FIS-416 ; MECANICA ANALITICA ; 3 ; 8 ; FIS-344
+FIS-416-L ; MECANICA ANALITICA- ; 0 ; 8 ; 
+FIS-418 ; DISEÑO DE LABORATORIO I ; 3 ; 8 ; FIS-342
+FIS-418-L ; DISEÑO DE LABORATORIO I- ; 0 ; 8 ; 
+EDU-383 ; INVESTIGACION ACCION ; 2 ; 9 ; EDU-175
+EDU-384 ; Práctica Docente IV-Manejo en el Aula ; 4 ; 9 ; EDU-377
+EDU-463 ; FISICA Y SU DIDACTICA ; 3 ; 9 ; EDU-449
+EDU-463-L ; FISICA Y SU DIDACTICA ; 0 ; 9 ; 
+ELT-002 ; Electiva II ; 2 ; 9 ; 
+FIS-414 ; METODO DE FISICA TEORICA ; 3 ; 9 ; FIS-416,MAT-410
+FIS-422 ; DISEÑO DE LABORATORIO II ; 3 ; 9 ; FIS-418
+FIS-422-L ; DISEÑO DE LABORATORIO II- ; 0 ; 9 ; 
+FIS-424 ; TERMODINAMICA ; 4 ; 9 ; FIS-344,MAT-410
+FIS-424-L ; TERMODINAMICA- PRACTICA ; 0 ; 9 ; 
+EDU-408 ; Práctica Docente V- Manejo en el Aula ; 4 ; 10 ; EDU-384
+ELT-003 ; Electiva III ; 2 ; 10 ; 
+FIS-426 ; INTRODUCCION A LA MECANICA ; 4 ; 10 ; FIS-414,FIS-416
+FIS-428 ; METODOLOGIA DE LA INVESTIGACION ; 3 ; 10 ; EDU-175,EDU-383,FIS-114
+FIS-432 ; ELECTRODINAMI CA CLASICA ; 3 ; 10 ; FIS-414
+FIS-432-L ; ELECTRODINAMI CA-PRACTICA ; 0 ; 10 ; 
+EDU-409 ; Práctica Docente VI-Informe Final ; 2 ; 11 ; EDU-408
+ELT-004 ; Electiva IV ; 2 ; 11 ; 
+FIS-434 ; FISICA NUCLEAR Y DE PARTICULA ; 3 ; 11 ; FIS-426
+FIS-434-L ; FISICA NUCLEAR Y DE PARTICULA- ; 0 ; 11 ; 
+FIS-436 ; FISICA DE MATERIA ; 3 ; 11 ; FIS-426
+FIS-436-L ; FISICA DE MATERIA ; 0 ; 11 ; 
+EDU-490 ; TRABAJO DE GRADO ; 4 ; 12 ; 

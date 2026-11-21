@@ -1,0 +1,77 @@
+# UNPHU · Psicología Organizacional · plan 2024
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-psicologia-organizacional.pdf); los créditos cuadran con los totales impresos (237 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: PSI-561: 7mo. 8vo. Y Periodo | PSI-545: 7mo. 8vo. Y Periodo | PSI-562: 10mo. Semestre | PSI-535: 10mo. Semestre | PSI-563: 10mo. Semestre | PSI-907: Total de Asignaturas
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+PSI-102 ; Psicología General ; 4 ; 1 ; 
+SOC-100 ; Introducción a la Sociología ; 3 ; 1 ; 
+EDU-107 ; Técnicas del Estudio e Investigación ; 3 ; 1 ; 
+MED-459 ; Anatomía y Fisiología ; 3 ; 2 ; 
+INF-200 ; Informática Básica y Cutural ; 3 ; 2 ; 
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+PSI-216 ; Estadística para Psicologos I ; 3 ; 2 ; MAT-060
+LEX-110 ; Inglés Básico ; 3 ; 2 ; 
+PSI-120 ; Historia de la Psicología ; 2 ; 2 ; PSI-102
+PSI-213 ; Métodos y Técnicas de Investigación en Psicología ; 3 ; 2 ; MAT-060,EDU-107
+FIL-211 ; Introducción al Conocimiento científico ; 3 ; 3 ; 
+PSI-223 ; Conducta Animal ; 2 ; 3 ; PSI-102
+LEX-124 ; Inglés Técnico para Psicología ; 3 ; 3 ; LEX-110
+PSI-202 ; Fundamentos de la Medición Psicológica ; 2 ; 3 ; PSI-102,PSI-216
+PSI-337 ; Neurociencia: Aprendizaje y Conducta ; 2 ; 3 ; PSI-102
+FIL-104 ; Ética Formativa ; 2 ; 3 ; 
+PSI-227 ; Psicología del Desarrollo I ; 4 ; 3 ; PSI-102
+HUM-160 ; Historia Dominicana ; 3 ; 3 ; 
+PSI-204 ; Pruebas Psicológicas ; 4 ; 4 ; PSI-202
+PSI-233 ; Teorías y Sistemas Contemporáneos en Psicología ; 2 ; 4 ; PSI-120
+PSI-230 ; Psicologia del Desarrollo II ; 4 ; 4 ; PSI-102,PSI-227
+PSI-331 ; Psicologia de la Percepción y Atención ; 3 ; 4 ; PSI-102
+PSI-219 ; Estadística para Psicólogos II ; 3 ; 4 ; PSI-213,PSI-216
+PSI-334 ; Psicología del Aprendizaje ; 3 ; 4 ; PSI-102
+PSI-399 ; Sexualidad Humana ; 2 ; 4 ; PSI-102,MED-459
+PSI-350 ; Psicología Social y Comunitaria ; 3 ; 5 ; PSI-102
+PSI-302 ; Encuestas y Escalas ; 3 ; 5 ; PSI-102
+ELT-002 ; Electiva II ; 3 ; 5 ; PSI-337
+PSI-525 ; Introduccion a los Estudios de Género ; 2 ; 5 ; PSI-399
+PSI-339 ; Psicología del Pensamiento y del Lenguaje ; 3 ; 5 ; PSI-102
+PSI-414 ; Psicología de la Personalidad ; 3 ; 5 ; PSI-102
+PSI-434 ; Estrategias de Mediación y Resolución de Conflictos ; 2 ; 5 ; PSI-102,SOC-100
+DER-001 ; Educación Constitucional ; 3 ; 5 ; 
+PSI-318 ; Modificación de Conducta ; 2 ; 6 ; PSI-202
+ELT-003 ; Electiva III ; 2 ; 6 ; PSI-102,PSI-350,PSI-318,PSI-331
+PSI-341 ; Psicopatología I ; 5 ; 6 ; PSI-102
+PSI-317 ; Diseños Multivariantes de Investigación ; 3 ; 6 ; PSI-213,PSI-204
+PSI-343 ; Psicología de la Motivación y Emoción ; 3 ; 6 ; PSI-102
+PSI-338 ; Psicofisiología ; 3 ; 6 ; MED-459,PSI-102
+PSI-527 ; Intervención en Crisis ; 3 ; 6 ; PSI-230,PSI-434,PSI-350
+PSI-267 ; Comunicación Corporativa ; 3 ; 7 ; PSI-331,PSI-339
+DER-227 ; Principios de Derecho laboral ; 3 ; 7 ; 
+PSI-237 ; Técnicas de Entrevista ; 4 ; 7 ; PSI-341
+PSI-478 ; Psicología Organizacional I ; 3 ; 7 ; PSI-230
+PSI-481 ; Programas de Evaluación ; 4 ; 7 ; PSI-302,PSI-230
+PSI-493 ; Dinámica de grupo ; 3 ; 7 ; PSI-343,PSI-434
+PSI-496 ; Reclutamiento y Selección de Personal ; 4 ; 8 ; PSI-302,PSI-481,PSI-478,PSI-204,PSI-237
+PSI-384 ; Capacitación y Desarrollo de Capital Humano ; 4 ; 8 ; PSI-414,PSI-478
+PSI-354 ; Compensación y Beneficios ; 3 ; 8 ; DER-227,PSI-481,PSI-478
+PSI-273 ; Responsabilidad Social ; 2 ; 8 ; PSI-350
+PSI-499 ; Clima Organizacional ; 3 ; 8 ; PSI-267,PSI-478
+PSI-479 ; Psicología Organizacional II ; 3 ; 8 ; PSI-478
+PSI-360 ; Investigación en Psicología Organizacional ; 3 ; 8 ; PSI-317,PSI-219,PSI-230
+PSI-559 ; Análisis, Diseño y Valoración de Puestos ; 4 ; 9 ; PSI-479,PSI-481
+PSI-560 ; Introducción a la Formulación de Proyectos ; 3 ; 9 ; PSI-479,PSI-481
+PSI-476 ; Relaciones Laborales e Industriales. ; 3 ; 9 ; DER-227,PSI-479
+PSI-362 ; Motivación y Retención Laboral ; 3 ; 9 ; PSI-384,PSI-479
+ADM-135 ; Instrumento de Toma de Decisiones para Negocios I ; 3 ; 9 ; MAT-060
+PSI-494 ; Higiene, Seguridad y Salud en el Trabajo ; 3 ; 9 ; PSI-334,PSI-354
+PSI-397 ; Liderazgo Organizacional ; 3 ; 9 ; PSI-339
+PSI-495 ; Productividad Laboral ; 3 ; 10 ; PSI-219
+PSI-561 ; Práctica Supervisada Organizacional I ; 12 ; 10 ; 
+PSI-475 ; Dirección Estratégica de Gestión Humana ; 3 ; 10 ; PSI-478,PSI-397
+PSI-545 ; Anteproyecto Organizacional I ; 4 ; 10 ; 
+PSI-562 ; Prácticas Supervisada Organizacional II ; 12 ; 11 ; 
+PSI-535 ; Ética del Psicologo Organizacional ; 2 ; 11 ; 
+PSI-563 ; Anteproyecto Organizacional II ; 4 ; 11 ; 
+PSI-907 ; Trabajo de Grado en Psicología Organizacional ; 6 ; 12 ; 

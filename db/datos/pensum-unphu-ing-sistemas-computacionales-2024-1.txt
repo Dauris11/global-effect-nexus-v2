@@ -1,0 +1,75 @@
+# UNPHU · Ingeniería en Sistemas Computacionales · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/ingenieria-en-sistemas-computacionales_2024-1.pdf); los créditos cuadran con los totales impresos (216 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Prerrequisitos que el PDF cita pero no existen como materia del pénsum (omitidos): INF-270 (en INF-379 INF-381)
+EDU-107 ; Técnicas del Estudios e Investigación ; 3 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+INF-158 ; Introducción a la Informática ; 5 ; 1 ; 
+INF-158-L ; Introducción a la Informática Práctica ; 0 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-160 ; Álgebra Superior ; 5 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+FIS-211 ; Física General I ; 3 ; 2 ; MAT-160
+INF-160 ; Fundamentos de Ingeniería de Sistemas ; 3 ; 2 ; EDU-107,INF-158
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+LEX-110 ; Inglés Básico ; 3 ; 2 ; 
+MAT-170 ; Cálculo Diferencial e Integral ; 3 ; 2 ; MAT-160
+QUI-111 ; Química General I ; 4 ; 2 ; 
+QUI-111-L ; Química General I Práctica ; 0 ; 2 ; 
+FIS-212 ; Física General II ; 3 ; 3 ; FIS-211
+FIS-221 ; Laboratorio de Física General I ; 1 ; 3 ; FIS-211
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 3 ; 
+INF-161 ; Introducción a la Programación ; 4 ; 3 ; INF-160
+LEX-125 ; Inglés Técnico I ; 3 ; 3 ; LEX-110
+MAT-271 ; Cálculo Diferencial e Integral II ; 3 ; 3 ; MAT-170
+MAT-362 ; Matemática Discreta I ; 4 ; 3 ; MAT-160
+FIS-222 ; Laboratorio de Física General II ; 1 ; 4 ; FIS-212
+INF-241 ; Algoritmos y Estructuras de Datos ; 4 ; 4 ; INF-161
+INF-271 ; Arquitectura de Computadores I ; 3 ; 4 ; INF-161
+ING-110 ; Geometría Descriptiva ; 3 ; 4 ; 
+LEX-126 ; Inglés Técnico II ; 3 ; 4 ; LEX-125
+MAT-363 ; Matemática Discreta II ; 4 ; 4 ; MAT-362
+MAT-371 ; Ecuaciones Diferenciales ; 3 ; 4 ; MAT-271
+FIS-213 ; Física General III ; 3 ; 5 ; FIS-211
+INF-272 ; Ingeniería de Software I ; 3 ; 5 ; INF-161
+INF-273 ; Arquitectura de Computadores II ; 3 ; 5 ; INF-271
+INF-274 ; Programación Web I ; 4 ; 5 ; INF-241
+MAT-330 ; Estadística para Ingenieros ; 3 ; 5 ; MAT-170
+MAT-420 ; Métodos Numéricos y Programación ; 3 ; 5 ; MAT-271
+FIS-223 ; Laboratorio de Física General III ; 1 ; 6 ; FIS-213
+INF-275 ; Ingeniería de Software II ; 3 ; 6 ; INF-272
+INF-276 ; Programación de Aplicaciones Móviles ; 4 ; 6 ; INF-274
+INF-277 ; Sistemas de Base de Datos I ; 3 ; 6 ; INF-272
+INF-278 ; Sistemas Ciberfísicos I ; 3 ; 6 ; INF-272,INF-273
+MAT-260 ; Álgebra Lineal ; 3 ; 6 ; MAT-160
+MAT-337 ; Inferencia Estadística ; 3 ; 6 ; MAT-330
+INF-370 ; Ingeniería de Software III ; 3 ; 7 ; INF-275
+INF-371 ; Sistemas de Bases De Datos II ; 3 ; 7 ; INF-277
+INF-372 ; Redes de Computadoras I ; 3 ; 7 ; INF-160
+INF-373 ; Electrónica de Sistemas Ciberfisicos ; 3 ; 7 ; FIS-223,INF-278,MAT-371,QUI-111
+INF-374 ; Ciberseguridad en Software ; 3 ; 7 ; INF-273,INF-275,MAT-420
+INF-386 ; Proyecto Integrador en Software y Bases de Datos ; 3 ; 7 ; INF-275,INF-276,INF-277
+ADM-105 ; Principios de Administración ; 3 ; 8 ; 
+ECO-100 ; Introducción a la Economía ; 3 ; 8 ; 
+INF-375 ; Principios de Sistemas Operativos ; 3 ; 8 ; INF-273
+INF-377 ; Redes de Computadoras II ; 3 ; 8 ; INF-372
+INF-378 ; Sistemas Ciberfísicos II ; 3 ; 8 ; INF-372,INF-373
+INF-379 ; Introducción a la Ciencia de Datos ; 3 ; 8 ; INF-277,MAT-337
+ELT-002 ; Electiva II ; 3 ; 9 ; INF-276,INF-374,INF-379
+INF-380 ; Administración de Proyectos ; 3 ; 9 ; ADM-105
+INF-381 ; Sistemas Ciberfísicos III ; 3 ; 9 ; INF-377,INF-378
+INF-383 ; Machine Learning ; 3 ; 9 ; INF-371,INF-379
+INF-384 ; Auditoría de Sistemas ; 3 ; 9 ; ADM-105,INF-370,INF-374
+ING-540 ; Introducción a la Ingeniería Económica ; 3 ; 9 ; ECO-100
+ELT-003 ; Electiva III ; 3 ; 10 ; INF-375,INF-378,INF-383
+INF-431 ; Mineria de Datos ; 3 ; 10 ; INF-383
+INF-432 ; Innovación y Emprendiemiento en Ingenieria ; 3 ; 10 ; ING-540
+INF-434 ; Big Data con Procesamiento Distribuido ; 3 ; 10 ; INF-375,INF-379
+INF-435 ; Proyecto Integrador en Sistemas Ciberfisicos ; 3 ; 10 ; INF-380,INF-381
+ELT-004 ; Electiva IV ; 3 ; 11 ; INF-276,INF-374,INF-381,INF-383
+INF-437 ; Seminario de Investigación para Trabajo de Grado ; 3 ; 11 ; INF-380,INF-432
+INF-438 ; Proyecto Integrador en Ciencias e Ingeniería de Datos ; 3 ; 11 ; INF-380,INF-383,INF-431,INF-434
+INF-440 ; Modelado y Simulación de Sistemas Ciberfísicos ; 3 ; 11 ; INF-435
+INI-510 ; Ética Profesional ; 3 ; 11 ; 
+INF-901 ; Trabajo De Grado (Ing. De Sistemas) ; 6 ; 12 ; INF-437
+INF-905 ; Pasantía Final ; 8 ; 12 ; INF-386,INF-432,INF-438

@@ -1,0 +1,68 @@
+# UNPHU · Gestión Aeronáutica · plan 2024
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-gestion-aeronautica.pdf); los créditos cuadran con los totales impresos (206 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: GAE-324: 1ro al 7mo periodo | GAE-420: 1ro al 10mo periodo | GAE-900: 1ro al 10mo periodo
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+FIL-104 ; Ética Formativa ; 2 ; 1 ; 
+LET-104 ; Expresión Oral y Producción Escrita ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+DER-001 ; Educación Constitucional ; 3 ; 1 ; 
+HUM-177 ; Geografía Mundial ; 3 ; 1 ; 
+GAE-110 ; Historia de la Aviación e Industria Aeronáutica ; 2 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 2 ; 
+LEX-110 ; Inglés Básico ; 3 ; 2 ; 
+MAT-114 ; Aritmética y Geometría ; 3 ; 2 ; MAT-060
+HUM-160 ; Historia Dominicana ; 3 ; 2 ; 
+IAG-110 ; Geografía Física de Rep. ; 3 ; 2 ; 
+CON-116 ; Dominicana Fundamentos de la Contabilidad ; 4 ; 2 ; 
+GAE-120 ; Introducción al Ámbito de la Aeronáutica ; 3 ; 2 ; GAE-110
+LEX-223 ; Inglés Técnico para Negocios ; 3 ; 3 ; LEX-110
+ADM-105 ; Principios de la Administración ; 3 ; 3 ; 
+CON-117 ; Contabilidad Financiera ; 4 ; 3 ; CON-116
+PSI-132 ; Psicología de las Relaciones Interpersonales ; 3 ; 3 ; 
+GAE-130 ; Aerodinámica Básica ; 4 ; 3 ; MAT-114
+GAE-131 ; Regulación Aeronáutica ; 3 ; 3 ; GAE-120
+RNA-100 ; Conciencia Medioambiental ; 1 ; 4 ; 
+ECO-100 ; Introducción a la Economía ; 3 ; 4 ; MAT-060
+ADM-106 ; Comportamiento Organizacional y Gestión Administrativa ; 3 ; 4 ; ADM-105
+INF-200 ; Informática Básica y Cultural ; 3 ; 4 ; 
+LEX-228 ; Inglés Técnico Aeronáutico I ; 3 ; 4 ; LEX-223
+GAE-212 ; Redacción de Informes Técnicos en Aeronáutica ; 2 ; 4 ; LET-104
+GAE-213 ; Infrestructura de Aeropuertos ; 4 ; 4 ; GAE-120
+DER-227 ; Principios del Derecho Laboral ; 3 ; 5 ; 
+GAE-220 ; Metodología de la Investigación Científica ; 3 ; 5 ; 
+ADM-133 ; Métodos Cuantitativos Para Negocios I ; 5 ; 5 ; MAT-060
+LEX-229 ; Inglés Técnico Aeronáutico II ; 3 ; 5 ; LEX-228
+GAE-221 ; Factores Humanos en la Aviación ; 2 ; 5 ; ADM-106
+GAE-222 ; Transporte Aéreo ; 4 ; 5 ; GAE-213
+ADM-134 ; Métodos Cuantitativos para Negocios II ; 5 ; 6 ; ADM-133
+ADM-138 ; Gestión Humana y Liderazgo ; 3 ; 6 ; ADM-106
+ADM-135 ; Instrumento de Toma de Decisiones para Negocios I ; 4 ; 6 ; MAT-060
+ADM-570 ; Administración Pública ; 3 ; 6 ; ADM-106
+DER-232 ; Derecho Aeronáutico ; 3 ; 6 ; GAE-131
+GAE-231 ; Gestión Aeronáutica ; 4 ; 6 ; GAE-222
+ADM-136 ; Instrumentos de Toma de Decisiones para Negocios II ; 4 ; 7 ; ADM-135
+CON-312 ; Gestión Impositiva en la Industria Aeronáutica ; 3 ; 7 ; ECO-100
+MER-100 ; Principios de Mercadotecnia ; 3 ; 7 ; 
+GAE-310 ; Meteorología en la Aviación ; 3 ; 7 ; IAG-110
+GAE-311 ; Seguridad en la Aviación ; 3 ; 7 ; GAE-231
+GAE-312 ; Servicios de Tránsito Aéreo ; 4 ; 7 ; GAE-130,GAE-231
+ADM-381 ; Gerencia Estratégica ; 3 ; 8 ; ADM-106,ADM-136
+GAE-320 ; Márketing en la Aviación ; 3 ; 8 ; MER-100
+GAE-321 ; Accidentes e Incidentes Aéreos ; 2 ; 8 ; GAE-310,GAE-311
+GAE-322 ; Seguridad Operacional ; 3 ; 8 ; GAE-311
+GAE-323 ; Gestión de Líneas Aéreas ; 4 ; 8 ; GAE-312
+GAE-324 ; Formulación de Proyectos Aeronáuticos ; 4 ; 8 ; 
+ADM-143 ; Ética Profesional y Responsabilidad Social en los Negocios ; 2 ; 9 ; ADM-106,DER-227
+NEG-330 ; Introducción a los Negocios Internacionales ; 3 ; 9 ; 
+GAE-330 ; Tecnología y Equipamientos Aeronáuticos ; 3 ; 9 ; GAE-231
+GAE-331 ; Gestión de la Información Aeronáutica y Ciberseguridad ; 4 ; 9 ; INF-200,GAE-322
+GAE-332 ; Gestión de Mantenimiento de Aeronaves ; 4 ; 9 ; GAE-323
+GAE-333 ; Gestión Aeroportuaria ; 4 ; 9 ; GAE-212
+ADM-144 ; Emprendimiento ; 3 ; 10 ; ADM-106
+GAE-410 ; Administración de Operaciones de Vuelo ; 4 ; 10 ; GAE-333
+GAE-411 ; Lógistica de Aeropuertos ; 4 ; 10 ; GAE-333
+GAE-412 ; Gestión de Auditoria Aeronáutica ; 4 ; 10 ; GAE-231
+ELT-002 ; Electiva II ; 2 ; 10 ; GAE-320,GAE-330
+GAE-420 ; Pasantía Profesional ; 5 ; 11 ; 
+GAE-900 ; Trabajo de Grado ; 6 ; 11 ; 

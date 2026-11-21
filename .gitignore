@@ -47,3 +47,6 @@ __pycache__/
 # Artefacto incremental de TypeScript
 tsconfig.tsbuildinfo
 .i18n.lock
+
+# PDF oficiales de los pensums (30 MB): fuente de db/datos/pensum-*.txt, se guardan fuera del repo
+docs/PENSUMS/

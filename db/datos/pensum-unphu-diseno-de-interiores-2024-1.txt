@@ -1,0 +1,72 @@
+# UNPHU · Diseño de Interiores · plan 2024-1
+# Transcrito por script del pénsum oficial en PDF (docs/PENSUMS/UNPHU/licenciatura-en-diseno-de-interiores_2024-1.pdf); los créditos cuadran con los totales impresos (207 créditos).
+# Formato: código ; nombre ; créditos ; período ; prerrequisitos. Las listas de electivas (opciones) y los correquisitos no van.
+# Requisitos que no son materia (p. ej. «todas las asignaturas») o que el PDF trae cortados; revisar contra el original: DIS-701: Todas las asignaturas
+DIS-351 ; Diseño de Interiores I ; 4 ; 1 ; 
+DIS-103 ; Geometría Descriptiva orientada al Diseño de Interiores ; 3 ; 1 ; 
+DIS-113 ; Expresión Creativa I ; 3 ; 1 ; 
+LET-101 ; Lengua Española y Técnica de la Expresión I ; 3 ; 1 ; 
+MAT-060 ; Matemática Básica ; 4 ; 1 ; 
+ORI-100 ; Orientación Universitaria ; 1 ; 1 ; 
+DIS-001 ; Orientación para Diseño ; 1 ; 1 ; 
+ELT-001 ; Electiva I (Artes y Deportes) ; 1 ; 1 ; 
+DIS-352 ; Diseño de Interiores II ; 4 ; 2 ; DIS-103,DIS-351
+DIS-107 ; Dibujo Arquitectónico ; 3 ; 2 ; DIS-103
+DIS-114 ; Expresión Creativa II ; 3 ; 2 ; DIS-113
+DIS-240 ; Maquetismo ; 2 ; 2 ; DIS-103
+RNA-100 ; Conciencia Medioambiental ; 1 ; 2 ; 
+HUM-150 ; Historia de la Cultura Universal ; 3 ; 2 ; 
+LET-102 ; Lengua Española y Técnica de la Expresión II ; 3 ; 2 ; LET-101
+DIS-353 ; Diseño de Interiores III ; 4 ; 3 ; DIS-352,DIS-107
+DIS-133 ; Historia del Arte y del Diseño I ; 3 ; 3 ; HUM-150
+DIS-102 ; Perspectiva y Sombras ; 4 ; 3 ; DIS-107
+DIS-246 ; Técnicas de Presentación ; 2 ; 3 ; DIS-107
+DIS-200 ; Artes Aplicadas ; 2 ; 3 ; DIS-114
+DIS-105 ; Dibujo y Modelado Digital ; 3 ; 3 ; DIS-107
+DIS-130 ; Métodos y Técnicas de Investigación ; 3 ; 3 ; 
+DIS-365 ; Diseño de Interiores IV ; 4 ; 4 ; DIS-353
+DIS-270 ; Paisajismo ; 3 ; 4 ; DIS-246,DIS-353
+DIS-134 ; Historia del Arte y del Diseño II ; 3 ; 4 ; DIS-133
+DIS-106 ; BIM y Modelado Digital Avanzado ; 3 ; 4 ; DIS-105
+DIS-247 ; Ilustración Digital ; 3 ; 4 ; DIS-246
+DIS-222 ; Materiales y Procesos Constructivos ; 3 ; 4 ; 
+DIS-366 ; Diseño de Interiores V ; 4 ; 5 ; DIS-270,DIS-365
+DIS-135 ; Historia del Arte y del Diseño III ; 3 ; 5 ; DIS-134
+DIS-248 ; Visualización 3D ; 3 ; 5 ; DIS-106
+DIS-223 ; Materiales y Procesos de Terminación ; 3 ; 5 ; DIS-222
+DIS-224 ; Instalaciones y Servicios ; 3 ; 5 ; DIS-222,DIS-106
+DIS-478 ; Textiles ; 3 ; 5 ; 
+DIS-368 ; Diseño de Interiores VI ; 4 ; 6 ; DIS-248,DIS-366
+DIS-136 ; Historia del Arte y del Diseño IV ; 3 ; 6 ; DIS-135
+DIS-249 ; Infografía y Diagramación Digital ; 3 ; 6 ; DIS-247,DIS-248
+DIS-323 ; Comportamiento Estructural y Materiales ; 3 ; 6 ; DIS-223
+DIS-422 ; Luminotécnia ; 3 ; 6 ; DIS-224
+FIL-101 ; Introducción a la Filosofía ; 3 ; 6 ; 
+DIS-377 ; Diseño de Interiores VII ; 4 ; 7 ; DIS-368
+DIS-257 ; Diseño de Mobiliario I ; 3 ; 7 ; DIS-136
+SOC-100 ; Introducción a la Sociología ; 3 ; 7 ; 
+DIS-453 ; Teoría de la Intervención en Espacios Patrimoniales ; 3 ; 7 ; DIS-136
+LEX-110 ; Inglés Básico ; 3 ; 7 ; 
+ELD-001 ; Electiva I (Diseño de Interiores) ; 3 ; 7 ; DIS-240,DIS-248,DIS-270,DIS-323
+DIS-378 ; Diseño de Interiores VIII ; 4 ; 8 ; DIS-377,DIS-453
+DIS-258 ; Diseño de Mobiliario II ; 3 ; 8 ; DIS-257
+DIS-137 ; Antropología Aplicada al Diseño ; 2 ; 8 ; DIS-136,SOC-100
+DIS-423 ; Acústica ; 3 ; 8 ; DIS-224
+DIS-320 ; Presupuesto ; 3 ; 8 ; DIS-223
+LEX-222 ; Inglés Técnico para Diseño de Interiores ; 3 ; 8 ; LEX-110
+ELD-002 ; Electiva II (Diseño de Interiores) ; 3 ; 8 ; DIS-240,DIS-270,DIS-365,DIS-368
+DIS-379 ; Diseño de Interiores IX ; 4 ; 9 ; DIS-378
+DIS-256 ; Diseño Escenográfico ; 3 ; 9 ; DIS-422,DIS-423
+DIS-382 ; Ética Profesional para Diseñadores ; 2 ; 9 ; FIL-101
+PSI-100 ; Psicología General ; 3 ; 9 ; 
+DIS-138 ; Análisis del Diseño Contemporáneo ; 2 ; 9 ; DIS-137
+ELD-003 ; Electiva III (Diseño de Interiores) ; 3 ; 9 ; DIS-422,DIS-423,DIS-258,DIS-478,DIS-320
+DIS-699 ; Formulación de Proyecto de Grado ; 4 ; 10 ; DIS-138,DIS-379
+DIS-381 ; Gerencia de Proyectos ; 3 ; 10 ; DIS-382
+ADM-144 ; Emprendimiento ; 3 ; 10 ; DIS-382
+DIS-504 ; Práctica de la Profesión ; 3 ; 10 ; DIS-320,DIS-382
+ELD-004 ; Electiva IV (Diseño de Interiores) ; 3 ; 10 ; DIS-138,DIS-256,DIS-382
+DIS-468 ; Porfolio y Marca ; 3 ; 11 ; DIS-249
+MER-100 ; Principios de Mercadotecnia ; 3 ; 11 ; 
+DIS-700 ; Preproyecto de Grado ; 5 ; 11 ; DIS-699
+DIS-701 ; Proyecto de Grado ; 6 ; 12 ; 
