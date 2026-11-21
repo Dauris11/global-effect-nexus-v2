@@ -1,9 +1,12 @@
-import { filasDeLista } from "@/lib/carga-calificaciones";
-import { consultarUna } from "@/lib/db";
+import { filasDeLista, filasDeRespuesta } from "@/lib/carga-calificaciones";
+import { consultar, consultarUna } from "@/lib/db";
+import { leerCalificaciones } from "@/lib/calificaciones";
 import { leerEtiquetaPeriodo } from "@/lib/gradua";
 import { ROLES } from "@/lib/rbac";
 import { borrarAdjunto, obtenerAdjunto } from "@/server/ia/adjuntos";
 import { leerComprobanteFiscal, leerDocumentoDeIdentidad } from "@/server/ia/ocr";
+import { catalogoDelEstudiante } from "@/server/universidades/consultas";
+import { guardarCalificacionesDe } from "@/server/universidades/calificaciones-nucleo";
 import { confirmarCarga, guardarBorrador, leerFilasDeArchivo, universidadDeCarga } from "@/server/universidades/carga-nucleo";
 
 import type { Herramienta } from "./tipos";
@@ -43,6 +46,21 @@ const preparar: Herramienta = {
       universidad: { type: "string", description: "Siglas de la universidad, p. ej. UCATECI." },
       periodo: { type: "string", description: "Año y ronda del cuatrimestre, p. ej. 2026-2." },
       adjunto_id: { type: "string", description: "UUID del adjunto del chat (PDF o foto con el listado). Opcional si se pasa la lista." },
+      filas: {
+        type: "array",
+        description: "Las filas ya separadas (mejor que la lista cuando la información viene del mensaje).",
+        items: {
+          type: "object",
+          properties: {
+            matricula: { type: "string" },
+            nombre: { type: "string" },
+            codigo: { type: "string" },
+            materia: { type: "string" },
+            letra: { type: "string" },
+            nota: { type: "string" },
+          },
+        },
+      },
       lista: { type: "string", description: "Las filas: matrícula ; nombre ; código ; letra ; nota (la nota es opcional). Opcional si se pasa el adjunto." },
     },
     required: ["universidad", "periodo"],
@@ -63,7 +81,7 @@ const preparar: Herramienta = {
     if (!universidad) return { ok: false, texto: `No existe la universidad ${siglas}.` };
 
     const adjuntoId = texto(a.adjunto_id, 40);
-    let filas = filasDeLista(texto(a.lista, 60_000));
+    let filas = [...filasDeLista(texto(a.lista, 60_000)), ...(Array.isArray(a.filas) ? filasDeRespuesta({ filas: a.filas.map((f) => ({ ...(f as object), confianza: 100 })) }) : [])];
     let medio: "pdf" | "imagen" | "lista" = "lista";
 
     if (adjuntoId) {
@@ -173,4 +191,117 @@ const leerAdjunto: Herramienta = {
   },
 };
 
-export const HERRAMIENTAS_ACADEMICAS: readonly Herramienta[] = [preparar, confirmar, leerAdjunto];
+const buscarEstudiantes: Herramienta = {
+  nombre: "buscar_estudiantes",
+  descripcion:
+    "Busca estudiantes por nombre o matrícula (opcionalmente de una universidad) y devuelve su id, matrícula, universidad y carrera. Úsala para obtener el estudiante_id antes de ver sus materias o ponerle notas. Si estás en la pantalla de un estudiante, su id aparece en la ruta (/expedientes/<id>).",
+  esquema: {
+    type: "object",
+    properties: {
+      texto: { type: "string", description: "Parte del nombre o la matrícula." },
+      universidad: { type: "string", description: "Siglas, opcional." },
+    },
+    required: ["texto"],
+  },
+  nivel: "automatica",
+  roles: ADMINISTRATIVOS,
+  permiso: "expedientes.leer",
+  resumir: (a, i) => frase(`Buscar estudiantes: ${texto(a.texto, 40)}`, `Search students: ${texto(a.texto, 40)}`, i),
+  async ejecutar(_usuario, a) {
+    const q = texto(a.texto, 60);
+    const siglas = texto(a.universidad, 20).toUpperCase();
+
+    if (q.length < 2) return { ok: false, texto: "Escribe al menos 2 letras del nombre o la matrícula." };
+
+    const filas = await consultar<{ id: string; nombre: string; matricula: string | null; siglas: string | null; carrera: string | null }>(
+      `SELECT e.id, e.nombre, e.matricula, u.siglas, c.nombre AS carrera
+         FROM estudiante e LEFT JOIN universidad u ON u.id = e.universidad_id LEFT JOIN carrera c ON c.id = e.carrera_id
+        WHERE (e.nombre ILIKE '%' || $1 || '%' OR regexp_replace(coalesce(e.matricula, ''), '\\D', '', 'g') = regexp_replace($1, '\\D', '', 'g') AND length(regexp_replace($1, '\\D', '', 'g')) >= 4)
+          AND ($2 = '' OR upper(u.siglas) = $2)
+        ORDER BY e.nombre LIMIT 8`,
+      [q, siglas],
+    );
+
+    return { ok: true, texto: filas.length ? JSON.stringify(filas) : "No hay estudiantes con ese nombre o matrícula." };
+  },
+};
+
+const materiasPendientes: Herramienta = {
+  nombre: "materias_pendientes_estudiante",
+  descripcion:
+    "Lista las materias que le FALTAN por dar a un estudiante (código, nombre, créditos) y las letras que usa su universidad. Úsala antes de registrar notas para usar los códigos correctos del plan de estudios de esa persona.",
+  esquema: { type: "object", properties: { estudiante_id: { type: "string", description: "UUID del estudiante." } }, required: ["estudiante_id"] },
+  nivel: "automatica",
+  roles: ADMINISTRATIVOS,
+  permiso: "expedientes.leer",
+  resumir: (_a, i) => frase("Ver las materias que le faltan al estudiante", "See the subjects the student still has to take", i),
+  async ejecutar(_usuario, a) {
+    const id = texto(a.estudiante_id, 40);
+
+    if (!UUID_RE.test(id)) return { ok: false, texto: "Identificador de estudiante inválido." };
+
+    const c = await catalogoDelEstudiante(id);
+
+    if (!c.pensum) return { ok: false, texto: "El estudiante no tiene plan de estudios elegido: hay que vincularlo primero." };
+
+    const faltan = c.materias.filter((m) => m.estado === "pendiente" || m.estado === "cursando").map((m) => ({ codigo: m.codigo, nombre: m.nombre, creditos: m.creditos, periodo: m.periodo_sugerido }));
+
+    return { ok: true, texto: JSON.stringify({ universidad: c.universidad?.siglas, letras: Object.keys(c.reglas?.puntosPorLetra ?? {}), faltan }) };
+  },
+};
+
+const registrarEstudiante: Herramienta = {
+  nombre: "registrar_calificaciones_estudiante",
+  descripcion:
+    "Propone poner las notas de UN estudiante en un período. Solo se guarda cuando la persona aprueba. Usa los códigos de materias_pendientes_estudiante y las letras de su universidad (R = retirada). Si algo no corresponde a su plan de estudios, no se guarda nada.",
+  esquema: {
+    type: "object",
+    properties: {
+      estudiante_id: { type: "string" },
+      estudiante_nombre: { type: "string", description: "Nombre, para mostrarlo en la tarjeta de aprobación." },
+      periodo: { type: "string", description: "Año y cuatrimestre, p. ej. 2026-2." },
+      calificaciones: {
+        type: "array",
+        items: { type: "object", properties: { codigo: { type: "string" }, letra: { type: "string" }, nota: { type: "string", description: "Número opcional." } }, required: ["codigo", "letra"] },
+      },
+    },
+    required: ["estudiante_id", "periodo", "calificaciones"],
+  },
+  nivel: "confirmacion",
+  roles: ADMINISTRATIVOS,
+  permiso: "expedientes.escribir",
+  resumir: (a, i) => {
+    const n = Array.isArray(a.calificaciones) ? a.calificaciones.length : 0;
+    const quien = texto(a.estudiante_nombre, 60) || "el estudiante";
+
+    return frase(`Guardar ${n} nota(s) de ${texto(a.periodo, 10)} a ${quien}`, `Save ${n} grade(s) for ${texto(a.periodo, 10)} to ${quien}`, i);
+  },
+  async ejecutar(usuario, a) {
+    const id = texto(a.estudiante_id, 40);
+    const periodo = leerEtiquetaPeriodo(texto(a.periodo, 10));
+
+    if (!UUID_RE.test(id)) return { ok: false, texto: "Identificador de estudiante inválido." };
+    if (!periodo) return { ok: false, texto: "Período inválido: usa el formato 2026-2." };
+
+    const lectura = leerCalificaciones(
+      (Array.isArray(a.calificaciones) ? a.calificaciones : [])
+        .map((c) => {
+          const o = c as Record<string, unknown>;
+
+          return `${texto(o.codigo, 20)};${texto(o.letra, 3)};${texto(o.nota, 8)}`;
+        })
+        .join("\n"),
+    );
+    const r = await guardarCalificacionesDe({ usuarioId: usuario.id, estudianteId: id, periodo, items: lectura.items, rechazadas: lectura.rechazadas });
+
+    if (r.estado !== "ok") {
+      const motivo = r.estado === "invalido" ? `Nada se guardó: no corresponden a su plan de estudios o a las letras de su universidad: ${(r.desconocidos ?? []).join(", ")}${r.rechazadas?.length ? ` (líneas ilegibles: ${r.rechazadas.join(", ")})` : ""}.` : `No se pudo guardar (${r.estado}).`;
+
+      return { ok: false, texto: motivo };
+    }
+
+    return { ok: true, texto: `Se guardaron ${r.guardadas} notas. El plan de estudios, el índice y las alertas ya están al día.`, entidad: { tipo: "estudiante", id } };
+  },
+};
+
+export const HERRAMIENTAS_ACADEMICAS: readonly Herramienta[] = [preparar, confirmar, leerAdjunto, buscarEstudiantes, materiasPendientes, registrarEstudiante];

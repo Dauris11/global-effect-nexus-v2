@@ -232,13 +232,14 @@ export function WidgetFlotanteIA({
       if (archivoAEnviar) {
         cuerpo.set("contenido", contenidoAEnviar);
         cuerpo.set("adjunto", archivoAEnviar);
+        cuerpo.set("ruta", window.location.pathname);
       }
 
       const respuesta = await fetch("/api/ia/chat", {
         method: "POST",
         ...(archivoAEnviar
           ? { body: cuerpo }
-          : { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contenido: contenidoAEnviar }) }),
+          : { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contenido: contenidoAEnviar, ruta: window.location.pathname }) }),
       });
 
       if (!respuesta.ok) {

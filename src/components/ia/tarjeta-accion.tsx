@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { AiOrb, type EstadoOrbe } from "@/components/ui/ai-orb";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   aprobarAccionIA,
@@ -43,6 +44,7 @@ export function TarjetaAccionIA({ accionId, resumen }: TarjetaAccion) {
   const [fase, setFase] = useState<Fase>("propuesta");
   const [reversible, setReversible] = useState(false);
   const reducido = useReducedMotion() ?? false;
+  const router = useRouter();
 
   const resolver = async (
     accion: (id: string) => ReturnType<typeof aprobarAccionIA>,
@@ -56,6 +58,8 @@ export function TarjetaAccionIA({ accionId, resumen }: TarjetaAccion) {
       if (resultado.ok) {
         setReversible(resultado.reversible);
         setFase(exito);
+        // La pantalla que la persona tiene abierta (expediente, lista) muestra ya lo que Elly hizo.
+        if (exito === "hecha") router.refresh();
       } else {
         setFase("error");
       }

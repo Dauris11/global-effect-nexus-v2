@@ -32,6 +32,20 @@ const MAXIMO_TOKENS = 4096;
 
 export const maxDuration = 60;
 
+/**
+ * Qué está viendo la persona, para que Elly pueda trabajar sobre esa pantalla («ponle
+ * estas notas» en el expediente de alguien). Solo se acepta una ruta con forma de ruta:
+ * el valor llega del navegador y es dato, nunca instrucción.
+ */
+function pantallaActual(ruta: string): string {
+  if (!/^\/[\w\-/.]{0,200}$/.test(ruta)) return "";
+
+  const limpia = ruta.replace(/^\/(es|en)(?=\/|$)/, "") || "/";
+  const estudiante = /^\/expedientes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(limpia)?.[1];
+
+  return `\n\nPANTALLA ACTUAL de la persona: ${limpia}.${estudiante ? ` Está viendo el expediente del estudiante con id ${estudiante}: si pide notas o materias «de este estudiante», usa ese id sin preguntárselo.` : ""}`;
+}
+
 export async function POST(peticion: NextRequest) {
   const usuario = await obtenerUsuarioActual();
 
@@ -40,15 +54,19 @@ export async function POST(peticion: NextRequest) {
   // Texto solo (JSON) o texto con un adjunto (multipart: `contenido` + `adjunto`).
   let crudo = "";
   let archivo: File | null = null;
+  let ruta = "";
 
   if ((peticion.headers.get("content-type") ?? "").includes("multipart/form-data")) {
     const datos = await peticion.formData().catch(() => null);
     const adjunto = datos?.get("adjunto");
 
     crudo = String(datos?.get("contenido") ?? "").trim();
+    ruta = String(datos?.get("ruta") ?? "");
     archivo = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
   } else {
-    const cuerpo = (await peticion.json().catch(() => null)) as { contenido?: unknown } | null;
+    const cuerpo = (await peticion.json().catch(() => null)) as { contenido?: unknown; ruta?: unknown } | null;
+
+    ruta = typeof cuerpo?.ruta === "string" ? cuerpo.ruta : "";
 
     crudo = typeof cuerpo?.contenido === "string" ? cuerpo.contenido.trim() : "";
   }
@@ -130,7 +148,7 @@ export async function POST(peticion: NextRequest) {
           idioma: usuario.idioma,
           agente: config.clave,
           conversacionId: turno.conversacionId,
-          sistema: ensamblarSistema(turno.sistema, config.instrucciones),
+          sistema: ensamblarSistema(`${turno.sistema}${pantallaActual(ruta)}`, config.instrucciones),
           turnos: turno.turnos,
           documento,
           // Un modelo guardado de otro proveedor se ignora (ver `modeloIA`).
