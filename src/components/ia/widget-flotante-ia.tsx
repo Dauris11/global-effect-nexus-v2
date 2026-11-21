@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, HelpCircle, Lock, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
+import { AlertCircle, HelpCircle, Lock, Paperclip, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
@@ -53,6 +53,8 @@ const ERRORES: Record<string, string> = {
   inactivo: "errorInactivo",
   mensajeLargo: "errorLargo",
   entradaInvalida: "errorEntrada",
+  adjuntoInvalido: "errorAdjunto",
+  adjuntoNoPermitido: "errorAdjunto",
 };
 
 export function WidgetFlotanteIA({
@@ -79,6 +81,9 @@ export function WidgetFlotanteIA({
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [textoEntrada, setTextoEntrada] = useState("");
+  // PDF o foto para que Elly lo lea (solo el equipo; el servidor lo vuelve a comprobar).
+  const [adjunto, setAdjunto] = useState<File | null>(null);
+  const entradaAdjunto = useRef<HTMLInputElement>(null);
   const [errorAlerta, setErrorAlerta] = useState<string | null>(null);
 
   // Voz: dictar (voz → texto) y hablar (texto → voz), ambas del navegador.
@@ -185,19 +190,23 @@ export function WidgetFlotanteIA({
     if (e) e.preventDefault();
 
     const contenidoAEnviar = (textoManual ?? textoEntrada).trim();
-    if (!contenidoAEnviar || enviando) return;
+    if ((!contenidoAEnviar && !adjunto) || enviando) return;
+
+    const archivoAEnviar = adjunto;
 
     if (dictado.escuchando) dictado.detener();
     habla.parar();
 
     setErrorAlerta(null);
     setTextoEntrada("");
+    setAdjunto(null);
+    if (entradaAdjunto.current) entradaAdjunto.current.value = "";
 
     // Agregar mensaje optimista del usuario
     const mensajeOptimista: MensajeWidget = {
       id: crypto.randomUUID(),
       rol: "user",
-      contenido: contenidoAEnviar,
+      contenido: archivoAEnviar ? `${contenidoAEnviar}\n(${archivoAEnviar.name})`.trim() : contenidoAEnviar,
       hora: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -209,7 +218,7 @@ export function WidgetFlotanteIA({
 
     try {
       // Una orden de navegación se resuelve al instante, sin modelo.
-      if (modo === "acciones" && (await sugerirNavegacion(contenidoAEnviar))) {
+      if (!archivoAEnviar && modo === "acciones" && (await sugerirNavegacion(contenidoAEnviar))) {
         const res = await enviarMensajeWidget({ contenido: contenidoAEnviar, modo });
 
         if (res.ok && res.mensaje) setMensajes((prev) => [...prev, res.mensaje!]);
@@ -217,10 +226,19 @@ export function WidgetFlotanteIA({
         return;
       }
 
+      // Con adjunto va como formulario (el navegador pone el límite de partes); sin él, JSON como siempre.
+      const cuerpo = new FormData();
+
+      if (archivoAEnviar) {
+        cuerpo.set("contenido", contenidoAEnviar);
+        cuerpo.set("adjunto", archivoAEnviar);
+      }
+
       const respuesta = await fetch("/api/ia/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contenido: contenidoAEnviar }),
+        ...(archivoAEnviar
+          ? { body: cuerpo }
+          : { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contenido: contenidoAEnviar }) }),
       });
 
       if (!respuesta.ok) {
@@ -627,6 +645,15 @@ export function WidgetFlotanteIA({
             </AnimatePresence>
 
             <form onSubmit={(e) => void handleEnviar(e)} className="border-linea border-t p-3">
+              {adjunto && (
+                <div className="bg-muted text-tinta mb-2 flex items-center gap-2 rounded-control px-3 py-2 text-sm">
+                  <Paperclip className="size-4 shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{adjunto.name}</span>
+                  <button type="button" onClick={() => { setAdjunto(null); if (entradaAdjunto.current) entradaAdjunto.current.value = ""; }} aria-label={t("quitarAdjunto")} title={t("quitarAdjunto")} className="focus-visible:ring-ring flex size-8 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2">
+                    <X className="size-4" />
+                  </button>
+                </div>
+              )}
               <div className="border-linea-fuerte focus-within:border-marca-500 focus-within:ring-marca-500 flex items-end gap-1 rounded-card border p-1 focus-within:ring-1">
                 <BotonMicrofono
                   escuchando={dictado.escuchando}
@@ -636,6 +663,15 @@ export function WidgetFlotanteIA({
                 />
 
                 {habla.soporta && <InterruptorModoVoz activo={modoVoz} alCambiar={setModoVoz} textos={textosVoz} />}
+
+                {!esEstudiante && (
+                  <>
+                    <input ref={entradaAdjunto} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => setAdjunto(e.target.files?.[0] ?? null)} />
+                    <button type="button" onClick={() => entradaAdjunto.current?.click()} aria-label={t("adjuntar")} title={t("adjuntar")} className="text-tinta-2 hover:text-tinta focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2">
+                      <Paperclip className="size-5" />
+                    </button>
+                  </>
+                )}
 
                 <textarea
                   ref={textareaRef}
@@ -655,7 +691,7 @@ export function WidgetFlotanteIA({
 
                 <motion.button
                   type="submit"
-                  disabled={enviando || !textoEntrada.trim()}
+                  disabled={enviando || (!textoEntrada.trim() && !adjunto)}
                   aria-label={t("enviar")}
                   title={t("enviar")}
                   whileTap={reducido ? undefined : { scale: 0.9 }}

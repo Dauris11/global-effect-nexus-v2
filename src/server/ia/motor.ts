@@ -67,6 +67,7 @@ export async function ejecutarTurno({
   conversacionId,
   sistema,
   turnos,
+  documento,
   modelo,
   maximoTokens,
   emitir,
@@ -78,14 +79,19 @@ export async function ejecutarTurno({
   conversacionId: string | null;
   sistema: string;
   turnos: readonly { rol: "user" | "assistant"; contenido: string }[];
+  /** PDF o foto adjuntos al ÚLTIMO turno del usuario: el modelo los ve en este turno. */
+  documento?: { mime: string; base64: string } | null;
   modelo: string;
   maximoTokens: number;
   emitir: (evento: EventoTurno) => void;
 }): Promise<ResultadoTurno | { error: "rechazada" | "fallo" | "limite" | "sin_clave" }> {
   const visibles = herramientasVisibles(usuario);
-  const mensajes: MensajeModelo[] = turnos.map((t) => ({
+  const mensajes: MensajeModelo[] = turnos.map((t, i) => ({
     role: t.rol,
-    content: t.contenido,
+    content:
+      documento && i === turnos.length - 1 && t.rol === "user"
+        ? [{ type: "archivo" as const, mime: documento.mime, base64: documento.base64 }, { type: "text" as const, text: t.contenido }]
+        : t.contenido,
   }));
 
   const inicio = Date.now();
@@ -103,6 +109,8 @@ export async function ejecutarTurno({
       max_tokens: maximoTokens,
       system: sistema,
       messages: mensajes,
+      // Solo se prueban proveedores que lean el tipo de archivo adjunto.
+      ...(documento ? { requiere: documento.mime === "application/pdf" ? ("pdf" as const) : ("imagen" as const) } : {}),
       ...(visibles.length > 0 ? { tools: definiciones(visibles) } : {}),
     });
 

@@ -213,6 +213,8 @@ export async function leerDocumento(
   archivo: { mime: string; base64: string },
   instrucciones: string,
   peticion: string,
+  /** Un listado de varios estudiantes necesita más respuesta que una ficha de cuatro campos. */
+  opciones: { maxTokens?: number } = {},
 ): Promise<LecturaDocumento> {
   if (!hayClaveIA()) return { estado: "sin_clave" };
 
@@ -229,7 +231,7 @@ export async function leerDocumento(
       model: modelo,
       // Corto a propósito: la respuesta es un JSON de cuatro campos. Un techo
       // amplio no mejora una transcripción, solo da sitio a la invención.
-      max_tokens: 600,
+      max_tokens: opciones.maxTokens ?? 600,
       requiere: archivo.mime === "application/pdf" ? "pdf" : "imagen",
       system: instrucciones,
       messages: [

@@ -10,6 +10,7 @@ import {
   registrarUso,
   verificarAcceso,
 } from "@/server/ia/agente";
+import { guardarAdjunto } from "@/server/ia/adjuntos";
 import { prepararTurno } from "@/server/ia/contexto";
 import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import type { EventoFlujo } from "@/lib/ia-eventos";
@@ -36,8 +37,27 @@ export async function POST(peticion: NextRequest) {
 
   if (!usuario) return new NextResponse("No autorizado", { status: 401 });
 
-  const cuerpo = (await peticion.json().catch(() => null)) as { contenido?: unknown } | null;
-  const crudo = typeof cuerpo?.contenido === "string" ? cuerpo.contenido.trim() : "";
+  // Texto solo (JSON) o texto con un adjunto (multipart: `contenido` + `adjunto`).
+  let crudo = "";
+  let archivo: File | null = null;
+
+  if ((peticion.headers.get("content-type") ?? "").includes("multipart/form-data")) {
+    const datos = await peticion.formData().catch(() => null);
+    const adjunto = datos?.get("adjunto");
+
+    crudo = String(datos?.get("contenido") ?? "").trim();
+    archivo = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
+  } else {
+    const cuerpo = (await peticion.json().catch(() => null)) as { contenido?: unknown } | null;
+
+    crudo = typeof cuerpo?.contenido === "string" ? cuerpo.contenido.trim() : "";
+  }
+
+  // Los adjuntos son del equipo: el estudiante no sube documentos al asistente.
+  if (archivo && usuario.rol === "estudiante") return NextResponse.json({ error: "adjuntoNoPermitido" }, { status: 403 });
+
+  // Un adjunto sin texto es una petición válida: «mira esto».
+  if (!crudo && archivo) crudo = usuario.idioma === "en" ? "Review this document." : "Revisa este documento.";
 
   if (!crudo) return NextResponse.json({ error: "mensajeVacio" }, { status: 400 });
 
@@ -54,7 +74,7 @@ export async function POST(peticion: NextRequest) {
     return NextResponse.json({ error: "entradaInvalida", motivo: revision.motivo }, { status: 400 });
   }
 
-  const contenido = revision.texto;
+  let contenido = revision.texto;
 
   // El administrador maestro puede BLOQUEAR el asistente para un rol: sin botón
   // y también sin la ruta, que es lo que usaría quien armara la petición a mano.
@@ -79,6 +99,19 @@ export async function POST(peticion: NextRequest) {
 
   if (!proveedor) return NextResponse.json({ error: "sin_clave" }, { status: 503 });
 
+  // El archivo se comprueba (tipo, tamaño y firma real) y se guarda unos minutos: el modelo lo ve
+  // en este turno y las herramientas lo leen después por id.
+  let documento: { mime: string; base64: string } | null = null;
+
+  if (archivo) {
+    const guardado = await guardarAdjunto(usuario.id, archivo);
+
+    if (guardado.estado !== "ok") return NextResponse.json({ error: "adjuntoInvalido", motivo: guardado.estado }, { status: 400 });
+
+    documento = { mime: guardado.adjunto.mime, base64: guardado.base64 };
+    contenido += `\n\n[Adjunto: «${guardado.adjunto.nombre}» · id ${guardado.adjunto.id} · ${guardado.adjunto.mime}]`;
+  }
+
   const turno = await prepararTurno(usuario, contenido);
 
   if ("error" in turno) return NextResponse.json({ error: turno.error }, { status: 409 });
@@ -99,6 +132,7 @@ export async function POST(peticion: NextRequest) {
           conversacionId: turno.conversacionId,
           sistema: ensamblarSistema(turno.sistema, config.instrucciones),
           turnos: turno.turnos,
+          documento,
           // Un modelo guardado de otro proveedor se ignora (ver `modeloIA`).
           modelo: modeloIA(config.modelo),
           maximoTokens: config.maximoTokens ?? MAXIMO_TOKENS,

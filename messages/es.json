@@ -6085,7 +6085,10 @@
       "esperandoAprobacion": "Espera tu aprobación",
       "error": "Algo salió mal",
       "hecho": "Respuesta lista"
-    }
+    },
+    "adjuntar": "Adjuntar PDF o foto",
+    "quitarAdjunto": "Quitar adjunto",
+    "errorAdjunto": "No se pudo usar el adjunto: solo PDF, JPG, PNG o WebP de hasta 5 MB."
   },
   "colaborador": {
     "portal": {
@@ -7146,6 +7149,11 @@
       "rounding": "Índice",
       "truncate": "Se trunca a 2 decimales",
       "round": "Se redondea a 2 decimales",
+      "alertsTitle": "Escala y alertas del índice",
+      "maxIndex": "Índice máximo (escala)",
+      "minPeriod": "Mínimo del período",
+      "minOverall": "Mínimo acumulado",
+      "alertsHelp": "Vacío = sin definir: se usa el mínimo general de becas. Con estos valores el expediente avisa cuando el índice del período o el acumulado queda por debajo.",
       "confirmed": "Reglas verificadas con el reglamento de la universidad",
       "help": "Cada universidad calcula su índice a su manera. Mientras no estén verificadas, el sistema las marca como «por confirmar».",
       "confirmedBadge": "Reglas verificadas",
@@ -7227,8 +7235,98 @@
     "alerts": {
       "title": "Alertas académicas",
       "lowIndex": "Índice {index}, por debajo del mínimo de {min}: observación académica.",
+      "lowPeriodIndex": "Índice de {period}: {index}, por debajo del mínimo de {min} del período.",
       "failed": "{count, plural, one {# materia reprobada} other {# materias reprobadas}}: {subjects}.",
       "withdrawn": "{count, plural, one {# materia retirada} other {# materias retiradas}} sin volver a cursar: {subjects}."
+    },
+    "upload": {
+      "title": "Subir calificaciones",
+      "open": "Subir calificaciones",
+      "form": {
+        "university": "Universidad",
+        "chooseUniversity": "Elige la universidad",
+        "regime": "Régimen: {regime}",
+        "year": "Año",
+        "round": "Período",
+        "rounds": {
+          "1": "I",
+          "2": "II",
+          "3": "III"
+        },
+        "medium": "Medio",
+        "mediumFile": "PDF o foto",
+        "mediumList": "Pegar lista",
+        "file": "Archivo (PDF, JPG, PNG o WebP, hasta 5 MB)",
+        "list": "Una fila por línea: matrícula ; nombre ; código ; letra ; nota",
+        "submit": "Leer y revisar",
+        "reading": "Leyendo el documento…",
+        "help": "El programa y la IA identifican a cada estudiante y su materia, y tú revisas antes de guardar nada. El archivo no se conserva."
+      },
+      "errors": {
+        "no_permitido": "No tienes permiso para cargar calificaciones.",
+        "no_encontrado": "No se encontró la universidad o la carga.",
+        "dato_invalido": "Revisa los datos del formulario.",
+        "periodo_invalido": "El período no es válido.",
+        "sin_archivo": "Adjunta un archivo.",
+        "tipo_no_admitido": "Solo se admiten PDF, JPG, PNG o WebP.",
+        "demasiado_grande": "El archivo pasa de 5 MB.",
+        "sin_clave": "La lectura con IA no está configurada.",
+        "ilegible": "No se pudo leer el documento. Prueba con una imagen más nítida o pega la lista.",
+        "sin_filas": "No se encontró ninguna calificación en el documento.",
+        "estudiante_de_otra_universidad": "Ese estudiante no es de esta universidad.",
+        "error": "No se pudo completar la operación."
+      },
+      "review": {
+        "title": "Revisión de la carga",
+        "period": "Período {year}-{round}",
+        "summary": "{rows} filas · {students} estudiantes · {issues} por revisar",
+        "student": "Estudiante",
+        "subject": "Materia",
+        "grade": "Nota",
+        "status": "Estado",
+        "ok": "Listo",
+        "unmatched": "Sin emparejar",
+        "matchedBy": {
+          "matricula": "Por matrícula",
+          "nombre": "Por nombre",
+          "manual": "A mano"
+        },
+        "read": "Leído: {name} {id}",
+        "confidence": "{value}% de confianza",
+        "choose": "Elegir estudiante",
+        "assign": "Asignar",
+        "confirm": "Confirmar y guardar notas",
+        "discard": "Descartar",
+        "confirmed": "Carga confirmada: {notes} notas de {students} estudiantes.",
+        "omitted": "{count, plural, one {# estudiante no se escribió porque tiene filas por revisar.} other {# estudiantes no se escribieron porque tienen filas por revisar.}}",
+        "noStudent": "{count, plural, one {# fila sin estudiante no se escribió.} other {# filas sin estudiante no se escribieron.}}",
+        "alertsTitle": "Alertas por índice",
+        "alertPeriod": "{name}: índice del período {index}, por debajo de {min}.",
+        "alertOverall": "{name}: índice acumulado {index}, por debajo de {min}.",
+        "noAlerts": "Ningún estudiante quedó por debajo de los mínimos.",
+        "closed": {
+          "confirmada": "Esta carga ya se confirmó.",
+          "descartada": "Esta carga se descartó."
+        },
+        "back": "Volver",
+        "recent": "Cargas recientes",
+        "state": {
+          "borrador": "Por revisar",
+          "confirmada": "Confirmada",
+          "descartada": "Descartada"
+        },
+        "blocked": "Hay filas por revisar: esos estudiantes no se guardarán."
+      },
+      "problems": {
+        "sin_estudiante": "No se encontró al estudiante",
+        "ambiguo": "Más de un estudiante coincide",
+        "matricula_otra_persona": "La matrícula es de otra persona",
+        "sin_pensum": "El estudiante no tiene pénsum",
+        "materia_fuera_del_pensum": "La materia no está en su pénsum",
+        "letra_invalida": "La letra no existe en esta universidad",
+        "repetida": "Materia repetida en la carga",
+        "confianza_baja": "Lectura poco segura"
+      }
     }
   }
 }

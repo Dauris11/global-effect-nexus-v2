@@ -6085,7 +6085,10 @@
       "esperandoAprobacion": "Waiting for your approval",
       "error": "Something went wrong",
       "hecho": "Answer ready"
-    }
+    },
+    "adjuntar": "Attach a PDF or photo",
+    "quitarAdjunto": "Remove attachment",
+    "errorAdjunto": "The attachment could not be used: only PDF, JPG, PNG or WebP up to 5 MB."
   },
   "colaborador": {
     "portal": {
@@ -7146,6 +7149,11 @@
       "rounding": "Index",
       "truncate": "Truncated to 2 decimals",
       "round": "Rounded to 2 decimals",
+      "alertsTitle": "Index scale and alerts",
+      "maxIndex": "Maximum index (scale)",
+      "minPeriod": "Term minimum",
+      "minOverall": "Overall minimum",
+      "alertsHelp": "Empty = not set: the general scholarship minimum is used. With these values the record warns when the term or overall index falls below them.",
       "confirmed": "Rules verified against the university's regulations",
       "help": "Each university computes its index its own way. Until verified, the system flags them as \"to be confirmed\".",
       "confirmedBadge": "Rules verified",
@@ -7227,8 +7235,98 @@
     "alerts": {
       "title": "Academic alerts",
       "lowIndex": "Index {index}, below the minimum of {min}: academic observation.",
+      "lowPeriodIndex": "Index for {period}: {index}, below the term minimum of {min}.",
       "failed": "{count, plural, one {# failed subject} other {# failed subjects}}: {subjects}.",
       "withdrawn": "{count, plural, one {# withdrawn subject} other {# withdrawn subjects}} not retaken: {subjects}."
+    },
+    "upload": {
+      "title": "Upload grades",
+      "open": "Upload grades",
+      "form": {
+        "university": "University",
+        "chooseUniversity": "Choose the university",
+        "regime": "Regime: {regime}",
+        "year": "Year",
+        "round": "Term",
+        "rounds": {
+          "1": "I",
+          "2": "II",
+          "3": "III"
+        },
+        "medium": "Medium",
+        "mediumFile": "PDF or photo",
+        "mediumList": "Paste a list",
+        "file": "File (PDF, JPG, PNG or WebP, up to 5 MB)",
+        "list": "One row per line: student ID ; name ; code ; letter ; score",
+        "submit": "Read and review",
+        "reading": "Reading the document…",
+        "help": "The program and the AI identify each student and subject, and you review before anything is saved. The file is not kept."
+      },
+      "errors": {
+        "no_permitido": "You do not have permission to upload grades.",
+        "no_encontrado": "The university or the upload was not found.",
+        "dato_invalido": "Check the form data.",
+        "periodo_invalido": "The term is not valid.",
+        "sin_archivo": "Attach a file.",
+        "tipo_no_admitido": "Only PDF, JPG, PNG or WebP are accepted.",
+        "demasiado_grande": "The file is over 5 MB.",
+        "sin_clave": "AI reading is not configured.",
+        "ilegible": "The document could not be read. Try a sharper image or paste the list.",
+        "sin_filas": "No grades were found in the document.",
+        "estudiante_de_otra_universidad": "That student does not belong to this university.",
+        "error": "The operation could not be completed."
+      },
+      "review": {
+        "title": "Upload review",
+        "period": "Term {year}-{round}",
+        "summary": "{rows} rows · {students} students · {issues} to review",
+        "student": "Student",
+        "subject": "Subject",
+        "grade": "Grade",
+        "status": "Status",
+        "ok": "Ready",
+        "unmatched": "Unmatched",
+        "matchedBy": {
+          "matricula": "By student ID",
+          "nombre": "By name",
+          "manual": "Manual"
+        },
+        "read": "Read: {name} {id}",
+        "confidence": "{value}% confidence",
+        "choose": "Choose student",
+        "assign": "Assign",
+        "confirm": "Confirm and save grades",
+        "discard": "Discard",
+        "confirmed": "Upload confirmed: {notes} grades for {students} students.",
+        "omitted": "{count, plural, one {# student was not written because they have rows to review.} other {# students were not written because they have rows to review.}}",
+        "noStudent": "{count, plural, one {# row without a student was not written.} other {# rows without a student were not written.}}",
+        "alertsTitle": "Index alerts",
+        "alertPeriod": "{name}: term index {index}, below {min}.",
+        "alertOverall": "{name}: overall index {index}, below {min}.",
+        "noAlerts": "No student fell below the minimums.",
+        "closed": {
+          "confirmada": "This upload was already confirmed.",
+          "descartada": "This upload was discarded."
+        },
+        "back": "Back",
+        "recent": "Recent uploads",
+        "state": {
+          "borrador": "To review",
+          "confirmada": "Confirmed",
+          "descartada": "Discarded"
+        },
+        "blocked": "Some rows need review: those students will not be saved."
+      },
+      "problems": {
+        "sin_estudiante": "Student not found",
+        "ambiguo": "More than one student matches",
+        "matricula_otra_persona": "The student ID belongs to someone else",
+        "sin_pensum": "The student has no curriculum",
+        "materia_fuera_del_pensum": "The subject is not in their curriculum",
+        "letra_invalida": "The letter does not exist at this university",
+        "repetida": "Subject repeated in the upload",
+        "confianza_baja": "Low-confidence reading"
+      }
     }
   }
 }

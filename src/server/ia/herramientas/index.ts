@@ -2,6 +2,7 @@ import type { HerramientaModelo } from "@/lib/gemini";
 
 import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 
+import { HERRAMIENTAS_ACADEMICAS } from "./academico";
 import { HERRAMIENTAS_CONTABILIDAD } from "./contabilidad";
 import { HERRAMIENTAS_GENERALES } from "./generales";
 import type { Herramienta } from "./tipos";
@@ -13,7 +14,7 @@ import type { Herramienta } from "./tipos";
  * usar. El modelo no conoce las demás: no puede pedir una que no existe en su
  * lista, y si la inventa, el motor la rechaza y lo anota.
  */
-export const HERRAMIENTAS: readonly Herramienta[] = [...HERRAMIENTAS_GENERALES, ...HERRAMIENTAS_CONTABILIDAD];
+export const HERRAMIENTAS: readonly Herramienta[] = [...HERRAMIENTAS_GENERALES, ...HERRAMIENTAS_CONTABILIDAD, ...HERRAMIENTAS_ACADEMICAS];
 
 export function herramientasVisibles(usuario: UsuarioConPermisos): Herramienta[] {
   return HERRAMIENTAS.filter(

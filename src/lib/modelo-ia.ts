@@ -77,7 +77,17 @@ function alFallar(de: Proveedor, error: unknown, a: Proveedor) {
 
 /** Cadena de esta petición: los que tienen clave y saben leer lo que trae. */
 function candidatos(p: ParametrosModelo): Proveedor[] {
-  return cadenaIA().filter((pr) => admite(pr, p.requiere));
+  const base = cadenaIA().filter((pr) => admite(pr, p.requiere));
+
+  if (!p.requiere) return base;
+
+  // Leer un PDF o una foto (OCR) no puede quedarse sin respaldo porque el único
+  // proveedor de la cadena que ve documentos se quedó sin saldo: se añaden al final
+  // los demás con clave que sí lo leen. Pasó con OpenAI sin créditos y Groq (que no
+  // lee PDF) delante, y Gemini con clave sin usarse.
+  const extra = VALIDOS.filter((pr) => !base.includes(pr) && hayClave(pr) && admite(pr, p.requiere));
+
+  return [...base, ...extra];
 }
 
 /** El modelo de cada proveedor sale de SU configuración: el pedido solo vale si es suyo. */
