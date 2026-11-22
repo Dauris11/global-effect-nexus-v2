@@ -36,7 +36,6 @@ import {
   ASISTIO_REUNION,
   BANO,
   CASA_PROPIA,
-  ENVIO_CORREO,
   ESTADOS_ESTUDIANTE,
   FAMILIA_FIJA,
   GENEROS,
@@ -796,13 +795,7 @@ export function CamposExpediente({
               soloLectura={soloLectura}
             />
 
-            <Selector
-              nombre="envio_correo_patrocinador"
-              etiqueta={textos.campos.sponsorEmail}
-              predeterminado={valores?.envio_correo_patrocinador ?? "pendiente"}
-              opciones={ENVIO_CORREO.map((v) => ({ valor: v, texto: textos.seguimiento[v] ?? v }))}
-              disabled={soloLectura}
-            />
+            {/* La carta mensual al patrocinador ya no se marca a mano: el sistema la deriva de los correos recibidos. */}
             <Selector
               nombre="asistio_reunion_mensual"
               etiqueta={textos.campos.monthlyMeeting}

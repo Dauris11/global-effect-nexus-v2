@@ -49,13 +49,17 @@ export async function seguimientoDelEstudiante(estudianteId: string): Promise<Se
       `WITH rd AS (SELECT date_trunc('month', now() AT TIME ZONE 'America/Santo_Domingo')::date AS mes0),
             meses AS (SELECT to_char(d, 'YYYY-MM') AS mes
                         FROM rd, generate_series(rd.mes0 - interval '11 months', rd.mes0, interval '1 month') d),
-            alta AS (SELECT to_char(fecha_ingreso, 'YYYY-MM') AS desde,
-                            EXISTS (SELECT 1 FROM asignacion_beca a WHERE a.estudiante_id = e.id) AS con_patrocinio
-                       FROM estudiante e WHERE e.id = $1)
+            alta AS (SELECT to_char(fecha_ingreso, 'YYYY-MM') AS desde FROM estudiante e WHERE e.id = $1)
        SELECT m.mes,
               coalesce(r.hizo_servicio, false)   AS servicio,
               coalesce(r.asistio_reunion, false) AS reunion,
-              CASE WHEN NOT alta.con_patrocinio THEN 'no_aplica'
+              -- Solo escribe carta quien tenía patrocinador ESE mes: una asignación que ya terminó,
+                   -- o que empezó después, no obliga a nada.
+              CASE WHEN NOT EXISTS (
+                          SELECT 1 FROM asignacion_beca a
+                           WHERE a.estudiante_id = $1
+                             AND a.fecha_inicio < (to_date(m.mes, 'YYYY-MM') + interval '1 month')
+                             AND (a.fecha_fin IS NULL OR a.fecha_fin >= to_date(m.mes, 'YYYY-MM'))) THEN 'no_aplica'
                    WHEN c.ok THEN 'cumplio' WHEN c.rev THEN 'en_revision' WHEN c.tarde THEN 'tardia'
                    ELSE 'no_envio' END AS carta
          FROM meses m

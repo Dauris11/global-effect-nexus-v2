@@ -42,3 +42,4 @@ marca cuando se entrega. Lo que ya se decidió está al final, para que no se pi
 - Se agrega el estado **«retirado»** (con motivo y fecha).
 - Solo los **activos** son parte de la Fundación. Un **postulado** todavía no lo es: debe pasar los filtros y la Academia de Liderazgo, y para pasar a activo se llena la universidad, la carrera, el plan y la matrícula.
 - La **pre-matrícula del estudiante es solo para las clases de la Fundación**, no para las de la universidad.
+- Los correos son **mensuales** y solo los envía el estudiante que **tiene patrocinador**: la carta llega al sistema, que la distribuye, traduce, revisa y la manda al patrocinador correspondiente. No hay correos semanales ni correos de alerta académica.
