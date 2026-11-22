@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, DollarSign, FileText, ReceiptText } from "lucide-react";
+import { ChevronLeft, Calendar, DollarSign, FileText, ReceiptText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Dato, Monto } from "@/components/contabilidad/comun";
@@ -56,7 +56,7 @@ export default async function PaginaDetalleCxp({
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/cuentas-por-pagar">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("volver")}
           </Link>
         </Button>

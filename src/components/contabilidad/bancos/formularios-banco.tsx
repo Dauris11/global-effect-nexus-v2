@@ -138,7 +138,7 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
             </PasoFormulario>
             {error && <AvisoError>{error}</AvisoError>}
             <AccionesFormulario>
-              <Button type="submit" disabled={enviando}>
+              <Button type="submit" cargando={enviando}>
                 {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                 {t("guardar")}
               </Button>
@@ -173,7 +173,7 @@ export function FormularioTasa({ hoy }: { hoy: string }) {
       </div>
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{t("ok")}</AvisoOk>}
-      <Button type="submit" variant="secondary" disabled={enviando}>
+      <Button type="submit" variant="secondary" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
         {t("guardar")}
       </Button>
@@ -252,7 +252,7 @@ export function DialogoSubirEstado({ cuentaId, config }: { cuentaId: string; con
             <AvisoOk>{t("resultado", { nuevas: estado.nuevas ?? 0, repetidas: estado.repetidas ?? 0 })}</AvisoOk>
           )}
           <DialogFooter>
-            <Button type="submit" disabled={enviando}>
+            <Button type="submit" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
               {t("guardar")}
             </Button>
@@ -309,7 +309,7 @@ export function DialogoVincularCuenta({
           </Campo>
           {error && <AvisoError>{error}</AvisoError>}
           <DialogFooter>
-            <Button type="submit" disabled={enviando}>
+            <Button type="submit" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               {t("guardar")}
             </Button>

@@ -111,7 +111,7 @@ export function FormularioParametros({
       ))}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pendiente}>
+        <Button type="submit" cargando={pendiente}>
           {pendiente ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           {t("save")}
         </Button>

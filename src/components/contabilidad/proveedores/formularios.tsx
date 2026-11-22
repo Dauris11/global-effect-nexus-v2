@@ -143,7 +143,7 @@ export function FormularioProveedor({
         {error && <AvisoError>{error}</AvisoError>}
         <AccionesFormulario>
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={enviando}>
+            <Button type="submit" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               {t("guardar")}
             </Button>
@@ -184,7 +184,7 @@ export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string
       <p className="texto-meta">{t("nuevaCuentaAyuda")}</p>
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{tc("cxp.ok")}</AvisoOk>}
-      <Button type="submit" variant="secondary" disabled={enviando}>
+      <Button type="submit" variant="secondary" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
         {t("guardarCuenta")}
       </Button>
@@ -486,7 +486,7 @@ export function FormularioFactura({
           {error && <AvisoError>{error}</AvisoError>}
           <AccionesFormulario>
             <div className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={enviando}>
+              <Button type="submit" cargando={enviando}>
                 {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                 {t("guardar")}
               </Button>

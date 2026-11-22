@@ -25,9 +25,10 @@ export type EstudianteEnRiesgo = {
  * acumulado o del último período por debajo del mínimo de SU universidad, o materias
  * reprobadas sin volver a cursar. Es la misma regla de las alertas del expediente y del
  * aviso a administración, calculada para todos a la vez. Solo los activos: son los únicos
- * que son parte de la Fundación.
+ * que son parte de la Fundación. Con `ids` evalúa solo a esas personas: es lo que usan los
+ * avisos a administración al guardar notas o subir un gradua, para que haya UNA sola regla.
  */
-export async function estudiantesEnRiesgo(): Promise<EstudianteEnRiesgo[]> {
+export async function estudiantesEnRiesgo(ids?: readonly string[]): Promise<EstudianteEnRiesgo[]> {
   const global = await umbralDeIndice();
   const base = await consultar<{
     id: string;
@@ -47,7 +48,9 @@ export async function estudiantesEnRiesgo(): Promise<EstudianteEnRiesgo[]> {
        LEFT JOIN universidad u ON u.id = e.universidad_id
        LEFT JOIN carrera c ON c.id = e.carrera_id
       WHERE e.estado = 'activo' AND EXISTS (SELECT 1 FROM resultado_materia r WHERE r.estudiante_id = e.id)
+        AND ($1::uuid[] IS NULL OR e.id = ANY($1::uuid[]))
       ORDER BY e.nombre`,
+    [ids ? [...ids] : null],
   );
 
   const enRiesgo: EstudianteEnRiesgo[] = [];

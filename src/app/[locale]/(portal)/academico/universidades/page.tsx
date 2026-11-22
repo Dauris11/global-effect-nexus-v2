@@ -6,7 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FormUniversidad } from "@/components/universidades/formularios";
 import { Badge } from "@/components/ui/badge";
-import { variantesBoton } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";

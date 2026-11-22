@@ -21,7 +21,7 @@ export async function FichaCompleta({ e, puedeEditar }: { e: ExpedienteCompleto;
   if (incompletas.length === 0) return null;
 
   return (
-    <section className="no-imprimir rounded-card border border-linea bg-card p-4 shadow-card">
+    <section className="rounded-card border border-linea bg-card p-4 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-sm font-semibold">
           <ClipboardCheck className="size-4 text-marca-500" />

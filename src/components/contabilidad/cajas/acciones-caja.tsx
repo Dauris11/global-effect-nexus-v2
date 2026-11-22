@@ -30,7 +30,7 @@ export function BotonAprobarArqueo({ arqueoId }: { arqueoId: string }) {
     <div className="space-y-1">
       <Button
         size="sm"
-        disabled={pendiente}
+        cargando={pendiente}
         onClick={() =>
           iniciar(async () => {
             const res = await aprobarArqueoAction(arqueoId);
@@ -143,7 +143,7 @@ export function DialogoLiquidarVale({
             <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
               {t("cancelar")}
             </Button>
-            <Button type="submit" disabled={pendiente}>
+            <Button type="submit" cargando={pendiente}>
               {pendiente ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               {t("registrar")}
             </Button>

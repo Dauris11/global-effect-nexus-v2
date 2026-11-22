@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronLeft, ChevronRight, Download, HeartHandshake, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, HeartHandshake, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -12,7 +12,7 @@ import { arbolCatalogo } from "@/server/universidades/consultas";
 import { FormularioExpediente } from "@/components/expedientes/formulario-expediente";
 import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
 import { TarjetasExpedientes } from "@/components/expedientes/tarjetas-expedientes";
-import { BotonImprimir } from "@/components/compartido/boton-imprimir";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -124,14 +124,13 @@ export default async function PaginaExpedientes({
         titulo={t("title")}
         acciones={
           <>
-            <BotonImprimir />
-            <Button asChild variant="outline" size="sm" className="no-imprimir">
-              <a href={`/api/exportar/expedientes?${enlaceExpedientes(consulta, {}).split("?")[1] ?? ""}`} download>
-                <Download className="size-4" />
-                {te("excel")}
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="no-imprimir">
+            <MenuExportar
+              documentos={[
+                { tipo: "expedientes", etiqueta: te("docs.expedientes"), params: Object.fromEntries(new URLSearchParams(enlaceExpedientes(consulta, {}).split("?")[1] ?? "")) },
+                { tipo: "riesgo", etiqueta: te("docs.riesgo") },
+              ]}
+            />
+            <Button asChild variant="outline" size="sm">
               <Link href="/expedientes/riesgo">
                 <HeartHandshake className="size-4" />
                 {tr("title")}

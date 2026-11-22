@@ -549,7 +549,7 @@ function FormularioTareaMateria({
             </span>
           )}
         </div>
-        <Button type="submit" size="sm" disabled={enviando}>
+        <Button type="submit" size="sm" cargando={enviando}>
           {enviando ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (
@@ -658,7 +658,7 @@ function ListaPublicacionesMateria({
                   type="button"
                   size="icon"
                   variant="ghost"
-                  disabled={borrando}
+                  cargando={borrando}
                   title={tProf("deletePost")}
                   aria-label={tProf("deletePost")}
                   onClick={() => {
@@ -765,7 +765,7 @@ function FilaEntregaMateria({
           type="button"
           size="sm"
           className="h-8"
-          disabled={guardando}
+          cargando={guardando}
           onClick={guardar}
         >
           {guardando ? (
@@ -930,7 +930,7 @@ function FilaInscritoMateria({ est }: { est: InscritoEnMateria }) {
             size="sm"
             variant="outline"
             className="h-8 text-xs"
-            disabled={guardando}
+            cargando={guardando}
           >
             {guardando ? (
               <Loader2 className="size-3 animate-spin" />

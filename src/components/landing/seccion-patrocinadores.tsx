@@ -1,4 +1,4 @@
-import { ArrowRight, FileText, LineChart, Mail, Route } from "lucide-react";
+import { ChevronRight, FileText, LineChart, Mail, Route } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { parametros } from "@/server/parametros/consultas";
@@ -44,7 +44,7 @@ export async function SeccionPatrocinadores() {
             <Button asChild size="lg" className="group/cta">
               <Link href="/login">
                 {t("enter")}
-                <ArrowRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+                <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
               </Link>
             </Button>
 

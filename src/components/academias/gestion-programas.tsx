@@ -337,7 +337,7 @@ function DialogoBorrado({ fila }: { fila: AcademiaFila }) {
                   <Button
                     type="submit"
                     variant="destructive"
-                    disabled={enviando}
+                    cargando={enviando}
                   >
                     {enviando ? (
                       <Loader2 className="size-4 animate-spin" />
@@ -518,7 +518,7 @@ function Formulario({
             <Button
               type="submit"
               size="sm"
-              disabled={enviando}
+              cargando={enviando}
               className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (

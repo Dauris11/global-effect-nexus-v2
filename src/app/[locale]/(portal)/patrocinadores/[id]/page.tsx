@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, FileQuestion, Mail, Phone } from "lucide-react";
+import { ChevronLeft, FileQuestion, Mail, Phone } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { InsigniaCarta } from "@/components/expedientes/detalle/insignia-carta";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dato, FilaDatos } from "@/components/ui/dato";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
@@ -46,7 +47,7 @@ export default async function PaginaPatrocinador({
 }) {
   const { locale, id } = await params;
   const usuario = await requerirPermiso("patrocinadores.leer");
-  const [t, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "sponsors" }), getLocale()]);
+  const [t, te, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "sponsors" }), getTranslations({ locale, namespace: "export" }), getLocale()]);
   const idioma = idiomaCrudo === "en" ? "en" : "es";
 
   const patrocinador = UUID.test(id) ? await patrocinadorPorId(id) : null;
@@ -54,7 +55,7 @@ export default async function PaginaPatrocinador({
   const volver = (
     <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
       <Link href="/patrocinadores">
-        <ArrowLeft className="size-4" />
+        <ChevronLeft className="size-4" />
         {t("detail.back")}
       </Link>
     </Button>
@@ -90,7 +91,10 @@ export default async function PaginaPatrocinador({
         )}
       </div>
 
-      <EncabezadoPagina titulo={patrocinador.nombre} />
+      <EncabezadoPagina
+        titulo={patrocinador.nombre}
+        acciones={usuarioTienePermiso(usuario, "expedientes.leer") ? <MenuExportar documentos={[{ tipo: "estudiantes-patrocinador", etiqueta: te("docs.sponsorStudents"), params: { id: patrocinador.id } }]} /> : undefined}
+      />
 
       <Card className={TARJETA.contenido}>
         <CardContent className="space-y-3 pt-5">

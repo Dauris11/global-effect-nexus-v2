@@ -398,7 +398,7 @@ export function BuzonTareaMoodle({
                 )}
                 <Button
                   type="submit"
-                  disabled={isPending}
+                  cargando={isPending}
                   className="min-h-[42px] bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
                 >
                   {isPending ? (

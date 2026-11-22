@@ -1,5 +1,5 @@
 import {
-  ArrowRight,
+  ChevronRight,
   BookOpen,
   DollarSign,
   GraduationCap,
@@ -98,7 +98,7 @@ export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) 
                   {/* La flecha en un círculo que se llena al pasar: el gesto
                       dice "esto se pulsa" sin pintar la tarjeta entera. */}
                   <span className="flex size-10 items-center justify-center rounded-full border border-linea text-tinta transition-[background-color,border-color,color] duration-200 group-hover:border-marca-500 group-hover:bg-marca-500 group-hover:text-white">
-                    <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </span>
                 </div>
               </Link>

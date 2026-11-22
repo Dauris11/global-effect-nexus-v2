@@ -43,6 +43,27 @@ export type SeguimientoExpediente = {
   asignaciones: AsignacionPatrocinio[];
 };
 
+export type CambioDePlan = {
+  de: string;
+  a: string;
+  por: string | null;
+  cuando: string;
+};
+
+const ETIQUETA_PLAN = (u: string | null, c: string | null, p: string | null) => [u, c, p ? `v. ${p}` : null].filter(Boolean).join(" · ") || "—";
+
+/** Cambios de universidad, carrera o plan de estudios del estudiante, del más reciente al más antiguo. */
+export async function cambiosDePlanDelEstudiante(estudianteId: string): Promise<CambioDePlan[]> {
+  const filas = await consultar<{ de_universidad: string | null; de_carrera: string | null; de_plan: string | null; a_universidad: string | null; a_carrera: string | null; a_plan: string | null; por: string | null; cuando: string }>(
+    `SELECT c.de_universidad, c.de_carrera, c.de_plan, c.a_universidad, c.a_carrera, c.a_plan, u.nombre AS por, c.creado_en::text AS cuando
+       FROM estudiante_cambio_plan c LEFT JOIN usuario u ON u.id = c.usuario_id
+      WHERE c.estudiante_id = $1 ORDER BY c.creado_en DESC`,
+    [estudianteId],
+  );
+
+  return filas.map((f) => ({ de: ETIQUETA_PLAN(f.de_universidad, f.de_carrera, f.de_plan), a: ETIQUETA_PLAN(f.a_universidad, f.a_carrera, f.a_plan), por: f.por, cuando: f.cuando }));
+}
+
 export async function seguimientoDelEstudiante(estudianteId: string): Promise<SeguimientoExpediente> {
   const [meses, etapas, graduado, asignaciones] = await Promise.all([
     consultar<MesSeguimiento>(

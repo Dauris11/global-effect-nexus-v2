@@ -1,4 +1,4 @@
-import { ArrowLeft, QrCode } from "lucide-react";
+import { ChevronLeft, QrCode } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -28,7 +28,7 @@ export default async function PaginaEscanearInventario({
           href="/administrativo/inventario"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-tinta-2 transition-colors hover:text-tinta"
         >
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           <span>{t("volverInventario")}</span>
         </Link>
         <div className="mt-2 flex items-center gap-2">

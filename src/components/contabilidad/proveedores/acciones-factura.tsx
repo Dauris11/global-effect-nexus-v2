@@ -66,7 +66,7 @@ export function AccionesFactura({
             </div>
             <form action={enviarAprobar}>
               <input type="hidden" name="id" value={factura.id} />
-              <Button type="submit" disabled={aprobando}>
+              <Button type="submit" cargando={aprobando}>
                 {aprobando ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (

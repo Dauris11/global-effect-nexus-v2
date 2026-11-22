@@ -208,7 +208,7 @@ export default async function PortalEstudiante({
 
         <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} enlazar />
 
-        <MiPlanDeEstudios catalogo={catalogo} alertas={alertasPlan} />
+        <MiPlanDeEstudios catalogo={catalogo} alertas={alertasPlan} estudianteId={estudiante.id} />
 
         <BannerLlamadasActivas activas={llamadasActivas} />
       </div>

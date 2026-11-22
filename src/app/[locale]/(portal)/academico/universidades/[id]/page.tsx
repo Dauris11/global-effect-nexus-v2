@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { ArrowLeft, ChevronRight, Download, GraduationCap } from "lucide-react";
+import { ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FormCarrera, FormUniversidad } from "@/components/universidades/formularios";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -34,8 +35,9 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
 
   if (!universidad) notFound();
 
-  const [t, carreras, mensajes] = await Promise.all([
+  const [t, te, carreras, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "catalog" }),
+    getTranslations({ locale, namespace: "export" }),
     carrerasDeUniversidad(id),
     mensajesCliente(["catalog"]),
   ]);
@@ -47,15 +49,17 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
         titulo={`${universidad.siglas} · ${universidad.nombre}`}
         acciones={
           <>
-            <Button asChild variant="outline" size="sm" className="no-imprimir">
-              <a href={`/api/exportar/notas?universidad=${universidad.id}`} download>
-                <Download className="size-4" />
-                {t("exportGrades")}
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="no-imprimir">
+            {usuarioTienePermiso(usuario, "expedientes.leer") && (
+              <MenuExportar
+                documentos={[
+                  { tipo: "estudiantes-universidad", etiqueta: te("docs.studentsUniversity"), params: { id: universidad.id } },
+                  { tipo: "notas-universidad", etiqueta: te("docs.gradesUniversity"), params: { id: universidad.id } },
+                ]}
+              />
+            )}
+            <Button asChild variant="outline" size="sm">
               <Link href="/academico/universidades">
-                <ArrowLeft className="size-4" />
+                <ChevronLeft className="size-4" />
                 {t("back")}
               </Link>
             </Button>

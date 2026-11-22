@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
-  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Building2,
   Calendar,
   DollarSign,
@@ -69,7 +69,7 @@ export default async function PaginaDetalleFactura({
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href={`/contabilidad/proveedores/${factura.proveedor_id}`}>
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("volverProveedor")}
           </Link>
         </Button>
@@ -95,7 +95,7 @@ export default async function PaginaDetalleFactura({
                 <Button asChild size="sm" variant="outline">
                   <Link href={`/contabilidad/cuentas-por-pagar/${factura.cxp_id}`}>
                     {t("verCxp")}
-                    <ArrowRight className="size-4" />
+                    <ChevronRight className="size-4" />
                   </Link>
                 </Button>
               )}

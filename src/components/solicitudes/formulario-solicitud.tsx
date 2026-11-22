@@ -267,7 +267,7 @@ export function FormularioSolicitud({
       <AccionesFormulario>
       <Button
         type="submit"
-        disabled={enviando}
+        cargando={enviando}
         className="rounded-md bg-[#2096BA] text-white hover:bg-[#187a99] active:scale-[0.99]"
       >
         {enviando ? (

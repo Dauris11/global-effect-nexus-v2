@@ -10,6 +10,7 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import { MAXIMO_MATERIAL, subirMaterial } from "@/lib/supabase/almacen";
+import { vistaPreviaDeArchivo } from "@/server/habitudes/vista-previa";
 import { fechaHoyRD } from "@/lib/transporte";
 
 export type AccionHabitudesResultado = {
@@ -43,6 +44,8 @@ export async function subirRecursoHabitudesAction(
 
   const archivo = datos.get("archivo");
   let urlFinal = archivoUrl;
+  let portadaRuta: string | null = null;
+  let vistazo: unknown = null;
 
   if (archivo && archivo instanceof File && archivo.size > 0) {
     if (archivo.size > MAXIMO_MATERIAL) {
@@ -62,6 +65,19 @@ export async function subirRecursoHabitudesAction(
       return { ok: false, mensaje: "No se pudo subir el archivo al almacén. Inténtalo de nuevo." };
     }
     urlFinal = subida.ruta;
+
+    // Portada y vistazo del contenido, para reconocer el material sin abrirlo. Si no se
+    // pueden generar, el recurso se guarda igual y la tarjeta se dibuja con su título.
+    const vista = await vistaPreviaDeArchivo(new Uint8Array(await archivo.arrayBuffer()), extension);
+
+    vistazo = vista.vistazo;
+
+    if (vista.portada) {
+      const rutaPortada = `habitudes/portadas/${Date.now()}_${nombreLimpio.replace(/\.[^.]+$/, "")}.webp`;
+      const portada = await subirMaterial(rutaPortada, new File([new Uint8Array(vista.portada)], "portada.webp", { type: "image/webp" }));
+
+      if (portada.ok) portadaRuta = portada.ruta;
+    }
   }
 
   if (!urlFinal) return { ok: false, mensaje: "Debes adjuntar un archivo válido." };
@@ -69,10 +85,11 @@ export async function subirRecursoHabitudesAction(
   try {
     const res = await consultarUna<{ id: string }>(
       `INSERT INTO public.habitudes_recurso (
-         titulo, descripcion, categoria, formato, archivo_url, archivo_nombre, tamano_mb, subido_por_id
-       ) VALUES ($1, NULLIF($2, ''), $3, $4, $5, $6, $7, $8)
+         titulo, descripcion, categoria, formato, archivo_url, archivo_nombre, tamano_mb, subido_por_id,
+         portada_ruta, vistazo
+       ) VALUES ($1, NULLIF($2, ''), $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
        RETURNING id`,
-      [titulo, descripcion, categoria, formato, urlFinal, archivoNombre, tamanoMb, usuario.id],
+      [titulo, descripcion, categoria, formato, urlFinal, archivoNombre, tamanoMb, usuario.id, portadaRuta, vistazo ? JSON.stringify(vistazo) : null],
     );
 
     if (!res) return { ok: false, mensaje: "No se pudo registrar el recurso." };

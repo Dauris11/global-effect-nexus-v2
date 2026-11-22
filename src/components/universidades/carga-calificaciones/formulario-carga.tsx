@@ -111,7 +111,7 @@ export function FormularioCarga({ universidades, anioInicial }: { universidades:
         </PasoFormulario>
 
         <AccionesFormulario>
-          <Button type="submit" disabled={enviando}>
+          <Button type="submit" cargando={enviando}>
             {enviando ? <Loader2 className="size-4 animate-spin" /> : <ScanSearch className="size-4" />}
             {enviando ? t("form.reading") : t("form.submit")}
           </Button>

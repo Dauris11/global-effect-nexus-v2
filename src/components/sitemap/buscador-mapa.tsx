@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Lock, Search } from "lucide-react";
+import { ChevronRight, Lock, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -113,7 +113,7 @@ export function BuscadorMapa({ entradas, textos }: { entradas: readonly EntradaI
                     className="text-marca-700 hover:text-marca-600 inline-flex min-h-11 items-center gap-1 text-sm font-semibold"
                   >
                     {textos.abrir}
-                    <ArrowRight className="size-4" />
+                    <ChevronRight className="size-4" />
                   </Link>
                 ) : (
                   <span className="text-tinta-3 inline-flex min-h-11 items-center gap-1 text-sm">

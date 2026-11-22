@@ -1,4 +1,4 @@
-import { ArrowRight, CircleCheck } from "lucide-react";
+import { ChevronRight, CircleCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
@@ -62,7 +62,7 @@ export function ParaHoy({ pendientes }: { pendientes: readonly PendienteVisible[
             <span className="min-w-0 flex-1 text-tinta">
               {t(pendiente.clave, { count: pendiente.cuantos })}
             </span>
-            <ArrowRight className="size-4 shrink-0 text-tinta-3" />
+            <ChevronRight className="size-4 shrink-0 text-tinta-3" />
           </Link>
         </li>
       ))}

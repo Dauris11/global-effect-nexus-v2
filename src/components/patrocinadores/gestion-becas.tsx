@@ -315,7 +315,7 @@ function FormularioVinculo({
         <Button
           type="submit"
           size="sm"
-          disabled={enviando}
+          cargando={enviando}
           className="transition-transform duration-150 active:scale-95"
         >
           {enviando ? (
@@ -352,7 +352,7 @@ function BotonDesvincular({ id }: { id: string }) {
     <form action={enviar} className="flex items-center gap-2">
       <input type="hidden" name="estudiante" value={id} />
 
-      <Button type="submit" size="sm" variant="ghost" disabled={enviando}>
+      <Button type="submit" size="sm" variant="ghost" cargando={enviando}>
         {enviando ? (
           <Loader2 className="size-3.5 animate-spin" />
         ) : (

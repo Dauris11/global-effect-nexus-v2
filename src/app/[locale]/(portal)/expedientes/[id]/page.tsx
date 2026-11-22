@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ArrowLeft, FileQuestion, Printer } from "lucide-react";
+import { ChevronLeft, FileQuestion } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { FichaFamilia, FichaInformacion, FichaPerfil, FichaSalud } from "@/components/expedientes/detalle/fichas";
 import { FichaCompleta } from "@/components/expedientes/ficha-completa";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { AlertasAcademicas } from "@/components/expedientes/alertas-academicas";
 import { AccionesRapidasExpediente } from "@/components/expedientes/acciones-rapidas-expediente";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
@@ -30,7 +31,7 @@ import { inscripcionesDelEstudiante } from "@/server/estudiantes/academico";
 import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
 import { cuentaVinculada, cuentasEstudianteSinVincular, obtenerExpediente } from "@/server/expedientes/consultas";
-import { seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
+import { cambiosDePlanDelEstudiante, seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
 
 const PESTANAS = ["info", "family", "academic", "followUp", "edit"] as const;
 
@@ -87,7 +88,7 @@ export default async function PaginaExpediente({
       <div className="animate-entrada space-y-6">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backToList")}
           </Link>
         </Button>
@@ -135,7 +136,7 @@ export default async function PaginaExpediente({
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
   const mensajes = await mensajesCliente(["records", "catalog"]);
-  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales] = await Promise.all([
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales, cambios] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
     inscripcionesDelEstudiante(expediente.id),
@@ -149,6 +150,7 @@ export default async function PaginaExpediente({
     recordNativoDelEstudiante(expediente.id),
     indiceDelEstudiante(expediente.id),
     umbralesDeUniversidad(expediente.id),
+    cambiosDePlanDelEstudiante(expediente.id),
   ]);
   const ultimo = record?.periodos[0];
   const alertas = alertasAcademicas(catalogo, indice, umbrales.acumulado, ultimo ? { periodo: ultimo.periodo, indice: ultimo.indice, umbral: umbrales.periodo } : null);
@@ -167,19 +169,18 @@ export default async function PaginaExpediente({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backToList")}
           </Link>
         </Button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/expedientes/${expediente.id}/imprimir`}>
-              <Printer className="size-4" />
-              {te("print")}
-            </Link>
-          </Button>
-        </div>
+        <MenuExportar
+          documentos={[
+            { tipo: "ficha", etiqueta: te("docs.ficha"), params: { id: expediente.id } },
+            { tipo: "record", etiqueta: te("docs.record"), params: { id: expediente.id } },
+            { tipo: "avance", etiqueta: te("docs.avance"), params: { id: expediente.id } },
+          ]}
+        />
 
         {puedeEliminar && (
           <EliminarExpediente
@@ -256,7 +257,7 @@ export default async function PaginaExpediente({
           ),
           academic: (
             <>
-              <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />
+              <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} cambios={cambios} />
               <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />
               <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />
               <Tab360 datos={historial360} />

@@ -130,7 +130,7 @@ function BotonQuitarResultado({ id }: { id: string }) {
   return (
     <form action={enviar}>
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" variant="ghost" size="sm" disabled={enviando} aria-label={t("record.remove")}>
+      <Button type="submit" variant="ghost" size="sm" cargando={enviando} aria-label={t("record.remove")}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
       </Button>
     </form>

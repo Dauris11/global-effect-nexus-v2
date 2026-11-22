@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Download, HeartHandshake, Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { ChevronLeft, HeartHandshake, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { BotonImprimir } from "@/components/compartido/boton-imprimir";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -36,7 +36,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
 
   await requerirPermiso("expedientes.leer");
 
-  const [t, filas] = await Promise.all([getTranslations({ locale, namespace: "risk" }), estudiantesEnRiesgo()]);
+  const [t, te, filas] = await Promise.all([getTranslations({ locale, namespace: "risk" }), getTranslations({ locale, namespace: "export" }), estudiantesEnRiesgo()]);
   const nota = (n: number | null) => (n === null ? "—" : n.toFixed(2));
 
   const motivos = (f: EstudianteEnRiesgo) =>
@@ -52,7 +52,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
     const wa = enlaceWhatsapp(f.telefono);
 
     return (
-      <div className="no-imprimir flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {wa && (
           <Button asChild variant="outline" size="sm">
             <a href={wa} target="_blank" rel="noreferrer">
@@ -76,30 +76,21 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
 
   return (
     <div className="animate-entrada space-y-6">
-      <h1 className="solo-imprimir text-xl font-semibold">{t("title")}</h1>
 
-      <div className="no-imprimir">
+      <div>
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("back")}
           </Link>
         </Button>
       </div>
 
-      <div className="no-imprimir">
+      <div>
         <EncabezadoPagina
           titulo={t("title")}
           acciones={
-            <>
-              <BotonImprimir />
-              <Button asChild variant="outline" size="sm">
-                <a href="/api/exportar/riesgo" download>
-                  <Download className="size-4" />
-                  {t("excel")}
-                </a>
-              </Button>
-            </>
+            <MenuExportar documentos={[{ tipo: "riesgo", etiqueta: te("docs.riesgo") }]} />
           }
         />
       </div>
@@ -115,7 +106,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
 
           <ul className="space-y-3">
             {filas.map((f) => (
-              <li key={f.id} className="no-partir rounded-card border border-linea bg-card p-4 shadow-card">
+              <li key={f.id} className="rounded-card border border-linea bg-card p-4 shadow-card">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link href={`/expedientes/${f.id}`} className="font-semibold hover:underline">
@@ -134,7 +125,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
 
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   {contacto(f)}
-                  <Button asChild size="sm" className="no-imprimir">
+                  <Button asChild size="sm">
                     <Link href={`/expedientes/${f.id}?seccion=academic`}>{t("openRecord")}</Link>
                   </Button>
                 </div>

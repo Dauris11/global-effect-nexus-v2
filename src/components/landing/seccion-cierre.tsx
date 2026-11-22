@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CONTENEDOR } from "@/components/landing/piezas";
@@ -36,7 +36,7 @@ export async function SeccionCierre() {
         <Button asChild size="lg" className="group/cta shrink-0 focus-visible:ring-offset-tinta">
           <Link href="/login">
             {t("enter")}
-            <ArrowRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+            <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
           </Link>
         </Button>
       </div>

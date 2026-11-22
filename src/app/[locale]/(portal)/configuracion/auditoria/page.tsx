@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import {
   Activity,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Lock,
@@ -158,7 +157,7 @@ export default async function PaginaAuditoria({
         className="transition-transform hover:-translate-x-0.5"
       >
         <Link href="/configuracion">
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           {t("back")}
         </Link>
       </Button>

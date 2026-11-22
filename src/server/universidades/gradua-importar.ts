@@ -1,6 +1,7 @@
 import { consultar } from "@/lib/db";
 import { LECTORES_GRADUA, type LecturaGradua } from "@/lib/gradua";
 import { enlaceDeDocumento } from "@/lib/supabase/almacen";
+import { avisarRiesgoDeEstudiantes } from "@/server/academico/avisos";
 
 /**
  * Lectura e importación del gradua. Va aparte de `archivos.ts` (que es
@@ -98,6 +99,7 @@ export async function releerGraduasPendientes(
     }
 
     await enTransaccion((c) => escribirResultados(c, a.estudiante_id, a.id, lectura));
+    await avisarRiesgoDeEstudiantes([a.estudiante_id]);
     leidos++;
   }
 

@@ -46,7 +46,7 @@ export function BotonContabilizar({ id }: { id: string }) {
   return (
     <form action={enviar} className="space-y-2">
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" disabled={enviando}>
+      <Button type="submit" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
         {t("contabilizar")}
       </Button>
@@ -86,7 +86,7 @@ export function DialogoAnular({ id, numero }: { id: string; numero: string }) {
           </div>
           {error && <AvisoError>{error}</AvisoError>}
           <DialogFooter>
-            <Button type="submit" variant="destructive" disabled={enviando}>
+            <Button type="submit" variant="destructive" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
               {t("confirmarAnular")}
             </Button>
@@ -117,7 +117,7 @@ export function FormularioAdjunto({ id }: { id: string }) {
           required
           className="max-w-xs"
         />
-        <Button type="submit" variant="secondary" disabled={enviando}>
+        <Button type="submit" variant="secondary" cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
           {t("adjuntar")}
         </Button>

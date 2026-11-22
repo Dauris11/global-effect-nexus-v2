@@ -163,7 +163,7 @@ export function PermisosPorPersona({
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={pendiente}
+                    cargando={pendiente}
                     onClick={() =>
                       persona.excepciones.forEach((e) => guardar(e.permiso, null))
                     }

@@ -83,6 +83,16 @@ export interface ProfesorMonitoreoItem {
   ultimaVisita?: string | null;
 }
 
+/** Vistazo del contenido de un material: lo que se ve sin abrirlo. */
+export interface VistazoRecurso {
+  /** Páginas, diapositivas u hojas; `null` si no se pudo contar. */
+  paginas: number | null;
+  /** Títulos o índice (diapositivas, encabezados, hojas). */
+  puntos: string[];
+  /** Primeras líneas del contenido. */
+  texto: string;
+}
+
 export interface HabitudesRecurso {
   id: string;
   titulo: string;
@@ -96,6 +106,9 @@ export interface HabitudesRecurso {
   subido_por_nombre?: string | null;
   descargas_conteo: number;
   creado_en: string;
+  /** Portada ya firmada (o `null`: la tarjeta la dibuja con el título y la descripción). */
+  portada_url?: string | null;
+  vistazo?: VistazoRecurso | null;
 }
 
 export interface HabitudesVisitaEvidencia {

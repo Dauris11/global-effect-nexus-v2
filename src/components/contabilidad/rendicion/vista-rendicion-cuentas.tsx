@@ -61,7 +61,7 @@ export function VistaRendicionCuentas({
         </div>
 
         {rendicion && (
-          <Button variant="outline" onClick={handleImprimir} disabled={cargando}>
+          <Button variant="outline" onClick={handleImprimir} cargando={cargando}>
             <Download className="mr-2 size-4" />
             {t("exportarInforme")}
           </Button>

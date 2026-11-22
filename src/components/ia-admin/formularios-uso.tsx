@@ -65,7 +65,7 @@ export function FormularioCuota() {
         <Input id="cuota-aviso" name="aviso_pct" type="number" min={1} max={100} defaultValue={80} />
       </div>
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pendiente}>
+        <Button type="submit" cargando={pendiente}>
           <Save className="size-4" />
           {t("form.save")}
         </Button>
@@ -98,7 +98,7 @@ export function FormularioPrecio() {
         <Input id="precio-cache" name="cache" inputMode="decimal" defaultValue="0" />
       </div>
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pendiente}>
+        <Button type="submit" cargando={pendiente}>
           <Save className="size-4" />
           {t("form.save")}
         </Button>
@@ -176,7 +176,7 @@ export function EditorAgente({
         </label>
 
         <div className="flex items-center gap-3">
-          <Button type="submit" disabled={pendiente}>
+          <Button type="submit" cargando={pendiente}>
             <Save className="size-4" />
             {t("form.save")}
           </Button>

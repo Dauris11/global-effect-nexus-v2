@@ -1,6 +1,7 @@
 import { CheckCircle2, CircleDashed, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import type { AlertaAcademica } from "@/server/academico/indice";
 import type { CatalogoDelEstudiante } from "@/server/universidades/consultas";
 
@@ -9,8 +10,8 @@ import type { CatalogoDelEstudiante } from "@/server/universidades/consultas";
  * sencillas y solo lectura. Cuántos créditos lleva, qué materias le faltan y, si hay
  * algo que atender, un aviso amable (nunca un color de alarma).
  */
-export async function MiPlanDeEstudios({ catalogo, alertas }: { catalogo: CatalogoDelEstudiante; alertas: AlertaAcademica[] }) {
-  const t = await getTranslations("studentPortal.plan");
+export async function MiPlanDeEstudios({ catalogo, alertas, estudianteId }: { catalogo: CatalogoDelEstudiante; alertas: AlertaAcademica[]; estudianteId?: string | null }) {
+  const [t, te] = await Promise.all([getTranslations("studentPortal.plan"), getTranslations("export")]);
 
   // Sin universidad, carrera y plan elegidos no hay nada que mostrar: no se inventa.
   if (!catalogo.pensum || catalogo.materias.length === 0) return null;
@@ -31,11 +32,21 @@ export async function MiPlanDeEstudios({ catalogo, alertas }: { catalogo: Catalo
 
   return (
     <section className="space-y-4 rounded-card border border-linea bg-card p-4 shadow-card sm:p-6" aria-labelledby="mi-plan-titulo">
-      <div>
-        <h2 id="mi-plan-titulo" className="texto-titulo-seccion">{t("title")}</h2>
-        <p className="texto-meta">
-          {[catalogo.universidad?.siglas, catalogo.carrera?.nombre].filter(Boolean).join(" · ")}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="mi-plan-titulo" className="texto-titulo-seccion">{t("title")}</h2>
+          <p className="texto-meta">
+            {[catalogo.universidad?.siglas, catalogo.carrera?.nombre].filter(Boolean).join(" · ")}
+          </p>
+        </div>
+        {estudianteId && (
+          <MenuExportar
+            documentos={[
+              { tipo: "record", etiqueta: te("docs.record"), params: { id: estudianteId } },
+              { tipo: "avance", etiqueta: te("docs.avance"), params: { id: estudianteId } },
+            ]}
+          />
+        )}
       </div>
 
       <div className="space-y-2">

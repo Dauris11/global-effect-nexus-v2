@@ -5,7 +5,7 @@ import { claveCodigo } from "@/lib/carga-calificaciones";
 import type { CalificacionLeida } from "@/lib/calificaciones";
 import { consultar, consultarUna, enTransaccion } from "@/lib/db";
 import { RETIRADA } from "@/lib/indice-academico";
-import { avisarRiesgoAcademico } from "@/server/academico/avisos";
+import { avisarRiesgoDeEstudiantes } from "@/server/academico/avisos";
 import { alertasDeCarga } from "@/server/universidades/carga-nucleo";
 
 /**
@@ -88,13 +88,7 @@ export async function guardarCalificacionesDe(args: {
   }
 
   // Si con estas notas el estudiante queda bajo los mínimos de su universidad, se avisa a administración.
-  try {
-    const uni = await consultarUna<{ universidad_id: string }>(`SELECT universidad_id FROM estudiante WHERE id = $1`, [estudianteId]);
-
-    if (uni?.universidad_id) await avisarRiesgoAcademico(await alertasDeCarga(uni.universidad_id, periodo.anio, periodo.ronda, [estudianteId]));
-  } catch (error) {
-    console.error("[academico] no se pudo revisar el riesgo tras guardar las notas", error);
-  }
+  await avisarRiesgoDeEstudiantes([estudianteId]);
 
   try {
     revalidatePath("/[locale]/expedientes/[id]", "page");

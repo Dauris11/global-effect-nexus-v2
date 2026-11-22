@@ -1305,7 +1305,7 @@ function DialogoEntrada({
             <Button
               variant="destructive"
               size="sm"
-              disabled={guardando}
+              cargando={guardando}
               onClick={() => {
                 if (!window.confirm(t("deleteConfirm"))) return;
 
@@ -1485,7 +1485,7 @@ function FormularioEvento({
 
         <AccionesFormulario>
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={guardando}>
+            <Button type="submit" size="sm" cargando={guardando}>
               <CalendarDays className="size-3.5" />
               {guardando ? t("saving") : t("saveEvent")}
             </Button>

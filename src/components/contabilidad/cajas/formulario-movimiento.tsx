@@ -204,7 +204,7 @@ export function FormularioMovimientoCaja({
                 <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
                   {t("cancelar")}
                 </Button>
-                <Button type="submit" disabled={guardando}>
+                <Button type="submit" cargando={guardando}>
                   {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                   {t("registrar")}
                 </Button>

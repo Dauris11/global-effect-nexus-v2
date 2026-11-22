@@ -159,7 +159,7 @@ export function FilaInscrito({
             type="submit"
             size="icon"
             variant="ghost"
-            disabled={enviando}
+            cargando={enviando}
             title={t("saveGrade")}
             aria-label={t("saveGrade")}
           >

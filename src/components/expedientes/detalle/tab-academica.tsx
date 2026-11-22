@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
@@ -13,14 +13,14 @@ import { GraduaViva } from "@/components/expedientes/detalle/gradua-viva";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
-import { fechaLarga } from "@/lib/fechas";
+import { fechaCorta, fechaLarga } from "@/lib/fechas";
 import { promedio } from "@/lib/notas";
 import type { AsignacionDelEstudiante } from "@/server/estudiantes/aula";
 import type { InscripcionDelEstudiante } from "@/server/estudiantes/academico";
 import type { Historial360 as Datos360 } from "@/server/estudiantes/historial-360";
 import type { NotaDelEstudiante } from "@/server/estudiantes/portal";
 import type { ExpedienteCompleto } from "@/server/expedientes/consultas";
-import type { SeguimientoExpediente } from "@/server/expedientes/seguimiento";
+import type { CambioDePlan, SeguimientoExpediente } from "@/server/expedientes/seguimiento";
 import type { ArchivoAcademico, CatalogoDelEstudiante, RecordNativo } from "@/server/universidades/consultas";
 
 /**
@@ -37,6 +37,7 @@ export async function TabUniversidad({
   catalogo,
   puedeEditar,
   puedeAdministrar,
+  cambios = [],
 }: {
   e: ExpedienteCompleto;
   inscripciones: InscripcionDelEstudiante[];
@@ -44,8 +45,9 @@ export async function TabUniversidad({
   catalogo: CatalogoDelEstudiante;
   puedeEditar: boolean;
   puedeAdministrar: boolean;
+  cambios?: CambioDePlan[];
 }) {
-  const [t, tc] = await Promise.all([getTranslations("records"), getTranslations("catalog")]);
+  const [t, tc, idioma] = await Promise.all([getTranslations("records"), getTranslations("catalog"), getLocale()]);
 
   return (
     <>
@@ -78,6 +80,21 @@ export async function TabUniversidad({
           </div>
         )}
       </Seccion>
+      {cambios.length > 0 && (
+        <Seccion titulo={tc("link.changesTitle")}>
+          <ol className="space-y-3">
+            {cambios.map((c, i) => (
+              <li key={`${c.cuando}-${i}`} className="text-sm">
+                <span className="texto-meta mr-3">{fechaCorta(c.cuando, idioma === "en" ? "en" : "es")}</span>
+                <span className="text-tinta-2">{c.de}</span>
+                <ChevronRight className="mx-2 inline size-3.5" aria-hidden />
+                <span className="font-medium">{c.a}</span>
+                {c.por && <span className="texto-meta"> · {c.por}</span>}
+              </li>
+            ))}
+          </ol>
+        </Seccion>
+      )}
       <MateriasUniversidad inscripciones={inscripciones} />
       <TareasExpediente asignaciones={asignaciones} />
     </>

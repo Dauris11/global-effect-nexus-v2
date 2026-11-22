@@ -175,7 +175,7 @@ export function DialogoNuevaNomina() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={cargando}
+                  cargando={cargando}
                   className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

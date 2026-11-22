@@ -155,7 +155,7 @@ export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
                 >
                   {t("cancelar")}
                 </Button>
-                <Button type="submit" disabled={procesando}>
+                <Button type="submit" cargando={procesando}>
                   {procesando ? t("procesando") : t("confirmarLiberacion")}
                 </Button>
               </DialogFooter>

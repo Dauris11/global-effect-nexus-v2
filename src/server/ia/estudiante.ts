@@ -216,10 +216,10 @@ export async function instruccionesPara(
       ? `Carrera: ${catalogo.carrera.nombre}${catalogo.universidad ? ` en ${catalogo.universidad.siglas}` : ""}${catalogo.pensum ? `, plan ${catalogo.pensum.version}` : ""}.`
       : "Carrera: aún no registrada en el sistema.",
     catalogo.pensum && catalogo.materias.length > 0
-      ? `Avance en el pénsum según el sistema: ${catalogo.creditosAprobados} de ${catalogo.creditosTotales} créditos aprobados (${porcentaje} %). Es un cálculo del sistema, no el récord oficial de la universidad; las electivas aprobadas pueden no estar contadas. Para el dato oficial, remite a la universidad.`
+      ? `Avance en el plan de estudios según el sistema: ${catalogo.creditosAprobados} de ${catalogo.creditosTotales} créditos aprobados (${porcentaje} %). Es un cálculo del sistema, no el récord oficial de la universidad; las electivas aprobadas pueden no estar contadas. Para el dato oficial, remite a la universidad.`
       : "",
     lista(
-      "Materias del pénsum que ya podría cursar (prerrequisitos aprobados):",
+      "Materias del plan de estudios que ya podría cursar (prerrequisitos aprobados):",
       disponibles.map((m) => `${m.codigo} · ${m.nombre} · ${m.creditos} créditos${m.periodo_sugerido ? ` · período sugerido ${m.periodo_sugerido}` : ""}`),
     ),
     lista(

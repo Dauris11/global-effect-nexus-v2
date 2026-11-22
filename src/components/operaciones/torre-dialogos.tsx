@@ -192,7 +192,7 @@ export function DialogoEditarTarea({
                 <Button type="button" variant="ghost" onClick={() => alCambiar(false)}>
                   {t("cancel")}
                 </Button>
-                <Button type="submit" disabled={enviando}>
+                <Button type="submit" cargando={enviando}>
                   {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                   {t("save")}
                 </Button>
@@ -292,7 +292,7 @@ export function BotonAsignarTarea({
                   <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
                     {t("cancel")}
                   </Button>
-                  <Button type="submit" disabled={enviando}>
+                  <Button type="submit" cargando={enviando}>
                     {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                     {t("save")}
                   </Button>

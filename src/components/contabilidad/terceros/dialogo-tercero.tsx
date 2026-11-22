@@ -251,7 +251,7 @@ export function DialogoTercero() {
                 >
                   {t("cancelar")}
                 </Button>
-                <Button type="submit" disabled={cargando}>
+                <Button type="submit" cargando={cargando}>
                   {cargando ? t("guardando") : t("guardar")}
                 </Button>
               </DialogFooter>

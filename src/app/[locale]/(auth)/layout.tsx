@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
@@ -28,7 +28,7 @@ export default function LayoutAuth({
             href="/"
             className="inline-flex h-9 items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-tinta-2 transition-colors hover:bg-card hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backHome")}
           </Link>
         </div>

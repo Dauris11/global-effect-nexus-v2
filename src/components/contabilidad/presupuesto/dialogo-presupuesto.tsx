@@ -114,7 +114,7 @@ export function DialogoPresupuesto() {
             >
               {t("cancelar")}
             </Button>
-            <Button type="submit" disabled={guardando}>
+            <Button type="submit" cargando={guardando}>
               {guardando ? "Creando..." : t("guardar")}
             </Button>
           </DialogFooter>

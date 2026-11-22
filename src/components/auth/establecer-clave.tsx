@@ -96,7 +96,7 @@ export function EstablecerClave() {
           <span className={ALERTA_RIESGO.texto}>{error}</span>
         </p>
       )}
-      <Button type="submit" disabled={guardando} className="w-full">
+      <Button type="submit" cargando={guardando} className="w-full">
         {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
         {t("save")}
       </Button>

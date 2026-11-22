@@ -21,7 +21,7 @@ import {
 } from "@/lib/rbac";
 import { crearIdentidad, enlaceParaEstablecerClave } from "@/lib/supabase/admin";
 import { borrarDocumento, subirAvatar } from "@/lib/supabase/almacen";
-import { encolarCorreo } from "@/server/compartidos/notificaciones";
+import { encolarCorreo, notificarUsuario } from "@/server/compartidos/notificaciones";
 import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { leerDocumentoDeIdentidad } from "@/server/ia/ocr";
 import { resolverCatalogo } from "@/server/universidades/catalogo-estudiante";
@@ -120,8 +120,8 @@ export async function actualizarExpediente(
     await enTransaccion(async (cliente) => {
       // Se lee antes del UPDATE (y se bloquea la fila) para registrar el paso
       // de etapa solo si el estado cambió de verdad.
-      const previo = await cliente.query<{ estado: string }>(
-        `SELECT estado FROM estudiante WHERE id = $1 FOR UPDATE`,
+      const previo = await cliente.query<{ estado: string; universidad_id: string | null; carrera_id: string | null; pensum_id: string | null }>(
+        `SELECT estado, universidad_id, carrera_id, pensum_id FROM estudiante WHERE id = $1 FOR UPDATE`,
         [id],
       );
 
@@ -134,6 +134,8 @@ export async function actualizarExpediente(
       if (estado === "activo" && previo.rows[0]?.estado !== "activo" && !datosDeActivo(catalogo, texto("matricula"))) {
         throw new Error("FALTAN_DATOS_UNIVERSIDAD");
       }
+
+      if (!llevaCuenta(estado)) await desactivarCuentaDelEstudiante(cliente, id);
 
       const actualizado = await cliente.query(
         `UPDATE estudiante
@@ -212,6 +214,36 @@ export async function actualizarExpediente(
       );
 
       if (actualizado.rowCount === 0) throw new Error("NO_EXISTE");
+
+      if (estado === "activo" && previo.rows[0]?.estado !== "activo") await recuperarCuentaDelEstudiante(cliente, id);
+
+      // Cambio de universidad, carrera o plan de quien ya tenía uno: queda en su historial.
+      const antes = previo.rows[0];
+
+      if (
+        antes &&
+        (antes.universidad_id || antes.carrera_id || antes.pensum_id) &&
+        (antes.universidad_id !== catalogo.universidadId || antes.carrera_id !== catalogo.carreraId || antes.pensum_id !== catalogo.pensumId)
+      ) {
+        const etiquetas = (uni: string | null, car: string | null, pen: string | null) =>
+          cliente.query<{ universidad: string | null; carrera: string | null; plan: string | null }>(
+            `SELECT (SELECT siglas FROM universidad WHERE id = $1) AS universidad,
+                    (SELECT nombre FROM carrera WHERE id = $2) AS carrera,
+                    (SELECT version FROM pensum WHERE id = $3) AS plan`,
+            [uni, car, pen],
+          );
+        const [de, a] = await Promise.all([
+          etiquetas(antes.universidad_id, antes.carrera_id, antes.pensum_id),
+          etiquetas(catalogo.universidadId, catalogo.carreraId, catalogo.pensumId),
+        ]);
+
+        await cliente.query(
+          `INSERT INTO estudiante_cambio_plan
+             (estudiante_id, de_universidad, de_carrera, de_plan, a_universidad, a_carrera, a_plan, usuario_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [id, de.rows[0]?.universidad, de.rows[0]?.carrera, de.rows[0]?.plan, a.rows[0]?.universidad, a.rows[0]?.carrera, a.rows[0]?.plan, usuario.id],
+        );
+      }
 
       if (previo.rows[0]?.estado !== estado) {
         await cliente.query(
@@ -762,6 +794,70 @@ export async function eliminarExpediente(
   redirigir("/expedientes", await getLocale());
 }
 
+type ClienteSql = { query: (texto: string, valores?: unknown[]) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }> };
+
+/**
+ * Soltar el vínculo no basta: la persona seguiría pudiendo entrar con su cuenta. Al salir de
+ * «activo» se desactiva también la cuenta del portal, pero SOLO si es de rol estudiante (una
+ * cuenta de personal vinculada por error no se toca). Va ANTES de limpiar `usuario_id`.
+ */
+async function desactivarCuentaDelEstudiante(cliente: ClienteSql, estudianteId: string): Promise<void> {
+  await cliente.query(
+    `UPDATE usuario SET activo = FALSE
+      WHERE id = (SELECT usuario_id FROM estudiante WHERE id = $1)
+        AND rol_id = (SELECT id FROM rol WHERE nombre = 'estudiante')`,
+    [estudianteId],
+  );
+}
+
+/**
+ * Al volver a «activo» se recupera la cuenta que tuvo: la de rol estudiante con el mismo
+ * correo que no esté ligada a otro expediente. Así no hay que crear otra ni cambiar de
+ * contraseña; si no existe, el botón «Crear cuenta e invitar» sigue siendo el camino.
+ */
+async function recuperarCuentaDelEstudiante(cliente: ClienteSql, estudianteId: string): Promise<void> {
+  await cliente.query(
+    `WITH cuenta AS (
+       UPDATE usuario u SET activo = TRUE
+         FROM estudiante e
+        WHERE e.id = $1 AND e.usuario_id IS NULL AND e.email IS NOT NULL AND u.email = e.email
+          AND u.rol_id = (SELECT id FROM rol WHERE nombre = 'estudiante')
+          AND NOT EXISTS (SELECT 1 FROM estudiante o WHERE o.usuario_id = u.id)
+        RETURNING u.id)
+     UPDATE estudiante SET usuario_id = (SELECT id FROM cuenta) WHERE id = $1 AND EXISTS (SELECT 1 FROM cuenta)`,
+    [estudianteId],
+  );
+}
+
+/** Administración debe saber que un estudiante que sale del programa aún tiene beca vigente. */
+async function avisarPatrocinioVigente(estudianteId: string, nombre: string, nuevo: string): Promise<void> {
+  try {
+    const beca = await consultar<{ patrocinador: string }>(
+      `SELECT p.nombre AS patrocinador FROM asignacion_beca a JOIN patrocinador p ON p.id = a.patrocinador_id
+        WHERE a.estudiante_id = $1 AND a.estado = 'activo'`,
+      [estudianteId],
+    );
+
+    if (beca.length === 0) return;
+
+    const admins = await consultar<{ id: string }>(
+      `SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.activo AND r.nombre IN ('admin', 'super_admin')`,
+    );
+
+    for (const a of admins) {
+      await notificarUsuario({
+        usuarioId: a.id,
+        titulo: "Estudiante fuera del programa con beca vigente",
+        mensaje: `${nombre} pasó a «${nuevo}» y todavía tiene la beca de ${beca.map((b) => b.patrocinador).join(", ")}. Revisa si hay que terminarla.`,
+        tipo: "alerta",
+        enlace: `/expedientes/${estudianteId}?seccion=followUp`,
+      });
+    }
+  } catch (error) {
+    console.error("[expedientes] no se pudo avisar de la beca vigente", error);
+  }
+}
+
 /** Universidad, carrera, plan de estudios y matrícula: lo que se exige para ser activo. */
 function datosDeActivo(catalogo: { universidadId: string | null; carreraId: string | null; pensumId: string | null }, matricula: string | null): boolean {
   return Boolean(catalogo.universidadId && catalogo.carreraId && catalogo.pensumId && matricula);
@@ -1003,10 +1099,14 @@ export async function cambiarSituacionExpediente(_previo: EstadoSituacion, datos
       if (actual.estado === nuevo) return "invalido" as const;
       if (nuevo === "activo" && !(actual.universidad_id && actual.carrera_id && actual.pensum_id && actual.matricula)) return "faltan_datos_universidad" as const;
 
+      if (!llevaCuenta(nuevo)) await desactivarCuentaDelEstudiante(cliente, id);
+
       await cliente.query(
         `UPDATE estudiante SET estado = $2::estado_estudiante, usuario_id = CASE WHEN $3 THEN usuario_id ELSE NULL END WHERE id = $1`,
         [id, nuevo, llevaCuenta(nuevo)],
       );
+
+      if (nuevo === "activo") await recuperarCuentaDelEstudiante(cliente, id);
       await cliente.query(
         `INSERT INTO estudiante_etapa (estudiante_id, estado_anterior, estado_nuevo, usuario_id, motivo, fecha_efectiva)
          VALUES ($1, $2::estado_estudiante, $3::estado_estudiante, $4, $5, $6::date)`,
@@ -1017,6 +1117,12 @@ export async function cambiarSituacionExpediente(_previo: EstadoSituacion, datos
     });
 
     if (r !== "ok") return { estado: r };
+
+    if (nuevo !== "activo") {
+      const e = await consultarUna<{ nombre: string }>(`SELECT nombre FROM estudiante WHERE id = $1`, [id]);
+
+      await avisarPatrocinioVigente(id, e?.nombre ?? "", nuevo);
+    }
   } catch (error) {
     console.error("[expedientes] no se pudo cambiar la situación", error);
 

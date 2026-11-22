@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calculator } from "lucide-react";
+import { ChevronLeft, Calculator } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { ModalReposicionCaja } from "@/components/contabilidad/cajas/modal-reposicion";
@@ -73,7 +73,7 @@ export default async function PaginaDetalleCaja({
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/cajas">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("volverCajas")}
           </Link>
         </Button>

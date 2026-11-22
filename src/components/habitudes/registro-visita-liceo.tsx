@@ -436,7 +436,7 @@ export function RegistroVisitaLiceo({
           <AccionesFormulario>
           <Button
             type="submit"
-            disabled={isPending}
+            cargando={isPending}
             className="w-full min-h-12 gap-2 text-sm font-semibold active:scale-95"
           >
             {isPending ? (

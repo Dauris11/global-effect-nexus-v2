@@ -247,7 +247,9 @@
     "commandShortcutMac": "⌘K",
     "assignedSubjects": "My subjects",
     "universities": "Universities",
-    "atRisk": "Students at risk"
+    "atRisk": "Students at risk",
+    "uploadGrades": "Upload grades",
+    "leadershipAcademy": "Leadership Academy"
   },
   "landing": {
     "enter": "Sign in",
@@ -1377,7 +1379,7 @@
       "newState": "¿En qué situación queda?",
       "reason": "¿Por qué? (obligatorio)",
       "date": "Desde qué fecha",
-      "releasesAccount": "Al pasar a este estado se suelta la cuenta del portal: el estudiante ya no podrá entrar.",
+      "releasesAccount": "With this state the portal account is released and deactivated: the student will no longer be able to sign in. If they become active again, they get the same account back.",
       "activeNeeds": "Para pasar a activo hay que llenar primero la universidad, la carrera, el plan de estudios y la matrícula en «Editar».",
       "applicantNote": "Un postulado todavía no es parte de la Fundación: primero pasa los filtros y la Academia de Liderazgo.",
       "save": "Guardar el cambio",
@@ -1390,7 +1392,6 @@
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     },
-    "printSheets": "Imprimir",
     "quickCreate": {
       "title": "How do you want to register them?",
       "quick": "Quick registration",
@@ -6522,7 +6523,21 @@
       "lugar": "School",
       "sesion": "Session delivered",
       "evidencia": "Evidence and notes"
-    }
+    },
+    "previewButton": "Preview",
+    "previewOpen": "Preview {title}",
+    "previewContents": "What it contains",
+    "previewFirstLines": "First lines",
+    "previewNone": "There is no preview of this file yet: open it to see its content.",
+    "previewOpenFile": "Open or download",
+    "pagesCount": "{count, plural, one {# page} other {# pages}}",
+    "slidesCount": "{count, plural, one {# slide} other {# slides}}",
+    "sheetsCount": "{count, plural, one {# sheet} other {# sheets}}",
+    "cat_diapositiva": "Slides",
+    "cat_guia_facilitador": "Facilitator guide",
+    "cat_infografia_didactica": "Infographic",
+    "cat_dinamica_taller": "Workshop",
+    "cat_evaluacion": "Assessment"
   },
   "reuniones": {
     "eyebrow": "Operations & Support",
@@ -7199,7 +7214,8 @@
       "invalid": "The chosen university, program and curriculum do not match. Check the three dropdowns.",
       "edit": "Change in the student's edit tab",
       "unlinked": "Not linked to the catalog: \"{text}\"",
-      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula."
+      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula.",
+      "changesTitle": "Changes of university, degree or plan"
     },
     "progress": {
       "title": "Curriculum progress",
@@ -7435,45 +7451,30 @@
         "step2": "Upload the photo or PDF of the list, or paste the list.",
         "step3": "Check what the system understood and press “Save the grades”."
       }
-    },
-    "exportGrades": "Download grades (Excel)"
+    }
   },
   "export": {
-    "print": "Print or save as PDF",
-    "foundation": "Global Effect Foundation",
-    "issuedOn": "Issued on {fecha}",
-    "sheetsTitle": "Printable sheets",
-    "backToRecord": "Back to the record",
-    "sheet": {
-      "ficha": "Full file",
+    "button": "Export",
+    "viewPrint": "View and print (PDF)",
+    "download": {
+      "pdf": "Download as PDF",
+      "docx": "Download as Word",
+      "xlsx": "Download as Excel",
+      "csv": "Download as CSV"
+    },
+    "docs": {
+      "ficha": "Full file with photo",
       "record": "Grade record",
-      "avance": "Study plan progress"
-    },
-    "student": "Student",
-    "university": "University",
-    "career": "Degree",
-    "matricula": "Student ID",
-    "status": "Status",
-    "cumulativeIndex": "Cumulative index",
-    "periodIndex": "Period index",
-    "credits": "Credits",
-    "code": "Code",
-    "subject": "Subject",
-    "grade": "Grade",
-    "period": "Term",
-    "state": "State",
-    "progressSummary": "{approved} of {total} credits passed ({percent} %)",
-    "noRecord": "There are no grades recorded for this student yet.",
-    "noPlan": "No study plan assigned yet.",
-    "subjectState": {
-      "aprobada": "Passed",
-      "reprobada": "Failed",
-      "retirada": "Withdrawn",
-      "cursando": "In progress",
-      "pendiente": "Pending"
-    },
-    "excel": "Download as Excel",
-    "pdfHint": "In the window that opens, choose “Save as PDF” as the printer."
+      "avance": "Study plan progress",
+      "expedientes": "List of records",
+      "riesgo": "Students at risk",
+      "studentsUniversity": "University students",
+      "gradesUniversity": "University grades",
+      "studyPlan": "Study plan",
+      "class360": "Class students",
+      "attendance360": "Attendance sheet",
+      "sponsorStudents": "Sponsor's students"
+    }
   },
   "risk": {
     "title": "Students at risk",
@@ -7491,7 +7492,6 @@
     "email": "Email",
     "noContact": "No phone or email",
     "noCatalog": "No university assigned",
-    "openRecord": "See their record",
-    "excel": "Download as Excel"
+    "openRecord": "See their record"
   }
 }

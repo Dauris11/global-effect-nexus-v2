@@ -142,7 +142,7 @@ export function FormularioRecurrente({
 
         <Button
           onClick={manejarGuardar}
-          disabled={cargando}
+          cargando={cargando}
           className="gap-2 font-semibold"
         >
           {guardadoExitoso ? (

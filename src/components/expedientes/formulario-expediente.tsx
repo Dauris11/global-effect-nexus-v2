@@ -221,7 +221,7 @@ export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormu
 
             <AccionesFormulario>
               <div className="flex flex-wrap items-center justify-end gap-2">
-                <Button type="submit" size="sm" disabled={guardando}>
+                <Button type="submit" size="sm" cargando={guardando}>
                   {guardando ? (
                     <Loader2 className="size-3.5 animate-spin" />
                   ) : (
@@ -313,7 +313,7 @@ function LectorFicha({
           className="h-9 w-full cursor-pointer sm:w-64"
         />
 
-        <Button type="submit" size="sm" disabled={leyendo} className="shrink-0">
+        <Button type="submit" size="sm" cargando={leyendo} className="shrink-0">
           {leyendo ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (

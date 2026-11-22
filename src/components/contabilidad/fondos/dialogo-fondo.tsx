@@ -185,7 +185,7 @@ export function DialogoFondo({ donantes }: { donantes: { id: string; nombre: str
                 >
                   {t("cancelar")}
                 </Button>
-                <Button type="submit" disabled={guardando}>
+                <Button type="submit" cargando={guardando}>
                   {guardando ? t("procesando") : t("guardar")}
                 </Button>
               </DialogFooter>

@@ -365,7 +365,7 @@ function DialogoBorrado({ fila }: { fila: MaterialFila }) {
 
             <form action={enviar}>
               <input type="hidden" name="id" value={fila.id} />
-              <Button type="submit" variant="destructive" disabled={enviando}>
+              <Button type="submit" variant="destructive" cargando={enviando}>
                 {enviando ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
@@ -545,7 +545,7 @@ function Formulario({
             <Button
               type="submit"
               size="sm"
-              disabled={enviando}
+              cargando={enviando}
               className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (

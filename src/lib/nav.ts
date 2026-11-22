@@ -26,6 +26,7 @@ import {
   Presentation,
   ReceiptText,
   Settings,
+  ScanSearch,
   Sparkles,
   Star,
   TowerControl,
@@ -108,13 +109,40 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       },
     ],
   },
+  // Cada programa en su módulo, por lo que tienen en común: la universidad (catálogo,
+  // planes de estudio y notas), las clases propias de la Fundación (Global Effect 360) y
+  // Habitudes con la Academia de Liderazgo.
   {
     clave: "academico",
     etiqueta: "academicModule",
     icono: GraduationCap,
     secciones: [
       {
-        etiqueta: "courses",
+        items: [
+          // Catálogo universidad → carrera → plan de estudios: de aquí sale el avance de
+          // cada becado en su carrera.
+          {
+            etiqueta: "universities",
+            href: "/academico/universidades",
+            icono: Landmark,
+            permiso: "catalogo.leer",
+          },
+          {
+            etiqueta: "uploadGrades",
+            href: "/academico/universidades/calificaciones",
+            icono: ScanSearch,
+            permiso: "expedientes.escribir",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    clave: "global360",
+    etiqueta: "global360",
+    icono: Sparkles,
+    secciones: [
+      {
         items: [
           {
             etiqueta: "classes360",
@@ -122,7 +150,6 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Sparkles,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
-          { etiqueta: "history", href: "/academico/historial", icono: BarChart3 },
           {
             etiqueta: "preenrollment",
             href: "/academico/prematricula",
@@ -133,18 +160,26 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/academico/periodos",
             icono: CalendarDays,
           },
-          // Catálogo universidad → carrera → pénsum: de aquí sale el avance de
-          // cada becado en su carrera (fase 2 del expediente).
+        ],
+      },
+    ],
+  },
+  {
+    clave: "habitudes",
+    etiqueta: "habitudes",
+    icono: BookOpen,
+    secciones: [
+      {
+        items: [
           {
-            etiqueta: "universities",
-            href: "/academico/universidades",
-            icono: Landmark,
-            permiso: "catalogo.leer",
+            etiqueta: "habitudesHub",
+            href: "/habitudes",
+            icono: BookOpen,
           },
         ],
       },
       {
-        etiqueta: "academies",
+        etiqueta: "leadershipAcademy",
         items: [
           {
             etiqueta: "programs",
@@ -155,11 +190,6 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "materials",
             href: "/academias/materiales",
             icono: Library,
-          },
-          {
-            etiqueta: "habitudesHub",
-            href: "/habitudes",
-            icono: BookOpen,
           },
         ],
       },
@@ -515,9 +545,9 @@ const MENU_DOCENTE: AreaNav[] = [
     ],
   },
   {
-    clave: "academico",
-    etiqueta: "academicModule",
-    icono: GraduationCap,
+    clave: "global360",
+    etiqueta: "global360",
+    icono: Sparkles,
     secciones: [
       {
         items: [
@@ -527,6 +557,17 @@ const MENU_DOCENTE: AreaNav[] = [
             icono: Sparkles,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
+        ],
+      },
+    ],
+  },
+  {
+    clave: "habitudes",
+    etiqueta: "habitudes",
+    icono: BookOpen,
+    secciones: [
+      {
+        items: [
           {
             etiqueta: "habitudesHub",
             href: "/habitudes",

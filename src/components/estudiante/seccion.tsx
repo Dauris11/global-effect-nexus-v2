@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export function EnlaceSeccion({
       className="-mr-2 inline-flex min-h-11 items-center gap-1 rounded-control px-2 text-sm font-semibold text-marca-600 outline-none hover:text-marca-700 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
     >
       {texto}
-      <ArrowRight className="size-4" />
+      <ChevronRight className="size-4" />
     </Link>
   );
 }

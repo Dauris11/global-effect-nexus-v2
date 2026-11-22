@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -67,7 +67,7 @@ export default async function PaginaEditarDocumento({
 
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion/conocimiento">
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           {t("knowledge.back")}
         </Link>
       </Button>

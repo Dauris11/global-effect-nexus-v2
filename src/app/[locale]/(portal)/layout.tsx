@@ -3,7 +3,6 @@ import Script from "next/script";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { AplicadorApariencia } from "@/components/apariencia/aplicador-apariencia";
-import { CabeceraImpresa } from "@/components/compartido/cabecera-impresa";
 import { WidgetFlotanteIA } from "@/components/ia/widget-flotante-ia";
 import { AppShell } from "@/components/layout/app-shell";
 import { redirigir } from "@/i18n/navigation";
@@ -156,7 +155,6 @@ export default async function LayoutPortal({
         permisos={usuario.permisos}
         cerrarSesion={cerrarSesion}
       >
-        <CabeceraImpresa />
         {children}
         {asistenteVisible && (
           <WidgetFlotanteIA

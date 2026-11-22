@@ -1,4 +1,4 @@
-import { ArrowRight, HeartHandshake, MapPin, MoveRight } from "lucide-react";
+import { ChevronRight, HeartHandshake, MapPin, MoveRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { GloboApoyo } from "@/components/landing/globo-apoyo";
@@ -55,7 +55,7 @@ export async function SeccionMapa() {
           <Button asChild variant="secondary" className="mt-7">
             <Link href="#patrocinadores">
               {t("enter")}
-              <ArrowRight />
+              <ChevronRight />
             </Link>
           </Button>
         </div>

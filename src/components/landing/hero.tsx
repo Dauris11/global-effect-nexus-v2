@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 import { CONTENEDOR } from "@/components/landing/piezas";
 import { Button } from "@/components/ui/button";
@@ -173,7 +173,7 @@ export function Hero({
               <Button asChild size="lg" className="group/cta">
                 <Link href={boton.href}>
                   {boton.texto}
-                  <ArrowRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+                  <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
                 </Link>
               </Button>
             </div>

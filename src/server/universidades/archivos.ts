@@ -9,6 +9,7 @@ import { requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
 import { nombresParecidos, normalizarVersion, soloDigitos, type LecturaGradua } from "@/lib/gradua";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { avisarRiesgoDeEstudiantes } from "@/server/academico/avisos";
 import { borrarDocumento, MAXIMO_ENTREGA, subirMaterial } from "@/lib/supabase/almacen";
 import { escribirResultados, leerGraduaDeBytes } from "@/server/universidades/gradua-importar";
 
@@ -177,6 +178,9 @@ export async function subirArchivoAcademico(_p: EstadoArchivo, d: FormData): Pro
 
     return { estado: "error" };
   }
+
+  // Un gradua nuevo puede dejar al estudiante bajo el mínimo de su universidad: se avisa a administración.
+  if (destino === "estudiante" && lectura) await avisarRiesgoDeEstudiantes([id]);
 
   revalidatePath("/[locale]/expedientes/[id]", "page");
   revalidatePath("/[locale]/academico/universidades", "layout");

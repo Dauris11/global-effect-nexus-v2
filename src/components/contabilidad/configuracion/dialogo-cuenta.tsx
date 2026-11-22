@@ -108,7 +108,7 @@ export function DialogoCuenta({
 
           <AvisoEstado estado={estado} />
           <DialogFooter>
-            <Button type="submit" variant={modo === "desactivar" ? "destructive" : "default"} disabled={enviando}>
+            <Button type="submit" variant={modo === "desactivar" ? "destructive" : "default"} cargando={enviando}>
               {enviando ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : modo === "desactivar" ? (

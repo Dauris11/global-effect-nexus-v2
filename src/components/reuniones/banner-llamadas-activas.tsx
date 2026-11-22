@@ -1,4 +1,4 @@
-import { ArrowRight, Video } from "lucide-react";
+import { ChevronRight, Video } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +59,7 @@ export async function BannerLlamadasActivas({
             <Button asChild size="sm">
               <Link href={`/reuniones?sala=${reunion.id}`}>
                 {t("joinInWeb")}
-                <ArrowRight className="size-3.5" />
+                <ChevronRight className="size-3.5" />
               </Link>
             </Button>
           </li>

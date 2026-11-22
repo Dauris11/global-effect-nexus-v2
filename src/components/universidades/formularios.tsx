@@ -85,7 +85,7 @@ function Cascaron({
       {children}
       <MensajeEstado estado={estado} />
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando}>
+        <Button type="submit" size="sm" cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           {etiquetaBoton}
         </Button>
@@ -330,7 +330,7 @@ export function BotonQuitarMateria({ id, nombre }: { id: string; nombre: string 
   return (
     <form action={enviar}>
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" variant="ghost" size="sm" disabled={enviando} aria-label={t("pensum.remove", { name: nombre })}>
+      <Button type="submit" variant="ghost" size="sm" cargando={enviando} aria-label={t("pensum.remove", { name: nombre })}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
       </Button>
     </form>

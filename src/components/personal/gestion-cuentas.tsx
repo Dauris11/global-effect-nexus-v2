@@ -319,7 +319,7 @@ function FormularioAlta({
       )}
 
       <div className="flex items-center gap-2">
-        <Button type="submit" disabled={enviando}>
+        <Button type="submit" cargando={enviando}>
           {enviando && <Loader2 className="size-4 animate-spin" />}
           {enviando ? t("creating") : t("create")}
         </Button>
@@ -418,7 +418,7 @@ function BotonCuenta({
         type="submit"
         variant="ghost"
         size="icon"
-        disabled={enviando}
+        cargando={enviando}
         title={etiqueta}
         aria-label={etiqueta}
       >

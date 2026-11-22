@@ -137,7 +137,7 @@ export function DialogoCentroCosto() {
             >
               {t("cancelar")}
             </Button>
-            <Button type="submit" disabled={guardando}>
+            <Button type="submit" cargando={guardando}>
               {guardando ? t("guardando") : t("guardar")}
             </Button>
           </DialogFooter>

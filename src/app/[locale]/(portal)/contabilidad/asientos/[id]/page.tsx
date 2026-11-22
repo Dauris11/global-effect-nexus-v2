@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Info } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -71,7 +71,7 @@ export default async function PaginaAsiento({
         href="/contabilidad/asientos"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline"
       >
-        <ArrowLeft className="size-4" />
+        <ChevronLeft className="size-4" />
         {t("volver")}
       </Link>
 

@@ -190,6 +190,7 @@ export function GaleriaEvidencias({
                       type="button"
                       size="sm"
                       variant="outline"
+                      cargando={auditando && visitaEnCurso === visita.id}
                       disabled={auditando}
                       onClick={() => auditar(visita.id)}
                       className="min-h-11 gap-1.5"
