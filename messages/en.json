@@ -7178,7 +7178,8 @@
       "invalid": "The chosen university, program and curriculum do not match. Check the three dropdowns.",
       "edit": "Change in the student's edit tab",
       "unlinked": "Not linked to the catalog: \"{text}\"",
-      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula."
+      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula.",
+      "changesTitle": "Changes of university, degree or plan"
     },
     "progress": {
       "title": "Curriculum progress",

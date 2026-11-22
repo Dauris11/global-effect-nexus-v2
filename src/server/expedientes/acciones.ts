@@ -120,8 +120,8 @@ export async function actualizarExpediente(
     await enTransaccion(async (cliente) => {
       // Se lee antes del UPDATE (y se bloquea la fila) para registrar el paso
       // de etapa solo si el estado cambió de verdad.
-      const previo = await cliente.query<{ estado: string }>(
-        `SELECT estado FROM estudiante WHERE id = $1 FOR UPDATE`,
+      const previo = await cliente.query<{ estado: string; universidad_id: string | null; carrera_id: string | null; pensum_id: string | null }>(
+        `SELECT estado, universidad_id, carrera_id, pensum_id FROM estudiante WHERE id = $1 FOR UPDATE`,
         [id],
       );
 
@@ -212,6 +212,34 @@ export async function actualizarExpediente(
       );
 
       if (actualizado.rowCount === 0) throw new Error("NO_EXISTE");
+
+      // Cambio de universidad, carrera o plan de quien ya tenía uno: queda en su historial.
+      const antes = previo.rows[0];
+
+      if (
+        antes &&
+        (antes.universidad_id || antes.carrera_id || antes.pensum_id) &&
+        (antes.universidad_id !== catalogo.universidadId || antes.carrera_id !== catalogo.carreraId || antes.pensum_id !== catalogo.pensumId)
+      ) {
+        const etiquetas = (uni: string | null, car: string | null, pen: string | null) =>
+          cliente.query<{ universidad: string | null; carrera: string | null; plan: string | null }>(
+            `SELECT (SELECT siglas FROM universidad WHERE id = $1) AS universidad,
+                    (SELECT nombre FROM carrera WHERE id = $2) AS carrera,
+                    (SELECT version FROM pensum WHERE id = $3) AS plan`,
+            [uni, car, pen],
+          );
+        const [de, a] = await Promise.all([
+          etiquetas(antes.universidad_id, antes.carrera_id, antes.pensum_id),
+          etiquetas(catalogo.universidadId, catalogo.carreraId, catalogo.pensumId),
+        ]);
+
+        await cliente.query(
+          `INSERT INTO estudiante_cambio_plan
+             (estudiante_id, de_universidad, de_carrera, de_plan, a_universidad, a_carrera, a_plan, usuario_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [id, de.rows[0]?.universidad, de.rows[0]?.carrera, de.rows[0]?.plan, a.rows[0]?.universidad, a.rows[0]?.carrera, a.rows[0]?.plan, usuario.id],
+        );
+      }
 
       if (previo.rows[0]?.estado !== estado) {
         await cliente.query(

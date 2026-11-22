@@ -30,7 +30,7 @@ import { inscripcionesDelEstudiante } from "@/server/estudiantes/academico";
 import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
 import { cuentaVinculada, cuentasEstudianteSinVincular, obtenerExpediente } from "@/server/expedientes/consultas";
-import { seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
+import { cambiosDePlanDelEstudiante, seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
 
 const PESTANAS = ["info", "family", "academic", "followUp", "edit"] as const;
 
@@ -135,7 +135,7 @@ export default async function PaginaExpediente({
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
   const mensajes = await mensajesCliente(["records", "catalog"]);
-  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales] = await Promise.all([
+  const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales, cambios] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
     inscripcionesDelEstudiante(expediente.id),
@@ -149,6 +149,7 @@ export default async function PaginaExpediente({
     recordNativoDelEstudiante(expediente.id),
     indiceDelEstudiante(expediente.id),
     umbralesDeUniversidad(expediente.id),
+    cambiosDePlanDelEstudiante(expediente.id),
   ]);
   const ultimo = record?.periodos[0];
   const alertas = alertasAcademicas(catalogo, indice, umbrales.acumulado, ultimo ? { periodo: ultimo.periodo, indice: ultimo.indice, umbral: umbrales.periodo } : null);
@@ -256,7 +257,7 @@ export default async function PaginaExpediente({
           ),
           academic: (
             <>
-              <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />
+              <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} cambios={cambios} />
               <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />
               <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />
               <Tab360 datos={historial360} />

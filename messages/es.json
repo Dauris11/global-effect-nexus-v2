@@ -7178,7 +7178,8 @@
       "invalid": "La universidad, la carrera y el plan de estudios elegidos no concuerdan. Revisa los tres desplegables.",
       "edit": "Cambiar en la edición del expediente",
       "unlinked": "Sin vincular al catálogo: «{text}»",
-      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula."
+      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula.",
+      "changesTitle": "Cambios de universidad, carrera o plan"
     },
     "progress": {
       "title": "Avance en el plan de estudios",
