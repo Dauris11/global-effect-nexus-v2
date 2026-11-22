@@ -1,4 +1,5 @@
 import { consultar } from "@/lib/db";
+import { estudiantesEnRiesgo } from "@/server/academico/riesgo";
 import { notificarUsuario } from "@/server/compartidos/notificaciones";
 
 export type RiesgoAcademico = { estudianteId: string; nombre: string; tipo: "periodo" | "acumulado"; indice: number; umbral: number };
@@ -36,5 +37,26 @@ export async function avisarRiesgoAcademico(riesgos: readonly RiesgoAcademico[])
     }
   } catch (error) {
     console.error("[academico] no se pudo avisar del riesgo académico", error);
+  }
+}
+
+/**
+ * Avisa de quienes, de estos estudiantes, hoy están en riesgo según la misma regla de la
+ * vista «Estudiantes en riesgo». Se usa tras cualquier cambio de notas (subir un gradua,
+ * por ejemplo) sin repetir los umbrales de cada universidad.
+ */
+export async function avisarRiesgoDeEstudiantes(ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  try {
+    const lista = await estudiantesEnRiesgo(ids);
+    const riesgos: RiesgoAcademico[] = lista.flatMap((f) => [
+      ...(f.motivos.includes("acumulado") && f.indice !== null ? [{ estudianteId: f.id, nombre: f.nombre, tipo: "acumulado" as const, indice: f.indice, umbral: f.umbralAcumulado }] : []),
+      ...(f.motivos.includes("periodo") && f.indicePeriodo !== null ? [{ estudianteId: f.id, nombre: f.nombre, tipo: "periodo" as const, indice: f.indicePeriodo, umbral: f.umbralPeriodo }] : []),
+    ]);
+
+    await avisarRiesgoAcademico(riesgos);
+  } catch (error) {
+    console.error("[academico] no se pudo revisar el riesgo", error);
   }
 }

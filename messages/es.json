@@ -1377,7 +1377,7 @@
       "newState": "¿En qué situación queda?",
       "reason": "¿Por qué? (obligatorio)",
       "date": "Desde qué fecha",
-      "releasesAccount": "Al pasar a este estado se suelta la cuenta del portal: el estudiante ya no podrá entrar.",
+      "releasesAccount": "Al pasar a este estado se suelta la cuenta del portal y se desactiva: el estudiante ya no podrá entrar. Si vuelve a ser activo, recupera su misma cuenta.",
       "activeNeeds": "Para pasar a activo hay que llenar primero la universidad, la carrera, el plan de estudios y la matrícula en «Editar».",
       "applicantNote": "Un postulado todavía no es parte de la Fundación: primero pasa los filtros y la Academia de Liderazgo.",
       "save": "Guardar el cambio",

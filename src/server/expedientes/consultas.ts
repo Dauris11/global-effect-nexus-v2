@@ -89,7 +89,8 @@ const DONDE_EXPEDIENTES = `
         AND ($2::text IS NULL OR e.estado::text = $2)
         AND ($3::text IS NULL OR coalesce(uc.siglas, e.universidad) = $3)
         AND ($4::text IS NULL
-             OR ($4 = 'en_riesgo'  AND coalesce(indice_estudiante(e.id), h.indice) < $5)
+             -- Mismo criterio que «Estudiantes en riesgo»: solo activos, contra el mínimo de SU universidad.
+             OR ($4 = 'en_riesgo'  AND e.estado = 'activo' AND coalesce(indice_estudiante(e.id), h.indice) < coalesce(uc.indice_minimo_acumulado, $5))
              OR ($4 = 'sin_notas'  AND coalesce(indice_estudiante(e.id), h.indice) IS NULL)
              OR ($4 = 'sin_cuenta' AND e.estado = 'activo' AND e.usuario_id IS NULL)
              OR ($4 = 'sin_catalogo' AND (e.universidad_id IS NULL OR e.carrera_id IS NULL OR e.pensum_id IS NULL OR e.matricula IS NULL))

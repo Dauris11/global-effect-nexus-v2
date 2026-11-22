@@ -3,6 +3,7 @@ import { consultar, consultarUna } from "@/lib/db";
 import { leerCalificaciones } from "@/lib/calificaciones";
 import { leerEtiquetaPeriodo } from "@/lib/gradua";
 import { ROLES } from "@/lib/rbac";
+import { estudiantesEnRiesgo } from "@/server/academico/riesgo";
 import { borrarAdjunto, obtenerAdjunto } from "@/server/ia/adjuntos";
 import { leerComprobanteFiscal, leerDocumentoDeIdentidad } from "@/server/ia/ocr";
 import { catalogoDelEstudiante } from "@/server/universidades/consultas";
@@ -304,4 +305,28 @@ const registrarEstudiante: Herramienta = {
   },
 };
 
-export const HERRAMIENTAS_ACADEMICAS: readonly Herramienta[] = [preparar, confirmar, leerAdjunto, buscarEstudiantes, materiasPendientes, registrarEstudiante];
+const enRiesgo: Herramienta = {
+  nombre: "estudiantes_en_riesgo",
+  descripcion:
+    "Lista los estudiantes ACTIVOS que hoy necesitan atención académica (índice acumulado o del último período bajo el mínimo de su universidad, o materias reprobadas sin volver a cursar), con el motivo y cómo contactarlos. Es la misma lista de la pantalla «Estudiantes en riesgo». Opcionalmente filtra por universidad.",
+  esquema: { type: "object", properties: { universidad: { type: "string", description: "Siglas, opcional." } } },
+  nivel: "automatica",
+  roles: ADMINISTRATIVOS,
+  permiso: "expedientes.leer",
+  resumir: (_a, i) => frase("Ver estudiantes en riesgo académico", "See students at academic risk", i),
+  async ejecutar(_usuario, a) {
+    const siglas = texto(a.universidad, 20).toUpperCase();
+    const lista = (await estudiantesEnRiesgo()).filter((f) => !siglas || f.universidad?.toUpperCase() === siglas);
+
+    if (lista.length === 0) return { ok: true, texto: "Nadie está en riesgo académico ahora." };
+
+    return {
+      ok: true,
+      texto: JSON.stringify(
+        lista.slice(0, 25).map((f) => ({ id: f.id, nombre: f.nombre, universidad: f.universidad, indice: f.indice, indice_periodo: f.indicePeriodo, reprobadas: f.reprobadas, motivos: f.motivos, correo: f.email, telefono: f.telefono })),
+      ),
+    };
+  },
+};
+
+export const HERRAMIENTAS_ACADEMICAS: readonly Herramienta[] = [preparar, confirmar, leerAdjunto, buscarEstudiantes, enRiesgo, materiasPendientes, registrarEstudiante];
