@@ -171,7 +171,10 @@ export function FormUniversidad({
               </label>
             )}
           </div>
-          <p className="text-sm font-semibold">{t("rules.title")}</p>
+          {/* Lo avanzado va plegado: quien solo da de alta una universidad no necesita tocarlo. */}
+          <details className="rounded-control border border-linea p-3">
+            <summary className="min-h-11 cursor-pointer text-sm font-semibold">{t("rules.title")}</summary>
+            <div className="mt-3 space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <Campo id={`u-puntos-${k}`} etiqueta={t("rules.points")}>
               <Input id={`u-puntos-${k}`} name="puntos" required maxLength={200}
@@ -211,6 +214,8 @@ export function FormUniversidad({
             {t("rules.confirmed")}
           </label>
           <p className="texto-meta">{t("rules.help")}</p>
+            </div>
+          </details>
           {universidad && (
             <Campo id={`u-activa-${k}`} etiqueta={t("university.status")}>
               <select id={`u-activa-${k}`} name="activa" defaultValue={universidad.activa ? "si" : "no"} className={CLASE_SELECT}>

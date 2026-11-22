@@ -1,4 +1,6 @@
-import { indiceDelEstudiante, umbralDeIndice } from "@/server/academico/indice";
+import { MiPlanDeEstudios } from "@/components/estudiante/mi-plan-de-estudios";
+import { alertasAcademicas, indiceDelEstudiante, umbralDeIndice } from "@/server/academico/indice";
+import { catalogoDelEstudiante } from "@/server/universidades/consultas";
 import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
@@ -149,6 +151,9 @@ export default async function PortalEstudiante({
   // solo sin resultados nativos, el promedio del historial anterior.
   const [indiceNativo, umbralIndice] = await Promise.all([indiceDelEstudiante(estudiante.id), umbralDeIndice()]);
   const indice = indiceNativo ?? promedio(notas.map((nota) => nota.gpa));
+  // Su avance sobre el plan de estudios de su universidad (lo mismo que ve administración).
+  const catalogo = await catalogoDelEstudiante(estudiante.id);
+  const alertasPlan = alertasAcademicas(catalogo, indice, umbralIndice);
   const aprobadas = todasLasNotas.filter(aprobada).length;
   const creditos = materias.reduce(
     (total, materia) => total + (materia.creditos ?? 0),
@@ -202,6 +207,8 @@ export default async function PortalEstudiante({
         ) : null}
 
         <AvisoMinimoCuatrimestral cumplimiento={cumplimiento} enlazar />
+
+        <MiPlanDeEstudios catalogo={catalogo} alertas={alertasPlan} />
 
         <BannerLlamadasActivas activas={llamadasActivas} />
       </div>

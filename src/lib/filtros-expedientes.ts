@@ -9,6 +9,7 @@ export const SITUACIONES_EXPEDIENTE = [
   "en_riesgo",
   "sin_notas",
   "sin_cuenta",
+  "sin_catalogo",
   "sin_foto",
 ] as const;
 

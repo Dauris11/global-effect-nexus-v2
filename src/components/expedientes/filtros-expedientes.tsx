@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Search, Users, X } from "lucide-react";
+import { AlertTriangle, GraduationCap, LayoutGrid, List, Search, UserX, Users, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,25 @@ export async function FiltrosExpedientes({
 
   return (
     <div className="space-y-4">
+      {/* Lo que casi siempre se busca, a un toque: no hace falta saber de filtros. */}
+      <FilaChips etiqueta={t("filters.quick")}>
+        {(
+          [
+            ["en_riesgo", AlertTriangle],
+            ["sin_catalogo", GraduationCap],
+            ["sin_cuenta", UserX],
+          ] as const
+        ).map(([situacion, icono]) => (
+          <ChipFiltro
+            key={situacion}
+            icono={icono}
+            href={enlaceExpedientes(consulta, { situacion: consulta.situacion === situacion ? null : situacion })}
+            etiqueta={t(`filters.situations.${situacion}`)}
+            activo={consulta.situacion === situacion}
+          />
+        ))}
+      </FilaChips>
+
       <FilaChips etiqueta={t("filters.status")}>
         <ChipFiltro
           href={enlaceExpedientes(consulta, { estado: null })}

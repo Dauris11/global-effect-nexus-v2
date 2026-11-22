@@ -92,6 +92,7 @@ const DONDE_EXPEDIENTES = `
              OR ($4 = 'en_riesgo'  AND coalesce(indice_estudiante(e.id), h.indice) < $5)
              OR ($4 = 'sin_notas'  AND coalesce(indice_estudiante(e.id), h.indice) IS NULL)
              OR ($4 = 'sin_cuenta' AND e.estado = 'activo' AND e.usuario_id IS NULL)
+             OR ($4 = 'sin_catalogo' AND (e.universidad_id IS NULL OR e.carrera_id IS NULL OR e.pensum_id IS NULL OR e.matricula IS NULL))
              OR ($4 = 'sin_foto'   AND e.foto_url IS NULL))`;
 
 function parametrosFiltro(filtros: FiltrosExpedientes, umbral: number) {

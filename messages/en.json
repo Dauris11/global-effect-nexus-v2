@@ -975,7 +975,8 @@
         "en_riesgo": "On academic probation",
         "sin_notas": "No grades yet",
         "sin_cuenta": "Active without portal account",
-        "sin_foto": "No photo"
+        "sin_foto": "No photo",
+        "sin_catalogo": "Missing university, degree or student ID"
       },
       "order": "Sort by",
       "orders": {
@@ -983,7 +984,8 @@
         "indice_alto": "Highest GPA",
         "indice_bajo": "Lowest GPA",
         "ingreso_reciente": "Most recent entry"
-      }
+      },
+      "quick": "Quick attention"
     },
     "views": {
       "cards": "Cards",
@@ -2050,6 +2052,17 @@
         "evento": "Event",
         "solicitud": "Request"
       }
+    },
+    "plan": {
+      "title": "My study plan",
+      "progress": "Progress in my degree",
+      "credits": "You have {done} of {total} credits ({percent}%).",
+      "counts": "{done} subjects passed · {current} in progress · {missing} left to take",
+      "next": "What comes next",
+      "creditsOf": "{count, plural, one {1 credit} other {# credits}}",
+      "allDone": "You have taken every subject in your plan. Congratulations!",
+      "failed": "{count, plural, one {You have 1 subject to retake:} other {You have # subjects to retake:}} {subjects}. Talk to your advisor about when.",
+      "withdrawn": "{count, plural, one {You withdrew from 1 subject you have not retaken yet:} other {You withdrew from # subjects you have not retaken yet:}} {subjects}."
     }
   },
   "teacherPortal": {
@@ -7140,22 +7153,22 @@
       "retirada": "Withdrawn"
     },
     "rules": {
-      "title": "This university's grading rules",
-      "points": "Points per letter",
-      "minLetter": "Minimum passing letter",
-      "withdrawn": "Withdrawn course (R)",
-      "withdrawnYes": "Its credits count in the index divisor",
-      "withdrawnNo": "Its credits don't count in the divisor",
-      "rounding": "Index",
-      "truncate": "Truncated to 2 decimals",
-      "round": "Rounded to 2 decimals",
+      "title": "How this university calculates the index (for whoever configures it)",
+      "points": "Value of each letter (example: A=4, B=3, C=2)",
+      "minLetter": "Lowest letter that passes a subject",
+      "withdrawn": "If the student withdraws from a subject (R)",
+      "withdrawnYes": "Its credits do count when dividing the index",
+      "withdrawnNo": "Its credits do not count",
+      "rounding": "Index decimals",
+      "truncate": "Cut to 2 decimals (3.569 becomes 3.56)",
+      "round": "Rounded to 2 decimals (3.569 becomes 3.57)",
       "alertsTitle": "Index scale and alerts",
       "maxIndex": "Maximum index (scale)",
       "minPeriod": "Term minimum",
       "minOverall": "Overall minimum",
       "alertsHelp": "Empty = not set: the general scholarship minimum is used. With these values the record warns when the term or overall index falls below them.",
-      "confirmed": "Rules verified against the university's regulations",
-      "help": "Each university computes its index its own way. Until verified, the system flags them as \"to be confirmed\".",
+      "confirmed": "I already confirmed these rules with the university regulations",
+      "help": "If in doubt, leave it as is: the system marks these rules as “to confirm” until someone verifies them.",
       "confirmedBadge": "Rules verified",
       "pendingBadge": "Rules to be confirmed",
       "summary": "Points: {points} · Passes from {min} · Withdrawn: {withdrawn} · {rounding}"

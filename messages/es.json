@@ -975,7 +975,8 @@
         "en_riesgo": "En prueba académica",
         "sin_notas": "Sin notas todavía",
         "sin_cuenta": "Activos sin cuenta del portal",
-        "sin_foto": "Sin foto"
+        "sin_foto": "Sin foto",
+        "sin_catalogo": "Sin universidad, carrera o matrícula"
       },
       "order": "Ordenar por",
       "orders": {
@@ -983,7 +984,8 @@
         "indice_alto": "Índice más alto",
         "indice_bajo": "Índice más bajo",
         "ingreso_reciente": "Ingreso más reciente"
-      }
+      },
+      "quick": "Atención rápida"
     },
     "views": {
       "cards": "Tarjetas",
@@ -2050,6 +2052,17 @@
         "evento": "Evento",
         "solicitud": "Trámite"
       }
+    },
+    "plan": {
+      "title": "Mi plan de estudios",
+      "progress": "Avance de mi carrera",
+      "credits": "Llevas {done} de {total} créditos ({percent} %).",
+      "counts": "{done} materias aprobadas · {current} en curso · {missing} por cursar",
+      "next": "Lo que sigue",
+      "creditsOf": "{count, plural, one {1 crédito} other {# créditos}}",
+      "allDone": "Ya cursaste todas las materias de tu plan. ¡Felicidades!",
+      "failed": "{count, plural, one {Tienes 1 materia por volver a cursar:} other {Tienes # materias por volver a cursar:}} {subjects}. Habla con tu consejero para elegir cuándo.",
+      "withdrawn": "{count, plural, one {Retiraste 1 materia que aún no vuelves a cursar:} other {Retiraste # materias que aún no vuelves a cursar:}} {subjects}."
     }
   },
   "teacherPortal": {
@@ -7140,22 +7153,22 @@
       "retirada": "Retirada"
     },
     "rules": {
-      "title": "Reglas de calificación de esta universidad",
-      "points": "Puntos por letra",
-      "minLetter": "Letra mínima para aprobar",
-      "withdrawn": "Materia retirada (R)",
-      "withdrawnYes": "Sus créditos cuentan en el divisor del índice",
-      "withdrawnNo": "Sus créditos no cuentan en el divisor",
-      "rounding": "Índice",
-      "truncate": "Se trunca a 2 decimales",
-      "round": "Se redondea a 2 decimales",
+      "title": "Cómo calcula esta universidad el índice (solo para quien configura)",
+      "points": "Valor de cada letra (ejemplo: A=4, B=3, C=2)",
+      "minLetter": "Letra mínima para aprobar una materia",
+      "withdrawn": "Si el estudiante retira una materia (R)",
+      "withdrawnYes": "Sus créditos sí cuentan al dividir el índice",
+      "withdrawnNo": "Sus créditos no cuentan",
+      "rounding": "Decimales del índice",
+      "truncate": "Se cortan a 2 decimales (3,569 pasa a 3,56)",
+      "round": "Se redondean a 2 decimales (3,569 pasa a 3,57)",
       "alertsTitle": "Escala y alertas del índice",
       "maxIndex": "Índice máximo (escala)",
       "minPeriod": "Mínimo del período",
       "minOverall": "Mínimo acumulado",
       "alertsHelp": "Vacío = sin definir: se usa el mínimo general de becas. Con estos valores el expediente avisa cuando el índice del período o el acumulado queda por debajo.",
-      "confirmed": "Reglas verificadas con el reglamento de la universidad",
-      "help": "Cada universidad calcula su índice a su manera. Mientras no estén verificadas, el sistema las marca como «por confirmar».",
+      "confirmed": "Ya confirmé estas reglas con el reglamento de la universidad",
+      "help": "Si dudas, déjalo como está: el sistema marca estas reglas como «por confirmar» hasta que alguien las verifique.",
       "confirmedBadge": "Reglas verificadas",
       "pendingBadge": "Reglas por confirmar",
       "summary": "Puntos: {points} · Aprueba desde {min} · Retirada: {withdrawn} · {rounding}"
