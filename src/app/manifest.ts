@@ -21,19 +21,13 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: BLANCO,
     theme_color: AZUL,
     orientation: "portrait-primary",
+    // El logo a color sobre blanco. Antes apuntaban a archivos que no existían y el icono
+    // de «agregar a la pantalla de inicio» salía en blanco; el `icon.png` de entonces era
+    // el logo blanco sobre transparente (invisible sobre un fondo claro).
     icons: [
-      {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       {
