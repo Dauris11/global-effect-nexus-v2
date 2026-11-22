@@ -112,7 +112,20 @@
     "showPassword": "Ver la contraseña",
     "hidePassword": "Ocultar la contraseña",
     "or": "o",
-    "signInHeading": "Entra a tu portal"
+    "signInHeading": "Entra a tu portal",
+    "setPassword": {
+      "title": "Elige tu contraseña",
+      "intro": "Elige la contraseña con la que vas a entrar al portal.",
+      "password": "Contraseña nueva",
+      "hint": "Mínimo 8 caracteres.",
+      "repeat": "Repite la contraseña",
+      "save": "Guardar y entrar",
+      "tooShort": "Usa al menos 8 caracteres.",
+      "mismatch": "Las dos contraseñas no son iguales.",
+      "error": "No se pudo guardar. Pide que te envíen la invitación de nuevo.",
+      "expired": "Este enlace ya se usó o venció. Pide que te envíen una invitación nueva.",
+      "loading": "Cargando"
+    }
   },
   "nav": {
     "inbox": "Bandeja",
@@ -1252,7 +1265,20 @@
       "nota": "Nota: {nota} de {maximo}",
       "masTareas": "{n, plural, one {Y # tarea más en su aula virtual} other {Y # tareas más en su aula virtual}}",
       "cuentaSoloActivos": "Solo los estudiantes activos tienen cuenta del portal",
-      "noActivoDesvincular": "Este expediente ya no está activo: puedes desvincular la cuenta que le quedó."
+      "noActivoDesvincular": "Este expediente ya no está activo: puedes desvincular la cuenta que le quedó.",
+      "invitarTitulo": "Crear su cuenta e invitarlo por correo",
+      "invitarAyuda": "Le llega un correo a {correo} con un botón para elegir su contraseña. Tú no tienes que escribir ninguna.",
+      "invitarSinCorreo": "Para invitarlo, primero escribe su correo en «Editar».",
+      "invitarBoton": "Crear cuenta e invitar",
+      "invitarErrores": {
+        "no_permitido": "No tienes permiso para crear cuentas.",
+        "invalido": "No se encontró el expediente.",
+        "no_activo": "Solo los estudiantes activos tienen cuenta del portal.",
+        "sin_correo": "El expediente no tiene un correo válido. Escríbelo en «Editar».",
+        "ya_tiene_cuenta": "Este estudiante ya tiene una cuenta.",
+        "correo_repetido": "Ya existe una cuenta con ese correo. Elige esa cuenta en la lista de abajo.",
+        "error": "No se pudo crear la cuenta. Inténtalo de nuevo."
+      }
     },
     "lista": {
       "cuenta": "Cuenta del portal",

@@ -148,3 +148,16 @@ export async function reiniciarContrasena(
 
   return res.ok;
 }
+
+/**
+ * Enlace de un solo uso para que una persona elija su contraseña (invitación o recuperación).
+ * Lleva la sesión temporal en la dirección; la pantalla `/establecer-clave` la canjea.
+ */
+export async function enlaceParaEstablecerClave(email: string, destino: string): Promise<string | null> {
+  const res = await admin<{ action_link?: string }>("/generate_link", {
+    method: "POST",
+    body: JSON.stringify({ type: "recovery", email, redirect_to: destino }),
+  });
+
+  return res.ok ? (res.datos.action_link ?? null) : null;
+}

@@ -28,7 +28,11 @@ marca cuando se entrega. Lo que ya se decidió está al final, para que no se pi
 - [ ] **Filtros por los que pasa un postulado** antes de la Academia de Liderazgo, y qué se exige al terminar la academia para pasar a activo (para dejarlos como pasos en el sistema).
 - [ ] **Confirmar las reglas del índice de UCATECI** con su reglamento (hoy están como «por confirmar»).
 - [ ] **Mariela Vargas y Yaritza Polanco** figuran con «PUCMM» (no es parte del programa): ¿a qué universidad pasan?
-- [ ] **Correo de invitación**: revisar el texto que recibe el estudiante y confirmar que el correo de salida está configurado.
+- [ ] **Invitación por correo — hay que configurarlo para que funcione:**
+  - [ ] En Supabase → Authentication → URL Configuration, agregar a «Redirect URLs» la dirección `https://TU-DOMINIO/establecer-clave` (y `http://localhost:3000/establecer-clave` para probar).
+  - [ ] Definir `NEXT_PUBLIC_SITE_URL` con el dominio real (si no, se toma del servidor).
+  - [ ] Confirmar que el envío de correos (`/api/cron/correos`, cola `correo_cola`) está activo y con el remitente correcto.
+  - [ ] Revisar el texto del correo que recibe el estudiante (está en `crearCuentaEInvitar`, `src/server/expedientes/acciones.ts`).
 - [ ] **OpenAI sin saldo**: recargarlo o quitarlo de `IA_PROVEEDOR` (hoy la lectura de documentos pasa a Gemini).
 
 ## Ya decidido (22 nov 2026)

@@ -112,7 +112,20 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "or": "or",
-    "signInHeading": "Sign in to your portal"
+    "signInHeading": "Sign in to your portal",
+    "setPassword": {
+      "title": "Choose your password",
+      "intro": "Choose the password you will use to sign in to the portal.",
+      "password": "New password",
+      "hint": "At least 8 characters.",
+      "repeat": "Repeat the password",
+      "save": "Save and sign in",
+      "tooShort": "Use at least 8 characters.",
+      "mismatch": "The two passwords are not the same.",
+      "error": "It could not be saved. Ask for a new invitation.",
+      "expired": "This link was already used or has expired. Ask for a new invitation.",
+      "loading": "Loading"
+    }
   },
   "nav": {
     "inbox": "Inbox",
@@ -1252,7 +1265,20 @@
       "nota": "Grade: {nota} of {maximo}",
       "masTareas": "{n, plural, one {And # more assignment in their classroom} other {And # more assignments in their classroom}}",
       "cuentaSoloActivos": "Only active students have a portal account",
-      "noActivoDesvincular": "This record is no longer active: you can unlink the account it kept."
+      "noActivoDesvincular": "This record is no longer active: you can unlink the account it kept.",
+      "invitarTitulo": "Create their account and invite them by email",
+      "invitarAyuda": "An email goes to {correo} with a button to choose their password. You do not have to type any.",
+      "invitarSinCorreo": "To invite them, first write their email under “Edit”.",
+      "invitarBoton": "Create account and invite",
+      "invitarErrores": {
+        "no_permitido": "You do not have permission to create accounts.",
+        "invalido": "The record was not found.",
+        "no_activo": "Only active students have a portal account.",
+        "sin_correo": "The record has no valid email. Write it under “Edit”.",
+        "ya_tiene_cuenta": "This student already has an account.",
+        "correo_repetido": "An account with that email already exists. Choose it from the list below.",
+        "error": "The account could not be created. Try again."
+      }
     },
     "lista": {
       "cuenta": "Portal account",

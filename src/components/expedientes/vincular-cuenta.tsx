@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { AlertCircle, Link2, Loader2, Save, Unlink } from "lucide-react";
+import { AlertCircle, Link2, Loader2, Mail, Save, Unlink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/select";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import {
+  crearCuentaEInvitar,
   vincularCuenta,
+  type EstadoInvitacion,
   type EstadoVinculoCuenta,
 } from "@/server/expedientes/acciones";
 import type { CuentaSinVincular } from "@/server/expedientes/consultas";
@@ -40,12 +42,15 @@ export function VincularCuenta({
   vinculada,
   cuentas,
   soloDesvincular = false,
+  correoEstudiante = null,
 }: {
   estudianteId: string;
   vinculada: { id: string; email: string } | null;
   cuentas: CuentaSinVincular[];
   /** Para un expediente que ya no está activo: solo se puede soltar la cuenta. */
   soloDesvincular?: boolean;
+  /** El correo del expediente: con él se puede crear la cuenta e invitar. */
+  correoEstudiante?: string | null;
 }) {
   const t = useTranslations("records.portada");
   const [abierto, setAbierto] = useState(false);
@@ -59,6 +64,14 @@ export function VincularCuenta({
     },
     { estado: "inicial" },
   );
+
+  const [invitacion, invitar, invitando] = useActionState<EstadoInvitacion, FormData>(async (previo, datos) => {
+    const r = await crearCuentaEInvitar(previo, datos);
+
+    if (r.estado === "ok") setAbierto(false);
+
+    return r;
+  }, { estado: "inicial" });
 
   const error =
     estado.estado === "ocupada"
@@ -82,6 +95,25 @@ export function VincularCuenta({
         <DialogHeader>
           <DialogTitle>{t("tituloDialogo")}</DialogTitle>
         </DialogHeader>
+
+        {/* El camino fácil: crear la cuenta y mandar la invitación al correo del expediente. */}
+        {!vinculada && !soloDesvincular && (
+          <form action={invitar} className="space-y-2 rounded-control border border-linea p-3">
+            <input type="hidden" name="estudiante" value={estudianteId} />
+            <p className="text-sm font-medium">{t("invitarTitulo")}</p>
+            <p className="texto-meta">{correoEstudiante ? t("invitarAyuda", { correo: correoEstudiante }) : t("invitarSinCorreo")}</p>
+            {invitacion.estado !== "inicial" && invitacion.estado !== "ok" && (
+              <p role="alert" className={ALERTA_RIESGO.contenedor}>
+                <AlertCircle className={ALERTA_RIESGO.icono} />
+                <span className={ALERTA_RIESGO.texto}>{t(`invitarErrores.${invitacion.estado}`)}</span>
+              </p>
+            )}
+            <Button type="submit" disabled={invitando || !correoEstudiante} className="w-full">
+              {invitando ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
+              {t("invitarBoton")}
+            </Button>
+          </form>
+        )}
 
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="estudiante" value={estudianteId} />

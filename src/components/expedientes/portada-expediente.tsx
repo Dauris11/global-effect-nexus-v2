@@ -56,6 +56,7 @@ export async function PortadaExpediente({
     | "donde_estudia"
     | "fecha_ingreso"
     | "grupo"
+    | "email"
   >;
   foto: string | null;
   cuenta: CuentaVinculada | null;
@@ -146,6 +147,7 @@ export async function PortadaExpediente({
             vinculada={cuenta ? { id: cuenta.id, email: cuenta.email } : null}
             cuentas={activo ? cuentasLibres : []}
             soloDesvincular={!activo}
+            correoEstudiante={expediente.email}
           />
         )}
       </div>

@@ -1,5 +1,8 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
+
+import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
@@ -16,7 +19,9 @@ import {
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
+import { crearIdentidad, enlaceParaEstablecerClave } from "@/lib/supabase/admin";
 import { borrarDocumento, subirAvatar } from "@/lib/supabase/almacen";
+import { encolarCorreo } from "@/server/compartidos/notificaciones";
 import { estaEnLaVega } from "@/lib/la-vega-geografia";
 import { leerDocumentoDeIdentidad } from "@/server/ia/ocr";
 import { resolverCatalogo } from "@/server/universidades/catalogo-estudiante";
@@ -1023,4 +1028,84 @@ export async function cambiarSituacionExpediente(_previo: EstadoSituacion, datos
   revalidatePath("/[locale]/expedientes", "page");
 
   return { estado: "ok" };
+}
+
+export type EstadoInvitacion = {
+  estado: "inicial" | "ok" | "no_permitido" | "invalido" | "no_activo" | "sin_correo" | "ya_tiene_cuenta" | "correo_repetido" | "error";
+  correo?: string;
+};
+
+/**
+ * Crear la cuenta del estudiante desde su expediente y invitarlo por correo. Nadie conoce
+ * ni teclea una contraseña: la cuenta nace con una al azar que no se muestra, y el estudiante
+ * recibe un enlace para elegir la suya. Solo para activos, con el correo del expediente.
+ */
+export async function crearCuentaEInvitar(_previo: EstadoInvitacion, datos: FormData): Promise<EstadoInvitacion> {
+  const usuario = await requerirUsuario();
+
+  // Crear una cuenta es administrar usuarios; vincularla es escribir el expediente: hacen falta las dos.
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir") || !usuarioTienePermiso(usuario, "usuarios.administrar")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("estudiante") ?? "");
+
+  if (!esUuid(id)) return { estado: "invalido" };
+
+  const e = await consultarUna<{ nombre: string; email: string | null; estado: string; usuario_id: string | null }>(
+    `SELECT nombre, email::text AS email, estado::text AS estado, usuario_id FROM estudiante WHERE id = $1`,
+    [id],
+  );
+
+  if (!e) return { estado: "invalido" };
+  if (!llevaCuenta(e.estado)) return { estado: "no_activo" };
+  if (e.usuario_id) return { estado: "ya_tiene_cuenta" };
+  if (!e.email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.email)) return { estado: "sin_correo" };
+
+  const correo = e.email.trim().toLowerCase();
+  const cabeceras = await headers();
+  const origen = process.env.NEXT_PUBLIC_SITE_URL ?? `${cabeceras.get("x-forwarded-proto") ?? "https"}://${cabeceras.get("host")}`;
+
+  try {
+    const creado = await consultarUna<{ id: string }>(
+      `INSERT INTO usuario (email, nombre, idioma, activo, rol_id)
+       VALUES ($1, $2, 'es', TRUE, (SELECT id FROM rol WHERE nombre = 'estudiante'))
+       ON CONFLICT (email) DO NOTHING RETURNING id`,
+      [correo, e.nombre],
+    );
+
+    if (!creado) return { estado: "correo_repetido" };
+
+    const identidad = await crearIdentidad(correo, e.nombre, randomBytes(24).toString("base64url"));
+
+    if (!identidad.ok) {
+      await consultarUna(`DELETE FROM usuario WHERE id = $1 RETURNING id`, [creado.id]);
+
+      return { estado: identidad.motivo === "existe" ? "correo_repetido" : "error" };
+    }
+
+    await consultarUna(`UPDATE usuario SET auth_user_id = $2 WHERE id = $1 RETURNING id`, [creado.id, identidad.id]);
+    await consultarUna(`UPDATE estudiante SET usuario_id = $2 WHERE id = $1 RETURNING id`, [id, creado.id]);
+
+    const enlace = await enlaceParaEstablecerClave(correo, `${origen}/establecer-clave`);
+
+    if (!enlace) return { estado: "error" };
+
+    await encolarCorreo({
+      destinatario: correo,
+      asunto: "Te damos la bienvenida al Portal GlobalEffect",
+      cuerpoHtml: `<p>Hola ${e.nombre.replace(/[<>&]/g, "")},</p><p>La Fundación Global Effect creó tu acceso al portal del estudiante. Para entrar, elige tu contraseña con este botón:</p><p><a href="${enlace}" style="background:#2096BA;color:#fff;padding:12px 20px;border-radius:12px;text-decoration:none;display:inline-block">Elegir mi contraseña</a></p><p>Si el botón no funciona, copia este enlace en tu navegador:<br>${enlace}</p><p>Si no esperabas este correo, puedes ignorarlo.</p>`,
+      cuerpoTexto: `Hola ${e.nombre}, la Fundación Global Effect creó tu acceso al portal del estudiante. Elige tu contraseña aquí: ${enlace}`,
+    });
+
+    await registrar({ usuarioId: usuario.id, accion: "cuenta.invitada", entidad: "estudiante", entidadId: id, datos: { correo } });
+  } catch (error) {
+    console.error("[expedientes] no se pudo crear la cuenta e invitar", error);
+
+    return { estado: "error" };
+  }
+
+  revalidatePath("/[locale]/expedientes/[id]", "page");
+
+  return { estado: "ok", correo };
 }
