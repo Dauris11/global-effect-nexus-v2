@@ -6982,6 +6982,27 @@
     "pasos": {
       "pasajero": "Pasajero",
       "viaje": "Viaje"
+    },
+    "admin": {
+      "title": "Gestión de Transporte Institucional",
+      "subtitle": "Monitoreo en vivo del circuito universitario, turnos diarios, pasajeros e incidencias.",
+      "kpiActiveTrip": "Estado actual",
+      "kpiPassengersToday": "Pasajeros hoy",
+      "kpiStops": "Paradas oficiales",
+      "kpiIncidents": "Incidencias recientes",
+      "shiftsTitle": "Turnos oficiales y viajes de hoy",
+      "shiftActive": "Activo",
+      "shiftPaused": "Pausado",
+      "activateShift": "Activar",
+      "pauseShift": "Pausar",
+      "driverLabel": "Chofer",
+      "noDriverYet": "Sin iniciar hoy",
+      "passengersTitle": "Pasajeros inscritos hoy",
+      "noPassengersShift": "No hay pasajeros anotados en este turno para hoy.",
+      "incidentsTitle": "Bitácora de incidencias",
+      "noIncidents": "No hay incidencias reportadas recientemente.",
+      "typeRecurring": "Recurrente",
+      "typeDaily": "Puntual"
     }
   },
   "permisosAdmin": {

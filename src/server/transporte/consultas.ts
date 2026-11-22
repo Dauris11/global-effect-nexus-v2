@@ -415,3 +415,91 @@ export async function recorridoDelViaje(
   );
   return filas.map((f) => [f.lat, f.lng]);
 }
+
+export type TurnoConConteoAdmin = TransporteHorario & {
+  pasajeros_hoy: number;
+  viaje_hoy_estado: string | null;
+  chofer_hoy_nombre: string | null;
+};
+
+export type IncidenciaAdminTransporte = TransporteIncidencia & {
+  fecha: string;
+  horario_nombre: string;
+};
+
+/**
+ * Datos completos para el módulo administrativo de transporte
+ * (`/administrativo/transporte`, permiso `transporte.gestionar`).
+ */
+export async function obtenerResumenAdminTransporte(): Promise<{
+  turnos: TurnoConConteoAdmin[];
+  pasajerosPorHorario: Record<string, PasajeroViaje[]>;
+  incidenciasRecientes: IncidenciaAdminTransporte[];
+}> {
+  const [horarios, viajesHoy, incidenciasRecientes] = await Promise.all([
+    consultar<TransporteHorario>(
+      `SELECT h.id,
+              h.codigo,
+              h.nombre,
+              to_char(h.hora_salida, 'HH24:MI') AS hora_salida,
+              to_char(h.hora_llegada_estimada, 'HH24:MI') AS hora_llegada_estimada,
+              h.ruta_id,
+              r.nombre AS ruta_nombre,
+              h.orden,
+              h.activo
+         FROM transporte_horario h
+         JOIN transporte_ruta r ON r.id = h.ruta_id
+        ORDER BY h.orden ASC, h.hora_salida ASC`,
+    ),
+    consultar<{
+      horario_id: string;
+      estado: string;
+      chofer_nombre: string;
+    }>(
+      `SELECT DISTINCT ON (v.horario_id)
+              v.horario_id,
+              v.estado,
+              u.nombre AS chofer_nombre
+         FROM transporte_viaje v
+         JOIN usuario u ON u.id = v.chofer_id
+        WHERE v.fecha = ${SQL_HOY_RD}
+        ORDER BY v.horario_id, v.actualizado_en DESC`,
+    ),
+    consultar<IncidenciaAdminTransporte>(
+      `SELECT i.id,
+              i.viaje_id,
+              i.chofer_id,
+              u.nombre AS chofer_nombre,
+              i.tipo,
+              i.descripcion,
+              i.lat::float AS lat,
+              i.lng::float AS lng,
+              to_char(i.creado_en AT TIME ZONE 'America/Santo_Domingo', 'HH24:MI') AS creado_en,
+              to_char(v.fecha, 'YYYY-MM-DD') AS fecha,
+              h.nombre AS horario_nombre
+         FROM transporte_incidencia i
+         JOIN transporte_viaje v ON v.id = i.viaje_id
+         JOIN transporte_horario h ON h.id = v.horario_id
+         JOIN usuario u ON u.id = i.chofer_id
+        ORDER BY i.creado_en DESC
+        LIMIT 15`,
+    ),
+  ]);
+
+  const listas = await Promise.all(
+    horarios.map(async (h) => [h.id, await obtenerPasajerosHorario(h.id)] as const),
+  );
+  const pasajerosPorHorario = Object.fromEntries(listas);
+
+  const turnos: TurnoConConteoAdmin[] = horarios.map((h) => {
+    const viaje = viajesHoy.find((v) => v.horario_id === h.id);
+    return {
+      ...h,
+      pasajeros_hoy: (pasajerosPorHorario[h.id] ?? []).length,
+      viaje_hoy_estado: viaje?.estado ?? null,
+      chofer_hoy_nombre: viaje?.chofer_nombre ?? null,
+    };
+  });
+
+  return { turnos, pasajerosPorHorario, incidenciasRecientes };
+}

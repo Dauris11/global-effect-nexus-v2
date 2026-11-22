@@ -287,6 +287,12 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Utensils,
             permiso: "operaciones.leer",
           },
+          {
+            etiqueta: "transport",
+            href: "/administrativo/transporte",
+            icono: Bus,
+            permiso: "transporte.gestionar",
+          },
         ],
       },
     ],

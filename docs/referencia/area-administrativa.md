@@ -31,6 +31,7 @@ Definidos en `src/lib/rbac.ts` y evaluados siempre con `usuarioTienePermiso(usua
 | `usuarios.administrar` | Gestionar cuentas de personal y asignación de roles en `/administrativo/personal`. |
 | `rendicion.enviar` / `rendicion.revisar` | Enviar rendiciones de gastos con OCR/NCF o aprobarlas/revisarlas en `/administrativo/rendiciones`. |
 | `inventario.leer` / `escribir` / `auditar` / `eliminar` | Ver, crear/editar, auditar o eliminar activos en `/administrativo/inventario`. |
+| `transporte.gestionar` | Monitorear el mapa en vivo (TIMOB), consultar listas de pasajeros por turno, activar/pausar horarios oficiales y revisar incidencias en `/administrativo/transporte`. |
 
 > **Nota de acceso a proyectos:** En `/administrativo/proyectos/[id]`, un usuario sin `operaciones.leer` igual puede entrar si `participaEnProyecto(sesion.id, id)` devuelve `true` (por ejemplo, personal de Habitudes, contabilidad o chofer asignado a un proyecto). La gestión del equipo del proyecto dentro de esa pantalla requiere `operaciones.escribir`.
 
@@ -93,4 +94,5 @@ Definidos en `src/lib/rbac.ts` y evaluados siempre con `usuarioTienePermiso(usua
 - **Rendiciones de gastos (`/administrativo/rendiciones`):** Carga de facturas/comprobantes con escaneo OCR y validación NCF/RNC ante DGII imputados a programas (`FormularioRendicionGasto`, `ListaRendiciones`, `src/server/colaborador/{consultas,acciones}.ts`).
 - **Personal (`/administrativo/personal`):** Creación de cuentas de trabajo y asignación de roles (`usuarios.administrar`, `GestionCuentas`, `src/server/personal/consultas.ts`).
 - **Inventario (`/administrativo/inventario`):** Catálogo, métricas DOP, auditoría y escaneo QR de activos (`TablaActivos`, `src/server/inventario/consultas.ts`).
+- **Transporte Institucional (`/administrativo/transporte`):** Monitoreo en vivo con mapa TIMOB del circuito universitario, turnos diarios (`transporte_horario`), pasajeros inscritos por turno, activación/pausa de horarios (`alternarHorarioTransporte`) y bitácora de incidencias (`obtenerResumenAdminTransporte`). Protegido por `transporte.gestionar`.
 

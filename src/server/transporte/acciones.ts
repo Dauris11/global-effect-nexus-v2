@@ -32,6 +32,7 @@ const TIPOS_INCIDENCIA: readonly TipoIncidenciaTransporte[] = [
 function refrescarTransporte() {
   revalidatePath("/portal/chofer");
   revalidatePath("/portal/estudiante/transporte");
+  revalidatePath("/administrativo/transporte");
   revalidatePath("/transporte");
 }
 
@@ -631,5 +632,46 @@ export async function cargarPasajerosHorario(
   } catch (error) {
     console.error("[transporte] Error al obtener pasajeros:", error);
     return { ok: false, pasajeros: [] };
+  }
+}
+
+/**
+ * Habilita o pausa un turno oficial del transporte institucional
+ * (`/administrativo/transporte`, requiere permiso `transporte.gestionar`).
+ */
+export async function alternarHorarioTransporte(
+  horarioId: string,
+  activo: boolean,
+): Promise<{ ok: boolean; mensaje?: string }> {
+  const usuario = await requerirPermiso("transporte.gestionar");
+
+  if (!UUID.test(horarioId)) {
+    return { ok: false, mensaje: "datos_invalidos" };
+  }
+
+  try {
+    const actualizado = await consultarUna<{ id: string; codigo: string }>(
+      `UPDATE transporte_horario
+          SET activo = $2
+        WHERE id = $1
+      RETURNING id, codigo`,
+      [horarioId, Boolean(activo)],
+    );
+
+    if (!actualizado) return { ok: false, mensaje: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "transporte.horario_actualizado",
+      entidad: "transporte_horario",
+      entidadId: actualizado.id,
+      datos: { codigo: actualizado.codigo, activo: Boolean(activo) },
+    });
+
+    refrescarTransporte();
+    return { ok: true };
+  } catch (error) {
+    console.error("[transporte] Error actualizando horario:", error);
+    return { ok: false, mensaje: "error_interno" };
   }
 }

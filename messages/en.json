@@ -6982,6 +6982,27 @@
     "pasos": {
       "pasajero": "Passenger",
       "viaje": "Trip"
+    },
+    "admin": {
+      "title": "Institutional Transport Management",
+      "subtitle": "Live university circuit tracking, daily shifts, passenger rosters and incident logs.",
+      "kpiActiveTrip": "Current status",
+      "kpiPassengersToday": "Riders today",
+      "kpiStops": "Official stops",
+      "kpiIncidents": "Recent incidents",
+      "shiftsTitle": "Official shifts & today's trips",
+      "shiftActive": "Active",
+      "shiftPaused": "Paused",
+      "activateShift": "Activate",
+      "pauseShift": "Pause",
+      "driverLabel": "Driver",
+      "noDriverYet": "Not started today",
+      "passengersTitle": "Passengers scheduled today",
+      "noPassengersShift": "No passengers scheduled for this shift today.",
+      "incidentsTitle": "Incident log",
+      "noIncidents": "No incidents reported recently.",
+      "typeRecurring": "Recurring",
+      "typeDaily": "Single-day"
     }
   },
   "permisosAdmin": {
