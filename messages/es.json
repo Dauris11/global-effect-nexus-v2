@@ -1328,9 +1328,9 @@
         "academyPending": "El récord de notas de la academia de liderazgo se mostrará aquí cuando se cargue y se lea con OCR."
       },
       "curriculum": {
-        "title": "Pénsum",
+        "title": "Plan de estudios",
         "approvedCredits": "Créditos de materias aprobadas en el sistema",
-        "pending": "El pénsum de la carrera se mostrará aquí cuando se cargue el catálogo de universidades, carreras y pénsum. Mientras tanto no hay un total ni un porcentaje de avance: no se inventan."
+        "pending": "El plan de estudios de la carrera se mostrará aquí cuando se cargue el catálogo de universidades, carreras y plan de estudios. Mientras tanto no hay un total ni un porcentaje de avance: no se inventan."
       },
       "graduation": {
         "title": "Graduación",
@@ -1366,7 +1366,7 @@
       "label": "Acciones rápidas del expediente",
       "edit": "Editar expediente",
       "uploadGradua": "Subir el gradua o el récord",
-      "careerCurriculum": "Ver el pénsum de su carrera",
+      "careerCurriculum": "Ver el plan de estudios de su carrera",
       "sponsor": "Patrocinador: {name}",
       "letters": "Cartas a patrocinadores",
       "monthly": "Servicios del mes"
@@ -7057,8 +7057,8 @@
       "transporte_gestionar": "Gestionar el transporte",
       "transporte_operar": "Operar rutas de transporte",
       "usuarios_administrar": "Administrar usuarios",
-      "catalogo_leer": "Ver el catálogo de universidades y pénsum",
-      "catalogo_escribir": "Editar el catálogo de universidades y pénsum"
+      "catalogo_leer": "Ver el catálogo de universidades y planes de estudios",
+      "catalogo_escribir": "Editar el catálogo de universidades y planes de estudios"
     }
   },
   "lineaTiempo": {
@@ -7099,7 +7099,7 @@
     }
   },
   "catalog": {
-    "title": "Universidades y pénsum",
+    "title": "Universidades y planes de estudios",
     "back": "Volver",
     "edit": "Editar",
     "save": "Guardar",
@@ -7127,18 +7127,18 @@
       "new": "Nueva carrera",
       "name": "Nombre de la carrera",
       "empty": "Esta universidad aún no tiene carreras",
-      "counts": "{pensums} pénsums · {students} estudiantes"
+      "counts": "{pensums} planes de estudios · {students} estudiantes"
     },
     "pensum": {
-      "title": "Pénsum",
-      "new": "Nuevo pénsum",
+      "title": "Plan de estudios",
+      "new": "Nuevo plan de estudios",
       "version": "Versión o año del plan",
       "versionLabel": "Plan {version}",
       "currentLabel": "Vigencia",
       "current": "Vigente",
       "old": "Anterior",
-      "empty": "Esta carrera aún no tiene pénsum",
-      "noSubjects": "Este pénsum no tiene materias cargadas",
+      "empty": "Esta carrera aún no tiene plan de estudios",
+      "noSubjects": "Este plan de estudios no tiene materias cargadas",
       "totals": "{subjects} materias · {credits} créditos · {students} estudiantes",
       "period": "Período",
       "code": "Código",
@@ -7165,25 +7165,25 @@
       "logo_grande": "El logo pesa más de 1 MB."
     },
     "link": {
-      "title": "Universidad, carrera y pénsum",
+      "title": "Universidad, carrera y plan de estudios",
       "university": "Universidad",
       "career": "Carrera",
-      "pensum": "Pénsum",
+      "pensum": "Plan de estudios",
       "matricula": "Matrícula",
       "none": "Sin elegir",
       "save": "Guardar",
       "manage": "Administrar el catálogo",
       "saved": "Guardado.",
       "legacy": "Antes figuraba escrito a mano: «{text}». Elige una universidad del catálogo para vincularla.",
-      "invalid": "La universidad, la carrera y el pénsum elegidos no concuerdan. Revisa los tres desplegables.",
+      "invalid": "La universidad, la carrera y el plan de estudios elegidos no concuerdan. Revisa los tres desplegables.",
       "edit": "Cambiar en la edición del expediente",
       "unlinked": "Sin vincular al catálogo: «{text}»",
       "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula."
     },
     "progress": {
-      "title": "Avance en el pénsum",
+      "title": "Avance en el plan de estudios",
       "credits": "{approved} de {total} créditos aprobados ({percent} %)",
-      "subjects": "Materias del pénsum",
+      "subjects": "Materias del plan de estudios",
       "code": "Código",
       "subject": "Materia",
       "creditsShort": "Créd.",
@@ -7191,13 +7191,13 @@
       "aprobada": "Aprobada",
       "cursando": "Cursando",
       "pendiente": "Pendiente",
-      "noPensum": "Aún no tiene pénsum asignado: elige universidad, carrera y plan arriba para ver su avance.",
-      "emptyPensum": "El pénsum elegido todavía no tiene materias cargadas.",
+      "noPensum": "Aún no tiene plan de estudios asignado: elige universidad, carrera y plan arriba para ver su avance.",
+      "emptyPensum": "El plan de estudios elegido todavía no tiene materias cargadas.",
       "regime": "Régimen: {regime}",
       "generalIndex": "Índice general",
       "graduaMatches": "El gradua subido el {date} declara {index} y el sistema calcula lo mismo: las reglas de la universidad concuerdan.",
       "graduaDiffers": "El gradua subido el {date} declara {reported} y el sistema calcula {computed}. Hay notas posteriores o las reglas de la universidad necesitan revisión.",
-      "outsidePensum": "Materias del gradua que no están en el pénsum elegido: {codes}.",
+      "outsidePensum": "Materias del gradua que no están en el plan de estudios elegido: {codes}.",
       "noGradua": "Todavía no se ha subido el gradua: el avance sale solo de las notas del sistema. Súbelo abajo.",
       "period": "Período {n} del plan",
       "noPeriod": "Sin período sugerido",
@@ -7246,7 +7246,7 @@
       "type": {
         "gradua": "Gradua (validación de asignaturas)",
         "record_notas": "Récord de notas",
-        "pensum_pdf": "Pénsum oficial"
+        "pensum_pdf": "Plan de estudios oficial"
       },
       "errors": {
         "no_permitido": "No tienes permiso para subir archivos aquí.",
@@ -7260,12 +7260,12 @@
         "sin_lector": "Todavía no sabemos leer el gradua de {university}. No se guardó."
       },
       "gradTitle": "Gradua y récord del estudiante",
-      "pensumTitle": "PDF oficial del pénsum",
-      "read": "Gradua leído: {rows} materias con resultado, {pending} sin cursar{index}. El pénsum ya está actualizado.",
+      "pensumTitle": "PDF oficial del plan de estudios",
+      "read": "Gradua leído: {rows} materias con resultado, {pending} sin cursar{index}. El plan de estudios ya está actualizado.",
       "warnings": {
         "nombre_distinto": "El nombre del reporte no coincide con el del estudiante; revisa que sea suyo.",
-        "version_distinta": "La versión del plan del reporte no es la del pénsum elegido.",
-        "pensum_asignado": "Se asignó el pénsum según la versión del reporte."
+        "version_distinta": "La versión del plan del reporte no es la del plan de estudios elegido.",
+        "pensum_asignado": "Se asignó el plan de estudios según la versión del reporte."
       }
     },
     "record": {
@@ -7402,8 +7402,8 @@
         "sin_estudiante": "No se encontró al estudiante",
         "ambiguo": "Más de un estudiante coincide",
         "matricula_otra_persona": "La matrícula es de otra persona",
-        "sin_pensum": "El estudiante no tiene pénsum",
-        "materia_fuera_del_pensum": "La materia no está en su pénsum",
+        "sin_pensum": "El estudiante no tiene plan de estudios",
+        "materia_fuera_del_pensum": "La materia no está en su plan de estudios",
         "letra_invalida": "La letra no existe en esta universidad",
         "repetida": "Materia repetida en la carga",
         "confianza_baja": "Lectura poco segura"

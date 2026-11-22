@@ -265,8 +265,8 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
   },
   {
     identificadores: ["universidades", "universidad", "pensum", "pénsum", "carreras", "plan de estudios", "logo"],
-    etiqueta: "Universidades y pénsum",
-    descripcion: "Catálogo de universidades, carreras, pénsums y sus materias con créditos; reglas de calificación de cada universidad.",
+    etiqueta: "Universidades y planes de estudios",
+    descripcion: "Catálogo de universidades, carreras, planes de estudios y sus materias con créditos; reglas de calificación de cada universidad.",
     ruta: "/academico/universidades",
     puede: conPermiso("catalogo.leer"),
   },

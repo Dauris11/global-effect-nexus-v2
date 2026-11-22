@@ -122,7 +122,6 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Sparkles,
           },
           { etiqueta: "academic", href: "/academico/materias", icono: Library },
-          { etiqueta: "history", href: "/academico/historial", icono: BarChart3 },
           {
             etiqueta: "preenrollment",
             href: "/academico/prematricula",
