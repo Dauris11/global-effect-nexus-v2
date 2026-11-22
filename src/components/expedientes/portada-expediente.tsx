@@ -13,6 +13,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
+import { CambiarSituacion } from "@/components/expedientes/cambiar-situacion";
 import { VincularCuenta } from "@/components/expedientes/vincular-cuenta";
 import { Badge } from "@/components/ui/badge";
 import { Dato, FilaDatos } from "@/components/ui/dato";
@@ -136,6 +137,9 @@ export async function PortadaExpediente({
 
         {/* A un activo se le vincula o cambia la cuenta; a otro estado solo se
             le puede soltar la que le haya quedado de cuando estaba activo. */}
+        {puedeEditar && (
+          <CambiarSituacion estudianteId={expediente.id} estadoActual={expediente.estado} tieneCuenta={Boolean(cuenta)} />
+        )}
         {puedeEditar && (activo || cuenta) && (
           <VincularCuenta
             estudianteId={expediente.id}

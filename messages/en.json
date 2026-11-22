@@ -1009,7 +1009,8 @@
       "activo": "Active",
       "inactivo": "Inactive",
       "graduado": "Graduated",
-      "suspendido": "Suspended"
+      "suspendido": "Suspended",
+      "retirado": "Withdrawn"
     },
     "gender": {
       "masculino": "Male",
@@ -1348,6 +1349,25 @@
       "sponsor": "Sponsor: {name}",
       "letters": "Sponsor letters",
       "monthly": "This month's services"
+    },
+    "situation": {
+      "title": "Cambiar la situación",
+      "button": "Cambiar situación",
+      "newState": "¿En qué situación queda?",
+      "reason": "¿Por qué? (obligatorio)",
+      "date": "Desde qué fecha",
+      "releasesAccount": "Al pasar a este estado se suelta la cuenta del portal: el estudiante ya no podrá entrar.",
+      "activeNeeds": "Para pasar a activo hay que llenar primero la universidad, la carrera, el plan de estudios y la matrícula en «Editar».",
+      "applicantNote": "Un postulado todavía no es parte de la Fundación: primero pasa los filtros y la Academia de Liderazgo.",
+      "save": "Guardar el cambio",
+      "saved": "Listo, la situación quedó actualizada.",
+      "errors": {
+        "no_permitido": "No tienes permiso para cambiar la situación.",
+        "no_encontrado": "No se encontró el expediente.",
+        "invalido": "Elige la situación y escribe el motivo.",
+        "faltan_datos_universidad": "Faltan la universidad, la carrera, el plan de estudios o la matrícula. Llénalos en «Editar» y vuelve a intentarlo.",
+        "error": "No se pudo guardar. Inténtalo de nuevo."
+      }
     }
   },
   "academic": {
@@ -7123,7 +7143,8 @@
       "legacy": "It used to be typed by hand: \"{text}\". Choose a university from the catalog to link it.",
       "invalid": "The chosen university, program and curriculum do not match. Check the three dropdowns.",
       "edit": "Change in the student's edit tab",
-      "unlinked": "Not linked to the catalog: \"{text}\""
+      "unlinked": "Not linked to the catalog: \"{text}\"",
+      "incompleteActive": "Para que quede activo faltan la universidad, la carrera, el plan de estudios o la matrícula."
     },
     "progress": {
       "title": "Curriculum progress",

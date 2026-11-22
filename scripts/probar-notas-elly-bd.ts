@@ -60,6 +60,7 @@ try {
 } catch (error) {
   fallo = error;
 } finally {
+  await consultar(`DELETE FROM notificacion WHERE enlace = $1`, [`/expedientes/${est!.id}`]);
   await consultar(`DELETE FROM estudiante WHERE id = $1`, [est!.id]);
   await pool.end();
 }

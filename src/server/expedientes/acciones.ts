@@ -49,6 +49,7 @@ export type EstadoExpediente = {
     | "foto_invalida"
     | "foto_grande"
     | "catalogo_invalido"
+    | "faltan_datos_universidad"
     | "error";
 };
 
@@ -123,6 +124,11 @@ export async function actualizarExpediente(
       const catalogo = await resolverCatalogo(cliente, datos);
 
       if (!catalogo) throw new Error("CATALOGO_INVALIDO");
+
+      // Solo los activos son parte de la Fundación: para pasar a activo hay que llenar la universidad.
+      if (estado === "activo" && previo.rows[0]?.estado !== "activo" && !datosDeActivo(catalogo, texto("matricula"))) {
+        throw new Error("FALTAN_DATOS_UNIVERSIDAD");
+      }
 
       const actualizado = await cliente.query(
         `UPDATE estudiante
@@ -350,6 +356,9 @@ export async function actualizarExpediente(
     if (error instanceof Error && error.message === "CATALOGO_INVALIDO") {
       return { estado: "catalogo_invalido" };
     }
+    if (error instanceof Error && error.message === "FALTAN_DATOS_UNIVERSIDAD") {
+      return { estado: "faltan_datos_universidad" };
+    }
     console.error("[expedientes] no se pudo guardar la edición:", error);
     return { estado: "error" };
   }
@@ -436,6 +445,8 @@ export async function crearExpediente(
       const catalogo = await resolverCatalogo(cliente, datos);
 
       if (!catalogo) throw new Error("CATALOGO_INVALIDO");
+
+      if (estado === "activo" && !datosDeActivo(catalogo, texto("matricula"))) throw new Error("FALTAN_DATOS_UNIVERSIDAD");
 
       const fila = await cliente.query<{ id: string }>(
         `INSERT INTO estudiante (
@@ -604,6 +615,9 @@ export async function crearExpediente(
     if (error instanceof Error && error.message === "CATALOGO_INVALIDO") {
       return { estado: "catalogo_invalido" };
     }
+    if (error instanceof Error && error.message === "FALTAN_DATOS_UNIVERSIDAD") {
+      return { estado: "faltan_datos_universidad" };
+    }
     console.error("[expedientes] no se pudo crear el expediente:", error);
     return { estado: "error" };
   }
@@ -741,6 +755,11 @@ export async function eliminarExpediente(
   revalidatePath("/[locale]/expedientes", "page");
 
   redirigir("/expedientes", await getLocale());
+}
+
+/** Universidad, carrera, plan de estudios y matrícula: lo que se exige para ser activo. */
+function datosDeActivo(catalogo: { universidadId: string | null; carreraId: string | null; pensumId: string | null }, matricula: string | null): boolean {
+  return Boolean(catalogo.universidadId && catalogo.carreraId && catalogo.pensumId && matricula);
 }
 
 function esUuid(valor: string): boolean {
@@ -934,6 +953,74 @@ export async function vincularCuenta(
   }
 
   revalidatePath("/[locale]/expedientes/[id]", "page");
+
+  return { estado: "ok" };
+}
+
+export type EstadoSituacion = {
+  estado: "inicial" | "ok" | "no_permitido" | "no_encontrado" | "invalido" | "faltan_datos_universidad" | "error";
+};
+
+/** Estados que exigen explicar por qué: salen de la vida activa de la Fundación. */
+const SITUACIONES_CON_MOTIVO = ["inactivo", "graduado", "suspendido", "retirado"];
+
+/**
+ * Cambiar la situación de un estudiante con su motivo y su fecha. Es el camino guiado
+ * para pasar de etapa: queda en el historial de etapas con quién, por qué y desde cuándo.
+ *
+ * Dos reglas de fondo: solo los ACTIVOS son parte de la Fundación, así que para pasar a
+ * activo el expediente ya debe tener universidad, carrera, plan de estudios y matrícula;
+ * y todo estado que no sea activo suelta la cuenta del portal.
+ */
+export async function cambiarSituacionExpediente(_previo: EstadoSituacion, datos: FormData): Promise<EstadoSituacion> {
+  const usuario = await requerirUsuario();
+
+  if (!usuarioTienePermiso(usuario, "expedientes.escribir")) return { estado: "no_permitido" };
+
+  const id = String(datos.get("estudiante") ?? "");
+  const nuevo = String(datos.get("nuevo_estado") ?? "");
+  const motivo = String(datos.get("motivo") ?? "").trim().slice(0, 500);
+  const fechaTexto = String(datos.get("fecha") ?? "");
+  const fecha = /^\d{4}-\d{2}-\d{2}$/.test(fechaTexto) ? fechaTexto : new Date().toISOString().slice(0, 10);
+
+  if (!esUuid(id) || !esEstadoEstudiante(nuevo)) return { estado: "invalido" };
+  if (SITUACIONES_CON_MOTIVO.includes(nuevo) && !motivo) return { estado: "invalido" };
+
+  try {
+    const r = await enTransaccion(async (cliente) => {
+      const fila = await cliente.query<{ estado: string; universidad_id: string | null; carrera_id: string | null; pensum_id: string | null; matricula: string | null }>(
+        `SELECT estado, universidad_id, carrera_id, pensum_id, matricula FROM estudiante WHERE id = $1 FOR UPDATE`,
+        [id],
+      );
+      const actual = fila.rows[0];
+
+      if (!actual) return "no_encontrado" as const;
+      if (actual.estado === nuevo) return "invalido" as const;
+      if (nuevo === "activo" && !(actual.universidad_id && actual.carrera_id && actual.pensum_id && actual.matricula)) return "faltan_datos_universidad" as const;
+
+      await cliente.query(
+        `UPDATE estudiante SET estado = $2::estado_estudiante, usuario_id = CASE WHEN $3 THEN usuario_id ELSE NULL END WHERE id = $1`,
+        [id, nuevo, llevaCuenta(nuevo)],
+      );
+      await cliente.query(
+        `INSERT INTO estudiante_etapa (estudiante_id, estado_anterior, estado_nuevo, usuario_id, motivo, fecha_efectiva)
+         VALUES ($1, $2::estado_estudiante, $3::estado_estudiante, $4, $5, $6::date)`,
+        [id, actual.estado, nuevo, usuario.id, motivo || null, fecha],
+      );
+
+      return "ok" as const;
+    });
+
+    if (r !== "ok") return { estado: r };
+  } catch (error) {
+    console.error("[expedientes] no se pudo cambiar la situación", error);
+
+    return { estado: "error" };
+  }
+
+  await registrar({ usuarioId: usuario.id, accion: "expediente.situacion_cambiada", entidad: "estudiante", entidadId: id, datos: { nuevo, fecha } });
+  revalidatePath("/[locale]/expedientes/[id]", "page");
+  revalidatePath("/[locale]/expedientes", "page");
 
   return { estado: "ok" };
 }

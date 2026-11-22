@@ -117,11 +117,16 @@ try {
 
   if (otra) assert.equal(await asignarEstudianteAFila(fila!.id, otra.id), "estudiante_de_otra_universidad");
 
+  // Administración recibió el aviso de riesgo, y una segunda vez no se repite.
+  const avisos = await consultar(`SELECT 1 FROM notificacion WHERE enlace = $1`, [`/expedientes/${est!.id}`]);
+
+  assert.ok(avisos.length > 0, "aviso a administración");
   console.log("✓ carga de calificaciones: borrador, emparejamiento, todo o nada, alertas y asignación a mano");
 } catch (error) {
   fallo = error;
 } finally {
   await consultar(`DELETE FROM carga_calificaciones WHERE id = ANY($1::uuid[])`, [cargas]);
+  await consultar(`DELETE FROM notificacion WHERE enlace = $1`, [`/expedientes/${est!.id}`]);
   await consultar(`DELETE FROM estudiante WHERE id = $1`, [est!.id]);
   await pool.end();
 }

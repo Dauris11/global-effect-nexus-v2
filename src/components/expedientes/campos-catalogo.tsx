@@ -19,6 +19,7 @@ export type TextosCatalogo = {
   plan: string;
   previous: string;
   invalid: string;
+  incompleteActive: string;
 };
 
 export type CatalogoDelFormulario = { arbol: ArbolCatalogo; textos: TextosCatalogo };

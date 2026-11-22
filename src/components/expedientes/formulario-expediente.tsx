@@ -189,7 +189,9 @@ export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormu
                 <span className={ALERTA_RIESGO.texto}>
                   {alta.estado === "invalido"
                     ? textos.faltaNombre
-                    : alta.estado === "catalogo_invalido" && catalogo
+                    : alta.estado === "faltan_datos_universidad" && catalogo
+                      ? catalogo.textos.incompleteActive
+                      : alta.estado === "catalogo_invalido" && catalogo
                       ? catalogo.textos.invalid
                       : textos.error}
                 </span>

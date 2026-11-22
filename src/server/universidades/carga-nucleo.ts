@@ -4,6 +4,7 @@ import { consultar, consultarUna, enTransaccion } from "@/lib/db";
 import { calcularIndice, type ReglasIndice } from "@/lib/indice-academico";
 import { leerDocumento, MAXIMO_DOCUMENTO_OCR, TIPOS_DOCUMENTO_OCR } from "@/lib/ia";
 import { umbralDeIndice } from "@/server/academico/indice";
+import { avisarRiesgoAcademico } from "@/server/academico/avisos";
 
 /**
  * Carga guiada de calificaciones: leer el listado, emparejar cada fila con su
@@ -302,6 +303,9 @@ export async function confirmarCarga(cargaId: string, usuarioId: string): Promis
 
     const alertas = await alertasDeCarga(carga.universidad_id, carga.anio, carga.ronda, escribibles.map(([id]) => id));
 
+    // Administración se entera sin abrir cada expediente.
+    await avisarRiesgoAcademico(alertas);
+
     return { estado: "ok", estudiantesEscritos: escribibles.length, notasEscritas: notas, estudiantesOmitidos: omitidos, filasSinEstudiante: sinEstudiante, alertas };
   } catch (error) {
     console.error("[academico] no se pudo confirmar la carga de calificaciones", error);
@@ -311,7 +315,7 @@ export async function confirmarCarga(cargaId: string, usuarioId: string): Promis
 }
 
 /** Índice del período recién cargado y acumulado de cada estudiante escrito, contra los umbrales de su universidad. */
-async function alertasDeCarga(universidadId: string, anio: number, ronda: number, estudiantes: string[]): Promise<AlertaDeCarga[]> {
+export async function alertasDeCarga(universidadId: string, anio: number, ronda: number, estudiantes: string[]): Promise<AlertaDeCarga[]> {
   if (estudiantes.length === 0) return [];
 
   const u = await universidadDeCarga(universidadId);

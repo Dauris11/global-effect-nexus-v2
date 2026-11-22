@@ -133,5 +133,6 @@ export function textosCatalogo(t: (clave: string, valores?: Record<string, strin
     plan: t("pensum.versionLabel", { version: "{version}" }),
     previous: t("pensum.old"),
     invalid: t("link.invalid"),
+    incompleteActive: t("link.incompleteActive"),
   };
 }

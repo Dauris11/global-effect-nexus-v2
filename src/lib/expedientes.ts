@@ -21,6 +21,7 @@ import {
   PauseCircle,
   Send,
   Sparkles,
+  UserMinus,
   UserPlus,
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ export const ESTADOS_ESTUDIANTE = [
   "inactivo",
   "graduado",
   "suspendido",
+  "retirado",
 ] as const;
 
 /**
@@ -181,6 +183,11 @@ export const ESTADO_VISUAL: Record<
     insignia: "bg-[#0a6a8a] text-white",
     franja: "bg-[#0a6a8a]",
     icono: GraduationCap,
+  },
+  retirado: {
+    insignia: "bg-slate-200 text-slate-600",
+    franja: "bg-slate-300",
+    icono: UserMinus,
   },
   suspendido: {
     insignia: "bg-[#B4342B] text-white",

@@ -235,6 +235,8 @@ export function FormularioEdicionExpediente({
               ? textos.savedEdit
               : estado.estado === "invalido"
                 ? textos.faltaNombre
+                : estado.estado === "faltan_datos_universidad" && catalogo
+                ? catalogo.textos.incompleteActive
                 : estado.estado === "catalogo_invalido" && catalogo
                 ? catalogo.textos.invalid
                 : estado.estado === "foto_invalida"
