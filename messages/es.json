@@ -247,7 +247,9 @@
     "commandShortcutMac": "⌘K",
     "assignedSubjects": "Mis materias",
     "universities": "Universidades",
-    "atRisk": "Estudiantes en riesgo"
+    "atRisk": "Estudiantes en riesgo",
+    "uploadGrades": "Subir calificaciones",
+    "leadershipAcademy": "Academia de liderazgo"
   },
   "landing": {
     "enter": "Acceder",
