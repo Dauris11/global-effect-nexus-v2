@@ -255,21 +255,25 @@ export async function listarRecursosHabitudes(
            r.subido_por_id,
            u.nombre AS subido_por_nombre,
            r.descargas_conteo,
-           r.creado_en::text AS creado_en
+           r.creado_en::text AS creado_en,
+           r.portada_ruta,
+           r.vistazo
       FROM public.habitudes_recurso r
       LEFT JOIN public.usuario u ON u.id = r.subido_por_id
      ${where}
      ORDER BY r.creado_en DESC
   `;
 
-  const filas = await consultar<HabitudesRecurso>(query, params);
+  const filas = await consultar<HabitudesRecurso & { portada_ruta: string | null }>(query, params);
   return Promise.all(
-    filas.map(async (r) => {
+    filas.map(async ({ portada_ruta, ...r }) => {
+      const portada_url = portada_ruta ? await enlaceDeDocumento(portada_ruta) : null;
+
       if (r.archivo_url && !r.archivo_url.startsWith("http")) {
         const firmado = await enlaceDeDocumento(r.archivo_url);
-        return { ...r, archivo_url: firmado ?? r.archivo_url };
+        return { ...r, archivo_url: firmado ?? r.archivo_url, portada_url };
       }
-      return r;
+      return { ...r, portada_url };
     }),
   );
 }

@@ -1392,7 +1392,6 @@
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     },
-    "printSheets": "Imprimir",
     "quickCreate": {
       "title": "How do you want to register them?",
       "quick": "Quick registration",
@@ -6524,7 +6523,21 @@
       "lugar": "School",
       "sesion": "Session delivered",
       "evidencia": "Evidence and notes"
-    }
+    },
+    "previewButton": "Preview",
+    "previewOpen": "Preview {title}",
+    "previewContents": "What it contains",
+    "previewFirstLines": "First lines",
+    "previewNone": "There is no preview of this file yet: open it to see its content.",
+    "previewOpenFile": "Open or download",
+    "pagesCount": "{count, plural, one {# page} other {# pages}}",
+    "slidesCount": "{count, plural, one {# slide} other {# slides}}",
+    "sheetsCount": "{count, plural, one {# sheet} other {# sheets}}",
+    "cat_diapositiva": "Slides",
+    "cat_guia_facilitador": "Facilitator guide",
+    "cat_infografia_didactica": "Infographic",
+    "cat_dinamica_taller": "Workshop",
+    "cat_evaluacion": "Assessment"
   },
   "reuniones": {
     "eyebrow": "Operations & Support",
@@ -7417,45 +7430,30 @@
         "step2": "Upload the photo or PDF of the list, or paste the list.",
         "step3": "Check what the system understood and press “Save the grades”."
       }
-    },
-    "exportGrades": "Download grades (Excel)"
+    }
   },
   "export": {
-    "print": "Print or save as PDF",
-    "foundation": "Global Effect Foundation",
-    "issuedOn": "Issued on {fecha}",
-    "sheetsTitle": "Printable sheets",
-    "backToRecord": "Back to the record",
-    "sheet": {
-      "ficha": "Full file",
+    "button": "Export",
+    "viewPrint": "View and print (PDF)",
+    "download": {
+      "pdf": "Download as PDF",
+      "docx": "Download as Word",
+      "xlsx": "Download as Excel",
+      "csv": "Download as CSV"
+    },
+    "docs": {
+      "ficha": "Full file with photo",
       "record": "Grade record",
-      "avance": "Study plan progress"
-    },
-    "student": "Student",
-    "university": "University",
-    "career": "Degree",
-    "matricula": "Student ID",
-    "status": "Status",
-    "cumulativeIndex": "Cumulative index",
-    "periodIndex": "Period index",
-    "credits": "Credits",
-    "code": "Code",
-    "subject": "Subject",
-    "grade": "Grade",
-    "period": "Term",
-    "state": "State",
-    "progressSummary": "{approved} of {total} credits passed ({percent} %)",
-    "noRecord": "There are no grades recorded for this student yet.",
-    "noPlan": "No study plan assigned yet.",
-    "subjectState": {
-      "aprobada": "Passed",
-      "reprobada": "Failed",
-      "retirada": "Withdrawn",
-      "cursando": "In progress",
-      "pendiente": "Pending"
-    },
-    "excel": "Download as Excel",
-    "pdfHint": "In the window that opens, choose “Save as PDF” as the printer."
+      "avance": "Study plan progress",
+      "expedientes": "List of records",
+      "riesgo": "Students at risk",
+      "studentsUniversity": "University students",
+      "gradesUniversity": "University grades",
+      "studyPlan": "Study plan",
+      "class360": "Class students",
+      "attendance360": "Attendance sheet",
+      "sponsorStudents": "Sponsor's students"
+    }
   },
   "risk": {
     "title": "Students at risk",
@@ -7473,7 +7471,6 @@
     "email": "Email",
     "noContact": "No phone or email",
     "noCatalog": "No university assigned",
-    "openRecord": "See their record",
-    "excel": "Download as Excel"
+    "openRecord": "See their record"
   }
 }

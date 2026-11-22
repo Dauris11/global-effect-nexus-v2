@@ -1392,7 +1392,6 @@
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     },
-    "printSheets": "Imprimir",
     "quickCreate": {
       "title": "¿Cómo quieres registrarlo?",
       "quick": "Registro rápido",
@@ -6524,7 +6523,21 @@
       "lugar": "Centro educativo",
       "sesion": "Sesión impartida",
       "evidencia": "Evidencias y observaciones"
-    }
+    },
+    "previewButton": "Vistazo",
+    "previewOpen": "Ver el vistazo de {title}",
+    "previewContents": "Lo que trae",
+    "previewFirstLines": "Primeras líneas",
+    "previewNone": "Todavía no hay un vistazo de este archivo: ábrelo para ver su contenido.",
+    "previewOpenFile": "Abrir o descargar",
+    "pagesCount": "{count, plural, one {# página} other {# páginas}}",
+    "slidesCount": "{count, plural, one {# diapositiva} other {# diapositivas}}",
+    "sheetsCount": "{count, plural, one {# hoja} other {# hojas}}",
+    "cat_diapositiva": "Diapositivas",
+    "cat_guia_facilitador": "Guía del facilitador",
+    "cat_infografia_didactica": "Infografía",
+    "cat_dinamica_taller": "Taller",
+    "cat_evaluacion": "Evaluación"
   },
   "reuniones": {
     "eyebrow": "Operaciones y Acompañamiento",
@@ -7417,45 +7430,30 @@
         "step2": "Sube la foto o el PDF del listado, o pega la lista.",
         "step3": "Revisa lo que entendió el sistema y pulsa «Guardar las notas»."
       }
-    },
-    "exportGrades": "Descargar calificaciones (Excel)"
+    }
   },
   "export": {
-    "print": "Imprimir o guardar en PDF",
-    "foundation": "Fundación Global Effect",
-    "issuedOn": "Emitido el {fecha}",
-    "sheetsTitle": "Hojas para imprimir",
-    "backToRecord": "Volver al expediente",
-    "sheet": {
-      "ficha": "Ficha completa",
+    "button": "Exportar",
+    "viewPrint": "Ver e imprimir (PDF)",
+    "download": {
+      "pdf": "Descargar en PDF",
+      "docx": "Descargar en Word",
+      "xlsx": "Descargar en Excel",
+      "csv": "Descargar en CSV"
+    },
+    "docs": {
+      "ficha": "Ficha completa con foto",
       "record": "Récord de notas",
-      "avance": "Avance en el plan de estudios"
-    },
-    "student": "Estudiante",
-    "university": "Universidad",
-    "career": "Carrera",
-    "matricula": "Matrícula",
-    "status": "Situación",
-    "cumulativeIndex": "Índice acumulado",
-    "periodIndex": "Índice del período",
-    "credits": "Créditos",
-    "code": "Código",
-    "subject": "Materia",
-    "grade": "Nota",
-    "period": "Cuat.",
-    "state": "Estado",
-    "progressSummary": "{approved} de {total} créditos aprobados ({percent} %)",
-    "noRecord": "Todavía no hay notas registradas para este estudiante.",
-    "noPlan": "Todavía no tiene plan de estudios asignado.",
-    "subjectState": {
-      "aprobada": "Aprobada",
-      "reprobada": "Reprobada",
-      "retirada": "Retirada",
-      "cursando": "Cursando",
-      "pendiente": "Pendiente"
-    },
-    "excel": "Descargar en Excel",
-    "pdfHint": "En la ventana que se abre, elige «Guardar como PDF» como impresora."
+      "avance": "Avance en el plan de estudios",
+      "expedientes": "Lista de expedientes",
+      "riesgo": "Estudiantes en riesgo",
+      "studentsUniversity": "Estudiantes de la universidad",
+      "gradesUniversity": "Calificaciones de la universidad",
+      "studyPlan": "Plan de estudios",
+      "class360": "Estudiantes de la clase",
+      "attendance360": "Hoja de asistencia",
+      "sponsorStudents": "Estudiantes del patrocinador"
+    }
   },
   "risk": {
     "title": "Estudiantes en riesgo",
@@ -7473,7 +7471,6 @@
     "email": "Correo",
     "noContact": "Sin teléfono ni correo",
     "noCatalog": "Sin universidad asignada",
-    "openRecord": "Ver su récord",
-    "excel": "Descargar en Excel"
+    "openRecord": "Ver su récord"
   }
 }

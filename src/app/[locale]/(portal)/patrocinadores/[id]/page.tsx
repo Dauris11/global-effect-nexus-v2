@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dato, FilaDatos } from "@/components/ui/dato";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
@@ -46,7 +47,7 @@ export default async function PaginaPatrocinador({
 }) {
   const { locale, id } = await params;
   const usuario = await requerirPermiso("patrocinadores.leer");
-  const [t, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "sponsors" }), getLocale()]);
+  const [t, te, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "sponsors" }), getTranslations({ locale, namespace: "export" }), getLocale()]);
   const idioma = idiomaCrudo === "en" ? "en" : "es";
 
   const patrocinador = UUID.test(id) ? await patrocinadorPorId(id) : null;
@@ -90,7 +91,10 @@ export default async function PaginaPatrocinador({
         )}
       </div>
 
-      <EncabezadoPagina titulo={patrocinador.nombre} />
+      <EncabezadoPagina
+        titulo={patrocinador.nombre}
+        acciones={usuarioTienePermiso(usuario, "expedientes.leer") ? <MenuExportar documentos={[{ tipo: "estudiantes-patrocinador", etiqueta: te("docs.sponsorStudents"), params: { id: patrocinador.id } }]} /> : undefined}
+      />
 
       <Card className={TARJETA.contenido}>
         <CardContent className="space-y-3 pt-5">

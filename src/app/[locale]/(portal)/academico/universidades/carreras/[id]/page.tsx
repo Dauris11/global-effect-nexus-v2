@@ -14,6 +14,7 @@ import {
 } from "@/components/universidades/formularios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
@@ -52,8 +53,9 @@ export default async function PaginaCarrera({
 
   if (!carrera) notFound();
 
-  const [t, pensums, mensajes] = await Promise.all([
+  const [t, te, pensums, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "catalog" }),
+    getTranslations({ locale, namespace: "export" }),
     pensumsDeCarrera(id),
     mensajesCliente(["catalog"]),
   ]);
@@ -73,12 +75,15 @@ export default async function PaginaCarrera({
           </span>
         }
         acciones={
+          <>
+            {actual && <MenuExportar documentos={[{ tipo: "plan-estudios", etiqueta: te("docs.studyPlan"), params: { id: actual.id } }]} />}
           <Button asChild variant="outline" size="sm">
             <Link href={`/academico/universidades/${carrera.universidad_id}`}>
               <ChevronLeft className="size-4" />
               {t("back")}
             </Link>
           </Button>
+          </>
         }
       />
 

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ChevronLeft, FileQuestion, Printer } from "lucide-react";
+import { ChevronLeft, FileQuestion } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { FichaFamilia, FichaInformacion, FichaPerfil, FichaSalud } from "@/components/expedientes/detalle/fichas";
 import { FichaCompleta } from "@/components/expedientes/ficha-completa";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { AlertasAcademicas } from "@/components/expedientes/alertas-academicas";
 import { AccionesRapidasExpediente } from "@/components/expedientes/acciones-rapidas-expediente";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
@@ -173,14 +174,13 @@ export default async function PaginaExpediente({
           </Link>
         </Button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/expedientes/${expediente.id}/imprimir`}>
-              <Printer className="size-4" />
-              {te("print")}
-            </Link>
-          </Button>
-        </div>
+        <MenuExportar
+          documentos={[
+            { tipo: "ficha", etiqueta: te("docs.ficha"), params: { id: expediente.id } },
+            { tipo: "record", etiqueta: te("docs.record"), params: { id: expediente.id } },
+            { tipo: "avance", etiqueta: te("docs.avance"), params: { id: expediente.id } },
+          ]}
+        />
 
         {puedeEliminar && (
           <EliminarExpediente

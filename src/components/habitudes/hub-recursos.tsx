@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   BookOpen,
   Download,
+  Eye,
   FileCheck,
   FileSpreadsheet,
   FileText,
@@ -68,6 +69,7 @@ export function HubRecursos({
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>("todas");
   const [busqueda, setBusqueda] = useState<string>("");
   const [modalSubirAbierto, setModalSubirAbierto] = useState<boolean>(false);
+  const [vistazoDe, setVistazoDe] = useState<HabitudesRecurso | null>(null);
 
   // Formulario de subida
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
@@ -195,9 +197,23 @@ export function HubRecursos({
             return (
               <Card
                 key={rec.id}
-                className="flex flex-col justify-between border-linea-fuerte bg-card p-5 shadow-xs transition-shadow hover:shadow-md"
+                className="flex flex-col justify-between overflow-hidden border-linea-fuerte bg-card p-0 shadow-xs transition-shadow hover:shadow-md"
               >
-                <div>
+                {/* Portada: lo primero que se ve, para reconocer el material sin abrirlo. */}
+                <button
+                  type="button"
+                  onClick={() => setVistazoDe(rec)}
+                  aria-label={t("previewOpen", { title: rec.titulo })}
+                  className="group relative block w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <PortadaRecurso rec={rec} Icono={Icono} etiquetaCategoria={t(`cat_${rec.categoria}`)} />
+                  <span className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-tinta px-3 py-1.5 text-xs font-semibold text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <Eye className="size-3.5" />
+                    {t("previewButton")}
+                  </span>
+                </button>
+
+                <div className="p-5 pb-0">
                   <div className="flex items-start justify-between gap-2">
                     <span className="flex size-10 items-center justify-center rounded-xl bg-marca-50 text-marca-700">
                       <Icono className="size-5" />
@@ -218,7 +234,7 @@ export function HubRecursos({
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-linea pt-3 text-xs text-tinta/60">
+                <div className="m-5 mt-4 flex items-center justify-between border-t border-linea pt-3 text-xs text-tinta/60">
                   <span className="truncate">
                     {rec.subido_por_nombre ?? t("anonymousAuthor")}
                   </span>
@@ -239,6 +255,8 @@ export function HubRecursos({
           })}
         </div>
       )}
+
+      <VistazoDialogo rec={vistazoDe} onCerrar={() => setVistazoDe(null)} alDescargar={manejarDescarga} />
 
       {/* Modal de Subida de Material al Repositorio */}
       <Dialog open={modalSubirAbierto} onOpenChange={setModalSubirAbierto}>
@@ -339,5 +357,116 @@ export function HubRecursos({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/**
+ * Portada de un material. Con la imagen real del archivo, esa; sin ella (archivo que no
+ * se pudo leer o aún sin generar) se dibuja una página con la categoría, el formato y las
+ * primeras líneas del contenido o de la descripción, para que cada tarjeta se distinga.
+ */
+function PortadaRecurso({
+  rec,
+  Icono,
+  etiquetaCategoria,
+}: {
+  rec: HabitudesRecurso;
+  Icono: React.ComponentType<{ className?: string }>;
+  etiquetaCategoria: string;
+}) {
+  if (rec.portada_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- enlace firmado de vida corta: no pasa por el optimizador
+      <img src={rec.portada_url} alt="" className="aspect-[16/10] w-full bg-muted object-cover object-top" loading="lazy" />
+    );
+  }
+
+  const resumen = rec.vistazo?.puntos?.length ? rec.vistazo.puntos.slice(0, 3).join(" · ") : (rec.vistazo?.texto || rec.descripcion || "");
+
+  return (
+    <div className="flex aspect-[16/10] w-full flex-col justify-between bg-marca-50 p-4">
+      <div className="flex items-center justify-between">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-background text-marca-700">
+          <Icono className="size-5" />
+        </span>
+        <span className="rounded-full bg-background px-2.5 py-0.5 font-mono text-[10px] font-semibold text-marca-700 uppercase">.{rec.formato}</span>
+      </div>
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold tracking-wide text-marca-700 uppercase">{etiquetaCategoria}</p>
+        <p className="line-clamp-3 text-xs leading-relaxed text-tinta-2">{resumen}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Vistazo ampliado: portada grande, qué trae el material y sus primeras líneas, con el botón para abrirlo. */
+function VistazoDialogo({
+  rec,
+  onCerrar,
+  alDescargar,
+}: {
+  rec: HabitudesRecurso | null;
+  onCerrar: () => void;
+  alDescargar: (r: HabitudesRecurso) => void;
+}) {
+  const t = useTranslations("habitudes");
+  const Icono = rec ? (ICONO_CATEGORIA[rec.categoria as keyof typeof ICONO_CATEGORIA] ?? Presentation) : Presentation;
+  const v = rec?.vistazo;
+  const unidad = rec?.formato === "pptx" ? "slides" : rec?.formato === "xlsx" ? "sheets" : "pages";
+
+  return (
+    <Dialog open={rec !== null} onOpenChange={(abierto) => !abierto && onCerrar()}>
+      <DialogContent className="max-h-[calc(100dvh-4rem)] max-w-2xl overflow-y-auto p-0">
+        {rec && (
+          <>
+            <div className="overflow-hidden rounded-t-hoja">
+              <PortadaRecurso rec={rec} Icono={Icono} etiquetaCategoria={t(`cat_${rec.categoria}`)} />
+            </div>
+            <div className="space-y-4 px-6 pb-6">
+              <DialogHeader>
+                <DialogTitle className="text-lg leading-snug">{rec.titulo}</DialogTitle>
+              </DialogHeader>
+
+              <p className="texto-meta">
+                .{rec.formato.toUpperCase()} · {rec.tamano_mb} MB
+                {v?.paginas ? ` · ${t(`${unidad}Count`, { count: v.paginas })}` : ""}
+                {rec.subido_por_nombre ? ` · ${rec.subido_por_nombre}` : ""}
+              </p>
+
+              {rec.descripcion && <p className="text-sm text-tinta-2">{rec.descripcion}</p>}
+
+              {v?.puntos && v.puntos.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold">{t("previewContents")}</h4>
+                  <ol className="list-decimal space-y-1 pl-5 text-sm text-tinta-2">
+                    {v.puntos.map((p, i) => (
+                      <li key={`${i}-${p}`}>{p}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {v?.texto && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold">{t("previewFirstLines")}</h4>
+                  <p className="rounded-control bg-muted p-3 text-sm leading-relaxed text-tinta-2">{v.texto}</p>
+                </div>
+              )}
+
+              {!v?.texto && !(v?.puntos && v.puntos.length > 0) && !rec.portada_url && (
+                <p className="texto-meta">{t("previewNone")}</p>
+              )}
+
+              <Button asChild className="w-full sm:w-auto">
+                <a href={rec.archivo_url} target="_blank" rel="noopener noreferrer" onClick={() => alDescargar(rec)}>
+                  <Download className="size-4" />
+                  {t("previewOpenFile")}
+                </a>
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

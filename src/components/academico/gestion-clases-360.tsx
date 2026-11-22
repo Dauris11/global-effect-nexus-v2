@@ -30,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { NOTA_APROBADA } from "@/lib/notas";
 import { CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
@@ -104,6 +105,7 @@ export function GestionClases360({
   notaMinima360?: number;
 }) {
   const t = useTranslations("academic.classes360");
+  const te = useTranslations("export");
   const [abierto, setAbierto] = useState<string | null>(
     seccionInicial === "alumnos" || (!seccionInicial && claseInicialId)
       ? claseInicialId
@@ -206,6 +208,22 @@ export function GestionClases360({
                     )}
 
                     <div className="flex shrink-0 items-center gap-1">
+                      {(() => {
+                        // Los documentos de la clase son del período vigente (o, si no hay, el último).
+                        const periodos = periodosDeTarea[clase.id] ?? [];
+                        const periodo = periodos.find((p) => p.vigente) ?? periodos[0];
+
+                        return periodo ? (
+                          <MenuExportar
+                            className="shrink-0"
+                            documentos={[
+                              { tipo: "clase-360", etiqueta: `${te("docs.class360")} · ${periodo.nombre}`, params: { materia: clase.id, periodo: periodo.id } },
+                              { tipo: "asistencia-360", etiqueta: `${te("docs.attendance360")} · ${periodo.nombre}`, params: { materia: clase.id, periodo: periodo.id } },
+                            ]}
+                          />
+                        ) : null;
+                      })()}
+
                       <Button
                         type="button"
                         variant="ghost"
