@@ -132,7 +132,7 @@ export function FormularioCompra() {
         </p>
       )}
 
-      <Button type="submit" disabled={enviando}>
+      <Button type="submit" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
         {enviando ? t("form.sending") : t("purchase.submit")}
       </Button>

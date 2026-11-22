@@ -279,7 +279,7 @@ export function ListaRendiciones({
                     size="sm"
                     variant="outline"
                     className="min-h-[42px] border-marca-700 text-marca-700 hover:bg-marca-50 active:scale-95"
-                    disabled={isPending}
+                    cargando={isPending}
                     onClick={() => ejecutarRevision("contabilizada", r)}
                   >
                     <FileCheck className="mr-1.5 size-4" />
@@ -356,7 +356,7 @@ export function ListaRendiciones({
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={isPending}
+                  cargando={isPending}
                   onClick={() => ejecutarRevision("rechazada")}
                   className="border-[#B4342B] text-[#B4342B] hover:bg-[#B4342B]/10 active:scale-95"
                 >
@@ -366,7 +366,7 @@ export function ListaRendiciones({
 
                 <Button
                   type="button"
-                  disabled={isPending}
+                  cargando={isPending}
                   onClick={() => ejecutarRevision("aprobada")}
                   className="bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
                 >

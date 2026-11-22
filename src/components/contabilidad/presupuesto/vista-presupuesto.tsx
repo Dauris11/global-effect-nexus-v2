@@ -78,7 +78,7 @@ export function VistaPresupuesto({
         </div>
 
         {puedeAprobar && presupuestoActual?.estado === "borrador" && (
-          <Button onClick={handleAprobar} disabled={aprobando} size="sm">
+          <Button onClick={handleAprobar} cargando={aprobando} size="sm">
             <CheckCircle2 className="mr-2 size-4" />
             {aprobando ? "Aprobando..." : t("aprobar")}
           </Button>

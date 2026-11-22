@@ -155,7 +155,7 @@ export function VincularCuenta({
                 name="accion"
                 value="desvincular"
                 formNoValidate
-                disabled={guardando}
+                cargando={guardando}
               >
                 <Unlink className="size-4" />
                 {t("desvincular")}
@@ -163,7 +163,7 @@ export function VincularCuenta({
             )}
 
             {cuentas.length > 0 && (
-              <Button type="submit" disabled={guardando}>
+              <Button type="submit" cargando={guardando}>
                 {guardando ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (

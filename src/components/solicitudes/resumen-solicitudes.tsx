@@ -1,4 +1,4 @@
-import { ArrowRight, Inbox } from "lucide-react";
+import { ChevronRight, Inbox } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export async function ResumenSolicitudes({
           className="-mr-2 inline-flex min-h-11 items-center gap-1 rounded-control px-2 text-sm font-semibold text-marca-600 outline-none hover:text-marca-700 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           {t("summaryAll")}
-          <ArrowRight className="size-4" />
+          <ChevronRight className="size-4" />
         </Link>
       </div>
 

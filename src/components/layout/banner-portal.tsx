@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -96,7 +96,7 @@ export function AccesosPortal({
             </div>
 
             {acceso.href && (
-              <ArrowRight className="mt-3 size-4 text-tinta-3 transition-transform group-hover:translate-x-0.5 group-hover:text-tinta" />
+              <ChevronRight className="mt-3 size-4 text-tinta-3 transition-transform group-hover:translate-x-0.5 group-hover:text-tinta" />
             )}
           </Card>
         );

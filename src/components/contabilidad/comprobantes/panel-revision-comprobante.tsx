@@ -304,7 +304,7 @@ export function PanelRevisionComprobante({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={guardando}
+                cargando={guardando}
                 onClick={() => handleValidar("observado")}
                 className="text-tinta-2 hover:bg-muted"
               >
@@ -314,7 +314,7 @@ export function PanelRevisionComprobante({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={guardando}
+                cargando={guardando}
                 onClick={() => handleValidar("rechazado")}
                 className="text-tinta"
               >
@@ -324,7 +324,7 @@ export function PanelRevisionComprobante({
               <Button
                 variant="default"
                 size="sm"
-                disabled={guardando}
+                cargando={guardando}
                 onClick={() => handleValidar("validado")}
               >
                 <CheckCircle2 className="size-4 mr-1" />

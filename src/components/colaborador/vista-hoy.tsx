@@ -438,7 +438,7 @@ export function VistaHoy({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isPending}
+                    cargando={isPending}
                     className="bg-marca-500 text-white hover:bg-marca-600"
                   >
                     {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
@@ -539,7 +539,7 @@ export function VistaHoy({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isPending}
+                    cargando={isPending}
                     className="bg-marca-500 text-white hover:bg-marca-600"
                   >
                     {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}

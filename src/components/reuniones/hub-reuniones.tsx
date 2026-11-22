@@ -639,7 +639,7 @@ export function HubReuniones({
                             <Button
                               type="button"
                               size="sm"
-                              disabled={isPending}
+                              cargando={isPending}
                               onClick={() => {
                                 startTransition(async () => {
                                   const res = await cambiarEstadoLlamadaAction(
@@ -678,7 +678,7 @@ export function HubReuniones({
                               type="button"
                               size="sm"
                               variant="outline"
-                              disabled={isPending}
+                              cargando={isPending}
                               onClick={() => {
                                 startTransition(async () => {
                                   await cambiarEstadoLlamadaAction(
@@ -993,7 +993,7 @@ export function HubReuniones({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isPending}
+                    cargando={isPending}
                     className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
                   >
                     {isPending ? t("actions.saving") : t("actions.confirmSchedule")}
@@ -1121,7 +1121,7 @@ export function HubReuniones({
               </Button>
               <Button
                 type="submit"
-                disabled={isPending}
+                cargando={isPending}
                 className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
               >
                 {isPending ? t("actions.saving") : t("actions.saveMinuta")}
@@ -1185,7 +1185,7 @@ export function HubReuniones({
               </Button>
               <Button
                 type="submit"
-                disabled={isPending}
+                cargando={isPending}
                 className="h-10 min-h-[44px] bg-tinta text-white hover:bg-tinta-2 active:scale-95 transition-all"
               >
                 {isPending ? t("actions.cancelling") : t("actions.confirmCancel")}

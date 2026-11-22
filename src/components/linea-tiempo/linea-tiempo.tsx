@@ -260,10 +260,10 @@ export function LineaTiempo({
       return;
     }
     if (!puedeEditar(barra)) return;
-    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    if (e.key !== "ChevronLeft" && e.key !== "ChevronRight") return;
 
     e.preventDefault();
-    const paso = e.key === "ArrowRight" ? 1 : -1;
+    const paso = e.key === "ChevronRight" ? 1 : -1;
     const { inicio: i, fin: f } = fechasDe(barra);
     const nuevo: Fechas = e.shiftKey
       ? { inicio: i, fin: sumarDias(f, paso) < i ? i : sumarDias(f, paso) }

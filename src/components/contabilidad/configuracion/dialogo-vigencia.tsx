@@ -125,7 +125,7 @@ function FormularioVigencia({
       </div>
       <AvisoEstado estado={estado} />
       <DialogFooter>
-        <Button type="submit" disabled={enviando}>
+        <Button type="submit" cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           {t("guardar")}
         </Button>

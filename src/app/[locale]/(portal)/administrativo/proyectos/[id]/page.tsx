@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, FolderKanban, Layers, ListTodo } from "lucide-react";
+import { ChevronLeft, CalendarDays, FolderKanban, Layers, ListTodo } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,7 @@ export default async function PaginaDetalleProyectoGantt({
               href={verOperaciones ? "/administrativo/proyectos" : "/administrativo/torre-control"}
               className="inline-flex items-center text-xs font-semibold text-marca-600 hover:underline"
             >
-              <ArrowLeft className="size-3.5 mr-1" />
+              <ChevronLeft className="size-3.5 mr-1" />
               {verOperaciones ? t("projects.backToProjects") : tNav("controlTower")}
             </Link>
           </div>

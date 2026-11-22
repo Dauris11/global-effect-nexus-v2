@@ -168,7 +168,7 @@ export function ContadorArqueo({
       {error && <AvisoError>{error}</AvisoError>}
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" disabled={guardando}>
+        <Button type="submit" cargando={guardando}>
           {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           {t("guardarArqueo")}
         </Button>

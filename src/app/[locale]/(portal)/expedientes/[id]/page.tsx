@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, FileQuestion, Printer } from "lucide-react";
+import { ChevronLeft, FileQuestion, Printer } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -87,7 +87,7 @@ export default async function PaginaExpediente({
       <div className="animate-entrada space-y-6">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backToList")}
           </Link>
         </Button>
@@ -168,7 +168,7 @@ export default async function PaginaExpediente({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backToList")}
           </Link>
         </Button>

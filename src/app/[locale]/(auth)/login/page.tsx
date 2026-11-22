@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -67,7 +67,7 @@ export default async function PaginaLogin({
           href="/"
           className="inline-flex h-9 items-center gap-1.5 rounded-control border border-linea bg-background px-3 text-xs font-medium text-tinta-2 shadow-xs transition-colors hover:bg-muted hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <ArrowLeft className="size-3.5" />
+          <ChevronLeft className="size-3.5" />
           {t("backHome")}
         </Link>
       </div>

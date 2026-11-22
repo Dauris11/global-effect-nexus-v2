@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
+  ChevronLeft,
   CheckCircle2,
   Clock,
   Edit,
@@ -114,7 +114,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
             href="/administrativo/inventario"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-tinta-2 transition-colors hover:text-tinta"
           >
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             <span>{t("volverCatalogo")}</span>
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2">

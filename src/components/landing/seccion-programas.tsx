@@ -1,5 +1,5 @@
 import {
-  ArrowRight,
+  ChevronRight,
   ArrowUpRight,
   CalendarDays,
   Coins,
@@ -82,7 +82,7 @@ export async function SeccionProgramas() {
               className="group mt-8 inline-flex min-h-11 items-center gap-1.5 rounded-control font-semibold text-marca-600 transition-colors hover:text-marca-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {t("chainLink")}
-              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>

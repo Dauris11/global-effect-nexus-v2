@@ -138,7 +138,7 @@ export function BotonActivar({ id, activo }: { id: string; activo: boolean }) {
     <form action={enviar} className="space-y-2">
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="activo" value={String(!activo)} />
-      <Button type="submit" variant="ghost" disabled={enviando}>
+      <Button type="submit" variant="ghost" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Icono className="size-4" />}
         {activo ? t("desactivar") : t("activar")}
       </Button>
@@ -156,7 +156,7 @@ export function BotonProcesar({ id }: { id: string }) {
   return (
     <form action={enviar} className="space-y-3">
       <input type="hidden" name="ids" value={id} />
-      <Button type="submit" disabled={enviando}>
+      <Button type="submit" cargando={enviando}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCheck className="size-4" />}
         {t("boton")}
       </Button>
@@ -180,7 +180,7 @@ export function FormularioProcesar({ children }: { children: React.ReactNode }) 
     <form action={enviar} className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-3">
         {estado.estado === "ok" && <AvisoOk>{t("ok")}</AvisoOk>}
-        <Button type="submit" variant="secondary" disabled={enviando}>
+        <Button type="submit" variant="secondary" cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCheck className="size-4" />}
           {t("seleccionados")}
         </Button>

@@ -818,7 +818,7 @@ export function VistaReportes({
             <Button
               variant="outline"
               onClick={() => setDialogoSnapshotAbierto(false)}
-              disabled={isPending}
+              cargando={isPending}
             >
               {t("snapshots.cancelar")}
             </Button>

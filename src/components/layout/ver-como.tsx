@@ -41,7 +41,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
         <Button
           variant={viendoOtro ? "secondary" : "outline"}
           size="sm"
-          disabled={pendiente}
+          cargando={pendiente}
           className="gap-1.5"
         >
           <Eye className="size-4" aria-hidden />
@@ -80,7 +80,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
         <Button
           size="sm"
           onClick={() => cambiar("super_admin")}
-          disabled={pendiente}
+          cargando={pendiente}
           className="gap-1.5"
         >
           <Undo2 className="size-4" aria-hidden />

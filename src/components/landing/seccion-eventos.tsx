@@ -1,5 +1,5 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { ArrowRight, CalendarDays } from "lucide-react";
+import { ChevronRight, CalendarDays } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -71,7 +71,7 @@ export async function SeccionEventos({
             <Button asChild variant="secondary">
               <Link href="/login">
                 {t("enter")}
-                <ArrowRight />
+                <ChevronRight />
               </Link>
             </Button>
           }

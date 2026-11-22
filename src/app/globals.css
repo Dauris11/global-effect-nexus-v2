@@ -538,14 +538,30 @@ html:not(.dark)[data-acento="negro"] {
 }
 
 .animate-shimmer {
-  /* Sin degradado: un color plano que respira. */
+  /* Efecto shimmer sin degradado (la norma visual los prohíbe): un fondo plano y, encima,
+     una franja plana y difuminada que lo cruza. Solo se anima `transform`. */
+  position: relative;
+  overflow: hidden;
   background: var(--muted);
-  animation: respirar 1.6s ease-in-out infinite;
 }
 
-@keyframes respirar {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+.animate-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  background: var(--background);
+  opacity: 0.7;
+  filter: blur(14px);
+  transform: translateX(-120%);
+  animation: barrido 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes barrido {
+  to {
+    transform: translateX(320%);
+  }
 }
 
 .animate-soft-pulse {

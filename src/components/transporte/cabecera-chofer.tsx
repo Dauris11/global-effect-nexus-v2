@@ -171,7 +171,7 @@ export function CabeceraChofer({
               size="lg"
               variant="outline"
               onClick={alFinalizarViaje}
-              disabled={cargando}
+              cargando={cargando}
               className="h-14 w-full border-linea text-base font-semibold"
             >
               <Square className="mr-2 size-5 fill-current" />
@@ -182,7 +182,7 @@ export function CabeceraChofer({
               size="lg"
               variant="destructive"
               onClick={alAbrirIncidencia}
-              disabled={cargando}
+              cargando={cargando}
               className="h-12 w-full text-sm font-semibold"
             >
               <AlertTriangle className="mr-2 size-4" />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Bus, Clock, LogIn, Navigation } from "lucide-react";
+import { ChevronLeft, Bus, Clock, LogIn, Navigation } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -55,7 +55,7 @@ export default async function PaginaTransportePublico({
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" asChild className="gap-2 text-xs">
             <Link href="/">
-              <ArrowLeft className="size-3.5" />
+              <ChevronLeft className="size-3.5" />
               {t("backToHome")}
             </Link>
           </Button>

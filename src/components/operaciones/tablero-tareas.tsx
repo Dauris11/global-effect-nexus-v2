@@ -649,7 +649,7 @@ function FormularioTarea({
             <Button
               type="submit"
               size="sm"
-              disabled={enviando}
+              cargando={enviando}
               className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (

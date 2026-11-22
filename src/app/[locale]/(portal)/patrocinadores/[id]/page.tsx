@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, FileQuestion, Mail, Phone } from "lucide-react";
+import { ChevronLeft, FileQuestion, Mail, Phone } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { InsigniaCarta } from "@/components/expedientes/detalle/insignia-carta";
@@ -54,7 +54,7 @@ export default async function PaginaPatrocinador({
   const volver = (
     <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
       <Link href="/patrocinadores">
-        <ArrowLeft className="size-4" />
+        <ChevronLeft className="size-4" />
         {t("detail.back")}
       </Link>
     </Button>

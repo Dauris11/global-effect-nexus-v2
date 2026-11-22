@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ChevronLeft, Edit } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -39,7 +39,7 @@ export default async function PaginaEditarActivo({ params }: PaginaEditarActivoP
           href={`/administrativo/inventario/${activo.id}`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-tinta-2 transition-colors hover:text-tinta"
         >
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           <span>{t("volverFicha")}</span>
         </Link>
         <div className="mt-2 flex items-center gap-2">

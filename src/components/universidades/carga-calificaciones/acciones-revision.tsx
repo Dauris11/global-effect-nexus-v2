@@ -55,7 +55,7 @@ export function AsignarEstudiante({
             <option key={e.id} value={e.id}>{e.nombre}{e.matricula ? ` · ${e.matricula}` : ""}</option>
           ))}
         </select>
-        <Button type="submit" size="sm" variant="outline" disabled={enviando}>
+        <Button type="submit" size="sm" variant="outline" cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <UserCheck className="size-4" />}
           {t("assign")}
         </Button>

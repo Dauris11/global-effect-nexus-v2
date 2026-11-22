@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Download, HeartHandshake, Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { ChevronLeft, Download, HeartHandshake, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { BotonImprimir } from "@/components/compartido/boton-imprimir";
@@ -81,7 +81,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
       <div className="no-imprimir">
         <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
           <Link href="/expedientes">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("back")}
           </Link>
         </Button>

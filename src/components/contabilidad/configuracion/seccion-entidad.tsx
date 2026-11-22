@@ -138,7 +138,7 @@ export function SeccionEntidad({ entidad, puedeEditar }: { entidad: Entidad; pue
                 propio porque esta fila ya trae el suyo. */}
             <AccionesFormulario className="border-t-0 pt-0">
               {puedeEditar && (
-                <Button type="submit" disabled={enviando}>
+                <Button type="submit" cargando={enviando}>
                   {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                   {t("guardar")}
                 </Button>

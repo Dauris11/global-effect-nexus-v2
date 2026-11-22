@@ -75,7 +75,7 @@ export function EquipoProyecto({
         </fieldset>
         {resultado && resultado !== "ok" && <AvisoError clave={resultado} />}
         <div className="flex items-center gap-3">
-          <Button type="submit" disabled={guardando}>
+          <Button type="submit" cargando={guardando}>
             {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
             {t("projectTeam.save")}
           </Button>

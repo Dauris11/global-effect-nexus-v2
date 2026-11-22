@@ -2,14 +2,13 @@ import type { Metadata } from "next";
 import {
   AlertCircle,
   ArrowDownLeft,
-  ArrowRight,
+  ChevronRight,
   ArrowUpRight,
   Calendar,
   CalendarDays,
   CalendarRange,
   Calculator,
   ChevronLeft,
-  ChevronRight,
   HandCoins,
   Info,
   Landmark,
@@ -289,7 +288,7 @@ export default async function PortalContabilidad({
           <h2 className="texto-titulo-seccion">{t("saldos")}</h2>
           <Link href="/contabilidad/bancos" className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-marca-600 hover:underline">
             {t("verTodos")}
-            <ArrowRight className="size-4" />
+            <ChevronRight className="size-4" />
           </Link>
         </div>
         {activas.length === 0 ? (

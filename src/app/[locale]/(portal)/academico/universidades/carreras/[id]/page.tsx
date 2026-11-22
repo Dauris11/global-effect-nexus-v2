@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ChevronLeft, BookOpen } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -75,7 +75,7 @@ export default async function PaginaCarrera({
         acciones={
           <Button asChild variant="outline" size="sm">
             <Link href={`/academico/universidades/${carrera.universidad_id}`}>
-              <ArrowLeft className="size-4" />
+              <ChevronLeft className="size-4" />
               {t("back")}
             </Link>
           </Button>

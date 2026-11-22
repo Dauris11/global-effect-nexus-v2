@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, ChevronRight, Download, GraduationCap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, GraduationCap } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -55,7 +55,7 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
             </Button>
             <Button asChild variant="outline" size="sm" className="no-imprimir">
               <Link href="/academico/universidades">
-                <ArrowLeft className="size-4" />
+                <ChevronLeft className="size-4" />
                 {t("back")}
               </Link>
             </Button>

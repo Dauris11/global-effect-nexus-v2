@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import {
   Activity,
-  ArrowLeft,
+  ChevronLeft,
   CalendarDays,
   CalendarRange,
-  ChevronLeft,
   ChevronRight,
   Clock,
   Download,
@@ -138,7 +137,7 @@ export default async function PaginaActividad({
     <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           {t("back")}
         </Link>
       </Button>

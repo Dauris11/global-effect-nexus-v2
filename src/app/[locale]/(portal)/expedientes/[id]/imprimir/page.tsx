@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { BotonImprimir } from "@/components/compartido/boton-imprimir";
@@ -81,7 +81,7 @@ export default async function PaginaImprimirExpediente({
       <div className="no-imprimir flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="outline" size="sm">
           <Link href={`/expedientes/${e.id}`}>
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("backToRecord")}
           </Link>
         </Button>

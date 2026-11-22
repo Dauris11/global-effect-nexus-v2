@@ -278,7 +278,7 @@ export function DialogoOrdenCompra({
                 <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
                   {t("cancelar")}
                 </Button>
-                <Button type="submit" disabled={cargando}>
+                <Button type="submit" cargando={cargando}>
                   {cargando ? t("guardando") : t("enviarAAprobacion")}
                 </Button>
               </DialogFooter>

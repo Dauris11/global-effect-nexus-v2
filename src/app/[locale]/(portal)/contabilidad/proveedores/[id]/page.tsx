@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
+  ChevronLeft,
   Building2,
   Calendar,
   CreditCard,
@@ -69,7 +69,7 @@ export default async function PaginaDetalleProveedor({
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href="/contabilidad/proveedores">
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {t("volver")}
           </Link>
         </Button>

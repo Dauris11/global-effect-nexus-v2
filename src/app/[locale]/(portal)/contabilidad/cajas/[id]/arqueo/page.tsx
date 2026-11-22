@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { ContadorArqueo } from "@/components/contabilidad/cajas/contador-arqueo";
@@ -42,7 +42,7 @@ export default async function PaginaRealizarArqueo({
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href={`/contabilidad/cajas/${caja.id}`}>
-            <ArrowLeft className="size-4" />
+            <ChevronLeft className="size-4" />
             {caja.nombre}
           </Link>
         </Button>

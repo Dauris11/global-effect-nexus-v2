@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
@@ -87,7 +87,7 @@ export async function TabUniversidad({
               <li key={`${c.cuando}-${i}`} className="text-sm">
                 <span className="texto-meta mr-3">{fechaCorta(c.cuando, idioma === "en" ? "en" : "es")}</span>
                 <span className="text-tinta-2">{c.de}</span>
-                <ArrowRight className="mx-2 inline size-3.5" aria-hidden />
+                <ChevronRight className="mx-2 inline size-3.5" aria-hidden />
                 <span className="font-medium">{c.a}</span>
                 {c.por && <span className="texto-meta"> · {c.por}</span>}
               </li>

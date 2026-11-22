@@ -109,7 +109,7 @@ export function ArchivosAcademicos({
               ))}
             </ul>
           )}
-          <Button type="submit" size="sm" disabled={enviando}>
+          <Button type="submit" size="sm" cargando={enviando}>
             {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
             {t("files.upload")}
           </Button>
@@ -126,7 +126,7 @@ function BotonQuitar({ id }: { id: string }) {
   return (
     <form action={enviar}>
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" variant="ghost" size="sm" disabled={enviando} aria-label={t("files.remove")}>
+      <Button type="submit" variant="ghost" size="sm" cargando={enviando} aria-label={t("files.remove")}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
       </Button>
     </form>

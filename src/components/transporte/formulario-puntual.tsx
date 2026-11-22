@@ -217,7 +217,8 @@ export function FormularioPuntual({
         <AccionesFormulario>
           <Button
             type="submit"
-            disabled={cargando || !nombre.trim() || mismasParadas}
+            cargando={cargando}
+            disabled={!nombre.trim() || mismasParadas}
             className="w-full gap-2 font-semibold"
           >
             <Send className="size-4" />

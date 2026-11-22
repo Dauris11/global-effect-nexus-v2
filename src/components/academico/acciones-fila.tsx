@@ -176,7 +176,7 @@ export function AccionesFila({
                   <Button
                     type="submit"
                     variant="destructive"
-                    disabled={enviando}
+                    cargando={enviando}
                   >
                     {enviando ? (
                       <Loader2 className="size-4 animate-spin" />

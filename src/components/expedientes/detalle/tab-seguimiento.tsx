@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
@@ -69,7 +69,7 @@ export async function TabSeguimiento({ e, seg }: { e: ExpedienteCompleto; seg: S
                   {et.estado_anterior && (
                     <>
                       <Badge variant="neutra">{t(`status.${et.estado_anterior}`)}</Badge>
-                      <ArrowRight className="size-3.5 text-tinta-3" />
+                      <ChevronRight className="size-3.5 text-tinta-3" />
                     </>
                   )}
                   <Badge variant="marca">{t(`status.${et.estado_nuevo}`)}</Badge>

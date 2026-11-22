@@ -377,7 +377,7 @@ function FormularioMateria({
 
         <AccionesFormulario>
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={enviando}>
+            <Button type="submit" size="sm" cargando={enviando}>
               {enviando && <Loader2 className="size-3.5 animate-spin" />}
               {enviando ? t("saving") : t("save")}
             </Button>
@@ -495,7 +495,7 @@ function FormularioVentana({
 
         <AccionesFormulario>
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={enviando}>
+            <Button type="submit" size="sm" cargando={enviando}>
               {enviando && <Loader2 className="size-3.5 animate-spin" />}
               {enviando ? t("saving") : t("save")}
             </Button>
@@ -538,7 +538,7 @@ function BotonSimple({
         type="submit"
         variant="ghost"
         size="icon"
-        disabled={enviando}
+        cargando={enviando}
         title={etiqueta}
         aria-label={etiqueta}
       >

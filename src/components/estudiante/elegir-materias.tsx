@@ -251,7 +251,7 @@ function BotonMatricula({ id, elegida }: { id: string; elegida: boolean }) {
       <Button
         type="submit"
         variant={elegida ? "secondary" : "default"}
-        disabled={enviando}
+        cargando={enviando}
         className="w-full"
       >
         {enviando ? (

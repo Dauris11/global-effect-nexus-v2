@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, UserCog } from "lucide-react";
+import { ChevronLeft, UserCog } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -105,7 +105,7 @@ export default async function PaginaVisibilidad({
     <div className="animate-entrada mx-auto max-w-4xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           {t("back")}
         </Link>
       </Button>

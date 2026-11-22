@@ -217,7 +217,7 @@ export function FormularioRecibo({
 
         <AccionesFormulario>
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={enviando}>
+            <Button type="submit" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               {t("formulario.guardar")}
             </Button>

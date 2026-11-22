@@ -1,83 +1,79 @@
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
+"use client";
 
+import { useState } from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
+
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { cn } from "@/lib/utils";
 
 /**
- * Botón base (docs/09-sistema-visual.md §3).
+ * Botón base (docs/09-sistema-visual.md §3). Los estilos viven en `button-variantes.ts`
+ * para que los componentes de servidor puedan usarlos sin importar este archivo de cliente.
  *
- * `default` es el CTA: un solo color plano de la marca (azul o negro, según lo
- * que cada persona elija en su perfil), sin degradado, y es el único sitio donde
- * el acento ocupa una superficie entera. `secondary` es
- * blanco con borde. `destructive` es tinta y no rojo: la gravedad la dice el
- * peso, no el matiz.
- *
- * Se mantiene la API de shadcn (variant, size, asChild) para que las pantallas
- * no cambien de firma; lo que cambia es el aspecto.
+ * TODO botón tiene estado de carga, sin que cada pantalla lo cablee:
+ *   · `cargando` lo fuerza desde fuera (acciones con `useTransition` o `useActionState`).
+ *   · Un botón `type="submit"` dentro de un formulario con acción de servidor se carga
+ *     solo mientras el formulario se envía (`useFormStatus`).
+ *   · Si su `onClick` devuelve una promesa, se carga hasta que ella termine.
+ * Cargando, el botón se deshabilita (un doble clic no manda dos veces), pone `aria-busy` y
+ * cambia sus iconos por un único spinner; el texto se queda, para que el botón no cambie de ancho.
  */
-const variantesBoton = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-sm font-semibold transicion-control active:scale-[0.97] active:duration-(--duracion-instante) disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-marca-500 text-white hover:bg-marca-600",
-        destructive: "bg-tinta text-background hover:bg-tinta/90",
-        outline:
-          "border border-linea-fuerte bg-background text-tinta hover:border-tinta hover:bg-muted",
-        secondary:
-          "border border-linea-fuerte bg-background text-tinta hover:bg-muted",
-        ghost: "text-tinta hover:bg-muted",
-        link: "text-tinta underline underline-offset-4 decoration-linea-fuerte hover:decoration-tinta active:scale-100",
-      },
-      size: {
-        default: "h-11 px-5 has-[>svg]:px-4",
-        sm: "h-9 gap-1.5 px-3.5 has-[>svg]:px-3",
-        lg: "h-12 px-6 text-base has-[>svg]:px-5",
-        icon: "size-11",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
-
 function Button({
   className,
   variant,
   size,
   asChild = false,
-  cargando = false,
+  cargando,
   disabled,
   children,
+  onClick,
+  type,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof variantesBoton> & {
     /** Delega el estilo al hijo. Necesario para envolver un `Link`. */
     asChild?: boolean;
     /**
-     * Mientras se envía: muestra un spinner y deshabilita el botón, para que un
-     * doble clic no mande el formulario dos veces. Con `asChild` no se pinta el
-     * spinner —el hijo es un enlace y no se puede deshabilitar—.
+     * Fuerza el estado de carga. Con `asChild` no se pinta el spinner ni se deshabilita:
+     * el hijo es un enlace.
      */
     cargando?: boolean;
   }) {
   const Componente = asChild ? Slot : "button";
+  const { pending: enviando } = useFormStatus();
+  const [ocupado, setOcupado] = useState(false);
+
+  // Solo el botón que envía se carga con el formulario; los de «Cancelar» (type="button") no.
+  const envia = !asChild && (type === "submit" || type === undefined) && enviando;
+  const enCurso = !asChild && (cargando ?? (envia || ocupado));
+
+  const alPulsar = onClick
+    ? (evento: React.MouseEvent<HTMLButtonElement>) => {
+        const resultado = (onClick as (e: React.MouseEvent<HTMLButtonElement>) => unknown)(evento);
+
+        if (resultado && typeof (resultado as Promise<unknown>).then === "function") {
+          setOcupado(true);
+          void (resultado as Promise<unknown>).finally(() => setOcupado(false));
+        }
+      }
+    : undefined;
 
   return (
     <Componente
       data-slot="button"
-      className={cn(variantesBoton({ variant, size }), className)}
-      disabled={asChild ? undefined : disabled || cargando}
-      aria-busy={cargando || undefined}
+      className={cn(variantesBoton({ variant, size }), enCurso && "[&_svg:not([data-cargando])]:hidden", className)}
+      disabled={asChild ? undefined : disabled || enCurso}
+      aria-busy={enCurso || undefined}
+      type={asChild ? undefined : type}
+      onClick={alPulsar}
       {...props}
     >
-      {cargando && !asChild ? (
+      {enCurso ? (
         <>
-          <Loader2 className="animate-spin" />
+          <Loader2 data-cargando className="animate-spin" />
           {children}
         </>
       ) : (
@@ -87,4 +83,4 @@ function Button({
   );
 }
 
-export { Button, variantesBoton };
+export { Button };

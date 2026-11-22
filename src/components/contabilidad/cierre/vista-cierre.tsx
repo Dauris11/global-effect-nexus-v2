@@ -457,7 +457,7 @@ export function VistaCierre({
             <Button
               variant="outline"
               onClick={() => setPeriodoParaReabrir(null)}
-              disabled={isPending}
+              cargando={isPending}
             >
               Cancelar
             </Button>
@@ -518,13 +518,13 @@ export function VistaCierre({
             <Button
               variant="outline"
               onClick={() => setDialogoCierreAnualAbierto(false)}
-              disabled={isPending}
+              cargando={isPending}
             >
               Cancelar
             </Button>
             <Button
               onClick={handleEjecutarCierreAnual}
-              disabled={isPending}
+              cargando={isPending}
               className="bg-[#2096BA] hover:bg-[#187a99] text-white"
             >
               {isPending ? t("ejecutando") : t("ejecutarCierre")}

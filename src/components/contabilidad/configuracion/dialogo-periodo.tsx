@@ -90,7 +90,7 @@ function FormularioPeriodo({
       )}
       <AvisoEstado estado={estado} />
       <DialogFooter>
-        <Button type="submit" variant={modo === "reabrir" ? "destructive" : "default"} disabled={enviando}>
+        <Button type="submit" variant={modo === "reabrir" ? "destructive" : "default"} cargando={enviando}>
           {enviando ? <Loader2 className="size-4 animate-spin" /> : <Icono className="size-4" />}
           {modo === "cerrar" ? t("confirmarCerrar") : t("confirmarReabrir")}
         </Button>

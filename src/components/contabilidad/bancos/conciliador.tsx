@@ -224,7 +224,7 @@ export function BotonAnularPartida({ id }: { id: string }) {
           <input type="hidden" name="id" value={id} />
           {error && <AvisoError>{error}</AvisoError>}
           <DialogFooter>
-            <Button type="submit" variant="destructive" disabled={enviando}>
+            <Button type="submit" variant="destructive" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Unlink className="size-4" />}
               {t("anularConfirmar")}
             </Button>

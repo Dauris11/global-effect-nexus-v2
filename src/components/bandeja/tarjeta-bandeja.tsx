@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { Card, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
@@ -39,7 +39,7 @@ export function TarjetaBandeja({
             className="-mr-2 inline-flex h-11 shrink-0 items-center gap-1 rounded-control px-2 text-sm font-semibold text-marca-600 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {verTodo.etiqueta}
-            <ArrowRight className="size-4" />
+            <ChevronRight className="size-4" />
           </Link>
         )}
       </div>

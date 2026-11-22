@@ -150,7 +150,7 @@ export function EliminarExpediente({
                 <Button
                   type="submit"
                   variant="destructive"
-                  disabled={enviando}
+                  cargando={enviando}
                   className="animate-in fade-in zoom-in-95 duration-150"
                 >
                   {enviando ? (

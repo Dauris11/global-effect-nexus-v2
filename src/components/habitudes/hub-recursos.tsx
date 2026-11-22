@@ -328,7 +328,7 @@ export function HubRecursos({
               </Button>
               <Button
                 type="submit"
-                disabled={isPending}
+                cargando={isPending}
                 className="gap-2 min-h-11 px-5 active:scale-95"
               >
                 {isPending && <Loader2 className="size-4 animate-spin" />}

@@ -271,7 +271,7 @@ export function FormularioEdicionExpediente({
           <Button
             type="submit"
             size="sm"
-            disabled={enviando}
+            cargando={enviando}
             className="transition-transform active:scale-95"
           >
             {enviando ? (

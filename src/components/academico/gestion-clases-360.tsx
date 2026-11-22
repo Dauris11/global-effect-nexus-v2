@@ -414,7 +414,7 @@ function FilaEntrega({
           />
         </label>
 
-        <Button type="submit" size="sm" disabled={enviando}>
+        <Button type="submit" size="sm" cargando={enviando}>
           {enviando ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (

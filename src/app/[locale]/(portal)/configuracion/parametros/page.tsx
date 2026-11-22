@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -73,7 +73,7 @@ export default async function PaginaParametros({
     <div className="animate-entrada mx-auto max-w-3xl space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="size-4" />
           {t("back")}
         </Link>
       </Button>

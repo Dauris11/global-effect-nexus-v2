@@ -1,0 +1,42 @@
+import { cva } from "class-variance-authority";
+
+/**
+ * Botón base (docs/09-sistema-visual.md §3).
+ *
+ * `default` es el CTA: un solo color plano de la marca (azul o negro, según lo
+ * que cada persona elija en su perfil), sin degradado, y es el único sitio donde
+ * el acento ocupa una superficie entera. `secondary` es
+ * blanco con borde. `destructive` es tinta y no rojo: la gravedad la dice el
+ * peso, no el matiz.
+ *
+ * Se mantiene la API de shadcn (variant, size, asChild) para que las pantallas
+ * no cambien de firma; lo que cambia es el aspecto.
+ */
+export const variantesBoton = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-sm font-semibold transicion-control active:scale-[0.97] active:duration-(--duracion-instante) disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-marca-500 text-white hover:bg-marca-600",
+        destructive: "bg-tinta text-background hover:bg-tinta/90",
+        outline:
+          "border border-linea-fuerte bg-background text-tinta hover:border-tinta hover:bg-muted",
+        secondary:
+          "border border-linea-fuerte bg-background text-tinta hover:bg-muted",
+        ghost: "text-tinta hover:bg-muted",
+        link: "text-tinta underline underline-offset-4 decoration-linea-fuerte hover:decoration-tinta active:scale-100",
+      },
+      size: {
+        default: "h-11 px-5 has-[>svg]:px-4",
+        sm: "h-9 gap-1.5 px-3.5 has-[>svg]:px-3",
+        lg: "h-12 px-6 text-base has-[>svg]:px-5",
+        icon: "size-11",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  },
+);

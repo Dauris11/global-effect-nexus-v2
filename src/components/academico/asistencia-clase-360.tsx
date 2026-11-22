@@ -173,7 +173,7 @@ export function AsistenciaClase360({
                       size="icon"
                       title={t("deleteSession")}
                       aria-label={t("deleteSession")}
-                      disabled={borrando}
+                      cargando={borrando}
                       onClick={() => borrar(sesion.id)}
                     >
                       <Trash2 className="size-3.5" />
@@ -249,7 +249,7 @@ function ListaAsistencia({
         type="button"
         variant="outline"
         size="sm"
-        disabled={enviando}
+        cargando={enviando}
         onClick={() => marcar(undefined, true)}
       >
         {enviando ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
@@ -386,7 +386,7 @@ function FormularioSesion({
       {error && <Aviso estado={error} />}
 
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviando}>
+        <Button type="submit" size="sm" cargando={enviando}>
           {enviando ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
           {t("saveSession")}
         </Button>

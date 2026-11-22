@@ -385,7 +385,7 @@ function Formulario({
       )}
 
       <div className="flex items-center gap-2">
-        <Button type="submit" disabled={enviando}>
+        <Button type="submit" cargando={enviando}>
           {enviando && <Loader2 className="size-4 animate-spin" />}
           {anuncio ? t("save") : t("create")}
         </Button>
@@ -448,7 +448,7 @@ function BotonAccion({
         type="submit"
         variant="ghost"
         size={soloIcono ? "icon" : "sm"}
-        disabled={enviando}
+        cargando={enviando}
         aria-label={soloIcono ? etiqueta : undefined}
         title={soloIcono ? etiqueta : undefined}
         className={destructivo ? "text-destructive hover:text-destructive" : ""}
