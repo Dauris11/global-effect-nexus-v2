@@ -246,7 +246,8 @@
     "accountingClosing": "Cierre contable",
     "commandShortcutMac": "⌘K",
     "assignedSubjects": "Mis materias",
-    "universities": "Universidades"
+    "universities": "Universidades",
+    "atRisk": "Estudiantes en riesgo"
   },
   "landing": {
     "enter": "Acceder",
@@ -1298,15 +1299,9 @@
       "today": "Ingresó hoy",
       "tabs": {
         "info": "Información",
-        "profile": "Perfil",
-        "family": "Familia y vivienda",
-        "health": "Salud",
-        "university": "Universidad",
-        "record": "Récord de notas",
-        "curriculum": "Pénsum y graduación",
-        "g360": "Global 360",
-        "followUp": "Seguimiento",
-        "sponsorship": "Patrocinio",
+        "family": "Familia, vivienda y salud",
+        "academic": "Académica",
+        "followUp": "Seguimiento y patrocinio",
         "edit": "Editar"
       },
       "sections": {
@@ -1394,6 +1389,19 @@
         "faltan_datos_universidad": "Faltan la universidad, la carrera, el plan de estudios o la matrícula. Llénalos en «Editar» y vuelve a intentarlo.",
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
+    },
+    "printSheets": "Imprimir",
+    "quickCreate": {
+      "title": "¿Cómo quieres registrarlo?",
+      "quick": "Registro rápido",
+      "full": "Registro completo",
+      "quickHelp": "Solo lo básico: nombre, contacto y universidad. El resto se completa después, cuando se tenga la información.",
+      "fullHelp": "Toda la ficha ahora: familia, vivienda, salud y entorno."
+    },
+    "complete": {
+      "title": "Ficha completa al {percent} %",
+      "fill": "Completar ahora",
+      "missing": "Falta información en: {sections}."
     }
   },
   "academic": {
@@ -7406,6 +7414,63 @@
         "step2": "Sube la foto o el PDF del listado, o pega la lista.",
         "step3": "Revisa lo que entendió el sistema y pulsa «Guardar las notas»."
       }
-    }
+    },
+    "exportGrades": "Descargar calificaciones (Excel)"
+  },
+  "export": {
+    "print": "Imprimir o guardar en PDF",
+    "foundation": "Fundación Global Effect",
+    "issuedOn": "Emitido el {fecha}",
+    "sheetsTitle": "Hojas para imprimir",
+    "backToRecord": "Volver al expediente",
+    "sheet": {
+      "ficha": "Ficha completa",
+      "record": "Récord de notas",
+      "avance": "Avance en el plan de estudios"
+    },
+    "student": "Estudiante",
+    "university": "Universidad",
+    "career": "Carrera",
+    "matricula": "Matrícula",
+    "status": "Situación",
+    "cumulativeIndex": "Índice acumulado",
+    "periodIndex": "Índice del período",
+    "credits": "Créditos",
+    "code": "Código",
+    "subject": "Materia",
+    "grade": "Nota",
+    "period": "Cuat.",
+    "state": "Estado",
+    "progressSummary": "{approved} de {total} créditos aprobados ({percent} %)",
+    "noRecord": "Todavía no hay notas registradas para este estudiante.",
+    "noPlan": "Todavía no tiene plan de estudios asignado.",
+    "subjectState": {
+      "aprobada": "Aprobada",
+      "reprobada": "Reprobada",
+      "retirada": "Retirada",
+      "cursando": "Cursando",
+      "pendiente": "Pendiente"
+    },
+    "excel": "Descargar en Excel",
+    "pdfHint": "En la ventana que se abre, elige «Guardar como PDF» como impresora."
+  },
+  "risk": {
+    "title": "Estudiantes en riesgo",
+    "back": "Volver a expedientes",
+    "count": "{count, plural, one {# estudiante necesita atención} other {# estudiantes necesitan atención}}",
+    "emptyTitle": "Nadie está en riesgo ahora",
+    "emptyText": "Cuando un estudiante activo baje del índice mínimo de su universidad o repruebe una materia, aparecerá aquí.",
+    "reason": {
+      "cumulative": "Su índice acumulado es {indice} y el mínimo de su universidad es {minimo}.",
+      "period": "Su índice del período {periodo} es {indice} y el mínimo es {minimo}.",
+      "failed": "{count, plural, one {Tiene # materia reprobada sin volver a cursar.} other {Tiene # materias reprobadas sin volver a cursar.}}"
+    },
+    "urgency": "{count, plural, one {1 motivo} other {# motivos}}",
+    "whatsapp": "WhatsApp",
+    "email": "Correo",
+    "noContact": "Sin teléfono ni correo",
+    "noCatalog": "Sin universidad asignada",
+    "openRecord": "Ver su récord",
+    "excel": "Descargar en Excel"
   }
 }

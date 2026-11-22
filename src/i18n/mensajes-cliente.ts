@@ -18,6 +18,8 @@ import { getMessages } from "next-intl/server";
  */
 const ESPACIOS_BASE = [
   "common",
+  // Imprimir o guardar en PDF: el botón de la barra superior y el de cada lista.
+  "export",
   "nav",
   "auth",
   "portal",

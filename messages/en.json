@@ -246,7 +246,8 @@
     "accountingClosing": "Accounting closing",
     "commandShortcutMac": "⌘K",
     "assignedSubjects": "My subjects",
-    "universities": "Universities"
+    "universities": "Universities",
+    "atRisk": "Students at risk"
   },
   "landing": {
     "enter": "Sign in",
@@ -1298,15 +1299,9 @@
       "today": "Joined today",
       "tabs": {
         "info": "Information",
-        "profile": "Profile",
-        "family": "Family and housing",
-        "health": "Health",
-        "university": "University",
-        "record": "Grade record",
-        "curriculum": "Curriculum and graduation",
-        "g360": "Global 360",
-        "followUp": "Follow-up",
-        "sponsorship": "Sponsorship",
+        "family": "Family, housing and health",
+        "academic": "Academic",
+        "followUp": "Follow-up and sponsorship",
         "edit": "Edit"
       },
       "sections": {
@@ -1394,6 +1389,19 @@
         "faltan_datos_universidad": "Faltan la universidad, la carrera, el plan de estudios o la matrícula. Llénalos en «Editar» y vuelve a intentarlo.",
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
+    },
+    "printSheets": "Imprimir",
+    "quickCreate": {
+      "title": "How do you want to register them?",
+      "quick": "Quick registration",
+      "full": "Full registration",
+      "quickHelp": "Just the basics: name, contact and university. The rest is completed later, when the information is available.",
+      "fullHelp": "The whole file now: family, housing, health and background."
+    },
+    "complete": {
+      "title": "File {percent}% complete",
+      "fill": "Complete now",
+      "missing": "Information is missing in: {sections}."
     }
   },
   "academic": {
@@ -7406,6 +7414,63 @@
         "step2": "Upload the photo or PDF of the list, or paste the list.",
         "step3": "Check what the system understood and press “Save the grades”."
       }
-    }
+    },
+    "exportGrades": "Download grades (Excel)"
+  },
+  "export": {
+    "print": "Print or save as PDF",
+    "foundation": "Global Effect Foundation",
+    "issuedOn": "Issued on {fecha}",
+    "sheetsTitle": "Printable sheets",
+    "backToRecord": "Back to the record",
+    "sheet": {
+      "ficha": "Full file",
+      "record": "Grade record",
+      "avance": "Study plan progress"
+    },
+    "student": "Student",
+    "university": "University",
+    "career": "Degree",
+    "matricula": "Student ID",
+    "status": "Status",
+    "cumulativeIndex": "Cumulative index",
+    "periodIndex": "Period index",
+    "credits": "Credits",
+    "code": "Code",
+    "subject": "Subject",
+    "grade": "Grade",
+    "period": "Term",
+    "state": "State",
+    "progressSummary": "{approved} of {total} credits passed ({percent} %)",
+    "noRecord": "There are no grades recorded for this student yet.",
+    "noPlan": "No study plan assigned yet.",
+    "subjectState": {
+      "aprobada": "Passed",
+      "reprobada": "Failed",
+      "retirada": "Withdrawn",
+      "cursando": "In progress",
+      "pendiente": "Pending"
+    },
+    "excel": "Download as Excel",
+    "pdfHint": "In the window that opens, choose “Save as PDF” as the printer."
+  },
+  "risk": {
+    "title": "Students at risk",
+    "back": "Back to records",
+    "count": "{count, plural, one {# student needs attention} other {# students need attention}}",
+    "emptyTitle": "Nobody is at risk right now",
+    "emptyText": "When an active student falls below their university's minimum index or fails a subject, they will show up here.",
+    "reason": {
+      "cumulative": "Their cumulative index is {indice} and their university's minimum is {minimo}.",
+      "period": "Their index for {periodo} is {indice} and the minimum is {minimo}.",
+      "failed": "{count, plural, one {They have # failed subject not retaken.} other {They have # failed subjects not retaken.}}"
+    },
+    "urgency": "{count, plural, one {1 reason} other {# reasons}}",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "noContact": "No phone or email",
+    "noCatalog": "No university assigned",
+    "openRecord": "See their record",
+    "excel": "Download as Excel"
   }
 }

@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Palette,
+  Printer,
   Search,
   Settings,
   User,
@@ -84,6 +85,7 @@ export function TopBar({
   const tRoles = useTranslations("roles");
   const tAuth = useTranslations("auth");
   const tComun = useTranslations("common");
+  const tExp = useTranslations("export");
   const ruta = usePathname();
   const idioma = useLocale();
 
@@ -136,6 +138,7 @@ export function TopBar({
 
   return (
     <header
+      data-armazon
       className={cn(
         "bg-background/95 sticky top-0 z-30 flex h-16 items-center gap-3 px-4 backdrop-blur-md transition-[border-color,box-shadow] md:px-6 lg:px-8",
         desplazada ? "border-b border-linea shadow-card" : "border-b border-transparent",
@@ -192,6 +195,16 @@ export function TopBar({
             <VerComo rol={rol} rolReal={rolReal} />
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={() => window.print()}
+          aria-label={tExp("print")}
+          title={tExp("print")}
+          className="hidden size-11 items-center justify-center rounded-full text-tinta transicion-control hover:bg-muted active:scale-95 md:flex"
+        >
+          <Printer className="size-5" />
+        </button>
 
         <Campana avisos={avisos} sinLeer={sinLeer} />
 

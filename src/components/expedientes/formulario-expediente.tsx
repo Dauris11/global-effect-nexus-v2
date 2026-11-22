@@ -96,6 +96,8 @@ export type TextosFormulario = {
   guardando: string;
   error: string;
   faltaNombre: string;
+  /** Registro rápido o completo al dar de alta. */
+  modoAlta?: { titulo: string; rapido: string; completo: string; ayudaRapido: string; ayudaCompleto: string };
   cancelar: string;
   opcional: string;
   pestanas: Record<string, string>;
@@ -133,6 +135,8 @@ export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormu
    */
   const [leido, setLeido] = useState<ValoresExpediente | null>(null);
   const [version, setVersion] = useState(0);
+  // Registro rápido por defecto: lo mínimo ahora y el resto cuando se tenga la información.
+  const [rapido, setRapido] = useState(true);
 
   const [alta, enviarAlta, guardando] = useActionState<
     EstadoExpediente,
@@ -174,9 +178,27 @@ export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormu
           />
         )}
 
+        {textos.modoAlta && (
+        <div role="radiogroup" aria-label={textos.modoAlta.titulo} className="grid gap-2 sm:grid-cols-2">
+          {([true, false] as const).map((valor) => (
+            <button
+              key={String(valor)}
+              type="button"
+              role="radio"
+              aria-checked={rapido === valor}
+              onClick={() => setRapido(valor)}
+              className={`rounded-card border p-3 text-left transition-colors ${rapido === valor ? "border-marca-500 bg-marca-50" : "border-linea hover:bg-muted"}`}
+            >
+              <span className="block text-sm font-semibold">{valor ? textos.modoAlta?.rapido : textos.modoAlta?.completo}</span>
+              <span className="texto-meta mt-0.5 block">{valor ? textos.modoAlta?.ayudaRapido : textos.modoAlta?.ayudaCompleto}</span>
+            </button>
+          ))}
+        </div>
+        )}
+
         <form action={enviarAlta} className="space-y-4">
           <FormularioGuiado key={version}>
-            <CamposExpediente textos={textos} valores={leido ?? undefined} catalogo={catalogo} />
+            <CamposExpediente textos={textos} valores={leido ?? undefined} catalogo={catalogo} soloBasico={rapido && Boolean(textos.modoAlta)} />
 
             {/* El único error que la acción distingue por campo es el nombre
                 vacío, y es el que se puede arreglar sin salir de aquí: se dice
@@ -355,6 +377,7 @@ export function CamposExpediente({
   soloLectura = false,
   campoFoto,
   catalogo,
+  soloBasico = false,
 }: {
   textos: TextosFormulario;
   valores?: ValoresExpediente;
@@ -362,6 +385,8 @@ export function CamposExpediente({
   campoFoto?: React.ReactNode;
   /** Universidades, carreras y pénsums elegibles; sin él, el texto antiguo en solo lectura. */
   catalogo?: CatalogoDelFormulario;
+  /** Alta rápida: solo identidad y universidad; familia, vivienda, salud y entorno se completan después. */
+  soloBasico?: boolean;
 }) {
   const familiares = valores?.familiares;
 
@@ -526,6 +551,9 @@ export function CamposExpediente({
           </Rejilla>
         </PasoFormulario>
 
+        {/* Las cuatro últimas secciones se llenan después si se hizo el registro rápido. */}
+        {!soloBasico && (
+        <>
         {/* ── Familia: tabla `familiar` (una fila por bloque) ─── */}
         <PasoFormulario titulo={textos.pestanas.family} className="space-y-3">
           {FAMILIA_FIJA.map((parentesco) => (
@@ -806,6 +834,8 @@ export function CamposExpediente({
             />
           </Rejilla>
         </PasoFormulario>
+        </>
+        )}
     </>
   );
 }

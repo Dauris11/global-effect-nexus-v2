@@ -99,6 +99,7 @@ export function BarraInferior({
     <>
       <nav
         aria-label={t("mainNav")}
+        data-armazon
         className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t border-linea pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
         <ul className="grid h-16 grid-cols-5 items-center">

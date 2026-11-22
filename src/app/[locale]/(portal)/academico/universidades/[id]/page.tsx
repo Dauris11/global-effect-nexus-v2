@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeft, ChevronRight, GraduationCap } from "lucide-react";
+import { ArrowLeft, ChevronRight, Download, GraduationCap } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -46,12 +46,20 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
       <EncabezadoPagina
         titulo={`${universidad.siglas} · ${universidad.nombre}`}
         acciones={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/academico/universidades">
-              <ArrowLeft className="size-4" />
-              {t("back")}
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline" size="sm" className="no-imprimir">
+              <a href={`/api/exportar/notas?universidad=${universidad.id}`} download>
+                <Download className="size-4" />
+                {t("exportGrades")}
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="no-imprimir">
+              <Link href="/academico/universidades">
+                <ArrowLeft className="size-4" />
+                {t("back")}
+              </Link>
+            </Button>
+          </>
         }
       />
 

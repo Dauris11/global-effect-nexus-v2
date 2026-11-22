@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, HeartHandshake, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -12,6 +12,8 @@ import { arbolCatalogo } from "@/server/universidades/consultas";
 import { FormularioExpediente } from "@/components/expedientes/formulario-expediente";
 import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
 import { TarjetasExpedientes } from "@/components/expedientes/tarjetas-expedientes";
+import { BotonImprimir } from "@/components/compartido/boton-imprimir";
+import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { StatCard } from "@/components/ui/stat-card";
@@ -89,6 +91,8 @@ export default async function PaginaExpedientes({
   const usuario = await requerirPermiso("expedientes.leer");
   const puedeEscribir = usuarioTienePermiso(usuario, "expedientes.escribir");
   const t = await getTranslations({ locale, namespace: "records" });
+  const te = await getTranslations({ locale, namespace: "export" });
+  const tr = await getTranslations({ locale, namespace: "risk" });
 
   const filtros = {
     busqueda: consulta.busqueda,
@@ -119,7 +123,21 @@ export default async function PaginaExpedientes({
       <EncabezadoPagina
         titulo={t("title")}
         acciones={
-          puedeEscribir && (
+          <>
+            <BotonImprimir />
+            <Button asChild variant="outline" size="sm" className="no-imprimir">
+              <a href={`/api/exportar/expedientes?${enlaceExpedientes(consulta, {}).split("?")[1] ?? ""}`} download>
+                <Download className="size-4" />
+                {te("excel")}
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="no-imprimir">
+              <Link href="/expedientes/riesgo">
+                <HeartHandshake className="size-4" />
+                {tr("title")}
+              </Link>
+            </Button>
+          {puedeEscribir && (
             <FormularioExpediente
               catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
               textos={{
@@ -129,6 +147,13 @@ export default async function PaginaExpedientes({
                 guardando: t("form.saving"),
                 error: t("form.error"),
                 faltaNombre: t("form.faltaNombreSeccion"),
+                modoAlta: {
+                  titulo: t("quickCreate.title"),
+                  rapido: t("quickCreate.quick"),
+                  completo: t("quickCreate.full"),
+                  ayudaRapido: t("quickCreate.quickHelp"),
+                  ayudaCompleto: t("quickCreate.fullHelp"),
+                },
                 cancelar: t("form.cancel"),
                 opcional: t("field.optional"),
                 pestanas: Object.fromEntries(
@@ -227,7 +252,8 @@ export default async function PaginaExpedientes({
                 },
               }}
             />
-          )
+          )}
+          </>
         }
       />
 

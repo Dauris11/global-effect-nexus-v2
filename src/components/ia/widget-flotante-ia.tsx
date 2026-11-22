@@ -429,7 +429,7 @@ export function WidgetFlotanteIA({
         aria-expanded={abierto}
         whileHover={reducido ? undefined : { scale: 1.06 }}
         whileTap={reducido ? undefined : { scale: 0.94 }}
-        className="border-linea bg-card shadow-elevada focus-visible:ring-ring fixed right-4 bottom-20 z-50 flex size-14 items-center justify-center rounded-full border outline-none focus-visible:ring-2 md:right-6 md:bottom-6"
+        data-armazon className="border-linea bg-card shadow-elevada focus-visible:ring-ring fixed right-4 bottom-20 z-50 flex size-14 items-center justify-center rounded-full border outline-none focus-visible:ring-2 md:right-6 md:bottom-6"
       >
         <AnimatePresence mode="wait" initial={false}>
           {abierto ? (
@@ -468,7 +468,7 @@ export function WidgetFlotanteIA({
             exit={reducido ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.97 }}
             transition={transicionPanel}
             style={{ transformOrigin: "bottom right" }}
-            className="border-linea bg-background shadow-elevada fixed right-4 bottom-36 z-50 flex h-[600px] max-h-[calc(100dvh-10rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-hoja border sm:w-[420px] md:right-6 md:bottom-24 md:max-h-[calc(100dvh-8rem)]"
+            data-armazon className="border-linea bg-background shadow-elevada fixed right-4 bottom-36 z-50 flex h-[600px] max-h-[calc(100dvh-10rem)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-hoja border sm:w-[420px] md:right-6 md:bottom-24 md:max-h-[calc(100dvh-8rem)]"
           >
             <div className="border-linea flex items-center gap-3 border-b px-4 py-3">
               <AiOrb estado={estadoOrbe} tamano="md" />

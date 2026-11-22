@@ -364,13 +364,42 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
  * no gastar tinta.
  */
 @media print {
-  .no-imprimir {
+  .no-imprimir,
+  [data-armazon],
+  [data-barra-lateral] {
     display: none !important;
   }
 
   body {
     background: #ffffff;
   }
+
+  /* El contenido ocupa toda la hoja y las tarjetas no gastan tinta ni se parten a la mitad. */
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  .no-partir {
+    break-inside: avoid;
+  }
+
+  .solo-imprimir {
+    display: block !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}
+
+.solo-imprimir {
+  display: none;
 }
 /**
  * Sistema de movimiento — Portal GlobalEffect (docs/09-sistema-visual.md §2.8)

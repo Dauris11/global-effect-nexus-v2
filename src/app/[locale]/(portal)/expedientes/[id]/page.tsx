@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { ArrowLeft, FileQuestion } from "lucide-react";
+import { ArrowLeft, FileQuestion, Printer } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { FichaFamilia, FichaInformacion, FichaPerfil, FichaSalud } from "@/components/expedientes/detalle/fichas";
+import { FichaCompleta } from "@/components/expedientes/ficha-completa";
 import { AlertasAcademicas } from "@/components/expedientes/alertas-academicas";
 import { AccionesRapidasExpediente } from "@/components/expedientes/acciones-rapidas-expediente";
 import { PestanasDetalle } from "@/components/expedientes/detalle/pestanas-detalle";
@@ -31,7 +32,18 @@ import { notasDelEstudiante } from "@/server/estudiantes/portal";
 import { cuentaVinculada, cuentasEstudianteSinVincular, obtenerExpediente } from "@/server/expedientes/consultas";
 import { seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
 
-const PESTANAS = ["info", "profile", "family", "health", "university", "record", "curriculum", "g360", "followUp", "sponsorship", "edit"] as const;
+const PESTANAS = ["info", "family", "academic", "followUp", "edit"] as const;
+
+/** Enlaces viejos (`?seccion=record`…) siguen llegando a su sitio: cada pestaña antigua cae en la que la absorbió. */
+const PESTANA_ANTIGUA: Record<string, (typeof PESTANAS)[number]> = {
+  profile: "info",
+  health: "family",
+  university: "academic",
+  record: "academic",
+  curriculum: "academic",
+  g360: "academic",
+  sponsorship: "followUp",
+};
 
 export async function generateMetadata({
   params,
@@ -65,7 +77,7 @@ export default async function PaginaExpediente({
   const { editar, seccion } = await searchParams;
 
   const usuario = await requerirPermiso("expedientes.leer");
-  const [t, tc, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "records" }), getTranslations({ locale, namespace: "catalog" }), getLocale()]);
+  const [t, tc, te, idiomaCrudo] = await Promise.all([getTranslations({ locale, namespace: "records" }), getTranslations({ locale, namespace: "catalog" }), getTranslations({ locale, namespace: "export" }), getLocale()]);
   const idioma = idiomaCrudo === "en" ? "en" : "es";
 
   const expediente = await obtenerExpediente(id);
@@ -146,7 +158,7 @@ export default async function PaginaExpediente({
 
   const visibles = PESTANAS.filter((p) => p !== "edit" || puedeEditar);
   // `?editar=1` lo usan la lista y la vista rápida: abre directo la pestaña de edición.
-  const pedida = seccion ?? (editar === "1" ? "edit" : "info");
+  const pedida = PESTANA_ANTIGUA[seccion ?? ""] ?? seccion ?? (editar === "1" ? "edit" : "info");
   const inicial = (visibles as readonly string[]).includes(pedida) ? pedida : "info";
 
   return (
@@ -159,6 +171,15 @@ export default async function PaginaExpediente({
             {t("backToList")}
           </Link>
         </Button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/expedientes/${expediente.id}/imprimir`}>
+              <Printer className="size-4" />
+              {te("print")}
+            </Link>
+          </Button>
+        </div>
 
         {puedeEliminar && (
           <EliminarExpediente
@@ -196,6 +217,8 @@ export default async function PaginaExpediente({
         universidadCatalogo={catalogo.universidad}
       />
 
+      <FichaCompleta e={expediente} puedeEditar={puedeEditar} />
+
       <AlertasAcademicas alertas={alertas} />
 
       <AccionesRapidasExpediente
@@ -219,16 +242,32 @@ export default async function PaginaExpediente({
         inicial={inicial}
         pestanas={visibles.map((clave) => ({ clave, etiqueta: t(`v2.tabs.${clave}`) }))}
         contenido={{
-          info: <FichaInformacion e={expediente} tiempo={tiempo} />,
-          profile: <FichaPerfil e={expediente} />,
-          family: <FichaFamilia e={expediente} />,
-          health: <FichaSalud e={expediente} />,
-          university: <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />,
-          record: <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />,
-          curriculum: <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />,
-          g360: <Tab360 datos={historial360} />,
-          followUp: <TabSeguimiento e={expediente} seg={seguimiento} />,
-          sponsorship: <TabPatrocinio seg={seguimiento} />,
+          info: (
+            <>
+              <FichaInformacion e={expediente} tiempo={tiempo} />
+              <FichaPerfil e={expediente} />
+            </>
+          ),
+          family: (
+            <>
+              <FichaFamilia e={expediente} />
+              <FichaSalud e={expediente} />
+            </>
+          ),
+          academic: (
+            <>
+              <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} />
+              <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />
+              <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />
+              <Tab360 datos={historial360} />
+            </>
+          ),
+          followUp: (
+            <>
+              <TabSeguimiento e={expediente} seg={seguimiento} />
+              <TabPatrocinio seg={seguimiento} />
+            </>
+          ),
           edit: (
             <FormularioEdicionExpediente
               expediente={expediente}
