@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ESTADOS_ACADEMIA, TIPOS_ACADEMIA } from "@/lib/academias";
-import { ALERTA_RIESGO, ANIMACION, CUADRO, TARJETA, VACIO } from "@/lib/paleta";
+import {
+  ALERTA_RIESGO,
+  ANIMACION,
+  AZUL,
+  AZUL_OSCURO,
+  AZUL_SUAVE,
+  CUADRO,
+  TARJETA,
+  VACIO,
+} from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   eliminarAcademia,
@@ -90,8 +100,66 @@ export function GestionProgramas({
   const t = useTranslations("academies");
   const [editando, setEditando] = useState<string | null>(null);
 
+  const COLORES_TIPO = [AZUL, AZUL_OSCURO, AZUL_SUAVE] as const;
+  const serieTipos = TIPOS_ACADEMIA.map((tipo, idx) => ({
+    nombre: t(`type.${tipo}` as never),
+    valor: academias.filter((a) => a.tipo === tipo).length,
+    color: COLORES_TIPO[idx % COLORES_TIPO.length],
+  }));
+
+  const serieParticipantes = [...academias]
+    .filter((a) => a.participantes > 0)
+    .sort((a, b) => b.participantes - a.participantes)
+    .slice(0, 6)
+    .map((a, idx) => ({
+      nombre: a.nombre.length > 20 ? `${a.nombre.slice(0, 19)}…` : a.nombre,
+      valor: a.participantes,
+      color: idx === 0 ? AZUL_OSCURO : AZUL,
+    }));
+
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
+      {academias.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartTypeTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieTipos}
+                  total={academias.length}
+                  etiquetaTotal=""
+                  vacio={t("chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieTipos.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartParticipantsTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieParticipantes} vacio={t("chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
       {puedeEscribir && editando !== "nuevo" && (
         <div className="flex justify-end">
           <Button

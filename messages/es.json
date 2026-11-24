@@ -1639,6 +1639,10 @@
       "inProgress": "Hoy cae dentro",
       "mismatchEnded": "Marcado activo, pero sus fechas ya pasaron. Ciérralo o corrige la fecha de fin.",
       "mismatchStarted": "Marcado planificado, pero ya empezó. Actívalo para que las notas se registren aquí.",
+      "filterAll": "Todos",
+      "chartStatusTitle": "Períodos por estado",
+      "chartEnrollmentsTitle": "Matrículas por período (top 6)",
+      "chartEmpty": "Sin períodos para graficar",
       "stats": {
         "total": "Períodos",
         "active": "Activos",
@@ -2893,6 +2897,9 @@
     "allTypes": "Todos los tipos",
     "allStates": "Todos los estados",
     "allPrograms": "Todos los programas",
+    "chartTypeTitle": "Programas por tipo",
+    "chartParticipantsTitle": "Participantes por programa (top 6)",
+    "chartEmpty": "Sin programas para graficar",
     "type": {
       "liderazgo": "Liderazgo",
       "habilidades": "Habilidades para la vida",

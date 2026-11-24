@@ -1639,6 +1639,10 @@
       "inProgress": "Today falls inside",
       "mismatchEnded": "Marked active, but its dates have passed. Close it or fix the end date.",
       "mismatchStarted": "Marked planned, but it already started. Activate it so grades land here.",
+      "filterAll": "All",
+      "chartStatusTitle": "Terms by status",
+      "chartEnrollmentsTitle": "Enrollments per term (top 6)",
+      "chartEmpty": "No terms to chart",
       "stats": {
         "total": "Terms",
         "active": "Active",
@@ -2893,6 +2897,9 @@
     "allTypes": "All types",
     "allStates": "All states",
     "allPrograms": "All programs",
+    "chartTypeTitle": "Programs by type",
+    "chartParticipantsTitle": "Participants per program (top 6)",
+    "chartEmpty": "No programs to chart",
     "type": {
       "liderazgo": "Leadership",
       "habilidades": "Life skills",

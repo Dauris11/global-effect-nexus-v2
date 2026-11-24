@@ -63,6 +63,11 @@ módulo) — esto es solo la cola de pendientes concretos.
       - [ ] Confirmar el régimen real de cada universidad (se sembró «cuatrimestre» en las cuatro).
       - [ ] Ver en pantalla `/academico/universidades` y la pestaña Universidad/Pénsum (no probado en navegador).
 
+- [x] **Gráficos interactivos en Períodos y Programas de Academia + fix `Slot` en Bandeja (24 nov 2026):**
+      - **Períodos (`/academico/periodos`):** anillo por estado, barras de matrículas por período (top 6) y chips de filtro por estado (`gestion-periodos.tsx`).
+      - **Programas de Academia (`/academias/programas`):** anillo por tipo y barras de participantes por programa (top 6) (`gestion-programas.tsx`).
+      - **Bandeja (`/bandeja`):** sustitución de `<Button asChild><Link /></Button>` por `<Link className={variantesBoton(...)}>` en `bandeja/page.tsx` para evitar el error de `Slot` en React 19 RSC.
+
 - [x] **Gráficos interactivos y filtros en Personal, Solicitudes, Rendiciones, Patrocinadores/Becas y Clases 360 (23 nov 2026):**
       - **Personal (`/administrativo/personal`):** anillo de estado de cuentas y barras de reparto por rol (`graficas-personal.tsx`, `personal/page.tsx`).
       - **Solicitudes (`/administrativo/solicitudes`):** anillo de resumen de bandeja y barras de solicitudes por tipo (`graficas-solicitudes.tsx`, `solicitudes/page.tsx`).

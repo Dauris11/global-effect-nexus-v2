@@ -18,14 +18,23 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { AccionesFila } from "@/components/academico/acciones-fila";
 import { CifraAcademica } from "@/components/academico/cifra";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
-import { ALERTA_RIESGO, ANIMACION, CUADRO, VACIO } from "@/lib/paleta";
+import {
+  ALERTA_RIESGO,
+  ANIMACION,
+  AZUL,
+  AZUL_OSCURO,
+  AZUL_SUAVE,
+  CUADRO,
+  VACIO,
+} from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   eliminarPeriodo,
@@ -63,10 +72,30 @@ export function GestionPeriodos({
 }) {
   const t = useTranslations("academic");
   const [editando, setEditando] = useState<string | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<"todos" | "activo" | "planificado" | "completado">("todos");
 
   const activos = periodos.filter((p) => p.estado === "activo").length;
   const planificados = periodos.filter((p) => p.estado === "planificado").length;
   const completados = periodos.filter((p) => p.estado === "completado").length;
+
+  const serieEstado = [
+    { nombre: t("termStatus.activo"), valor: activos, color: AZUL },
+    { nombre: t("termStatus.planificado"), valor: planificados, color: AZUL_SUAVE },
+    { nombre: t("termStatus.completado"), valor: completados, color: AZUL_OSCURO },
+  ];
+
+  const serieMatriculas = [...periodos]
+    .map((p) => ({
+      nombre: p.nombre.length > 18 ? `${p.nombre.slice(0, 17)}…` : p.nombre,
+      valor: p.inscripciones + p.inscripciones_360,
+      color: p.estado === "activo" ? AZUL_OSCURO : AZUL,
+    }))
+    .filter((f) => f.valor > 0)
+    .slice(0, 6);
+
+  const visibles = periodos.filter((p) =>
+    filtroEstado === "todos" ? true : p.estado === filtroEstado,
+  );
 
   return (
     <div className={cn("space-y-5", ANIMACION.entrada)}>
@@ -94,35 +123,106 @@ export function GestionPeriodos({
         />
       </div>
 
+      {periodos.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("terms.chartStatusTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieEstado}
+                  total={periodos.length}
+                  etiquetaTotal=""
+                  vacio={t("terms.chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieEstado.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("terms.chartEnrollmentsTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieMatriculas} vacio={t("terms.chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <Card>
         <CardContent className="pt-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <CardTitle>
               <CalendarDays className="size-4" />
               {t("terms.title")}
-              <Badge className="ml-1 bg-[#2096BA]/15 text-[10px] text-[#187a99]">
-                {periodos.length}
+              <Badge className="ml-1 bg-marca-500/15 text-[10px] text-marca-600">
+                {visibles.length}
               </Badge>
             </CardTitle>
 
-            {puedeEscribir && editando !== "nuevo" && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setEditando("nuevo")}
-                className="transition-transform duration-150 active:scale-95"
-              >
-                <Plus className="size-3.5" />
-                {t("terms.new")}
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {(
+                [
+                  { id: "todos", label: t("terms.filterAll"), count: periodos.length },
+                  { id: "activo", label: t("termStatus.activo"), count: activos },
+                  { id: "planificado", label: t("termStatus.planificado"), count: planificados },
+                  { id: "completado", label: t("termStatus.completado"), count: completados },
+                ] as const
+              ).map((chip) => {
+                const activo = filtroEstado === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setFiltroEstado(chip.id)}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors",
+                      activo
+                        ? "border-marca-500 bg-marca-50 text-marca-700"
+                        : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+                    )}
+                  >
+                    <span>{chip.label}</span>
+                    <span className="tabular-nums opacity-75">{chip.count}</span>
+                  </button>
+                );
+              })}
+
+              {puedeEscribir && editando !== "nuevo" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setEditando("nuevo")}
+                  className="transition-transform duration-150 active:scale-95"
+                >
+                  <Plus className="size-3.5" />
+                  {t("terms.new")}
+                </Button>
+              )}
+            </div>
           </div>
 
           {editando === "nuevo" && (
             <FormularioPeriodo alTerminar={() => setEditando(null)} />
           )}
 
-          {periodos.length === 0 ? (
+          {visibles.length === 0 ? (
             <div className={VACIO.contenedor}>
               <span className={VACIO.icono}>
                 <CalendarDays className="size-6" />
@@ -131,7 +231,7 @@ export function GestionPeriodos({
             </div>
           ) : (
             <ul className="mt-3 divide-y">
-              {periodos.map((periodo) => (
+              {visibles.map((periodo) => (
                 <li key={periodo.id} className="group py-3">
                   {editando === periodo.id ? (
                     <FormularioPeriodo

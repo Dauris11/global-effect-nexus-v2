@@ -10,7 +10,7 @@ import {
 } from "@/components/bandeja/proyectos-bandeja";
 import { ReunionesBandeja } from "@/components/bandeja/reuniones-bandeja";
 import { TareasBandeja } from "@/components/bandeja/tareas-bandeja";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -67,24 +67,27 @@ export default async function PaginaBandeja({
         titulo={t("greeting", { name: usuario.nombre })}
         acciones={
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/administrativo/torre-control">
-                <TowerControl className="size-4" />
-                {tNav("controlTower")}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/calendario/gantt">
-                <GanttChartSquare className="size-4" />
-                {tNav("timeline")}
-              </Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/reuniones?agendar=true">
-                <CalendarPlus className="size-4" />
-                {tNav("meetings")}
-              </Link>
-            </Button>
+            <Link
+              href="/administrativo/torre-control"
+              className={variantesBoton({ variant: "outline", size: "sm" })}
+            >
+              <TowerControl className="size-4" />
+              {tNav("controlTower")}
+            </Link>
+            <Link
+              href="/calendario/gantt"
+              className={variantesBoton({ variant: "outline", size: "sm" })}
+            >
+              <GanttChartSquare className="size-4" />
+              {tNav("timeline")}
+            </Link>
+            <Link
+              href="/reuniones?agendar=true"
+              className={variantesBoton({ size: "sm" })}
+            >
+              <CalendarPlus className="size-4" />
+              {tNav("meetings")}
+            </Link>
           </div>
         }
       />
