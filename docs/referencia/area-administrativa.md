@@ -88,11 +88,13 @@ Definidos en `src/lib/rbac.ts` y evaluados siempre con `usuarioTienePermiso(usua
 
 ---
 
-## 4. Otros Módulos ERP bajo `/administrativo/`
+## 4. Otros Módulos ERP bajo `/administrativo/` y Gestión Académica/Patrocinio
 
-- **Solicitudes (`/administrativo/solicitudes`):** Bandeja de solicitudes internas y de compras (`FormularioCompra`, `FormularioSolicitud`, `TarjetaSolicitud`, `src/server/solicitudes/consultas.ts`).
-- **Rendiciones de gastos (`/administrativo/rendiciones`):** Carga de facturas/comprobantes con escaneo OCR y validación NCF/RNC ante DGII imputados a programas (`FormularioRendicionGasto`, `ListaRendiciones`, `src/server/colaborador/{consultas,acciones}.ts`).
-- **Personal (`/administrativo/personal`):** Creación de cuentas de trabajo y asignación de roles (`usuarios.administrar`, `GestionCuentas`, `src/server/personal/consultas.ts`).
-- **Inventario (`/administrativo/inventario`):** Catálogo, métricas DOP, auditoría y escaneo QR de activos (`TablaActivos`, `src/server/inventario/consultas.ts`).
+- **Solicitudes (`/administrativo/solicitudes`):** Bandeja de solicitudes internas y de compras (`GraficasSolicitudes`, `FormularioCompra`, `FormularioSolicitud`, `TarjetaSolicitud`, `src/server/solicitudes/consultas.ts`).
+- **Rendiciones de gastos (`/administrativo/rendiciones`):** Carga de facturas/comprobantes con escaneo OCR y validación NCF/RNC ante DGII imputados a programas, con gráficas de estado y montos DOP (`FormularioRendicionGasto`, `ListaRendiciones`, `src/server/colaborador/{consultas,acciones}.ts`).
+- **Personal (`/administrativo/personal`):** Creación de cuentas de trabajo, asignación de roles y gráficas de estado de cuentas/reparto por rol (`usuarios.administrar`, `GraficasPersonal`, `GestionCuentas`, `src/server/personal/consultas.ts`).
+- **Inventario (`/administrativo/inventario`):** Catálogo, métricas DOP, gráficas por estado/categoría, auditoría y escaneo QR de activos (`TablaActivos`, `src/server/inventario/consultas.ts`).
 - **Transporte Institucional (`/administrativo/transporte`):** Monitoreo en vivo con mapa TIMOB del circuito universitario, turnos diarios (`transporte_horario`), pasajeros inscritos por turno, activación/pausa de horarios (`alternarHorarioTransporte`) y bitácora de incidencias (`obtenerResumenAdminTransporte`). Protegido por `transporte.gestionar`.
+- **Asignación de materias (`/academico/materias`) y Clases 360 (`/academico/clases-360`):** Catálogo agrupado por período con asignación rápida de docente (`asignarDocenteMateria`), gráficos de cobertura docente y seguimiento de inscritos/entregas en 360 (`GestionMaterias`, `GestionClases360`).
+- **Patrocinadores y Becas (`/patrocinadores`, `/patrocinadores/becas`):** Directorio y cobertura de becas con gráficas por tipo, becados por patrocinador y filtros de asignación (`GestionPatrocinadores`, `GestionBecas`).
 

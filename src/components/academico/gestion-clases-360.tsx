@@ -18,9 +18,10 @@ import { useTranslations } from "next-intl";
 
 import { AsistenciaClase360 } from "@/components/academico/asistencia-clase-360";
 import { FilaInscrito } from "@/components/academico/fila-inscrito-360";
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import {
   AccionesFormulario,
@@ -32,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { NOTA_APROBADA } from "@/lib/notas";
-import { CUADRO } from "@/lib/paleta";
+import { AZUL, AZUL_OSCURO, CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   borrarAsignacion360,
@@ -121,8 +122,69 @@ export function GestionClases360({
     seccionInicial === "asistencia" ? claseInicialId : null,
   );
 
+  const serieInscritos = [...clases]
+    .map((c) => ({
+      nombre: c.nombre.length > 20 ? `${c.nombre.slice(0, 19)}…` : c.nombre,
+      valor: (inscritosPorClase[c.id] ?? []).length,
+      color: AZUL,
+    }))
+    .sort((a, b) => b.valor - a.valor)
+    .slice(0, 6);
+
+  const todasEntregas = Object.values(entregasPorAsignacion).flat();
+  const calificadasCount = todasEntregas.filter(
+    (e) => e.estado === "calificada",
+  ).length;
+  const serieEntregas = [
+    { nombre: t("chartPending"), valor: entregas.length, color: AZUL_OSCURO },
+    { nombre: t("chartGraded"), valor: calificadasCount, color: AZUL },
+  ];
+  const totalEntregas = entregas.length + calificadasCount;
+
   return (
     <div className="space-y-6">
+      {clases.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartEnrolledTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieInscritos} vacio={t("chartEmpty")} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartSubmissionsTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieEntregas}
+                  total={totalEntregas}
+                  etiquetaTotal=""
+                  vacio={t("chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieEntregas.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ── 1. Por revisar ───────────────────────────────────────── */}
       <Card>
         <CardContent className="pt-5">

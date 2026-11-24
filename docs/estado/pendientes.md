@@ -63,6 +63,14 @@ módulo) — esto es solo la cola de pendientes concretos.
       - [ ] Confirmar el régimen real de cada universidad (se sembró «cuatrimestre» en las cuatro).
       - [ ] Ver en pantalla `/academico/universidades` y la pestaña Universidad/Pénsum (no probado en navegador).
 
+- [x] **Gráficos interactivos y filtros en Personal, Solicitudes, Rendiciones, Patrocinadores/Becas y Clases 360 (23 nov 2026):**
+      - **Personal (`/administrativo/personal`):** anillo de estado de cuentas y barras de reparto por rol (`graficas-personal.tsx`, `personal/page.tsx`).
+      - **Solicitudes (`/administrativo/solicitudes`):** anillo de resumen de bandeja y barras de solicitudes por tipo (`graficas-solicitudes.tsx`, `solicitudes/page.tsx`).
+      - **Rendiciones (`/administrativo/rendiciones`):** anillo por estado y barras de monto total DOP por estado (`lista-rendiciones.tsx`).
+      - **Patrocinadores y Becas (`/patrocinadores`, `/patrocinadores/becas`):** anillo por tipo y barras de becados por patrocinador (`gestion-patrocinadores.tsx`); anillo de cobertura y chips de filtro por patrocinio (`gestion-becas.tsx`).
+      - **Clases de 360 (`/academico/clases-360`):** barras de inscritos por clase y anillo de entregas por revisar vs calificadas (`gestion-clases-360.tsx`).
+      - **i18n simétrico:** claves nuevas en `messages/{es,en}.json` (`6012` claves verificadas).
+
 - [x] **Área Administrativa y Operaciones — Fases 1–3, gráficos interactivos y referencia técnica (19 nov 2026):**
       - **Documentación (`docs/referencia/area-administrativa.md`):** referencia completa de `/bandeja`, `/administrativo/tareas`, `/administrativo/tareas/hoy`, `/administrativo/proyectos`, `/administrativo/proyectos/[id]`, `/administrativo/proyectos/roles`, `/administrativo/torre-control` (`/equipo`) y módulos ERP (`/personal`, `/solicitudes`, `/rendiciones`, `/inventario`).
       - **Fase 1 (operación diaria):** chips de filtro y completar rápido en `/bandeja` (`tareas-bandeja-interactiva.tsx`, `tareas-bandeja.tsx`); búsqueda, filtros por proyecto/prioridad/vencidas y resaltado drag-over en `/administrativo/tareas` (`tablero-tareas.tsx`); métricas vivas y filtro por programa asignado al rol en `/administrativo/tareas/hoy` (`vista-hoy.tsx`).

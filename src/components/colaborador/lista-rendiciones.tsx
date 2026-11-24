@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
 import { formatearMonto } from "@/lib/contabilidad/formato";
+import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
 import type { EstadoRendicion, RendicionGastoItem } from "@/lib/torre-control";
 import { cn } from "@/lib/utils";
 import { revisarRendicionGastoAction } from "@/server/colaborador/acciones";
@@ -144,8 +146,98 @@ export function ListaRendiciones({
     }
   };
 
+  const estadosGrafica: { clave: EstadoRendicion; label: string; color: string }[] = [
+    { clave: "enviada", label: t("stateEnviada"), color: AZUL },
+    { clave: "en_revision", label: t("stateEnviada"), color: AZUL_SUAVE },
+    { clave: "aprobada", label: t("stateAprobada"), color: AZUL_OSCURO },
+    { clave: "contabilizada", label: t("stateContabilizada"), color: AZUL_SUAVE },
+    { clave: "rechazada", label: t("stateRechazada"), color: NEUTRO },
+  ];
+
+  const serieConteo = [
+    {
+      nombre: t("stateEnviada"),
+      valor: rendiciones.filter((r) => r.estado === "enviada" || r.estado === "en_revision").length,
+      color: AZUL,
+    },
+    {
+      nombre: t("stateAprobada"),
+      valor: rendiciones.filter((r) => r.estado === "aprobada").length,
+      color: AZUL_OSCURO,
+    },
+    {
+      nombre: t("stateContabilizada"),
+      valor: rendiciones.filter((r) => r.estado === "contabilizada").length,
+      color: AZUL_SUAVE,
+    },
+    {
+      nombre: t("stateRechazada"),
+      valor: rendiciones.filter((r) => r.estado === "rechazada").length,
+      color: NEUTRO,
+    },
+  ];
+
+  const serieMontos = estadosGrafica
+    .filter((e) => e.clave !== "en_revision")
+    .map((e) => {
+      const suma = rendiciones
+        .filter((r) =>
+          e.clave === "enviada"
+            ? r.estado === "enviada" || r.estado === "en_revision"
+            : r.estado === e.clave,
+        )
+        .reduce((acc, r) => acc + Number(r.monto_total || 0), 0);
+      return {
+        nombre: e.label,
+        valor: Math.round(suma),
+        color: e.color,
+      };
+    })
+    .filter((s) => s.valor > 0);
+
   return (
     <div className="space-y-4">
+      {rendiciones.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartStatusTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid items-center gap-3 sm:grid-cols-2">
+                <GraficaAnillo
+                  datos={serieConteo}
+                  total={rendiciones.length}
+                  etiquetaTotal=""
+                  vacio={t("chartEmpty")}
+                />
+                <ul className="divide-y divide-linea">
+                  {serieConteo.map((fila) => (
+                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: fila.color }}
+                      />
+                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">{t("chartAmountTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficaBarras datos={serieMontos} vacio={t("chartEmpty")} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
       {errorRevision && !modalRevisarAbierto && (
         <p
           role="alert"

@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { FormularioCompra } from "@/components/solicitudes/formulario-compra";
 import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
+import { GraficasSolicitudes } from "@/components/solicitudes/graficas-solicitudes";
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -103,9 +104,38 @@ export default async function PaginaSolicitudes({
       : "/administrativo/solicitudes";
   };
 
+  const conteoPorTipo = new Map<string, number>();
+  const vistasIds = new Set<string>();
+  for (const s of [...porAtender, ...mias, ...resueltas]) {
+    if (vistasIds.has(s.id)) continue;
+    vistasIds.add(s.id);
+    conteoPorTipo.set(s.tipo, (conteoPorTipo.get(s.tipo) ?? 0) + 1);
+  }
+  const tiposGrafica = [...conteoPorTipo.entries()].map(([tipo, valor]) => ({
+    nombre: t(`type.${tipo}` as never),
+    valor,
+  }));
+
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
       <EncabezadoPagina titulo={t("staffTitle")} />
+
+      <GraficasSolicitudes
+        resumen={{
+          porAtender: porAtender.length,
+          mias: mias.length,
+          resueltas: resueltas.length,
+        }}
+        tipos={tiposGrafica}
+        etiquetas={{
+          tituloBandeja: t("chartTrayTitle"),
+          tituloTipos: t("chartTypesTitle"),
+          porAtender: t("pendingTitle"),
+          mias: t("mineTitle"),
+          resueltas: t("resolvedTitle"),
+          vacio: t("chartEmpty"),
+        }}
+      />
 
       <NextIntlClientProvider messages={mensajes}>
         {revisa && (

@@ -11,15 +11,16 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { GraficaAnillo } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { fechaCorta } from "@/lib/fechas";
-import { ALERTA_RIESGO, ANIMACION, CUADRO, VACIO } from "@/lib/paleta";
+import { ALERTA_RIESGO, ANIMACION, AZUL, AZUL_OSCURO, CUADRO, VACIO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   asignarBeca,
@@ -63,6 +64,7 @@ export function GestionBecas({
 }) {
   const t = useTranslations("sponsors");
   const [abierto, setAbierto] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState<"todos" | "sin" | "con">("todos");
 
   if (becados.length === 0) {
     return (
@@ -79,8 +81,79 @@ export function GestionBecas({
     );
   }
 
+  const conPatrocinador = becados.filter((b) => Boolean(b.patrocinador_id)).length;
+  const sinPatrocinador = becados.length - conPatrocinador;
+
+  const serieCobertura = [
+    { nombre: t("grants.stats.assigned"), valor: conPatrocinador, color: AZUL },
+    { nombre: t("grants.stats.pending"), valor: sinPatrocinador, color: AZUL_OSCURO },
+  ];
+
+  const visibles = becados.filter((b) => {
+    if (filtro === "con") return Boolean(b.patrocinador_id);
+    if (filtro === "sin") return !b.patrocinador_id;
+    return true;
+  });
+
   return (
-    <div className={cn("space-y-3", ANIMACION.entrada)}>
+    <div className={cn("space-y-4", ANIMACION.entrada)}>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold">{t("grants.chartCoverageTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid items-center gap-4 sm:grid-cols-2">
+            <GraficaAnillo
+              datos={serieCobertura}
+              total={becados.length}
+              etiquetaTotal=""
+              vacio={t("grants.chartEmpty")}
+            />
+            <ul className="divide-y divide-linea">
+              {serieCobertura.map((fila) => (
+                <li key={fila.nombre} className="flex items-center gap-2 py-2 text-xs">
+                  <span
+                    aria-hidden
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: fila.color }}
+                  />
+                  <span className="flex-1 text-tinta-2">{fila.nombre}</span>
+                  <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap gap-1.5">
+        {(
+          [
+            { id: "todos", label: t("grants.filterAll"), count: becados.length },
+            { id: "sin", label: t("grants.filterUnsponsored"), count: sinPatrocinador },
+            { id: "con", label: t("grants.filterSponsored"), count: conPatrocinador },
+          ] as const
+        ).map((chip) => {
+          const activo = filtro === chip.id;
+          return (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => setFiltro(chip.id)}
+              className={cn(
+                "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-colors",
+                activo
+                  ? "border-marca-500 bg-marca-50 text-marca-700"
+                  : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+              )}
+            >
+              <span>{chip.label}</span>
+              <span className="tabular-nums opacity-75">{chip.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {puedeEscribir && patrocinadores.length === 0 && (
         <p className={ALERTA_RIESGO.contenedor}>
           <AlertCircle className={ALERTA_RIESGO.icono} />
@@ -91,7 +164,7 @@ export function GestionBecas({
       )}
 
       <ul className="space-y-3">
-        {becados.map((fila) => (
+        {visibles.map((fila) => (
           <li key={fila.estudiante_id}>
             <Card className="group">
               <CardContent className="pt-5">

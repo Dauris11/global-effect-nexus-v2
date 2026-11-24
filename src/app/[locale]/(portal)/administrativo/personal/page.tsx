@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { GestionCuentas } from "@/components/personal/gestion-cuentas";
+import { GraficasPersonal } from "@/components/personal/graficas-personal";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -67,6 +68,27 @@ export default async function PaginaPersonal({
         <Cifra valor={cifras.inactivas} etiqueta={t("stats.inactive")} />
         <Cifra valor={cifras.sin_entrar} etiqueta={t("stats.neverSignedIn")} />
       </div>
+
+      <GraficasPersonal
+        cuentas={{
+          conAcceso: Math.max(0, cifras.activas - cifras.sin_entrar),
+          sinAcceso: cifras.sin_entrar,
+          inactivas: cifras.inactivas,
+          total: cifras.total,
+        }}
+        roles={reparto.map((fila) => ({
+          nombre: tRoles(fila.rol),
+          valor: fila.total,
+        }))}
+        etiquetas={{
+          tituloCuentas: t("chartAccountsTitle"),
+          tituloRoles: t("roles"),
+          conAcceso: t("chartActiveWithLogin"),
+          sinAcceso: t("stats.neverSignedIn"),
+          inactivas: t("stats.inactive"),
+          vacio: t("chartEmpty"),
+        }}
+      />
 
       {/* Reparto por rol: es lo que dice de un vistazo si falta cubrir un
           puesto —cero cuentas de contabilidad deja los gastos sin nadie
