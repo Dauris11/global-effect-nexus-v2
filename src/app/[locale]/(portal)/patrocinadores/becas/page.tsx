@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { CifraAcademica } from "@/components/academico/cifra";
 import { GestionBecas } from "@/components/patrocinadores/gestion-becas";
 import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
@@ -130,12 +131,10 @@ export default async function PaginaBecas({
         </Button>
 
         {busqueda && (
-          <Button asChild variant="ghost">
-            <Link href="/patrocinadores/becas">
-              <X className="size-4" />
-              {t("clear")}
-            </Link>
-          </Button>
+          <Link href="/patrocinadores/becas" className={variantesBoton({ variant: "ghost" })}>
+            <X className="size-4" />
+            {t("clear")}
+          </Link>
         )}
       </form>
 

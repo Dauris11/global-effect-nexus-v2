@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { CifraAcademica } from "@/components/academico/cifra";
+import { GraficasServicios } from "@/components/bienestar/graficas-servicios";
 import { PlanillaServicios } from "@/components/bienestar/planilla-servicios";
 import { BotonImprimir } from "@/components/comida/boton-imprimir";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,15 @@ export default async function PaginaServiciosMensuales({
   const soloFaltan = faltan === "1";
   const aplicanCarta = filas.filter((f) => f.correo !== "no_aplica").length;
   const conCarta = filas.filter((f) => f.correo === "cumplio").length;
+  const conPendientes = filas.filter(
+    (f) =>
+      !f.hizo_servicio ||
+      !f.asistio_reunion ||
+      f.correo === "no_envio" ||
+      f.correo === "tardia" ||
+      f.correo === "en_revision",
+  ).length;
+  const alDia = Math.max(0, filas.length - conPendientes);
   const visibles = soloFaltan
     ? filas.filter(
         (f) =>
@@ -173,6 +183,26 @@ export default async function PaginaServiciosMensuales({
           icono={Mail}
         />
       </div>
+
+      <GraficasServicios
+        alDia={alDia}
+        conPendientes={conPendientes}
+        porcentajes={{
+          servicio: resumen.total > 0 ? Math.round((resumen.con_servicio / resumen.total) * 100) : 0,
+          reunion: resumen.total > 0 ? Math.round((resumen.con_reunion / resumen.total) * 100) : 0,
+          carta: aplicanCarta > 0 ? Math.round((conCarta / aplicanCarta) * 100) : 0,
+        }}
+        etiquetas={{
+          tituloBalance: t("chartBalanceTitle"),
+          tituloRequisitos: t("chartBreakdownTitle"),
+          alDia: t("chartUpToDate"),
+          conPendientes: t("chartWithPending"),
+          servicio: t("stats.service"),
+          reunion: t("stats.meeting"),
+          carta: t("stats.letter"),
+          vacio: t("chartEmpty"),
+        }}
+      />
 
       <div className="flex flex-wrap gap-2 print:hidden">
         <Button asChild variant={soloFaltan ? "outline" : "default"} size="sm">

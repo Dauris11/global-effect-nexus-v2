@@ -2498,6 +2498,11 @@
     "retire": "Remove from programme",
     "restore": "Return to programme",
     "windowsTitle": "Pre-enrolment windows",
+    "chartStatusTitle": "360 catalog by status",
+    "chartActive": "Active",
+    "chartInactive": "Retired",
+    "chartEnrolledTitle": "Enrolled per class (top 6)",
+    "chartEmpty": "No classes to chart",
     "windowsEmpty": "You have not configured any window.",
     "newWindow": "Open window",
     "fieldPeriod": "Term",
@@ -2651,6 +2656,11 @@
     "eyebrow": "Student life",
     "letter": "Letter to sponsor",
     "fulfilled": "Fulfilled",
+    "chartBalanceTitle": "Compliance balance",
+    "chartBreakdownTitle": "Compliance by requirement (%)",
+    "chartUpToDate": "Up to date",
+    "chartWithPending": "With pending items",
+    "chartEmpty": "No records to chart",
     "yes": "Yes",
     "no": "No",
     "showAll": "Everyone",
@@ -2747,6 +2757,7 @@
     },
     "state": {
       "activo": "Active",
+      "pausado": "Paused",
       "inactivo": "Inactive"
     },
     "form": {
@@ -6572,6 +6583,9 @@
     "eyebrow": "Operations & Support",
     "title": "Institutional Meetings",
     "description": "Collaborative agenda for team coordination, student tutoring sessions, educational follow-ups, and leadership agreements.",
+    "chartModalityTitle": "Meetings by modality",
+    "chartTypesTitle": "Meetings by type",
+    "chartEmpty": "No meetings to chart",
     "metrics": {
       "total": "Total Meetings",
       "scheduled": "Scheduled",

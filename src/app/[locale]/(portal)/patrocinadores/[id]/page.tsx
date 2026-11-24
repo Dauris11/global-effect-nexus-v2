@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { InsigniaCarta } from "@/components/expedientes/detalle/insignia-carta";
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import { MenuExportar } from "@/components/compartido/menu-exportar";
@@ -53,12 +53,13 @@ export default async function PaginaPatrocinador({
   const patrocinador = UUID.test(id) ? await patrocinadorPorId(id) : null;
 
   const volver = (
-    <Button asChild variant="outline" size="sm" className="transition-transform hover:-translate-x-0.5">
-      <Link href="/patrocinadores">
-        <ChevronLeft className="size-4" />
-        {t("detail.back")}
-      </Link>
-    </Button>
+    <Link
+      href="/patrocinadores"
+      className={variantesBoton({ variant: "outline", size: "sm", className: "transition-transform hover:-translate-x-0.5" })}
+    >
+      <ChevronLeft className="size-4" />
+      {t("detail.back")}
+    </Link>
   );
 
   if (!patrocinador) {
@@ -82,12 +83,13 @@ export default async function PaginaPatrocinador({
       <div className="flex flex-wrap items-center justify-between gap-3">
         {volver}
         {puedeCartas && (
-          <Button asChild variant="outline" size="sm">
-            <Link href="/patrocinadores/correos">
-              <Mail className="size-4" />
-              {t("detail.letters")}
-            </Link>
-          </Button>
+          <Link
+            href="/patrocinadores/correos"
+            className={variantesBoton({ variant: "outline", size: "sm" })}
+          >
+            <Mail className="size-4" />
+            {t("detail.letters")}
+          </Link>
         )}
       </div>
 

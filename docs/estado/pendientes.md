@@ -63,6 +63,12 @@ módulo) — esto es solo la cola de pendientes concretos.
       - [ ] Confirmar el régimen real de cada universidad (se sembró «cuatrimestre» en las cuatro).
       - [ ] Ver en pantalla `/academico/universidades` y la pestaña Universidad/Pénsum (no probado en navegador).
 
+- [x] **Gráficos en Servicios mensuales, Prematrícula 360 y Reuniones + fixes en Patrocinadores (24 nov 2026):**
+      - **Servicios mensuales (`/servicios-mensuales`):** anillo de balance de cumplimiento y barras por requisito (`graficas-servicios.tsx`, `servicios-mensuales/page.tsx`).
+      - **Prematrícula 360 (`/academico/prematricula`):** anillo del catálogo 360 por estado y barras de inscritos por clase (`administracion.tsx`).
+      - **Reuniones (`/reuniones`):** anillo por modalidad y barras por tipo de reunión (`hub-reuniones.tsx`).
+      - **Patrocinadores (`/patrocinadores`, `/patrocinadores/becas`, `/patrocinadores/[id]`):** clave faltante `sponsors.state.pausado` en `messages/{es,en}.json` y reemplazo de `<Button asChild><Link /></Button>` por `<Link className={variantesBoton(...)}>`.
+
 - [x] **Gráficos interactivos en Períodos y Programas de Academia + fix `Slot` en Bandeja (24 nov 2026):**
       - **Períodos (`/academico/periodos`):** anillo por estado, barras de matrículas por período (top 6) y chips de filtro por estado (`gestion-periodos.tsx`).
       - **Programas de Academia (`/academias/programas`):** anillo por tipo y barras de participantes por programa (top 6) (`gestion-programas.tsx`).

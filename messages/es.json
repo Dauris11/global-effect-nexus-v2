@@ -2498,6 +2498,11 @@
     "retire": "Retirar del programa",
     "restore": "Devolver al programa",
     "windowsTitle": "Ventanas de prematrícula",
+    "chartStatusTitle": "Catálogo 360 por estado",
+    "chartActive": "Activas",
+    "chartInactive": "Retiradas",
+    "chartEnrolledTitle": "Inscritos por clase (top 6)",
+    "chartEmpty": "Sin clases para graficar",
     "windowsEmpty": "No has configurado ninguna ventana.",
     "newWindow": "Abrir ventana",
     "fieldPeriod": "Período",
@@ -2651,6 +2656,11 @@
     "eyebrow": "Vida estudiantil",
     "letter": "Carta al patrocinador",
     "fulfilled": "Cumplió",
+    "chartBalanceTitle": "Balance de cumplimiento",
+    "chartBreakdownTitle": "Cumplimiento por requisito (%)",
+    "chartUpToDate": "Al día",
+    "chartWithPending": "Con pendientes",
+    "chartEmpty": "Sin registros para graficar",
     "yes": "Sí",
     "no": "No",
     "showAll": "Todos",
@@ -2747,6 +2757,7 @@
     },
     "state": {
       "activo": "Activo",
+      "pausado": "Pausado",
       "inactivo": "Inactivo"
     },
     "form": {
@@ -6572,6 +6583,9 @@
     "eyebrow": "Operaciones y Acompañamiento",
     "title": "Reuniones Institucionales",
     "description": "Agenda colaborativa para coordinación del equipo, tutorías con estudiantes, seguimiento pedagógico y acuerdos de dirección.",
+    "chartModalityTitle": "Reuniones por modalidad",
+    "chartTypesTitle": "Reuniones por tipo",
+    "chartEmpty": "Sin reuniones para graficar",
     "metrics": {
       "total": "Total Reuniones",
       "scheduled": "Programadas",

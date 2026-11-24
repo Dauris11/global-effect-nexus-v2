@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { CifraAcademica } from "@/components/academico/cifra";
 import { GestionPatrocinadores } from "@/components/patrocinadores/gestion-patrocinadores";
 import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
@@ -90,12 +91,13 @@ export default async function PaginaPatrocinadores({
         titulo={t("title")}
         acciones={
           usuarioTienePermiso(usuario, "patrocinadores.escribir") ? (
-            <Button asChild variant="outline">
-              <Link href="/patrocinadores/correos">
-                <Mail className="size-4" />
-                {tCartas("viewMail")}
-              </Link>
-            </Button>
+            <Link
+              href="/patrocinadores/correos"
+              className={variantesBoton({ variant: "outline" })}
+            >
+              <Mail className="size-4" />
+              {tCartas("viewMail")}
+            </Link>
           ) : undefined
         }
       />
@@ -199,12 +201,10 @@ export default async function PaginaPatrocinadores({
         </Button>
 
         {hayFiltro && (
-          <Button asChild variant="ghost">
-            <Link href="/patrocinadores">
-              <X className="size-4" />
-              {t("clear")}
-            </Link>
-          </Button>
+          <Link href="/patrocinadores" className={variantesBoton({ variant: "ghost" })}>
+            <X className="size-4" />
+            {t("clear")}
+          </Link>
         )}
       </form>
 
