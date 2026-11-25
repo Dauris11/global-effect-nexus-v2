@@ -4674,11 +4674,17 @@
         },
         "codigosTitulo": "Códigos de transacción",
         "codigosAyuda": "Marca los procesos que usarán esta cuenta. El asiento automático la pondrá del lado configurado de cada código.",
-        "codigosMover": "Ya está en {cuenta}; se moverá aquí",
+        "codigosMover": "Se moverá aquí desde {cuenta}",
         "codigosVacio": "No hay códigos de transacción definidos.",
         "codigosGuardar": "Guardar códigos",
         "codigosGuardado": "Códigos guardados",
-        "codigosInsignia": "{n, plural, one {# código de transacción} other {# códigos de transacción}}"
+        "codigosInsignia": "{n, plural, one {# código de transacción} other {# códigos de transacción}}",
+        "codigosBuscar": "Buscar por nombre, código o módulo",
+        "codigosBuscarEtiqueta": "Buscar códigos de transacción",
+        "codigosSinResultados": "Ningún código coincide.",
+        "codigosMas": "{n, plural, one {Hay # más} other {Hay # más}}; sigue escribiendo para acotar.",
+        "codigosResultados": "{n, plural, =0 {Sin resultados} one {# resultado} other {# resultados}}",
+        "codigosQuitar": "Quitar {nombre}"
       },
       "error": {
         "no_permitido": "Tu cuenta no tiene permiso para hacer esto.",
@@ -5413,16 +5419,7 @@
         "fechas": "Fechas"
       },
       "asientoTitulo": "Asiento que se generará",
-      "asientoCuenta": "Cuenta",
-      "asientoDebe": "Debe",
-      "asientoHaber": "Haber",
-      "asientoTotal": "Totales",
-      "asientoBancoPendiente": "Banco (se elige al pagar)",
-      "asientoCargando": "Calculando el asiento",
-      "asientoSinCuenta": "Códigos sin cuenta asignada: {codigos}. Asígnalos en Configuración contable > Código de transacciones y Catálogo.",
-      "asientoCuentaInactiva": "Códigos con cuenta inactiva o agrupadora: {codigos}.",
-      "asientoDescuadre": "El asiento no cuadra con la configuración actual. Revisa el lado de los códigos.",
-      "asientoError": "No se pudo calcular la vista previa."
+      "asientoBancoPendiente": "Banco (se elige al pagar)"
     },
     "activosFijos": {
       "antetitulo": "Contabilidad",
@@ -5707,6 +5704,34 @@
       "fechaCierre": "Fecha de cierre",
       "asientoCierre": "Asiento de cierre",
       "cerradoPorUsuario": "Responsable"
+    },
+    "asiento": {
+      "boton": "Asiento",
+      "titulo": "Asiento",
+      "descripcion": "Cuentas, lado y códigos del asiento, para revisar descuadres o cuentas faltantes.",
+      "cargando": "Calculando el asiento",
+      "error": "No se pudo cargar el asiento.",
+      "previo": "Asiento previo",
+      "contabilizado": "Asiento contabilizado N.º {numero}",
+      "tablaDescripcion": "Líneas del asiento",
+      "cuenta": "Cuenta",
+      "codigo": "Código de transacción",
+      "debe": "Debe",
+      "haber": "Haber",
+      "totales": "Totales",
+      "sinCuenta": "Sin cuenta asignada",
+      "cuadra": "Cuadra",
+      "descuadrado": "Descuadrado por RD$ {monto}",
+      "problemas": "Qué corregir",
+      "irACodigos": "Ir a Códigos",
+      "problema": {
+        "codigo_sin_cuenta": "El código {codigo} no tiene cuenta asignada.",
+        "cuenta_inactiva": "La cuenta del código {codigo} está inactiva ({detalle}).",
+        "cuenta_agrupadora": "La cuenta del código {codigo} es agrupadora y no recibe asientos ({detalle}).",
+        "asiento_descuadrado": "El débito y el crédito no son iguales. Revisa el lado de cada código.",
+        "monto_invalido": "El monto del código {codigo} no es válido.",
+        "otro": "Hay un problema con el asiento."
+      }
     }
   },
   "iaAdmin": {

@@ -64,3 +64,46 @@ con la misma función. La migración `0115` siembra el reparto anterior
 (5.3.3.x, 5.3.4.x y 2.3.1), por lo que el asiento resultante es el mismo de
 antes. ISR por pagar queda sin cuenta (no existe en el catálogo): con ISR
 retenido mayor que cero el pago se detiene con un mensaje claro.
+
+## La opción Asiento en cada proceso
+
+Todo proceso que genera un asiento (o lo contabiliza) lleva un botón
+**«Asiento»** que muestra qué asiento sale, con cuenta, código de transacción,
+debe y haber, y avisa de descuadres o cuentas faltantes. Es un contrato común:
+no se hace una tabla propia por módulo.
+
+| Pieza | Ubicación |
+|---|---|
+| Tipos y `armarVista(lineas, problemas, extras)` (centavos enteros) | `src/lib/contabilidad/vista-asiento.ts` |
+| `vistaDeLineasPorCodigo(cliente, partidas, extras?)` (previa, no escribe) | `src/server/contabilidad/asientos/vista.ts` |
+| `vistaDeAsientoContabilizado(asientoId, locale?)` | `src/server/contabilidad/asientos/vista.ts` |
+| `<BotonAsiento cargar={() => Promise<VistaAsiento>} />` | `src/components/contabilidad/asiento/boton-asiento.tsx` |
+| `<PanelAsiento vista={...} />` (solo presentación) | `src/components/contabilidad/asiento/panel-asiento.tsx` |
+| Textos | `contab.asiento.*` (es y en) |
+
+Reglas: las funciones de `vista.ts` **no comprueban permisos**; la acción de
+servidor que las llama hace `requerirPermiso("contabilidad.leer")` (o el
+permiso propio del proceso). Lo que falta no lanza: va a `problemas`
+(`codigo_sin_cuenta`, `cuenta_inactiva`, `cuenta_agrupadora`,
+`asiento_descuadrado`, `monto_invalido`, `otro`) y la pantalla lo traduce con un
+enlace a `/contabilidad/configuracion?tab=codigos`. Una línea que no sale de un
+código (banco, caja) se pasa en `extras.lineasExtra`; con `cuenta_id: null`
+se muestra «Sin cuenta asignada». Ejemplo canónico: la nómina
+(`components/contabilidad/nomina/asiento-previo.tsx`).
+
+Cómo añadirla a un módulo:
+
+```ts
+// src/server/contabilidad/<modulo>/acciones.ts  ("use server")
+export async function asientoDeX(id: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  return enTransaccion(async (cliente) => {
+    const partidas = await partidasDeX(cliente, id); // mismas que usa el asiento real
+    return vistaDeLineasPorCodigo(cliente, partidas, { descripcion: "X-123" });
+  });
+}
+// En la pantalla (cliente):  <BotonAsiento cargar={() => asientoDeX(id)} />
+// Si ya está contabilizado:  return vistaDeAsientoContabilizado(asientoId);
+```
+
+Prueba sin base: `npx tsx scripts/probar-vista-asiento.ts`.

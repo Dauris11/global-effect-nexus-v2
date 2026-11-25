@@ -242,7 +242,6 @@ export function DialogoDetalleNomina({
               <AsientoPrevio
                 nominaId={nominaId}
                 cuentaBancoId={cuentaBancoSeleccionada || null}
-                version={nomina.estado}
               />
             )}
 

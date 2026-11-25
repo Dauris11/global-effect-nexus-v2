@@ -63,6 +63,7 @@ function DialogContent({
   className,
   children,
   mostrarCerrar = true,
+  onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   mostrarCerrar?: boolean;
@@ -74,6 +75,15 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        onEscapeKeyDown={(e) => {
+          // Un combobox con la lista abierta usa Escape para cerrarla; el
+          // diálogo solo se cierra con la siguiente pulsación.
+          const objetivo = e.target as HTMLElement | null;
+          if (objetivo?.getAttribute?.("role") === "combobox" && objetivo.getAttribute("aria-expanded") === "true") {
+            e.preventDefault();
+          }
+          onEscapeKeyDown?.(e);
+        }}
         className={cn(
           "bg-background fixed z-50 grid gap-4 border border-linea p-5 pt-7 shadow-elevada md:p-6",
           /*

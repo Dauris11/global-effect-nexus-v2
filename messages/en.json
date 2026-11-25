@@ -4674,11 +4674,17 @@
         },
         "codigosTitulo": "Transaction codes",
         "codigosAyuda": "Check the processes that will use this account. The automatic entry will place it on the side configured for each code.",
-        "codigosMover": "Already in {cuenta}; it will be moved here",
+        "codigosMover": "Will move here from {cuenta}",
         "codigosVacio": "No transaction codes are defined.",
         "codigosGuardar": "Save codes",
         "codigosGuardado": "Codes saved",
-        "codigosInsignia": "{n, plural, one {# transaction code} other {# transaction codes}}"
+        "codigosInsignia": "{n, plural, one {# transaction code} other {# transaction codes}}",
+        "codigosBuscar": "Search by name, code or module",
+        "codigosBuscarEtiqueta": "Search transaction codes",
+        "codigosSinResultados": "No code matches.",
+        "codigosMas": "{n, plural, one {# more} other {# more}}; keep typing to narrow down.",
+        "codigosResultados": "{n, plural, =0 {No results} one {# result} other {# results}}",
+        "codigosQuitar": "Remove {nombre}"
       },
       "error": {
         "no_permitido": "Your account does not have permission to do this.",
@@ -5413,16 +5419,7 @@
         "fechas": "Dates"
       },
       "asientoTitulo": "Entry that will be generated",
-      "asientoCuenta": "Account",
-      "asientoDebe": "Debit",
-      "asientoHaber": "Credit",
-      "asientoTotal": "Totals",
-      "asientoBancoPendiente": "Bank (chosen when paying)",
-      "asientoCargando": "Calculating the entry",
-      "asientoSinCuenta": "Codes without an assigned account: {codigos}. Assign them in Accounting settings > Transaction codes and Chart of accounts.",
-      "asientoCuentaInactiva": "Codes with an inactive or parent account: {codigos}.",
-      "asientoDescuadre": "The entry does not balance with the current configuration. Check the side of the codes.",
-      "asientoError": "The preview could not be calculated."
+      "asientoBancoPendiente": "Bank (chosen when paying)"
     },
     "activosFijos": {
       "antetitulo": "Accounting",
@@ -5707,6 +5704,34 @@
       "fechaCierre": "Closing date",
       "asientoCierre": "Closing entry",
       "cerradoPorUsuario": "Responsible"
+    },
+    "asiento": {
+      "boton": "Journal entry",
+      "titulo": "Journal entry",
+      "descripcion": "Accounts, side and codes of the entry, to check imbalances or missing accounts.",
+      "cargando": "Calculating the entry",
+      "error": "The entry could not be loaded.",
+      "previo": "Entry preview",
+      "contabilizado": "Posted entry No. {numero}",
+      "tablaDescripcion": "Entry lines",
+      "cuenta": "Account",
+      "codigo": "Transaction code",
+      "debe": "Debit",
+      "haber": "Credit",
+      "totales": "Totals",
+      "sinCuenta": "No account assigned",
+      "cuadra": "Balanced",
+      "descuadrado": "Out of balance by RD$ {monto}",
+      "problemas": "What to fix",
+      "irACodigos": "Go to Codes",
+      "problema": {
+        "codigo_sin_cuenta": "Code {codigo} has no account assigned.",
+        "cuenta_inactiva": "The account of code {codigo} is inactive ({detalle}).",
+        "cuenta_agrupadora": "The account of code {codigo} is a parent account and takes no entries ({detalle}).",
+        "asiento_descuadrado": "Debit and credit are not equal. Check the side of each code.",
+        "monto_invalido": "The amount of code {codigo} is not valid.",
+        "otro": "There is a problem with the entry."
+      }
     }
   },
   "iaAdmin": {

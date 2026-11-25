@@ -11,6 +11,8 @@ import {
   previsualizarLineasPorCodigo,
 } from "@/server/contabilidad/codigos-transaccion/asiento";
 import { descripcionDesembolso, partidasDeNomina } from "@/server/contabilidad/nomina/asiento";
+import { vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 
 export type CrearEmpleadoInput = {
   tercero_id: string;
@@ -609,11 +611,12 @@ export async function generarTxtTssAccion(nominaId: string) {
 }
 
 /**
- * Vista previa del asiento que generaría el pago: mismo motor y mismas
- * partidas que `pagarNomina`, pero sin escribir nada (por eso no necesita la
- * transacción con usuario que exige la bitácora).
+ * Opción «Asiento» de la nómina (ejemplo canónico del contrato
+ * `VistaAsiento`): mismo motor y mismas partidas que `pagarNomina`, pero sin
+ * escribir nada (por eso no necesita la transacción con usuario que exige la
+ * bitácora). El permiso es el del módulo; otros módulos usan `contabilidad.leer`.
  */
-export async function previsualizarAsientoNominaAccion(nominaId: string, cuentaBancoId: string | null) {
+export async function previsualizarAsientoNominaAccion(nominaId: string, cuentaBancoId: string | null): Promise<VistaAsiento> {
   await requerirPermiso("contabilidad.nomina");
   return enTransaccion(async (cliente) => {
     const nom = (await cliente.query<{ codigo: string; estado: string }>(
@@ -621,20 +624,9 @@ export async function previsualizarAsientoNominaAccion(nominaId: string, cuentaB
     )).rows[0];
     if (!nom) throw new Error("Nómina no encontrada.");
     const { partidas, neto } = await partidasDeNomina(cliente, nominaId, nom.codigo);
-    const previa = await previsualizarLineasPorCodigo(cliente, partidas, [
-      { cuenta_id: cuentaBancoId, debe: 0, haber: neto, descripcion: descripcionDesembolso(nom.codigo) },
-    ]);
-    const ids = previa.lineas.map((l) => l.cuenta_id).filter((x): x is string => !!x);
-    const cuentas = (await cliente.query<{ id: string; codigo: string; nombre: string }>(
-      `SELECT id, codigo, nombre FROM contabilidad.cuenta_contable WHERE id = ANY($1::uuid[])`, [ids],
-    )).rows;
-    const porId = new Map(cuentas.map((c) => [c.id, c]));
-    return {
-      ...previa,
-      lineas: previa.lineas.map((l) => ({
-        ...l,
-        cuenta: l.cuenta_id ? porId.get(l.cuenta_id) ?? null : null,
-      })),
-    };
+    return vistaDeLineasPorCodigo(cliente, partidas, {
+      descripcion: nom.codigo,
+      lineasExtra: [{ cuenta_id: cuentaBancoId, debe: 0, haber: neto, descripcion: descripcionDesembolso(nom.codigo) }],
+    });
   });
 }
