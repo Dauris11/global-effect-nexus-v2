@@ -2133,6 +2133,25 @@
       "allDone": "You have taken every subject in your plan. Congratulations!",
       "failed": "{count, plural, one {You have 1 subject to retake:} other {You have # subjects to retake:}} {subjects}. Talk to your advisor about when.",
       "withdrawn": "{count, plural, one {You withdrew from 1 subject you have not retaken yet:} other {You withdrew from # subjects you have not retaken yet:}} {subjects}."
+    },
+    "scholarship": {
+      "title": "My scholarship",
+      "verdict": {
+        "dentro": "On track",
+        "advertencia": "Pending",
+        "alerta": "At risk"
+      },
+      "level": {
+        "dentro": "Done",
+        "advertencia": "Pending",
+        "alerta": "Below the minimum"
+      },
+      "indexMin": "GPA · minimum {min}",
+      "indexNone": "GPA · no history",
+      "serviceMonth": "Service this month",
+      "meetingMonth": "Meeting this month",
+      "done": "Done",
+      "pending": "Pending"
     }
   },
   "teacherPortal": {

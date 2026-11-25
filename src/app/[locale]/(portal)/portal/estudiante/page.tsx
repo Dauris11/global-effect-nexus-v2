@@ -8,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AvisoMinimoCuatrimestral } from "@/components/estudiante/aviso-minimo-cuatrimestral";
 import { CondicionFundacion } from "@/components/estudiante/condicion-fundacion";
+import { SemaforoBeca } from "@/components/estudiante/semaforo-beca";
 import {
   DashboardGraficoEstudiante,
   KpisAnimadosEstudiante,
@@ -190,6 +191,9 @@ export default async function PortalEstudiante({
             creditos={creditos}
           />
         </NextIntlClientProvider>
+
+        {/* Lo que decide si conserva la beca, junto y con veredicto. */}
+        <SemaforoBeca indice={indice} minimo={umbralIndice} condicion={condicion} />
 
         {/* Prueba académica: el aviso solo aparece si el índice ya está por
             debajo del mínimo, nunca cuando aún no hay historial. Es el aviso

@@ -2133,6 +2133,25 @@
       "allDone": "Ya cursaste todas las materias de tu plan. ¡Felicidades!",
       "failed": "{count, plural, one {Tienes 1 materia por volver a cursar:} other {Tienes # materias por volver a cursar:}} {subjects}. Habla con tu consejero para elegir cuándo.",
       "withdrawn": "{count, plural, one {Retiraste 1 materia que aún no vuelves a cursar:} other {Retiraste # materias que aún no vuelves a cursar:}} {subjects}."
+    },
+    "scholarship": {
+      "title": "Mi beca",
+      "verdict": {
+        "dentro": "Al día",
+        "advertencia": "Pendiente",
+        "alerta": "En riesgo"
+      },
+      "level": {
+        "dentro": "Cumplido",
+        "advertencia": "Pendiente",
+        "alerta": "Por debajo del mínimo"
+      },
+      "indexMin": "Índice · mínimo {min}",
+      "indexNone": "Índice · sin historial",
+      "serviceMonth": "Servicio de este mes",
+      "meetingMonth": "Reunión de este mes",
+      "done": "Cumplido",
+      "pending": "Pendiente"
     }
   },
   "teacherPortal": {
