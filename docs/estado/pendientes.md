@@ -1852,8 +1852,13 @@ módulo) — esto es solo la cola de pendientes concretos.
 Fuente: `01-coherencia-roles-permisos.md`, `02-ux-ui-por-rol.md`, `03-funcionamiento-animaciones-coherencia.md`. Auditaron el sitio desplegado; cada hallazgo se contrastó con el código antes de aplicarlo.
 
 - [x] **Hoy en UTC (03 §1.1):** `claveDia()`/`claveMes()` sin argumento y todo `CURRENT_DATE` de `src/` usan la hora de la Fundación (`America/Santo_Domingo`). Helpers `diaEnRD`/`horaEnRD` en `src/lib/fechas.ts`. En la base `now()::date` ya era el 25 cuando en La Vega era el 24.
-- [x] **Eventos internos al estudiante (03 §1.2):** migración `0108` agrega `evento.audiencia` (`todos`/`estudiantes`/`personal`); lo nacido de una tarea o administrativo pasa a `personal` y las consultas del estudiante y de la landing filtran. **0108 no está aplicada en la base**: `npm run db:migrate`.
+- [x] **Eventos internos al estudiante (03 §1.2):** migración `0108` agrega `evento.audiencia` (`todos`/`estudiantes`/`personal`); lo nacido de una tarea o administrativo pasa a `personal` y las consultas del estudiante y de la landing filtran. `0108` aplicada en la base (24 nov 2026).
 - [x] **Rendir gastos sin enlace (01 §2.10):** Rendiciones en el menú de docente, facilitador y director de Habitudes, con `rendicion.enviar`.
 - [x] **Asignación de materias en el menú del docente (01 §2.4):** ya apunta a sus clases (P0 del informe QA).
 - [ ] Contrastado y NO aplicado, por decisión pendiente: Admin y Clases 360/Subir calificaciones (01 §2.1–2.2; hoy admin las coordina), super_admin sin Mi día/Cierre/Rendiciones (01 §2.11, es la separación de funciones), segregación contable (01 §3.1–3.3), rol `psicologia` (01 §3.4: **prohibido por CLAUDE.md regla 8**), «Ver como persona» (01 §5), chofer con `rendicion.enviar` (01 §2.8).
 - [ ] Sin tocar: nombres de roles únicos y `ROLE_LABELS` (01 §4), rutas sin convención y redirects (01 §6), UX transversal y por rol (02 completo), mapas Leaflet sin teselas, contadores contradictorios de Bandeja, enlace de «Entregas esperando nota», datos de prueba «xvc bc», rendimiento y miniaturas, tokens de movimiento y microinteracciones, `PageHeader`/`ExportMenu` (03 §1.3–§4).
+
+- [x] **Mapas Leaflet sin teselas (03 §1.3):** `ResizeObserver` que llama a `invalidateSize()` en `mapa-la-vega-cliente.tsx` (el de transporte ya lo tenía).
+- [x] **Recursos de Habitudes (03 §1.5):** el título pide al menos 5 caracteres. El recurso «xvc bc» no era basura (PDF real del equipo, con categoría): solo falta renombrarlo desde la galería.
+- [ ] **Enlace de «Entregas esperando nota» (03 §1.6):** `/academico/clases-360` no tiene una vista de entregas pendientes; hay que construirla antes de enlazarla. La tarjeta tampoco aplica a `admin`, que no califica (01 §2.2).
+- [ ] **Contadores de Bandeja (03 §1.4):** no se pudo confirmar sin datos reales; comparar la consulta de «Mis tareas por estado» con la de «Tareas por hacer».
