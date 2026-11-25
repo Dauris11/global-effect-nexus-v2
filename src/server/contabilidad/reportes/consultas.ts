@@ -955,7 +955,7 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
      WHERE (c.codigo IN ('5.3.1', '5.4.6.1') OR c.codigo LIKE '5.3.2.%')
        AND a.anulado = false AND a.procesado_en IS NOT NULL
-       AND a.fecha >= (CURRENT_DATE - INTERVAL '90 days')`,
+       AND a.fecha >= ((now() AT TIME ZONE 'America/Santo_Domingo')::date - INTERVAL '90 days')`,
   );
   const gastoFijoPromedio = Number(filaGastosFijos?.promedio_fijo ?? 0);
 

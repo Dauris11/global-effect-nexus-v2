@@ -123,9 +123,9 @@ export async function parametros(): Promise<Parametro[]> {
                 FROM jsonb_array_elements(p.valor -> 'tramos') WITH ORDINALITY AS t(tramo, orden))
             END AS tramos,
             p.fuente, p.nota,
-            (p.vigente_desde <= CURRENT_DATE
-              AND (p.vigente_hasta IS NULL OR p.vigente_hasta > CURRENT_DATE)
-              AND p.valor IS NOT DISTINCT FROM contabilidad.parametro_en(p.clave, CURRENT_DATE))
+            (p.vigente_desde <= (now() AT TIME ZONE 'America/Santo_Domingo')::date
+              AND (p.vigente_hasta IS NULL OR p.vigente_hasta > (now() AT TIME ZONE 'America/Santo_Domingo')::date)
+              AND p.valor IS NOT DISTINCT FROM contabilidad.parametro_en(p.clave, (now() AT TIME ZONE 'America/Santo_Domingo')::date))
               AS "vigenteHoy"
        FROM contabilidad.parametro p
       CROSS JOIN LATERAL (

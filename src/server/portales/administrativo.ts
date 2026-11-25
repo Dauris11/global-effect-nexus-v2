@@ -31,7 +31,7 @@ export type PendientesFundacion = {
  * noticia, que es justo lo contrario de lo que significa un cero en las cifras.
  *
  * `periodos_incoherentes` repite el criterio de `/academico/periodos`
- * —comparar el estado contra `CURRENT_DATE`— y se calcula igual, en la base.
+ * —comparar el estado contra `(now() AT TIME ZONE 'America/Santo_Domingo')::date`— y se calcula igual, en la base.
  * Es la única duplicación de esta clase que hay aquí, y se hace porque el
  * portal tiene que poder contar sin traerse la lista entera de períodos.
  */
@@ -43,7 +43,7 @@ export async function pendientesDeLaFundacion(): Promise<PendientesFundacion> {
             (SELECT count(*)::int FROM tarea
               WHERE estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')
                 AND fecha_limite IS NOT NULL
-                AND fecha_limite < CURRENT_DATE) AS tareas_vencidas,
+                AND fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS tareas_vencidas,
             (SELECT count(*)::int FROM entrega_estudiante
               WHERE estado IN ('entregado', 'tarde')) AS entregas_por_revisar,
             (SELECT count(*)::int FROM estudiante e
@@ -52,8 +52,8 @@ export async function pendientesDeLaFundacion(): Promise<PendientesFundacion> {
                                  WHERE a.estudiante_id = e.id
                                    AND a.estado = 'activo')) AS becados_sin_patrocinador,
             (SELECT count(*)::int FROM periodo p
-              WHERE (p.estado = 'activo'      AND CURRENT_DATE >  p.fecha_fin)
-                 OR (p.estado = 'planificado' AND CURRENT_DATE >= p.fecha_inicio)) AS periodos_incoherentes,
+              WHERE (p.estado = 'activo'      AND (now() AT TIME ZONE 'America/Santo_Domingo')::date >  p.fecha_fin)
+                 OR (p.estado = 'planificado' AND (now() AT TIME ZONE 'America/Santo_Domingo')::date >= p.fecha_inicio)) AS periodos_incoherentes,
             (SELECT count(*)::int FROM materia
               WHERE periodo_id IS NULL AND estado = 'activa') AS materias_sin_periodo`,
   );

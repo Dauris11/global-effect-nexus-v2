@@ -329,7 +329,7 @@ export async function periodosDelGantt(): Promise<
  */
 export async function hoyEnLaBase(): Promise<string> {
   const fila = await consultarUna<{ hoy: string }>(
-    `SELECT CURRENT_DATE::text AS hoy`,
+    `SELECT (now() AT TIME ZONE 'America/Santo_Domingo')::date::text AS hoy`,
   );
 
   return fila?.hoy ?? "";

@@ -258,7 +258,7 @@ export type PlantillaRecurrente = {
 };
 
 /**
- * "Este mes" lo decide la base con CURRENT_DATE, igual que
+ * "Este mes" lo decide la base con (now() AT TIME ZONE 'America/Santo_Domingo')::date, igual que
  * `generar_recurrente`: si lo calculara la app con su reloj, cerca de la
  * medianoche la lista y la función podrían discrepar.
  */
@@ -266,7 +266,7 @@ export async function plantillasRecurrentes(): Promise<PlantillaRecurrente[]> {
   return consultar<PlantillaRecurrente>(
     `SELECT p.id, p.nombre, p.concepto, p.dia_del_mes, p.activo,
             p.ultimo_generado::text AS ultimo_generado,
-            coalesce(p.ultimo_generado >= date_trunc('month', CURRENT_DATE)::date, false) AS generado_este_mes,
+            coalesce(p.ultimo_generado >= date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date)::date, false) AS generado_este_mes,
             jsonb_array_length(p.lineas) AS lineas,
             (SELECT coalesce(sum(coalesce((l ->> 'debe')::numeric, 0)), 0)
                FROM jsonb_array_elements(p.lineas) l)::text AS total,

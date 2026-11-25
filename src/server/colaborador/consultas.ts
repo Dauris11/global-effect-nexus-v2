@@ -32,10 +32,10 @@ export async function tareasColaborador(
             t.proyecto_id,
             p.nombre AS proyecto_nombre,
             (t.fecha_limite IS NOT NULL
-             AND t.fecha_limite < CURRENT_DATE
+             AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date
              AND t.estado != 'completada') AS vencida,
             (t.fecha_limite IS NOT NULL
-             AND t.fecha_limite = CURRENT_DATE) AS es_hoy,
+             AND t.fecha_limite = (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS es_hoy,
             t.created_at::text AS creado_en
        FROM public.tarea t
        LEFT JOIN public.proyecto p ON p.id = t.proyecto_id
@@ -92,7 +92,7 @@ export async function bitacoraDeHoy(
        FROM public.colaborador_bitacora_diaria b
        LEFT JOIN public.tarea t ON t.id = b.tarea_id
       WHERE b.usuario_id = $1
-        AND b.fecha = CURRENT_DATE
+        AND b.fecha = (now() AT TIME ZONE 'America/Santo_Domingo')::date
       ORDER BY b.created_at DESC`,
     [usuarioId],
   );
@@ -113,7 +113,7 @@ export async function resumenColaborador(
   const [tareas, bitacora, rendiciones] = await Promise.all([
     consultar<{ estado: string; completada_hoy: boolean }>(
       `SELECT t.estado,
-              (t.estado = 'completada' AND t.updated_at::date = CURRENT_DATE) AS completada_hoy
+              (t.estado = 'completada' AND t.updated_at::date = (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS completada_hoy
          FROM public.tarea t
         WHERE (t.visibilidad = 'todos'
                OR EXISTS (SELECT 1 FROM public.tarea_asignado ta
@@ -123,7 +123,7 @@ export async function resumenColaborador(
     consultar<{ minutos: number }>(
       `SELECT coalesce(sum(minutos_dedicados), 0)::int AS minutos
          FROM public.colaborador_bitacora_diaria
-        WHERE usuario_id = $1 AND fecha = CURRENT_DATE`,
+        WHERE usuario_id = $1 AND fecha = (now() AT TIME ZONE 'America/Santo_Domingo')::date`,
       [usuarioId],
     ),
     consultar<{ conteo: number }>(

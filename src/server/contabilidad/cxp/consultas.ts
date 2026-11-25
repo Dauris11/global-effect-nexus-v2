@@ -4,7 +4,7 @@ import { esUuid, type Moneda } from "@/lib/contabilidad/formato";
 /**
  * Cuentas por pagar (§4.5): lista, antigüedad de saldos y Gantt.
  *
- * "Vencida" se calcula en la base contra CURRENT_DATE, no en el
+ * "Vencida" se calcula en la base contra (now() AT TIME ZONE 'America/Santo_Domingo')::date, no en el
  * navegador: la hora de quien mira no decide si una deuda está vencida.
  */
 
@@ -44,7 +44,7 @@ const SELECT_CXP = `
          x.fecha_emision::text AS fecha_emision, x.fecha_vencimiento::text AS fecha_vencimiento,
          x.fecha_programada::text AS fecha_programada, x.cuenta_salida_id, cb.nombre AS cuenta_salida,
          x.categoria_id, x.fondo_id, x.proyecto_id, pr.nombre AS proyecto, x.estado,
-         (CURRENT_DATE - x.fecha_vencimiento)::int AS dias_vencida
+         ((now() AT TIME ZONE 'America/Santo_Domingo')::date - x.fecha_vencimiento)::int AS dias_vencida
     FROM contabilidad.cuenta_por_pagar x
     LEFT JOIN contabilidad.proveedor p ON p.id = x.proveedor_id
     LEFT JOIN solicitud s ON s.id = x.solicitud_id
@@ -118,7 +118,7 @@ export async function antiguedadDeSaldos(): Promise<FilaAntiguedad[]> {
             coalesce(sum(saldo) FILTER (WHERE d BETWEEN 61 AND 90), 0)::text AS d61_90,
             coalesce(sum(saldo) FILTER (WHERE d > 90), 0)::text AS d90,
             sum(saldo)::text AS total
-       FROM (SELECT moneda, saldo, CURRENT_DATE - fecha_vencimiento AS d
+       FROM (SELECT moneda, saldo, (now() AT TIME ZONE 'America/Santo_Domingo')::date - fecha_vencimiento AS d
                FROM contabilidad.cuenta_por_pagar
               WHERE estado NOT IN ('pagada', 'anulada')) x
       GROUP BY moneda
@@ -132,13 +132,13 @@ export async function vencenEn(dias: number): Promise<{ moneda: Moneda; total: s
     `SELECT moneda, sum(saldo)::text AS total, count(*)::int AS cantidad
        FROM contabilidad.cuenta_por_pagar
       WHERE estado NOT IN ('pagada', 'anulada')
-        AND fecha_vencimiento <= CURRENT_DATE + $1::int
+        AND fecha_vencimiento <= (now() AT TIME ZONE 'America/Santo_Domingo')::date + $1::int
       GROUP BY moneda ORDER BY moneda`,
     [dias],
   );
 }
 
 export async function hoyEnLaBase(): Promise<string> {
-  const fila = await consultarUna<{ hoy: string }>(`SELECT CURRENT_DATE::text AS hoy`);
+  const fila = await consultarUna<{ hoy: string }>(`SELECT (now() AT TIME ZONE 'America/Santo_Domingo')::date::text AS hoy`);
   return fila?.hoy ?? new Date().toISOString().slice(0, 10);
 }

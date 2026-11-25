@@ -155,7 +155,7 @@ export async function guardarPrecio(
          SET usd_entrada_mtok = EXCLUDED.usd_entrada_mtok,
              usd_salida_mtok = EXCLUDED.usd_salida_mtok,
              usd_cache_lectura_mtok = EXCLUDED.usd_cache_lectura_mtok,
-             vigente_desde = CURRENT_DATE, updated_at = now()
+             vigente_desde = (now() AT TIME ZONE 'America/Santo_Domingo')::date, updated_at = now()
        RETURNING modelo`,
       [modelo, entrada, salida, cache],
     );

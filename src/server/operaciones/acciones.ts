@@ -139,8 +139,8 @@ export async function crearTarea(
       // fecha límite no tiene día en el calendario.
       if (limite) {
         await cliente.query(
-          `INSERT INTO evento (titulo, descripcion, tipo, fecha, estado, tarea_id)
-           VALUES ($1, NULLIF($2, ''), 'administrativo', $3::date, 'programado', $4)`,
+          `INSERT INTO evento (titulo, descripcion, tipo, fecha, estado, tarea_id, audiencia)
+           VALUES ($1, NULLIF($2, ''), 'administrativo', $3::date, 'programado', $4, 'personal')`,
           [titulo, descripcion, limite, tareaId],
         );
       }

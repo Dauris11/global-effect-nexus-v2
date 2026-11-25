@@ -72,7 +72,7 @@ function mesEntero(desde: string, hasta: string): string | null {
 
 /**
  * De `searchParams` a un filtro completo. El mes por defecto lo da
- * `CURRENT_DATE` de la base y no el reloj del servidor: el servidor de
+ * `(now() AT TIME ZONE 'America/Santo_Domingo')::date` de la base y no el reloj del servidor: el servidor de
  * Vercel vive en UTC y el día 1 a las 8 de la noche ya diría el mes siguiente.
  */
 export async function leerFiltroLibros(crudo: Crudo): Promise<FiltroLibros> {
@@ -88,8 +88,8 @@ export async function leerFiltroLibros(crudo: Crudo): Promise<FiltroLibros> {
 
   if (!desde || !hasta) {
     const hoy = await consultarUna<{ desde: string; hasta: string }>(
-      `SELECT to_char(date_trunc('month', CURRENT_DATE), 'YYYY-MM-DD') AS desde,
-              to_char(date_trunc('month', CURRENT_DATE) + interval '1 month' - interval '1 day',
+      `SELECT to_char(date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date), 'YYYY-MM-DD') AS desde,
+              to_char(date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date) + interval '1 month' - interval '1 day',
                       'YYYY-MM-DD') AS hasta`,
     );
     desde ??= hoy?.desde ?? null;

@@ -172,7 +172,7 @@ export async function ejecutarCierreAnual(
     const { rows: crRows } = await cliente.query<{ id: string }>(
       `INSERT INTO contabilidad.cierre_anual
          (ejercicio, fecha_cierre, asiento_cierre_id, total_ingresos, total_gastos, superavit_deficit, cerrado_por, notas)
-       VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $6, $7)
+       VALUES ($1, (now() AT TIME ZONE 'America/Santo_Domingo')::date, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
       [
         ejercicio,

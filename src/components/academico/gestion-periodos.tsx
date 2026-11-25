@@ -282,7 +282,7 @@ function FilaPeriodo({
 
   /*
    * Las dos incoherencias que la pantalla existe para cazar. Se comparan las
-   * banderas que trajo la consulta —calculadas con `CURRENT_DATE` en la base—
+   * banderas que trajo la consulta —calculadas con `(now() AT TIME ZONE 'America/Santo_Domingo')::date` en la base—
    * y no `new Date()`: el reloj del dispositivo de quien mira no puede decidir
    * qué cuatrimestre está en curso.
    */

@@ -629,7 +629,7 @@ async function insertarSolicitud(
         fecha_requerida, hora_preferida, requiere_direccion)
      VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8, $9)
      RETURNING id, folio::int AS folio,
-               coalesce(fecha_requerida < CURRENT_DATE, FALSE) AS pasada`,
+               coalesce(fecha_requerida < (now() AT TIME ZONE 'America/Santo_Domingo')::date, FALSE) AS pasada`,
     [
       datos.tipo,
       datos.titulo,

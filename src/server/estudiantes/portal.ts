@@ -307,7 +307,8 @@ export async function eventosProximos(limite = 5): Promise<EventoProximo[]> {
   return consultar<EventoProximo>(
     `SELECT id, titulo, tipo, fecha::text AS fecha, hora_inicio, ubicacion
        FROM evento
-      WHERE fecha >= CURRENT_DATE
+      WHERE audiencia IN ('todos', 'estudiantes')
+        AND fecha >= (now() AT TIME ZONE 'America/Santo_Domingo')::date
         AND estado <> 'cancelado'
       ORDER BY fecha, hora_inicio NULLS LAST
       LIMIT $1`,

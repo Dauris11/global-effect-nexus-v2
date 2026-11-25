@@ -417,7 +417,7 @@ export async function mesesConAlgo(usuarioId: string): Promise<string[]> {
     `SELECT DISTINCT to_char(fecha, 'YYYY-MM') AS mes
        FROM evento
       WHERE estado <> 'cancelado'
-        AND fecha BETWEEN CURRENT_DATE - 180 AND CURRENT_DATE + 180
+        AND fecha BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date - 180 AND (now() AT TIME ZONE 'America/Santo_Domingo')::date + 180
 
       UNION
 
@@ -425,14 +425,14 @@ export async function mesesConAlgo(usuarioId: string): Promise<string[]> {
        FROM tarea t
        JOIN tarea_asignado ta ON ta.tarea_id = t.id
       WHERE ta.usuario_id = $1
-        AND t.fecha_limite BETWEEN CURRENT_DATE - 180 AND CURRENT_DATE + 180
+        AND t.fecha_limite BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date - 180 AND (now() AT TIME ZONE 'America/Santo_Domingo')::date + 180
 
       UNION
 
      SELECT DISTINCT to_char(r.fecha, 'YYYY-MM') AS mes
        FROM reunion r
       WHERE r.estado <> 'cancelada'
-        AND r.fecha BETWEEN CURRENT_DATE - 180 AND CURRENT_DATE + 180
+        AND r.fecha BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date - 180 AND (now() AT TIME ZONE 'America/Santo_Domingo')::date + 180
 
       ORDER BY mes`,
     [usuarioId],

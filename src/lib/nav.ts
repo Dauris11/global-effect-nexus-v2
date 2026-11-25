@@ -31,6 +31,7 @@ import {
   Star,
   TowerControl,
   UserCog,
+  Receipt,
   Users,
   Utensils,
   Wallet,
@@ -609,6 +610,15 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
+          // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
+          // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
+          // dónde rendir la factura.
+          {
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: Receipt,
+            permiso: "rendicion.enviar",
+          },
           {
             etiqueta: "controlTower",
             href: "/administrativo/torre-control",
@@ -649,6 +659,15 @@ const MENU_HABITUDES: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+          },
+          // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
+          // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
+          // dónde rendir la factura.
+          {
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: Receipt,
+            permiso: "rendicion.enviar",
           },
           {
             etiqueta: "controlTower",

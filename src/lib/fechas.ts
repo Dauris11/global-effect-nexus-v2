@@ -83,15 +83,49 @@ export function diaConSemana(
   return format(fecha, "EEEE d", { locale: LOCALES[idioma] });
 }
 
-/** Clave `YYYY-MM-DD` para columnas DATE y comparaciones del calendario. */
-export function claveDia(valor: string | Date = new Date()): string {
+/**
+ * Zona de la Fundación. El servidor de Vercel corre en UTC: a las 8 de la noche
+ * en La Vega ya es "mañana" para `new Date()`, y el calendario marcaba el día
+ * siguiente como hoy.
+ */
+export const ZONA_HORARIA = "America/Santo_Domingo";
+
+const FORMATO_DIA_RD = new Intl.DateTimeFormat("en-CA", {
+  timeZone: ZONA_HORARIA,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** `YYYY-MM-DD` de un instante, visto desde República Dominicana. */
+export function diaEnRD(instante: Date = new Date()): string {
+  return FORMATO_DIA_RD.format(instante);
+}
+
+/** `HH:mm` de un instante, visto desde República Dominicana. */
+export function horaEnRD(instante: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: ZONA_HORARIA,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(instante);
+}
+
+/**
+ * Clave `YYYY-MM-DD` para columnas DATE y comparaciones del calendario. Sin
+ * argumento es "hoy" en la hora de la Fundación, no en la del servidor.
+ */
+export function claveDia(valor?: string | Date): string {
+  if (valor === undefined) return diaEnRD();
   const fecha = aFecha(valor);
 
   return fecha ? format(fecha, "yyyy-MM-dd") : "";
 }
 
 /** Clave `YYYY-MM` — el selector de mes de Servicios Mensuales. */
-export function claveMes(valor: string | Date = new Date()): string {
+export function claveMes(valor?: string | Date): string {
+  if (valor === undefined) return diaEnRD().slice(0, 7);
   const fecha = aFecha(valor);
 
   return fecha ? format(fecha, "yyyy-MM") : "";

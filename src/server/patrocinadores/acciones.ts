@@ -201,7 +201,7 @@ export async function asignarBeca(
       // `id <> $2` para no cerrar la que se acaba de abrir.
       await cliente.query(
         `UPDATE asignacion_beca
-            SET estado = 'finalizado', fecha_fin = CURRENT_DATE
+            SET estado = 'finalizado', fecha_fin = (now() AT TIME ZONE 'America/Santo_Domingo')::date
           WHERE estudiante_id = $1 AND estado = 'activo' AND id <> $2`,
         [estudianteId, rows[0].id],
       );
@@ -258,7 +258,7 @@ export async function desvincularBeca(
     const cerrada = await enTransaccion(async (cliente) => {
       const { rows } = await cliente.query<{ id: string }>(
         `UPDATE asignacion_beca
-            SET estado = 'finalizado', fecha_fin = CURRENT_DATE
+            SET estado = 'finalizado', fecha_fin = (now() AT TIME ZONE 'America/Santo_Domingo')::date
           WHERE estudiante_id = $1 AND estado = 'activo'
         RETURNING id`,
         [estudianteId],

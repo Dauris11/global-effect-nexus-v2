@@ -184,7 +184,7 @@ export async function registrarBitacoraDiariaAction(
     await enTransaccion(async (cliente) => {
       await cliente.query(
         `INSERT INTO public.colaborador_bitacora_diaria (usuario_id, fecha, descripcion, tarea_id, minutos_dedicados)
-         VALUES ($1, CURRENT_DATE, $2, $3, $4)`,
+         VALUES ($1, (now() AT TIME ZONE 'America/Santo_Domingo')::date, $2, $3, $4)`,
         [usuario.id, descripcion, tareaId, isNaN(minutos) ? 0 : minutos],
       );
     });

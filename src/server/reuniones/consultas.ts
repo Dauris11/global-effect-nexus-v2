@@ -74,7 +74,7 @@ export async function metricasReuniones(filtro?: {
        count(*) FILTER (WHERE r.estado = 'programada')::text AS programadas,
        count(*) FILTER (
          WHERE r.estado = 'realizada'
-           AND to_char(r.fecha, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
+           AND to_char(r.fecha, 'YYYY-MM') = to_char((now() AT TIME ZONE 'America/Santo_Domingo')::date, 'YYYY-MM')
        )::text AS realizadas_mes,
        (
          SELECT count(*)::text
