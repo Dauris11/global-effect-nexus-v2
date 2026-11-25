@@ -64,7 +64,7 @@ export async function resumenFlujo(periodo: PeriodoTablero, rango: RangoTablero)
                     WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')), 0)::text AS compromisos,
          COALESCE((SELECT SUM(saldo) FROM contabilidad.cuenta_por_pagar
                     WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')
-                      AND fecha_vencimiento <= CURRENT_DATE + 7), 0)::text AS por_vencer`,
+                      AND fecha_vencimiento <= (now() AT TIME ZONE 'America/Santo_Domingo')::date + 7), 0)::text AS por_vencer`,
       [rango.desde, rango.hasta],
     ),
     consultar<{ mes: string; ingresos: string; egresos: string }>(
@@ -109,10 +109,10 @@ export async function pendientesDelDepartamento(): Promise<PendientesContables> 
             (SELECT count(*)::int FROM contabilidad.factura_proveedor WHERE estado = 'borrador') AS facturas_borrador,
             (SELECT count(*)::int FROM contabilidad.cuenta_por_pagar
               WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')
-                AND fecha_vencimiento < CURRENT_DATE) AS cxp_vencidas,
+                AND fecha_vencimiento < (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS cxp_vencidas,
             (SELECT count(*)::int FROM contabilidad.cuenta_por_pagar
               WHERE estado IN ('pendiente', 'programada', 'pagada_parcial')
-                AND fecha_vencimiento BETWEEN CURRENT_DATE AND CURRENT_DATE + 7) AS cxp_semana,
+                AND fecha_vencimiento BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date AND (now() AT TIME ZONE 'America/Santo_Domingo')::date + 7) AS cxp_semana,
             (SELECT count(*)::int FROM public.rendicion_gasto
               WHERE estado IN ('enviada', 'en_revision')) AS rendiciones,
             (SELECT count(*)::int FROM contabilidad.arqueo

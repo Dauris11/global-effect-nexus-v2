@@ -108,7 +108,8 @@ export const eventosPublicos = unstable_cache(
     consultar<EventoPublico>(
       `SELECT id, titulo, descripcion, tipo, fecha::text AS fecha, hora_inicio, ubicacion
          FROM evento
-        WHERE fecha >= CURRENT_DATE
+        WHERE audiencia = 'todos'
+          AND fecha >= (now() AT TIME ZONE 'America/Santo_Domingo')::date
           AND estado <> 'cancelado'
         ORDER BY fecha, hora_inicio NULLS LAST
         LIMIT $1`,

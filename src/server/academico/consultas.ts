@@ -52,7 +52,7 @@ export type PeriodoGestionado = {
 /**
  * Los períodos, del más reciente al más antiguo.
  *
- * `en_curso` lo decide PostgreSQL con `CURRENT_DATE` y no el cliente con `new
+ * `en_curso` lo decide PostgreSQL con `(now() AT TIME ZONE 'America/Santo_Domingo')::date` y no el cliente con `new
  * Date()`: el navegador va con la hora del dispositivo, y un portátil con la
  * fecha mal puesta enseñaría el cuatrimestre equivocado como activo.
  *
@@ -68,9 +68,9 @@ export async function periodosGestionados(): Promise<PeriodoGestionado[]> {
             p.fecha_inicio::text AS fecha_inicio,
             p.fecha_fin::text    AS fecha_fin,
             p.estado,
-            (CURRENT_DATE BETWEEN p.fecha_inicio AND p.fecha_fin) AS en_curso,
-            (CURRENT_DATE >= p.fecha_inicio) AS ya_empezo,
-            (CURRENT_DATE >  p.fecha_fin)    AS ya_termino,
+            ((now() AT TIME ZONE 'America/Santo_Domingo')::date BETWEEN p.fecha_inicio AND p.fecha_fin) AS en_curso,
+            ((now() AT TIME ZONE 'America/Santo_Domingo')::date >= p.fecha_inicio) AS ya_empezo,
+            ((now() AT TIME ZONE 'America/Santo_Domingo')::date >  p.fecha_fin)    AS ya_termino,
             (SELECT count(*)::int FROM materia     m WHERE m.periodo_id = p.id) AS materias,
             (SELECT count(*)::int FROM inscripcion_360 c WHERE c.periodo_id = p.id) AS inscripciones_360,
             (SELECT count(*)::int FROM inscripcion i WHERE i.periodo_id = p.id) AS inscripciones

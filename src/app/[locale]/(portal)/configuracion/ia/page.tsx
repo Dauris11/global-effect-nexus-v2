@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { GraficoBarras } from "@/components/ui/grafico";
 import { StatCard } from "@/components/ui/stat-card";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
@@ -71,7 +72,6 @@ export default async function PaginaIA({
   const numero = new Intl.NumberFormat(locale);
   const dinero = (valor: number | null) =>
     valor === null ? "—" : `US$ ${valor.toFixed(valor < 1 ? 4 : 2)}`;
-  const maximoDia = Math.max(1, ...porDia.map((d) => d.tokens));
   const nombreAgente = (clave: string) =>
     t.has(`agentNames.${clave}`) ? t(`agentNames.${clave}`) : clave;
 
@@ -93,16 +93,15 @@ export default async function PaginaIA({
       <Card className={TARJETA.contenido}>
         <CardContent className="space-y-3 pt-5">
           <p className="texto-titulo-tarjeta">{t("byDay")}</p>
-          <div className="flex h-28 items-end gap-1" role="img" aria-label={t("byDay")}>
-            {porDia.map((d) => (
-              <div key={d.dia} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${d.dia}: ${numero.format(d.tokens)}`}>
-                <div
-                  className="bg-marca-500 w-full rounded-t"
-                  style={{ height: `${Math.max(2, (d.tokens / maximoDia) * 100)}%` }}
-                />
-              </div>
-            ))}
-          </div>
+          <GraficoBarras
+            datos={porDia.map((d) => ({ dia: d.dia.slice(5), tokens: d.tokens }))}
+            claveX="dia"
+            series={[{ clave: "tokens", nombre: t("byDay") }]}
+            etiqueta={t("byDay")}
+            vacio={t("byDay")}
+            altura={140}
+            formato={(n) => numero.format(n)}
+          />
           <div className="texto-meta flex justify-between">
             <span>{porDia[0]?.dia}</span>
             <span>{porDia.at(-1)?.dia}</span>

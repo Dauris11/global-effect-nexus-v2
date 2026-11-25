@@ -10,6 +10,11 @@ módulo) — esto es solo la cola de pendientes concretos.
   - **Panel Docente (`src/app/[locale]/(portal)/portal/profesor/page.tsx`, `src/lib/nav.ts`):** botones directos «Asignar tarea (360)» y «Materias asignadas» (`/portal/profesor/materias`) en cabecera y `MENU_DOCENTE`; `src/app/[locale]/(portal)/layout.tsx` oculta `habitudes` del menú si el docente no tiene asignación activa en `habitudes_liceo_profesor`.
   - **Portal Estudiante (`src/app/[locale]/(portal)/layout.tsx`, `topbar.tsx`, `aula-virtual/page.tsx`):** aviso de prematrícula visible para `usuario.rol === "estudiante"` (incluyendo «Ver como») enlazando a `/portal/estudiante/global-360` y visible desde `sm:` en barra superior; Aula Virtual reorganizada en 2 columnas con «Tareas y Exámenes» primero arriba/izquierda y tarjetas + gráfico de entregas en barra lateral derecha (`aside`).
   - **Estabilidad SSR React 19 / Next.js 16:** reemplazado `<Button asChild>` sobre `<Link>`/`<a>` por `variantesBoton` en `portal/profesor/page.tsx`, componentes de estudiante/reuniones y la portada pública (`hero.tsx`, `navbar.tsx`, `seccion-patrocinadores.tsx`, `seccion-mapa.tsx`, `seccion-cierre.tsx`, `seccion-eventos.tsx`), eliminando `Slot failed to slot onto its children`.
+- [x] **Auditoría Integral de QA, Usabilidad y Coherencia Operativa (24 nov 2026):** documento completo en [`docs/estado/informe-qa-portal.md`](informe-qa-portal.md). Diagnóstico de producto, las 10 inconsistencias críticas («cosas sin sentido»: compra en estudiante, ícono wrench, docente desviado a catálogo, chofer con torre sin combustible, dispersión de tareas, etc.), matriz de lo que PUEDEN vs DEBERÍAN poder hacer los 8 roles y roadmap priorizado P0/P1/P2.
+      - [x] **P0 aplicado (24 nov 2026):** formulario de compra fuera del portal del estudiante (y `crearCompra` lo rechaza en el servidor), icono `GraduationCap` en su menú, «Materias» del docente apunta a `/portal/profesor/materias` y acceso directo a Comida en el menú del estudiante.
+      - [ ] **P0 sin aplicar:** menú del chofer (quitar Torre de control y añadir combustible): el código documenta que la torre es por donde le llegan tareas asignadas y el chofer no tiene `rendicion.enviar`; decidir antes de tocarlo.
+      - [ ] **P1 y P2** del informe siguen pendientes.
+
 - [x] **Catálogo de universidades y pénsum — fase 2 del expediente (19 nov 2026, migración `0095`):** universidad → carrera → pénsum → materias (`/academico/universidades`), selector en cascada y matrícula en la pestaña Universidad del expediente, avance de créditos en la pestaña Pénsum. Detalle en `bitacora-tesis.md`.
       - [x] **Pénsum de UCATECI · Ingeniería en Sistemas de Computación (plan ISC-R2-2019, 110 materias, 237 créditos)** cargado desde `db/datos/pensum-ucateci-isc-r2-2019.txt` con `scripts/cargar-pensum.mjs` (base del usuario: `PensumPdf.pdf`). Las opciones de electiva (ISC123-130) no se cargaron: ocupan los cupos ELE013-016, así que una electiva aprobada no suma al avance hasta definir cómo se empareja.
       - [x] **Pénsums de `docs/PENSUMS` cargados (20 nov 2026): 13 de UCATECI y 25 de UNPHU**, cada uno con su carrera en su universidad (`db/datos/pensum-<universidad>-<carrera>-<versión>.txt`, cargados con `scripts/cargar-pensum.mjs`). Salieron de los PDF con un lector propio y solo se cargó lo que cuadra: créditos de cada período = total impreso, créditos del plan = total del plan donde lo trae, todo período con nombre y créditos. UCATECI además coincide campo por campo con la transcripción manual de Sistemas. Notas que quedan en el encabezado de cada `.txt`:
@@ -1826,3 +1831,39 @@ módulo) — esto es solo la cola de pendientes concretos.
       asignarlo a los expedientes existentes; mostrarlo y filtrarlo en la lista.
 - [ ] El detalle del expediente no se ha visto en pantalla (solo `tsc`, `build` y las
       consultas contra la base): revisar pestañas, espaciados y móvil.
+
+## Catálogo de cuentas editable (24 nov 2026)
+
+- Cerrado: en Configuración contable → Catálogo, «Editar» cambia nombre, código (renumera la rama), tipo (solo cuentas principales; las hijas lo heredan) y si recibe asientos; «Nueva cuenta principal» crea rubros de primer nivel. Código/tipo/movimiento solo en cuentas sin asientos y sin nada que las use (`editarCuenta`, `crearCuentaRaiz`).
+- Abierto: reportes, nómina y cierre buscan cuentas por código fijo (p. ej. `3.1.01.02`, `5.2.01.09`). Cambiar el código de una cuenta sin asientos que ellos esperan los rompería; falta una marca `de_sistema` que bloquee esas cuentas.
+- Abierto: los botones solo salen con `contabilidad.configurar` (rol `contabilidad`); `super_admin` queda en lectura por separación de funciones.
+
+## Gantt unificado con SVAR (24 nov 2026)
+
+- Cerrado: `LineaTiempo` propia reemplazada por `GanttBase` (`src/components/ui/gantt-base.tsx`); estándar en `docs/estado/estandar-gantt.md`.
+- Abierto: no se ha visto en pantalla (solo `tsc`/`eslint`/`audit:ui`/`i18n:check`): revisar tema claro/oscuro, acento negro, arrastre con permiso, tooltip y móvil. El tooltip de SVAR podría salir fuera del tema si la librería lo monta en un portal del `body`.
+
+## Estándar de gráficos, calendarios y Gantt (24 nov 2026)
+
+- Cerrado: capa común de gráficos, FullCalendar y SVAR Gantt en lugar de las tres implementaciones propias (`event-manager` y `linea-tiempo` eliminados). Pasan tsc, lint, build, i18n y audit:ui.
+- Abierto, sin ver en navegador: arrastre y alta en calendario, tooltip y tema del Gantt, vista móvil, contraste del acento negro en modo oscuro, alturas de gráficos.
+- Abierto: barra apilada de solicitudes del estudiante sigue a mano; estados vacíos de gráficos muestran el título (faltan claves propias).
+- Abierto: auditoría por rol en `docs/estado/auditoria-roles.md` (recorte de menús y formularios, funciones faltantes). El diagrama de comunicación entre módulos y roles va después de ese recorte.
+
+- Rediseño de gráficos (24 nov 2026): barras en píldora con pista y cifra, anillo redondeado, área suave; `Progress` más grueso, barra apilada de solicitudes con segmentos separados y contador de biografía sobre `Progress`. Sin ver en navegador con sesión.
+
+## Informes 01–03 de coherencia, UX y funcionamiento (24 nov 2026)
+
+Fuente: `01-coherencia-roles-permisos.md`, `02-ux-ui-por-rol.md`, `03-funcionamiento-animaciones-coherencia.md`. Auditaron el sitio desplegado; cada hallazgo se contrastó con el código antes de aplicarlo.
+
+- [x] **Hoy en UTC (03 §1.1):** `claveDia()`/`claveMes()` sin argumento y todo `CURRENT_DATE` de `src/` usan la hora de la Fundación (`America/Santo_Domingo`). Helpers `diaEnRD`/`horaEnRD` en `src/lib/fechas.ts`. En la base `now()::date` ya era el 25 cuando en La Vega era el 24.
+- [x] **Eventos internos al estudiante (03 §1.2):** migración `0108` agrega `evento.audiencia` (`todos`/`estudiantes`/`personal`); lo nacido de una tarea o administrativo pasa a `personal` y las consultas del estudiante y de la landing filtran. `0108` aplicada en la base (24 nov 2026).
+- [x] **Rendir gastos sin enlace (01 §2.10):** Rendiciones en el menú de docente, facilitador y director de Habitudes, con `rendicion.enviar`.
+- [x] **Asignación de materias en el menú del docente (01 §2.4):** ya apunta a sus clases (P0 del informe QA).
+- [ ] Contrastado y NO aplicado, por decisión pendiente: Admin y Clases 360/Subir calificaciones (01 §2.1–2.2; hoy admin las coordina), super_admin sin Mi día/Cierre/Rendiciones (01 §2.11, es la separación de funciones), segregación contable (01 §3.1–3.3), rol `psicologia` (01 §3.4: **prohibido por CLAUDE.md regla 8**), «Ver como persona» (01 §5), chofer con `rendicion.enviar` (01 §2.8).
+- [ ] Sin tocar: nombres de roles únicos y `ROLE_LABELS` (01 §4), rutas sin convención y redirects (01 §6), UX transversal y por rol (02 completo), mapas Leaflet sin teselas, contadores contradictorios de Bandeja, enlace de «Entregas esperando nota», datos de prueba «xvc bc», rendimiento y miniaturas, tokens de movimiento y microinteracciones, `PageHeader`/`ExportMenu` (03 §1.3–§4).
+
+- [x] **Mapas Leaflet sin teselas (03 §1.3):** `ResizeObserver` que llama a `invalidateSize()` en `mapa-la-vega-cliente.tsx` (el de transporte ya lo tenía).
+- [x] **Recursos de Habitudes (03 §1.5):** el título pide al menos 5 caracteres. El recurso «xvc bc» no era basura (PDF real del equipo, con categoría): solo falta renombrarlo desde la galería.
+- [ ] **Enlace de «Entregas esperando nota» (03 §1.6):** `/academico/clases-360` no tiene una vista de entregas pendientes; hay que construirla antes de enlazarla. La tarjeta tampoco aplica a `admin`, que no califica (01 §2.2).
+- [ ] **Contadores de Bandeja (03 §1.4):** no se pudo confirmar sin datos reales; comparar la consulta de «Mis tareas por estado» con la de «Tareas por hacer».

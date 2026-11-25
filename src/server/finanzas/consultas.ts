@@ -180,7 +180,7 @@ export async function mesesConMovimiento(): Promise<string[]> {
 /**
  * Las cifras del mes en curso, para el portal de contabilidad.
  *
- * El mes lo decide la BASE con `date_trunc('month', CURRENT_DATE)` y no el
+ * El mes lo decide la BASE con `date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date)` y no el
  * reloj del servidor de Node ni el del navegador. Parece lo mismo y no lo es:
  * el primer día del mes, a las 20:00 de Santo Domingo, un servidor en UTC ya
  * está en el día siguiente y uno en Madrid en el mes siguiente. El "balance del
@@ -197,7 +197,7 @@ export async function resumenDelMesEnCurso(): Promise<ResumenFinanciero> {
              - coalesce(sum(monto) FILTER (WHERE tipo = 'egreso'), 0))::float8 AS balance,
             count(*)::int AS movimientos
        FROM transaccion
-      WHERE fecha >= date_trunc('month', CURRENT_DATE)`,
+      WHERE fecha >= date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date)`,
   );
 
   return fila ?? { ingresos: 0, egresos: 0, balance: 0, movimientos: 0 };
@@ -250,8 +250,8 @@ export async function flujoMensual(meses = 6): Promise<MesFinanciero[]> {
     `WITH calendario AS (
        SELECT to_char(mes, 'YYYY-MM') AS mes
          FROM generate_series(
-                date_trunc('month', CURRENT_DATE) - make_interval(months => $1::int - 1),
-                date_trunc('month', CURRENT_DATE),
+                date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date) - make_interval(months => $1::int - 1),
+                date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date),
                 interval '1 month'
               ) AS mes
      )

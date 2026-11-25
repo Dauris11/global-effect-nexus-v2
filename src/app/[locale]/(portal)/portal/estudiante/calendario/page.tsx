@@ -5,8 +5,8 @@ import { getTranslations } from "next-intl/server";
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { CalendarioMensualEstudiante } from "@/components/estudiante/calendario-mensual-estudiante";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
-import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
+import { esVistaCalendario } from "@/lib/calendario";
 import { claveDia, claveMes } from "@/lib/fechas";
 import { agendaDelEstudiante } from "@/server/estudiantes/agenda";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
@@ -27,18 +27,17 @@ export async function generateMetadata({
 /**
  * Calendario mensual del estudiante:
  * eventos, vencimientos de tareas/exámenes, clases proyectadas, reuniones y
- * trámites con fecha en una rejilla de mes completa con navegación libre.
+ * trámites con fecha en el calendario base, con mes, semana, día y lista.
  */
 export default async function PaginaCalendario({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; vista?: string }>;
 }) {
   const { locale } = await params;
-  const { mes: mesPedido } = await searchParams;
-  const idioma: Locale = locale === "en" ? "en" : "es";
+  const { mes: mesPedido, vista: vistaPedida } = await searchParams;
 
   const usuario = await requerirRol(["estudiante"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
@@ -46,10 +45,11 @@ export default async function PaginaCalendario({
   const hoy = claveDia();
   const mesActual = claveMes();
   const mes = mesPedido && MES_VALIDO.test(mesPedido) ? mesPedido : mesActual;
+  const vista = esVistaCalendario(vistaPedida) ? vistaPedida : undefined;
 
   const [t, mensajes, entradas] = await Promise.all([
     getTranslations({ locale, namespace: "studentPortal" }),
-    mensajesCliente(["studentPortal"]),
+    mensajesCliente(["studentPortal", "calendar"]),
     agendaDelEstudiante(estudiante.id, mes, usuario.id),
   ]);
 
@@ -60,9 +60,9 @@ export default async function PaginaCalendario({
       <NextIntlClientProvider messages={mensajes}>
         <CalendarioMensualEstudiante
           mes={mes}
+          vista={vista}
           hoy={hoy}
           entradas={entradas}
-          locale={idioma}
         />
       </NextIntlClientProvider>
     </div>

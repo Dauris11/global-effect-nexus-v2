@@ -112,7 +112,7 @@ export function SuiteCalculadoras() {
       concepto: `Asiento borrador de factura (calculadora) - Neto: ${resFactura.netoAPagar.toFixed(2)}`,
       lineas: [
         {
-          cuentaCodigo: "5.1.01.01",
+          cuentaCodigo: "5.4.12",
           descripcion: "Gasto de servicios profesionales",
           debe: resFactura.subtotalNeto,
           haber: 0,
@@ -136,7 +136,7 @@ export function SuiteCalculadoras() {
           haber: resFactura.retencionItbis,
         },
         {
-          cuentaCodigo: "2.1.01.01",
+          cuentaCodigo: "2.1.1",
           descripcion: "Cuentas por pagar a proveedores (Neto)",
           debe: 0,
           haber: resFactura.netoAPagar,

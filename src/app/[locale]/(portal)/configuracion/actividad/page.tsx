@@ -182,30 +182,24 @@ export default async function PaginaActividad({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Tarjeta titulo={t("charts.byHour")}>
-          <GraficaPorHora datos={porHora} etiqueta={t("charts.events")} />
+          <GraficaPorHora datos={porHora} etiqueta={t("charts.events")} vacio={t("noData")} />
         </Tarjeta>
         <Tarjeta titulo={t("charts.byDay")}>
-          <GraficaPorDia datos={porDia} etiqueta={t("charts.events")} />
+          <GraficaPorDia datos={porDia} etiqueta={t("charts.events")} vacio={t("noData")} />
         </Tarjeta>
         <Tarjeta titulo={t("charts.byPerson")}>
-          {porPersona.length === 0 ? (
-            <p className="texto-meta">{t("noData")}</p>
-          ) : (
-            <GraficaHorizontal
-              datos={porPersona.map((p) => ({ nombre: p.nombre, eventos: p.eventos }))}
-              etiqueta={t("charts.events")}
-            />
-          )}
+          <GraficaHorizontal
+            datos={porPersona.map((p) => ({ nombre: p.nombre, eventos: p.eventos }))}
+            etiqueta={t("charts.events")}
+            vacio={t("noData")}
+          />
         </Tarjeta>
         <Tarjeta titulo={t("charts.byModule")}>
-          {porModulo.length === 0 ? (
-            <p className="texto-meta">{t("noData")}</p>
-          ) : (
-            <GraficaHorizontal
-              datos={porModulo.map((m) => ({ nombre: nombreModulo(m.modulo), eventos: m.eventos }))}
-              etiqueta={t("charts.events")}
-            />
-          )}
+          <GraficaHorizontal
+            datos={porModulo.map((m) => ({ nombre: nombreModulo(m.modulo), eventos: m.eventos }))}
+            etiqueta={t("charts.events")}
+            vacio={t("noData")}
+          />
         </Tarjeta>
       </div>
 

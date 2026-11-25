@@ -74,7 +74,7 @@ export async function tareasDelTablero({
                JOIN usuario u ON u.id = ta.usuario_id
               WHERE ta.tarea_id = t.id) AS asignados,
             (t.fecha_limite IS NOT NULL
-             AND t.fecha_limite < CURRENT_DATE
+             AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date
              AND t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')) AS vencida
        FROM tarea t
        LEFT JOIN proyecto p ON p.id = t.proyecto_id

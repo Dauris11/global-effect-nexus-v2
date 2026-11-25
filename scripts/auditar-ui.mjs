@@ -47,7 +47,6 @@ const PERMITIDOS_HEX = new Set([
 ]);
 const EXCEPCIONES_HEX = [
   "src/lib/paleta.ts",
-  "src/components/dashboard/graficas.tsx",
   "src/components/landing/globe.tsx",
 ];
 

@@ -1,7 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { CalendarRange, FolderKanban, GraduationCap, Globe, ListChecks, type LucideIcon } from "lucide-react";
 
+import { ChipFiltro } from "@/components/ui/chip-filtro";
+import { FilaChips } from "@/components/ui/fila-chips";
 import {
   Select,
   SelectContent,
@@ -10,7 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
+
+/** Un icono por familia: el chip lo pide y la clave viene del servidor. */
+const ICONO_FAMILIA: Record<string, LucideIcon> = {
+  academico: GraduationCap,
+  tareas: ListChecks,
+  operaciones: FolderKanban,
+  clases360: Globe,
+};
 
 /**
  * Filtros de la línea de tiempo. Viven en la URL (la página es de servidor y
@@ -58,14 +68,6 @@ export function FiltrosLineaTiempo({
       }
     });
 
-  const chip = (activo: boolean) =>
-    cn(
-      "min-h-10 cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors duration-(--duracion-rapida)",
-      activo
-        ? "border-tinta bg-tinta text-background"
-        : "border-linea-fuerte text-tinta-2 hover:border-tinta hover:text-tinta",
-    );
-
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select
@@ -90,35 +92,31 @@ export function FiltrosLineaTiempo({
         </SelectContent>
       </Select>
 
-      <button
-        type="button"
-        aria-pressed={todo}
+      <ChipFiltro
+        icono={CalendarRange}
+        etiqueta={etiquetaTodo}
+        activo={todo}
         onClick={() =>
           aplicar((p) => {
             if (todo) p.delete("tramo");
             else p.set("tramo", "todo");
           })
         }
-        className={chip(todo)}
-      >
-        {etiquetaTodo}
-      </button>
+      />
 
       <span aria-hidden className="hidden h-6 w-px bg-linea sm:block" />
 
-      <div role="group" aria-label={etiquetaFamilias} className="flex flex-wrap gap-2">
+      <FilaChips etiqueta={etiquetaFamilias} className="border-b-0">
         {familias.map((f) => (
-          <button
+          <ChipFiltro
             key={f.clave}
-            type="button"
-            aria-pressed={activas.includes(f.clave)}
+            icono={ICONO_FAMILIA[f.clave] ?? ListChecks}
+            etiqueta={f.etiqueta}
+            activo={activas.includes(f.clave)}
             onClick={() => alternarFamilia(f.clave)}
-            className={chip(activas.includes(f.clave))}
-          >
-            {f.etiqueta}
-          </button>
+          />
         ))}
-      </div>
+      </FilaChips>
     </div>
   );
 }

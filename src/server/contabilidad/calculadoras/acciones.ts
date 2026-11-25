@@ -49,12 +49,17 @@ export async function convertirCalculoEnAsientoBorrador(datos: {
       const lineas: { cuenta_id: string; debe: number; haber: number; descripcion: string }[] = [];
       for (const l of datos.lineas) {
         const { rows: ctaRows } = await cliente.query<{ id: string }>(
-          `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1 LIMIT 1`,
+          `SELECT id FROM contabilidad.cuenta_contable
+            WHERE codigo = $1 AND admite_movimiento AND activa LIMIT 1`,
           [l.cuentaCodigo]
         );
         const ctaId = ctaRows[0]?.id;
         if (!ctaId) {
-          throw new Error(`Cuenta contable con código ${l.cuentaCodigo} no encontrada`);
+          // El catálogo de la Fundación no tiene cuentas de ITBIS/ISR ni de
+          // proveedores con movimiento: el asiento de una factura no se puede armar.
+          throw new Error(
+            `El catálogo vigente no tiene una cuenta con movimiento para el código ${l.cuentaCodigo}`
+          );
         }
         lineas.push({
           cuenta_id: ctaId,

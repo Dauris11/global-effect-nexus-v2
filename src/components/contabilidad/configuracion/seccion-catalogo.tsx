@@ -14,7 +14,7 @@ import { TARJETA } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import type { CuentaCatalogo } from "@/server/contabilidad/configuracion/consultas";
 
-type Seleccion = { modo: ModoCuenta; cuenta: CuentaCatalogo } | null;
+type Seleccion = { modo: ModoCuenta; cuenta: CuentaCatalogo | null } | null;
 
 /**
  * El catálogo como árbol: la sangría sale del nivel que calcula la base.
@@ -59,9 +59,9 @@ export function SeccionCatalogo({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={t("renombrarCuenta", { codigo: cuenta.codigo })}
-          title={t("renombrar")}
-          onClick={() => setSeleccion({ modo: "renombrar", cuenta })}
+          aria-label={t("editarCuenta", { codigo: cuenta.codigo })}
+          title={t("editar")}
+          onClick={() => setSeleccion({ modo: "editar", cuenta })}
         >
           <Pencil className="size-4" />
         </Button>
@@ -94,7 +94,8 @@ export function SeccionCatalogo({
   return (
     <div className="space-y-4">
       <p className="max-w-3xl text-[15px] text-tinta-2">{t("explicacion")}</p>
-      <div className="relative max-w-md">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="relative w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-2" />
         <Input
           type="search"
@@ -104,6 +105,13 @@ export function SeccionCatalogo({
           aria-label={t("buscar")}
           className="pl-9"
         />
+      </div>
+        {puedeEditar && (
+          <Button onClick={() => setSeleccion({ modo: "raiz", cuenta: null })}>
+            <Plus className="size-4" />
+            {t("nuevaRaiz")}
+          </Button>
+        )}
       </div>
 
       {visibles.length === 0 ? (
@@ -172,7 +180,7 @@ export function SeccionCatalogo({
 
       {seleccion && (
         <DialogoCuenta
-          key={`${seleccion.modo}-${seleccion.cuenta.id}`}
+          key={`${seleccion.modo}-${seleccion.cuenta?.id ?? "raiz"}`}
           modo={seleccion.modo}
           cuenta={seleccion.cuenta}
           alCerrar={() => setSeleccion(null)}

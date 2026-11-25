@@ -128,7 +128,7 @@ const SELECT_CAJA = `
     JOIN public.usuario u ON c.responsable_id = u.id
     LEFT JOIN contabilidad.cuenta_contable cc
            ON cc.id = COALESCE(c.cuenta_contable_id,
-                               (SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.1.01.02'))`;
+                               (SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.1.1'))`;
 
 function aCaja(f: FilaCaja): CajaResumen {
   return {

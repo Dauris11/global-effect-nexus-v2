@@ -23,7 +23,7 @@ import type {
  * "Esta semana" es hasta el domingo, no los próximos siete días: así lo cuenta
  * la gente cuando planifica el lunes.
  */
-const FIN_DE_SEMANA = `(date_trunc('week', CURRENT_DATE)::date + 6)`;
+const FIN_DE_SEMANA = `(date_trunc('week', (now() AT TIME ZONE 'America/Santo_Domingo')::date)::date + 6)`;
 const ABIERTA = `t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')`;
 
 /**
@@ -49,16 +49,16 @@ export async function tareasDeUsuario(usuarioId: string): Promise<TareaTorre[]> 
             coalesce((SELECT array_agg(x.usuario_id::text)
                         FROM tarea_asignado x WHERE x.tarea_id = t.id), '{}') AS asignados_ids,
             (SELECT count(*)::int FROM tarea_comentario c WHERE c.tarea_id = t.id) AS comentarios,
-            (${ABIERTA} AND t.fecha_limite < CURRENT_DATE) AS vencida,
-            (t.fecha_limite = CURRENT_DATE) AS es_hoy,
-            (t.fecha_limite BETWEEN CURRENT_DATE AND ${FIN_DE_SEMANA}) AS esta_semana
+            (${ABIERTA} AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS vencida,
+            (t.fecha_limite = (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS es_hoy,
+            (t.fecha_limite BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date AND ${FIN_DE_SEMANA}) AS esta_semana
        FROM tarea t
        JOIN tarea_asignado ta ON ta.tarea_id = t.id AND ta.usuario_id = $1
        LEFT JOIN proyecto p ON p.id = t.proyecto_id
       WHERE ${ABIERTA}
          OR (t.estado = 'completada' AND t.updated_at >= now() - interval '14 days')
       ORDER BY (t.estado = 'completada'),
-               (${ABIERTA} AND t.fecha_limite < CURRENT_DATE) DESC,
+               (${ABIERTA} AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date) DESC,
                t.fecha_limite NULLS LAST,
                CASE coalesce(t.prioridad, 'media')
                  WHEN 'urgente' THEN 0 WHEN 'alta' THEN 1 WHEN 'media' THEN 2 ELSE 3
@@ -120,10 +120,10 @@ export async function cargaPorPersona(): Promise<CargaPersona[]> {
             r.nombre AS rol,
             count(*) FILTER (WHERE ${ABIERTA})::int AS abiertas,
             count(*) FILTER (WHERE t.estado = 'en_progreso')::int AS en_progreso,
-            count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite < CURRENT_DATE)::int AS vencidas,
-            count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite = CURRENT_DATE)::int AS hoy,
+            count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date)::int AS vencidas,
+            count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite = (now() AT TIME ZONE 'America/Santo_Domingo')::date)::int AS hoy,
             count(*) FILTER (WHERE ${ABIERTA}
-                               AND t.fecha_limite BETWEEN CURRENT_DATE AND ${FIN_DE_SEMANA})::int AS semana,
+                               AND t.fecha_limite BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date AND ${FIN_DE_SEMANA})::int AS semana,
             coalesce(sum(t.horas_estimadas) FILTER (WHERE ${ABIERTA}), 0)::float8 AS horas_pendientes,
             count(*) FILTER (WHERE t.estado = 'completada'
                                AND t.updated_at >= now() - interval '7 days')::int AS completadas_7d,
@@ -140,7 +140,7 @@ export async function cargaPorPersona(): Promise<CargaPersona[]> {
         AND (r.nombre <> 'estudiante'
              OR EXISTS (SELECT 1 FROM tarea_asignado x WHERE x.usuario_id = u.id))
       GROUP BY u.id, u.nombre, r.nombre
-      ORDER BY count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite < CURRENT_DATE) DESC,
+      ORDER BY count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date) DESC,
                count(*) FILTER (WHERE ${ABIERTA}) DESC,
                u.nombre`,
   );

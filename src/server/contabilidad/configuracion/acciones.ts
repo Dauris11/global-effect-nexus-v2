@@ -52,6 +52,8 @@ export type EstadoConfig = {
     | "cuenta_con_saldo"
     | "subcuentas_activas"
     | "cuenta_en_uso"
+    | "cuenta_con_movimientos"
+    | "cuenta_con_hijas"
     | EstadoErrorContable;
 };
 
@@ -382,21 +384,144 @@ export async function crearSubcuenta(_previo: EstadoConfig, datos: FormData): Pr
   });
 }
 
-export async function renombrarCuenta(_previo: EstadoConfig, datos: FormData): Promise<EstadoConfig> {
+const TIPOS = ["activo", "pasivo", "patrimonio", "ingreso", "gasto"] as const;
+const RAIZ = /^\d{1,2}$/;
+
+/** Ids de la cuenta y de todas sus descendientes: el código dice dónde cuelga cada una. */
+async function ramaDe(cliente: PoolClient, codigo: string): Promise<string[]> {
+  const { rows } = await cliente.query<{ id: string }>(
+    `SELECT id FROM contabilidad.cuenta_contable
+      WHERE codigo = $1 OR starts_with(codigo, $1 || '.')`,
+    [codigo],
+  );
+  return rows.map((f) => f.id);
+}
+
+async function ramaConMovimientos(cliente: PoolClient, ids: string[]): Promise<boolean> {
+  const { rowCount } = await cliente.query(
+    `SELECT 1 FROM contabilidad.asiento_linea WHERE cuenta_id = ANY($1::uuid[]) LIMIT 1`,
+    [ids],
+  );
+  return Boolean(rowCount);
+}
+
+async function ramaEnUso(cliente: PoolClient, ids: string[]): Promise<boolean> {
+  for (const id of ids) if (await cuentaEnUso(cliente, id)) return true;
+  return false;
+}
+
+/**
+ * Edita una cuenta: nombre siempre; código, tipo y si recibe asientos solo
+ * mientras nada dependa de ellos. Los reportes, la nómina y el cierre
+ * buscan cuentas por código y por tipo, así que cambiarlos con asientos o
+ * con una categoría, caja o banco apuntando a la cuenta los descuadraría.
+ */
+export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Promise<EstadoConfig> {
   const usuario = await usuarioCon("contabilidad.configurar");
   if (!usuario) return { estado: "no_permitido" };
 
   const id = texto(datos, "id", 40);
   const nombre = texto(datos, "nombre", 160);
+  const codigoNuevo = texto(datos, "codigo", 40);
+  const tipoNuevo = texto(datos, "tipo", 20);
+  const movimientoNuevo = texto(datos, "movimiento", 1) === "1";
   if (!esUuid(id)) return { estado: "no_encontrado" };
   if (!nombre) return { estado: "datos_invalidos" };
 
   return ejecutar(usuario, async (cliente) => {
-    const { rowCount } = await cliente.query(
-      `UPDATE contabilidad.cuenta_contable SET nombre = $2 WHERE id = $1`,
-      [id, nombre],
+    const { rows } = await cliente.query<{
+      codigo: string;
+      tipo: string;
+      padre_id: string | null;
+      admite_movimiento: boolean;
+      padre_codigo: string | null;
+    }>(
+      `SELECT c.codigo, c.tipo, c.padre_id, c.admite_movimiento, p.codigo AS padre_codigo
+         FROM contabilidad.cuenta_contable c
+         LEFT JOIN contabilidad.cuenta_contable p ON p.id = c.padre_id
+        WHERE c.id = $1
+          FOR UPDATE OF c`,
+      [id],
     );
-    if (!rowCount) throw new Rechazo("no_encontrado");
+    const cuenta = rows[0];
+    if (!cuenta) throw new Rechazo("no_encontrado");
+
+    const cambiaCodigo = codigoNuevo !== "" && codigoNuevo !== cuenta.codigo;
+    const cambiaTipo = tipoNuevo !== "" && tipoNuevo !== cuenta.tipo;
+    const cambiaMovimiento = movimientoNuevo !== cuenta.admite_movimiento;
+    const rama = await ramaDe(cliente, cuenta.codigo);
+
+    if (cambiaCodigo || cambiaTipo || cambiaMovimiento) {
+      if (await ramaConMovimientos(cliente, rama)) throw new Rechazo("cuenta_con_movimientos");
+      if (await ramaEnUso(cliente, rama)) throw new Rechazo("cuenta_en_uso");
+    }
+
+    if (cambiaCodigo) {
+      const valido = cuenta.padre_codigo
+        ? codigoNuevo.startsWith(`${cuenta.padre_codigo}.`) &&
+          SEGMENTO.test(codigoNuevo.slice(cuenta.padre_codigo.length + 1))
+        : RAIZ.test(codigoNuevo);
+      if (!valido) throw new Rechazo("codigo_invalido");
+      // Fuera de su propia rama, que se va a renumerar con ella.
+      const choque = await cliente.query(
+        `SELECT 1 FROM contabilidad.cuenta_contable
+          WHERE (codigo = $1 OR starts_with(codigo, $1 || '.'))
+            AND NOT (codigo = $2 OR starts_with(codigo, $2 || '.'))
+          LIMIT 1`,
+        [codigoNuevo, cuenta.codigo],
+      );
+      if (choque.rowCount) throw new Rechazo("codigo_repetido");
+      await cliente.query(
+        `UPDATE contabilidad.cuenta_contable
+            SET codigo = $1 || substr(codigo, length($2) + 1)
+          WHERE id = ANY($3::uuid[])`,
+        [codigoNuevo, cuenta.codigo, rama],
+      );
+    }
+
+    if (cambiaTipo) {
+      // Las hijas heredan el tipo de la madre: solo una raíz lo decide.
+      if (cuenta.padre_id || !TIPOS.includes(tipoNuevo as (typeof TIPOS)[number])) {
+        throw new Rechazo("datos_invalidos");
+      }
+      await cliente.query(
+        `UPDATE contabilidad.cuenta_contable SET tipo = $1 WHERE id = ANY($2::uuid[])`,
+        [tipoNuevo, rama],
+      );
+    }
+
+    if (cambiaMovimiento && movimientoNuevo) {
+      const hijas = await cliente.query(
+        `SELECT 1 FROM contabilidad.cuenta_contable WHERE padre_id = $1 LIMIT 1`,
+        [id],
+      );
+      if (hijas.rowCount) throw new Rechazo("cuenta_con_hijas");
+    }
+
+    await cliente.query(
+      `UPDATE contabilidad.cuenta_contable SET nombre = $2, admite_movimiento = $3 WHERE id = $1`,
+      [id, nombre, movimientoNuevo],
+    );
+  });
+}
+
+/** Una cuenta de primer nivel (un tipo nuevo de rubro). Nace agrupadora: sus hijas son las que reciben asientos. */
+export async function crearCuentaRaiz(_previo: EstadoConfig, datos: FormData): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const codigo = texto(datos, "codigo", 4);
+  const nombre = texto(datos, "nombre", 160);
+  const tipo = texto(datos, "tipo", 20);
+  if (!nombre || !TIPOS.includes(tipo as (typeof TIPOS)[number])) return { estado: "datos_invalidos" };
+  if (!RAIZ.test(codigo)) return { estado: "codigo_invalido" };
+
+  return ejecutar(usuario, async (cliente) => {
+    await cliente.query(
+      `INSERT INTO contabilidad.cuenta_contable (codigo, nombre, tipo, padre_id, admite_movimiento)
+       VALUES ($1, $2, $3, NULL, false)`,
+      [codigo, nombre, tipo],
+    );
   });
 }
 

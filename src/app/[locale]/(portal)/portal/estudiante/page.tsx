@@ -24,7 +24,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import type { Locale } from "@/i18n/routing";
 import { requerirRol } from "@/lib/auth";
-import { claveDia } from "@/lib/fechas";
+import { claveDia, diaEnRD, horaEnRD } from "@/lib/fechas";
 import {
   aprobada,
   promedio,
@@ -105,15 +105,15 @@ export default async function PortalEstudiante({
     ),
     reunionesEstudiante(usuario.id, estudiante.id),
     reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
-    mensajesCliente(["studentPortal", "requests"]),
+    mensajesCliente(["studentPortal", "requests", "calendar"]),
   ]);
 
   const hoyIso = claveDia();
   const tareasDashboard = asignaciones.map((a) => {
     const fechaBase = a.fecha_vencimiento ?? a.fecha_publicacion;
-    const fechaIso = fechaBase.toISOString().slice(0, 10);
+    const fechaIso = diaEnRD(fechaBase);
     const hora = a.fecha_vencimiento
-      ? fechaBase.toISOString().slice(11, 16)
+      ? horaEnRD(fechaBase)
       : null;
     return {
       id: a.id,

@@ -802,7 +802,9 @@
       "assignment": "Class deadline",
       "appointment": "Administration appointment",
       "meeting": "Institutional meeting",
-      "class": "Class"
+      "class": "Class",
+      "request": "Request",
+      "forum": "Forum or announcement"
     },
     "eventType": {
       "academico": "Academic",
@@ -4540,14 +4542,15 @@
         "inactiva": "Inactive",
         "agregar": "Add sub-account",
         "agregarSub": "Add a sub-account to {codigo}",
-        "renombrar": "Rename",
-        "renombrarCuenta": "Rename account {codigo}",
         "desactivar": "Deactivate",
         "desactivarCuenta": "Deactivate account {codigo}",
         "activar": "Activate",
         "activarCuenta": "Activate account {codigo}",
         "vacioTitulo": "The chart of accounts is empty",
-        "vacioTexto": "The basic chart is seeded by the accounting migrations."
+        "vacioTexto": "The basic chart is seeded by the accounting migrations.",
+        "editar": "Edit",
+        "editarCuenta": "Edit account {codigo}",
+        "nuevaRaiz": "New top-level account"
       },
       "cuenta": {
         "codigo": "Code",
@@ -4559,11 +4562,6 @@
           "aviso": "This account currently receives entries. Giving it a sub-account turns it into a summary account; this is not allowed if it already has entries or a category, cash box or bank account uses it.",
           "confirmar": "Create sub-account"
         },
-        "renombrar": {
-          "titulo": "Rename the account",
-          "descripcion": "Changes the name of {cuenta}. The code stays the same and entries are not affected.",
-          "confirmar": "Save name"
-        },
         "desactivar": {
           "titulo": "Deactivate the account",
           "descripcion": "{cuenta} will no longer be available for new records. Its history is kept. Only allowed if it has no balance, no active sub-accounts and nothing uses it.",
@@ -4573,6 +4571,21 @@
           "titulo": "Activate the account",
           "descripcion": "{cuenta} becomes available for new records again.",
           "confirmar": "Yes, activate"
+        },
+        "tipo": "Account type",
+        "codigoAyudaRaiz": "One or two digits, for example 7.",
+        "recibeAsientos": "Accepts entries",
+        "recibeAsientosAyuda": "If checked, the account is used in journal entries; otherwise it only sums its sub-accounts.",
+        "editar": {
+          "titulo": "Edit account",
+          "descripcion": "Change the details of {cuenta}.",
+          "avisoBloqueo": "Code, type and whether it accepts entries can only change on accounts with no entries and nothing using them. The name can always be changed.",
+          "confirmar": "Save changes"
+        },
+        "raiz": {
+          "titulo": "New top-level account",
+          "descripcion": "Creates a first-level heading. It starts as a grouping account: its sub-accounts are the ones that accept entries.",
+          "confirmar": "Create account"
         }
       },
       "error": {
@@ -4606,7 +4619,9 @@
         "cheque_cobrado": "The check has already been cashed.",
         "montos_distintos": "The amounts do not match.",
         "cuenta_cerrada": "The account is closed.",
-        "error": "It could not be completed. Try again and, if it persists, tell the technical team."
+        "error": "It could not be completed. Try again and, if it persists, tell the technical team.",
+        "cuenta_con_movimientos": "The account or its sub-accounts already have entries: code, type and whether it accepts entries can't change. The name can.",
+        "cuenta_con_hijas": "The account has sub-accounts: it can't accept entries."
       }
     },
     "asientos": {
@@ -7165,7 +7180,10 @@
     "all": "All",
     "families": "What to draw",
     "noSelection": "Pick a term",
-    "dependsOn": "Depends on"
+    "dependsOn": "Depends on",
+    "dayScale": "Day",
+    "task": "Item",
+    "scheduled": "Scheduled payment"
   },
   "historial360": {
     "title": "Global Effect 360",

@@ -86,8 +86,9 @@ export async function guardarEvento(
     } else {
       const creado = await consultarUna<{ id: string }>(
         `INSERT INTO evento
-                (titulo, descripcion, tipo, fecha, hora_inicio, hora_fin, ubicacion, responsable)
-         VALUES ($1, NULLIF($2, ''), $3, $4::date, NULLIF($5, ''), NULLIF($6, ''), NULLIF($7, ''), $8)
+                (titulo, descripcion, tipo, fecha, hora_inicio, hora_fin, ubicacion, responsable, audiencia)
+         VALUES ($1, NULLIF($2, ''), $3, $4::date, NULLIF($5, ''), NULLIF($6, ''), NULLIF($7, ''), $8,
+                 CASE WHEN $3 = 'administrativo' THEN 'personal' ELSE 'todos' END)
          RETURNING id`,
         [titulo, descripcion, tipoValido, fecha, horaInicio, horaFin, ubicacion, usuario.nombre],
       );

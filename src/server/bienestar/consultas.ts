@@ -91,7 +91,7 @@ export async function resumenDelMes(mes: string): Promise<ResumenServicio> {
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE coalesce(r.hizo_servicio, FALSE))::int   AS con_servicio,
             count(*) FILTER (WHERE coalesce(r.asistio_reunion, FALSE))::int AS con_reunion,
-            (SELECT to_char(CURRENT_DATE, 'YYYY-MM')) AS mes_actual
+            (SELECT to_char((now() AT TIME ZONE 'America/Santo_Domingo')::date, 'YYYY-MM')) AS mes_actual
        FROM estudiante e
        LEFT JOIN registro_servicio r
               ON r.estudiante_id = e.id AND r.mes = $1
@@ -113,8 +113,8 @@ export async function ultimosDoceMeses(): Promise<string[]> {
   const filas = await consultar<{ mes: string }>(
     `SELECT to_char(fecha, 'YYYY-MM') AS mes
        FROM generate_series(
-              date_trunc('month', CURRENT_DATE) - INTERVAL '11 months',
-              date_trunc('month', CURRENT_DATE),
+              date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date) - INTERVAL '11 months',
+              date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date),
               INTERVAL '1 month'
             ) AS fecha
       ORDER BY fecha DESC`,

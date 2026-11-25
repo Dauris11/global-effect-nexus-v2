@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 /**
  * Medidor del consumo mensual de quien pregunta. Con tope muestra una barra y
@@ -34,19 +35,7 @@ export function MedidorConsumo({ consumo }: { consumo: ConsumoVisible }) {
       </div>
 
       {porcentaje !== null && (
-        <div
-          role="progressbar"
-          aria-valuenow={porcentaje}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={t("consumo.titulo")}
-          className="bg-muted mt-1 h-1 overflow-hidden rounded-full"
-        >
-          <div
-            className={cn("h-full rounded-full", consumo.aviso ? "bg-tinta" : "bg-marca-500")}
-            style={{ width: `${porcentaje}%` }}
-          />
-        </div>
+        <Progress value={porcentaje} tono={consumo.aviso ? "tinta" : "acento"} aria-label={t("consumo.titulo")} className="mt-1 h-1" />
       )}
 
       {consumo.aviso && <p className="text-tinta mt-1 text-[11px]">{t("consumo.aviso")}</p>}

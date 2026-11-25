@@ -16,25 +16,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   cambiarEstadoCuenta,
+  crearCuentaRaiz,
   crearSubcuenta,
-  renombrarCuenta,
+  editarCuenta,
 } from "@/server/contabilidad/configuracion/acciones";
+import { TIPOS_CUENTA, type TipoCuenta } from "@/lib/contabilidad/catalogo";
 import type { CuentaCatalogo } from "@/server/contabilidad/configuracion/consultas";
 
-export type ModoCuenta = "subcuenta" | "renombrar" | "desactivar" | "activar";
+export type ModoCuenta = "subcuenta" | "editar" | "raiz" | "desactivar" | "activar";
 
 const ACCION = {
   subcuenta: crearSubcuenta,
-  renombrar: renombrarCuenta,
+  editar: editarCuenta,
+  raiz: crearCuentaRaiz,
   desactivar: cambiarEstadoCuenta,
   activar: cambiarEstadoCuenta,
 } as const;
 
 /**
- * Las tres operaciones del catálogo. Ninguna borra: desactivar deja la
- * cuenta con su historia y la base rechaza hacerlo si tiene saldo.
+ * Las operaciones del catálogo. Ninguna borra: desactivar deja la cuenta
+ * con su historia y la base rechaza hacerlo si tiene saldo. Código, tipo y
+ * "recibe asientos" solo se editan en cuentas sin movimientos; el servidor
+ * lo vuelve a comprobar.
  */
 export function DialogoCuenta({
   modo,
@@ -42,15 +48,25 @@ export function DialogoCuenta({
   alCerrar,
 }: {
   modo: ModoCuenta;
-  cuenta: CuentaCatalogo;
+  /** `null` solo en `raiz`: una cuenta de primer nivel no cuelga de ninguna. */
+  cuenta: CuentaCatalogo | null;
   alCerrar: () => void;
 }) {
   const t = useTranslations("contab.config.cuenta");
+  const tt = useTranslations("contab.config.catalogo.tipo");
   const [estado, enviar, enviando] = useAccionConfig(ACCION[modo], alCerrar);
-  // El código de la subcuenta se escribe como segmento: el prefijo del
-  // padre lo pone la pantalla para que no se pueda equivocar.
-  const [segmento, setSegmento] = useState("");
-  const etiqueta = `${cuenta.codigo} · ${cuenta.nombre}`;
+  const esRaiz = cuenta ? cuenta.padreId === null : true;
+  // Prefijo fijo = código de la madre; el segmento es lo único que se escribe,
+  // para que una hija no pueda quedar fuera de su rama.
+  const prefijo = modo === "subcuenta" ? `${cuenta?.codigo}.` : modo === "editar" && cuenta?.padreId ? `${cuenta.codigo.split(".").slice(0, -1).join(".")}.` : "";
+  const segmentoInicial = modo === "editar" && cuenta ? cuenta.codigo.slice(prefijo.length) : "";
+  const [segmento, setSegmento] = useState(segmentoInicial);
+  const [tipo, setTipo] = useState<TipoCuenta>(cuenta?.tipo ?? "activo");
+  const [movimiento, setMovimiento] = useState(cuenta?.admiteMovimiento ?? false);
+  const etiqueta = cuenta ? `${cuenta.codigo} · ${cuenta.nombre}` : "";
+  const maxSegmento = prefijo ? 4 : 2;
+  const pideNombre = modo === "subcuenta" || modo === "editar" || modo === "raiz";
+  const pideCodigo = pideNombre;
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && alCerrar()}>
@@ -60,35 +76,35 @@ export function DialogoCuenta({
           <DialogDescription>{t(`${modo}.descripcion`, { cuenta: etiqueta })}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
-          {modo === "subcuenta" ? (
-            <>
-              <input type="hidden" name="padre_id" value={cuenta.id} />
-              <input type="hidden" name="codigo" value={`${cuenta.codigo}.${segmento}`} />
-              <div className="space-y-1.5">
-                <Label htmlFor="sub-segmento" className="text-sm font-medium">
-                  {t("codigo")}
-                </Label>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm text-tinta-2">{`${cuenta.codigo}.`}</span>
-                  <Input
-                    id="sub-segmento"
-                    value={segmento}
-                    onChange={(e) => setSegmento(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    inputMode="numeric"
-                    required
-                    pattern="[0-9]{1,4}"
-                    className="max-w-32 font-mono"
-                  />
-                </div>
-                <p className="texto-meta">{t("codigoAyuda")}</p>
+          {modo === "subcuenta" && <input type="hidden" name="padre_id" value={cuenta?.id} />}
+          {(modo === "editar" || modo === "desactivar" || modo === "activar") && (
+            <input type="hidden" name="id" value={cuenta?.id} />
+          )}
+          {pideCodigo && <input type="hidden" name="codigo" value={`${prefijo}${segmento}`} />}
+
+          {pideCodigo && (
+            <div className="space-y-1.5">
+              <Label htmlFor="cuenta-segmento" className="text-sm font-medium">
+                {t("codigo")}
+              </Label>
+              <div className="flex items-center gap-2">
+                {prefijo && <span className="font-mono text-sm text-tinta-2">{prefijo}</span>}
+                <Input
+                  id="cuenta-segmento"
+                  value={segmento}
+                  onChange={(e) => setSegmento(e.target.value.replace(/\D/g, "").slice(0, maxSegmento))}
+                  inputMode="numeric"
+                  required
+                  pattern={`[0-9]{1,${maxSegmento}}`}
+                  className="max-w-32 font-mono"
+                />
               </div>
-              {cuenta.admiteMovimiento && <p className="texto-meta">{t("subcuenta.aviso")}</p>}
-            </>
-          ) : (
-            <input type="hidden" name="id" value={cuenta.id} />
+              <p className="texto-meta">{prefijo ? t("codigoAyuda") : t("codigoAyudaRaiz")}</p>
+              {modo === "editar" && <p className="texto-meta">{t("editar.avisoBloqueo")}</p>}
+            </div>
           )}
 
-          {(modo === "subcuenta" || modo === "renombrar") && (
+          {pideNombre && (
             <div className="space-y-1.5">
               <Label htmlFor="cuenta-nombre" className="text-sm font-medium">
                 {t("nombre")}
@@ -98,10 +114,49 @@ export function DialogoCuenta({
                 name="nombre"
                 required
                 maxLength={160}
-                defaultValue={modo === "renombrar" ? cuenta.nombre : ""}
+                defaultValue={modo === "editar" ? cuenta?.nombre : ""}
               />
             </div>
           )}
+
+          {(modo === "raiz" || (modo === "editar" && esRaiz)) && (
+            <div className="space-y-1.5">
+              <Label htmlFor="cuenta-tipo" className="text-sm font-medium">
+                {t("tipo")}
+              </Label>
+              <input type="hidden" name="tipo" value={tipo} />
+              <Select value={tipo} onValueChange={(v) => setTipo(v as TipoCuenta)}>
+                <SelectTrigger id="cuenta-tipo">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_CUENTA.map((valor) => (
+                    <SelectItem key={valor} value={valor}>
+                      {tt(valor)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {modo === "editar" && (
+            <label className="flex items-start gap-3 text-sm">
+              <input type="hidden" name="movimiento" value={movimiento ? "1" : "0"} />
+              <input
+                type="checkbox"
+                checked={movimiento}
+                onChange={(e) => setMovimiento(e.target.checked)}
+                className="mt-0.5 size-4 accent-marca-500"
+              />
+              <span>
+                <span className="font-medium text-tinta">{t("recibeAsientos")}</span>
+                <span className="texto-meta block">{t("recibeAsientosAyuda")}</span>
+              </span>
+            </label>
+          )}
+
+          {modo === "subcuenta" && cuenta?.admiteMovimiento && <p className="texto-meta">{t("subcuenta.aviso")}</p>}
           {(modo === "activar" || modo === "desactivar") && (
             <input type="hidden" name="activar" value={modo === "activar" ? "1" : "0"} />
           )}

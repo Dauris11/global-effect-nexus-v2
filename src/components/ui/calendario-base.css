@@ -1,0 +1,251 @@
+/*
+ * Tema de FullCalendar para el sistema.
+ *
+ * Todo sale de variables de los tokens (`--color-marca-*`, `--tinta`, `--linea`…),
+ * nunca de un hex: así el calendario sigue solo al acento azul/negro de cada
+ * persona y al modo oscuro. FullCalendar inyecta su CSS en runtime y lee sus
+ * propias `--fc-*`; las reasignamos bajo `.calendario-base .fc`, que gana a su
+ * `.fc` por especificidad.
+ */
+
+.calendario-base .fc {
+  --fc-border-color: var(--linea);
+  --fc-page-bg-color: var(--card);
+  --fc-neutral-bg-color: var(--muted);
+  --fc-neutral-text-color: var(--tinta-3);
+  --fc-today-bg-color: color-mix(in srgb, var(--color-marca-500) 7%, transparent);
+  --fc-now-indicator-color: var(--color-marca-500);
+  --fc-highlight-color: color-mix(in srgb, var(--color-marca-500) 12%, transparent);
+  --fc-event-bg-color: var(--color-marca-500);
+  --fc-event-border-color: var(--color-marca-500);
+  --fc-event-text-color: white;
+  --fc-event-selected-overlay-color: color-mix(in srgb, var(--tinta) 15%, transparent);
+  --fc-list-event-hover-bg-color: var(--muted);
+  --fc-more-link-bg-color: transparent;
+  --fc-more-link-text-color: var(--color-marca-600);
+  --fc-non-business-color: var(--muted);
+
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--tinta);
+}
+
+/* ── Rejilla ─────────────────────────────────────────────────── */
+
+.calendario-base .fc .fc-scrollgrid {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border-color: var(--linea);
+}
+
+.calendario-base .fc .fc-col-header-cell {
+  background: var(--card);
+}
+
+.calendario-base .fc .fc-col-header-cell-cushion {
+  padding: 0.625rem 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--tinta-3);
+  text-transform: capitalize;
+}
+
+.calendario-base .fc .fc-daygrid-day-number,
+.calendario-base .fc .fc-timegrid-axis-cushion,
+.calendario-base .fc .fc-timegrid-slot-label-cushion {
+  color: var(--tinta-2);
+  font-size: 0.8125rem;
+}
+
+.calendario-base .fc .fc-daygrid-day-number {
+  margin: 0.25rem;
+  min-width: 1.75rem;
+  padding: 0.125rem 0.25rem;
+  text-align: center;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.calendario-base .fc .fc-day-other .fc-daygrid-day-number {
+  opacity: 0.55;
+}
+
+/* Hoy: el único sitio donde el acento ocupa una superficie, y es pequeño. */
+.calendario-base .fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--color-marca-500);
+  color: white;
+  font-weight: 600;
+}
+
+.calendario-base .fc .fc-timegrid-col.fc-day-today,
+.calendario-base .fc .fc-daygrid-day.fc-day-today {
+  background: var(--fc-today-bg-color);
+}
+
+.calendario-base .fc .fc-daygrid-day-frame {
+  min-height: 5.5rem;
+}
+
+.calendario-base.calendario-compacto .fc .fc-daygrid-day-frame {
+  min-height: 3.25rem;
+}
+
+.calendario-base.calendario-compacto .fc {
+  font-size: 0.8125rem;
+}
+
+/* Un día con clic: se nota que se puede crear algo. */
+.calendario-base[data-creable="true"] .fc .fc-daygrid-day:hover,
+.calendario-base[data-creable="true"] .fc .fc-timegrid-slot-lane:hover {
+  background: var(--muted);
+  cursor: pointer;
+}
+
+/* ── Eventos: chips con peso propio por origen ───────────────── */
+
+.calendario-base .fc .fc-event {
+  border-radius: calc(var(--radius-control) - 4px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: default;
+  box-shadow: none;
+}
+
+.calendario-base .fc .fc-event[tabindex] {
+  cursor: pointer;
+}
+
+.calendario-base .fc .fc-event.fc-event-draggable {
+  cursor: grab;
+}
+
+.calendario-base .fc .fc-daygrid-event {
+  padding: 0.125rem 0.375rem;
+  margin: 1px 0.25rem;
+}
+
+.calendario-base .fc .fc-event:hover {
+  box-shadow: var(--shadow-card);
+}
+
+.calendario-base .fc .fc-more-link {
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.375rem;
+  margin: 0 0.25rem;
+  border-radius: 6px;
+}
+
+.calendario-base .fc .fc-more-link:hover {
+  background: var(--color-marca-50);
+  text-decoration: none;
+}
+
+.fc-origen-cita {
+  --fc-event-bg-color: var(--color-marca-700);
+  --fc-event-border-color: var(--color-marca-700);
+  --fc-event-text-color: white;
+}
+
+.fc-origen-tarea {
+  --fc-event-bg-color: var(--tinta);
+  --fc-event-border-color: var(--tinta);
+  --fc-event-text-color: var(--background);
+}
+
+.fc-origen-evento {
+  --fc-event-bg-color: var(--color-marca-500);
+  --fc-event-border-color: var(--color-marca-500);
+  --fc-event-text-color: white;
+}
+
+.fc-origen-reunion {
+  --fc-event-bg-color: var(--color-marca-600);
+  --fc-event-border-color: var(--color-marca-600);
+  --fc-event-text-color: white;
+}
+
+.fc-origen-asignacion {
+  --fc-event-bg-color: var(--color-marca-300);
+  --fc-event-border-color: var(--color-marca-300);
+  --fc-event-text-color: var(--color-marca-900);
+}
+
+.fc-origen-clase {
+  --fc-event-bg-color: color-mix(in srgb, var(--color-marca-500) 16%, var(--card));
+  --fc-event-border-color: color-mix(in srgb, var(--color-marca-500) 45%, transparent);
+  --fc-event-text-color: var(--tinta);
+}
+
+.fc-origen-foro {
+  --fc-event-bg-color: var(--color-marca-100);
+  --fc-event-border-color: var(--color-marca-200);
+  --fc-event-text-color: var(--color-marca-900);
+}
+
+.fc-origen-solicitud {
+  --fc-event-bg-color: var(--muted);
+  --fc-event-border-color: var(--linea-fuerte);
+  --fc-event-text-color: var(--tinta-2);
+}
+
+/* ── Lista ───────────────────────────────────────────────────── */
+
+.calendario-base .fc .fc-list {
+  border-radius: var(--radius-card);
+  border-color: var(--linea);
+  overflow: hidden;
+}
+
+.calendario-base .fc .fc-list-day-cushion {
+  background: var(--muted);
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.calendario-base .fc .fc-list-event td {
+  padding: 0.875rem 1rem;
+  min-height: 44px;
+}
+
+.calendario-base .fc .fc-list-event {
+  cursor: pointer;
+}
+
+.calendario-base .fc .fc-list-empty {
+  background: var(--card);
+  color: var(--tinta-3);
+}
+
+/* ── Popover de «+n más» ─────────────────────────────────────── */
+
+.calendario-base .fc .fc-popover,
+.fc .fc-popover {
+  border-radius: var(--radius-card);
+  border-color: var(--linea);
+  background: var(--card);
+  box-shadow: var(--shadow-elevada);
+}
+
+.fc .fc-popover-header {
+  background: var(--muted);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+/* ── Foco visible y movimiento reducido ──────────────────────── */
+
+.calendario-base .fc a:focus-visible,
+.calendario-base .fc .fc-event:focus-visible,
+.calendario-base .fc .fc-more-link:focus-visible,
+.calendario-base .fc .fc-daygrid-day:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendario-base .fc * {
+    transition: none !important;
+  }
+}

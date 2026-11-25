@@ -260,6 +260,10 @@ export async function crearCompra(
   datos: FormData,
 ): Promise<EstadoFormularioSolicitud> {
   const usuario = await requerirUsuario();
+  // Una compra corporativa (cotización, proveedor, cheque a contabilidad) no es un
+  // trámite estudiantil: el estudiante pide constancias y permisos. Ocultar el
+  // formulario no protege nada, así que el servidor lo rechaza.
+  if (usuario.rol === "estudiante") return { estado: "no_permitido" };
 
   const campos = leerCampos(datos, "compra");
   if (campos === "invalido" || campos === "fecha_invalida") {
@@ -625,7 +629,7 @@ async function insertarSolicitud(
         fecha_requerida, hora_preferida, requiere_direccion)
      VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8, $9)
      RETURNING id, folio::int AS folio,
-               coalesce(fecha_requerida < CURRENT_DATE, FALSE) AS pasada`,
+               coalesce(fecha_requerida < (now() AT TIME ZONE 'America/Santo_Domingo')::date, FALSE) AS pasada`,
     [
       datos.tipo,
       datos.titulo,

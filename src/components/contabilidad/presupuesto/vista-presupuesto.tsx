@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { aprobarPresupuesto } from "@/server/contabilidad/presupuesto/acciones";
 import type {
@@ -150,16 +151,11 @@ export function VistaPresupuesto({
                         <div className="flex justify-between text-xs font-mono">
                           <span>{e.porcentajeEjecucion}%</span>
                         </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted dark:bg-slate-800">
-                          <div
-                            className={`h-full transition-all ${
-                              e.estadoAlerta === "sobregiro"
-                                ? "bg-tinta font-bold"
-                                : "bg-marca-600"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
+                        <Progress
+                          value={pct}
+                          tono={e.estadoAlerta === "sobregiro" ? "tinta" : "acento"}
+                          aria-label={`${e.porcentajeEjecucion}%`}
+                        />
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">

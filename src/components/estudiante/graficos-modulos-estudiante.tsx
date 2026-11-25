@@ -7,22 +7,16 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  GraficoAnillo,
+  GraficoBarras,
+  GraficoLinea,
+  LeyendaGrafico,
+  TONO,
+  acortar,
+} from "@/components/ui/grafico";
 import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO, TINTA } from "@/lib/paleta";
 
 /** 1) Evolución de promedio por período en `/portal/estudiante/calificaciones`. */
@@ -36,7 +30,7 @@ export function GraficoEvolucionCalificaciones({
   if (periodos.length === 0) return null;
 
   const datos = [...periodos].reverse().map((p) => ({
-    periodo: p.nombre.length > 14 ? `${p.nombre.slice(0, 13)}…` : p.nombre,
+    periodo: acortar(p.nombre),
     promedio: Number(p.promedio.toFixed(1)),
     materias: p.materias,
   }));
@@ -52,45 +46,17 @@ export function GraficoEvolucionCalificaciones({
           <span className="text-xs text-tinta-3">{t("gradesTrendHint")}</span>
         </div>
 
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={datos}
-              margin={{ top: 10, right: 12, left: -20, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.25} />
-              <XAxis
-                dataKey="periodo"
-                tick={{ fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[0, 100]}
-                tick={{ fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "10px",
-                  borderColor: "var(--border)",
-                  fontSize: "12px",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="promedio"
-                name={t("averageSeries")}
-                stroke={AZUL_OSCURO}
-                strokeWidth={2.5}
-                fill={AZUL_SUAVE}
-                fillOpacity={0.35}
-                animationDuration={700}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <GraficoLinea
+          datos={datos}
+          claveX="periodo"
+          claveY="promedio"
+          nombreSerie={t("averageSeries")}
+          etiqueta={t("gradesTrendTitle")}
+          vacio={t("gradesTrendTitle")}
+          area
+          dominio={[0, 100]}
+          altura={208}
+        />
       </CardContent>
     </Card>
   );
@@ -127,36 +93,13 @@ export function GraficoEstadoAulaVirtual({
     <Card className="overflow-hidden">
       <CardContent className="pt-5">
         <div className="grid gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
-          <div className="relative h-40 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={datos}
-                  dataKey="valor"
-                  nameKey="nombre"
-                  innerRadius={44}
-                  outerRadius={66}
-                  paddingAngle={3}
-                  animationDuration={650}
-                >
-                  {datos.map((d) => (
-                    <Cell key={d.clave} fill={d.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: "10px",
-                    borderColor: "var(--border)",
-                    fontSize: "12px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-lg font-bold text-tinta">{pct}%</span>
-              <span className="text-[10px] text-tinta-3">{t("classroomDonePct")}</span>
-            </div>
-          </div>
+          <GraficoAnillo
+            datos={datos}
+            etiqueta={t("classroomChartTitle")}
+            vacio={t("classroomChartTitle")}
+            altura={160}
+            centro={{ valor: `${pct}%`, etiqueta: t("classroomDonePct") }}
+          />
 
           <div className="space-y-3">
             <div>
@@ -169,23 +112,7 @@ export function GraficoEstadoAulaVirtual({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {datos.map((d) => (
-                <div
-                  key={d.clave}
-                  className="flex items-center justify-between rounded-control border border-linea bg-muted/30 px-2.5 py-1.5"
-                >
-                  <span className="inline-flex items-center gap-1.5 text-tinta-2">
-                    <span
-                      className="size-2.5 rounded-full"
-                      style={{ backgroundColor: d.color }}
-                    />
-                    {d.nombre}
-                  </span>
-                  <span className="font-semibold text-tinta tabular-nums">{d.valor}</span>
-                </div>
-              ))}
-            </div>
+            <LeyendaGrafico enLista items={datos.map((d) => ({ nombre: d.nombre, color: d.color, valor: d.valor }))} />
           </div>
         </div>
       </CardContent>
@@ -215,7 +142,7 @@ export function GraficoProgresoGlobal360({
   const datosAsistencia = asistencia
     .filter((a) => a.porcentaje !== null)
     .map((a) => ({
-      materia: a.materia.length > 14 ? `${a.materia.slice(0, 13)}…` : a.materia,
+      materia: acortar(a.materia),
       porcentaje: a.porcentaje ?? 0,
     }));
 
@@ -227,35 +154,13 @@ export function GraficoProgresoGlobal360({
         <Card className="overflow-hidden">
           <CardContent className="pt-5">
             <div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
-              <div className="relative h-36 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={datosAnillo}
-                      dataKey="valor"
-                      nameKey="nombre"
-                      innerRadius={40}
-                      outerRadius={60}
-                      paddingAngle={3}
-                      animationDuration={650}
-                    >
-                      {datosAnillo.map((d) => (
-                        <Cell key={d.nombre} fill={d.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "10px",
-                        borderColor: "var(--border)",
-                        fontSize: "12px",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-lg font-bold text-tinta">{pct}%</span>
-                </div>
-              </div>
+              <GraficoAnillo
+                datos={datosAnillo}
+                etiqueta={t("g360ProgressTitle")}
+                vacio={t("g360ProgressTitle")}
+                altura={144}
+                centro={{ valor: `${pct}%` }}
+              />
 
               <div className="space-y-2">
                 <CardTitle>
@@ -278,32 +183,15 @@ export function GraficoProgresoGlobal360({
               <BookOpen className="size-4 text-marca-600" />
               {t("attendanceBarTitle")}
             </CardTitle>
-            <div className="h-36 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosAsistencia}
-                  margin={{ top: 6, right: 8, left: -24, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.25} />
-                  <XAxis dataKey="materia" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "10px",
-                      borderColor: "var(--border)",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="porcentaje"
-                    name={t("attendanceSeries")}
-                    fill={AZUL}
-                    radius={[5, 5, 0, 0]}
-                    animationDuration={650}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <GraficoBarras
+              datos={datosAsistencia}
+              claveX="materia"
+              series={[{ clave: "porcentaje", nombre: t("attendanceSeries"), color: TONO.base }]}
+              etiqueta={t("attendanceBarTitle")}
+              vacio={t("attendanceBarTitle")}
+              dominio={[0, 100]}
+              altura={144}
+            />
           </CardContent>
         </Card>
       )}
@@ -322,7 +210,7 @@ export function GraficoCargaPrematricula({
   if (materias.length === 0) return null;
 
   const datos = materias.slice(0, 7).map((m) => ({
-    materia: m.nombre.length > 14 ? `${m.nombre.slice(0, 13)}…` : m.nombre,
+    materia: acortar(m.nombre),
     creditos: m.creditos,
   }));
 
@@ -337,32 +225,14 @@ export function GraficoCargaPrematricula({
           <span className="text-xs text-tinta-3">{t("enrollmentChartHint")}</span>
         </div>
 
-        <div className="h-44 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={datos}
-              margin={{ top: 8, right: 8, left: -24, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.25} />
-              <XAxis dataKey="materia" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "10px",
-                  borderColor: "var(--border)",
-                  fontSize: "12px",
-                }}
-              />
-              <Bar
-                dataKey="creditos"
-                name={t("creditsSeries")}
-                fill={AZUL_OSCURO}
-                radius={[5, 5, 0, 0]}
-                animationDuration={650}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <GraficoBarras
+          datos={datos}
+          claveX="materia"
+          series={[{ clave: "creditos", nombre: t("creditsSeries"), color: TONO.oscuro }]}
+          etiqueta={t("enrollmentChartTitle")}
+          vacio={t("enrollmentChartTitle")}
+          altura={176}
+        />
       </CardContent>
     </Card>
   );

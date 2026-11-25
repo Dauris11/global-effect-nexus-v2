@@ -229,7 +229,7 @@ export async function exportarCxpExcel(): Promise<Buffer> {
        f.ncf,
        to_char(c.fecha_emision, 'YYYY-MM-DD') AS fecha_emision,
        to_char(c.fecha_vencimiento, 'YYYY-MM-DD') AS fecha_vencimiento,
-       GREATEST(0, (CURRENT_DATE - c.fecha_vencimiento)) AS dias_mora,
+       GREATEST(0, ((now() AT TIME ZONE 'America/Santo_Domingo')::date - c.fecha_vencimiento)) AS dias_mora,
        c.monto,
        c.pagado,
        (c.monto - c.pagado) AS saldo_pendiente,

@@ -71,12 +71,12 @@ export async function ejecutarCierreAnual(
     }
     const periodoDiciembreId = perRows[0].id;
 
-    // 2. Obtener la cuenta de Resultados Acumulados (3.1.01.02)
+    // 2. Obtener la cuenta de Balance Acumulado (3.1.2)
     const { rows: ctaRows } = await cliente.query<{ id: string }>(
-      `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '3.1.01.02'`,
+      `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '3.1.2'`,
     );
     if (ctaRows.length === 0) {
-      throw new Error("No se encontró la cuenta de Resultados Acumulados (3.1.01.02).");
+      throw new Error("No se encontró la cuenta de Balance Acumulado (3.1.2).");
     }
     const cuentaResultadosAcumuladosId = ctaRows[0].id;
 
@@ -172,7 +172,7 @@ export async function ejecutarCierreAnual(
     const { rows: crRows } = await cliente.query<{ id: string }>(
       `INSERT INTO contabilidad.cierre_anual
          (ejercicio, fecha_cierre, asiento_cierre_id, total_ingresos, total_gastos, superavit_deficit, cerrado_por, notas)
-       VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $6, $7)
+       VALUES ($1, (now() AT TIME ZONE 'America/Santo_Domingo')::date, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
       [
         ejercicio,

@@ -802,7 +802,9 @@
       "assignment": "Entrega de clase",
       "appointment": "Cita con administración",
       "meeting": "Reunión institucional",
-      "class": "Clase"
+      "class": "Clase",
+      "request": "Trámite",
+      "forum": "Foro o anuncio"
     },
     "eventType": {
       "academico": "Académico",
@@ -4540,14 +4542,15 @@
         "inactiva": "Inactiva",
         "agregar": "Agregar subcuenta",
         "agregarSub": "Agregar una subcuenta a {codigo}",
-        "renombrar": "Renombrar",
-        "renombrarCuenta": "Renombrar la cuenta {codigo}",
         "desactivar": "Desactivar",
         "desactivarCuenta": "Desactivar la cuenta {codigo}",
         "activar": "Activar",
         "activarCuenta": "Activar la cuenta {codigo}",
         "vacioTitulo": "El catálogo está vacío",
-        "vacioTexto": "El catálogo básico lo siembran las migraciones de contabilidad."
+        "vacioTexto": "El catálogo básico lo siembran las migraciones de contabilidad.",
+        "editar": "Editar",
+        "editarCuenta": "Editar la cuenta {codigo}",
+        "nuevaRaiz": "Nueva cuenta principal"
       },
       "cuenta": {
         "codigo": "Código",
@@ -4559,11 +4562,6 @@
           "aviso": "Esta cuenta hoy recibe asientos. Al darle una subcuenta pasa a ser agrupadora; si ya tiene movimientos o la usa una categoría, caja o cuenta bancaria, no se puede.",
           "confirmar": "Crear subcuenta"
         },
-        "renombrar": {
-          "titulo": "Renombrar la cuenta",
-          "descripcion": "Cambia el nombre de {cuenta}. El código no cambia y los asientos siguen en su sitio.",
-          "confirmar": "Guardar nombre"
-        },
         "desactivar": {
           "titulo": "Desactivar la cuenta",
           "descripcion": "{cuenta} deja de estar disponible para registros nuevos. Su historia se conserva. Solo se puede si no tiene saldo, ni subcuentas activas, ni nada que la use.",
@@ -4573,6 +4571,21 @@
           "titulo": "Activar la cuenta",
           "descripcion": "{cuenta} vuelve a estar disponible para registros nuevos.",
           "confirmar": "Sí, activar"
+        },
+        "tipo": "Tipo de cuenta",
+        "codigoAyudaRaiz": "De uno o dos dígitos, por ejemplo 7.",
+        "recibeAsientos": "Recibe asientos",
+        "recibeAsientosAyuda": "Si la marcas, la cuenta se usa en asientos; si no, solo suma a sus subcuentas.",
+        "editar": {
+          "titulo": "Editar la cuenta",
+          "descripcion": "Cambia los datos de {cuenta}.",
+          "avisoBloqueo": "El código, el tipo y si recibe asientos solo cambian en cuentas sin asientos y sin nada que las use. El nombre siempre se puede cambiar.",
+          "confirmar": "Guardar cambios"
+        },
+        "raiz": {
+          "titulo": "Nueva cuenta principal",
+          "descripcion": "Crea un rubro de primer nivel. Nace agrupadora: sus subcuentas son las que reciben asientos.",
+          "confirmar": "Crear cuenta"
         }
       },
       "error": {
@@ -4606,7 +4619,9 @@
         "cheque_cobrado": "El cheque ya se cobró.",
         "montos_distintos": "Los montos no coinciden.",
         "cuenta_cerrada": "La cuenta está cerrada.",
-        "error": "No se pudo completar. Inténtalo de nuevo y, si sigue, avisa al equipo técnico."
+        "error": "No se pudo completar. Inténtalo de nuevo y, si sigue, avisa al equipo técnico.",
+        "cuenta_con_movimientos": "La cuenta o sus subcuentas ya tienen asientos: no se puede cambiar su código, tipo ni si recibe asientos. El nombre sí.",
+        "cuenta_con_hijas": "La cuenta tiene subcuentas: no puede recibir asientos."
       }
     },
     "asientos": {
@@ -7165,7 +7180,10 @@
     "all": "Todo",
     "families": "Qué dibujar",
     "noSelection": "Elige un período",
-    "dependsOn": "Depende de"
+    "dependsOn": "Depende de",
+    "dayScale": "Día",
+    "task": "Elemento",
+    "scheduled": "Pago programado"
   },
   "historial360": {
     "title": "Global Effect 360",

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal GlobalEffect · Comunicación entre roles y módulos</title>
+<style>
+  /* Marca del Portal GlobalEffect: turquesa como único acento, tinta y grises. */
+  :root {
+    --fondo: #ffffff; --tarjeta: #ffffff; --tinta: #171A1D; --tinta2: #4a525a; --tinta3: #7b838b;
+    --linea: #e3e6e9; --marca: #2096BA; --marca-osc: #0a6a8a; --marca-suave: #5FB8D4; --marca-50: #e8f5f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo: #0f1215; --tarjeta: #171b1f; --tinta: #f1f3f4; --tinta2: #b4bbc1; --tinta3: #8b939a;
+            --linea: #2a3036; --marca-50: #12303a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--tinta); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  header { padding: 24px 24px 8px; max-width: 1280px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 600; }
+  header p { margin: 0; color: var(--tinta2); max-width: 70ch; }
+  main { max-width: 1280px; margin: 0 auto; padding: 8px 24px 32px; }
+  .barra { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 20px; }
+  .barra b { font-size: 13px; color: var(--tinta3); margin-right: 6px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--linea); background: var(--tarjeta); color: var(--tinta);
+           border-radius: 999px; padding: 6px 12px; min-height: 36px; }
+  button:hover { border-color: var(--marca); }
+  button:focus-visible { outline: 2px solid var(--marca); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--marca); border-color: var(--marca); color: #fff; }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 16px 8px; margin-bottom: 16px; transition: opacity .15s; }
+  .tarjeta.apagada { opacity: .25; }
+  .tarjeta h2 { margin: 0; font-size: 17px; font-weight: 600; }
+  .tarjeta p { margin: 2px 0 8px; color: var(--tinta2); font-size: 14px; }
+  svg { width: 100%; height: auto; display: block; }
+  .leyenda { display: flex; gap: 20px; flex-wrap: wrap; color: var(--tinta2); font-size: 13px; margin-bottom: 16px; }
+  .leyenda i { display: inline-block; width: 28px; border-top: 2px solid var(--marca); vertical-align: middle; margin-right: 6px; }
+  .leyenda i.disc { border-top-style: dashed; }
+  .leyenda i.vuelta { border-top-color: var(--tinta3); }
+  footer { max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; color: var(--tinta3); font-size: 13px; }
+  .arista { fill: none; stroke: var(--marca); stroke-width: 2; }
+  .arista.disc { stroke-dasharray: 6 5; }
+  .arista.vuelta { stroke: var(--tinta3); }
+  .rol rect { fill: var(--tinta); }
+  .nodo.rol text { fill: var(--fondo); font-weight: 600; }
+  .mod rect { fill: var(--marca-50); stroke: var(--marca); stroke-width: 1.5; }
+  .nodo text { font-size: 13px; fill: var(--tinta); }
+  @media (prefers-reduced-motion: reduce) { .tarjeta { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Comunicación entre roles y módulos</h1>
+  <p>Quién inicia cada trámite, qué módulo lo recibe y qué rol lo resuelve en el Portal GlobalEffect. Cada tarjeta es un trámite, de izquierda a derecha. Elige un rol para ver solo en qué participa.</p>
+</header>
+<main>
+  <div class="barra" id="roles" role="group" aria-label="Filtrar por rol"><b>Rol</b></div>
+  <div class="leyenda">
+    <span><svg width="0" height="0" style="position:absolute"><defs>
+      <marker id="punta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2096BA"/></marker>
+      <marker id="puntaV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7b838b"/></marker>
+    </defs></svg><i></i>Avanza el trámite</span>
+    <span><i class="vuelta"></i>Respuesta o vuelta</span>
+    <span><i class="disc"></i>Por verificar</span>
+  </div>
+  <div id="flujos"></div>
+</main>
+<footer>
+  Fuente: auditoría por rol del 24 de noviembre de 2026 (<code>docs/estado/auditoria-roles.md</code>), <code>rbac.ts</code>, <code>nav.ts</code> y <code>solicitudes.ts</code>.
+  Las líneas punteadas son flujos que los documentos prometen y no se encontraron en una pantalla. Los módulos de uso transversal (Torre de control, Calendario, Reuniones, campana de notificaciones) los tocan todos los roles.
+</footer>
+
+<script>
+const ROLES = {
+  super_admin: 'super_admin', admin: 'admin', contabilidad: 'contabilidad', chofer: 'chofer',
+  estudiante: 'estudiante', docente: 'docente', habitudes: 'habitudes', dir_habitudes: 'dir_habitudes'
+};
+// Orden de los botones de filtro.
+const ORDEN_ROLES = ['super_admin', 'admin', 'contabilidad', 'chofer', 'estudiante', 'docente', 'dir_habitudes', 'habitudes'];
+
+const FLUJOS = [
+  { id: 'compra', nombre: 'Solicitud de compra', resumen: 'Cualquier rol pide; contabilidad aprueba y nace una cuenta por pagar.',
+    pasos: [['estudiante', 'Solicitudes'], ['Solicitudes', 'contabilidad'], ['contabilidad', 'Cuentas por pagar']] },
+  { id: 'gasto', nombre: 'Gasto con umbral', resumen: 'Contabilidad revisa; sobre el umbral en USD pasa a dirección.',
+    pasos: [['docente', 'Solicitudes'], ['Solicitudes', 'contabilidad'], ['Solicitudes', 'super_admin', true]] },
+  { id: 'alta', nombre: 'Alta de expediente', resumen: 'Habitudes postula; administración aprueba y el estudiante queda registrado.',
+    pasos: [['habitudes', 'Solicitudes'], ['dir_habitudes', 'Solicitudes'], ['Solicitudes', 'admin'], ['admin', 'Expedientes'], ['Expedientes', 'estudiante']] },
+  { id: 'rendicion', nombre: 'Rendición de facturas', resumen: 'El colaborador sube la factura; contabilidad valida e imputa al presupuesto.',
+    pasos: [['habitudes', 'Rendiciones'], ['chofer', 'Rendiciones'], ['Rendiciones', 'contabilidad'], ['contabilidad', 'Presupuesto']] },
+  { id: 'notas', nombre: 'Carga de notas universitarias', resumen: 'Administración carga calificaciones; llegan al expediente del estudiante.',
+    pasos: [['admin', 'Académico y notas'], ['Académico y notas', 'Expedientes'], ['Expedientes', 'estudiante']] },
+  { id: 'prematricula', nombre: 'Prematrícula', resumen: 'El estudiante elige materias; administración las aprueba.',
+    pasos: [['estudiante', 'Prematrícula'], ['Prematrícula', 'admin']] },
+  { id: 'aula', nombre: 'Tareas y calificaciones', resumen: 'El docente publica y califica; el estudiante entrega.',
+    pasos: [['docente', 'Aula virtual'], ['Aula virtual', 'estudiante'], ['estudiante', 'Aula virtual'], ['Aula virtual', 'docente']] },
+  { id: 'transporte', nombre: 'Transporte e incidencias', resumen: 'Administración define rutas; el chofer reporta incidencias y se avisa a los estudiantes convocados.',
+    pasos: [['admin', 'Transporte'], ['Transporte', 'Notificaciones'], ['Notificaciones', 'estudiante'], ['Transporte', 'chofer'], ['chofer', 'Transporte']] },
+  { id: 'habitudes', nombre: 'Visitas y recursos de Habitudes', resumen: 'Habitudes registra visitas; la dirección supervisa; los recursos sirven también al docente.',
+    pasos: [['habitudes', 'Habitudes'], ['dir_habitudes', 'Habitudes'], ['Habitudes', 'docente'], ['admin', 'Habitudes']] },
+  { id: 'patrocinio', nombre: 'Patrocinio y becas', resumen: 'Administración gestiona patrocinadores; las becas se reflejan en el expediente.',
+    pasos: [['admin', 'Patrocinadores y becas'], ['Patrocinadores y becas', 'Expedientes']] },
+  { id: 'auditoria', nombre: 'Auditoría', resumen: 'Dirección revisa la bitácora y la contabilidad en solo lectura; no opera.',
+    pasos: [['super_admin', 'Auditoría'], ['super_admin', 'Cuentas por pagar']] },
+  { id: 'transversal', nombre: 'Tareas y reuniones', resumen: 'Administración asigna tareas; estudiantes y personal agendan reuniones.',
+    pasos: [['admin', 'Torre y reuniones'], ['Torre y reuniones', 'chofer'], ['Torre y reuniones', 'habitudes'], ['estudiante', 'Torre y reuniones']] },
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, padre) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (padre) padre.appendChild(n);
+  return n;
+};
+const esRol = n => n in ROLES;
+const COL = 215, FILA = 62, MARGEN = 20;
+
+// Cada flujo es su propio diagrama: el nivel de un nodo es su distancia desde quien inicia, y las
+// aristas que regresan a un nivel anterior se dibujan por debajo, en gris, como respuesta.
+function dibujar(flujo) {
+  const nivel = {}, orden = {};
+  flujo.pasos.forEach(([d, h]) => {
+    if (nivel[d] === undefined) nivel[d] = 0;
+    if (nivel[h] === undefined) nivel[h] = nivel[d] + 1;
+  });
+  const porNivel = {};
+  Object.keys(nivel).forEach(n => { (porNivel[nivel[n]] ||= []).push(n); });
+  const niveles = Math.max(...Object.values(nivel)) + 1;
+  const filas = Math.max(...Object.values(porNivel).map(a => a.length));
+  const hayVuelta = flujo.pasos.some(([d, h]) => nivel[h] <= nivel[d]);
+  const ancho = niveles * COL + MARGEN * 2 - 55, alto = (filas - 1) * FILA + 56 + (hayVuelta ? 40 : 0);
+  const svg = el('svg', { viewBox: `0 0 ${ancho} ${alto}`, role: 'img', 'aria-label': flujo.nombre });
+  // Un píxel por unidad: así el texto mide lo mismo en todas las tarjetas.
+  svg.style.maxWidth = ancho + 'px';
+  const pos = {};
+  Object.entries(porNivel).forEach(([niv, nombres]) => {
+    const total = nombres.length;
+    nombres.forEach((n, i) => {
+      const w = esRol(n) ? 124 : 156;
+      pos[n] = { x: MARGEN + niv * COL, y: 24 + (filas - total) * FILA / 2 + i * FILA, w };
+    });
+  });
+  const gA = el('g', {}, svg), gN = el('g', {}, svg);
+  flujo.pasos.forEach(([d, h, disc]) => {
+    const a = pos[d], b = pos[h], atras = nivel[h] <= nivel[d];
+    let ruta;
+    if (atras) {
+      const x1 = a.x + a.w / 2, y1 = a.y + 17, x2 = b.x + b.w / 2, y2 = b.y + 17, h2 = Math.max(y1, y2) + 34;
+      ruta = `M${x1},${y1} C${x1},${h2} ${x2},${h2} ${x2},${y2}`;
+    } else {
+      const x1 = a.x + a.w, y1 = a.y, x2 = b.x, y2 = b.y, m = (x1 + x2) / 2;
+      ruta = `M${x1},${y1} C${m},${y1} ${m},${y2} ${x2 - 2},${y2}`;
+    }
+    const p = el('path', { d: ruta, class: 'arista' + (disc ? ' disc' : '') + (atras ? ' vuelta' : ''), 'marker-end': atras ? 'url(#puntaV)' : 'url(#punta)' }, gA);
+    el('title', {}, p).textContent = `${d} → ${h}${disc ? ' (por verificar)' : ''}`;
+  });
+  Object.entries(pos).forEach(([n, p]) => {
+    const g = el('g', { class: 'nodo ' + (esRol(n) ? 'rol' : 'mod'), transform: `translate(${p.x},${p.y})` }, gN);
+    el('rect', { x: 0, y: -17, width: p.w, height: 34, rx: esRol(n) ? 17 : 10 }, g);
+    const t = el('text', { x: p.w / 2, y: 5, 'text-anchor': 'middle' }, g);
+    t.textContent = n;
+  });
+  return svg;
+}
+
+const contenedor = document.getElementById('flujos');
+const tarjetas = FLUJOS.map(f => {
+  const c = document.createElement('section');
+  c.className = 'tarjeta';
+  c.innerHTML = `<h2>${f.nombre}</h2><p>${f.resumen}</p>`;
+  c.appendChild(dibujar(f));
+  contenedor.appendChild(c);
+  return { f, c };
+});
+
+let rolActivo = null;
+function filtrar() {
+  tarjetas.forEach(({ f, c }) => {
+    const participa = !rolActivo || f.pasos.some(([d, h]) => d === rolActivo || h === rolActivo);
+    c.classList.toggle('apagada', !participa);
+  });
+  document.querySelectorAll('#roles button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.rol === rolActivo)));
+}
+ORDEN_ROLES.forEach(r => {
+  const b = document.createElement('button');
+  b.textContent = r; b.dataset.rol = r; b.setAttribute('aria-pressed', 'false');
+  b.onclick = () => { rolActivo = rolActivo === r ? null : r; filtrar(); };
+  document.getElementById('roles').appendChild(b);
+});
+</script>
+</body>
+</html>

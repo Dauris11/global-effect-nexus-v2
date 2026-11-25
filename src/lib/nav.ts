@@ -31,10 +31,10 @@ import {
   Star,
   TowerControl,
   UserCog,
+  Receipt,
   Users,
   Utensils,
   Wallet,
-  Wrench,
 } from "lucide-react";
 
 import {
@@ -431,7 +431,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
           {
             etiqueta: "studentPortal",
             href: "/portal/estudiante",
-            icono: Wrench,
+            icono: GraduationCap,
           },
         ],
       },
@@ -463,6 +463,9 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             href: "/portal/estudiante/global-360",
             icono: Sparkles,
           },
+          // Inscribirse al almuerzo de hoy: el estudiante lo hacía en una página
+          // pública, fuera de su portal, y no sabía que la tenía.
+          { etiqueta: "meals", href: "/comida", icono: Utensils },
           // Ahí está el índice académico, que es lo que decide la beca, y las
           // notas finales de 360.
           {
@@ -556,7 +559,9 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/academico/clases-360",
             icono: Sparkles,
           },
-          { etiqueta: "academic", href: "/academico/materias", icono: Library },
+          // Sus materias con alumnos, notas y asistencia: `/academico/materias` es el
+          // catálogo administrativo y desde ahí el docente no puede calificar.
+          { etiqueta: "academic", href: "/portal/profesor/materias", icono: Library },
         ],
       },
     ],
@@ -605,6 +610,15 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
+          // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
+          // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
+          // dónde rendir la factura.
+          {
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: Receipt,
+            permiso: "rendicion.enviar",
+          },
           {
             etiqueta: "controlTower",
             href: "/administrativo/torre-control",
@@ -645,6 +659,15 @@ const MENU_HABITUDES: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+          },
+          // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
+          // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
+          // dónde rendir la factura.
+          {
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: Receipt,
+            permiso: "rendicion.enviar",
           },
           {
             etiqueta: "controlTower",

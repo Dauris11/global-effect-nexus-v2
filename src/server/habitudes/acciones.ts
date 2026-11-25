@@ -40,6 +40,11 @@ export async function subirRecursoHabitudesAction(
   const tamanoMb = parseFloat(String(datos.get("tamano_mb") ?? "0")) || 1.0;
 
   if (!titulo) return { ok: false, mensaje: "El título del recurso es obligatorio." };
+  // Un título de dos letras («xvc bc») llegó a la galería de los facilitadores: no
+  // dice qué es el recurso ni se puede buscar.
+  if (titulo.length < 5) {
+    return { ok: false, mensaje: "El título debe tener al menos 5 caracteres." };
+  }
   if (!archivoNombre) return { ok: false, mensaje: "Debes adjuntar un archivo válido." };
 
   const archivo = datos.get("archivo");

@@ -43,7 +43,7 @@ export async function cuentasConSaldo(): Promise<CuentaConSaldo[]> {
             CASE cb.moneda
               WHEN 'DOP' THEN (cb.saldo_inicial + coalesce(s.suma, 0))
               ELSE round((cb.saldo_inicial + coalesce(s.suma, 0))
-                         * contabilidad.tasa_referencia(CURRENT_DATE), 2)
+                         * contabilidad.tasa_referencia((now() AT TIME ZONE 'America/Santo_Domingo')::date), 2)
             END::text AS saldo_dop,
             coalesce(s.n, 0)::int AS movimientos,
             (SELECT max(e.fecha)::text
@@ -75,7 +75,7 @@ export type TasaDelDia = { fecha: string; compra: string; venta: string; fuente:
 export async function tasaVigente(): Promise<TasaDelDia | null> {
   return consultarUna<TasaDelDia>(
     `SELECT fecha::text AS fecha, compra::text AS compra, venta::text AS venta, fuente
-       FROM contabilidad.tasa_cambio WHERE fecha <= CURRENT_DATE
+       FROM contabilidad.tasa_cambio WHERE fecha <= (now() AT TIME ZONE 'America/Santo_Domingo')::date
       ORDER BY fecha DESC LIMIT 1`,
   );
 }
@@ -286,7 +286,7 @@ export async function cuentasAuxiliaresDeActivo(): Promise<CuentaAuxiliar[]> {
   return consultar<CuentaAuxiliar>(
     `SELECT id, codigo, nombre FROM contabilidad.cuenta_contable
       WHERE tipo = 'activo' AND admite_movimiento AND activa
-      ORDER BY codigo COLLATE "C"`,
+      ORDER BY contabilidad.clave_codigo(codigo)`,
   );
 }
 

@@ -255,11 +255,17 @@ export function MapaLaVegaCliente({
     });
     observador.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
+    // Dentro de una pestaña oculta el contenedor mide 0 al montarse y Leaflet
+    // calcula mal sus teselas (bloques grises). Al cambiar el tamaño, recalcula.
+    const tamano = new ResizeObserver(() => map.invalidateSize());
+    tamano.observe(el);
+
     mapaRef.current = map;
     if (!inicial) map.fitBounds(BOUNDS_LEAFLET_LA_VEGA, { padding: [8, 8] });
 
     return () => {
       observador.disconnect();
+      tamano.disconnect();
       map.remove();
       mapaRef.current = null;
       marcadorPuntoRef.current = null;

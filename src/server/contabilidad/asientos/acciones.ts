@@ -320,7 +320,7 @@ export async function generarDelMes(
 
       await fijarAccion(cliente, "crear");
       const generado = await cliente.query<{ id: string }>(
-        `SELECT contabilidad.generar_recurrente($1, CURRENT_DATE) AS id`,
+        `SELECT contabilidad.generar_recurrente($1, (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS id`,
         [id],
       );
       return generado.rows[0].id;

@@ -1,6 +1,7 @@
 "use client";
 
 import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
+import { LeyendaGrafico } from "@/components/ui/grafico";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AZUL, AZUL_OSCURO, AZUL_SUAVE } from "@/lib/paleta";
 
@@ -56,19 +57,7 @@ export function GraficasSolicitudes({
               etiquetaTotal=""
               vacio={etiquetas.vacio}
             />
-            <ul className="divide-y divide-linea">
-              {serieBandeja.map((fila) => (
-                <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                  <span
-                    aria-hidden
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: fila.color }}
-                  />
-                  <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                  <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                </li>
-              ))}
-            </ul>
+            <LeyendaGrafico enLista items={serieBandeja} />
           </div>
         </CardContent>
       </Card>

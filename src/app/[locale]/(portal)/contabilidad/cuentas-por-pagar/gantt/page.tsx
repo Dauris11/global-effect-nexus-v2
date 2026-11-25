@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { GanttChartSquare } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { LineaTiempo } from "@/components/linea-tiempo/linea-tiempo";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { GanttBase } from "@/components/ui/gantt-base";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { formatearMonto } from "@/lib/contabilidad/formato";
@@ -103,7 +103,7 @@ export default async function PaginaGanttCxp({
       />
 
       {rango ? (
-        <LineaTiempo secciones={secciones} inicio={rango.inicio} fin={rango.fin} hoy={hoy} />
+        <GanttBase secciones={secciones} inicio={rango.inicio} fin={rango.fin} hoy={hoy} />
       ) : (
         <EstadoVacio icono={GanttChartSquare} titulo={t("vacio")} />
       )}

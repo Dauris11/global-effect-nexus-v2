@@ -13,7 +13,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { EquipoProyecto } from "@/components/operaciones/equipo-proyecto";
-import { LineaTiempo } from "@/components/linea-tiempo/linea-tiempo";
+import { GanttBase } from "@/components/ui/gantt-base";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { moverBarra } from "@/server/calendario/acciones-gantt";
 import { hoyEnLaBase } from "@/server/calendario/gantt";
@@ -137,7 +137,7 @@ export default async function PaginaDetalleProyectoGantt({
       </div>
 
       {rango && (
-        <LineaTiempo
+        <GanttBase
           secciones={secciones}
           inicio={rango.inicio}
           fin={rango.fin}

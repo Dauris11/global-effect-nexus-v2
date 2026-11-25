@@ -130,6 +130,7 @@ export async function agendaDelEstudiante(
             e.ubicacion
        FROM evento e
       WHERE e.estado <> 'cancelado'
+        AND e.audiencia IN ('todos', 'estudiantes')
         AND to_char(e.fecha, 'YYYY-MM') = $2
 
       UNION ALL
@@ -236,6 +237,7 @@ export async function mesesConAgenda(
        SELECT to_char(fecha, 'YYYY-MM') AS mes
          FROM evento
         WHERE estado <> 'cancelado'
+          AND audiencia IN ('todos', 'estudiantes')
 
        UNION ALL
 
