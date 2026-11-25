@@ -53,22 +53,32 @@ export function StatCard({
     );
   }
 
+  // Etiqueta arriba y cifra debajo: la cifra es lo que se mira y la etiqueta, lo que la nombra.
+  // El icono pasa a la esquina en un cuadrado redondeado, como el resto de las superficies.
   return (
-    <Card className={cn("group/cifra flex-row items-center gap-4 p-5", className)}>
-      {Icono && (
-        <span
-          className={cn(
-            acento ? STAT_CARD.iconoAcento : STAT_CARD.iconoNeutro,
-            "transition-transform duration-(--duracion-media) ease-salida group-hover/cifra:scale-105",
-          )}
-        >
-          <Icono className="size-5" />
-        </span>
-      )}
-      <div className="min-w-0">
-        <Valor valor={valor} className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]")} />
-        <p className={cn(STAT_CARD.label, "line-clamp-2 break-words")}>{etiqueta}</p>
+    <Card className={cn("group/cifra gap-4 p-5", className)}>
+      <div className="flex items-start justify-between gap-3">
+        <p className={cn(STAT_CARD.label, "mt-0 line-clamp-2 break-words font-medium")}>{etiqueta}</p>
+        {Icono && (
+          <span
+            className={cn(
+              acento ? STAT_CARD.iconoAcento : STAT_CARD.iconoNeutro,
+              "transition-transform duration-(--duracion-media) ease-salida group-hover/cifra:scale-105",
+            )}
+          >
+            <Icono className="size-[18px]" />
+          </span>
+        )}
       </div>
+      <Valor
+        valor={valor}
+        // Un monto como «RD$ 1,164,987» a 34 px se partiría en dos renglones: baja a 26 y no se parte.
+        className={cn(
+          STAT_CARD.valorNeutro,
+          "animate-entrada [animation-delay:60ms]",
+          typeof valor === "string" && valor.length > 8 && "text-[26px] whitespace-nowrap",
+        )}
+      />
     </Card>
   );
 }

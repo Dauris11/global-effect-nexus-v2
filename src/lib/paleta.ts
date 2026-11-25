@@ -297,12 +297,12 @@ export const STAT_CARD = {
   card: "rounded-card border border-linea bg-card shadow-card",
   content: "p-5",
   iconoAcento:
-    "flex size-10 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600",
+    "flex size-9 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600",
   iconoNeutro:
-    "flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-tinta-2",
+    "flex size-9 shrink-0 items-center justify-center rounded-control bg-muted text-tinta-2",
   /** La cifra va en tinta siempre: el acento lo lleva el icono. */
-  valorAcento: "text-[28px] font-semibold leading-none tracking-tight text-tinta",
-  valorNeutro: "text-[28px] font-semibold leading-none tracking-tight text-tinta",
+  valorAcento: "text-[34px] font-semibold leading-none tracking-tight text-tinta tabular-nums",
+  valorNeutro: "text-[34px] font-semibold leading-none tracking-tight text-tinta tabular-nums",
   label: "texto-meta mt-1.5",
 } as const;
 
