@@ -249,7 +249,8 @@
     "universities": "Universidades",
     "atRisk": "Estudiantes en riesgo",
     "uploadGrades": "Subir calificaciones",
-    "leadershipAcademy": "Academia de liderazgo"
+    "leadershipAcademy": "Academia de liderazgo",
+    "submissionsToGrade": "Entregas por calificar"
   },
   "landing": {
     "enter": "Acceder",
@@ -2265,6 +2266,13 @@
       "dayTitle": "Agenda · {date}",
       "dayEmpty": "Sin actividades programadas para este día.",
       "viewFullCalendar": "Ver calendario completo"
+    },
+    "submissions": {
+      "title": "Entregas por calificar",
+      "empty": "No tienes entregas pendientes de calificar.",
+      "count": "{count, plural, =1 {1 entrega esperando nota} other {# entregas esperando nota}}",
+      "late": "Tarde",
+      "grade": "Nota sobre {max}"
     }
   },
   "modules": {

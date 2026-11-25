@@ -31,6 +31,7 @@ import {
   Star,
   TowerControl,
   UserCog,
+  FileCheck2,
   Receipt,
   Users,
   Utensils,
@@ -558,6 +559,13 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "classes360",
             href: "/academico/clases-360",
             icono: Sparkles,
+          },
+          // La cola de todo lo que espera nota, sin entrar clase por clase.
+          {
+            etiqueta: "submissionsToGrade",
+            href: "/portal/profesor/entregas",
+            icono: FileCheck2,
+            permiso: "docencia.impartir",
           },
           // Sus materias con alumnos, notas y asistencia: `/academico/materias` es el
           // catálogo administrativo y desde ahí el docente no puede calificar.

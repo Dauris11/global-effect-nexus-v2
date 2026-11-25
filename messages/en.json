@@ -249,7 +249,8 @@
     "universities": "Universities",
     "atRisk": "Students at risk",
     "uploadGrades": "Upload grades",
-    "leadershipAcademy": "Leadership Academy"
+    "leadershipAcademy": "Leadership Academy",
+    "submissionsToGrade": "Submissions to grade"
   },
   "landing": {
     "enter": "Sign in",
@@ -2265,6 +2266,13 @@
       "dayTitle": "Schedule · {date}",
       "dayEmpty": "No activities scheduled for this day.",
       "viewFullCalendar": "View full calendar"
+    },
+    "submissions": {
+      "title": "Submissions to grade",
+      "empty": "You have no submissions waiting for a grade.",
+      "count": "{count, plural, =1 {1 submission waiting for a grade} other {# submissions waiting for a grade}}",
+      "late": "Late",
+      "grade": "Grade out of {max}"
     }
   },
   "modules": {

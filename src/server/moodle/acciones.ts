@@ -237,6 +237,7 @@ export async function entregarTareaMoodleAction(
     revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
     revalidatePath("/[locale]/portal/profesor", "page");
     revalidatePath("/[locale]/portal/profesor/materias", "page");
+    revalidatePath("/[locale]/portal/profesor/entregas", "page");
     revalidatePath("/[locale]/academico/clases-360", "page");
 
     return { ok: true, mensaje: vencida ? "entregada_tarde" : "entregada" };

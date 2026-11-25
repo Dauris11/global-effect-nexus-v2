@@ -1865,5 +1865,5 @@ Fuente: `01-coherencia-roles-permisos.md`, `02-ux-ui-por-rol.md`, `03-funcionami
 
 - [x] **Mapas Leaflet sin teselas (03 §1.3):** `ResizeObserver` que llama a `invalidateSize()` en `mapa-la-vega-cliente.tsx` (el de transporte ya lo tenía).
 - [x] **Recursos de Habitudes (03 §1.5):** el título pide al menos 5 caracteres. El recurso «xvc bc» no era basura (PDF real del equipo, con categoría): solo falta renombrarlo desde la galería.
-- [ ] **Enlace de «Entregas esperando nota» (03 §1.6):** `/academico/clases-360` no tiene una vista de entregas pendientes; hay que construirla antes de enlazarla. La tarjeta tampoco aplica a `admin`, que no califica (01 §2.2).
+- [x] **Bandeja de entregas por calificar del docente (24 nov 2026):** `/portal/profesor/entregas` junta las entregas pendientes de todas sus clases (universitarias y 360), agrupadas por tarea, con nota y comentario en línea (reusa `calificarEntregaMoodleAction`); entrada «Entregas por calificar» en su menú. Falta probarla con sesión de docente. La tarjeta «Entregas esperando nota» de la Bandeja de `admin` sigue enlazando a Clases 360 y no aplica a quien no califica (01 §2.2).
 - [ ] **Contadores de Bandeja (03 §1.4):** no se pudo confirmar sin datos reales; comparar la consulta de «Mis tareas por estado» con la de «Tareas por hacer».
