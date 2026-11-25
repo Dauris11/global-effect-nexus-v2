@@ -1915,3 +1915,6 @@ Fuente: `auditoria-coherencia-roles-modulos.md`. Contrastada con el código.
 - [x] Costo por estudiante, fases 1, 4 y 5 (0112, aplicada): pestaña «Costos» y reporte con Excel. Falta la fase 3 (pantalla para materiales y transporte; prorrateo del transporte solo entre los inscritos de esas cinco zonas).
 - [x] Tablero ejecutivo `/ejecutivo` (super_admin) y fusión de Bandeja, Tareas y Torre de control en «Pendientes» (`/bandeja`).
 - [ ] Sin definir: embudo de talento de Habitudes con visto bueno del director.
+
+- [x] **Mínimo del promedio del liceo configurable (25 nov 2026):** parámetro `becas.promedio_liceo_minimo` = 89 (escala 100) en `src/lib/parametros.ts`, editable en Parámetros y citado en el reglamento del asistente. Aún no hay campo del promedio del liceo en el expediente del candidato ni validación: se construye cuando se sepan las cuatro materias principales.
+- [ ] **Por entregar (usuario):** las cuatro materias principales del récord del liceo y los años que cuentan; los «otros factores» para recomendar carrera; y cómo se calcula el índice en cada universidad (sin responder todavía). Ver `docs/estado/por-entregar.md`.

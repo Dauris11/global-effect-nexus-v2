@@ -14,6 +14,9 @@ marca cuando se entrega. Lo que ya se decidió está al final, para que no se pi
   - [ ] Índice mínimo para mantenerse y para la beca, del período y acumulado.
   - [ ] Calendario académico (inicio, fin, fecha para retirar materias, entrega de notas).
 - [ ] **Récord de notas del liceo** de los postulados: una muestra real (foto o PDF) para saber cómo viene.
+  - Ya definido (25 nov 2026): es un promedio de las notas de bachillerato en **escala de 100**; **no se convierte** a la escala universitaria; con ese récord y otros factores la Fundación decide qué carrera puede tomar el estudiante. Mínimo para aceptar a un candidato: **89**, configurable (`Parámetros → becas.promedio_liceo_minimo`).
+  - [ ] **Por entregar:** cuáles son **las cuatro materias principales** con las que se calcula el promedio, y qué años o períodos del bachillerato cuentan. Se calcula sobre esas cuatro; el usuario lo averigua y lo pasa.
+  - [ ] **Por entregar:** qué «otros factores» pesan junto al récord para recomendar una carrera.
 - [ ] **Parámetros del promedio del liceo por carrera**: qué promedio se pide y cuál se considera bueno para cada carrera (con eso el sistema dirá a quién le conviene una u otra).
 - [ ] **Listados reales de notas** de cada universidad (PDF o foto), para afinar la lectura con IA.
 - [ ] **Gradua de UNPHU, UTESA y UASD** (una muestra de cada una; hoy solo se lee el de UCATECI).

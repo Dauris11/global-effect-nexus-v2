@@ -31,6 +31,10 @@ export const DEFINICIONES = [
   { clave: "comedor.apertura", grupo: "comedor", tipo: "hora", defecto: "06:00" },
   { clave: "comedor.cierre", grupo: "comedor", tipo: "hora", defecto: "08:30" },
   { clave: "becas.indice_minimo", grupo: "becas", tipo: "numero", defecto: 3, minimo: 0, maximo: 4, decimales: 2 },
+  // Promedio mínimo del récord de notas del liceo (escala de 100) para aceptar a un candidato.
+  // La Fundación NO lo convierte a la escala universitaria: con ese récord y otros factores
+  // decide qué carrera puede tomar. Se calcula sobre las cuatro materias principales (por definir).
+  { clave: "becas.promedio_liceo_minimo", grupo: "becas", tipo: "numero", defecto: 89, minimo: 0, maximo: 100, decimales: 0 },
   { clave: "becas.asistencia_minima", grupo: "becas", tipo: "numero", defecto: 80, minimo: 0, maximo: 100, decimales: 0 },
   { clave: "becas.horas_servicio_mes", grupo: "becas", tipo: "numero", defecto: 8, minimo: 0, maximo: 60, decimales: 0 },
   { clave: "becas.nota_minima_360", grupo: "becas", tipo: "numero", defecto: 70, minimo: 0, maximo: 100, decimales: 0 },

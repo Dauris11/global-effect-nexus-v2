@@ -6169,6 +6169,10 @@
       "contacto_correo": {
         "label": "Correo de contacto",
         "hint": "Sale en el pie de la portada y en la sección de patrocinadores."
+      },
+      "becas_promedio_liceo_minimo": {
+        "label": "Promedio mínimo del liceo para candidatos",
+        "hint": "Sobre 100, en el récord de notas del liceo. No se convierte a la escala universitaria: ayuda a decidir la carrera."
       }
     },
     "normal": "Normal: {valor}",

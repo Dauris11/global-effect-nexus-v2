@@ -22,6 +22,8 @@ REGLAMENTO INSTITUCIONAL Y POLÍTICA DE BECAS (FUNDACIÓN GLOBAL EFFECT - LA VEG
    - Servicio Comunitario Mensual: ${p["becas.horas_servicio_mes"]} horas mensuales obligatorias en proyectos aprobados por la Fundación.
    - Reuniones Mensuales Generales: Asistencia obligatoria el primer fin de semana de cada mes.
 
+   - Candidatos reclutados por Habitudes: promedio mínimo de ${p["becas.promedio_liceo_minimo"]} sobre 100 en el récord de notas del liceo (las cuatro materias principales). Ese promedio no se convierte a la escala universitaria: con él y otros factores la Fundación decide qué carrera puede tomar el estudiante.
+
 2. ASIGNATURAS REPROBADAS Y OBSERVACIÓN:
    - Si un estudiante reprueba una materia o su índice cae por debajo de ${p["becas.indice_minimo"]}, entra automáticamente en «Observación Académica».
    - Debe cumplir un plan de tutorías y acompañamiento con el equipo académico. Dos cuatrimestres consecutivos en observación requieren revisión por el Comité de Becas.

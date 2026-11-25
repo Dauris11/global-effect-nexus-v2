@@ -6169,6 +6169,10 @@
       "contacto_correo": {
         "label": "Contact email",
         "hint": "It shows in the home page footer and in the sponsors section."
+      },
+      "becas_promedio_liceo_minimo": {
+        "label": "Minimum high-school average for candidates",
+        "hint": "Out of 100, on the high-school grade record. Not converted to the university scale: it helps decide the career."
       }
     },
     "normal": "Default: {valor}",
