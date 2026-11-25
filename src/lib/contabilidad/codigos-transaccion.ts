@@ -26,7 +26,18 @@
 export type NaturalezaCodigo = "debito" | "credito";
 
 /** Módulos que tienen códigos. Para sumar uno, añade aquí y en ETIQUETA_MODULO. */
-export type ModuloCodigo = "nomina";
+export type ModuloCodigo =
+  | "nomina"
+  | "bancos"
+  | "cajas"
+  | "recibos"
+  | "proveedores"
+  | "donaciones"
+  | "fondos"
+  | "cierre"
+  | "inventario"
+  | "activos_fijos"
+  | "calculadoras";
 
 export type TextoBilingue = { es: string; en: string };
 
@@ -46,6 +57,16 @@ export type DefinicionCodigo = {
 /** Orden de los módulos en pantalla y su etiqueta. */
 export const ETIQUETA_MODULO: Record<ModuloCodigo, TextoBilingue> = {
   nomina: { es: "Nómina", en: "Payroll" },
+  bancos: { es: "Bancos", en: "Banks" },
+  cajas: { es: "Cajas y arqueos", en: "Cash boxes and counts" },
+  recibos: { es: "Recibos", en: "Receipts" },
+  proveedores: { es: "Facturas y pagos a proveedores", en: "Supplier invoices and payments" },
+  donaciones: { es: "Donaciones", en: "Donations" },
+  fondos: { es: "Fondos", en: "Funds" },
+  cierre: { es: "Cierres contables", en: "Accounting closings" },
+  inventario: { es: "Inventario", en: "Inventory" },
+  activos_fijos: { es: "Activos fijos", en: "Fixed assets" },
+  calculadoras: { es: "Calculadoras", en: "Calculators" },
 };
 
 export const CODIGOS_TRANSACCION: readonly DefinicionCodigo[] = [
