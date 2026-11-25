@@ -5,7 +5,7 @@ import { useState } from "react";
 import { BarraInferior } from "@/components/layout/barra-inferior";
 import type { AvisoVisible } from "@/components/layout/campana";
 import { Sidebar } from "@/components/layout/sidebar";
-import { ProveedorVisibilidad } from "@/components/layout/visibilidad";
+import { ProveedorPermisos } from "@/components/layout/proveedor-permisos";
 import { TopBar } from "@/components/layout/topbar";
 import { VerComo } from "@/components/layout/ver-como";
 import { usePathname } from "@/i18n/navigation";
@@ -33,7 +33,6 @@ export function AppShell({
   aviso,
   avisos,
   sinLeer,
-  ocultos,
   permisos,
   cerrarSesion,
   children,
@@ -49,8 +48,6 @@ export function AppShell({
   /** Últimos avisos de la cuenta, para la campana de la cabecera. */
   avisos: readonly AvisoVisible[];
   sinLeer: number;
-  /** Rutas que el administrador maestro ocultó para este rol. */
-  ocultos: readonly string[];
   /** Permisos efectivos de la persona: el menú los usa para mostrar lo habilitado a título personal. */
   permisos: readonly Permiso[];
   /** Server Action; cierra la sesión de Supabase y redirige al login. */
@@ -73,7 +70,7 @@ export function AppShell({
   }
 
   return (
-    <ProveedorVisibilidad ocultos={ocultos} permisos={permisos}>
+    <ProveedorPermisos permisos={permisos}>
       {/* Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
         él una tabla ancha o un titular largo estiran la columna y empujan la
         barra fuera de la pantalla en vez de desbordar dentro de su propio hueco. */}
@@ -116,6 +113,6 @@ export function AppShell({
           onAbrirMenu={() => setAbiertaEnMovil(true)}
         />
       </div>
-    </ProveedorVisibilidad>
+    </ProveedorPermisos>
   );
 }

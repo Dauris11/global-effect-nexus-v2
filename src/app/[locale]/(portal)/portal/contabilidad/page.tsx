@@ -47,7 +47,6 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
 import { listarCajas } from "@/server/contabilidad/cajas/consultas";
 import { pendientesDelDepartamento, resumenFlujo } from "@/server/contabilidad/inicio/consultas";
-import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 
 export async function generateMetadata({
   params,
@@ -80,7 +79,7 @@ export default async function PortalContabilidad({
   const rango = rangoTablero(periodo, ref);
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, tc, tMiDia, cuentas, tasa, pendientes, cajas, flujo, visibilidad] = await Promise.all([
+  const [t, tc, tMiDia, cuentas, tasa, pendientes, cajas, flujo] = await Promise.all([
     getTranslations({ locale, namespace: "contab.inicio" }),
     getTranslations({ locale, namespace: "contab" }),
     getTranslations({ locale, namespace: "miDia" }),
@@ -89,12 +88,10 @@ export default async function PortalContabilidad({
     pendientesDelDepartamento(),
     listarCajas(),
     resumenFlujo(periodo, rango),
-    visibilidadDeRol(usuario.rol),
   ]);
 
   const puede = (permiso: Parameters<typeof usuarioTienePermiso>[1]) =>
     usuarioTienePermiso(usuario, permiso);
-  const fueraDelMenu = new Set(visibilidad.fueraDelMenu);
   const dop = (n: number | string) => formatearMonto(Number(n).toFixed(2), "DOP");
 
   const activas = cuentas.filter((c) => c.estado === "activa");
@@ -145,7 +142,7 @@ export default async function PortalContabilidad({
   const grupos = GRUPOS_CONTABLES.map((grupo) => ({
     grupo,
     modulos: modulosDeGrupo(grupo).filter(
-      (modulo) => (!modulo.permiso || puede(modulo.permiso)) && !fueraDelMenu.has(modulo.href),
+      (modulo) => modulo.universal || (modulo.permiso && puede(modulo.permiso)),
     ),
   })).filter((grupo) => grupo.modulos.length > 0);
 

@@ -71,8 +71,10 @@ export type ModuloContable = {
   etiqueta: string;
   href: string;
   icono: React.ComponentType<{ className?: string }>;
-  /** Sin permiso, el módulo no aparece ni en el menú ni en el inicio. */
+  /** Sin permiso (ni `universal`), el módulo no aparece ni en el menú ni en el inicio. */
   permiso?: Permiso;
+  /** Pantalla abierta a todo el personal, sin permiso que la proteja. */
+  universal?: boolean;
   /**
    * Si va también en el área de Finanzas del menú de administración.
    *
@@ -222,6 +224,9 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     etiqueta: "requests",
     href: "/administrativo/solicitudes",
     icono: Inbox,
+    // Cualquiera con sesión puede pedir algo; lo que resuelve cada quien lo
+    // decide la pantalla.
+    universal: true,
     enAdministracion: false,
   },
   {

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
-import { usePermisos } from "@/components/layout/visibilidad";
+import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { tienePermiso, type Permiso, type Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 

@@ -3137,8 +3137,7 @@
     "settingsDesc": {
       "general": "Resumen de los ajustes del sistema.",
       "staff": "Alta y gestión del personal.",
-      "permissions": "Qué puede hacer cada rol y las excepciones por persona.",
-      "visibility": "Qué menús y funciones ve cada rol.",
+      "permissions": "Qué puede hacer cada rol y las excepciones por persona. Lo que no puede abrir, no lo ve.",
       "parameters": "Reglas de la beca, horario del comedor, día límite de las cartas…",
       "landing": "Anuncios de la portada pública.",
       "ia": "Uso, cuotas, modelos y agentes de Elly AI.",
@@ -3150,8 +3149,7 @@
     "settingsKeys": {
       "general": "configuracion inicio",
       "staff": "personal usuarios empleados invitar",
-      "permissions": "permisos roles acceso excepciones",
-      "visibility": "visibilidad menus ocultar bloquear",
+      "permissions": "permisos roles acceso excepciones visibilidad menus modulos",
       "parameters": "parametros reglas beca comedor cartas limite indice horario",
       "landing": "portada landing hero anuncios",
       "ia": "elly ia inteligencia artificial agentes cuotas modelo tokens consumo",
@@ -3372,7 +3370,6 @@
       "general": "General",
       "staff": "Personal",
       "permissions": "Permisos",
-      "visibility": "Visibilidad",
       "parameters": "Parámetros",
       "landing": "Portada",
       "ia": "IA",
@@ -6053,35 +6050,6 @@
       "conciliado": "conciliado"
     }
   },
-  "visibilidad": {
-    "eyebrow": "Configuración",
-    "title": "Qué ve cada rol",
-    "subtitle": "Oculta o muestra módulos para los demás roles. Tú, como administrador maestro, lo ves siempre todo.",
-    "back": "Volver a configuración",
-    "hints": {
-      "visible": "Visible: aparece en el menú.",
-      "oculto": "Oculto: sale del menú, el buscador y el inicio, pero abre si alguien conoce la dirección (con sus permisos de siempre).",
-      "bloqueado": "Bloqueado: sale del menú y la dirección directa tampoco abre."
-    },
-    "permissionsNote": "Ocultar no cambia los permisos: lo que cada rol puede hacer con los datos sigue dependiendo de ellos.",
-    "permissionsLink": "Ver permisos y excepciones",
-    "pickRole": "Rol",
-    "counts": "{rol}: {o} ocultas · {b} bloqueadas",
-    "functions": "Funciones",
-    "assistant": "Botón del asistente de IA",
-    "states": {
-      "visible": "Visible",
-      "oculto": "Oculto",
-      "bloqueado": "Bloqueado"
-    },
-    "alwaysVisible": "Siempre visible",
-    "showArea": "Mostrar el área",
-    "hideArea": "Ocultar el área",
-    "resetAll": "Mostrar todo",
-    "save": "Guardar para {rol}",
-    "saved": "Guardado: {ocultas} ocultas y {bloqueadas} bloqueadas. Se aplica en la próxima pantalla que abra cada persona.",
-    "failed": "No se pudo guardar. Revisa e inténtalo otra vez."
-  },
   "parametros": {
     "eyebrow": "Configuración",
     "title": "Parámetros institucionales",
@@ -7273,6 +7241,13 @@
       "transporte_gestionar": "Gestionar el transporte",
       "transporte_operar": "Operar rutas de transporte",
       "usuarios_administrar": "Administrar usuarios"
+    },
+    "help": "Lo que no puede abrir, no lo ve: el menú de cada persona se calcula con sus permisos, sin una lista de visibilidad aparte.",
+    "unlocks": "Habilita: {modules}",
+    "preview": {
+      "title": "Verá estos módulos",
+      "count": "{count, plural, =0 {Ningún módulo} =1 {1 módulo} other {# módulos}}",
+      "empty": "Con estos permisos no ve ningún módulo."
     }
   },
   "lineaTiempo": {

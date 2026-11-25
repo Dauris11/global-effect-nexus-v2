@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 import Image from "next/image";
 
-import { useOcultos, usePermisos } from "@/components/layout/visibilidad";
+import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { Link, usePathname } from "@/i18n/navigation";
 import { esRutaActiva, itemsDeArea, menuDe, type ItemNav } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
@@ -66,8 +66,7 @@ export function Sidebar({
   const tComun = useTranslations("common");
   const tAuth = useTranslations("auth");
   const ruta = usePathname();
-  const ocultos = useOcultos();
-  const areas = menuDe(rol, ocultos, usePermisos());
+  const areas = menuDe(rol, usePermisos());
 
   /*
    * Solo UNA entrada activa: la más específica. Con un simple "empieza por",

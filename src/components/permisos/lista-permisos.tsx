@@ -28,12 +28,16 @@ export function ListaPermisos({
   estadoDe,
   onCambio,
   deshabilitado,
+  habilitaDe,
 }: {
   estadoDe: (permiso: Permiso) => EstadoPermiso;
+  /** Claves `nav` de los módulos que abre cada permiso, para la pista bajo su nombre. */
+  habilitaDe?: (permiso: Permiso) => readonly string[];
   onCambio: (permiso: Permiso, activo: boolean) => void;
   deshabilitado?: boolean;
 }) {
   const t = useTranslations("permisosAdmin");
+  const tNav = useTranslations("nav");
 
   const grupos = (Object.keys(GRUPOS_PERMISOS) as GrupoPermiso[]).map((grupo) => ({
     grupo,
@@ -57,7 +61,18 @@ export function ListaPermisos({
                   key={permiso}
                   className="flex min-h-14 items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-muted/40"
                 >
-                  <span className="min-w-0 text-sm text-tinta">{nombre}</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm text-tinta">{nombre}</span>
+                    {(habilitaDe?.(permiso) ?? []).length > 0 && (
+                      <span className="texto-meta block">
+                        {t("unlocks", {
+                          modules: (habilitaDe?.(permiso) ?? [])
+                            .map((clave) => tNav(clave))
+                            .join(", "),
+                        })}
+                      </span>
+                    )}
+                  </span>
                   <span className="flex shrink-0 items-center gap-3">
                     {origen === "habilitado" && (
                       <Badge variant="marca">{t("granted")}</Badge>

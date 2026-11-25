@@ -99,13 +99,6 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     puede: soloRoles("super_admin"),
   },
   {
-    identificadores: ["visibilidad", "que ve cada rol", "ocultar modulos"],
-    etiqueta: "Qué ve cada rol",
-    descripcion: "Oculta o bloquea módulos para los demás roles.",
-    ruta: "/configuracion/visibilidad",
-    puede: soloRoles("super_admin"),
-  },
-  {
     identificadores: [
       "cuentas por pagar",
       "cxp",

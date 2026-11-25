@@ -44,7 +44,7 @@ import {
   type ModuloContable,
 } from "@/lib/contabilidad/modulos";
 import type { Permiso, Rol } from "@/lib/rbac";
-import { PORTAL_POR_ROL, tienePermiso } from "@/lib/rbac";
+import { tienePermiso } from "@/lib/rbac";
 
 /**
  * Menús de la barra lateral, uno por rol (sección 3 del inventario).
@@ -77,8 +77,22 @@ export type ItemNav = {
   etiqueta: string;
   href: string;
   icono: React.ComponentType<{ className?: string }>;
-  /** Si se indica, la entrada solo se dibuja cuando el rol tiene el permiso. */
+  /**
+   * La entrada solo se dibuja cuando la persona tiene este permiso. Debe ser el
+   * mismo que la pantalla exige con `requerirPermiso`: así lo que el menú
+   * ofrece y lo que la página deja abrir nunca se contradicen, y la pantalla
+   * de permisos puede decir qué módulos ve cada rol sin otra lista aparte.
+   */
   permiso?: Permiso;
+  /** Como `permiso`, pero basta con tener UNO (pantallas con pestañas por permiso). */
+  algunPermiso?: readonly Permiso[];
+  /**
+   * Entrada que ve todo el que tenga el menú, sin permiso que la proteja. Es una
+   * decisión y no un olvido: cada una lleva al lado el porqué (la pantalla es
+   * de todos, o su acceso es por ROL y no por permiso). `scripts/` comprueba
+   * que ninguna entrada quede sin `permiso`, `algunPermiso` ni `universal`.
+   */
+  universal?: boolean;
 };
 
 export type SeccionNav = {
@@ -106,7 +120,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         // Una sola entrada de inicio: Pendientes junta lo que antes eran la
         // bandeja, las tareas y la torre de control (tres pantallas con el
         // mismo trabajo). Cada pestaña se abre con `?tab=`.
-        items: [{ etiqueta: "pending", href: "/bandeja", icono: Inbox }],
+        // Universal: la bandeja es el inicio del personal y cada pestaña
+        // filtra por sus propios permisos dentro de la pantalla.
+        items: [{ etiqueta: "pending", href: "/bandeja", icono: Inbox, universal: true }],
       },
     ],
   },
@@ -145,21 +161,32 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     secciones: [
       {
         items: [
+          // La pantalla admite a quien gestiona (`academico.escribir`) o a quien
+          // imparte (`docencia.impartir`); en el menú de administración manda
+          // la primera, que es la que de verdad trae este rol.
           {
             etiqueta: "classes360",
             href: "/academico/clases-360",
             icono: Sparkles,
+            permiso: "academico.escribir",
           },
-          { etiqueta: "academic", href: "/academico/materias", icono: Library },
+          {
+            etiqueta: "academic",
+            href: "/academico/materias",
+            icono: Library,
+            permiso: "academico.leer",
+          },
           {
             etiqueta: "preenrollment",
             href: "/academico/prematricula",
             icono: ClipboardList,
+            permiso: "academico.escribir",
           },
           {
             etiqueta: "periods",
             href: "/academico/periodos",
             icono: CalendarDays,
+            permiso: "academico.leer",
           },
         ],
       },
@@ -176,6 +203,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "habitudesHub",
             href: "/habitudes",
             icono: BookOpen,
+            permiso: "habitudes.recursos.leer",
           },
         ],
       },
@@ -186,11 +214,13 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "programs",
             href: "/academias/programas",
             icono: Presentation,
+            permiso: "academico.leer",
           },
           {
             etiqueta: "materials",
             href: "/academias/materiales",
             icono: Library,
+            permiso: "academico.leer",
           },
         ],
       },
@@ -258,18 +288,20 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         etiqueta: "admin",
         items: [
-          // Primero: es lo que espera respuesta de alguien. Sin permiso, porque
+          // Primero: es lo que espera respuesta de alguien. Universal, porque
           // todo el personal puede pedir algo; lo que cada uno puede RESOLVER
           // lo decide la pantalla con los permisos de solicitudes.
           {
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+            universal: true,
           },
           {
             etiqueta: "projects",
             href: "/administrativo/proyectos",
             icono: FolderKanban,
+            permiso: "operaciones.leer",
           },
           {
             etiqueta: "staff",
@@ -346,7 +378,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     secciones: [
       {
         items: [
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          // Universal: el calendario es de todo el personal (`requerirUsuario`);
+          // cada quien ve y puede crear lo que sus permisos permiten.
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true },
           {
             etiqueta: "meetings",
             href: "/reuniones",
@@ -373,9 +407,17 @@ const MENU_ADMINISTRACION: AreaNav[] = [
           // tiene, así que coordinación no veía la entrada —y dos de las tres
           // pestañas del módulo son de operaciones y de académico, que sí
           // lleva—. La pestaña financiera se cierra dentro de la pantalla, que
-          // es donde se puede cerrar una parte y no toda la puerta.
-          { etiqueta: "reports", href: "/reportes", icono: BarChart3 },
-          { etiqueta: "sitemap", href: "/sitemap", icono: Map },
+          // es donde se puede cerrar una parte y no toda la puerta. Por eso
+          // basta UNO de los tres permisos de sus pestañas, igual que la pantalla.
+          {
+            etiqueta: "reports",
+            href: "/reportes",
+            icono: BarChart3,
+            algunPermiso: ["operaciones.leer", "academico.leer", "finanzas.leer"],
+          },
+          // Universal: `requerirRol(["admin", "super_admin"])`, o sea, acceso por
+          // ROL y no por permiso; este menú ya es solo de esos dos roles.
+          { etiqueta: "sitemap", href: "/sitemap", icono: Map, universal: true },
         ],
       },
     ],
@@ -387,7 +429,10 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     secciones: [
       {
         items: [
-          { etiqueta: "settings", href: "/configuracion", icono: Settings },
+          // Universal: la entrada de Configuración es por ROL
+          // (`requerirRol(["admin", "super_admin"])`); cada tarjeta de dentro
+          // se filtra con su permiso.
+          { etiqueta: "settings", href: "/configuracion", icono: Settings, universal: true },
           {
             etiqueta: "permissions",
             href: "/configuracion/permisos",
@@ -409,6 +454,10 @@ const MENU_ADMINISTRACION: AreaNav[] = [
   },
 ];
 
+// Las pantallas del estudiante (`/portal/estudiante/*`, `/comida`) se abren por
+// ROL (`requerirRol(["estudiante"])`), no por un permiso: por eso sus entradas
+// son `universal`. Solo `reuniones` y el chat de IA piden permiso, porque su
+// pantalla lo comprueba.
 const MENU_ESTUDIANTE: AreaNav[] = [
   {
     clave: "panel",
@@ -421,6 +470,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "studentPortal",
             href: "/portal/estudiante",
             icono: GraduationCap,
+            universal: true,
           },
         ],
       },
@@ -437,6 +487,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "mySubjects",
             href: "/portal/estudiante/prematricula",
             icono: Library,
+            universal: true,
           },
           // Las asignaciones cuelgan de la misma matrícula, así que van con
           // ella.
@@ -444,6 +495,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "virtualClassroom",
             href: "/portal/estudiante/aula-virtual",
             icono: MonitorPlay,
+            universal: true,
           },
           // Global Effect 360: las materias de la Fundación. Desde la 0047 son
           // para todos, todas obligatorias, una por tanda.
@@ -451,16 +503,18 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "global360",
             href: "/portal/estudiante/global-360",
             icono: Sparkles,
+            universal: true,
           },
           // Inscribirse al almuerzo de hoy: el estudiante lo hacía en una página
           // pública, fuera de su portal, y no sabía que la tenía.
-          { etiqueta: "meals", href: "/comida", icono: Utensils },
+          { etiqueta: "meals", href: "/comida", icono: Utensils, universal: true },
           // Ahí está el índice académico, que es lo que decide la beca, y las
           // notas finales de 360.
           {
             etiqueta: "grades",
             href: "/portal/estudiante/calificaciones",
             icono: Star,
+            universal: true,
           },
         ],
       },
@@ -477,16 +531,19 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "calendar",
             href: "/portal/estudiante/calendario",
             icono: CalendarDays,
+            universal: true,
           },
           {
             etiqueta: "meetings",
             href: "/reuniones",
             icono: Users,
+            permiso: "reuniones.leer",
           },
           {
             etiqueta: "transport",
             href: "/portal/estudiante/transporte",
             icono: Bus,
+            universal: true,
           },
           // Trámites con administración: constancias, cartas, citas y
           // permisos. Va en la agenda porque casi todo lo que pide tiene
@@ -495,6 +552,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             etiqueta: "myRequests",
             href: "/portal/estudiante/solicitudes",
             icono: Inbox,
+            universal: true,
           },
         ],
       },
@@ -531,6 +589,7 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "teacherPortal",
             href: "/portal/profesor",
             icono: BookOpen,
+            permiso: "docencia.impartir",
           },
         ],
       },
@@ -547,6 +606,7 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "classes360",
             href: "/academico/clases-360",
             icono: Sparkles,
+            permiso: "docencia.impartir",
           },
           // La cola de todo lo que espera nota, sin entrar clase por clase.
           {
@@ -557,7 +617,12 @@ const MENU_DOCENTE: AreaNav[] = [
           },
           // Sus materias con alumnos, notas y asistencia: `/academico/materias` es el
           // catálogo administrativo y desde ahí el docente no puede calificar.
-          { etiqueta: "academic", href: "/portal/profesor/materias", icono: Library },
+          {
+            etiqueta: "academic",
+            href: "/portal/profesor/materias",
+            icono: Library,
+            permiso: "docencia.impartir",
+          },
         ],
       },
     ],
@@ -573,6 +638,7 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "habitudesHub",
             href: "/habitudes",
             icono: BookOpen,
+            permiso: "habitudes.recursos.leer",
           },
         ],
       },
@@ -585,11 +651,13 @@ const MENU_DOCENTE: AreaNav[] = [
     secciones: [
       {
         items: [
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          // Universal: el calendario es de todo el personal (`requerirUsuario`).
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true },
           {
             etiqueta: "meetings",
             href: "/reuniones",
             icono: Users,
+            permiso: "reuniones.leer",
           },
           // La línea de tiempo cierra su propia puerta (junta datos
           // académicos y de operaciones), pero se ofrece solo a quien
@@ -600,11 +668,13 @@ const MENU_DOCENTE: AreaNav[] = [
             icono: GanttChartSquare,
             permiso: "operaciones.leer",
           },
-          // El docente pide material o gastos de su curso por aquí.
+          // El docente pide material o gastos de su curso por aquí. Universal:
+          // cualquiera con sesión puede pedir algo.
           {
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+            universal: true,
           },
           // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
           // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
@@ -638,10 +708,13 @@ const MENU_HABITUDES: AreaNav[] = [
     secciones: [
       {
         items: [
+          // El hub exige `habitudes.recursos.leer` (el guard de la pantalla es el
+          // mismo): quien no lo tiene no ve la entrada, ni entra por la URL.
           {
             etiqueta: "habitudesHub",
             href: "/habitudes",
             icono: BookOpen,
+            permiso: "habitudes.recursos.leer",
           },
           // Postular a un candidato ES una solicitud (`alta_expediente`) que
           // aprueba administración: no hay lista de expedientes que ver, y una
@@ -650,6 +723,7 @@ const MENU_HABITUDES: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+            universal: true,
           },
           // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
           // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
@@ -663,7 +737,7 @@ const MENU_HABITUDES: AreaNav[] = [
           // Tienen `reuniones.agendar`/`leer` (y el director, `gestionar`),
           // pero sin estas entradas una reunión a la que los convocaban solo
           // se encontraba escribiendo la dirección a mano.
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true },
           {
             etiqueta: "meetings",
             href: "/reuniones",
@@ -708,6 +782,7 @@ const MENU_CONTABILIDAD: AreaNav[] = [
             etiqueta: "accountingHome",
             href: "/portal/contabilidad",
             icono: Home,
+            permiso: "contabilidad.leer",
           },
           ...modulosDeGrupo("general").map(itemDeModulo),
         ],
@@ -762,7 +837,7 @@ const MENU_CONTABILIDAD: AreaNav[] = [
       {
         items: [
           ...modulosDeGrupo("departamento").map(itemDeModulo),
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true },
           { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
           { etiqueta: "chatIaAdmin", href: "/chat-ia", icono: Bot, permiso: "ia.usar" },
         ],
@@ -777,6 +852,7 @@ function itemDeModulo(modulo: ModuloContable): ItemNav {
     href: modulo.href,
     icono: modulo.icono,
     permiso: modulo.permiso,
+    universal: modulo.universal,
   };
 }
 
@@ -803,6 +879,7 @@ const MENU_CHOFER: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+            universal: true,
           },
           // Rinde el gasoil, el pinchazo o el peaje: es quien más gasta efectivo en la
           // calle y no tenía por dónde entregar la factura.
@@ -834,12 +911,23 @@ const AREA_DOCENCIA: AreaNav = {
   secciones: [
     {
       items: [
-        { etiqueta: "teacherPortal", href: "/portal/profesor", icono: BookOpen },
-        { etiqueta: "classes360", href: "/academico/clases-360", icono: Sparkles },
+        {
+          etiqueta: "teacherPortal",
+          href: "/portal/profesor",
+          icono: BookOpen,
+          permiso: "docencia.impartir",
+        },
+        {
+          etiqueta: "classes360",
+          href: "/academico/clases-360",
+          icono: Sparkles,
+          permiso: "docencia.impartir",
+        },
         {
           etiqueta: "assignedSubjects",
           href: "/portal/profesor/materias",
           icono: Library,
+          permiso: "docencia.impartir",
         },
       ],
     },
@@ -852,7 +940,13 @@ const MENU_SUPER_ADMIN: AreaNav[] = [
     clave: "ejecutivo",
     etiqueta: "executiveDashboard",
     icono: Gauge,
-    secciones: [{ items: [{ etiqueta: "executiveDashboard", href: "/ejecutivo", icono: Gauge }] }],
+    // Universal: `requerirRol(["super_admin"])`. Es acceso por ROL (Dirección/Junta),
+    // no un permiso que se reparta; el menú ya es solo de ese rol.
+    secciones: [
+      {
+        items: [{ etiqueta: "executiveDashboard", href: "/ejecutivo", icono: Gauge, universal: true }],
+      },
+    ],
   },
   ...MENU_ADMINISTRACION,
 ];
@@ -879,7 +973,6 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
  */
 export function menuDe(
   rol: Rol,
-  ocultos?: ReadonlySet<string>,
   /**
    * Permisos efectivos de la persona (rol + excepciones). Sin ellos se usa el
    * reparto de fábrica del rol, que es lo que necesitan los catálogos por rol.
@@ -903,13 +996,12 @@ export function menuDe(
       secciones: area.secciones
         .map((seccion) => ({
           ...seccion,
+          // La visibilidad se DERIVA del permiso: no hay otra lista que
+          // configurar. Quien no puede abrir un módulo, no lo ve.
           items: seccion.items.filter(
             (item) =>
               (!item.permiso || puede(item.permiso)) &&
-              // Lo que el administrador maestro ocultó para este rol (ver
-              // `/configuracion/visibilidad`). El permiso sigue mandando: ocultar
-              // no da acceso a nada, solo quita la entrada.
-              !ocultos?.has(item.href),
+              (!item.algunPermiso || item.algunPermiso.some(puede)),
           ),
         }))
         .filter((seccion) => seccion.items.length > 0),
@@ -918,16 +1010,38 @@ export function menuDe(
 }
 
 /**
- * Entradas que nadie puede ocultar ni bloquear a un rol: su portal de inicio y su
- * perfil. Sin ellas, una pantalla de visibilidad mal puesta lo dejaría sin sitio
- * al que ir ni forma de cambiar su foto o salir.
+ * Entradas sin `permiso` ni `universal` de un menú: debe devolver vacío. Lo usa
+ * el script de verificación para que una entrada nueva no se cuele sin decidir
+ * quién puede verla.
  */
-export function rutasProtegidas(rol: Rol): string[] {
-  return ["/perfil", PORTAL_POR_ROL[rol]];
+export function itemsSinDeclarar(rol: Rol): ItemNav[] {
+  return itemsDeTodoElMenu(rol).filter(
+    (item) => !item.permiso && !item.algunPermiso && !item.universal,
+  );
 }
 
-/** Función transversal que también se puede ocultar por rol: el botón del asistente. */
-export const FUNCION_ASISTENTE = "funcion:asistente_ia";
+/**
+ * Las entradas del menú de un rol que este permiso abre, para que la pantalla
+ * de permisos diga qué módulos enciende cada interruptor. Sin repetir: una
+ * misma ruta puede salir en dos áreas.
+ */
+export function modulosQueHabilita(rol: Rol, permiso: Permiso): ItemNav[] {
+  const vistos = new Set<string>();
+
+  return itemsDeTodoElMenu(rol).filter((item) => {
+    const depende = item.permiso === permiso || item.algunPermiso?.includes(permiso);
+    if (!depende || vistos.has(item.href)) return false;
+    vistos.add(item.href);
+    return true;
+  });
+}
+
+/** Todo lo que el rol puede llegar a ver, sin filtrar: base + áreas por capacidad. */
+export function itemsDeTodoElMenu(rol: Rol): ItemNav[] {
+  return [...MENU_POR_ROL[rol], ...AREAS_POR_CAPACIDAD.map(({ area }) => area)].flatMap(
+    itemsDeArea,
+  );
+}
 
 /** Todos los enlaces de un área, sin sus secciones. */
 export function itemsDeArea(area: AreaNav): ItemNav[] {
@@ -1028,11 +1142,10 @@ const ETIQUETA_CORTA: Record<string, string> = {
  */
 export function pestanasMoviles(
   rol: Rol,
-  ocultos?: ReadonlySet<string>,
   /** Permisos efectivos: sin ellos las pestañas seguían el reparto de fábrica. */
   permisos?: ReadonlySet<Permiso>,
 ): PestanaMovil[] {
-  const items = menuDe(rol, ocultos, permisos).flatMap(itemsDeArea);
+  const items = menuDe(rol, permisos).flatMap(itemsDeArea);
   // Un objeto y no un `Map`: en este archivo `Map` es el icono de lucide.
   const porHref: Record<string, ItemNav> = Object.fromEntries(
     items.map((item) => [item.href, item]),

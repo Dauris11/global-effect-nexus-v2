@@ -20,7 +20,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { StatCard } from "@/components/ui/stat-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "@/i18n/navigation";
-import { requerirRol } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
@@ -50,13 +50,10 @@ export default async function PaginaHabitudesHub({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const usuario = await requerirRol([
-    "habitudes",
-    "dir_habitudes",
-    "docente",
-    "admin",
-    "super_admin",
-  ]);
+  // Por permiso y no por lista de roles: es el mismo que declara su entrada del
+  // menú en `nav.ts`, así el menú y el acceso dicen lo mismo y la pantalla de
+  // permisos puede apagar o encender el módulo por persona.
+  const usuario = await requerirPermiso("habitudes.recursos.leer");
 
   const [t, metricas, liceos, recursos, visitas] = await Promise.all([
     getTranslations({ locale, namespace: "habitudes" }),

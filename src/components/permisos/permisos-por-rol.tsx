@@ -15,8 +15,10 @@ import {
 import { useTranslations } from "next-intl";
 
 import { ListaPermisos } from "@/components/permisos/lista-permisos";
+import { VistaModulos } from "@/components/permisos/vista-modulos";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { FilaChips } from "@/components/ui/fila-chips";
+import { modulosQueHabilita } from "@/lib/nav";
 import type { Permiso, Rol } from "@/lib/rbac";
 import { guardarPermisoRol } from "@/server/configuracion/acciones-permisos";
 import type { PermisosDeRol } from "@/server/configuracion/consultas-permisos";
@@ -91,6 +93,10 @@ export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
         ))}
       </FilaChips>
 
+      <p className="texto-meta">{t("help")}</p>
+
+      <VistaModulos rol={seleccionado} permisos={actuales} />
+
       {error && (
         <p
           role="alert"
@@ -104,6 +110,9 @@ export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
       <ListaPermisos
         key={seleccionado}
         deshabilitado={pendiente}
+        habilitaDe={(permiso) =>
+          modulosQueHabilita(seleccionado, permiso).map((item) => item.etiqueta)
+        }
         estadoDe={(permiso) => ({ activo: actuales.has(permiso) })}
         onCambio={cambiar}
       />

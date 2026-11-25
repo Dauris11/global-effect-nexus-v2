@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, usePathname } from "@/i18n/navigation";
 import { VerComo } from "@/components/layout/ver-como";
-import { useOcultos, usePermisos } from "@/components/layout/visibilidad";
+import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { menuDe } from "@/lib/nav";
 import type { Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -126,9 +126,8 @@ export function TopBar({
 
   // "Configuración" solo para quien la tiene en su menú: ofrecer una puerta que
   // el servidor va a cerrar no sirve de nada.
-  const ocultos = useOcultos();
   const permisos = usePermisos();
-  const tieneConfiguracion = menuDe(rol, ocultos, permisos).some((area) =>
+  const tieneConfiguracion = menuDe(rol, permisos).some((area) =>
     area.secciones.some((seccion) =>
       seccion.items.some((item) => item.href === "/configuracion"),
     ),

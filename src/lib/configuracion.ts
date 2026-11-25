@@ -20,7 +20,6 @@ export const AJUSTES = [
   { clave: "general", href: "/configuracion", permiso: "usuarios.administrar", roles: ["admin", "super_admin"] },
   { clave: "staff", href: "/administrativo/personal", permiso: "usuarios.administrar" },
   { clave: "permissions", href: "/configuracion/permisos", permiso: "usuarios.administrar", soloMaestro: true },
-  { clave: "visibility", href: "/configuracion/visibilidad", permiso: "usuarios.administrar", soloMaestro: true },
   { clave: "parameters", href: "/configuracion/parametros", permiso: "usuarios.administrar", roles: ["admin", "super_admin"] },
   { clave: "landing", href: "/configuracion/landing", permiso: "landing.administrar" },
   { clave: "ia", href: "/configuracion/ia", permiso: "ia.administrar" },

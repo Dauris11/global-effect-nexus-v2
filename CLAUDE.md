@@ -80,6 +80,11 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     Rey y Rancho Viejo. Comedor y transporte no se acoplan.
 17. **Permisos reales** viven en `rol_permiso` (base de datos); `rbac.ts` es el
     reparto de fábrica y puede diferir. Un cambio de permisos va en migración.
+    La visibilidad del menú se DERIVA del permiso que declara cada entrada de
+    `src/lib/nav.ts` (`permiso`, `algunPermiso` o `universal: true` con su porqué)
+    y debe ser el mismo que exige la pantalla; no hay pantalla de visibilidad ni
+    tabla `visibilidad_menu` (migración `0114`). `npx tsx
+    scripts/probar-menu-por-permisos.ts` falla si una entrada queda sin declarar.
 
 ## Qué leer según la tarea
 

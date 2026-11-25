@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { obtenerUsuarioActual } from "@/lib/auth";
-import { FUNCION_ASISTENTE } from "@/lib/nav";
 import { MAXIMO_CARACTERES_PREGUNTA } from "@/lib/ia";
 import { ensamblarSistema, revisarEntrada } from "@/lib/ia-seguridad";
 import {
@@ -12,7 +11,6 @@ import {
 } from "@/server/ia/agente";
 import { guardarAdjunto } from "@/server/ia/adjuntos";
 import { prepararTurno } from "@/server/ia/contexto";
-import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import type { EventoFlujo } from "@/lib/ia-eventos";
 import { ejecutarTurno, proveedorModelo } from "@/server/ia/motor";
 import { modeloIA } from "@/lib/modelo-ia";
@@ -93,16 +91,6 @@ export async function POST(peticion: NextRequest) {
   }
 
   let contenido = revision.texto;
-
-  // El administrador maestro puede BLOQUEAR el asistente para un rol: sin botón
-  // y también sin la ruta, que es lo que usaría quien armara la petición a mano.
-  if (usuario.rol !== "super_admin") {
-    const visibilidad = await visibilidadDeRol(usuario.rol);
-
-    if (visibilidad.bloqueadas.has(FUNCION_ASISTENTE)) {
-      return NextResponse.json({ error: "inactivo" }, { status: 403 });
-    }
-  }
 
   const config = await configDelAgente(usuario.rol);
   const acceso = await verificarAcceso(usuario, config);

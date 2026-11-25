@@ -5,10 +5,12 @@ import { AlertCircle, RotateCcw, Search, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { ListaPermisos } from "@/components/permisos/lista-permisos";
+import { VistaModulos } from "@/components/permisos/vista-modulos";
 import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Input } from "@/components/ui/input";
-import type { Permiso } from "@/lib/rbac";
+import { modulosQueHabilita } from "@/lib/nav";
+import { PERMISOS, type Permiso } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { guardarExcepcionPermiso } from "@/server/configuracion/acciones-permisos";
 import type {
@@ -85,6 +87,14 @@ export function PermisosPorPersona({
       );
     });
   };
+
+  // Lo que la persona puede de verdad: el rol más sus cambios personales.
+  const efectivos = new Set<Permiso>(
+    PERMISOS.filter((permiso) => {
+      const excepcion = persona?.excepciones.find((e) => e.permiso === permiso);
+      return excepcion ? excepcion.concedido : delRol.has(permiso);
+    }),
+  );
 
   const cambiar = (permiso: Permiso, activo: boolean) =>
     // Igual a lo que da el rol = sin cambio personal.
@@ -185,9 +195,14 @@ export function PermisosPorPersona({
               </p>
             )}
 
+            <VistaModulos rol={persona.rol} permisos={efectivos} compacto />
+
             <ListaPermisos
               key={persona.id}
               deshabilitado={pendiente}
+              habilitaDe={(permiso) =>
+                modulosQueHabilita(persona.rol, permiso).map((item) => item.etiqueta)
+              }
               estadoDe={(permiso) => {
                 const excepcion = persona.excepciones.find(
                   (e) => e.permiso === permiso,

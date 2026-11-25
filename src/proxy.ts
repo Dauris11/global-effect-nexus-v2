@@ -22,14 +22,7 @@ import { refrescarSesion } from "@/lib/supabase/proxy";
 const manejarIdioma = createMiddleware(routing);
 
 export default async function proxy(original: NextRequest) {
-  // La ruta viaja como cabecera para que el layout del portal pueda aplicar los
-  // bloqueos de visibilidad: un layout no sabe en qué ruta está. No decide nada
-  // aquí; solo la anota.
-  const cabeceras = new Headers(original.headers);
-
-  cabeceras.set("x-ruta", original.nextUrl.pathname);
-
-  const request = new NextRequest(original, { headers: cabeceras });
+  const request = new NextRequest(original);
   const respuesta = manejarIdioma(request);
 
   return refrescarSesion(request, respuesta);

@@ -30,7 +30,7 @@ export async function listarPermisosPorRol(): Promise<PermisosDeRol[]> {
 
 /**
  * Lo mismo sin guardia propia, para las pantallas que ya exigen su rol
- * (visibilidad, mapa del sitio) y necesitan el menú REAL de cada rol, no el de
+ * (mapa del sitio) y necesitan el menú REAL de cada rol, no el de
  * fábrica del código.
  */
 export async function leerPermisosPorRol(): Promise<PermisosDeRol[]> {

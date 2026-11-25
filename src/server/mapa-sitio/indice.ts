@@ -58,7 +58,7 @@ export function menusPorRol(
     const permisos = permisosPorRol.get(rol) ?? [];
     const conjunto = new Set<Permiso>(permisos);
 
-    const areas = menuDe(rol, undefined, conjunto).map((area) => ({
+    const areas = menuDe(rol, conjunto).map((area) => ({
       clave: area.clave,
       etiqueta: t.nav(area.etiqueta),
       area,

@@ -9,7 +9,6 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirRol } from "@/lib/auth";
 import { menuDe, itemsDeArea } from "@/lib/nav";
-import { visibilidadDeRol } from "@/server/visibilidad/consultas";
 import { TARJETA } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
@@ -47,11 +46,7 @@ export default async function PaginaConfiguracion({
 
   // Los módulos que ofrece el menú de esta cuenta. Sale de `menuDe`, igual que
   // el mapa del sitio: una cifra de "módulos" escrita a mano se queda vieja.
-  const modulos = menuDe(
-    usuario.rol,
-    new Set((await visibilidadDeRol(usuario.rol)).fueraDelMenu),
-    new Set(usuario.permisos),
-  ).flatMap(itemsDeArea).length;
+  const modulos = menuDe(usuario.rol, new Set(usuario.permisos)).flatMap(itemsDeArea).length;
 
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">

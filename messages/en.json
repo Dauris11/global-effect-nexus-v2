@@ -3137,8 +3137,7 @@
     "settingsDesc": {
       "general": "Summary of the system settings.",
       "staff": "Adding and managing staff.",
-      "permissions": "What each role can do and the per-person exceptions.",
-      "visibility": "Which menus and features each role sees.",
+      "permissions": "What each role can do and the per-person exceptions. What they can't open, they don't see.",
       "parameters": "Scholarship rules, canteen hours, letter deadline day…",
       "landing": "Public home page announcements.",
       "ia": "Usage, quotas, models and agents of Elly AI.",
@@ -3150,8 +3149,7 @@
     "settingsKeys": {
       "general": "settings home",
       "staff": "staff users employees invite",
-      "permissions": "permissions roles access exceptions",
-      "visibility": "visibility menus hide block",
+      "permissions": "permissions roles access exceptions visibility menus modules",
       "parameters": "parameters rules scholarship canteen letters deadline index hours",
       "landing": "landing home hero announcements",
       "ia": "elly ai artificial intelligence agents quotas model tokens usage",
@@ -3372,7 +3370,6 @@
       "general": "General",
       "staff": "Staff",
       "permissions": "Permissions",
-      "visibility": "Visibility",
       "parameters": "Parameters",
       "landing": "Homepage",
       "ia": "AI",
@@ -6053,35 +6050,6 @@
       "conciliado": "reconciled"
     }
   },
-  "visibilidad": {
-    "eyebrow": "Settings",
-    "title": "What each role sees",
-    "subtitle": "Hide or show modules for the other roles. As master administrator, you always see everything.",
-    "back": "Back to settings",
-    "hints": {
-      "visible": "Visible: it shows in the menu.",
-      "oculto": "Hidden: it leaves the menu, search and home, but still opens if someone knows the address (with their usual permissions).",
-      "bloqueado": "Blocked: it leaves the menu and the direct address does not open either."
-    },
-    "permissionsNote": "Hiding does not change permissions: what each role can do with the data still depends on them.",
-    "permissionsLink": "See permissions and exceptions",
-    "pickRole": "Role",
-    "counts": "{rol}: {o} hidden · {b} blocked",
-    "functions": "Features",
-    "assistant": "AI assistant button",
-    "states": {
-      "visible": "Visible",
-      "oculto": "Hidden",
-      "bloqueado": "Blocked"
-    },
-    "alwaysVisible": "Always visible",
-    "showArea": "Show area",
-    "hideArea": "Hide area",
-    "resetAll": "Show everything",
-    "save": "Save for {rol}",
-    "saved": "Saved: {ocultas} hidden and {bloqueadas} blocked. Applies on the next screen each person opens.",
-    "failed": "Could not save. Check and try again."
-  },
   "parametros": {
     "eyebrow": "Settings",
     "title": "Institutional parameters",
@@ -7273,6 +7241,13 @@
       "transporte_gestionar": "Manage transport",
       "transporte_operar": "Operate transport routes",
       "usuarios_administrar": "Manage users"
+    },
+    "help": "What they can't open, they don't see: each person's menu is computed from their permissions, with no separate visibility list.",
+    "unlocks": "Unlocks: {modules}",
+    "preview": {
+      "title": "Will see these modules",
+      "count": "{count, plural, =0 {No modules} =1 {1 module} other {# modules}}",
+      "empty": "With these permissions they see no modules."
     }
   },
   "lineaTiempo": {
