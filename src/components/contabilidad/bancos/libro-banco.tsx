@@ -12,6 +12,7 @@ import { fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import type { FiltroLibro, FilaLibro, Libro } from "@/server/contabilidad/bancos/consultas";
+import { AsientoMovimientoBanco } from "./botones-asiento-banco";
 
 /**
  * Los movimientos de una cuenta (§4.2): filtros, totales del rango y saldo
@@ -43,6 +44,11 @@ export async function LibroBanco({
     ]
       .filter(Boolean)
       .join(" · ");
+
+  // Solo los movimientos que escriben un asiento por su cuenta (recibo y
+  // transferencia); los demás no tienen asiento propio que mostrar.
+  const conAsiento = (fila: FilaLibro) =>
+    fila.origen_tabla === "recibo" || fila.origen_tabla === "transferencia_interna";
 
   const enlace = (fila: FilaLibro) =>
     fila.origen_tabla === "recibo" && fila.origen_id ? `/contabilidad/recibos/${fila.origen_id}` : null;
@@ -110,6 +116,7 @@ export async function LibroBanco({
                   <th className="px-4 py-3 font-medium">{t("concepto")}</th>
                   <th className="px-4 py-3 text-right font-medium">{t("importe")}</th>
                   <th className="px-4 py-3 text-right font-medium">{t("saldo")}</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -136,6 +143,9 @@ export async function LibroBanco({
                       <td className="px-4 py-3 text-right text-tinta-2">
                         {fila.saldo ? <Monto valor={fila.saldo} moneda={moneda} /> : "—"}
                       </td>
+                      <td className="px-4 py-2 text-right">
+                        {conAsiento(fila) && <AsientoMovimientoBanco movimientoId={fila.id} />}
+                      </td>
                     </tr>
                   );
                 })}
@@ -155,6 +165,7 @@ export async function LibroBanco({
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <Marcas fila={fila} anulado={t("anulado")} />
+                  {conAsiento(fila) && <AsientoMovimientoBanco movimientoId={fila.id} />}
                   {fila.saldo && (
                     <span className="texto-meta">
                       {t("saldo")}: <Monto valor={fila.saldo} moneda={moneda} />

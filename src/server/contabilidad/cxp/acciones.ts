@@ -2,10 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requerirUsuario } from "@/lib/auth";
-import { enTransaccionComo } from "@/lib/db";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import { consultarUna, enTransaccionComo } from "@/lib/db";
 import { esFechaIso, esFormaPago, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/formato";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
+import { vistaDeAsientoContabilizado } from "@/server/contabilidad/asientos/vista";
+import { errorDeCodigoSql, vistaPreviaDePagoCxp } from "@/server/contabilidad/proveedores/asiento";
 import { contextoDe, estadoDeError, type EstadoErrorContable } from "@/server/contabilidad/sesion";
 
 /**
@@ -28,8 +31,12 @@ export type EstadoCxpAccion = {
     | "supera_saldo"
     | "moneda_distinta"
     | "no_admite"
+    | "proveedor_codigo_sin_cuenta"
+    | "proveedor_cuenta_no_valida"
     | EstadoErrorContable;
   id?: string;
+  /** Nombre del código de transacción implicado (para el texto del error). */
+  codigo?: string;
 };
 
 function texto(datos: FormData, campo: string, maximo = 200): string {
@@ -114,6 +121,36 @@ export async function pagarCxp(
     if (mensaje.includes("supera el saldo")) return { estado: "supera_saldo" };
     if (mensaje.includes("la cuenta de salida en")) return { estado: "moneda_distinta" };
     if (mensaje.includes("no admite pagos")) return { estado: "no_admite" };
+    const deCodigo = await errorDeCodigoSql(error);
+    if (deCodigo) return deCodigo;
     return { estado: estadoDeError(error) };
   }
+}
+
+/**
+ * Opción «Asiento» del formulario de pago: el asiento que saldría con la cuenta
+ * de salida, el monto y la tasa que la persona lleva escritos. No escribe nada.
+ */
+export async function asientoDePagoPrevio(
+  id: string,
+  cuenta: string,
+  monto: string,
+  tasa: string,
+): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const montoLimpio = montoValido(monto.trim());
+  if (!esUuid(id) || !esUuid(cuenta) || !montoLimpio) throw new Error("Datos del pago no válidos.");
+  return vistaPreviaDePagoCxp(id, cuenta, montoLimpio, tasaValida(tasa.trim()));
+}
+
+/** Opción «Asiento» de un pago ya hecho: el asiento real de su recibo de egreso. */
+export async function asientoDePagoCxp(pagoId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  if (!esUuid(pagoId)) throw new Error("Pago no válido.");
+  const pago = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT r.asiento_id FROM contabilidad.pago p JOIN contabilidad.recibo r ON r.id = p.recibo_id WHERE p.id = $1`,
+    [pagoId],
+  );
+  if (!pago?.asiento_id) throw new Error("El pago no tiene asiento.");
+  return vistaDeAsientoContabilizado(pago.asiento_id);
 }

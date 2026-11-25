@@ -8,6 +8,7 @@ import { esFechaIso, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { obtenerAdaptador, type ColumnasEstado } from "@/server/contabilidad/bancos";
 import { claveDeTransaccion } from "@/lib/contabilidad/extracto";
+import { problemaDeErrorSql } from "@/server/contabilidad/asientos/vista-sql";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe, estadoDeError, type EstadoErrorContable } from "@/server/contabilidad/sesion";
 
@@ -32,6 +33,8 @@ export type EstadoBanco = {
     | "archivo_invalido"
     | "archivo_vacio"
     | "montos_distintos"
+    /** Un código de transacción (p. ej. la ganancia cambiaria) sin cuenta válida; `detalle` trae el código. */
+    | "tesoreria_codigo_sin_cuenta"
     | EstadoErrorContable;
   /** Error de lectura del CSV ("Línea 12: fecha inválida…"). Es dato, no texto de interfaz. */
   detalle?: string;
@@ -78,6 +81,11 @@ export async function transferirEntreCuentas(
     refrescar();
     return { estado: "ok", id };
   } catch (error) {
+    // `linea_por_codigo` avisa con «codigo_sin_cuenta:CODIGO» o «cuenta_no_valida:CODIGO».
+    const problema = problemaDeErrorSql(error);
+    if (problema.clave === "codigo_sin_cuenta" || problema.clave === "cuenta_inactiva") {
+      return { estado: "tesoreria_codigo_sin_cuenta", detalle: problema.codigo };
+    }
     return { estado: estadoDeError(error) };
   }
 }

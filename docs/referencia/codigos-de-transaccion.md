@@ -107,3 +107,25 @@ export async function asientoDeX(id: string): Promise<VistaAsiento> {
 ```
 
 Prueba sin base: `npx tsx scripts/probar-vista-asiento.ts`.
+
+## Módulos cableados (25 nov 2026, migraciones 0117–0120)
+
+Todos los procesos que generan asientos usan códigos y tienen la opción «Asiento». Cada grupo tiene su archivo en `src/lib/contabilidad/codigos/`.
+
+| Grupo | Códigos | Sembrados a cuenta | Sin cuenta (hay que asignarla) |
+|---|---|---|---|
+| Nómina | `NOM_*` (15) | sueldos 5.3.3.x, aportes 5.3.4.x, por pagar 2.3.1 | `NOM_ISR_X_PAGAR` |
+| Tesorería (`grupo-tesoreria.ts`) | `BAN_TRANSFER_GANANCIA_CAMBIARIA`, `BAN_TRANSFER_PERDIDA_CAMBIARIA`, `CAJ_CAJA_CHICA`, `CAJ_ARQUEO_FALTANTE`, `CAJ_ARQUEO_SOBRANTE` | 4.3.2, 5.4.4, 1.1.1, 5.4.12 | `CAJ_ARQUEO_SOBRANTE` |
+| Proveedores (`grupo-proveedores.ts`) | `PROV_CXP_FACTURA`, `PROV_PAGO_CXP`, `PROV_ISR_RETENIDO_X_PAGAR`, `PROV_ITBIS_RETENIDO_X_PAGAR` | ninguno | los cuatro |
+| Patrimonio (`grupo-patrimonio.ts`) | `DON_NACIONAL_BANCO`, `DON_INTERNACIONAL_BANCO`, `DON_ESPECIE_*`, `FON_LIBERACION_*`, `CIE_RESULTADOS_ACUMULADOS_*` | 4.1.1, 4.1.3, 3.1.1, 3.1.2 | `DON_ESPECIE_INGRESO`, `DON_ESPECIE_BIEN_RECIBIDO` |
+| Operaciones (`grupo-operaciones.ts`) | `INV_*` (6), `AF_*` (2), `CALC_FACTURA_*` (5) | `CALC_FACTURA_GASTO` → 5.4.12 | el resto |
+
+Reglas que conviene recordar:
+
+- **Un código tiene un solo lado.** Si una cuenta entra por un lado y sale por el otro (existencias, cuentas por pagar), son dos códigos que pueden apuntar a la misma cuenta.
+- **Lo que elige la persona NO es un código:** el banco o la caja de un recibo, las dos cuentas de una transferencia, el banco de una donación, la contrapartida de la categoría de un recibo y las cuentas de resultado que cancela el cierre anual.
+- **Excepción del lado:** `PROV_PAGO_CXP` siempre debita, porque lo fija el recibo de egreso (`contabilizar_recibo`); `lineas_pago_cxp` y `lineas_recibo` deben mantenerse alineadas.
+- **Procesos en SQL** (facturas, pagos, recibos, transferencias): cada uno tiene una función pura `contabilidad.lineas_<proceso>(…)` que usa `linea_por_codigo`; la función que contabiliza la llama y luego `crear_asiento`, así «Asiento» y el asiento real salen del mismo cálculo. La vista previa de esas funciones es `vistaDeFuncionSql` (`src/server/contabilidad/asientos/vista-sql.ts`).
+- **Procesos en TypeScript** (nómina, donaciones, fondos, cierre, inventario, activos, calculadoras): un `asiento.ts` por módulo con `construirLineasPorCodigo`.
+- **Errores:** los procesos de operaciones devuelven `ResultadoOperacion` con el texto ya traducido (`src/server/contabilidad/operaciones/errores.ts`) porque en producción Next oculta el mensaje de un `throw`.
+- **Los asientos manuales y los recurrentes no usan códigos**: la plantilla ya fija sus cuentas. Solo tienen la opción «Asiento» para ver si cuadran.

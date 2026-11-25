@@ -25,12 +25,8 @@ import { crearArticulo } from "@/server/contabilidad/inventario/acciones";
 
 export function DialogoArticulo({
   centrosCosto,
-  cuentasInventario,
-  cuentasGasto,
 }: {
   centrosCosto: Array<{ id: string; codigo: string; nombre: string }>;
-  cuentasInventario: Array<{ id: string; codigo: string; nombre: string }>;
-  cuentasGasto: Array<{ id: string; codigo: string; nombre: string }>;
 }) {
   const t = useTranslations("contab.inventarioContable");
   const [abierto, setAbierto] = useState(false);
@@ -46,8 +42,6 @@ export function DialogoArticulo({
     "unidad" | "libra" | "kilo" | "caja" | "saco" | "litro" | "galon" | "paquete"
   >("libra");
   const [centroCostoId, setCentroCostoId] = useState(centrosCosto[0]?.id || "");
-  const [cuentaInventarioId, setCuentaInventarioId] = useState(cuentasInventario[0]?.id || "");
-  const [cuentaGastoId, setCuentaGastoId] = useState(cuentasGasto[0]?.id || "");
   const [stockMinimo, setStockMinimo] = useState("10");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,8 +56,6 @@ export function DialogoArticulo({
         categoria,
         unidad_medida: unidadMedida,
         centro_costo_id: centroCostoId || null,
-        cuenta_inventario_id: cuentaInventarioId,
-        cuenta_gasto_id: cuentaGastoId,
         stock_minimo: Number(stockMinimo) || 0,
       });
 
@@ -178,40 +170,6 @@ export function DialogoArticulo({
               </div>
             </PasoFormulario>
 
-            <PasoFormulario titulo={t("pasos.cuentas")}>
-              <div className="space-y-1">
-                <Label htmlFor="art-cta-inv">{t("cuentaInventario")}</Label>
-                <Select value={cuentaInventarioId} onValueChange={setCuentaInventarioId} required>
-                  <SelectTrigger id="art-cta-inv">
-                    <SelectValue placeholder="Seleccione cuenta..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cuentasInventario.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.codigo} — {c.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="art-cta-gas">{t("cuentaGasto")}</Label>
-                <Select value={cuentaGastoId} onValueChange={setCuentaGastoId} required>
-                  <SelectTrigger id="art-cta-gas">
-                    <SelectValue placeholder="Seleccione cuenta..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cuentasGasto.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.codigo} — {c.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </PasoFormulario>
-
             <AccionesFormulario>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
@@ -219,7 +177,7 @@ export function DialogoArticulo({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={cargando || !codigo || !nombre || !cuentaInventarioId || !cuentaGastoId}
+                  disabled={cargando || !codigo || !nombre}
                   className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

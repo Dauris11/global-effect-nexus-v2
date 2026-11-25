@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { ArrowLeftRight, Link2, Loader2, Save, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
@@ -25,6 +26,7 @@ import {
   vincularCuentaContable,
   type EstadoBanco,
 } from "@/server/contabilidad/bancos/acciones";
+import { asientoPreviaTransferencia } from "@/server/contabilidad/bancos/acciones-asiento";
 import type { OpcionCuenta } from "@/server/contabilidad/recibos/consultas";
 
 const INICIAL: EstadoBanco = { estado: "inicial" };
@@ -81,6 +83,9 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
   const [origen, setOrigen] = useState(cuentas[0]?.id ?? "");
   const [destino, setDestino] = useState(cuentas[1]?.id ?? "");
   const error = useError(estado);
+  // «Asiento» lee lo escrito hasta ahora en el formulario (los pasos ocultos
+  // siguen montados, ver FormularioGuiado) y calcula la diferencia cambiaria.
+  const formulario = useRef<HTMLFormElement>(null);
   const monedaOrigen = cuentas.find((c) => c.id === origen)?.moneda;
   const monedaDestino = cuentas.find((c) => c.id === destino)?.moneda;
 
@@ -97,7 +102,7 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
           <DialogTitle>{t("titulo")}</DialogTitle>
           <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
-        <form action={enviar} className="space-y-4">
+        <form ref={formulario} action={enviar} className="space-y-4">
           <FormularioGuiado>
             <PasoFormulario titulo={t("pasos.cuentas")}>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -138,6 +143,9 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
             </PasoFormulario>
             {error && <AvisoError>{error}</AvisoError>}
             <AccionesFormulario>
+              <BotonAsiento
+                cargar={() => asientoPreviaTransferencia(new FormData(formulario.current ?? undefined))}
+              />
               <Button type="submit" cargando={enviando}>
                 {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                 {t("guardar")}

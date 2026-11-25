@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { liberarFondoRestringido } from "@/server/contabilidad/fondos/acciones";
+import { asientoPreviaLiberacion, liberarFondoRestringido } from "@/server/contabilidad/fondos/acciones";
 import type { FondoItem } from "@/server/contabilidad/fondos/consultas";
 
 export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
@@ -148,6 +149,11 @@ export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
               </div>
 
               <DialogFooter className="gap-2 sm:gap-0">
+                {/* Con el fondo y el monto escritos: muestra las cuentas y si algún código falta. */}
+                <BotonAsiento
+                  size="default"
+                  cargar={() => asientoPreviaLiberacion({ fondoId, monto: Number(monto) })}
+                />
                 <Button
                   type="button"
                   variant="outline"

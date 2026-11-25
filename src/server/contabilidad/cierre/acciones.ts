@@ -1,11 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { enTransaccionComo } from "@/lib/db";
+import { enTransaccion, enTransaccionComo } from "@/lib/db";
 import { requerirPermiso } from "@/lib/auth";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
 import { obtenerResumenPreCierreAnual } from "./consultas";
+import { textoDeErrorCodigos } from "@/server/contabilidad/patrimonio/errores";
+import { armarAsientoCierre, conceptoDeCierre } from "./asiento";
+import { construirLineasPorCodigo } from "@/server/contabilidad/codigos-transaccion/asiento";
+import { vistaDeAsientoContabilizado, vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 
 export async function cerrarPeriodoMensual(periodoId: string): Promise<{ ok: boolean }> {
   const usuario = await requerirPermiso("contabilidad.cerrar_periodo");
@@ -71,21 +76,17 @@ export async function ejecutarCierreAnual(
     }
     const periodoDiciembreId = perRows[0].id;
 
-    // 2. Obtener la cuenta de Balance Acumulado (3.1.2)
-    const { rows: ctaRows } = await cliente.query<{ id: string }>(
-      `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '3.1.2'`,
-    );
-    if (ctaRows.length === 0) {
-      throw new Error("No se encontró la cuenta de Balance Acumulado (3.1.2).");
-    }
-    const cuentaResultadosAcumuladosId = ctaRows[0].id;
-
+    // 2. Las líneas salen de los códigos de cierre (Configuración contable):
+    // cada cuenta con saldo se cancela y la contrapartida va a resultados
+    // acumulados. Si falta la cuenta del código, el motor se detiene con un
+    // mensaje claro antes de escribir nada.
+    const { partidas, lineasExtra, hayMovimientos } = armarAsientoCierre(resumen, ejercicio);
     let asientoCierreId: string | null = null;
 
     // Si existen saldos a liquidar en ingresos o gastos, generamos el asiento de cierre
-    const hayMovimientos = resumen.cuentasIngresoSaldar.length > 0 || resumen.cuentasGastoSaldar.length > 0;
-
     if (hayMovimientos) {
+      const lineas = await construirLineasPorCodigo(cliente, partidas, lineasExtra);
+
       // Siguiente número de asiento
       const { rows: numRows } = await cliente.query<{ sig: string }>(
         `SELECT contabilidad.siguiente_numero('AS') AS sig`,
@@ -94,7 +95,6 @@ export async function ejecutarCierreAnual(
 
       // Crear asiento
       const fechaCierre = `${ejercicio}-12-31`;
-      const concepto = `Asiento de Cierre Ejercicio Fiscal ${ejercicio} - Cancelación de Cuentas de Resultados`;
 
       const { rows: asRows } = await cliente.query<{ id: string }>(
         // Nace procesado: lo genera el cierre que alguien ya aprobó, y un
@@ -103,67 +103,16 @@ export async function ejecutarCierreAnual(
            (numero, fecha, periodo_id, concepto, tipo, creado_por, procesado_en, procesado_por)
          VALUES ($1, $2, $3, $4, 'ajuste', $5, now(), $5)
          RETURNING id`,
-        [numeroAsiento, fechaCierre, periodoDiciembreId, concepto, ctx.usuarioId],
+        [numeroAsiento, fechaCierre, periodoDiciembreId, conceptoDeCierre(ejercicio), ctx.usuarioId],
       );
       asientoCierreId = asRows[0].id;
 
-      // Líneas para cancelar cuentas de ingresos (debe)
-      for (const ing of resumen.cuentasIngresoSaldar) {
+      for (const l of lineas) {
         await cliente.query(
           `INSERT INTO contabilidad.asiento_linea
              (asiento_id, cuenta_id, debe, haber, descripcion)
-           VALUES ($1, $2, $3, 0, $4)`,
-          [
-            asientoCierreId,
-            ing.cuentaId,
-            ing.saldo,
-            `Cancelación saldo acreedor ingreso: ${ing.nombre}`,
-          ],
-        );
-      }
-
-      // Líneas para cancelar cuentas de gastos (haber)
-      for (const gas of resumen.cuentasGastoSaldar) {
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, cuenta_id, debe, haber, descripcion)
-           VALUES ($1, $2, 0, $3, $4)`,
-          [
-            asientoCierreId,
-            gas.cuentaId,
-            gas.saldo,
-            `Cancelación saldo deudor gasto: ${gas.nombre}`,
-          ],
-        );
-      }
-
-      // Contrapartida a Resultados Acumulados
-      const superavit = resumen.superavitDeficitNeto;
-      if (superavit > 0) {
-        // Superávit: Crédito a Resultados Acumulados
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, cuenta_id, debe, haber, descripcion)
-           VALUES ($1, $2, 0, $3, $4)`,
-          [
-            asientoCierreId,
-            cuentaResultadosAcumuladosId,
-            superavit,
-            `Superávit neto del ejercicio ${ejercicio} trasladado a Resultados Acumulados`,
-          ],
-        );
-      } else if (superavit < 0) {
-        // Déficit: Débito a Resultados Acumulados
-        await cliente.query(
-          `INSERT INTO contabilidad.asiento_linea
-             (asiento_id, cuenta_id, debe, haber, descripcion)
-           VALUES ($1, $2, $3, 0, $4)`,
-          [
-            asientoCierreId,
-            cuentaResultadosAcumuladosId,
-            Math.abs(superavit),
-            `Déficit neto del ejercicio ${ejercicio} absorbido en Resultados Acumulados`,
-          ],
+           VALUES ($1, $2, $3, $4, $5)`,
+          [asientoCierreId, l.cuenta_id, l.debe, l.haber, l.descripcion],
         );
       }
     }
@@ -192,5 +141,33 @@ export async function ejecutarCierreAnual(
       cierreId: crRows[0].id,
       asientoId: asientoCierreId,
     };
+  }).catch(async (error: unknown) => {
+    // Un código sin cuenta debe leerse como «qué falta», no como un error técnico.
+    const traducido = await textoDeErrorCodigos(error);
+    throw traducido ? new Error(traducido) : error;
   });
+}
+
+/**
+ * Opción «Asiento» del cierre anual: el asiento que saldría hoy con los saldos
+ * de ingresos y gastos del ejercicio, sin escribir nada. Si el ejercicio ya se
+ * cerró, el cierre real se ve con `asientoDeCierreAnual`.
+ */
+export async function asientoPreviaCierreAnual(ejercicio: number): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const resumen = await obtenerResumenPreCierreAnual(ejercicio);
+  const { partidas, lineasExtra } = armarAsientoCierre(resumen, ejercicio);
+  return enTransaccion((cliente) =>
+    vistaDeLineasPorCodigo(cliente, partidas, {
+      fecha: `${ejercicio}-12-31`,
+      descripcion: conceptoDeCierre(ejercicio),
+      lineasExtra,
+    }),
+  );
+}
+
+/** Opción «Asiento» de un cierre anual ya ejecutado. */
+export async function asientoDeCierreAnual(asientoId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  return vistaDeAsientoContabilizado(asientoId);
 }

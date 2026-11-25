@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Dato, InsigniaEstadoRecibo, Monto } from "@/components/contabilidad/comun";
+import { AsientoRecibo } from "@/components/contabilidad/recibos/boton-asiento-recibo";
 import {
   BotonContabilizar,
   DialogoAnular,
@@ -84,6 +85,9 @@ export default async function PaginaRecibo({
         acciones={
           <>
             <InsigniaEstadoRecibo estado={recibo.estado} etiqueta={tc(`estado.${recibo.estado}`)} />
+            <NextIntlClientProvider messages={mensajes}>
+              <AsientoRecibo reciboId={recibo.id} />
+            </NextIntlClientProvider>
             <Button asChild variant="secondary">
               {/* Fuera del armazón del portal, para que imprima solo el recibo. */}
               <a href={getPathname({ href: `/comprobante/recibo/${recibo.id}`, locale })} target="_blank" rel="noopener">

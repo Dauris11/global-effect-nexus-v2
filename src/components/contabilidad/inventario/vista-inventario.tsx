@@ -10,6 +10,11 @@ import type {
   MovimientoKardex,
   ConteoFisicoResumen,
 } from "@/server/contabilidad/inventario/consultas";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
+import {
+  asientoDeConteoFisico,
+  asientoDeMovimientoInventario,
+} from "@/server/contabilidad/inventario/acciones";
 import { DialogoArticulo } from "./dialogo-articulo";
 import { DialogoMovimiento } from "./dialogo-movimiento";
 import { DialogoConteoFisico } from "./dialogo-conteo-fisico";
@@ -19,15 +24,11 @@ export function VistaInventario({
   movimientosRecientes,
   conteos,
   centrosCosto,
-  cuentasInventario,
-  cuentasGasto,
 }: {
   articulos: ArticuloInventario[];
   movimientosRecientes: MovimientoKardex[];
   conteos: ConteoFisicoResumen[];
   centrosCosto: Array<{ id: string; codigo: string; nombre: string }>;
-  cuentasInventario: Array<{ id: string; codigo: string; nombre: string }>;
-  cuentasGasto: Array<{ id: string; codigo: string; nombre: string }>;
 }) {
   const t = useTranslations("contab.inventarioContable");
   const [tabActiva, setTabActiva] = useState("catalogo");
@@ -102,11 +103,7 @@ export function VistaInventario({
               centrosCosto={centrosCosto}
             />
             <DialogoConteoFisico />
-            <DialogoArticulo
-              centrosCosto={centrosCosto}
-              cuentasInventario={cuentasInventario}
-              cuentasGasto={cuentasGasto}
-            />
+            <DialogoArticulo centrosCosto={centrosCosto} />
           </div>
         </div>
 
@@ -205,6 +202,7 @@ export function VistaInventario({
                     <th className="px-4 py-3 text-right">{t("stockAnterior")}</th>
                     <th className="px-4 py-3 text-right font-semibold">{t("stockPosterior")}</th>
                     <th className="px-4 py-3">{t("colMotivoPrograma")}</th>
+                    <th className="px-4 py-3 text-right">{t("colAsiento")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -243,6 +241,13 @@ export function VistaInventario({
                       <td className="px-4 py-3 text-xs text-muted-foreground">
                         {m.motivo ?? (m.centro_costo_nombre ? t("imputadoA", { nombre: m.centro_costo_nombre }) : "—")}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        {m.asiento_id ? (
+                          <BotonAsiento cargar={() => asientoDeMovimientoInventario(m.id)} />
+                        ) : (
+                          <span className="text-tinta-3">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -269,6 +274,7 @@ export function VistaInventario({
                     <th className="px-4 py-3 text-right">{t("diferencia")}</th>
                     <th className="px-4 py-3 text-right">{t("impacto")}</th>
                     <th className="px-4 py-3 text-center">{t("colEstado")}</th>
+                    <th className="px-4 py-3 text-right">{t("colAsiento")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -299,6 +305,9 @@ export function VistaInventario({
                         >
                           {c.estado}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <BotonAsiento cargar={() => asientoDeConteoFisico(c.id)} />
                       </td>
                     </tr>
                   ))}

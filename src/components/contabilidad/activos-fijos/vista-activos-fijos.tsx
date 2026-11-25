@@ -10,6 +10,8 @@ import type {
   DepreciacionMensualResumen,
   CategoriaActivo,
 } from "@/server/contabilidad/activos-fijos/consultas";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
+import { asientoDeDepreciacionEjecutada } from "@/server/contabilidad/activos-fijos/acciones";
 import { DialogoActivoFijo } from "./dialogo-activo-fijo";
 import { DialogoDepreciacion } from "./dialogo-depreciacion";
 
@@ -189,6 +191,7 @@ export function VistaActivosFijos({
                     <th className="px-4 py-3 text-right font-bold text-marca-500">
                       {t("totalAmortizado")}
                     </th>
+                    <th className="px-4 py-3 text-right">{t("colAsiento")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -204,6 +207,13 @@ export function VistaActivosFijos({
                       <td className="px-4 py-3 text-center tabular-nums">{d.activos_conteo}</td>
                       <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {d.total_depreciacion.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {d.asiento_id ? (
+                          <BotonAsiento cargar={() => asientoDeDepreciacionEjecutada(d.id)} />
+                        ) : (
+                          <span className="text-tinta-3">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

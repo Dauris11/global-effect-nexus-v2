@@ -4,6 +4,7 @@ import { useState } from "react";
 import { HeartHandshake } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { registrarDonacion } from "@/server/contabilidad/donaciones/acciones";
+import { asientoPreviaDonacion, registrarDonacion } from "@/server/contabilidad/donaciones/acciones";
 
 export function DialogoDonacion({
   donantes,
@@ -246,6 +247,20 @@ export function DialogoDonacion({
 
             <AccionesFormulario>
               <DialogFooter>
+                {/* Calcula con lo que hay en el formulario, para ver qué cuenta falta antes de registrar. */}
+                <BotonAsiento
+                  size="default"
+                  cargar={() =>
+                    asientoPreviaDonacion({
+                      clase,
+                      moneda,
+                      tasa: moneda === "USD" ? Number(tasa) : undefined,
+                      monto: Number(monto),
+                      fecha,
+                      cuentaBancariaId: clase === "efectivo" ? cuentaBancariaId : undefined,
+                    })
+                  }
+                />
                 <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
                   {t("cancelar")}
                 </Button>

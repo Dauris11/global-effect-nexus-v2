@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Loader2, Receipt, Save, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { registrarMovimientoCajaAction } from "@/server/contabilidad/cajas/acciones";
+import { asientoPreviaGastoCaja } from "@/server/contabilidad/cajas/acciones-asiento";
 import type { CajaResumen, CategoriaGastoCaja } from "@/server/contabilidad/cajas/consultas";
 import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
 
@@ -47,6 +49,19 @@ export function FormularioMovimientoCaja({
   const [tipo, setTipo] = useState<"gasto" | "vale">("gasto");
   const [monto, setMonto] = useState("");
   const [archivo, setArchivo] = useState<string | null>(null);
+  // «Asiento» lee lo escrito hasta ahora (los pasos ocultos siguen montados).
+  const formularioRef = useRef<HTMLFormElement>(null);
+
+  function previaDelGasto() {
+    const datos = new FormData(formularioRef.current ?? undefined);
+    return asientoPreviaGastoCaja({
+      cajaId: caja.id,
+      categoriaId: String(datos.get("categoriaId") ?? "") || null,
+      monto: Number(datos.get("monto")),
+      concepto: String(datos.get("concepto") ?? ""),
+      fecha: String(datos.get("fecha") ?? ""),
+    });
+  }
 
   const umbral = Number(caja.umbralAdjunto);
   const requiereAdjunto = tipo === "gasto" && (Number(monto) || 0) >= umbral;
@@ -84,7 +99,7 @@ export function FormularioMovimientoCaja({
           <DialogTitle>{t("nuevoMovimiento")}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={enviar} className="space-y-4">
+        <form ref={formularioRef} onSubmit={enviar} className="space-y-4">
           <FormularioGuiado>
             <PasoFormulario titulo={t("pasos.movimiento")}>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -200,7 +215,9 @@ export function FormularioMovimientoCaja({
             {error && <AvisoError>{error}</AvisoError>}
 
             <AccionesFormulario>
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-wrap justify-end gap-2">
+                {/* El vale no genera asiento hasta que se liquida. */}
+                {tipo === "gasto" && <BotonAsiento cargar={previaDelGasto} size="default" />}
                 <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
                   {t("cancelar")}
                 </Button>

@@ -12,6 +12,7 @@ import type {
   MovimientoCaja,
 } from "@/server/contabilidad/cajas/consultas";
 import { BotonAprobarArqueo, DialogoLiquidarVale } from "./acciones-caja";
+import { AsientoArqueo, AsientoMovimientoCaja } from "./botones-asiento-caja";
 
 const TIPO = { gasto: "tipoGasto", vale: "tipoVale", reposicion: "tipoReposicion", ajuste: "tipoAjuste" } as const;
 
@@ -68,6 +69,8 @@ export function TablaMovimientos({
           {t("verAsiento")}
         </Link>
       )}
+      {/* El vale pendiente aún no tiene asiento; la reposición lo tiene en su recibo. */}
+      {(m.asientoId || (m.tipo === "reposicion" && m.reciboId)) && <AsientoMovimientoCaja movimientoId={m.id} />}
       {puedeRegistrar && m.tipo === "vale" && m.estado === "pendiente" && (
         <DialogoLiquidarVale
           movimientoId={m.id}
@@ -194,7 +197,9 @@ export function TablaArqueos({
                 {a.revisadoPorNombre && ` · ${t("colSupervisor")}: ${a.revisadoPorNombre}`}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Sin diferencia no hay asiento que ver. */}
+              {dif !== 0 && <AsientoArqueo arqueoId={a.id} />}
               {a.estado === "aprobado" ? (
                 <>
                   <Badge variant="neutra">{t("aprobado")}</Badge>

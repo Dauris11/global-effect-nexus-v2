@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,8 @@ import {
   cerrarPeriodoMensual,
   reabrirPeriodoMensual,
   ejecutarCierreAnual,
+  asientoPreviaCierreAnual,
+  asientoDeCierreAnual,
 } from "@/server/contabilidad/cierre/acciones";
 
 interface Props {
@@ -311,14 +314,18 @@ export function VistaCierre({
           </div>
 
           {!resumenPreCierreInicial.yaCerrado && (
-            <Button
-              disabled={isPending || !resumenPreCierreInicial.todosMesesCerrados}
-              onClick={() => setDialogoCierreAnualAbierto(true)}
-              className="mt-3 sm:mt-0 bg-[#2096BA] hover:bg-[#187a99] text-white text-xs h-9"
-            >
-              <FileCheck2 className="mr-2 h-4 w-4" />
-              {t("ejecutarCierre")}
-            </Button>
+            <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
+              {/* Disponible aunque falten meses por cerrar: sirve justo para ver qué se cancelaría. */}
+              <BotonAsiento cargar={() => asientoPreviaCierreAnual(ejercicioSeleccionado)} />
+              <Button
+                disabled={isPending || !resumenPreCierreInicial.todosMesesCerrados}
+                onClick={() => setDialogoCierreAnualAbierto(true)}
+                className="bg-[#2096BA] hover:bg-[#187a99] text-white text-xs h-9"
+              >
+                <FileCheck2 className="mr-2 h-4 w-4" />
+                {t("ejecutarCierre")}
+              </Button>
+            </div>
           )}
         </div>
 
@@ -403,7 +410,14 @@ export function VistaCierre({
                     <td className="p-3 font-bold text-foreground">{c.ejercicio}</td>
                     <td className="p-3 tabular-nums text-muted-foreground">{c.fechaCierre}</td>
                     <td className="p-3 font-medium tabular-nums text-[#2096BA]">
-                      {c.asientoCierreNumero ? `#${c.asientoCierreNumero}` : "—"}
+                      {c.asientoCierreNumero && c.asientoCierreId ? (
+                        <span className="inline-flex flex-wrap items-center gap-2">
+                          #{c.asientoCierreNumero}
+                          <BotonAsiento cargar={() => asientoDeCierreAnual(c.asientoCierreId as string)} />
+                        </span>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="p-3 text-right tabular-nums">{formatearMonto(c.totalIngresos)}</td>
                     <td className="p-3 text-right tabular-nums">{formatearMonto(c.totalGastos)}</td>

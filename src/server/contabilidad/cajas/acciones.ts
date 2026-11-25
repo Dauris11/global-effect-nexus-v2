@@ -7,9 +7,6 @@ import type { PoolClient } from "pg";
 import { requerirPermiso } from "@/lib/auth";
 import { enTransaccionComo } from "@/lib/db";
 import {
-  CUENTA_CAJA_CHICA,
-  CUENTA_FALTANTE_CAJA,
-  CUENTA_SOBRANTE_CAJA,
   JUSTIFICACION_MINIMA,
   UMBRAL_ALERTA_DIFERENCIA,
   denominacionesDe,
@@ -20,7 +17,9 @@ import {
 } from "@/lib/contabilidad/cajas";
 import { MAXIMO_ADJUNTO, TIPOS_ADJUNTO, esFechaIso, esUuid } from "@/lib/contabilidad/formato";
 import { subirContable } from "@/lib/supabase/almacen";
+import { construirLineasPorCodigo, ErrorCodigosTransaccion } from "@/server/contabilidad/codigos-transaccion/asiento";
 import { fijarAccion } from "../bitacora";
+import { aJsonDeAsiento, cuentaDeCajaPorDefecto, lineasDeGastoCaja, partidasDeArqueo } from "./asiento";
 import { contextoDe, otrosConPermiso } from "../sesion";
 
 /**
@@ -48,6 +47,9 @@ class Rechazo extends Error {
 
 function fallo(error: unknown): ResultadoCaja {
   if (error instanceof Rechazo) return { exito: false, error: error.clave };
+  // Un código de transacción sin cuenta (p. ej. el sobrante de caja, que el
+  // catálogo no trae) detiene el asiento; «Asiento» dice cuál falta.
+  if (error instanceof ErrorCodigosTransaccion) return { exito: false, error: "codigo_sin_cuenta" };
   const mensaje = error instanceof Error ? error.message : String(error);
   if (mensaje.includes("período contable está cerrado")) return { exito: false, error: "periodo_cerrado" };
   if (mensaje.includes("caja_codigo_key")) return { exito: false, error: "codigo_repetido" };
@@ -58,15 +60,6 @@ function fallo(error: unknown): ResultadoCaja {
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad/cajas", "layout");
   revalidatePath("/[locale]/portal/contabilidad", "page");
-}
-
-async function idCuenta(cliente: PoolClient, codigo: string): Promise<string> {
-  const { rows } = await cliente.query<{ id: string }>(
-    `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1`,
-    [codigo],
-  );
-  if (!rows[0]) throw new Rechazo("sin_cuenta_contable");
-  return rows[0].id;
 }
 
 type CajaBloqueada = {
@@ -81,19 +74,23 @@ type CajaBloqueada = {
 };
 
 /** Bloquea la fila: dos gastos simultáneos no pueden gastar el mismo efectivo. */
-async function bloquearCaja(cliente: PoolClient, cajaId: string): Promise<CajaBloqueada> {
+async function bloquearCaja(
+  cliente: PoolClient,
+  cajaId: string,
+): Promise<CajaBloqueada & { cuenta_id: string }> {
   const { rows } = await cliente.query<CajaBloqueada>(
     `SELECT id, nombre, moneda, fondo_fijo, saldo_actual, umbral_adjunto, estado,
             COALESCE(cuenta_contable_id,
-                     (SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $2)) AS cuenta_id
+                     (SELECT cuenta_id FROM contabilidad.codigo_transaccion
+                       WHERE codigo = 'CAJ_CAJA_CHICA')) AS cuenta_id
        FROM contabilidad.caja WHERE id = $1 FOR UPDATE`,
-    [cajaId, CUENTA_CAJA_CHICA],
+    [cajaId],
   );
   const caja = rows[0];
   if (!caja) throw new Rechazo("no_encontrada");
   if (caja.estado !== "activa") throw new Rechazo("inactiva");
   if (!caja.cuenta_id) throw new Rechazo("sin_cuenta_contable");
-  return caja;
+  return { ...caja, cuenta_id: caja.cuenta_id };
 }
 
 const texto = (datos: FormData, campo: string, maximo = 200): string =>
@@ -127,7 +124,8 @@ export async function crearCajaAction(datos: {
 
   try {
     const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
-      const cuenta = await idCuenta(cliente, CUENTA_CAJA_CHICA);
+      const cuenta = await cuentaDeCajaPorDefecto(cliente);
+      if (!cuenta) throw new Rechazo("sin_cuenta_contable");
       await fijarAccion(cliente, "crear");
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.caja
@@ -244,10 +242,15 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
             fecha,
             `${caja.nombre}: ${concepto}`,
             movimientoId,
-            JSON.stringify([
-              { cuenta_id: cuentaGasto, debe: monto, descripcion: concepto },
-              { cuenta_id: caja.cuenta_id, haber: monto, descripcion: caja.nombre },
-            ]),
+            aJsonDeAsiento(
+              lineasDeGastoCaja({
+                cuentaGasto,
+                cuentaCaja: caja.cuenta_id,
+                monto,
+                concepto,
+                nombreCaja: caja.nombre,
+              }),
+            ),
           ],
         );
       }
@@ -330,10 +333,15 @@ export async function liquidarValeAction(datos: {
             datos.fecha,
             `${caja.nombre}: ${vale.concepto}`,
             rows[0].id,
-            JSON.stringify([
-              { cuenta_id: cat[0].cuenta_id, debe: gastado, descripcion: vale.concepto },
-              { cuenta_id: caja.cuenta_id, haber: gastado, descripcion: caja.nombre },
-            ]),
+            aJsonDeAsiento(
+              lineasDeGastoCaja({
+                cuentaGasto: cat[0].cuenta_id,
+                cuentaCaja: caja.cuenta_id,
+                monto: gastado,
+                concepto: vale.concepto,
+                nombreCaja: caja.nombre,
+              }),
+            ),
           ],
         );
       }
@@ -487,29 +495,14 @@ export async function aprobarArqueoAction(arqueoId: string): Promise<ResultadoCa
 
       if (diferencia !== 0) {
         if (Number(caja.saldo_actual) + diferencia < 0) throw new Rechazo("saldo_insuficiente");
-        const faltante = diferencia < 0;
-        const codigoContra = faltante ? CUENTA_FALTANTE_CAJA : CUENTA_SOBRANTE_CAJA;
-        if (!codigoContra) throw new Rechazo("sin_cuenta_contable");
-        const contra = await idCuenta(cliente, codigoContra);
-        const monto = Math.abs(diferencia);
+        // Faltante o sobrante salen de un código de transacción; la línea de la
+        // caja es la cuenta de esa caja. Si el código no tiene cuenta, el motor
+        // lanza y no se aprueba nada a medias.
+        const armado = partidasDeArqueo(diferencia, caja.cuenta_id)!;
+        const lineas = await construirLineasPorCodigo(cliente, armado.partidas, armado.lineasExtra);
         await cliente.query(
           `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', 'arqueo', $3, $4::jsonb)`,
-          [
-            arqueo.fecha,
-            `AR-${arqueo.numero} ${caja.nombre}`,
-            arqueoId,
-            JSON.stringify(
-              faltante
-                ? [
-                    { cuenta_id: contra, debe: monto },
-                    { cuenta_id: caja.cuenta_id, haber: monto },
-                  ]
-                : [
-                    { cuenta_id: caja.cuenta_id, debe: monto },
-                    { cuenta_id: contra, haber: monto },
-                  ],
-            ),
-          ],
+          [arqueo.fecha, `AR-${arqueo.numero} ${caja.nombre}`, arqueoId, aJsonDeAsiento(lineas)],
         );
         await cliente.query(
           `UPDATE contabilidad.caja SET saldo_actual = saldo_actual + $1 WHERE id = $2`,

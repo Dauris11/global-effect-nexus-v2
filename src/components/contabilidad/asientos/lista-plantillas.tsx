@@ -2,12 +2,14 @@ import { CheckCircle2, PauseCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { BotonActivar, BotonGenerar } from "@/components/contabilidad/asientos/acciones";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Monto } from "@/components/contabilidad/comun";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { numeroDocumento } from "@/lib/contabilidad/formato";
 import { mesLargo } from "@/lib/fechas";
 import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
+import { asientoDePlantilla } from "@/server/contabilidad/asientos/acciones";
 import type { PlantillaRecurrente } from "@/server/contabilidad/asientos/consultas";
 
 /**
@@ -62,6 +64,7 @@ export async function ListaPlantillas({
   const acciones = (p: PlantillaRecurrente) =>
     puedeOperar && (
       <div className="flex flex-wrap items-start gap-2">
+        <BotonAsiento cargar={asientoDePlantilla.bind(null, p.id)} />
         <BotonGenerar id={p.id} deshabilitado={!p.activo || p.generado_este_mes} />
         <BotonActivar id={p.id} activo={p.activo} />
       </div>

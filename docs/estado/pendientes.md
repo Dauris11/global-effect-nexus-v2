@@ -1949,3 +1949,15 @@ Fuente: `auditoria-coherencia-roles-modulos.md`. Contrastada con el código.
 
 - [x] **Mínimo del promedio del liceo configurable (25 nov 2026):** parámetro `becas.promedio_liceo_minimo` = 89 (escala 100) en `src/lib/parametros.ts`, editable en Parámetros y citado en el reglamento del asistente. Aún no hay campo del promedio del liceo en el expediente del candidato ni validación: se construye cuando se sepan las cuatro materias principales.
 - [ ] **Por entregar (usuario):** las cuatro materias principales del récord del liceo y los años que cuentan; los «otros factores» para recomendar carrera; y cómo se calcula el índice en cada universidad (sin responder todavía). Ver `docs/estado/por-entregar.md`.
+
+## Códigos de transacción en todos los módulos (25 nov 2026, migraciones 0115–0120)
+
+- [x] Todos los procesos que generan asientos usan códigos y tienen la opción «Asiento»; el selector del catálogo es un buscador. Guía en [`docs/referencia/codigos-de-transaccion.md`](../referencia/codigos-de-transaccion.md).
+- [ ] **La contadora debe crear cuentas de detalle en el catálogo y asignarles códigos** (sin esto los procesos se detienen con «código sin cuenta» y «Asiento» lo muestra): cuentas por pagar de proveedores (`PROV_CXP_FACTURA`, `PROV_PAGO_CXP`), ISR e ITBIS retenidos por pagar (`PROV_*_RETENIDO_X_PAGAR`, `NOM_ISR_X_PAGAR`, `CALC_FACTURA_*`), existencias y consumo de inventario (`INV_*`), depreciación gasto y acumulada (`AF_*`), sobrante de caja (`CAJ_ARQUEO_SOBRANTE`) y donaciones en especie (`DON_ESPECIE_*`). Hay que decidir si `CALC_FACTURA_*` y `PROV_*` van a las mismas cuentas.
+- [ ] `registrarDonacion` solo exige sesión (la regla 4 pide permiso).
+- [ ] `revertir_asiento` usa `CURRENT_DATE` (regla 12): corregir en una migración aparte.
+- [ ] Decidir si compras, donaciones y ajustes de inventario y el alta y baja de activos fijos generan asiento (hoy no). Falta el botón para aplicar una toma física (`aplicarConteoFisico`).
+- [ ] Decidir si el cierre anual debe pasar por «resultado del ejercicio» (3.1.1) antes de acumulados. Comisiones e intereses bancarios no generan asiento hoy.
+- [ ] Columnas sin uso que se pueden retirar: `articulo.cuenta_inventario_id`/`cuenta_gasto_id` y `activo_categoria.cuenta_*_depreciacion_*`.
+- [ ] Textos fijos en español sin i18n en los diálogos de inventario, activos, fondos, donaciones y cierre.
+- [ ] Probar en el navegador con sesión de contabilidad los botones «Asiento» (incluida la vista móvil) y aprobar y pagar una nómina, factura o recibo reales.

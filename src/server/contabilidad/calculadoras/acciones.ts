@@ -1,10 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requerirUsuario } from "@/lib/auth";
-import { enTransaccionComo } from "@/lib/db";
+import { requerirPermiso } from "@/lib/auth";
+import { enTransaccion, enTransaccionComo } from "@/lib/db";
+import { claveDia } from "@/lib/fechas";
+import { armarVista, type VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
+import { vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import { construirLineasPorCodigo } from "@/server/contabilidad/codigos-transaccion/asiento";
+import { asientoDeFactura, type EntradaFactura } from "@/server/contabilidad/calculadoras/asiento";
+import { ErrorOperacion, textoDeErrorOperacion } from "@/server/contabilidad/operaciones/errores";
 
 export type EstadoAccionCalculadora = {
   ok: boolean;
@@ -13,74 +19,41 @@ export type EstadoAccionCalculadora = {
   asientoNumero?: number;
 };
 
+/**
+ * Convierte el cálculo de una factura en un asiento. Las cuentas salen de los
+ * códigos CALC_FACTURA_* (Configuración contable); si alguno no tiene cuenta,
+ * el error lo dice con su nombre en vez de un código de cuenta suelto.
+ *
+ * Crea un asiento contable, así que exige `contabilidad.registrar` y no solo
+ * una sesión.
+ */
 export async function convertirCalculoEnAsientoBorrador(datos: {
-  tipo: "factura" | "itbis" | "retenciones" | "laboral";
-  concepto: string;
+  tipo: "factura";
+  entrada: EntradaFactura;
   fecha?: string;
-  lineas: {
-    cuentaCodigo: string;
-    descripcion: string;
-    debe: number;
-    haber: number;
-  }[];
 }): Promise<EstadoAccionCalculadora> {
-  const usuario = await requerirUsuario();
-  const fecha = datos.fecha || new Date().toISOString().slice(0, 10);
-
-  // Verificar que el asiento cuadre
-  let totalDebe = 0;
-  let totalHaber = 0;
-  for (const l of datos.lineas) {
-    totalDebe += Number(l.debe || 0);
-    totalHaber += Number(l.haber || 0);
-  }
-
-  const dif = Math.abs(totalDebe - totalHaber);
-  if (dif > 0.01) {
-    return { ok: false, error: `El cálculo no cuadra: Débito (${totalDebe.toFixed(2)}) != Crédito (${totalHaber.toFixed(2)})` };
-  }
+  const usuario = await requerirPermiso("contabilidad.registrar");
+  const fecha = datos.fecha || claveDia();
 
   try {
     const res = await enTransaccionComo<{ asientoId: string; asientoNumero: number }>(await contextoDe(usuario), async (cliente) => {
       await fijarAccion(cliente, "convertir_calculo_en_asiento");
 
-      // Las cuentas llegan por código desde la calculadora; se resuelven antes
-      // de crear el asiento para que un código inválido no deje nada a medias.
-      const lineas: { cuenta_id: string; debe: number; haber: number; descripcion: string }[] = [];
-      for (const l of datos.lineas) {
-        const { rows: ctaRows } = await cliente.query<{ id: string }>(
-          `SELECT id FROM contabilidad.cuenta_contable
-            WHERE codigo = $1 AND admite_movimiento AND activa LIMIT 1`,
-          [l.cuentaCodigo]
-        );
-        const ctaId = ctaRows[0]?.id;
-        if (!ctaId) {
-          // El catálogo de la Fundación no tiene cuentas de ITBIS/ISR ni de
-          // proveedores con movimiento: el asiento de una factura no se puede armar.
-          throw new Error(
-            `El catálogo vigente no tiene una cuenta con movimiento para el código ${l.cuentaCodigo}`
-          );
-        }
-        lineas.push({
-          cuenta_id: ctaId,
-          debe: Number(Number(l.debe || 0).toFixed(2)),
-          haber: Number(Number(l.haber || 0).toFixed(2)),
-          descripcion: l.descripcion.trim(),
-        });
-      }
+      const { concepto, partidas, totales } = asientoDeFactura(datos.entrada);
+      // Falla con «código sin cuenta» antes de crear nada, y también si no cuadra.
+      const lineas = await construirLineasPorCodigo(cliente, partidas);
 
       // `crear_asiento` asigna número y período (y falla si el período está
       // cerrado), así que no se replica esa lógica aquí.
       const { rows: asRows } = await cliente.query<{ id: string }>(
         `SELECT contabilidad.crear_asiento($1::date, $2, 'manual', NULL, NULL, $3::jsonb) AS id`,
-        [fecha, datos.concepto.trim(), JSON.stringify(lineas)]
+        [fecha, concepto, JSON.stringify(lineas)],
       );
       const asientoId = asRows[0].id;
       const { rows: numRows } = await cliente.query<{ numero: string }>(
         `SELECT numero::text AS numero FROM contabilidad.asiento WHERE id = $1`,
-        [asientoId]
+        [asientoId],
       );
-      const numero = Number(numRows[0].numero);
 
       // Guardar en historial de calculadoras
       await cliente.query(
@@ -89,20 +62,38 @@ export async function convertirCalculoEnAsientoBorrador(datos: {
          ) VALUES ($1, $2, $3, $4, $5)`,
         [
           datos.tipo,
-          JSON.stringify({ concepto: datos.concepto, fecha }),
-          JSON.stringify({ totalDebe, totalHaber, lineas: datos.lineas }),
+          JSON.stringify({ concepto, fecha, entrada: datos.entrada }),
+          JSON.stringify({ ...totales, lineas }),
           asientoId,
           usuario.id,
-        ]
+        ],
       );
 
-      return { asientoId, asientoNumero: numero };
+      return { asientoId, asientoNumero: Number(numRows[0].numero) };
     });
 
     revalidatePath("/contabilidad/asientos");
     return { ok: true, asientoId: res.asientoId, asientoNumero: res.asientoNumero };
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: msg || "Error al generar asiento borrador" };
+  } catch (e) {
+    return { ok: false, error: await textoDeErrorOperacion(e) };
   }
+}
+
+/**
+ * «Asiento» de la calculadora de factura ANTES de convertirla: mismo cálculo y
+ * mismas partidas que `convertirCalculoEnAsientoBorrador`. Un cálculo inválido
+ * no lanza: se muestra vacío con el aviso.
+ */
+export async function asientoDeCalculoFactura(entrada: EntradaFactura, fecha?: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  let calculo;
+  try {
+    calculo = asientoDeFactura(entrada);
+  } catch (e) {
+    if (!(e instanceof ErrorOperacion)) throw e;
+    return armarVista([], [{ clave: "otro", detalle: await textoDeErrorOperacion(e) }], { estado: "previa" });
+  }
+  return enTransaccion((cliente) =>
+    vistaDeLineasPorCodigo(cliente, calculo.partidas, { descripcion: calculo.concepto, fecha: fecha || claveDia() }),
+  );
 }

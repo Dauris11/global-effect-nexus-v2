@@ -1,10 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requerirUsuario } from "@/lib/auth";
-import { enTransaccionComo } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import { consultarUna, enTransaccion, enTransaccionComo } from "@/lib/db";
+import { diaEnRD } from "@/lib/fechas";
+import { armarVista, type VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
+import { construirLineasPorCodigo } from "@/server/contabilidad/codigos-transaccion/asiento";
+import { vistaDeAsientoContabilizado, vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import { conceptoDeLiberacion, partidasDeLiberacion } from "@/server/contabilidad/fondos/asiento";
+import { textoDeErrorCodigos } from "@/server/contabilidad/patrimonio/errores";
 
 export type EstadoAccionFondo = {
   ok: boolean;
@@ -92,7 +99,7 @@ export async function liberarFondoRestringido(datos: {
     return { ok: false, error: "Debe proveer una justificación clara de la ejecución del gasto" };
   }
 
-  const fecha = datos.fecha || new Date().toISOString().slice(0, 10);
+  const fecha = datos.fecha || diaEnRD();
 
   try {
     const id = await enTransaccionComo<string>(await contextoDe(usuario), async (cliente) => {
@@ -139,52 +146,32 @@ export async function liberarFondoRestringido(datos: {
       let asientoId: string | null = null;
       if (estRows[0]?.estado === "abierto") {
 
-        // Buscar cuentas para liberación de fondos ASFL
-        // 3.1.2 (Balance Acumulado / restringidos) y 3.1.1 (Balance Excedente / operativo liberado)
-        const { rows: ctaRows } = await cliente.query<{ id: string; codigo: string }>(
-          `SELECT id, codigo FROM contabilidad.cuenta_contable
-            WHERE codigo IN ('3.1.2', '3.1.1')
-            ORDER BY codigo ASC`
+        // Las cuentas y el lado salen de los códigos de liberación
+        // (Configuración contable). Si falta alguna, el motor se detiene con
+        // un mensaje claro en vez de omitir el asiento en silencio.
+        const lineas = await construirLineasPorCodigo(cliente, partidasDeLiberacion(f.nombre, monto));
+
+        const { rows: secRows } = await cliente.query<{ num: string }>(
+          `SELECT contabilidad.siguiente_numero('AS')::text AS num`
         );
+        const numAsiento = Number(secRows[0].num);
 
-        if (ctaRows.length >= 2) {
-          const ctaRestringida = ctaRows.find((c) => c.codigo === "3.1.2")?.id ?? ctaRows[0].id;
-          const ctaLiberada = ctaRows.find((c) => c.codigo === "3.1.1")?.id ?? ctaRows[1].id;
+        const { rows: asRows } = await cliente.query<{ id: string }>(
+          `INSERT INTO contabilidad.asiento (
+             numero, fecha, periodo_id, concepto, tipo, creado_por
+           ) VALUES ($1, $2, $3, $4, 'automatico', $5)
+           RETURNING id`,
+          [numAsiento, fecha, periodoId, conceptoDeLiberacion(f.nombre, justificacion), usuario.id]
+        );
+        asientoId = asRows[0].id;
 
-          const { rows: secRows } = await cliente.query<{ num: string }>(
-            `SELECT contabilidad.siguiente_numero('AS')::text AS num`
-          );
-          const numAsiento = Number(secRows[0].num);
-
-          const { rows: asRows } = await cliente.query<{ id: string }>(
-            `INSERT INTO contabilidad.asiento (
-               numero, fecha, periodo_id, concepto, tipo, creado_por
-             ) VALUES ($1, $2, $3, $4, 'automatico', $5)
-             RETURNING id`,
-            [
-              numAsiento,
-              fecha,
-              periodoId,
-              `Liberación de fondos restringidos: ${f.nombre} (${justificacion})`,
-              usuario.id,
-            ]
-          );
-          asientoId = asRows[0].id;
-
-          // Débito: Reclasificación Fondo Restringido
+        // Cada línea lleva el fondo para que el libro por fondo la encuentre.
+        for (const l of lineas) {
           await cliente.query(
             `INSERT INTO contabilidad.asiento_linea (
                asiento_id, cuenta_id, descripcion, debe, haber, fondo_id
-             ) VALUES ($1, $2, $3, $4, 0, $5)`,
-            [asientoId, ctaRestringida, `Liberación de restricción - ${f.nombre}`, monto, datos.fondoId]
-          );
-
-          // Crédito: Ingreso / Fondo Liberado para operaciones
-          await cliente.query(
-            `INSERT INTO contabilidad.asiento_linea (
-               asiento_id, cuenta_id, descripcion, debe, haber, fondo_id
-             ) VALUES ($1, $2, $3, 0, $4, $5)`,
-            [asientoId, ctaLiberada, `Fondo liberado para operaciones - ${f.nombre}`, monto, datos.fondoId]
+             ) VALUES ($1, $2, $3, $4, $5, $6)`,
+            [asientoId, l.cuenta_id, l.descripcion, l.debe, l.haber, datos.fondoId]
           );
         }
       }
@@ -222,7 +209,55 @@ export async function liberarFondoRestringido(datos: {
     revalidatePath("/contabilidad/asientos");
     return { ok: true, id };
   } catch (err: unknown) {
+    const traducido = await textoDeErrorCodigos(err);
+    if (traducido) return { ok: false, error: traducido };
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: false, error: msg || "Error al liberar fondo restringido" };
   }
+}
+
+/**
+ * Opción «Asiento» del diálogo de liberar un fondo: el asiento que saldría con
+ * el monto escrito, sin escribir nada. Si el mes de la fecha está cerrado la
+ * liberación se registra sin asiento y así se dice.
+ */
+export async function asientoPreviaLiberacion(datos: {
+  fondoId: string;
+  monto: number;
+  fecha?: string;
+}): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const fecha = datos.fecha || diaEnRD();
+  const monto = Number.isFinite(datos.monto) && datos.monto > 0 ? datos.monto : 0;
+
+  return enTransaccion(async (cliente) => {
+    const { rows } = await cliente.query<{ nombre: string }>(
+      `SELECT nombre FROM contabilidad.fondo WHERE id = $1`,
+      [datos.fondoId],
+    );
+    if (!rows[0]) throw new Error("Fondo no encontrado");
+
+    // Solo se consulta: `periodo_para` crearía el mes, y una vista previa no escribe.
+    const periodo = await cliente.query<{ estado: string }>(
+      `SELECT estado FROM contabilidad.periodo_contable
+        WHERE anio = EXTRACT(YEAR FROM $1::date)::int AND mes = EXTRACT(MONTH FROM $1::date)::int`,
+      [fecha],
+    );
+    if (periodo.rows[0]?.estado === "cerrado") {
+      const t = await getTranslations("contab.patrimonio.asiento");
+      return armarVista([], [{ clave: "otro", detalle: t("liberacionPeriodoCerrado") }], { estado: "previa", fecha });
+    }
+    return vistaDeLineasPorCodigo(cliente, partidasDeLiberacion(rows[0].nombre, monto), { fecha });
+  });
+}
+
+/** Opción «Asiento» de una liberación ya registrada. */
+export async function asientoDeLiberacion(liberacionId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const fila = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT asiento_id FROM contabilidad.fondo_liberacion WHERE id = $1`,
+    [liberacionId],
+  );
+  if (!fila?.asiento_id) throw new Error("La liberación no tiene asiento.");
+  return vistaDeAsientoContabilizado(fila.asiento_id);
 }

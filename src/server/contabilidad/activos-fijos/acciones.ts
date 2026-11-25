@@ -1,10 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { enTransaccionComo } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
+import { consultarUna, enTransaccion, enTransaccionComo } from "@/lib/db";
 import { requerirPermiso } from "@/lib/auth";
+import { armarVista, type VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
+import { vistaDeAsientoContabilizado, vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import { construirLineasPorCodigo } from "@/server/contabilidad/codigos-transaccion/asiento";
+import {
+  ErrorOperacion,
+  textoDeErrorOperacion,
+  type ResultadoOperacion,
+} from "@/server/contabilidad/operaciones/errores";
+import {
+  depreciacionConMismaCuenta,
+  exigirCuentasDistintas,
+  partidasDeDepreciacion,
+  planDeDepreciacion,
+} from "@/server/contabilidad/activos-fijos/asiento";
 
 export type CrearActivoFijoInput = {
   inventario_activo_id?: string | null;
@@ -64,198 +79,129 @@ export async function ejecutarDepreciacionMensual(
   anio: number,
   mes: number,
   fechaAsiento: string,
-): Promise<{ id: string; totalDepreciado: number; asientoId: string }> {
+): Promise<ResultadoOperacion<{ id: string; totalDepreciado: number; asientoId: string }>> {
   const usuario = await requerirPermiso("contabilidad.aprobar");
   const ctx = await contextoDe(usuario);
 
-  const res = await enTransaccionComo(ctx, async (cliente) => {
-    await fijarAccion(cliente, "ejecutar_depreciacion_mensual");
+  try {
+    const res = await enTransaccionComo(ctx, async (cliente) => {
+      await fijarAccion(cliente, "ejecutar_depreciacion_mensual");
 
-    // Verificar si ya existe para este mes
-    const yaExiste = await cliente.query(
-      `SELECT id FROM contabilidad.depreciacion_mensual WHERE anio = $1 AND mes = $2`,
-      [anio, mes],
-    );
-    if (yaExiste.rows.length > 0) {
-      throw new Error(`Ya se ejecutó la depreciación para el período ${mes}/${anio}.`);
-    }
-
-    // Obtener activos depreciables
-    const { rows: activos } = await cliente.query<{
-      id: string;
-      codigo: string;
-      costo_adquisicion: string;
-      valor_residual: string;
-      depreciacion_acumulada: string;
-      valor_en_libros: string;
-      meses_depreciados: number;
-      vida_util_meses: number;
-      cuenta_depreciacion_acumulada_id: string;
-      cuenta_gasto_depreciacion_id: string;
-    }>(
-      `SELECT af.id,
-              af.codigo,
-              af.costo_adquisicion::text AS costo_adquisicion,
-              af.valor_residual::text AS valor_residual,
-              af.depreciacion_acumulada::text AS depreciacion_acumulada,
-              af.valor_en_libros::text AS valor_en_libros,
-              af.meses_depreciados,
-              ca.vida_util_meses,
-              ca.cuenta_depreciacion_acumulada_id,
-              ca.cuenta_gasto_depreciacion_id
-         FROM contabilidad.activo_fijo af
-         JOIN contabilidad.activo_categoria ca ON ca.id = af.categoria_id
-        WHERE af.estado = 'activo'
-          AND af.valor_en_libros > af.valor_residual
-          AND af.fecha_adquisicion <= $1::date
-        ORDER BY af.codigo ASC`,
-      [fechaAsiento],
-    );
-
-    if (activos.length === 0) {
-      throw new Error("No hay activos pendientes de depreciación para este período.");
-    }
-
-    let totalDepreciado = 0;
-    type LineaDeprec = {
-      activoId: string;
-      monto: number;
-      deprecPrevia: number;
-      nuevoValorLibros: number;
-      totalmenteDepreciado: boolean;
-      nuevosMeses: number;
-    };
-    const lineasCalculadas: LineaDeprec[] = [];
-
-    // Agrupar monto depreciado por par de cuentas contables de cada categoría
-    const acumuladoPorCuentas = new Map<
-      string,
-      { ctaGasto: string; ctaAcum: string; monto: number }
-    >();
-
-    // El catálogo de la Fundación no tiene gasto de depreciación ni
-    // depreciación acumulada. La migración 0107 dejó ambas columnas de la
-    // categoría (NOT NULL) apuntando a 5.4.12 «Otros Gastos»; un asiento con
-    // la misma cuenta a los dos lados sería un engaño, así que se rechaza.
-    if (activos.some((x) => x.cuenta_gasto_depreciacion_id === x.cuenta_depreciacion_acumulada_id)) {
-      throw new Error(
-        "El catálogo contable vigente no tiene cuentas de depreciación. Agrégalas y asígnalas a las categorías de activos antes de depreciar."
+      // Verificar si ya existe para este mes
+      const yaExiste = await cliente.query(
+        `SELECT id FROM contabilidad.depreciacion_mensual WHERE anio = $1 AND mes = $2`,
+        [anio, mes],
       );
-    }
+      if (yaExiste.rows.length > 0) throw new ErrorOperacion("depreciacion_ya_ejecutada", { mes, anio });
 
-    for (const act of activos) {
-      const costo = Number(act.costo_adquisicion);
-      const residual = Number(act.valor_residual);
-      const valorLibros = Number(act.valor_en_libros);
-      const deprecPrevia = Number(act.depreciacion_acumulada);
+      const { lineas: lineasCalculadas, totalDepreciado } = await planDeDepreciacion(cliente, fechaAsiento);
+      if (lineasCalculadas.length === 0) throw new ErrorOperacion("sin_activos_depreciables");
 
-      const cuotaBase = (costo - residual) / act.vida_util_meses;
-      const cuotaRedondeada = Math.round(cuotaBase * 100) / 100;
+      await exigirCuentasDistintas(cliente);
+      // Falla con «código sin cuenta» si los códigos AF_* no están asignados:
+      // mejor detenerse que depreciar activos sin asiento.
+      const lineasAsiento = await construirLineasPorCodigo(
+        cliente,
+        partidasDeDepreciacion(totalDepreciado, mes, anio),
+      );
 
-      const saldoDepreciable = valorLibros - residual;
-      const cuotaEfectiva = Math.min(cuotaRedondeada, Math.max(0, saldoDepreciable));
+      // `crear_asiento` asigna número y período; armar la cabecera a
+      // mano duplicaba esa lógica con columnas que la tabla no tiene.
+      const { rows: asRows } = await cliente.query<{ id: string }>(
+        `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', NULL, NULL, $3::jsonb) AS id`,
+        [
+          fechaAsiento,
+          `Depreciación mensual de activos fijos ${mes}/${anio}`,
+          JSON.stringify(lineasAsiento),
+        ],
+      );
+      const asientoId = asRows[0].id;
 
-      if (cuotaEfectiva > 0) {
-        const nuevoValorLibros = Math.round((valorLibros - cuotaEfectiva) * 100) / 100;
-        const esTotal = nuevoValorLibros <= residual;
+      // Insertar cabecera corrida
+      const { rows: depRows } = await cliente.query<{ id: string }>(
+        `INSERT INTO contabilidad.depreciacion_mensual
+           (anio, mes, fecha_asiento, total_depreciacion, asiento_id, creado_por)
+         VALUES ($1, $2, $3::date, $4, $5, $6)
+         RETURNING id`,
+        [anio, mes, fechaAsiento, totalDepreciado, asientoId, usuario.id],
+      );
+      const depreciacionId = depRows[0].id;
 
-        lineasCalculadas.push({
-          activoId: act.id,
-          monto: cuotaEfectiva,
-          deprecPrevia,
-          nuevoValorLibros,
-          totalmenteDepreciado: esTotal,
-          nuevosMeses: act.meses_depreciados + 1,
-        });
+      // Insertar líneas y actualizar activos
+      for (const l of lineasCalculadas) {
+        await cliente.query(
+          `INSERT INTO contabilidad.depreciacion_linea
+             (depreciacion_id, activo_fijo_id, monto_depreciacion,
+              depreciacion_acumulada_previa, nuevo_valor_en_libros)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [depreciacionId, l.activoId, l.monto, l.deprecPrevia, l.nuevoValorLibros],
+        );
 
-        totalDepreciado += cuotaEfectiva;
-
-        const clave = `${act.cuenta_gasto_depreciacion_id}:${act.cuenta_depreciacion_acumulada_id}`;
-        const prev = acumuladoPorCuentas.get(clave) ?? {
-          ctaGasto: act.cuenta_gasto_depreciacion_id,
-          ctaAcum: act.cuenta_depreciacion_acumulada_id,
-          monto: 0,
-        };
-        prev.monto = Math.round((prev.monto + cuotaEfectiva) * 100) / 100;
-        acumuladoPorCuentas.set(clave, prev);
+        await cliente.query(
+          `UPDATE contabilidad.activo_fijo
+              SET depreciacion_acumulada = depreciacion_acumulada + $2,
+                  valor_en_libros        = $3,
+                  meses_depreciados      = $4,
+                  estado                 = CASE WHEN $5 = true THEN 'totalmente_depreciado' ELSE estado END,
+                  actualizado_en         = now()
+            WHERE id = $1`,
+          [l.activoId, l.monto, l.nuevoValorLibros, l.nuevosMeses, l.totalmenteDepreciado],
+        );
       }
+
+      return { id: depreciacionId, totalDepreciado, asientoId };
+    });
+
+    revalidatePath("/contabilidad/activos-fijos");
+    return { ok: true, ...res };
+  } catch (e) {
+    return { ok: false, error: await textoDeErrorOperacion(e) };
+  }
+}
+
+/**
+ * «Asiento» de la depreciación ANTES de ejecutarla: mismo cálculo y mismas
+ * partidas que `ejecutarDepreciacionMensual`. Si el mes ya se ejecutó, muestra
+ * el asiento real. No lanza por falta de activos o de cuentas: lo dice en la vista.
+ */
+export async function asientoDeDepreciacion(anio: number, mes: number, fechaAsiento: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const t = await getTranslations("contab.operaciones.avisos");
+  const sinAsiento = (clave: "depreciacion_sin_activos" | "depreciacion_misma_cuenta") =>
+    armarVista([], [{ clave: "otro", detalle: t(clave) }], { estado: "previa" });
+
+  const hecha = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT asiento_id FROM contabilidad.depreciacion_mensual WHERE anio = $1 AND mes = $2`,
+    [anio, mes],
+  );
+  if (hecha?.asiento_id) return vistaDeAsientoContabilizado(hecha.asiento_id);
+
+  return enTransaccion(async (cliente) => {
+    const { totalDepreciado, lineas } = await planDeDepreciacion(cliente, fechaAsiento);
+    if (lineas.length === 0) return sinAsiento("depreciacion_sin_activos");
+    const vista = await vistaDeLineasPorCodigo(cliente, partidasDeDepreciacion(totalDepreciado, mes, anio), {
+      descripcion: `Depreciación mensual de activos fijos ${mes}/${anio}`,
+      fecha: fechaAsiento,
+    });
+    if (await depreciacionConMismaCuenta(cliente)) {
+      vista.problemas.push({ clave: "otro", detalle: t("depreciacion_misma_cuenta") });
     }
-
-    totalDepreciado = Math.round(totalDepreciado * 100) / 100;
-
-    // Líneas de asiento contable desglosadas por las cuentas de cada categoría
-    const lineasAsiento: {
-      cuenta_id: string;
-      debe: number;
-      haber: number;
-      descripcion: string;
-    }[] = [];
-
-    for (const { ctaGasto, ctaAcum, monto } of acumuladoPorCuentas.values()) {
-      if (monto <= 0) continue;
-      lineasAsiento.push({
-        cuenta_id: ctaGasto,
-        debe: monto,
-        haber: 0,
-        descripcion: `Gasto depreciación activos período ${mes}/${anio}`,
-      });
-      lineasAsiento.push({
-        cuenta_id: ctaAcum,
-        debe: 0,
-        haber: monto,
-        descripcion: `Depreciación acumulada activos período ${mes}/${anio}`,
-      });
-    }
-
-    // `crear_asiento` asigna número y período; armar la cabecera a
-    // mano duplicaba esa lógica con columnas que la tabla no tiene.
-    const { rows: asRows } = await cliente.query<{ id: string }>(
-      `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', NULL, NULL, $3::jsonb) AS id`,
-      [
-        fechaAsiento,
-        `Depreciación mensual de activos fijos ${mes}/${anio}`,
-        JSON.stringify(lineasAsiento),
-      ],
-    );
-    const asientoId = asRows[0].id;
-
-    // Insertar cabecera corrida
-    const { rows: depRows } = await cliente.query<{ id: string }>(
-      `INSERT INTO contabilidad.depreciacion_mensual
-         (anio, mes, fecha_asiento, total_depreciacion, asiento_id, creado_por)
-       VALUES ($1, $2, $3::date, $4, $5, $6)
-       RETURNING id`,
-      [anio, mes, fechaAsiento, totalDepreciado, asientoId, usuario.id],
-    );
-    const depreciacionId = depRows[0].id;
-
-    // Insertar líneas y actualizar activos
-    for (const l of lineasCalculadas) {
-      await cliente.query(
-        `INSERT INTO contabilidad.depreciacion_linea
-           (depreciacion_id, activo_fijo_id, monto_depreciacion,
-            depreciacion_acumulada_previa, nuevo_valor_en_libros)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [depreciacionId, l.activoId, l.monto, l.deprecPrevia, l.nuevoValorLibros],
-      );
-
-      await cliente.query(
-        `UPDATE contabilidad.activo_fijo
-            SET depreciacion_acumulada = depreciacion_acumulada + $2,
-                valor_en_libros        = $3,
-                meses_depreciados      = $4,
-                estado                 = CASE WHEN $5 = true THEN 'totalmente_depreciado' ELSE estado END,
-                actualizado_en         = now()
-          WHERE id = $1`,
-        [l.activoId, l.monto, l.nuevoValorLibros, l.nuevosMeses, l.totalmenteDepreciado],
-      );
-    }
-
-    return { id: depreciacionId, totalDepreciado, asientoId };
+    return vista;
   });
+}
 
-  revalidatePath("/contabilidad/activos-fijos");
-  return res;
+/** «Asiento» ya contabilizado de una corrida de depreciación pasada. */
+export async function asientoDeDepreciacionEjecutada(depreciacionId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const fila = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT asiento_id FROM contabilidad.depreciacion_mensual WHERE id = $1`,
+    [depreciacionId],
+  );
+  if (!fila?.asiento_id) {
+    const t = await getTranslations("contab.operaciones.avisos");
+    return armarVista([], [{ clave: "otro", detalle: t("inventario_sin_asiento") }], { estado: "previa" });
+  }
+  return vistaDeAsientoContabilizado(fila.asiento_id);
 }
 
 export async function darDeBajaActivoFijo(

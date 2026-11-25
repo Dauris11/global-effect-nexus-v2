@@ -3606,7 +3606,10 @@
       "tiene_pagos": "La factura ya tiene pagos y no se puede anular: registra un ajuste.",
       "supera_saldo": "El pago supera el saldo pendiente.",
       "moneda_distinta": "La cuenta de salida tiene que ser de la misma moneda que la deuda.",
-      "no_admite": "Esta cuenta por pagar ya está pagada o anulada."
+      "no_admite": "Esta cuenta por pagar ya está pagada o anulada.",
+      "proveedor_codigo_sin_cuenta": "El código de transacción «{codigo}» no tiene cuenta asignada. Asígnale una cuenta de detalle en Configuración contable > Catálogo; el botón Asiento muestra qué más falta.",
+      "proveedor_cuenta_no_valida": "La cuenta del código «{codigo}» está inactiva o es agrupadora. Asígnale una cuenta de movimiento en el Catálogo.",
+      "tesoreria_codigo_sin_cuenta": "Un código de transacción de la transferencia (ganancia o pérdida cambiaria) no tiene una cuenta válida: sin asignar, inactiva o agrupadora. Asígnala en Configuración contable > Códigos; el botón Asiento muestra qué falta. Código:"
     },
     "inicio": {
       "antetitulo": "Portal de contabilidad",
@@ -4222,7 +4225,8 @@
         "sin_cuenta_contable": "Falta una cuenta del catálogo para contabilizar.",
         "codigo_repetido": "Ya existe una caja con ese código.",
         "periodo_cerrado": "El periodo contable de esa fecha está cerrado.",
-        "error": "No se pudo guardar. Inténtalo de nuevo."
+        "error": "No se pudo guardar. Inténtalo de nuevo.",
+        "codigo_sin_cuenta": "Falta asignar o corregir la cuenta de un código de transacción (por ejemplo el sobrante de caja, que el catálogo no trae). Asígnala en Configuración contable > Códigos; el botón Asiento muestra qué falta."
       },
       "pasos": {
         "movimiento": "Movimiento",
@@ -4255,7 +4259,9 @@
       "aprobadaPor": "Aprobada por {nombre}",
       "adjuntos": "Factura escaneada",
       "adjuntar": "Subir archivo",
-      "adjuntoAyuda": "PDF, JPG o PNG, hasta 10 MB."
+      "adjuntoAyuda": "PDF, JPG o PNG, hasta 10 MB.",
+      "asientoContable": "Asiento contable",
+      "asientoContableAyuda": "Las cuentas, el debe y el haber con que quedó registrada esta factura."
     },
     "cxp": {
       "titulo": "Cuentas por pagar",
@@ -5063,7 +5069,8 @@
         "destino": "Destino",
         "compromiso": "Compromiso",
         "calendario": "Calendario de cobro"
-      }
+      },
+      "asiento": "Asiento"
     },
     "compras": {
       "antetitulo": "Contabilidad",
@@ -5473,7 +5480,8 @@
         "identificacion": "Identificación",
         "adquisicion": "Adquisición",
         "origen": "Origen y enlace"
-      }
+      },
+      "colAsiento": "Asiento"
     },
     "inventarioContable": {
       "antetitulo": "Contabilidad",
@@ -5546,7 +5554,8 @@
         "cantidades": "Cantidad y destino",
         "articulo": "Artículo",
         "cuentas": "Cuentas contables"
-      }
+      },
+      "colAsiento": "Asiento"
     },
     "reportesFinancieros": {
       "antetitulo": "Contabilidad",
@@ -5731,6 +5740,49 @@
         "asiento_descuadrado": "El débito y el crédito no son iguales. Revisa el lado de cada código.",
         "monto_invalido": "El monto del código {codigo} no es válido.",
         "otro": "Hay un problema con el asiento."
+      }
+    },
+    "patrimonio": {
+      "errores": {
+        "codigo_sin_cuenta": "Estos códigos de transacción no tienen cuenta asignada: {codigos}. Asígnalos en Configuración contable > Catálogo.",
+        "cuenta_no_usable": "La cuenta de estos códigos está inactiva o no admite movimientos: {codigos}. Asígnales otra cuenta.",
+        "asiento_descuadrado": "El asiento no cuadra: el débito y el crédito no son iguales. Revisa el lado de cada código en Configuración contable.",
+        "monto_invalido": "El monto de {codigos} no es válido.",
+        "codigo_desconocido": "El código de transacción {codigos} no existe."
+      },
+      "asiento": {
+        "liberacionPeriodoCerrado": "El mes de esa fecha está cerrado: la liberación se registraría sin asiento."
+      }
+    },
+    "operaciones": {
+      "errores": {
+        "cantidad_invalida": "La cantidad debe ser mayor a cero.",
+        "costo_negativo": "El costo unitario no puede ser negativo.",
+        "articulo_no_encontrado": "Artículo no encontrado.",
+        "stock_insuficiente": "Stock insuficiente para «{nombre}». Disponible: {disponible}, solicitado: {solicitado}.",
+        "conteo_no_encontrado": "Toma física no encontrada.",
+        "conteo_no_aplicable": "La toma física está en estado «{estado}» y no puede aplicarse.",
+        "depreciacion_ya_ejecutada": "Ya se ejecutó la depreciación del período {mes}/{anio}.",
+        "sin_activos_depreciables": "No hay activos pendientes de depreciación para este período.",
+        "depreciacion_misma_cuenta": "El gasto de depreciación y la depreciación acumulada apuntan a la misma cuenta. Asígnales cuentas distintas en Configuración contable > Códigos de transacción.",
+        "calculo_invalido": "Los datos del cálculo no son válidos.",
+        "calculo_descuadrado": "El cálculo no cuadra: débito {debe} y crédito {haber}.",
+        "periodo_cerrado": "El período contable de esa fecha está cerrado.",
+        "generico": "No se pudo completar la operación. Intenta de nuevo.",
+        "codigos": {
+          "codigo_desconocido": "Hay un código de transacción que no existe: {codigos}.",
+          "monto_invalido": "El monto de un código de transacción no es válido: {codigos}.",
+          "codigo_sin_cuenta": "Estos códigos de transacción no tienen cuenta asignada: {codigos}. Asígnalos en Configuración contable > Códigos de transacción.",
+          "cuenta_no_usable": "La cuenta de estos códigos está inactiva o no admite movimientos: {codigos}. Asígnales otra cuenta.",
+          "asiento_descuadrado": "El asiento no cuadra. Revisa el lado de estos códigos: {codigos}."
+        }
+      },
+      "avisos": {
+        "inventario_sin_costo": "Elige un artículo con costo y una cantidad mayor a cero para ver el asiento.",
+        "inventario_sin_asiento": "Este registro no generó asiento: solo las salidas por consumo y los ajustes con diferencia de valor lo generan.",
+        "inventario_sin_diferencia": "La toma física no tiene diferencia de valor, así que no genera asiento.",
+        "depreciacion_sin_activos": "No hay activos pendientes de depreciación en esta fecha, así que no hay asiento.",
+        "depreciacion_misma_cuenta": "El gasto de depreciación y la depreciación acumulada apuntan a la misma cuenta; asígnales cuentas distintas."
       }
     }
   },

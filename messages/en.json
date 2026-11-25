@@ -3606,7 +3606,10 @@
       "tiene_pagos": "The invoice already has payments and cannot be voided: record an adjustment.",
       "supera_saldo": "The payment exceeds the outstanding balance.",
       "moneda_distinta": "The paying account must be in the same currency as the debt.",
-      "no_admite": "This payable is already paid or voided."
+      "no_admite": "This payable is already paid or voided.",
+      "proveedor_codigo_sin_cuenta": "The transaction code “{codigo}” has no account assigned. Assign it a detail account in Accounting settings > Chart of accounts; the Entry button shows what else is missing.",
+      "proveedor_cuenta_no_valida": "The account of the code “{codigo}” is inactive or a header account. Assign it a posting account in the Chart of accounts.",
+      "tesoreria_codigo_sin_cuenta": "A transaction code of the transfer (exchange gain or loss) has no valid account: unassigned, inactive or a header account. Assign it in Accounting settings > Codes; the Entry button shows what is missing. Code:"
     },
     "inicio": {
       "antetitulo": "Accounting portal",
@@ -4222,7 +4225,8 @@
         "sin_cuenta_contable": "A chart-of-accounts entry is missing to post this.",
         "codigo_repetido": "A fund with that code already exists.",
         "periodo_cerrado": "The accounting period for that date is closed.",
-        "error": "Could not save. Try again."
+        "error": "Could not save. Try again.",
+        "codigo_sin_cuenta": "The account of a transaction code is missing or invalid (for example the cash overage, which the chart of accounts does not include). Assign it in Accounting settings > Codes; the Entry button shows what is missing."
       },
       "pasos": {
         "movimiento": "Movement",
@@ -4255,7 +4259,9 @@
       "aprobadaPor": "Approved by {nombre}",
       "adjuntos": "Scanned invoice",
       "adjuntar": "Upload file",
-      "adjuntoAyuda": "PDF, JPG or PNG, up to 10 MB."
+      "adjuntoAyuda": "PDF, JPG or PNG, up to 10 MB.",
+      "asientoContable": "Accounting entry",
+      "asientoContableAyuda": "The accounts, debits and credits this invoice was posted with."
     },
     "cxp": {
       "titulo": "Payables",
@@ -5063,7 +5069,8 @@
         "destino": "Destination",
         "compromiso": "Pledge",
         "calendario": "Collection schedule"
-      }
+      },
+      "asiento": "Journal entry"
     },
     "compras": {
       "antetitulo": "Accounting",
@@ -5473,7 +5480,8 @@
         "identificacion": "Identification",
         "adquisicion": "Acquisition",
         "origen": "Origin and link"
-      }
+      },
+      "colAsiento": "Entry"
     },
     "inventarioContable": {
       "antetitulo": "Accounting",
@@ -5546,7 +5554,8 @@
         "cantidades": "Quantity and destination",
         "articulo": "Item",
         "cuentas": "Accounting accounts"
-      }
+      },
+      "colAsiento": "Entry"
     },
     "reportesFinancieros": {
       "antetitulo": "Accounting",
@@ -5731,6 +5740,49 @@
         "asiento_descuadrado": "Debit and credit are not equal. Check the side of each code.",
         "monto_invalido": "The amount of code {codigo} is not valid.",
         "otro": "There is a problem with the entry."
+      }
+    },
+    "patrimonio": {
+      "errores": {
+        "codigo_sin_cuenta": "These transaction codes have no account assigned: {codigos}. Assign them in Accounting settings > Chart of accounts.",
+        "cuenta_no_usable": "The account of these codes is inactive or does not accept entries: {codigos}. Assign them another account.",
+        "asiento_descuadrado": "The entry does not balance: debit and credit differ. Check the side of each code in Accounting settings.",
+        "monto_invalido": "The amount of {codigos} is not valid.",
+        "codigo_desconocido": "The transaction code {codigos} does not exist."
+      },
+      "asiento": {
+        "liberacionPeriodoCerrado": "The month of that date is closed: the release would be recorded without an entry."
+      }
+    },
+    "operaciones": {
+      "errores": {
+        "cantidad_invalida": "The quantity must be greater than zero.",
+        "costo_negativo": "The unit cost cannot be negative.",
+        "articulo_no_encontrado": "Item not found.",
+        "stock_insuficiente": "Not enough stock for \"{nombre}\". Available: {disponible}, requested: {solicitado}.",
+        "conteo_no_encontrado": "Physical count not found.",
+        "conteo_no_aplicable": "The physical count is in status \"{estado}\" and cannot be applied.",
+        "depreciacion_ya_ejecutada": "Depreciation for period {mes}/{anio} has already been run.",
+        "sin_activos_depreciables": "There are no assets pending depreciation for this period.",
+        "depreciacion_misma_cuenta": "Depreciation expense and accumulated depreciation point to the same account. Assign different accounts in Accounting settings > Transaction codes.",
+        "calculo_invalido": "The calculation data is not valid.",
+        "calculo_descuadrado": "The calculation does not balance: debit {debe} and credit {haber}.",
+        "periodo_cerrado": "The accounting period for that date is closed.",
+        "generico": "The operation could not be completed. Try again.",
+        "codigos": {
+          "codigo_desconocido": "A transaction code does not exist: {codigos}.",
+          "monto_invalido": "The amount of a transaction code is not valid: {codigos}.",
+          "codigo_sin_cuenta": "These transaction codes have no account assigned: {codigos}. Assign them in Accounting settings > Transaction codes.",
+          "cuenta_no_usable": "The account of these codes is inactive or does not accept entries: {codigos}. Assign them another account.",
+          "asiento_descuadrado": "The entry does not balance. Check the side of these codes: {codigos}."
+        }
+      },
+      "avisos": {
+        "inventario_sin_costo": "Choose an item with a cost and a quantity greater than zero to see the entry.",
+        "inventario_sin_asiento": "This record did not generate an entry: only consumption issues and adjustments with a value difference do.",
+        "inventario_sin_diferencia": "The physical count has no value difference, so it generates no entry.",
+        "depreciacion_sin_activos": "No assets are pending depreciation on this date, so there is no entry.",
+        "depreciacion_misma_cuenta": "Depreciation expense and accumulated depreciation point to the same account; assign them different accounts."
       }
     }
   },

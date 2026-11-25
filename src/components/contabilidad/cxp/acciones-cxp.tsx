@@ -4,12 +4,13 @@ import { useActionState, useState } from "react";
 import { Calendar, CheckCircle2, DollarSign, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { pagarCxp, programarCxp, type EstadoCxpAccion } from "@/server/contabilidad/cxp/acciones";
+import { asientoDePagoPrevio, pagarCxp, programarCxp, type EstadoCxpAccion } from "@/server/contabilidad/cxp/acciones";
 import type { FilaCxp } from "@/server/contabilidad/cxp/consultas";
 import type { Opcion, OpcionCategoria, OpcionCuenta } from "@/server/contabilidad/recibos/consultas";
 
@@ -42,6 +43,9 @@ export function AccionesCxp({
 
   const [montoPago, setMontoPago] = useState(cxp.saldo);
   const [formaPago, setFormaPago] = useState<string>("transferencia");
+  // «Asiento» usa lo que la persona lleva escrito en el pago, no valores fijos.
+  const [cuentaPago, setCuentaPago] = useState(cxp.cuenta_salida_id ?? "");
+  const [tasaPago, setTasaPago] = useState("");
 
   const cuentasMismaMoneda = cuentasBancarias.filter(
     (c) => c.moneda === cxp.moneda,
@@ -54,7 +58,7 @@ export function AccionesCxp({
 
   const errorPagar =
     estadoPagar.estado !== "inicial" && estadoPagar.estado !== "ok"
-      ? tc(`error.${estadoPagar.estado}` as never)
+      ? tc(`error.${estadoPagar.estado}` as never, { codigo: estadoPagar.codigo ?? "" } as never)
       : null;
 
   const abierta = cxp.estado !== "pagada" && cxp.estado !== "anulada";
@@ -211,7 +215,8 @@ export function AccionesCxp({
                     name="cuenta"
                     className={SELECT}
                     required
-                    defaultValue={cxp.cuenta_salida_id ?? cuentasMismaMoneda[0]?.id ?? ""}
+                    value={cuentaPago || (cuentasMismaMoneda[0]?.id ?? "")}
+                    onChange={(e) => setCuentaPago(e.target.value)}
                   >
                     {cuentasMismaMoneda.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -285,7 +290,15 @@ export function AccionesCxp({
                     <Label htmlFor="tasa" className="text-sm font-medium">
                       {t("tasa")}
                     </Label>
-                    <Input id="tasa" name="tasa" inputMode="decimal" required placeholder="60.0000" />
+                    <Input
+                      id="tasa"
+                      name="tasa"
+                      inputMode="decimal"
+                      required
+                      placeholder="60.0000"
+                      value={tasaPago}
+                      onChange={(e) => setTasaPago(e.target.value)}
+                    />
                   </div>
                 )}
               </PasoFormulario>
@@ -294,6 +307,13 @@ export function AccionesCxp({
               {estadoPagar.estado === "ok" && <AvisoOk>{t("ok")}</AvisoOk>}
 
               <AccionesFormulario>
+                <BotonAsiento
+                  size="default"
+                  className="w-full sm:w-auto"
+                  cargar={() =>
+                    asientoDePagoPrevio(cxp.id, cuentaPago || (cuentasMismaMoneda[0]?.id ?? ""), montoPago, tasaPago)
+                  }
+                />
                 <Button type="submit" disabled={pagando} className="w-full">
                   {pagando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
                   {t("confirmarPago")}

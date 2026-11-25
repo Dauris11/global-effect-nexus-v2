@@ -21,20 +21,13 @@ export default async function PaginaInventario() {
   await requerirPermiso("contabilidad.leer");
   const t = await getTranslations("contab.inventarioContable");
 
-  const [articulos, conteos, centrosCosto, cuentasInventario, cuentasGasto, movimientosRecientes] =
+  // Las cuentas de existencias y de consumo ya no se eligen por artículo: son
+  // los códigos INV_* de Configuración contable.
+  const [articulos, conteos, centrosCosto, movimientosRecientes] =
     await Promise.all([
       listarArticulos(),
       listarConteosFisicos(),
       listarCentrosCosto(),
-      // El catálogo de la Fundación no tiene cuentas de inventario (0107): la
-      // lista va vacía a propósito, no por un filtro que se rompió.
-      Promise.resolve([] as { id: string; codigo: string; nombre: string }[]),
-      consultar<{ id: string; codigo: string; nombre: string }>(
-        `SELECT id, codigo, nombre
-           FROM contabilidad.cuenta_contable
-          WHERE tipo = 'gasto' AND admite_movimiento = true AND activa
-          ORDER BY contabilidad.clave_codigo(codigo)`,
-      ),
       consultar<{
         id: string;
         articulo_id: string;
@@ -102,8 +95,6 @@ export default async function PaginaInventario() {
         movimientosRecientes={movimientosFormateados}
         conteos={conteos}
         centrosCosto={centrosFormateados}
-        cuentasInventario={cuentasInventario}
-        cuentasGasto={cuentasGasto}
       />
     </div>
   );

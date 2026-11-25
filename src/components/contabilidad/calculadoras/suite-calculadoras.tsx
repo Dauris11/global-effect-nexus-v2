@@ -26,7 +26,11 @@ import {
   calcularItbis,
   calcularRetencionesDominicanas,
 } from "@/server/contabilidad/calculadoras/motor";
-import { convertirCalculoEnAsientoBorrador } from "@/server/contabilidad/calculadoras/acciones";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
+import {
+  asientoDeCalculoFactura,
+  convertirCalculoEnAsientoBorrador,
+} from "@/server/contabilidad/calculadoras/acciones";
 import { calcularRecargosYMora } from "@/server/contabilidad/dgii/recargos-mora";
 
 export function SuiteCalculadoras() {
@@ -103,46 +107,22 @@ export function SuiteCalculadoras() {
   const [mensajeAsiento, setMensajeAsiento] = useState<string | null>(null);
   const [creandoAsiento, setCreandoAsiento] = useState(false);
 
+  // Lo que el servidor necesita para recalcular la factura y armar el asiento:
+  // los datos de entrada, no los montos (el servidor no se fía de lo calculado aquí).
+  const entradaFactura = {
+    cantidad: Number(cant1 || 1),
+    precioUnitario: Number(precio1 || 0),
+    descuentoPorcentaje: Number(desc1 || 0),
+    itbisTasa: Number(itbisTasa1 || 0.18),
+    retencionIsrTasa: Number(retIsrTasa1 || 0),
+    retencionItbisTasa: Number(retItbisTasa1 || 0),
+  };
+
   async function handleConvertirEnAsientoFactura() {
     setCreandoAsiento(true);
     setMensajeAsiento(null);
 
-    const res = await convertirCalculoEnAsientoBorrador({
-      tipo: "factura",
-      concepto: `Asiento borrador de factura (calculadora) - Neto: ${resFactura.netoAPagar.toFixed(2)}`,
-      lineas: [
-        {
-          cuentaCodigo: "5.4.12",
-          descripcion: "Gasto de servicios profesionales",
-          debe: resFactura.subtotalNeto,
-          haber: 0,
-        },
-        {
-          cuentaCodigo: "1.1.05.01",
-          descripcion: "ITBIS pagado / adelantado",
-          debe: resFactura.totalItbis,
-          haber: 0,
-        },
-        {
-          cuentaCodigo: "2.1.02.03",
-          descripcion: "Retención de ISR por pagar (Ley 30-26)",
-          debe: 0,
-          haber: resFactura.retencionIsr,
-        },
-        {
-          cuentaCodigo: "2.1.02.02",
-          descripcion: "Retención de ITBIS por pagar",
-          debe: 0,
-          haber: resFactura.retencionItbis,
-        },
-        {
-          cuentaCodigo: "2.1.1",
-          descripcion: "Cuentas por pagar a proveedores (Neto)",
-          debe: 0,
-          haber: resFactura.netoAPagar,
-        },
-      ],
-    });
+    const res = await convertirCalculoEnAsientoBorrador({ tipo: "factura", entrada: entradaFactura });
 
     setCreandoAsiento(false);
     if (res.ok) {
@@ -267,14 +247,21 @@ export function SuiteCalculadoras() {
                 </div>
               </div>
 
-              <Button
-                onClick={handleConvertirEnAsientoFactura}
-                disabled={creandoAsiento}
-                className="w-full"
-              >
-                <FileCheck className="mr-2 size-4" />
-                {creandoAsiento ? t("generando") : t("convertirEnAsientoBorrador")}
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <BotonAsiento
+                  size="default"
+                  className="sm:flex-1"
+                  cargar={() => asientoDeCalculoFactura(entradaFactura)}
+                />
+                <Button
+                  onClick={handleConvertirEnAsientoFactura}
+                  disabled={creandoAsiento}
+                  className="sm:flex-1"
+                >
+                  <FileCheck className="mr-2 size-4" />
+                  {creandoAsiento ? t("generando") : t("convertirEnAsientoBorrador")}
+                </Button>
+              </div>
             </div>
           </div>
         </TabsContent>

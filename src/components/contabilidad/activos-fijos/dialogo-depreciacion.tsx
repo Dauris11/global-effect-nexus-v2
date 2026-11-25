@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ejecutarDepreciacionMensual } from "@/server/contabilidad/activos-fijos/acciones";
+import { diaEnRD } from "@/lib/fechas";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
+import {
+  asientoDeDepreciacion,
+  ejecutarDepreciacionMensual,
+} from "@/server/contabilidad/activos-fijos/acciones";
 
 export function DialogoDepreciacion() {
   const t = useTranslations("contab.activosFijos");
@@ -23,10 +28,11 @@ export function DialogoDepreciacion() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hoy = new Date();
-  const [anio, setAnio] = useState(hoy.getFullYear().toString());
-  const [mes, setMes] = useState((hoy.getMonth() + 1).toString());
-  const [fechaAsiento, setFechaAsiento] = useState(hoy.toISOString().split("T")[0]);
+  // «Hoy» en la hora de la Fundación, no en la del navegador ni la del servidor.
+  const hoy = diaEnRD();
+  const [anio, setAnio] = useState(hoy.slice(0, 4));
+  const [mes, setMes] = useState(String(Number(hoy.slice(5, 7))));
+  const [fechaAsiento, setFechaAsiento] = useState(hoy);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +40,12 @@ export function DialogoDepreciacion() {
     setError(null);
 
     try {
-      await ejecutarDepreciacionMensual(Number(anio), Number(mes), fechaAsiento);
+      const res = await ejecutarDepreciacionMensual(Number(anio), Number(mes), fechaAsiento);
+      // El error llega ya traducido (la acción no lanza), con el código que falta.
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
       setAbierto(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error al ejecutar depreciación");
@@ -105,6 +116,11 @@ export function DialogoDepreciacion() {
           </div>
 
           <DialogFooter>
+            <BotonAsiento
+              size="default"
+              className="sm:mr-auto"
+              cargar={() => asientoDeDepreciacion(Number(anio), Number(mes), fechaAsiento)}
+            />
             <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
               {t("cancelar")}
             </Button>

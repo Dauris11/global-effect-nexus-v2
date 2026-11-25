@@ -189,6 +189,7 @@ export type DetalleFactura = FilaFactura & {
   aprobado_por: string | null;
   motivo_anulacion: string | null;
   asiento_numero: string | null;
+  asiento_id: string | null;
 };
 
 export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
@@ -204,7 +205,7 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
             f.solicitante_id, us.nombre AS solicitante_nombre, f.programa_codigo,
             f.estudiante_id, f.pilar_costo,
             f.creado_por AS creado_por_id, uc.nombre AS creado_por, ua.nombre AS aprobado_por,
-            f.motivo_anulacion, a.numero::text AS asiento_numero
+            f.motivo_anulacion, a.numero::text AS asiento_numero, f.asiento_id
        FROM contabilidad.factura_proveedor f
        JOIN contabilidad.proveedor p ON p.id = f.proveedor_id
        JOIN contabilidad.categoria c ON c.id = f.categoria_id

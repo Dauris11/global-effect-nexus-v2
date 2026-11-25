@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Calendar, DollarSign, FileText, ReceiptText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Dato, Monto } from "@/components/contabilidad/comun";
 import { AccionesCxp } from "@/components/contabilidad/cxp/acciones-cxp";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { asientoDePagoCxp } from "@/server/contabilidad/cxp/acciones";
 import { cxpPorId, hoyEnLaBase, pagosDeCxp } from "@/server/contabilidad/cxp/consultas";
 import { opcionesRecibo } from "@/server/contabilidad/recibos/consultas";
 
@@ -192,8 +194,9 @@ export default async function PaginaDetalleCxp({
                     Registrado por {p.creado_por}
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                   <Monto valor={p.monto} moneda={cxp.moneda} className="font-bold text-marca-700" />
+                  <BotonAsiento cargar={asientoDePagoCxp.bind(null, p.id)} />
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/contabilidad/recibos/${p.recibo_id}`}>
                       <ReceiptText className="size-4" />

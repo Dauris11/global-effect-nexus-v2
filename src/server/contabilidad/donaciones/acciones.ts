@@ -1,10 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requerirUsuario } from "@/lib/auth";
-import { enTransaccionComo } from "@/lib/db";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import { consultarUna, enTransaccion, enTransaccionComo } from "@/lib/db";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
+import { construirLineasPorCodigo } from "@/server/contabilidad/codigos-transaccion/asiento";
+import { vistaDeAsientoContabilizado, vistaDeLineasPorCodigo } from "@/server/contabilidad/asientos/vista";
+import { armarAsientoDonacion } from "@/server/contabilidad/donaciones/asiento";
+import { textoDeErrorCodigos } from "@/server/contabilidad/patrimonio/errores";
 
 export type EstadoAccionDonacion = {
   ok: boolean;
@@ -77,41 +82,32 @@ export async function registrarDonacion(datos: {
         : `Recepción de donación en especie #${numero}: ${datos.descripcionEspecie}`;
 
       // El asiento se lleva en pesos (`monto_dop`): la moneda original queda
-      // en la donación, porque `asiento` no tiene moneda ni tasa.
-      let lineas: { cuenta_id: string; debe: number; haber: number; descripcion: string }[] = [];
+      // en la donación, porque `asiento` no tiene moneda ni tasa. Las cuentas
+      // de ingreso salen de los códigos de transacción (Configuración
+      // contable); el banco es la elección de quien registra.
+      let cuentaBancoContableId: string | null = null;
       if (datos.clase === "efectivo") {
         const { rows: bcoRows } = await cliente.query<{ cuenta_contable_id: string }>(
           `SELECT cuenta_contable_id FROM contabilidad.cuenta_bancaria WHERE id = $1`,
           [datos.cuentaBancariaId]
         );
-        const ctaDebe = bcoRows[0]?.cuenta_contable_id;
-
-        // El catálogo de la Fundación separa las donaciones por origen y
-        // forma de cobro. Aquí siempre entran por banco (4.1.1 nacional,
-        // 4.1.3 internacional); la moneda es lo único que distingue el
-        // origen. Lo «gravado» ya no tiene cuenta propia y va a la misma.
-        const codigoIngreso = datos.moneda === "USD" ? "4.1.3" : "4.1.1";
-        const { rows: ingRows } = await cliente.query<{ id: string }>(
-          `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1 AND admite_movimiento AND activa`,
-          [codigoIngreso]
-        );
-        const ctaHaber = ingRows[0]?.id;
-
-        if (!ctaDebe || !ctaHaber) {
-          throw new Error(`Falta la cuenta del banco o la cuenta de ingreso ${codigoIngreso} en el catálogo`);
+        cuentaBancoContableId = bcoRows[0]?.cuenta_contable_id ?? null;
+        if (!cuentaBancoContableId) {
+          throw new Error("La cuenta bancaria elegida no tiene cuenta contable asignada");
         }
-        lineas = [
-          { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Entrada a banco donación" },
-          { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Reconocimiento de donación" },
-        ];
-      } else {
-        // El catálogo vigente no tiene cuenta de ingreso por donaciones en
-        // especie (ni de inventario o activos recibidos sin costo): no se
-        // inventa una, se rechaza con un mensaje claro.
-        throw new Error(
-          "El catálogo contable vigente no tiene una cuenta para donaciones en especie. Agrégala al catálogo para registrarlas."
-        );
       }
+      const { partidas, lineasExtra } = armarAsientoDonacion({
+        clase: datos.clase,
+        moneda: datos.moneda,
+        montoDop,
+        cuentaBancoContableId,
+        cuentaDestinoEspecieId: datos.cuentaDestinoEspecieId,
+      });
+      const lineas = await construirLineasPorCodigo(
+        cliente,
+        partidas,
+        lineasExtra.map((l) => ({ ...l, cuenta_id: l.cuenta_id as string })),
+      );
 
       const { rows: asientoRows } = await cliente.query<{ id: string }>(
         `SELECT contabilidad.crear_asiento($1::date, $2, 'manual', NULL, NULL, $3::jsonb) AS id`,
@@ -160,6 +156,8 @@ export async function registrarDonacion(datos: {
     revalidatePath("/contabilidad/libros");
     return { ok: true, id: donacionId };
   } catch (err: unknown) {
+    const traducido = await textoDeErrorCodigos(err);
+    if (traducido) return { ok: false, error: traducido };
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: false, error: msg || "Error al procesar la donación" };
   }
@@ -248,4 +246,54 @@ export async function crearPromesaDonacion(datos: {
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: false, error: msg || "Error al crear promesa de donación" };
   }
+}
+
+/**
+ * Opción «Asiento» del diálogo de nueva donación: el asiento que saldría con
+ * lo que hay en el formulario, sin escribir nada. Muestra qué código falta
+ * (p. ej. el de especie) antes de que alguien pulse «Registrar».
+ */
+export async function asientoPreviaDonacion(datos: {
+  clase: "efectivo" | "especie";
+  moneda: "DOP" | "USD";
+  tasa?: number;
+  monto: number;
+  fecha: string;
+  cuentaBancariaId?: string;
+  cuentaDestinoEspecieId?: string;
+}): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const monto = Number.isFinite(datos.monto) && datos.monto > 0 ? datos.monto : 0;
+  const tasa = datos.moneda === "USD" ? Number(datos.tasa ?? 60.0) : 1.0;
+  const montoDop = datos.moneda === "USD" ? monto * tasa : monto;
+
+  return enTransaccion(async (cliente) => {
+    let cuentaBancoContableId: string | null = null;
+    if (datos.clase === "efectivo" && datos.cuentaBancariaId) {
+      const { rows } = await cliente.query<{ cuenta_contable_id: string | null }>(
+        `SELECT cuenta_contable_id FROM contabilidad.cuenta_bancaria WHERE id = $1`,
+        [datos.cuentaBancariaId],
+      );
+      cuentaBancoContableId = rows[0]?.cuenta_contable_id ?? null;
+    }
+    const { partidas, lineasExtra } = armarAsientoDonacion({
+      clase: datos.clase,
+      moneda: datos.moneda,
+      montoDop,
+      cuentaBancoContableId,
+      cuentaDestinoEspecieId: datos.cuentaDestinoEspecieId,
+    });
+    return vistaDeLineasPorCodigo(cliente, partidas, { fecha: datos.fecha, lineasExtra });
+  });
+}
+
+/** Opción «Asiento» de una donación ya registrada: el asiento tal como quedó en el libro. */
+export async function asientoDeDonacion(donacionId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const fila = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT asiento_id FROM contabilidad.donacion WHERE id = $1`,
+    [donacionId],
+  );
+  if (!fila?.asiento_id) throw new Error("La donación no tiene asiento.");
+  return vistaDeAsientoContabilizado(fila.asiento_id);
 }

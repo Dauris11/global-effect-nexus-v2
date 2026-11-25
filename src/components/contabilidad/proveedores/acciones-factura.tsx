@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Ban, CheckCircle2, FileUp, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, AvisoOk } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
   adjuntarFactura,
   anularFactura,
   aprobarFactura,
+  asientoDeFactura,
   type EstadoProveedor,
 } from "@/server/contabilidad/proveedores/acciones";
 import type { DetalleFactura } from "@/server/contabilidad/proveedores/consultas";
@@ -42,7 +44,7 @@ export function AccionesFactura({
 
   const errorAprobar =
     estadoAprobar.estado !== "inicial" && estadoAprobar.estado !== "ok"
-      ? tc(`error.${estadoAprobar.estado}` as never)
+      ? tc(`error.${estadoAprobar.estado}` as never, { codigo: estadoAprobar.codigo ?? "" } as never)
       : null;
 
   const errorAnular =
@@ -64,19 +66,34 @@ export function AccionesFactura({
               <p className="font-semibold text-tinta">{t("aprobar")}</p>
               <p className="text-xs text-tinta-2">{t("aprobarAyuda")}</p>
             </div>
-            <form action={enviarAprobar}>
-              <input type="hidden" name="id" value={factura.id} />
-              <Button type="submit" cargando={aprobando}>
-                {aprobando ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="size-4" />
-                )}
-                {t("aprobar")}
-              </Button>
-            </form>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Antes de aprobar: el asiento que saldría y qué cuenta falta. */}
+              <BotonAsiento cargar={() => asientoDeFactura(factura.id)} />
+              <form action={enviarAprobar}>
+                <input type="hidden" name="id" value={factura.id} />
+                <Button type="submit" cargando={aprobando}>
+                  {aprobando ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-4" />
+                  )}
+                  {t("aprobar")}
+                </Button>
+              </form>
+            </div>
           </div>
           {errorAprobar && <AvisoError>{errorAprobar}</AvisoError>}
+        </div>
+      )}
+
+      {/* Ya contabilizada (o anulada): el asiento real, visible para quien lee contabilidad. */}
+      {factura.asiento_id && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-linea bg-background p-4">
+          <div>
+            <p className="font-semibold text-tinta">{t("asientoContable")}</p>
+            <p className="text-xs text-tinta-2">{t("asientoContableAyuda")}</p>
+          </div>
+          <BotonAsiento cargar={() => asientoDeFactura(factura.id)} />
         </div>
       )}
 

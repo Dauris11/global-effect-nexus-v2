@@ -106,7 +106,7 @@ type FilaCaja = {
 };
 
 // La cuenta de la caja cae en "Caja Chica" del catálogo cuando la caja se
-// creó sin cuenta (código = CUENTA_CAJA_CHICA de lib/contabilidad/cajas): así
+// creó sin cuenta (la del código de transacción CAJ_CAJA_CHICA): así
 // el cuadre nunca se queda sin contrapartida.
 const SELECT_CAJA = `
   SELECT c.id, c.codigo, c.nombre, c.departamento,
@@ -128,7 +128,8 @@ const SELECT_CAJA = `
     JOIN public.usuario u ON c.responsable_id = u.id
     LEFT JOIN contabilidad.cuenta_contable cc
            ON cc.id = COALESCE(c.cuenta_contable_id,
-                               (SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.1.1'))`;
+                               (SELECT cuenta_id FROM contabilidad.codigo_transaccion
+                                WHERE codigo = 'CAJ_CAJA_CHICA'))`;
 
 function aCaja(f: FilaCaja): CajaResumen {
   return {

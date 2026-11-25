@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import type { PoolClient } from "pg";
 
-import { requerirUsuario } from "@/lib/auth";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 import {
   esRevertible,
   esTipoAsientoManual,
@@ -14,8 +15,9 @@ import {
   type LineaNormalizada,
 } from "@/lib/contabilidad/asientos";
 import { esFechaIso, esUuid, numeroDocumento } from "@/lib/contabilidad/formato";
-import { enTransaccionComo } from "@/lib/db";
+import { consultarUna, enTransaccionComo } from "@/lib/db";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { vistaDeLineasSql, type LineaSql } from "@/server/contabilidad/asientos/vista-sql";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import {
   contextoDe,
@@ -386,4 +388,19 @@ export async function procesarAsientos(
 
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad", "layout");
+}
+
+/**
+ * «Asiento» de una plantilla recurrente: las líneas que generaría tal como
+ * están guardadas. No usa códigos de transacción (la plantilla ya fija sus
+ * cuentas), pero se ve igual que los demás procesos y avisa si el asiento no
+ * cuadra.
+ */
+export async function asientoDePlantilla(plantillaId: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  const fila = await consultarUna<{ concepto: string; lineas: LineaSql[] }>(
+    `SELECT concepto, lineas FROM contabilidad.asiento_recurrente WHERE id = $1`,
+    [plantillaId],
+  );
+  return vistaDeLineasSql(fila?.lineas ?? [], { descripcion: fila?.concepto });
 }

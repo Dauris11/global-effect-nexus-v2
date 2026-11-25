@@ -1,7 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Badge } from "@/components/ui/badge";
+import { asientoDeLiberacion } from "@/server/contabilidad/fondos/acciones";
 import type { FondoItem, FondoLiberacionItem } from "@/server/contabilidad/fondos/consultas";
 
 export function ListaFondos({
@@ -123,8 +125,11 @@ export function ListaFondos({
                     </td>
                     <td className="px-4 py-3 text-xs">
                       {lib.asientoNumero ? (
-                        <span className="font-mono font-medium text-marca-600">
-                          AS-{String(lib.asientoNumero).padStart(6, "0")}
+                        <span className="inline-flex flex-wrap items-center gap-2">
+                          <span className="font-mono font-medium text-marca-600">
+                            AS-{String(lib.asientoNumero).padStart(6, "0")}
+                          </span>
+                          <BotonAsiento cargar={() => asientoDeLiberacion(lib.id)} />
                         </span>
                       ) : (
                         lib.documentoReferencia || "—"

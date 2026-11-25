@@ -21,7 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { registrarMovimientoInventario } from "@/server/contabilidad/inventario/acciones";
+import { diaEnRD } from "@/lib/fechas";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
+import {
+  asientoDeConsumoInventario,
+  registrarMovimientoInventario,
+} from "@/server/contabilidad/inventario/acciones";
 
 export function DialogoMovimiento({
   articulos,
@@ -39,7 +44,7 @@ export function DialogoMovimiento({
   const [tipo, setTipo] = useState<
     "entrada_compra" | "entrada_donacion" | "salida_consumo" | "ajuste_sobrante" | "ajuste_faltante"
   >("salida_consumo");
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
+  const [fecha, setFecha] = useState(diaEnRD());
   const [cantidad, setCantidad] = useState("");
   const [costoUnitario, setCostoUnitario] = useState("");
   const [centroCostoId, setCentroCostoId] = useState(centrosCosto[0]?.id || "");
@@ -54,7 +59,7 @@ export function DialogoMovimiento({
     setError(null);
 
     try {
-      await registrarMovimientoInventario({
+      const res = await registrarMovimientoInventario({
         articulo_id: articuloId,
         tipo,
         fecha,
@@ -63,6 +68,12 @@ export function DialogoMovimiento({
         centro_costo_id: centroCostoId || null,
         motivo: motivo || undefined,
       });
+      // La acción devuelve el error ya traducido (no lanza) para que «código
+      // sin cuenta» llegue a la pantalla también en producción.
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
 
       setAbierto(false);
       setCantidad("");
@@ -209,6 +220,14 @@ export function DialogoMovimiento({
 
             <AccionesFormulario>
               <DialogFooter>
+                {/* Solo la salida por consumo genera asiento; las demás solo mueven existencias. */}
+                {tipo === "salida_consumo" && (
+                  <BotonAsiento
+                    size="default"
+                    cargar={() => asientoDeConsumoInventario(articuloId, Number(cantidad))}
+                    className="sm:mr-auto"
+                  />
+                )}
                 <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
                   {t("cancelar")}
                 </Button>

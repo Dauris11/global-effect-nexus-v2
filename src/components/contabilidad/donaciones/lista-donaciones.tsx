@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2 } from "lucide-react";
+import { asientoDeDonacion } from "@/server/contabilidad/donaciones/acciones";
 import type { DonacionItem, PromesaConCuotas } from "@/server/contabilidad/donaciones/consultas";
 
 export function ListaDonaciones({
@@ -40,6 +42,7 @@ export function ListaDonaciones({
                   <th className="px-4 py-3 text-right">{t("monto")}</th>
                   <th className="px-4 py-3">{t("fondo")}</th>
                   <th className="px-4 py-3">{t("estado")}</th>
+                  <th className="px-4 py-3 text-right">{t("asiento")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -75,6 +78,9 @@ export function ListaDonaciones({
                         <CheckCircle2 className="mr-1 size-3 text-marca-600" />
                         {t("confirmada")}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {d.asientoNumero ? <BotonAsiento cargar={() => asientoDeDonacion(d.id)} /> : "—"}
                     </td>
                   </tr>
                 ))}

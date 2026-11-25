@@ -4,7 +4,7 @@ import { createHash, randomUUID } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
 
-import { requerirUsuario } from "@/lib/auth";
+import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { consultarUna, enTransaccionComo } from "@/lib/db";
 import {
   esFechaIso,
@@ -23,6 +23,9 @@ import {
 import { esPilarCosto } from "@/lib/costos";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { subirContable } from "@/lib/supabase/almacen";
+import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
+import { vistaDeAsientoContabilizado } from "@/server/contabilidad/asientos/vista";
+import { errorDeCodigoSql, vistaPreviaDeFactura } from "@/server/contabilidad/proveedores/asiento";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import {
   contextoDe,
@@ -66,8 +69,12 @@ export type EstadoProveedor = {
     | "motivo_requerido"
     | "tiene_pagos"
     | "archivo_invalido"
+    | "proveedor_codigo_sin_cuenta"
+    | "proveedor_cuenta_no_valida"
     | EstadoErrorContable;
   id?: string;
+  /** Nombre del código de transacción implicado (para el texto del error). */
+  codigo?: string;
 };
 
 function texto(datos: FormData, campo: string, maximo = 200): string {
@@ -326,8 +333,27 @@ export async function aprobarFactura(
     refrescar();
     return { estado: "ok", id };
   } catch (error) {
+    // Sin cuenta asignada a un código de proveedores: se dice cuál, no «error».
+    const deCodigo = await errorDeCodigoSql(error);
+    if (deCodigo) return deCodigo;
     return { estado: estadoDeError(error) };
   }
+}
+
+/**
+ * Opción «Asiento» de una factura: antes de aprobarla, el asiento que saldría
+ * (con lo que falte); ya aprobada, el asiento real. Mostrarlo es leer
+ * contabilidad, no aprobar.
+ */
+export async function asientoDeFactura(id: string): Promise<VistaAsiento> {
+  await requerirPermiso("contabilidad.leer");
+  if (!esUuid(id)) throw new Error("Factura no válida.");
+  const factura = await consultarUna<{ asiento_id: string | null }>(
+    `SELECT asiento_id FROM contabilidad.factura_proveedor WHERE id = $1`,
+    [id],
+  );
+  if (!factura) throw new Error("Factura no encontrada.");
+  return factura.asiento_id ? vistaDeAsientoContabilizado(factura.asiento_id) : vistaPreviaDeFactura(id);
 }
 
 export async function anularFactura(

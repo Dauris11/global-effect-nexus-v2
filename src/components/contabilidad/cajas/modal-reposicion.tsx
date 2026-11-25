@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowDownRight, Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { reponerCajaDesdeBancoAction } from "@/server/contabilidad/cajas/acciones";
+import { asientoPreviaReposicion } from "@/server/contabilidad/cajas/acciones-asiento";
 import type { CajaResumen } from "@/server/contabilidad/cajas/consultas";
 
 export type CuentaBancoOpcion = {
@@ -160,7 +162,13 @@ export function ModalReposicionCaja({
 
           {error && <AvisoError>{error}</AvisoError>}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <BotonAsiento
+              size="default"
+              cargar={() =>
+                asientoPreviaReposicion({ cajaId: caja.id, cuentaBancoId, monto: Number(monto), concepto, fecha })
+              }
+            />
             <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
               {t("cancelar")}
             </Button>
