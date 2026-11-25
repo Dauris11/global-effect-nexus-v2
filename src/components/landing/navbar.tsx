@@ -9,7 +9,7 @@ import {
   type DestinoPortal,
 } from "@/components/landing/buscador-portal";
 import { CONTENEDOR } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -144,9 +144,9 @@ export function Navbar({
             {textos.transporte}
           </Link>
 
-          <Button asChild>
-            <Link href="/login">{textos.acceder}</Link>
-          </Button>
+          <Link href="/login" className={variantesBoton()}>
+            {textos.acceder}
+          </Link>
 
           <div ref={menu} className="relative">
             <button

@@ -8,7 +8,7 @@ import {
   SECCION,
   TITULO_SECCION,
 } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -41,12 +41,13 @@ export async function SeccionPatrocinadores() {
           <h2 className={TITULO_SECCION}>{t("sponsorTitle")}</h2>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button asChild size="lg" className="group/cta">
-              <Link href="/login">
-                {t("enter")}
-                <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
-              </Link>
-            </Button>
+            <Link
+              href="/login"
+              className={variantesBoton({ size: "lg", className: "group/cta" })}
+            >
+              {t("enter")}
+              <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+            </Link>
 
             {/*
               Correo y no una ruta: no hay formulario de contacto en el sistema,
@@ -54,12 +55,17 @@ export async function SeccionPatrocinadores() {
               `mailto`. La dirección es la misma que el pie, así que sale de la
               misma clave.
             */}
-            <Button asChild size="lg" variant="secondary" className="min-w-0">
-              <a href={`mailto:${correo}`}>
-                <Mail />
-                <span className="truncate">{correo}</span>
-              </a>
-            </Button>
+            <a
+              href={`mailto:${correo}`}
+              className={variantesBoton({
+                size: "lg",
+                variant: "secondary",
+                className: "min-w-0",
+              })}
+            >
+              <Mail />
+              <span className="truncate">{correo}</span>
+            </a>
           </div>
         </div>
 

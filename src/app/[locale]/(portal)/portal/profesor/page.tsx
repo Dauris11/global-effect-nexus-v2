@@ -16,7 +16,7 @@ import {
 } from "@/components/profesor/dashboard-inicio-docente";
 import { BannerLlamadasActivas } from "@/components/reuniones/banner-llamadas-activas";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
@@ -152,6 +152,24 @@ export default async function PortalProfesor({
         <EncabezadoPagina
           titulo={t("greeting", { name: usuario.nombre })}
           subtitulo={t("summary")}
+          acciones={
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/academico/clases-360"
+                className={variantesBoton({ size: "sm" })}
+              >
+                <Sparkles className="size-4" />
+                {t("assignTask")} (360)
+              </Link>
+              <Link
+                href="/portal/profesor/materias"
+                className={variantesBoton({ variant: "outline", size: "sm" })}
+              >
+                <Library className="size-4" />
+                {t("shortcuts.assignedSubjects.label")}
+              </Link>
+            </div>
+          }
         />
 
         <NextIntlClientProvider messages={mensajes}>
@@ -193,11 +211,12 @@ export default async function PortalProfesor({
                 </Badge>
               </CardTitle>
 
-              <Button asChild size="sm">
-                <Link href="/academico/clases-360">
-                  {t("shortcuts.classes360.label")}
-                </Link>
-              </Button>
+              <Link
+                href="/academico/clases-360"
+                className={variantesBoton({ size: "sm" })}
+              >
+                {t("shortcuts.classes360.label")}
+              </Link>
             </div>
 
             <ul className="divide-linea divide-y">
@@ -214,11 +233,16 @@ export default async function PortalProfesor({
                       {entrega.asignacion} · {entrega.unidad}
                     </span>
                   </div>
-                  <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs text-marca-600 hover:text-marca-700">
-                    <Link href={enlaceRevision(entrega)}>
-                      {t("reviewSubmission")}
-                    </Link>
-                  </Button>
+                  <Link
+                    href={enlaceRevision(entrega)}
+                    className={variantesBoton({
+                      size: "sm",
+                      variant: "ghost",
+                      className: "shrink-0 text-xs text-marca-600 hover:text-marca-700",
+                    })}
+                  >
+                    {t("reviewSubmission")}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -295,31 +319,39 @@ export default async function PortalProfesor({
                         </div>
 
                         <div className="flex shrink-0 flex-wrap items-center gap-1.5 self-center">
-                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/academico/clases-360?clase=${clase.id}&accion=asistencia#clase-${clase.id}`}>
-                              <CalendarCheck className="size-3.5" />
-                              {t("takeAttendance")}
-                            </Link>
-                          </Button>
-                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/academico/clases-360?clase=${clase.id}&accion=tarea#clase-${clase.id}`}>
-                              <ClipboardList className="size-3.5" />
-                              {t("assignTask")}
-                            </Link>
-                          </Button>
+                          <Link
+                            href={`/academico/clases-360?clase=${clase.id}&accion=asistencia#clase-${clase.id}`}
+                            className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                          >
+                            <CalendarCheck className="size-3.5" />
+                            {t("takeAttendance")}
+                          </Link>
+                          <Link
+                            href={`/academico/clases-360?clase=${clase.id}&accion=tarea#clase-${clase.id}`}
+                            className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                          >
+                            <ClipboardList className="size-3.5" />
+                            {t("assignTask")}
+                          </Link>
                           {clase.tareas > 0 && (
-                            <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                              <Link href={`/academico/clases-360?clase=${clase.id}&accion=publicaciones#clase-${clase.id}`}>
-                                <ClipboardList className="size-3.5" />
-                                {t("viewPosts")} ({clase.tareas})
-                              </Link>
-                            </Button>
-                          )}
-                          <Button asChild size="sm" variant="ghost" className="h-8 text-xs text-marca-600 hover:text-marca-700">
-                            <Link href={`/academico/clases-360?clase=${clase.id}&accion=alumnos#clase-${clase.id}`}>
-                              {t("manageClass")}
+                            <Link
+                              href={`/academico/clases-360?clase=${clase.id}&accion=publicaciones#clase-${clase.id}`}
+                              className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                            >
+                              <ClipboardList className="size-3.5" />
+                              {t("viewPosts")} ({clase.tareas})
                             </Link>
-                          </Button>
+                          )}
+                          <Link
+                            href={`/academico/clases-360?clase=${clase.id}&accion=alumnos#clase-${clase.id}`}
+                            className={variantesBoton({
+                              size: "sm",
+                              variant: "ghost",
+                              className: "h-8 text-xs text-marca-600 hover:text-marca-700",
+                            })}
+                          >
+                            {t("manageClass")}
+                          </Link>
                         </div>
                       </div>
                     </li>
@@ -378,31 +410,39 @@ export default async function PortalProfesor({
                         </div>
 
                         <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia#materia-${materia.id}`}>
-                              <CalendarCheck className="size-3.5" />
-                              {t("takeAttendance")}
-                            </Link>
-                          </Button>
-                          <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea#materia-${materia.id}`}>
-                              <ClipboardList className="size-3.5" />
-                              {t("assignTask")}
-                            </Link>
-                          </Button>
+                          <Link
+                            href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia#materia-${materia.id}`}
+                            className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                          >
+                            <CalendarCheck className="size-3.5" />
+                            {t("takeAttendance")}
+                          </Link>
+                          <Link
+                            href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea#materia-${materia.id}`}
+                            className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                          >
+                            <ClipboardList className="size-3.5" />
+                            {t("assignTask")}
+                          </Link>
                           {materia.tareas > 0 && (
-                            <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                              <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=publicaciones#materia-${materia.id}`}>
-                                <ClipboardList className="size-3.5" />
-                                {t("viewPosts")} ({materia.tareas})
-                              </Link>
-                            </Button>
-                          )}
-                          <Button asChild size="sm" variant="ghost" className="h-8 text-xs text-marca-600 hover:text-marca-700">
-                            <Link href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos#materia-${materia.id}`}>
-                              {t("manageClass")}
+                            <Link
+                              href={`/portal/profesor/materias?materia=${materia.id}&accion=publicaciones#materia-${materia.id}`}
+                              className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
+                            >
+                              <ClipboardList className="size-3.5" />
+                              {t("viewPosts")} ({materia.tareas})
                             </Link>
-                          </Button>
+                          )}
+                          <Link
+                            href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos#materia-${materia.id}`}
+                            className={variantesBoton({
+                              size: "sm",
+                              variant: "ghost",
+                              className: "h-8 text-xs text-marca-600 hover:text-marca-700",
+                            })}
+                          >
+                            {t("manageClass")}
+                          </Link>
                         </div>
                       </div>
                     </li>

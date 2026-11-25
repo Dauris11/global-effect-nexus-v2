@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -169,27 +169,25 @@ export function CalendarioMensualEstudiante({
         <CardContent className="space-y-4 pt-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="icon" className="size-9">
-                <Link
-                  href={`/portal/estudiante/calendario?mes=${mesAnterior}`}
-                  aria-label={tCal("prevMonth")}
-                >
-                  <ChevronLeft className="size-4" />
-                </Link>
-              </Button>
+              <Link
+                href={`/portal/estudiante/calendario?mes=${mesAnterior}`}
+                aria-label={tCal("prevMonth")}
+                className={variantesBoton({ variant: "outline", size: "icon", className: "size-9" })}
+              >
+                <ChevronLeft className="size-4" />
+              </Link>
 
               <h2 className="min-w-44 text-center text-base font-semibold capitalize text-tinta">
                 {etiquetaMes}
               </h2>
 
-              <Button asChild variant="outline" size="icon" className="size-9">
-                <Link
-                  href={`/portal/estudiante/calendario?mes=${mesSiguiente}`}
-                  aria-label={tCal("nextMonth")}
-                >
-                  <ChevronRight className="size-4" />
-                </Link>
-              </Button>
+              <Link
+                href={`/portal/estudiante/calendario?mes=${mesSiguiente}`}
+                aria-label={tCal("nextMonth")}
+                className={variantesBoton({ variant: "outline", size: "icon", className: "size-9" })}
+              >
+                <ChevronRight className="size-4" />
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">
@@ -197,11 +195,12 @@ export function CalendarioMensualEstudiante({
                 {t("count", { count: entradasFiltradas.length })}
               </span>
               {mes !== mesHoy && (
-                <Button asChild variant="secondary" size="sm">
-                  <Link href={`/portal/estudiante/calendario?mes=${mesHoy}`}>
-                    {tCal("today")}
-                  </Link>
-                </Button>
+                <Link
+                  href={`/portal/estudiante/calendario?mes=${mesHoy}`}
+                  className={variantesBoton({ variant: "secondary", size: "sm" })}
+                >
+                  {tCal("today")}
+                </Link>
               )}
             </div>
           </div>

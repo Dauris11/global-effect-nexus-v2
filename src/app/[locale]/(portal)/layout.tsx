@@ -10,6 +10,7 @@ import { requerirUsuario } from "@/lib/auth";
 import { FUNCION_ASISTENTE, rutasProtegidas } from "@/lib/nav";
 import { PORTAL_POR_ROL, usuarioTienePermiso } from "@/lib/rbac";
 import { SCRIPT_APARIENCIA } from "@/lib/apariencia";
+import { consultarUna } from "@/lib/db";
 import { fechaConHora } from "@/lib/fechas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { marcarPresencia } from "@/server/auditoria/actividad";
@@ -79,21 +80,26 @@ export default async function LayoutPortal({
    * `estudianteDeUsuario` está memoizada por petición, así que esto no repite
    * la consulta que la propia pantalla va a hacer después.
    */
-  const conExpediente =
-    usuario.rol === "estudiante" &&
-    (await estudianteDeUsuario(usuario.id)).tieneExpediente;
+  const tieneHabitudes =
+    usuario.rol !== "docente" ||
+    Boolean(
+      await consultarUna<{ ok: number }>(
+        `SELECT 1 AS ok
+           FROM public.habitudes_liceo_profesor
+          WHERE profesor_id = $1 AND activo = true
+          LIMIT 1`,
+        [usuario.id],
+      ),
+    );
 
-  /*
-   * Aviso de prematrícula en la cabecera, a todo estudiante con expediente:
-   * todos cursan Global Effect 360.
-   *
-   * Se resuelve aquí, en el servidor, y viaja como una cadena ya formada: la
-   * cabecera es cliente y así no se le manda ni el diccionario ni la lógica de
-   * fechas. Si no hay ventana vigente no se consulta nada más y el aviso no sale.
-   */
+  const fueraDelMenu = tieneHabitudes
+    ? visibilidad.fueraDelMenu
+    : [...visibilidad.fueraDelMenu, "habitudes"];
+
+  // Mostrar aviso de prematrícula a todo rol estudiante (incluido «Ver como»).
   let aviso: { texto: string; href: string } | null = null;
 
-  if (conExpediente) {
+  if (usuario.rol === "estudiante") {
     const ventana = await ventanaVigente();
 
     if (ventana) {
@@ -151,7 +157,7 @@ export default async function LayoutPortal({
           cuando: fechaConHora(fila.created_at, null, usuario.idioma),
         }))}
         sinLeer={avisos[0]?.sin_leer ?? 0}
-        ocultos={visibilidad.fueraDelMenu}
+        ocultos={fueraDelMenu}
         permisos={usuario.permisos}
         cerrarSesion={cerrarSesion}
       >

@@ -2,7 +2,7 @@ import { ChevronRight, Video } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 import type { ReunionActivaBanner } from "@/server/reuniones/consultas";
 
@@ -56,12 +56,13 @@ export async function BannerLlamadasActivas({
               </div>
             </div>
 
-            <Button asChild size="sm">
-              <Link href={`/reuniones?sala=${reunion.id}`}>
-                {t("joinInWeb")}
-                <ChevronRight className="size-3.5" />
-              </Link>
-            </Button>
+            <Link
+              href={`/reuniones?sala=${reunion.id}`}
+              className={variantesBoton({ size: "sm" })}
+            >
+              {t("joinInWeb")}
+              <ChevronRight className="size-3.5" />
+            </Link>
           </li>
         ))}
       </ul>

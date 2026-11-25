@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 import { CONTENEDOR } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -170,12 +170,13 @@ export function Hero({
             </h1>
 
             <div className="landing-entrada mt-8 md:mt-10" style={{ "--paso": 1 } as React.CSSProperties}>
-              <Button asChild size="lg" className="group/cta">
-                <Link href={boton.href}>
-                  {boton.texto}
-                  <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
-                </Link>
-              </Button>
+              <Link
+                href={boton.href}
+                className={variantesBoton({ size: "lg", className: "group/cta" })}
+              >
+                {boton.texto}
+                <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+              </Link>
             </div>
           </div>
 

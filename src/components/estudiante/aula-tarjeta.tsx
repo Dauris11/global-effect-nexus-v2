@@ -146,9 +146,9 @@ export function TarjetaAsignacion({
               </Dato>
             )}
 
-            {enlazable && (
+            {enlazable && fila.archivo_url && (
               <a
-                href={fila.archivo_url ?? "#"}
+                href={fila.archivo_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-control font-medium text-marca-600 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"

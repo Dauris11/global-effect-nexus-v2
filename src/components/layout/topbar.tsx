@@ -182,7 +182,7 @@ export function TopBar({
             className="inline-flex h-11 max-w-[18rem] items-center gap-1.5 rounded-full bg-marca-50 px-3 text-sm font-semibold text-marca-700 transicion-control hover:bg-marca-100 active:scale-[0.97]"
           >
             <CalendarClock className="size-4 shrink-0" />
-            <span className="hidden truncate lg:inline">{aviso.texto}</span>
+            <span className="hidden truncate sm:inline">{aviso.texto}</span>
           </Link>
         )}
 

@@ -11,7 +11,7 @@ import {
   CONTENEDOR,
   SECCION,
 } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { fechaCorta } from "@/lib/fechas";
@@ -68,12 +68,13 @@ export async function SeccionEventos({
         <CabeceraSeccion
           titulo={t("eventsTitle")}
           accion={
-            <Button asChild variant="secondary">
-              <Link href="/login">
-                {t("enter")}
-                <ChevronRight />
-              </Link>
-            </Button>
+            <Link
+              href="/login"
+              className={variantesBoton({ variant: "secondary" })}
+            >
+              {t("enter")}
+              <ChevronRight />
+            </Link>
           }
         />
 

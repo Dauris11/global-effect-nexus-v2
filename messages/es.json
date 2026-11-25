@@ -6939,6 +6939,11 @@
     "noPassengersEnrolled": "No hay pasajeros registrados para este turno todavía.",
     "recurring": "Recurrente",
     "singleDay": "Hoy",
+    "searchPassenger": "Buscar pasajero...",
+    "allStops": "Todas las paradas",
+    "chartStopsTitle": "Pasajeros por parada de abordaje",
+    "chartTypesTitle": "Tipo de registro",
+    "chartEmpty": "Sin pasajeros para graficar",
     "reportIncidentTitle": "Reportar problema o avería",
     "reportIncidentDesc": "Al emitir este reporte, se notificará de inmediato a los estudiantes inscritos en este viaje.",
     "incidentType": {

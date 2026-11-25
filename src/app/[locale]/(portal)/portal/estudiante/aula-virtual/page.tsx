@@ -183,107 +183,113 @@ export default async function PaginaAulaVirtual({
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-      <div className="animate-entrada space-y-8">
+      <div className="animate-entrada space-y-6">
         <EncabezadoPagina titulo={t("classroom.title")} />
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
-            <StatCard
-              key={clave}
-              icono={FILTROS[clave].icono}
-              valor={cuenta(clave)}
-              etiqueta={etiquetas[clave]}
-              // El acento va donde hay que actuar: lo pendiente, y lo vencido
-              // solo si existe.
-              acento={clave === "pendiente" || (clave === "vencida" && cuenta(clave) > 0)}
-            />
-          ))}
-        </div>
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+          {/* Columna principal: Tareas y exámenes arriba de todo */}
+          <div className="min-w-0 space-y-8">
+            <section className="space-y-6">
+              <h2 className="texto-titulo-seccion">{t("classroom.assignmentsTitle")}</h2>
 
-        <GraficoEstadoAulaVirtual
-          pendientes={cuenta("pendiente")}
-          entregadas={cuenta("entregado")}
-          calificadas={cuenta("calificado")}
-          vencidas={cuenta("vencida")}
-        />
+              {materiasDisponibles.length > 0 && (
+                <div className="space-y-3">
+                  <FilaChips etiqueta={t("classroom.filterSubjectLabel")}>
+                    <ChipFiltro
+                      icono={Layers}
+                      etiqueta={t("classroom.filterAllSubjects")}
+                      activo={materiaActiva === null}
+                      href={enlaceFiltro({ estado: filtro, materia: null })}
+                    />
+                    {materiasDisponibles.map((nombreMateria) => (
+                      <ChipFiltro
+                        key={nombreMateria}
+                        icono={BookOpen}
+                        etiqueta={nombreMateria}
+                        activo={materiaActiva === nombreMateria}
+                        href={enlaceFiltro({ estado: filtro, materia: nombreMateria })}
+                      />
+                    ))}
+                  </FilaChips>
 
-        <section className="space-y-6">
-          <h2 className="texto-titulo-seccion">{t("classroom.assignmentsTitle")}</h2>
+                  <FilaChips etiqueta={t("classroom.filterLabel")}>
+                    <ChipFiltro
+                      icono={ListTodo}
+                      etiqueta={t("classroom.filterAll")}
+                      activo={filtro === null}
+                      href={enlaceFiltro({ estado: null, materia: materiaActiva })}
+                    />
+                    {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
+                      <ChipFiltro
+                        key={clave}
+                        icono={FILTROS[clave].icono}
+                        etiqueta={etiquetas[clave]}
+                        activo={filtro === clave}
+                        href={enlaceFiltro({ estado: clave, materia: materiaActiva })}
+                      />
+                    ))}
+                  </FilaChips>
+                </div>
+              )}
 
-          {materiasDisponibles.length > 0 && (
-            <div className="space-y-3">
-              <FilaChips etiqueta={t("classroom.filterSubjectLabel")}>
-                <ChipFiltro
-                  icono={Layers}
-                  etiqueta={t("classroom.filterAllSubjects")}
-                  activo={materiaActiva === null}
-                  href={enlaceFiltro({ estado: filtro, materia: null })}
+              {evaluables.length === 0 ? (
+                <EstadoVacio
+                  icono={ClipboardCheck}
+                  titulo={t("classroom.assignmentsEmpty")}
                 />
-                {materiasDisponibles.map((nombreMateria) => (
-                  <ChipFiltro
-                    key={nombreMateria}
-                    icono={BookOpen}
-                    etiqueta={nombreMateria}
-                    activo={materiaActiva === nombreMateria}
-                    href={enlaceFiltro({ estado: filtro, materia: nombreMateria })}
-                  />
-                ))}
-              </FilaChips>
-
-              <FilaChips etiqueta={t("classroom.filterLabel")}>
-                <ChipFiltro
+              ) : visibles.length === 0 ? (
+                <EstadoVacio
                   icono={ListTodo}
-                  etiqueta={t("classroom.filterAll")}
-                  activo={filtro === null}
-                  href={enlaceFiltro({ estado: null, materia: materiaActiva })}
+                  titulo={t("classroom.filterEmpty")}
                 />
-                {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
-                  <ChipFiltro
-                    key={clave}
-                    icono={FILTROS[clave].icono}
-                    etiqueta={etiquetas[clave]}
-                    activo={filtro === clave}
-                    href={enlaceFiltro({ estado: clave, materia: materiaActiva })}
-                  />
-                ))}
-              </FilaChips>
+              ) : (
+                <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {visibles.map((fila) => (
+                    <li key={fila.id}>
+                      <TarjetaAsignacion fila={fila} idioma={idioma} textos={textos(fila)} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {recursos.length > 0 && filtro === null && (
+              <section className="space-y-6 border-t border-linea pt-8">
+                <h2 className="texto-titulo-seccion">{t("classroom.resourcesTitle")}</h2>
+
+                <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {recursos.map((fila) => (
+                    <li key={fila.id}>
+                      <TarjetaAsignacion fila={fila} idioma={idioma} textos={textos(fila)} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+
+          {/* Barra lateral: métricas rápidas y gráfico de entregas */}
+          <aside className="space-y-4 lg:sticky lg:top-20">
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(FILTROS) as Filtro[]).map((clave) => (
+                <StatCard
+                  key={clave}
+                  icono={FILTROS[clave].icono}
+                  valor={cuenta(clave)}
+                  etiqueta={etiquetas[clave]}
+                  acento={clave === "pendiente" || (clave === "vencida" && cuenta(clave) > 0)}
+                />
+              ))}
             </div>
-          )}
 
-          {evaluables.length === 0 ? (
-            <EstadoVacio
-              icono={ClipboardCheck}
-              titulo={t("classroom.assignmentsEmpty")}
+            <GraficoEstadoAulaVirtual
+              pendientes={cuenta("pendiente")}
+              entregadas={cuenta("entregado")}
+              calificadas={cuenta("calificado")}
+              vencidas={cuenta("vencida")}
             />
-          ) : visibles.length === 0 ? (
-            <EstadoVacio
-              icono={ListTodo}
-              titulo={t("classroom.filterEmpty")}
-            />
-          ) : (
-            <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {visibles.map((fila) => (
-                <li key={fila.id}>
-                  <TarjetaAsignacion fila={fila} idioma={idioma} textos={textos(fila)} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {recursos.length > 0 && filtro === null && (
-          <section className="space-y-6 border-t border-linea pt-8">
-            <h2 className="texto-titulo-seccion">{t("classroom.resourcesTitle")}</h2>
-
-            <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {recursos.map((fila) => (
-                <li key={fila.id}>
-                  <TarjetaAsignacion fila={fila} idioma={idioma} textos={textos(fila)} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+          </aside>
+        </div>
       </div>
     </NextIntlClientProvider>
   );

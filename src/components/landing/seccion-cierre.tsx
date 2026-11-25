@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CONTENEDOR } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -33,12 +33,16 @@ export async function SeccionCierre() {
           </h2>
         </div>
 
-        <Button asChild size="lg" className="group/cta shrink-0 focus-visible:ring-offset-tinta">
-          <Link href="/login">
-            {t("enter")}
-            <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
-          </Link>
-        </Button>
+        <Link
+          href="/login"
+          className={variantesBoton({
+            size: "lg",
+            className: "group/cta shrink-0 focus-visible:ring-offset-tinta",
+          })}
+        >
+          {t("enter")}
+          <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+        </Link>
       </div>
     </section>
   );

@@ -6939,6 +6939,11 @@
     "noPassengersEnrolled": "No passengers registered for this shift yet.",
     "recurring": "Recurring",
     "singleDay": "Single day",
+    "searchPassenger": "Search passenger...",
+    "allStops": "All stops",
+    "chartStopsTitle": "Passengers by boarding stop",
+    "chartTypesTitle": "Booking type",
+    "chartEmpty": "No passengers to chart",
     "reportIncidentTitle": "Report problem or breakdown",
     "reportIncidentDesc": "Submitting this report will immediately notify students enrolled on this trip.",
     "incidentType": {

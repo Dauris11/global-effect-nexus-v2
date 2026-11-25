@@ -7,7 +7,7 @@ import {
   CONTENEDOR,
   SECCION,
 } from "@/components/landing/piezas";
-import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -52,12 +52,13 @@ export async function SeccionMapa() {
             </span>
           </div>
 
-          <Button asChild variant="secondary" className="mt-7">
-            <Link href="#patrocinadores">
-              {t("enter")}
-              <ChevronRight />
-            </Link>
-          </Button>
+          <Link
+            href="#patrocinadores"
+            className={variantesBoton({ variant: "secondary", className: "mt-7" })}
+          >
+            {t("enter")}
+            <ChevronRight />
+          </Link>
         </div>
 
         {/* El globo necesita fondo oscuro: sus colores (tierra y halo) están
