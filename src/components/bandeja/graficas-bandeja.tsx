@@ -8,6 +8,7 @@ import {
   GraficaBarras,
   GraficaFlujo,
 } from "@/components/dashboard/graficas";
+import { LeyendaGrafico } from "@/components/ui/grafico";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO, PRIORIDAD, PRIORIDADES } from "@/lib/paleta";
@@ -130,19 +131,7 @@ export function GraficasBandeja({
 
             {/* La cifra escrita junto a cada porción: el anillo da la
                 proporción y la lista el número que se acaba diciendo en voz alta. */}
-            <ul className="mt-3 divide-y divide-linea">
-              {serie.map((fila) => (
-                <li key={fila.nombre} className="flex items-center gap-2.5 py-2 text-sm">
-                  <span
-                    aria-hidden
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: fila.color }}
-                  />
-                  <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                  <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                </li>
-              ))}
-            </ul>
+            <LeyendaGrafico enLista items={serie} className="mt-3" />
           </CardContent>
         </Card>
       )}

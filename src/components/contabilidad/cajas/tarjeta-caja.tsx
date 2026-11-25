@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
 import { UMBRAL_CAJA_BAJA } from "@/lib/contabilidad/cajas";
 import { formatearMonto } from "@/lib/contabilidad/formato";
@@ -57,19 +58,7 @@ export function TarjetaCaja({ caja }: { caja: CajaResumen }) {
             </span>
             <span className={baja ? "font-semibold text-tinta" : undefined}>{pct}%</span>
           </div>
-          <div
-            className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-linea"
-            role="progressbar"
-            aria-valuenow={pct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={t("efectivo")}
-          >
-            <div
-              className={`h-full rounded-full ${baja ? "bg-tinta" : "bg-marca-500"}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          <Progress value={pct} tono={baja ? "tinta" : "acento"} aria-label={t("efectivo")} className="mt-1 h-1.5" />
           {Number(caja.pendienteReposicion) > 0 && (
             <p className="texto-meta mt-2">
               {t("porReponer")}: {formatearMonto(caja.pendienteReposicion, caja.moneda)}

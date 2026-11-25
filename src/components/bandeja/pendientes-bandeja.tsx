@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
 import type { DatosBandeja } from "@/server/bandeja/consultas";
 
@@ -114,12 +115,7 @@ export function PendientesBandeja({
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-tinta-3 transition-transform group-hover:translate-x-0.5 group-hover:text-marca-500" />
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-marca-500 transition-all"
-                      style={{ width: `${porcentaje}%` }}
-                    />
-                  </div>
+                  <Progress value={porcentaje} aria-label={t(aviso.clave)} className="h-1.5" />
                 </div>
               </Link>
             );

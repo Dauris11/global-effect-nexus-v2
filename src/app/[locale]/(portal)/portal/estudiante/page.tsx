@@ -105,7 +105,7 @@ export default async function PortalEstudiante({
     ),
     reunionesEstudiante(usuario.id, estudiante.id),
     reunionesActivasParaUsuario({ usuarioId: usuario.id, rol: usuario.rol }),
-    mensajesCliente(["studentPortal", "requests"]),
+    mensajesCliente(["studentPortal", "requests", "calendar"]),
   ]);
 
   const hoyIso = claveDia();

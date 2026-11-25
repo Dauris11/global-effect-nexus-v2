@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { CheckCircle2 } from "lucide-react";
 import type { DonacionItem, PromesaConCuotas } from "@/server/contabilidad/donaciones/consultas";
 
@@ -129,9 +130,7 @@ export function ListaDonaciones({
                         {cobradas} / {totalCuotas} ({pct}%)
                       </span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted dark:bg-slate-800">
-                      <div className="h-full bg-marca-600 transition-all" style={{ width: `${pct}%` }} />
-                    </div>
+                    <Progress value={pct} aria-label={`${cobradas} / ${totalCuotas}`} />
                   </div>
 
                   {p.cuotas.length > 0 && (

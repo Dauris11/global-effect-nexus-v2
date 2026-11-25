@@ -4,35 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Award,
   BookOpen,
-  CalendarDays,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   ClipboardCheck,
   ClipboardList,
   Sparkles,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  CalendarioCompacto,
+  type EntradaCompacta,
+} from "@/components/calendario/calendario-compacto";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { GraficoAnillo, GraficoBarras, LeyendaGrafico, TONO } from "@/components/ui/grafico";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
 import { AZUL, AZUL_OSCURO, AZUL_SUAVE } from "@/lib/paleta";
-import { cn } from "@/lib/utils";
 import type { ActividadCalendarioDocente } from "@/server/profesor/consultas";
 
 export type ClaseResumenGrafico = {
@@ -143,12 +131,7 @@ export function KpisAnimadosDocente({
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-marca-500 transition-all duration-700 ease-out"
-                      style={{ width: `${item.progreso}%` }}
-                    />
-                  </div>
+                  <Progress value={item.progreso} aria-label={item.detalle} className="h-1.5" />
                   <p className="truncate text-[11px] text-tinta-3">{item.detalle}</p>
                 </div>
               </CardContent>
@@ -202,57 +185,19 @@ export function DashboardGraficoDocente({
     { clave: "graded", nombre: t("gradedSeries"), valor: calificadas, color: AZUL_SUAVE },
   ].filter((d) => d.valor > 0);
 
-  // Calendario interactivo
-  const porFecha = useMemo(() => {
-    const mapa = new Map<string, ActividadCalendarioDocente[]>();
-    for (const act of actividades) {
-      const lista = mapa.get(act.fecha) ?? [];
-      lista.push(act);
-      mapa.set(act.fecha, lista);
-    }
-    return mapa;
-  }, [actividades]);
-
-  const [anioMes, setAnioMes] = useState(() => ({
-    anio: Number(hoyIso.slice(0, 4)),
-    mes: Number(hoyIso.slice(5, 7)) - 1,
-  }));
-  const [diaSeleccionado, setDiaSeleccionado] = useState(hoyIso);
-
-  const calendario = useMemo(() => {
-    const primero = new Date(anioMes.anio, anioMes.mes, 1);
-    const ultimo = new Date(anioMes.anio, anioMes.mes + 1, 0);
-    const offset = (primero.getDay() + 6) % 7;
-
-    const celdas: { iso: string | null; numero: number | null }[] = [];
-    for (let i = 0; i < offset; i++) celdas.push({ iso: null, numero: null });
-    for (let d = 1; d <= ultimo.getDate(); d++) {
-      celdas.push({
-        iso: `${anioMes.anio}-${String(anioMes.mes + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
-        numero: d,
-      });
-    }
-
-    const etiquetaMes = new Intl.DateTimeFormat(
-      locale === "en" ? "en-US" : "es-DO",
-      { month: "long", year: "numeric" },
-    ).format(primero);
-
-    return { celdas, etiquetaMes };
-  }, [anioMes, locale]);
-
-  const cambiarMes = (delta: number) => {
-    setAnioMes((prev) => {
-      const d = new Date(prev.anio, prev.mes + delta, 1);
-      return { anio: d.getFullYear(), mes: d.getMonth() };
-    });
-  };
-
-  const actividadesDia = porFecha.get(diaSeleccionado) ?? [];
-  const diasCabecera =
-    locale === "en"
-      ? ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
-      : ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+  // Las actividades del docente al formato del calendario compacto.
+  const entradasCalendario = useMemo<EntradaCompacta[]>(
+    () =>
+      actividades.map((act) => ({
+        id: act.id,
+        origen: act.categoria,
+        titulo: act.titulo,
+        dia: act.fecha,
+        hora: act.hora,
+        href: act.href,
+      })),
+    [actividades],
+  );
 
   return (
     <div className="space-y-6">
@@ -285,40 +230,17 @@ export function DashboardGraficoDocente({
                 {t("noClassesChart")}
               </p>
             ) : (
-              <div className="h-56 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={datosClases}
-                    margin={{ top: 8, right: 8, left: -22, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.25} />
-                    <XAxis dataKey="clase" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      cursor={{ fill: "rgba(32, 150, 186, 0.08)" }}
-                      contentStyle={{
-                        borderRadius: "10px",
-                        borderColor: "var(--border)",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Bar
-                      dataKey="inscritos"
-                      name={t("enrolledSeries")}
-                      fill={AZUL_SUAVE}
-                      radius={[4, 4, 0, 0]}
-                      animationDuration={650}
-                    />
-                    <Bar
-                      dataKey="notas"
-                      name={t("gradesSeries")}
-                      fill={AZUL_OSCURO}
-                      radius={[4, 4, 0, 0]}
-                      animationDuration={650}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <GraficoBarras
+                datos={datosClases}
+                claveX="clase"
+                series={[
+                  { clave: "inscritos", nombre: t("enrolledSeries"), color: TONO.suave },
+                  { clave: "notas", nombre: t("gradesSeries"), color: TONO.oscuro },
+                ]}
+                etiqueta={t("classesChartTitle")}
+                vacio={t("noClassesChart")}
+                altura={224}
+              />
             )}
           </CardContent>
         </Card>
@@ -342,251 +264,27 @@ export function DashboardGraficoDocente({
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
-                <div className="relative h-40 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={datosEntregas}
-                        dataKey="valor"
-                        nameKey="nombre"
-                        innerRadius={42}
-                        outerRadius={64}
-                        paddingAngle={3}
-                        animationDuration={650}
-                      >
-                        {datosEntregas.map((d) => (
-                          <Cell key={d.clave} fill={d.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: "10px",
-                          borderColor: "var(--border)",
-                          fontSize: "12px",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-lg font-bold text-tinta">{pctRevisadas}%</span>
-                    <span className="text-[10px] text-tinta-3">{t("reviewedPct")}</span>
-                  </div>
-                </div>
+                <GraficoAnillo
+                  datos={datosEntregas}
+                  etiqueta={t("reviewsChartTitle")}
+                  vacio={t("noSubmissionsYet")}
+                  altura={160}
+                  centro={{ valor: `${pctRevisadas}%`, etiqueta: t("reviewedPct") }}
+                />
 
-                <div className="space-y-2 text-xs">
-                  {datosEntregas.map((d) => (
-                    <div
-                      key={d.clave}
-                      className="flex items-center justify-between rounded-control border border-linea bg-muted/30 px-3 py-2"
-                    >
-                      <span className="inline-flex items-center gap-1.5 text-tinta-2">
-                        <span
-                          className="size-2.5 rounded-full"
-                          style={{ backgroundColor: d.color }}
-                        />
-                        {d.nombre}
-                      </span>
-                      <span className="font-semibold text-tinta tabular-nums">{d.valor}</span>
-                    </div>
-                  ))}
-                </div>
+                <LeyendaGrafico enLista items={datosEntregas.map((d) => ({ nombre: d.nombre, color: d.color, valor: d.valor }))} />
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Calendario interactivo del docente */}
-      <Card>
-        <CardContent className="pt-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <CardTitle>
-                <CalendarDays className="size-4 text-marca-600" />
-                {t("calendarTitle")}
-              </CardTitle>
-              <p className="mt-1 text-xs text-tinta-3">{t("calendarSubtitle")}</p>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="size-8"
-                aria-label={t("prevMonth")}
-                onClick={() => cambiarMes(-1)}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <span className="min-w-32 text-center text-xs font-semibold capitalize text-tinta">
-                {calendario.etiquetaMes}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="size-8"
-                aria-label={t("nextMonth")}
-                onClick={() => cambiarMes(1)}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <div>
-              <div className="mb-1.5 grid grid-cols-7 text-center text-[11px] font-semibold text-tinta-3">
-                {diasCabecera.map((d) => (
-                  <span key={d} className="py-1">
-                    {d}
-                  </span>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 gap-1">
-                {calendario.celdas.map((celda, idx) => {
-                  if (!celda.iso || !celda.numero) {
-                    return <div key={`vacio-${idx}`} className="h-10" />;
-                  }
-
-                  const lista = porFecha.get(celda.iso) ?? [];
-                  const tieneReunion = lista.some((a) => a.categoria === "reunion");
-                  const tieneTarea = lista.some((a) => a.categoria === "tarea");
-                  const tieneEvento = lista.some((a) => a.categoria === "evento");
-                  const esHoy = celda.iso === hoyIso;
-                  const seleccionado = celda.iso === diaSeleccionado;
-
-                  return (
-                    <button
-                      key={celda.iso}
-                      type="button"
-                      onClick={() => setDiaSeleccionado(celda.iso!)}
-                      className={cn(
-                        "relative flex h-10 flex-col items-center justify-center rounded-control text-xs font-medium transition-all duration-150",
-                        seleccionado
-                          ? "scale-105 bg-marca-500 font-bold text-white shadow-sm"
-                          : esHoy
-                            ? "border border-marca-500 bg-marca-50 text-marca-700"
-                            : "text-tinta hover:bg-muted",
-                      )}
-                    >
-                      <span>{celda.numero}</span>
-                      {lista.length > 0 && (
-                        <span className="mt-0.5 flex items-center gap-0.5">
-                          {tieneReunion && (
-                            <span
-                              className={cn(
-                                "size-1.5 rounded-full",
-                                seleccionado ? "bg-white" : "animate-pulse bg-marca-700",
-                              )}
-                            />
-                          )}
-                          {tieneTarea && (
-                            <span
-                              className={cn(
-                                "size-1.5 rounded-full",
-                                seleccionado ? "bg-white" : "bg-marca-500",
-                              )}
-                            />
-                          )}
-                          {tieneEvento && (
-                            <span
-                              className={cn(
-                                "size-1.5 rounded-full",
-                                seleccionado ? "bg-white/80" : "bg-tinta",
-                              )}
-                            />
-                          )}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-tinta-3">
-                <span className="inline-flex items-center gap-1">
-                  <span className="size-2 rounded-full bg-marca-700" />
-                  {t("catMeeting")}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="size-2 rounded-full bg-marca-500" />
-                  {t("catTask")}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="size-2 rounded-full bg-tinta" />
-                  {t("catEvent")}
-                </span>
-              </div>
-            </div>
-
-            <div
-              key={diaSeleccionado}
-              className="animate-fade-in-up flex flex-col justify-between rounded-card border border-linea bg-muted/30 p-3.5"
-            >
-              <div>
-                <div className="mb-2.5 flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-tinta">
-                    {t("dayTitle", { date: diaSeleccionado })}
-                  </p>
-                  <Badge variant="outline" className="text-[10px]">
-                    {actividadesDia.length}
-                  </Badge>
-                </div>
-
-                {actividadesDia.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <CheckCircle2 className="size-6 text-marca-500/70" />
-                    <p className="mt-2 text-xs text-tinta-3">{t("dayEmpty")}</p>
-                  </div>
-                ) : (
-                  <ul className="space-y-2">
-                    {actividadesDia.map((act) => {
-                      const Icono =
-                        act.categoria === "reunion"
-                          ? Users
-                          : act.categoria === "tarea"
-                            ? ClipboardList
-                            : CalendarDays;
-                      return (
-                        <li key={act.id}>
-                          <Link
-                            href={act.href}
-                            className="group flex items-start gap-2.5 rounded-control bg-card p-2.5 shadow-xs transition-all duration-150 hover:translate-x-0.5 hover:border-marca-500/40"
-                          >
-                            <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-marca-50 text-marca-600 transition-colors group-hover:bg-marca-500 group-hover:text-white">
-                              <Icono className="size-3.5" />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs font-semibold text-tinta">
-                                {act.titulo}
-                              </p>
-                              <p className="truncate text-[11px] text-tinta-3">
-                                {[act.hora, act.subtitulo].filter(Boolean).join(" · ")}
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              <div className="mt-3 flex justify-end border-t border-linea pt-2.5">
-                <Link
-                  href="/calendario"
-                  className="text-xs font-semibold text-marca-600 hover:underline"
-                >
-                  {t("viewFullCalendar")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <CalendarioCompacto
+        titulo={t("calendarTitle")}
+        entradas={entradasCalendario}
+        hoy={hoyIso}
+        enlaceCompleto={{ href: "/calendario", etiqueta: t("viewFullCalendar") }}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { CheckCircle2, Circle, Clock, MinusCircle, XCircle } from "lucide-react"
 import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { textoDePuntos } from "@/lib/indice-academico";
 import type { CatalogoDelEstudiante, EstadoMateria } from "@/server/universidades/consultas";
 
@@ -42,9 +43,7 @@ export async function GraduaViva({ catalogo }: { catalogo: CatalogoDelEstudiante
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <p className="text-sm font-medium">{t("progress.credits", { approved: ap, total: tot, percent: pct })}</p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full bg-marca-500" style={{ width: `${pct}%` }} />
-          </div>
+          <Progress value={pct} aria-label={t("progress.credits", { approved: ap, total: tot, percent: pct })} className="mt-2" />
         </div>
         <div className="sm:text-right">
           <p className="text-2xl leading-none font-bold">{indice?.indice != null ? indice.indice.toFixed(2) : "—"}</p>

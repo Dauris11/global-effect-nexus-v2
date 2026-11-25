@@ -1,0 +1,164 @@
+/*
+ * Tema de SVAR Gantt con los tokens del sistema (docs/09-sistema-visual.md).
+ *
+ * Solo variables: nada de hex. Tinta, línea y superficie se invierten en modo
+ * oscuro por sí solas, y `marca-*` sigue el acento (azul o negro) de cada
+ * persona, así que la barra, la selección y el foco lo heredan sin código.
+ * Se escribe sobre `.wx-willow-theme` con un selector más específico para ganar
+ * a las variables que trae la librería, sin tocar su CSS.
+ */
+.gb-gantt .wx-willow-theme {
+  --wx-font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --wx-font-size: 14px;
+  --wx-font-size-sm: 12px;
+  --wx-color-primary: var(--color-marca-500);
+  --wx-color-primary-selected: color-mix(in srgb, var(--color-marca-500) 14%, transparent);
+  --wx-color-primary-font: var(--primary-foreground);
+  --wx-color-danger: var(--tinta);
+  --wx-color-font: var(--tinta);
+  --wx-color-font-alt: var(--tinta-3);
+  --wx-color-font-disabled: var(--tinta-3);
+  --wx-background: var(--card);
+  --wx-background-alt: var(--muted);
+  --wx-background-hover: var(--accent);
+  --wx-icon-color: var(--tinta-3);
+  --wx-border-color: var(--linea);
+  --wx-border-radius: 12px;
+  --wx-radius-major: 16px;
+  --wx-box-shadow: var(--shadow-card);
+  --wx-shadow-light: var(--shadow-elevada);
+  --wx-tooltip-background: var(--tinta);
+  --wx-tooltip-font-color: var(--background);
+
+  --wx-table-select-background: color-mix(in srgb, var(--color-marca-500) 10%, transparent);
+  --wx-table-border: 1px solid var(--linea);
+  --wx-table-header-background: var(--card);
+  --wx-table-fixed-column-border: 1px solid var(--linea);
+
+  --wx-gantt-border-color: var(--linea);
+  --wx-gantt-border: 1px solid var(--linea);
+  --wx-gantt-icon-color: var(--tinta-3);
+  --wx-gantt-bar-border-radius: 999px;
+  --wx-gantt-milestone-border-radius: 3px;
+  --wx-gantt-task-color: var(--color-marca-500);
+  --wx-gantt-task-font-color: var(--primary-foreground);
+  --wx-gantt-task-fill-color: color-mix(in srgb, var(--tinta) 22%, transparent);
+  --wx-gantt-task-border-color: transparent;
+  --wx-gantt-summary-color: var(--linea-fuerte);
+  --wx-gantt-summary-font-color: var(--tinta);
+  --wx-gantt-summary-fill-color: color-mix(in srgb, var(--tinta) 18%, transparent);
+  --wx-gantt-summary-border-color: transparent;
+  --wx-gantt-milestone-color: var(--tinta);
+  --wx-gantt-select-color: color-mix(in srgb, var(--color-marca-500) 10%, transparent);
+  --wx-gantt-link-color: var(--color-marca-600);
+  --wx-gantt-link-color-hovered: var(--tinta);
+  --wx-gantt-link-marker-background: var(--muted);
+  --wx-gantt-link-marker-color: var(--tinta-3);
+  --wx-gantt-bar-shadow: var(--shadow-elevada);
+  --wx-gantt-holiday-background: var(--muted);
+  --wx-gantt-holiday-color: var(--tinta-3);
+  --wx-gantt-marker-color: var(--tinta);
+  --wx-gantt-marker-font-color: var(--background);
+  --wx-grid-header-font-color: var(--tinta-2);
+  --wx-grid-header-text-transform: none;
+  --wx-timescale-font-color: var(--tinta-2);
+}
+
+.gb-gantt {
+  border: 1px solid var(--linea);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  background: var(--card);
+  overflow: hidden;
+}
+
+/* Solo lectura de avance: el progreso se ve pero no se arrastra. */
+.gb-gantt .wx-progress-marker {
+  display: none;
+}
+
+/* Fin de semana: una franja neutra, no un color nuevo. */
+.gb-gantt .gb-fin-semana {
+  background: var(--muted);
+}
+
+/* Tonos de barra: el contenido de la plantilla lleva la clase y `:has` la
+   sube a la barra, porque la librería solo expone el tipo como clase. */
+.gb-gantt .wx-bar:has(> .gb-tono-oscuro) {
+  background: var(--color-marca-700);
+}
+.gb-gantt .wx-bar:has(> .gb-tono-tinta) {
+  background: var(--tinta);
+  color: var(--background);
+}
+.gb-gantt .wx-bar:has(> .gb-tono-apagado) {
+  background: var(--linea-fuerte);
+  color: var(--tinta-2);
+}
+.gb-gantt .wx-bar.wx-task {
+  overflow: visible;
+}
+
+.gb-gantt .gb-contenido {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  position: relative;
+  font-size: 12px;
+  font-weight: 500;
+}
+.gb-gantt .gb-contenido-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rombo de una fecha puntual dentro de la barra (p. ej. el pago programado). */
+.gb-gantt .gb-marca {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  transform: rotate(45deg);
+  border: 2px solid var(--card);
+  border-radius: 3px;
+  background: var(--tinta);
+  z-index: 2;
+}
+
+/* Celda del árbol: título y la clase en una línea de metadatos. */
+.gb-gantt .gb-celda {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-weight: 500;
+}
+.gb-gantt .gb-celda-seccion {
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--tinta-2);
+}
+.gb-gantt .gb-celda-conteo {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta-3);
+}
+
+.gb-tooltip {
+  display: grid;
+  gap: 2px;
+  max-width: 260px;
+  font-size: 12px;
+}
+.gb-tooltip strong {
+  font-weight: 600;
+}
+
+/* Enlazar tareas arrastrando no se ofrece: las dependencias vienen de la base. */
+.gb-gantt .wx-bar .wx-link {
+  display: none;
+}

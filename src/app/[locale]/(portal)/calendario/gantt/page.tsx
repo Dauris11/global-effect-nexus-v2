@@ -3,10 +3,10 @@ import { AlertCircle, GanttChartSquare, ShieldAlert } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { FiltrosLineaTiempo } from "@/components/linea-tiempo/filtros-linea-tiempo";
-import { LineaTiempo } from "@/components/linea-tiempo/linea-tiempo";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { GanttBase } from "@/components/ui/gantt-base";
 import { Link } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import {
@@ -212,7 +212,7 @@ export default async function PaginaGantt({
           }
         />
       ) : (
-        <LineaTiempo
+        <GanttBase
           secciones={secciones}
           inicio={rango.inicio}
           fin={rango.fin}

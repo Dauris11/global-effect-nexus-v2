@@ -1821,3 +1821,21 @@ módulo) — esto es solo la cola de pendientes concretos.
       asignarlo a los expedientes existentes; mostrarlo y filtrarlo en la lista.
 - [ ] El detalle del expediente no se ha visto en pantalla (solo `tsc`, `build` y las
       consultas contra la base): revisar pestañas, espaciados y móvil.
+
+## Catálogo de cuentas editable (24 nov 2026)
+
+- Cerrado: en Configuración contable → Catálogo, «Editar» cambia nombre, código (renumera la rama), tipo (solo cuentas principales; las hijas lo heredan) y si recibe asientos; «Nueva cuenta principal» crea rubros de primer nivel. Código/tipo/movimiento solo en cuentas sin asientos y sin nada que las use (`editarCuenta`, `crearCuentaRaiz`).
+- Abierto: reportes, nómina y cierre buscan cuentas por código fijo (p. ej. `3.1.01.02`, `5.2.01.09`). Cambiar el código de una cuenta sin asientos que ellos esperan los rompería; falta una marca `de_sistema` que bloquee esas cuentas.
+- Abierto: los botones solo salen con `contabilidad.configurar` (rol `contabilidad`); `super_admin` queda en lectura por separación de funciones.
+
+## Gantt unificado con SVAR (24 nov 2026)
+
+- Cerrado: `LineaTiempo` propia reemplazada por `GanttBase` (`src/components/ui/gantt-base.tsx`); estándar en `docs/estado/estandar-gantt.md`.
+- Abierto: no se ha visto en pantalla (solo `tsc`/`eslint`/`audit:ui`/`i18n:check`): revisar tema claro/oscuro, acento negro, arrastre con permiso, tooltip y móvil. El tooltip de SVAR podría salir fuera del tema si la librería lo monta en un portal del `body`.
+
+## Estándar de gráficos, calendarios y Gantt (24 nov 2026)
+
+- Cerrado: capa común de gráficos, FullCalendar y SVAR Gantt en lugar de las tres implementaciones propias (`event-manager` y `linea-tiempo` eliminados). Pasan tsc, lint, build, i18n y audit:ui.
+- Abierto, sin ver en navegador: arrastre y alta en calendario, tooltip y tema del Gantt, vista móvil, contraste del acento negro en modo oscuro, alturas de gráficos.
+- Abierto: barra apilada de solicitudes del estudiante sigue a mano; estados vacíos de gráficos muestran el título (faltan claves propias).
+- Abierto: auditoría por rol en `docs/estado/auditoria-roles.md` (recorte de menús y formularios, funciones faltantes). El diagrama de comunicación entre módulos y roles va después de ese recorte.

@@ -104,7 +104,7 @@ export default async function PortalProfesor({
   ] = await Promise.all([
     getTranslations({ locale, namespace: "teacherPortal" }),
     getTranslations({ locale, namespace: "academic" }),
-    mensajesCliente(["teacherPortal"]),
+    mensajesCliente(["teacherPortal", "calendar"]),
     cifrasDocente(docenteId),
     materiasDelDocente(docenteId),
     clases360(docenteId),

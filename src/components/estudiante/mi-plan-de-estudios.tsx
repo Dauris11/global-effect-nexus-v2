@@ -2,6 +2,7 @@ import { CheckCircle2, CircleDashed, Info } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { MenuExportar } from "@/components/compartido/menu-exportar";
+import { Progress } from "@/components/ui/progress";
 import type { AlertaAcademica } from "@/server/academico/indice";
 import type { CatalogoDelEstudiante } from "@/server/universidades/consultas";
 
@@ -51,9 +52,7 @@ export async function MiPlanDeEstudios({ catalogo, alertas, estudianteId }: { ca
 
       <div className="space-y-2">
         <p className="text-[15px]">{t("credits", { done: catalogo.creditosAprobados, total: catalogo.creditosTotales, percent: avance })}</p>
-        <div className="h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={avance} aria-valuemin={0} aria-valuemax={100} aria-label={t("progress")}>
-          <div className="h-full rounded-full bg-marca-500" style={{ width: `${avance}%` }} />
-        </div>
+        <Progress value={avance} aria-label={t("progress")} className="h-3" />
         <p className="texto-meta">{t("counts", { done: aprobadas, current: cursando, missing: faltan.length })}</p>
       </div>
 

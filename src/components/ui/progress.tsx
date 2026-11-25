@@ -9,11 +9,14 @@ import { cn } from "@/lib/utils";
  */
 function Progress({
   value = 0,
+  tono = "acento",
   className,
   ...props
 }: Omit<React.ComponentProps<"div">, "children"> & {
   /** Porcentaje 0-100. Se recorta al rango para que la barra no se desborde. */
   value?: number | null;
+  /** `tinta` marca lo que requiere atención (sobregiro, saldo bajo) sin salirse de la marca. */
+  tono?: "acento" | "tinta";
 }) {
   const porcentaje = Math.min(100, Math.max(0, value ?? 0));
 
@@ -37,7 +40,9 @@ function Progress({
       */}
       <div
         data-slot="progress-indicator"
-        className="bg-primary h-full w-full rounded-full transition-transform duration-500 ease-salida motion-safe:animate-[progresoEntrada_600ms_var(--ease-salida)_backwards]"
+        className={cn("h-full w-full rounded-full transition-transform duration-500 ease-salida motion-safe:animate-[progresoEntrada_600ms_var(--ease-salida)_backwards]",
+          tono === "tinta" ? "bg-tinta" : "bg-primary",
+        )}
         style={{ transform: `translateX(-${100 - porcentaje}%)` }}
       />
     </div>

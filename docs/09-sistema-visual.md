@@ -276,3 +276,15 @@ npm run lint && npm run build && npm run i18n:check
 
 Las excepciones del hex (componentes de gráficas que pintan con `fill`, y los
 estados `SEMAFORO`) están listadas en `scripts/auditar-ui.mjs`.
+
+## Gráficos, calendarios y Gantt (24 nov 2026)
+
+Una sola librería por tipo, siempre a través de su envoltorio y con tokens (sin hex, sin degradados, un solo acento):
+
+| Qué | Envoltorio | Detalle |
+|---|---|---|
+| Gráficos (barras, línea/área, anillo, medidor) | `src/components/ui/grafico/` sobre Recharts | `docs/estado/estandar-graficos.md` |
+| Calendarios (mes/semana/día/lista) | `src/components/ui/calendario-base.tsx` sobre FullCalendar | `docs/estado/estandar-calendario.md` |
+| Gantt y líneas de tiempo | `src/components/ui/gantt-base.tsx` sobre SVAR Gantt | `docs/estado/estandar-gantt.md` |
+
+Prohibido importar `recharts`, `@fullcalendar/*` o `@svar-ui/*` fuera de esos envoltorios.

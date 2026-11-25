@@ -13,22 +13,11 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import type { PeriodoConNotas } from "@/components/estudiante/periodos";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { GraficoAnillo, GraficoBarras, TONO, acortar } from "@/components/ui/grafico";
 import { Link } from "@/i18n/navigation";
 import { fechaCorta } from "@/lib/fechas";
 import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO, SERIE, TINTA } from "@/lib/paleta";
@@ -52,13 +41,15 @@ export function MateriasEnCursoInteractivo({
     () =>
       materias.slice(0, 6).map((m, i) => ({
         id: m.id,
-        nombre: m.nombre.length > 18 ? `${m.nombre.slice(0, 17)}…` : m.nombre,
+        nombre: acortar(m.nombre, 18),
         completo: m.nombre,
         creditos: m.creditos && m.creditos > 0 ? m.creditos : 1,
         color: SERIE[i % SERIE.length],
       })),
     [materias],
   );
+
+  const indiceActivo = activa ? datosGrafico.findIndex((d) => d.id === activa) : -1;
 
   const totalCreditos = useMemo(
     () => materias.reduce((s, m) => s + (m.creditos ?? 0), 0),
@@ -98,42 +89,15 @@ export function MateriasEnCursoInteractivo({
         ) : (
           <div className="grid gap-4 sm:grid-cols-[170px_1fr] sm:items-center">
             {/* Dona de distribución de créditos */}
-            <div className="relative h-40 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={datosGrafico}
-                    dataKey="creditos"
-                    nameKey="completo"
-                    innerRadius={42}
-                    outerRadius={66}
-                    paddingAngle={3}
-                    animationDuration={650}
-                    onMouseEnter={(_, idx) => setActiva(datosGrafico[idx]?.id ?? null)}
-                    onMouseLeave={() => setActiva(null)}
-                  >
-                    {datosGrafico.map((entry) => (
-                      <Cell
-                        key={entry.id}
-                        fill={entry.color}
-                        opacity={activa && activa !== entry.id ? 0.45 : 1}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "10px",
-                      borderColor: "var(--border)",
-                      fontSize: "12px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-lg font-bold text-tinta">{totalCreditos}</span>
-                <span className="text-[10px] text-tinta-3">{t("stats.credits")}</span>
-              </div>
-            </div>
+            <GraficoAnillo
+              datos={datosGrafico.map((d) => ({ nombre: d.completo, valor: d.creditos, color: d.color }))}
+              etiqueta={tDash("manageSubjects")}
+              vacio={t("subjectsEmpty")}
+              altura={160}
+              centro={{ valor: totalCreditos, etiqueta: t("stats.credits") }}
+              activo={indiceActivo >= 0 ? indiceActivo : null}
+              alPasar={(i) => setActiva(i === null ? null : (datosGrafico[i]?.id ?? null))}
+            />
 
             {/* Tarjetas interactivas */}
             <ul className="space-y-2">
@@ -207,7 +171,7 @@ export function NotasRecientesInteractivo({
     () =>
       (periodo?.notas ?? []).slice(0, 6).map((f) => ({
         id: f.id,
-        materia: f.materia.length > 14 ? `${f.materia.slice(0, 13)}…` : f.materia,
+        materia: acortar(f.materia),
         completo: f.materia,
         nota: Number(f.nota.toFixed(1)),
       })),
@@ -243,49 +207,17 @@ export function NotasRecientesInteractivo({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosGrafico}
-                  margin={{ top: 8, right: 8, left: -22, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.25} />
-                  <XAxis
-                    dataKey="materia"
-                    tick={{ fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    cursor={{ fill: "rgba(32, 150, 186, 0.08)" }}
-                    contentStyle={{
-                      borderRadius: "10px",
-                      borderColor: "var(--border)",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="nota"
-                    name={tDash("gradeLabel")}
-                    radius={[5, 5, 0, 0]}
-                    animationDuration={700}
-                  >
-                    {datosGrafico.map((entry) => (
-                      <Cell
-                        key={entry.id}
-                        fill={entry.nota >= 85 ? AZUL_OSCURO : entry.nota >= 70 ? AZUL : TINTA}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <GraficoBarras
+              datos={datosGrafico}
+              claveX="materia"
+              series={[{ clave: "nota", nombre: tDash("gradeLabel") }]}
+              etiqueta={t("gradesTitle")}
+              vacio={t("gradesEmpty")}
+              dominio={[0, 100]}
+              altura={176}
+              // El peso del tono dice el rango: oscuro 85+, acento 70+, tinta el resto.
+              colorFila={(fila) => (Number(fila.nota) >= 85 ? TONO.oscuro : Number(fila.nota) >= 70 ? TONO.base : TONO.tinta)}
+            />
 
             <ul className="space-y-2">
               {periodo.notas.slice(0, 4).map((fila) => (

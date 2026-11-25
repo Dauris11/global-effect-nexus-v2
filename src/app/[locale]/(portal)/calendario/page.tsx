@@ -3,10 +3,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Calendario } from "@/components/calendario/calendario";
-import type { Entrada } from "@/components/calendario/event-manager";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
+import { esVistaCalendario, type Entrada } from "@/lib/calendario";
 import { claveDia, claveMes } from "@/lib/fechas";
 import {
   usuarioTienePermiso,
@@ -30,7 +30,7 @@ export async function generateMetadata({
  *
  * La página es de servidor y solo hace tres cosas: comprobar quién mira, traer
  * el mes y decidir qué puede tocar. Todo lo demás —las cuatro vistas, los
- * filtros, el arrastre— vive en `EventManager`, que es cliente porque nada de
+ * filtros, el arrastre— vive en `Calendario`, que es cliente porque nada de
  * eso se puede hacer sin JavaScript.
  *
  * Quién ve qué lo decide la CONSULTA, no el componente: los eventos son de todo
@@ -44,16 +44,17 @@ export default async function PaginaCalendario({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; vista?: string }>;
 }) {
   const { locale } = await params;
-  const { mes: mesPedido } = await searchParams;
+  const { mes: mesPedido, vista: vistaPedida } = await searchParams;
 
   const usuario = await requerirUsuario();
 
   // Un mes con formato raro en la URL se ignora: llega de un enlace que puede
   // haber quedado viejo.
   const mes = /^\d{4}-\d{2}$/.test(mesPedido ?? "") ? mesPedido! : claveMes();
+  const vista = esVistaCalendario(vistaPedida) ? vistaPedida : undefined;
 
   const [t, filas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "calendar" }),
@@ -111,9 +112,9 @@ export default async function PaginaCalendario({
         <Calendario
           entradas={entradas}
           mes={mes}
+          vista={vista}
           hoy={claveDia()}
           puedeCrear={puedeCrear}
-          puedeMoverCitas={puedeMoverCitas}
         />
       </NextIntlClientProvider>
     </div>
