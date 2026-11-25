@@ -7746,6 +7746,66 @@
       "averageTerm": "Promedio por cuatrimestre",
       "averageGraduate": "Promedio por graduado"
     },
-    "hint": "Los promedios cuentan solo a los becados con costo registrado. El promedio por graduado queda vacío hasta que haya graduados con gastos imputados."
+    "hint": "Los promedios cuentan solo a los becados con costo registrado. El promedio por graduado queda vacío hasta que haya graduados con gastos imputados.",
+    "register": {
+      "link": "Registrar materiales y transporte",
+      "title": "Registrar materiales y transporte",
+      "back": "Volver al reporte",
+      "student": "Estudiante",
+      "chooseStudent": "Elige un becado",
+      "usesTransport": "usa transporte",
+      "readOnly": "Tu rol puede ver estos costos pero no registrarlos.",
+      "saved": "Guardado.",
+      "total": "Total vigente",
+      "materials": {
+        "title": "Materiales y equipamiento",
+        "concept": "Concepto",
+        "quantity": "Cantidad",
+        "unitCost": "Costo unitario (DOP)",
+        "date": "Fecha de entrega",
+        "article": "Artículo de inventario (opcional)",
+        "noArticle": "Sin artículo de inventario",
+        "save": "Registrar material",
+        "each": "c/u",
+        "empty": "Aún no hay materiales registrados",
+        "emptyHint": "Uniformes, laptops, libros o instrumentos entregados a este becado aparecen aquí."
+      },
+      "transport": {
+        "title": "Transporte por cuatrimestre",
+        "enrolled": "Tiene inscripción de transporte: {n} días por semana. Registra el costo asignado de cada cuatrimestre; no se reparte entre los demás becados.",
+        "notEnrolled": "Este estudiante no tiene inscripción de transporte activa. La guagua la usan solo quienes viven en Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo; confirma que corresponde antes de registrar.",
+        "term": "Cuatrimestre",
+        "chooseTerm": "Elige un cuatrimestre",
+        "days": "Días asignados",
+        "daysCount": "{n} días",
+        "cost": "Costo asignado (DOP)",
+        "notes": "Observaciones",
+        "save": "Registrar transporte",
+        "empty": "Aún no hay transporte registrado",
+        "emptyHint": "El costo de la guagua de cada cuatrimestre se carga a mano para quien la usa."
+      },
+      "void": {
+        "button": "Anular",
+        "reason": "Motivo de la anulación",
+        "confirm": "Confirmar anulación",
+        "cancel": "Cancelar",
+        "voided": "Anulado",
+        "reasonIs": "Motivo: {motivo}"
+      },
+      "errors": {
+        "no_permitido": "No tienes permiso para registrar costos.",
+        "estudiante_invalido": "El estudiante no es válido.",
+        "concepto_vacio": "Escribe el concepto (máximo 150 caracteres).",
+        "cantidad_invalida": "La cantidad debe ser un número entero de 1 en adelante.",
+        "monto_invalido": "El monto no es válido: usa números con hasta dos decimales.",
+        "fecha_invalida": "La fecha no es válida.",
+        "dias_invalidos": "Los días deben ser un número entero entre 0 y 366.",
+        "periodo_invalido": "Elige un cuatrimestre válido.",
+        "duplicado": "Ese cuatrimestre ya tiene un cobro de transporte vigente. Anúlalo primero para registrarlo de nuevo.",
+        "motivo_vacio": "Escribe el motivo de la anulación.",
+        "no_encontrado": "No se encontró el registro o ya estaba anulado.",
+        "error": "No se pudo guardar. Inténtalo de nuevo."
+      }
+    }
   }
 }

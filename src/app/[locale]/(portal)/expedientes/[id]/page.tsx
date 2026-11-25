@@ -31,7 +31,7 @@ import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import { inscripcionesDelEstudiante } from "@/server/estudiantes/academico";
 import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
-import { costoDeEstudiante, gastosDeEstudiante, periodosParaCostos } from "@/server/costos/consultas";
+import { costoDeEstudiante, datosRegistroCostos, gastosDeEstudiante, periodosParaCostos } from "@/server/costos/consultas";
 import { cuentaVinculada, cuentasEstudianteSinVincular, obtenerExpediente } from "@/server/expedientes/consultas";
 import { cambiosDePlanDelEstudiante, seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
 
@@ -158,9 +158,16 @@ export default async function PaginaExpediente({
     umbralesDeUniversidad(expediente.id),
     cambiosDePlanDelEstudiante(expediente.id),
   ]);
-  const [costo, gastos, periodosCosto] = puedeVerCostos
-    ? await Promise.all([costoDeEstudiante(expediente.id), gastosDeEstudiante(expediente.id), periodosParaCostos()])
-    : [null, [], []];
+  // Escribir exige además `contabilidad.registrar`; el servidor lo vuelve a comprobar en cada acción.
+  const puedeRegistrarCostos = puedeVerCostos && usuarioTienePermiso(usuario, "contabilidad.registrar");
+  const [costo, gastos, periodosCosto, registroCostos] = puedeVerCostos
+    ? await Promise.all([
+        costoDeEstudiante(expediente.id),
+        gastosDeEstudiante(expediente.id),
+        periodosParaCostos(),
+        puedeRegistrarCostos ? datosRegistroCostos(expediente.id) : Promise.resolve(null),
+      ])
+    : [null, [], [], null];
   // Rastro aparte del de la ficha: las cifras de dinero son lo más sensible que hay aquí.
   if (puedeVerCostos) {
     await registrar({ usuarioId: usuario.id, accion: "expediente.costos.consultado", entidad: "estudiante", entidadId: expediente.id, datos: { nombre: expediente.nombre } });
@@ -282,7 +289,7 @@ export default async function PaginaExpediente({
               <TabPatrocinio seg={seguimiento} />
             </>
           ),
-          costs: costo ? <TabCostos resumen={costo} gastos={gastos} periodos={periodosCosto} /> : null,
+          costs: costo ? <TabCostos resumen={costo} gastos={gastos} periodos={periodosCosto} registro={registroCostos} /> : null,
           edit: (
             <FormularioEdicionExpediente
               expediente={expediente}

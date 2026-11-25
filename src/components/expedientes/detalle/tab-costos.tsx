@@ -5,6 +5,7 @@ import { CalendarRange, HandCoins, Layers, Receipt, Scale, Wallet } from "lucide
 import { useLocale, useTranslations } from "next-intl";
 
 import { Seccion } from "@/components/expedientes/detalle/ficha";
+import { PanelRegistroCostos } from "@/components/costos/panel-registro-costos";
 import { Badge } from "@/components/ui/badge";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -14,7 +15,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { PILARES_COSTO } from "@/lib/costos";
 import { fechaCorta } from "@/lib/fechas";
-import type { GastoEstudiante, PeriodoCosto, ResumenCostoEstudiante } from "@/server/costos/consultas";
+import type { DatosRegistroCostos, GastoEstudiante, PeriodoCosto, ResumenCostoEstudiante } from "@/server/costos/consultas";
 
 const TOTAL_PILAR: Record<(typeof PILARES_COSTO)[number], keyof ResumenCostoEstudiante> = {
   universidad: "total_universidad",
@@ -35,10 +36,13 @@ export function TabCostos({
   resumen,
   gastos,
   periodos,
+  registro,
 }: {
   resumen: ResumenCostoEstudiante;
   gastos: GastoEstudiante[];
   periodos: PeriodoCosto[];
+  /** Solo para quien puede escribir (`contabilidad.registrar` y `expedientes.costos.leer`): materiales y transporte a mano. */
+  registro?: DatosRegistroCostos | null;
 }) {
   const t = useTranslations("records.costs");
   const idioma = useLocale() === "en" ? "en" : "es";
@@ -167,6 +171,8 @@ export function TabCostos({
           </>
         )}
       </Seccion>
+
+      {registro && <PanelRegistroCostos datos={registro} />}
     </>
   );
 }

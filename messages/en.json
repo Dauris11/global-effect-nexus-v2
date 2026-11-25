@@ -7746,6 +7746,66 @@
       "averageTerm": "Average per term",
       "averageGraduate": "Average per graduate"
     },
-    "hint": "Averages only count students with a recorded cost. The per-graduate average stays empty until graduates have expenses charged to them."
+    "hint": "Averages only count students with a recorded cost. The per-graduate average stays empty until graduates have expenses charged to them.",
+    "register": {
+      "link": "Record materials and transport",
+      "title": "Record materials and transport",
+      "back": "Back to the report",
+      "student": "Student",
+      "chooseStudent": "Choose a scholar",
+      "usesTransport": "uses transport",
+      "readOnly": "Your role can view these costs but not record them.",
+      "saved": "Saved.",
+      "total": "Active total",
+      "materials": {
+        "title": "Materials and equipment",
+        "concept": "Item",
+        "quantity": "Quantity",
+        "unitCost": "Unit cost (DOP)",
+        "date": "Delivery date",
+        "article": "Inventory item (optional)",
+        "noArticle": "No inventory item",
+        "save": "Record material",
+        "each": "each",
+        "empty": "No materials recorded yet",
+        "emptyHint": "Uniforms, laptops, books or instruments given to this scholar appear here."
+      },
+      "transport": {
+        "title": "Transport per term",
+        "enrolled": "Has a transport enrollment: {n} days per week. Record the cost assigned for each term; it is not split among the other scholars.",
+        "notEnrolled": "This student has no active transport enrollment. Only students from Rincón, Jima, Ranchito, Saba Rey and Rancho Viejo ride the bus; confirm it applies before recording.",
+        "term": "Term",
+        "chooseTerm": "Choose a term",
+        "days": "Assigned days",
+        "daysCount": "{n} days",
+        "cost": "Assigned cost (DOP)",
+        "notes": "Notes",
+        "save": "Record transport",
+        "empty": "No transport recorded yet",
+        "emptyHint": "The bus cost of each term is entered by hand for the students who ride it."
+      },
+      "void": {
+        "button": "Void",
+        "reason": "Reason for voiding",
+        "confirm": "Confirm void",
+        "cancel": "Cancel",
+        "voided": "Voided",
+        "reasonIs": "Reason: {motivo}"
+      },
+      "errors": {
+        "no_permitido": "You are not allowed to record costs.",
+        "estudiante_invalido": "The student is not valid.",
+        "concepto_vacio": "Enter the item (150 characters at most).",
+        "cantidad_invalida": "Quantity must be a whole number, 1 or more.",
+        "monto_invalido": "The amount is not valid: use numbers with up to two decimals.",
+        "fecha_invalida": "The date is not valid.",
+        "dias_invalidos": "Days must be a whole number between 0 and 366.",
+        "periodo_invalido": "Choose a valid term.",
+        "duplicado": "That term already has an active transport charge. Void it first to record it again.",
+        "motivo_vacio": "Enter the reason for voiding.",
+        "no_encontrado": "The record was not found or was already voided.",
+        "error": "Could not save. Try again."
+      }
+    }
   }
 }

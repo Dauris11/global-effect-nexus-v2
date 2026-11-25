@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Download, GraduationCap, Users, Wallet } from "lucide-react";
+import { Download, GraduationCap, PackagePlus, Users, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { TablaCostoCarreras } from "@/components/costos/tabla-costo-carreras";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { StatCard } from "@/components/ui/stat-card";
+import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { formatearMonto } from "@/lib/contabilidad/formato";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { costoPorCarrera } from "@/server/costos/consultas";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -25,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function PaginaCostoEstudiantes({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
-  await requerirPermiso("expedientes.costos.leer");
+  const usuario = await requerirPermiso("expedientes.costos.leer");
+  const puedeRegistrar = usuarioTienePermiso(usuario, "contabilidad.registrar");
 
   const [t, filas] = await Promise.all([getTranslations({ locale, namespace: "costs" }), costoPorCarrera()]);
 
@@ -39,6 +42,14 @@ export default async function PaginaCostoEstudiantes({ params }: { params: Promi
         titulo={t("title")}
         acciones={
           <>
+            {puedeRegistrar && (
+              <Button asChild>
+                <Link href="/contabilidad/reportes/costo-estudiantes/registro">
+                  <PackagePlus className="size-4" />
+                  {t("register.link")}
+                </Link>
+              </Button>
+            )}
             <Button asChild variant="outline">
               <a href="/api/costos/exportar?vista=carreras" download>
                 <Download className="size-4" />

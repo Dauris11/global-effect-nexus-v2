@@ -118,3 +118,131 @@ export async function costoPorEstudiante(): Promise<ResumenCostoEstudiante[]> {
       ORDER BY costo_total_acumulado DESC, nombre`,
   );
 }
+
+/*
+ * Registro manual de los pilares «materiales» y «transporte». Mismas reglas de
+ * acceso que arriba: quien llama exige `expedientes.costos.leer`. Se devuelven
+ * también las filas anuladas (con su motivo) para que la lista cuente toda la
+ * historia, pero solo las vigentes suman en el total.
+ */
+
+export type MaterialRegistrado = {
+  id: string;
+  fecha: string;
+  concepto: string;
+  cantidad: number;
+  costo_unitario: number;
+  costo_total: number;
+  articulo: string | null;
+  anulado: boolean;
+  motivo_anulacion: string | null;
+};
+
+export async function materialesDeEstudiante(estudianteId: string): Promise<MaterialRegistrado[]> {
+  if (!esUuid(estudianteId)) return [];
+
+  return consultar<MaterialRegistrado>(
+    `SELECT m.id, m.fecha::text AS fecha, m.concepto, m.cantidad,
+            m.costo_unitario_dop::float8 AS costo_unitario,
+            m.costo_total_dop::float8 AS costo_total,
+            a.nombre AS articulo,
+            (m.anulado_en IS NOT NULL) AS anulado,
+            m.motivo_anulacion
+       FROM public.estudiante_material_costo m
+       LEFT JOIN contabilidad.articulo a ON a.id = m.articulo_id
+      WHERE m.estudiante_id = $1
+      ORDER BY (m.anulado_en IS NOT NULL), m.fecha DESC, m.creado_en DESC`,
+    [estudianteId],
+  );
+}
+
+export type TransporteRegistrado = {
+  id: string;
+  periodo_id: string;
+  periodo: string;
+  dias_asignados: number;
+  costo_asignado: number;
+  observaciones: string | null;
+  anulado: boolean;
+  motivo_anulacion: string | null;
+};
+
+export async function transporteDeEstudiante(estudianteId: string): Promise<TransporteRegistrado[]> {
+  if (!esUuid(estudianteId)) return [];
+
+  return consultar<TransporteRegistrado>(
+    `SELECT t.id, t.periodo_id, pe.nombre AS periodo, t.dias_asignados,
+            t.costo_asignado_dop::float8 AS costo_asignado, t.observaciones,
+            (t.anulado_en IS NOT NULL) AS anulado, t.motivo_anulacion
+       FROM public.estudiante_transporte_costo t
+       JOIN public.periodo pe ON pe.id = t.periodo_id
+      WHERE t.estudiante_id = $1
+      ORDER BY (t.anulado_en IS NOT NULL), pe.fecha_inicio DESC`,
+    [estudianteId],
+  );
+}
+
+export type EstudianteParaCosto = {
+  id: string;
+  nombre: string;
+  /** Días por semana con inscripción recurrente de guagua activa; 0 si no la usa. */
+  dias_transporte: number;
+};
+
+/**
+ * Los becados para el selector del registro. El transporte institucional solo
+ * lo usan quienes tienen inscripción recurrente (Rincón, Jima, Ranchito, Saba
+ * Rey, Rancho Viejo); se marca con `dias_transporte` para avisar en pantalla
+ * si se intenta cargar transporte a quien no la tiene.
+ */
+export async function estudiantesParaCosto(): Promise<EstudianteParaCosto[]> {
+  return consultar<EstudianteParaCosto>(
+    `SELECT e.id, e.nombre,
+            (SELECT count(DISTINCT r.dia_semana)::int
+               FROM public.transporte_inscripcion_recurrente r
+              WHERE r.estudiante_id = e.id AND r.activo) AS dias_transporte
+       FROM public.estudiante e
+      ORDER BY e.nombre`,
+  );
+}
+
+export type ArticuloParaCosto = { id: string; codigo: string; nombre: string; costo_promedio: number };
+
+export async function articulosParaCosto(): Promise<ArticuloParaCosto[]> {
+  return consultar<ArticuloParaCosto>(
+    `SELECT id, codigo, nombre, costo_promedio::float8 AS costo_promedio
+       FROM contabilidad.articulo
+      WHERE activo
+      ORDER BY nombre`,
+  );
+}
+
+export type DatosRegistroCostos = {
+  estudianteId: string;
+  materiales: MaterialRegistrado[];
+  transporte: TransporteRegistrado[];
+  periodos: PeriodoCosto[];
+  articulos: ArticuloParaCosto[];
+  /** Días por semana con inscripción recurrente de guagua activa; 0 si no usa el transporte. */
+  diasTransporte: number;
+};
+
+/** Todo lo que necesita el panel de registro de un estudiante (pantalla de contabilidad y pestaña «Costos»). */
+export async function datosRegistroCostos(estudianteId: string): Promise<DatosRegistroCostos> {
+  const [materiales, transporte, periodos, articulos, dias] = await Promise.all([
+    materialesDeEstudiante(estudianteId),
+    transporteDeEstudiante(estudianteId),
+    periodosParaCostos(),
+    articulosParaCosto(),
+    esUuid(estudianteId)
+      ? consultarUna<{ n: number }>(
+          `SELECT count(DISTINCT dia_semana)::int AS n
+             FROM public.transporte_inscripcion_recurrente
+            WHERE estudiante_id = $1 AND activo`,
+          [estudianteId],
+        )
+      : Promise.resolve(null),
+  ]);
+
+  return { estudianteId, materiales, transporte, periodos, articulos, diasTransporte: dias?.n ?? 0 };
+}
