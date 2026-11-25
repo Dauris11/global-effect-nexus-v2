@@ -1,3 +1,4 @@
+import type { TipoCuenta } from "@/lib/contabilidad/catalogo";
 import { consultar, consultarUna } from "@/lib/db";
 
 /**
@@ -183,8 +184,7 @@ export async function periodos(): Promise<Periodo[]> {
 // Catálogo de cuentas
 // ----------------------------------------------------------------
 
-export const TIPOS_CUENTA = ["activo", "pasivo", "patrimonio", "ingreso", "gasto"] as const;
-export type TipoCuenta = (typeof TIPOS_CUENTA)[number];
+export type { TipoCuenta };
 
 export type CuentaCatalogo = {
   id: string;
