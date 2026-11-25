@@ -54,9 +54,10 @@ export function GraficoAnillo({
             data={porciones.map((p) => ({ ...p }))}
             dataKey="valor"
             nameKey="nombre"
-            innerRadius="66%"
-            outerRadius="90%"
-            paddingAngle={2}
+            innerRadius="74%"
+            outerRadius="94%"
+            paddingAngle={5}
+            cornerRadius={12}
             strokeWidth={0}
             isAnimationActive={!reducido}
             animationDuration={DURACION_ENTRADA}
@@ -78,7 +79,7 @@ export function GraficoAnillo({
       {hayDatos && centro && (
         // `pointer-events-none` para no robarle el ratón a las porciones.
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[28px] leading-none font-semibold tracking-tight text-tinta">
+          <span className="text-[34px] leading-none font-semibold tracking-tight text-tinta">
             {centro.valor}
           </span>
           {centro.etiqueta && <span className="texto-meta mt-1">{centro.etiqueta}</span>}

@@ -69,8 +69,8 @@ export function ContenedorGrafico({
           <caption>{etiqueta}</caption>
           <thead>
             <tr>
-              {tabla.columnas.map((columna) => (
-                <th key={columna} scope="col">
+              {tabla.columnas.map((columna, i) => (
+                <th key={`${i}-${columna}`} scope="col">
                   {columna}
                 </th>
               ))}

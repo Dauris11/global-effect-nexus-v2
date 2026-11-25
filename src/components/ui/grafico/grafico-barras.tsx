@@ -1,6 +1,7 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from "recharts";
+import { useState } from "react";
+import { Bar, BarChart, Cell, LabelList, Tooltip, XAxis, YAxis } from "recharts";
 
 import { ContenedorGrafico } from "./contenedor-grafico";
 import {
@@ -61,6 +62,8 @@ export function GraficoBarras({
   radioEje?: number;
 }) {
   const reducido = useMovimientoReducido();
+  // Al pasar sobre una barra, las demás bajan de tono: la mirada se queda en la que se lee.
+  const [activa, setActiva] = useState<number | null>(null);
   const enFilas = orientacion === "filas";
   const alto = altura ?? (enFilas ? Math.max(120, datos.length * 40 + 16) : 220);
   const hayDatos = datos.some((fila) => series.some((s) => Number(fila[s.clave]) > 0));
@@ -80,17 +83,18 @@ export function GraficoBarras({
       <BarChart
         data={[...datos]}
         layout={enFilas ? "vertical" : "horizontal"}
-        barGap={2}
-        margin={enFilas ? { left: 4, right: 12 } : { top: 8, right: 8, left: -12, bottom: 0 }}
+        barGap={4}
+        margin={enFilas ? { left: 4, right: 36 } : { top: 22, right: 8, left: 8, bottom: 0 }}
+        onMouseLeave={() => setActiva(null)}
       >
-        <CartesianGrid {...REJILLA} vertical={enFilas} horizontal={!enFilas} />
+        {/* Sin rejilla ni eje de valores: cada barra trae su cifra escrita y una pista suave detrás. */}
         {enFilas ? (
           <>
             <XAxis type="number" hide domain={dominio ? [...dominio] : undefined} />
             <YAxis
               type="category"
               dataKey={claveX}
-              tick={EJE}
+              tick={{ ...EJE, fontSize: 12, fill: "var(--tinta-2)" }}
               axisLine={false}
               tickLine={false}
               width={radioEje}
@@ -101,24 +105,18 @@ export function GraficoBarras({
           <>
             <XAxis
               dataKey={claveX}
-              tick={EJE}
-              axisLine={LINEA_EJE}
-              tickLine={false}
-              tickFormatter={formatoX}
-            />
-            <YAxis
-              tick={EJE}
+              tick={{ ...EJE, fontSize: 12, fill: "var(--tinta-2)" }}
               axisLine={false}
               tickLine={false}
-              width={44}
-              allowDecimals={false}
-              domain={dominio ? [...dominio] : undefined}
-              tickFormatter={(v: number) => formato(v)}
+              tickMargin={10}
+              tickFormatter={formatoX}
             />
+            <YAxis hide allowDecimals={false} domain={dominio ? [...dominio] : [0, "auto"]} />
           </>
         )}
         <Tooltip
           {...GLOBO}
+          cursor={false}
           formatter={(valor, nombre) => [
             typeof valor === "number" ? formato(valor) : "—",
             String(nombre ?? ""),
@@ -130,15 +128,31 @@ export function GraficoBarras({
             dataKey={serie.clave}
             name={serie.nombre}
             fill={resolverColor(serie.color, i)}
-            radius={enFilas ? [0, 6, 6, 0] : [5, 5, 0, 0]}
-            barSize={enFilas ? 18 : undefined}
+            // Píldora completa y una pista detrás: el aspecto de una app, no de una hoja de cálculo.
+            radius={enFilas ? 999 : [10, 10, 10, 10]}
+            barSize={enFilas ? 14 : series.length > 1 ? 14 : 26}
+            background={{ fill: "var(--linea)", fillOpacity: 0.45, radius: enFilas ? 999 : 10 }}
             isAnimationActive={!reducido}
             animationDuration={DURACION_ENTRADA}
+            animationEasing="ease-out"
+            onMouseEnter={(_, indice) => setActiva(indice)}
           >
-            {colorFila &&
-              datos.map((fila, indice) => (
-                <Cell key={indice} fill={resolverColor(colorFila(fila, indice), indice)} />
-              ))}
+            {datos.map((fila, indice) => (
+              <Cell
+                key={indice}
+                fill={resolverColor(colorFila ? colorFila(fila, indice) : serie.color, i)}
+                fillOpacity={activa !== null && activa !== indice ? 0.35 : 1}
+              />
+            ))}
+            {series.length === 1 && (
+              <LabelList
+                dataKey={serie.clave}
+                position={enFilas ? "right" : "top"}
+                offset={8}
+                formatter={(v: unknown) => (typeof v === "number" ? formato(v) : "")}
+                style={{ fontSize: 12, fontWeight: 600, fill: "var(--tinta)" }}
+              />
+            )}
           </Bar>
         ))}
       </BarChart>

@@ -17,7 +17,6 @@ import {
   DURACION_ENTRADA,
   EJE,
   GLOBO,
-  LINEA_EJE,
   REJILLA,
   TONO,
   resolverColor,
@@ -68,8 +67,8 @@ export function GraficoLinea({
 
   const ejes = (
     <>
-      <CartesianGrid {...REJILLA} />
-      <XAxis dataKey={claveX} tick={EJE} axisLine={LINEA_EJE} tickLine={false} />
+      <CartesianGrid {...REJILLA} stroke="var(--linea)" strokeOpacity={0.6} strokeDasharray="0" vertical={false} />
+      <XAxis dataKey={claveX} tick={EJE} axisLine={false} tickLine={false} tickMargin={10} />
       <YAxis
         tick={EJE}
         axisLine={false}
@@ -105,11 +104,12 @@ export function GraficoLinea({
     dataKey: claveY,
     name: nombreSerie,
     stroke: trazo,
-    strokeWidth: 2,
+    strokeWidth: 3,
+    strokeLinecap: "round" as const,
     // El punto se dibuja siempre: con dos periodos, una línea sin puntos no dice
     // dónde están las medidas y dónde la interpolación.
-    dot: { r: 3, fill: trazo, strokeWidth: 0 },
-    activeDot: { r: 5 },
+    dot: { r: 4, fill: "var(--card)", stroke: trazo, strokeWidth: 2 },
+    activeDot: { r: 7, fill: trazo, stroke: "var(--card)", strokeWidth: 3 },
     isAnimationActive: !reducido,
     animationDuration: DURACION_ENTRADA,
   };
@@ -129,7 +129,7 @@ export function GraficoLinea({
         <AreaChart data={[...datos]} margin={margen}>
           {ejes}
           {/* Relleno plano con opacidad, no degradado: la norma los prohíbe. */}
-          <Area {...comunes} fill={trazo} fillOpacity={0.15} />
+          <Area {...comunes} fill={trazo} fillOpacity={0.12} />
         </AreaChart>
       ) : (
         <LineChart data={[...datos]} margin={margen}>
