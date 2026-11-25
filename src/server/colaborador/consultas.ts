@@ -156,6 +156,7 @@ export async function resumenColaborador(
  */
 export async function misRendiciones(
   usuarioId: string,
+  verEstudiante: boolean,
 ): Promise<RendicionGastoItem[]> {
   return consultar<RendicionGastoItem>(
     `SELECT rg.id,
@@ -165,6 +166,14 @@ export async function misRendiciones(
             u.email AS empleado_email,
             rg.programa_id,
             p.nombre AS programa_nombre,
+            rg.solicitud_id,
+            sol.folio::int AS solicitud_folio,
+            sol.titulo AS solicitud_titulo,
+            -- El estudiante imputado solo sale para quien puede ver
+            -- estudiantes: recortarlo aquí, y no en la pantalla, evita que el
+            -- dato viaje al navegador de quien no debe verlo.
+            CASE WHEN $2 THEN rg.estudiante_id END AS estudiante_id,
+            CASE WHEN $2 THEN est.nombre END AS estudiante_nombre,
             rg.proveedor_nombre,
             rg.proveedor_rnc,
             rg.ncf,
@@ -184,19 +193,24 @@ export async function misRendiciones(
        JOIN public.usuario u ON u.id = rg.empleado_id
        LEFT JOIN public.proyecto p ON p.id = rg.programa_id
        LEFT JOIN public.usuario rev ON rev.id = rg.revisado_por
+       LEFT JOIN public.solicitud sol ON sol.id = rg.solicitud_id
+       LEFT JOIN public.estudiante est ON est.id = rg.estudiante_id
       WHERE rg.empleado_id = $1
       ORDER BY rg.created_at DESC`,
-    [usuarioId],
+    [usuarioId, verEstudiante],
   );
 }
 
 /**
  * Bandeja de rendiciones para Contabilidad y Superadmin.
  */
-export async function todasRendiciones(filtros?: {
-  estado?: string;
-  programaId?: string;
-}): Promise<RendicionGastoItem[]> {
+export async function todasRendiciones(
+  verEstudiante: boolean,
+  filtros?: {
+    estado?: string;
+    programaId?: string;
+  },
+): Promise<RendicionGastoItem[]> {
   const condiciones: string[] = ["1=1"];
   const parametros: unknown[] = [];
 
@@ -210,6 +224,10 @@ export async function todasRendiciones(filtros?: {
     condiciones.push(`rg.programa_id = $${parametros.length}`);
   }
 
+  // El flag va como último parámetro: los filtros ya numeraron los anteriores.
+  parametros.push(verEstudiante);
+  const verIdx = parametros.length;
+
   return consultar<RendicionGastoItem>(
     `SELECT rg.id,
             rg.codigo,
@@ -218,6 +236,14 @@ export async function todasRendiciones(filtros?: {
             u.email AS empleado_email,
             rg.programa_id,
             p.nombre AS programa_nombre,
+            rg.solicitud_id,
+            sol.folio::int AS solicitud_folio,
+            sol.titulo AS solicitud_titulo,
+            -- El estudiante imputado solo sale para quien puede ver
+            -- estudiantes: recortarlo aquí, y no en la pantalla, evita que el
+            -- dato viaje al navegador de quien no debe verlo.
+            CASE WHEN $${verIdx} THEN rg.estudiante_id END AS estudiante_id,
+            CASE WHEN $${verIdx} THEN est.nombre END AS estudiante_nombre,
             rg.proveedor_nombre,
             rg.proveedor_rnc,
             rg.ncf,
@@ -237,9 +263,55 @@ export async function todasRendiciones(filtros?: {
        JOIN public.usuario u ON u.id = rg.empleado_id
        LEFT JOIN public.proyecto p ON p.id = rg.programa_id
        LEFT JOIN public.usuario rev ON rev.id = rg.revisado_por
+       LEFT JOIN public.solicitud sol ON sol.id = rg.solicitud_id
+       LEFT JOIN public.estudiante est ON est.id = rg.estudiante_id
       WHERE ${condiciones.join(" AND ")}
       ORDER BY rg.created_at DESC`,
     parametros,
+  );
+}
+
+export type SolicitudParaRendir = {
+  id: string;
+  folio: number;
+  titulo: string;
+  monto: number | null;
+};
+
+/**
+ * Solicitudes que pueden respaldar una rendición NUEVA de esta persona: de
+ * gasto o compra, suyas y APROBADAS. `completada` es el cierre del ciclo, así
+ * que una vez contabilidad la completa ya no se ofrece. Una misma solicitud
+ * admite varias rendiciones (varios comprobantes de una misma compra).
+ */
+export async function solicitudesParaRendir(
+  usuarioId: string,
+): Promise<SolicitudParaRendir[]> {
+  return consultar<SolicitudParaRendir>(
+    `SELECT id, folio::int AS folio, titulo, monto::float AS monto
+       FROM public.solicitud
+      WHERE solicitante_id = $1
+        AND tipo IN ('gasto', 'compra')
+        AND estado = 'aprobada'
+      ORDER BY folio DESC`,
+    [usuarioId],
+  );
+}
+
+/**
+ * Becados a los que se puede imputar un gasto. La pantalla solo llama esto si
+ * la persona tiene `expedientes.leer`: filtrar en el navegador no es control
+ * de acceso, así que la lista ni siquiera viaja para los demás roles.
+ */
+export async function becadosParaRendicion(): Promise<
+  { id: string; nombre: string }[]
+> {
+  return consultar<{ id: string; nombre: string }>(
+    `SELECT id, nombre
+       FROM public.estudiante
+      WHERE tipo = 'becado'
+      ORDER BY nombre
+      LIMIT 1000`,
   );
 }
 

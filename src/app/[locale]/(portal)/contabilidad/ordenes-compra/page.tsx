@@ -28,7 +28,7 @@ export default async function PaginaOrdenesCompra({
   const usuario = await requerirPermiso("contabilidad.leer");
   const puedeAprobar = usuarioTienePermiso(usuario, "contabilidad.aprobar");
 
-  const [t, ordenes, proveedores, fondos, categorias] = await Promise.all([
+  const [t, ordenes, proveedores, fondos, categorias, estudiantes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.compras" }),
     listarOrdenesCompra(),
     consultar<{ id: string; nombre: string; identificacion: string }>(
@@ -36,6 +36,11 @@ export default async function PaginaOrdenesCompra({
     ),
     consultar<{ id: string; nombre: string }>(`SELECT id, nombre FROM contabilidad.fondo ORDER BY nombre`),
     consultar<{ id: string; nombre: string }>(`SELECT id, nombre FROM contabilidad.categoria ORDER BY nombre`),
+    consultar<{ id: string; nombre: string }>(
+      `SELECT id, nombre FROM public.estudiante
+        WHERE estado::text IN ('activo', 'standby_tecnico', 'academia_liderazgo', 'suspendido')
+        ORDER BY nombre`,
+    ),
   ]);
 
   return (
@@ -48,6 +53,7 @@ export default async function PaginaOrdenesCompra({
           proveedores={proveedores}
           fondos={fondos}
           categorias={categorias}
+          estudiantes={estudiantes}
         />
       </div>
 

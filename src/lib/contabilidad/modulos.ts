@@ -11,6 +11,7 @@ import {
   HandHeart,
   Inbox,
   Landmark,
+  GraduationCap,
   Layers,
   NotebookPen,
   PieChart,
@@ -127,6 +128,15 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     href: "/contabilidad/reportes",
     icono: BarChart3,
     permiso: "contabilidad.leer",
+    enAdministracion: true,
+  },
+  {
+    clave: "costo-estudiantes",
+    grupo: "general",
+    etiqueta: "studentCost",
+    href: "/contabilidad/reportes/costo-estudiantes",
+    icono: GraduationCap,
+    permiso: "expedientes.costos.leer",
     enAdministracion: true,
   },
   {

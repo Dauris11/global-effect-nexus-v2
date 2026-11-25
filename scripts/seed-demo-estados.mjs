@@ -497,7 +497,7 @@ try {
   const todos = { ...CORREO, estudiante: U.estudiante, super_admin: U.admin };
   const NOTIS = [
     ["solicitud", "Tu solicitud cambió de estado", "Coordinación actualizó tu solicitud.", "/portal/estudiante/solicitudes"],
-    ["tarea", "Tienes una tarea por vencer", "Una tarea vence en los próximos 3 días.", "/administrativo/tareas"],
+    ["tarea", "Tienes una tarea por vencer", "Una tarea vence en los próximos 3 días.", "/bandeja?tab=tareas"],
     ["reunion", "Reunión programada", "Te invitaron a una reunión de coordinación.", "/administrativo/reuniones"],
     ["sistema", "Bienvenido al Portal GlobalEffect", "Tu cuenta está activa y lista para usar.", "/"],
   ];

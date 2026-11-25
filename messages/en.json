@@ -251,7 +251,10 @@
     "uploadGrades": "Upload grades",
     "leadershipAcademy": "Leadership Academy",
     "submissionsToGrade": "Submissions to grade",
-    "habitudesSupervision": "Habitudes supervision"
+    "habitudesSupervision": "Habitudes supervision",
+    "pending": "To-do",
+    "executiveDashboard": "Executive dashboard",
+    "studentCost": "Cost per student"
   },
   "landing": {
     "enter": "Sign in",
@@ -1311,7 +1314,8 @@
         "family": "Family, housing and health",
         "academic": "Academic",
         "followUp": "Follow-up and sponsorship",
-        "edit": "Edit"
+        "edit": "Edit",
+        "costs": "Costs"
       },
       "sections": {
         "personal": "Personal data",
@@ -1410,6 +1414,41 @@
       "title": "File {percent}% complete",
       "fill": "Complete now",
       "missing": "Information is missing in: {sections}."
+    },
+    "costs": {
+      "hint": "Figures visible only to the Board and accounting. The sponsor contribution is an estimate: the monthly amount of their assignment times the months elapsed.",
+      "kpi": {
+        "total": "Total investment",
+        "average": "Average per term ({n} completed)",
+        "sponsor": "Sponsor contributions",
+        "balance": "Scholarship balance"
+      },
+      "chart": {
+        "title": "Spending breakdown",
+        "label": "Spending by pillar",
+        "empty": "No expenses charged to this student yet",
+        "center": "Total"
+      },
+      "pillar": {
+        "universidad": "University",
+        "materiales": "Materials and equipment",
+        "transporte": "Transport",
+        "tramites": "Paperwork and reimbursements"
+      },
+      "table": {
+        "title": "Charged expenses",
+        "filter": "Filter by period",
+        "all": "All",
+        "date": "Date",
+        "pillar": "Category",
+        "concept": "Concept",
+        "origin": "Supplier / source",
+        "reference": "NCF / reference",
+        "amount": "Amount (DOP)",
+        "total": "Total",
+        "empty": "No expenses in this period",
+        "emptyHint": "Expenses appear when the student is tagged on an invoice, a purchase order or an expense report."
+      }
     }
   },
   "academic": {
@@ -2578,7 +2617,7 @@
     }
   },
   "bandeja": {
-    "title": "Inbox",
+    "title": "To-do",
     "greeting": "Hello, {name}",
     "seeAll": "See all",
     "attention": {
@@ -2633,6 +2672,17 @@
       "noFinance": "No movements recorded",
       "projects": "My projects progress",
       "projectsEmpty": "No projects with tasks"
+    },
+    "tabs": {
+      "label": "To-do sections",
+      "decide": "To decide",
+      "tasks": "My tasks",
+      "team": "Team"
+    },
+    "views": {
+      "today": "My day",
+      "board": "Team board",
+      "expense": "Submit an expense"
     }
   },
   "sponsorMail": {
@@ -4034,6 +4084,15 @@
         "comprobante": "Tax receipt",
         "montos": "Amounts",
         "asignacion": "Allocation"
+      },
+      "estudiante": "Charge to a student",
+      "estudianteAyuda": "Optional. Adds this expense to the scholarship student's cost.",
+      "pilar": "Cost type",
+      "pilares": {
+        "universidad": "University (tuition, credits)",
+        "materiales": "Materials and equipment",
+        "transporte": "Transport",
+        "tramites": "Paperwork and direct expenses"
       }
     },
     "cajas": {
@@ -5012,6 +5071,15 @@
         "datos": "General data",
         "lineas": "Items",
         "justificacion": "Justification"
+      },
+      "estudiante": "Student (optional)",
+      "sinEstudiante": "No student",
+      "pilar": "Cost type",
+      "pilares": {
+        "universidad": "University (tuition, credits)",
+        "materiales": "Materials and equipment",
+        "transporte": "Transport",
+        "tramites": "Paperwork and direct expenses"
       }
     },
     "retenciones": {
@@ -6396,14 +6464,28 @@
       "formato_invalido": "The receipt must be an image (JPG, PNG, WEBP) or a PDF.",
       "archivo_grande": "The receipt cannot exceed 10 MB.",
       "error_subida": "Could not upload the receipt.",
-      "error": "Error recording the expense report."
+      "error": "Error recording the expense report.",
+      "falta_solicitud": "Choose the approved request that authorized this expense.",
+      "solicitud_invalida": "The request is not yours, is not approved, or is already closed.",
+      "estudiante_invalido": "The chosen student is not valid or you lack permission to charge expenses to students."
     },
     "ocrManualNotice": "File attached. Please fill in or verify the fields manually.",
     "pasos": {
       "comprobante": "Receipt and supplier",
       "montos": "Amounts",
-      "destino": "Program and description"
-    }
+      "destino": "Program and description",
+      "solicitud": "Approved request"
+    },
+    "noApprovedRequest": "To report an expense you need an approved expense or purchase request that authorizes it. You have none open right now.",
+    "createRequestLink": "Create a request",
+    "authorizingRequest": "Request that authorized the expense",
+    "selectRequestHint": "Choose the approved request",
+    "requestRef": "Request #{folio} · {titulo}",
+    "chargeToStudent": "Student to charge (optional)",
+    "studentSearchPlaceholder": "Search student by name",
+    "studentNoResults": "No scholarship student matches the search.",
+    "noStudent": "No student: leave this empty if the expense is not for a scholarship student.",
+    "clearStudent": "Remove student"
   },
   "moodle": {
     "answerText": "Your written answer",
@@ -7140,6 +7222,8 @@
       "academico_escribir": "Edit the academic catalog",
       "academico_leer": "View academic information",
       "calificaciones_registrar": "Record grades",
+      "catalogo_escribir": "Edit the university and curriculum catalog",
+      "catalogo_leer": "View the university and curriculum catalog",
       "contabilidad_aprobar": "Approve accounting entries",
       "contabilidad_asiento_manual": "Create manual journal entries",
       "contabilidad_auditar": "Audit accounting",
@@ -7150,6 +7234,7 @@
       "contabilidad_nomina": "Manage payroll",
       "contabilidad_registrar": "Record accounting entries",
       "docencia_impartir": "Teach Global Effect 360 classes",
+      "expedientes_costos_leer": "View scholarship student costs",
       "expedientes_eliminar": "Delete records",
       "expedientes_escribir": "Edit records",
       "expedientes_leer": "View records",
@@ -7161,8 +7246,8 @@
       "habitudes_recursos_leer": "View Habitudes resources",
       "habitudes_recursos_subir": "Upload Habitudes resources",
       "habitudes_supervisar": "Supervise Habitudes",
-      "ia_conocimiento": "Edit the student assistant's knowledge base",
       "ia_administrar": "Manage the AI",
+      "ia_conocimiento": "Edit the student assistant's knowledge base",
       "ia_usar": "Use the AI assistant",
       "inventario_auditar": "Audit inventory",
       "inventario_eliminar": "Delete inventory items",
@@ -7183,9 +7268,7 @@
       "solicitudes_gestionar": "Manage requests",
       "transporte_gestionar": "Manage transport",
       "transporte_operar": "Operate transport routes",
-      "usuarios_administrar": "Manage users",
-      "catalogo_leer": "View the university and curriculum catalog",
-      "catalogo_escribir": "Edit the university and curriculum catalog"
+      "usuarios_administrar": "Manage users"
     }
   },
   "lineaTiempo": {
@@ -7587,5 +7670,78 @@
     "noContact": "No phone or email",
     "noCatalog": "No university assigned",
     "openRecord": "See their record"
+  },
+  "executive": {
+    "title": "Executive dashboard",
+    "sections": {
+      "scholars": "Scholars",
+      "money": "Money"
+    },
+    "kpi": {
+      "activeScholars": "Active scholars",
+      "avgIndex": "Average academic index",
+      "atRisk": "Scholars at risk",
+      "noSponsor": "Scholars without a sponsor",
+      "pendingDirection": "Requests awaiting a decision",
+      "activeSponsors": "Active sponsors",
+      "bankDop": "Bank balance (RD$)",
+      "bankUsd": "Bank balance (US$)",
+      "monthlyPledge": "Monthly sponsor contributions"
+    },
+    "charts": {
+      "byUniversity": "Scholars by university",
+      "byCareer": "Scholars by degree",
+      "career": "Degree",
+      "scholars": "Scholars",
+      "empty": "No data yet",
+      "unassigned": "Unassigned",
+      "others": "Other degrees",
+      "compliance": "Compliance for {mes}",
+      "complianceNone": "Last month compliance",
+      "service": "Did service",
+      "meeting": "Attended meeting",
+      "registered": "With a record",
+      "item": "Item",
+      "viewMonthly": "View monthly service"
+    },
+    "donors": {
+      "title": "Donor compliance",
+      "committed": "Committed",
+      "collected": "Collected",
+      "dueSoon": "Due in 30 days ({n})",
+      "overdue": "Overdue installments",
+      "emptyTitle": "No pledges recorded",
+      "emptyText": "They will appear here once accounting records donation pledges.",
+      "view": "View donations"
+    }
+  },
+  "costs": {
+    "title": "Cost per student",
+    "exportCareers": "Export by degree",
+    "exportStudents": "Export by student",
+    "kpi": {
+      "total": "Total invested",
+      "withCost": "Students with recorded cost",
+      "graduates": "Graduates"
+    },
+    "empty": "No scholarship students yet",
+    "emptyHint": "Once records have expenses charged to them, their cost is compared by degree here.",
+    "chart": {
+      "title": "Average per student and degree",
+      "label": "Average cost by degree",
+      "empty": "No expenses charged to any student yet"
+    },
+    "table": {
+      "title": "Detail by degree",
+      "university": "University",
+      "career": "Degree",
+      "students": "Students with cost",
+      "studentsOf": "{con} of {total}",
+      "total": "Total invested",
+      "averageStudent": "Average per student",
+      "averageTerm": "Average per term",
+      "averageGraduate": "Average per graduate"
+    },
+    "hint": "Averages only count students with a recorded cost. The per-graduate average stays empty until graduates have expenses charged to them."
   }
 }

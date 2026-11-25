@@ -33,13 +33,13 @@ export function PendientesBandeja({
     {
       clave: "urgentTasks",
       cuantos: pendientes.tareas_urgentes,
-      href: "/administrativo/tareas",
+      href: "/bandeja?tab=tareas&vista=tablero",
       icono: Flame,
     },
     {
       clave: "overdueTasks",
       cuantos: pendientes.tareas_vencidas,
-      href: "/administrativo/tareas",
+      href: "/bandeja?tab=tareas&vista=tablero",
       icono: Clock,
     },
     {

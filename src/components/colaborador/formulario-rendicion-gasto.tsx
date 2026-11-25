@@ -8,10 +8,13 @@ import {
   Camera,
   CheckCircle2,
   FileText,
+  Info,
   Loader2,
   Receipt,
   ScanLine,
+  Search,
   Upload,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -25,8 +28,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import type { SolicitudParaRendir } from "@/server/colaborador/consultas";
 import {
   enviarRendicionGastoAction,
   extraerComprobanteOcrAction,
@@ -34,6 +38,13 @@ import {
 
 interface FormularioRendicionGastoProps {
   programas: { id: string; nombre: string; codigo: string | null }[];
+  /** Solicitudes aprobadas de la persona que aún no se han cerrado. */
+  solicitudes: SolicitudParaRendir[];
+  /**
+   * Becados a quienes imputar el gasto. `null` = esta persona no puede ver
+   * estudiantes: el selector no se pinta y la lista nunca llegó al navegador.
+   */
+  becados: { id: string; nombre: string }[] | null;
   onExito?: () => void;
 }
 
@@ -42,6 +53,8 @@ const SELECT_CLASS =
 
 export function FormularioRendicionGasto({
   programas,
+  solicitudes,
+  becados,
   onExito,
 }: FormularioRendicionGastoProps) {
   const t = useTranslations("rendicion");
@@ -67,6 +80,9 @@ export function FormularioRendicionGasto({
   const [montoItbis, setMontoItbis] = useState("");
   const [concepto, setConcepto] = useState("");
   const [programaId, setProgramaId] = useState("");
+  const [solicitudId, setSolicitudId] = useState("");
+  const [estudianteId, setEstudianteId] = useState("");
+  const [busquedaEstudiante, setBusquedaEstudiante] = useState("");
   const [ocrData, setOcrData] = useState<Record<string, unknown> | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(
     null,
@@ -118,6 +134,8 @@ export function FormularioRendicionGasto({
     formData.set("proveedor_rnc", proveedorRnc);
     formData.set("ncf", ncf);
     formData.set("programa_id", programaId);
+    formData.set("solicitud_id", solicitudId);
+    formData.set("estudiante_id", estudianteId);
     formData.set("fecha_comprobante", fechaComprobante);
     formData.set("monto_total", montoTotal);
     formData.set("monto_itbis", montoItbis);
@@ -140,6 +158,9 @@ export function FormularioRendicionGasto({
         setMontoTotal("");
         setMontoItbis("");
         setConcepto("");
+        setSolicitudId("");
+        setEstudianteId("");
+        setBusquedaEstudiante("");
         setArchivo(null);
         setArchivoNombre(null);
         setOcrCompletado(false);
@@ -150,6 +171,9 @@ export function FormularioRendicionGasto({
       } else {
         const codigo = res.mensaje;
         const codigosConocidos = [
+          "falta_solicitud",
+          "solicitud_invalida",
+          "estudiante_invalido",
           "falta_proveedor",
           "falta_concepto",
           "monto_invalido",
@@ -167,6 +191,34 @@ export function FormularioRendicionGasto({
       }
     });
   };
+
+  // Sin una solicitud aprobada no hay nada que rendir: se explica y se lleva a
+  // crearla, en vez de dejar un formulario que el servidor rechazaría.
+  if (solicitudes.length === 0) {
+    return (
+      <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
+        <CardContent className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2 text-sm text-tinta">
+            <Info className="mt-0.5 size-4 shrink-0 text-marca-700" />
+            <span>{t("noApprovedRequest")}</span>
+          </p>
+          <Link
+            href="/administrativo/solicitudes"
+            className="inline-flex min-h-[44px] shrink-0 items-center rounded-control bg-marca-500 px-4 text-sm font-semibold text-white hover:bg-marca-600 active:scale-95"
+          >
+            {t("createRequestLink")}
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const becadosFiltrados = (becados ?? [])
+    .filter((b) =>
+      b.nombre.toLowerCase().includes(busquedaEstudiante.trim().toLowerCase()),
+    )
+    .slice(0, 6);
+  const estudianteElegido = becados?.find((b) => b.id === estudianteId) ?? null;
 
   return (
     <Card className="rounded-2xl border-linea-fuerte bg-card shadow-xs">
@@ -197,6 +249,26 @@ export function FormularioRendicionGasto({
 
         <form onSubmit={manejarEnvio} className="space-y-4">
           <FormularioGuiado>
+          <PasoFormulario titulo={t("pasos.solicitud")}>
+          <div>
+            <Label htmlFor="solicitud_id">{t("authorizingRequest")}</Label>
+            <select
+              id="solicitud_id"
+              value={solicitudId}
+              onChange={(e) => setSolicitudId(e.target.value)}
+              required
+              className={cn(SELECT_CLASS, "mt-1")}
+            >
+              <option value="">{t("selectRequestHint")}</option>
+              {solicitudes.map((sol) => (
+                <option key={sol.id} value={sol.id}>
+                  #{sol.folio} · {sol.titulo}
+                </option>
+              ))}
+            </select>
+          </div>
+          </PasoFormulario>
+
           {/* La foto va en el primer paso porque el OCR rellena los campos del
               proveedor que vienen justo después: subirla primero ahorra teclear. */}
           <PasoFormulario titulo={t("pasos.comprobante")}>
@@ -350,6 +422,64 @@ export function FormularioRendicionGasto({
               ))}
             </select>
           </div>
+
+          {becados && (
+            <div>
+              <Label htmlFor="buscar_estudiante">{t("chargeToStudent")}</Label>
+              {estudianteElegido ? (
+                <div className="mt-1 flex min-h-[44px] items-center justify-between gap-2 rounded-control border border-linea-fuerte bg-marca-50 px-3 text-sm text-marca-700">
+                  <span className="truncate font-medium">{estudianteElegido.nombre}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEstudianteId("")}
+                    aria-label={t("clearStudent")}
+                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-card"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-1 space-y-2">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-3" />
+                    <Input
+                      id="buscar_estudiante"
+                      value={busquedaEstudiante}
+                      onChange={(e) => setBusquedaEstudiante(e.target.value)}
+                      placeholder={t("studentSearchPlaceholder")}
+                      autoComplete="off"
+                      className="pl-9"
+                    />
+                  </div>
+                  {busquedaEstudiante.trim() !== "" && (
+                    <ul className="overflow-hidden rounded-control border border-linea-fuerte bg-card">
+                      {becadosFiltrados.length === 0 ? (
+                        <li className="px-3 py-2 text-sm text-tinta-3">
+                          {t("studentNoResults")}
+                        </li>
+                      ) : (
+                        becadosFiltrados.map((b) => (
+                          <li key={b.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEstudianteId(b.id);
+                                setBusquedaEstudiante("");
+                              }}
+                              className="flex min-h-[44px] w-full items-center px-3 text-left text-sm text-tinta hover:bg-muted"
+                            >
+                              {b.nombre}
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                  <p className="text-xs text-tinta-3">{t("noStudent")}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <Label htmlFor="concepto">{t("conceptDescription")}</Label>

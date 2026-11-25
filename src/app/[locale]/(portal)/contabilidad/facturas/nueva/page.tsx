@@ -29,7 +29,7 @@ export default async function PaginaNuevaFactura({
   const { proveedor } = await searchParams;
   await requerirPermiso("contabilidad.registrar");
 
-  const [t, tf, opciones, listaProveedores, solicitantes] = await Promise.all([
+  const [t, tf, opciones, listaProveedores, solicitantes, estudiantes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.facturaForm" }),
     getTranslations({ locale, namespace: "contab.factura" }),
     opcionesRecibo(),
@@ -53,6 +53,12 @@ export default async function PaginaNuevaFactura({
         WHERE u.activo = TRUE
         ORDER BY u.nombre ASC`,
     ),
+    // Quien sigue en el programa: imputar un gasto a un egresado o retirado es raro y se hace desde el expediente.
+    consultar<{ id: string; nombre: string }>(
+      `SELECT id, nombre FROM public.estudiante
+        WHERE estado::text IN ('activo', 'standby_tecnico', 'academia_liderazgo', 'suspendido')
+        ORDER BY nombre`,
+    ),
   ]);
 
   return (
@@ -69,6 +75,7 @@ export default async function PaginaNuevaFactura({
           fondos={opciones.fondos}
           proyectos={opciones.proyectos}
           solicitantes={solicitantes}
+          estudiantes={estudiantes}
           hoy={claveDia()}
         />
       </div>

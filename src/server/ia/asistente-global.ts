@@ -222,9 +222,9 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
       "tablero de tareas",
       "pendientes operaciones",
     ],
-    etiqueta: "Tablero de Tareas",
+    etiqueta: "Pendientes: tablero de tareas",
     descripcion: "Gestión operativa de tareas institucionales y asignaciones del equipo.",
-    ruta: "/administrativo/tareas",
+    ruta: "/bandeja?tab=tareas&vista=tablero",
     puede: conPermiso("operaciones.leer"),
   },
   {
@@ -341,6 +341,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
   },
   {
     identificadores: [
+      "pendientes",
       "bandeja",
       "dashboard",
       "panel general",
@@ -348,9 +349,9 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
       "notificaciones",
       "inicio",
     ],
-    etiqueta: "Bandeja",
-    descripcion: "Bandeja con tareas, proyectos, reuniones, notificaciones y gráficas.",
-    ruta: "/bandeja",
+    etiqueta: "Pendientes",
+    descripcion: "Pendientes: lo que espera decisión, mis tareas, el equipo, proyectos, reuniones, notificaciones y gráficas.",
+    ruta: "/bandeja?tab=decidir",
     puede: soloRoles("admin", "super_admin"),
   },
   {

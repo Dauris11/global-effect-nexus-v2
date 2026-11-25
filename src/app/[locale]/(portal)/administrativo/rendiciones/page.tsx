@@ -12,8 +12,10 @@ import {
   usuarioTienePermiso,
 } from "@/lib/rbac";
 import {
+  becadosParaRendicion,
   misRendiciones,
   programasParaRendicion,
+  solicitudesParaRendir,
   todasRendiciones,
 } from "@/server/colaborador/consultas";
 
@@ -48,12 +50,22 @@ export default async function PaginaRendiciones({
   // se ofrece a quien la puerta va a dejar pasar.
   const veContabilidad = usuarioTienePermiso(usuario, "contabilidad.leer");
 
-  const [t, programas, rendiciones, mensajes] = await Promise.all([
+  // Ver a qué estudiante se imputó un gasto es ver estudiantes: quien revisa
+  // lo necesita para validar, y quien tiene `expedientes.leer` ya lo veía.
+  const puedeElegirEstudiante = usuarioTienePermiso(usuario, "expedientes.leer");
+  const verEstudiante = puedeElegirEstudiante || puedeRevisar;
+
+  const [t, programas, solicitudes, becados, rendiciones, mensajes] =
+    await Promise.all([
     getTranslations({ locale, namespace: "rendicion" }),
     programasParaRendicion(),
-    puedeRevisar ? todasRendiciones() : misRendiciones(usuario.id),
+    solicitudesParaRendir(usuario.id),
+    puedeElegirEstudiante ? becadosParaRendicion() : Promise.resolve(null),
+    puedeRevisar
+      ? todasRendiciones(verEstudiante)
+      : misRendiciones(usuario.id, verEstudiante),
     mensajesCliente(["rendicion", "colaborador", "admin"]),
-  ]);
+    ]);
 
   return (
     <div className="animate-entrada mx-auto max-w-5xl space-y-6">
@@ -62,7 +74,7 @@ export default async function PaginaRendiciones({
         acciones={
       <div className="flex items-center gap-2">
         <Link
-          href="/administrativo/tareas/hoy"
+          href="/bandeja?tab=tareas"
           className="inline-flex min-h-[44px] items-center rounded-control border border-linea-fuerte bg-card px-3 text-xs font-medium text-tinta hover:bg-muted active:scale-95"
         >
           {t("backToToday")}
@@ -81,7 +93,11 @@ export default async function PaginaRendiciones({
 
       <NextIntlClientProvider messages={mensajes}>
         <div className="space-y-6">
-          <FormularioRendicionGasto programas={programas} />
+          <FormularioRendicionGasto
+            programas={programas}
+            solicitudes={solicitudes}
+            becados={becados}
+          />
 
           <div className="pt-2">
             <h2 className="mb-3 text-base font-bold text-tinta">

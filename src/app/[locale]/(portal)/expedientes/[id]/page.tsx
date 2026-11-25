@@ -13,6 +13,7 @@ import { textoAntiguedad } from "@/components/expedientes/detalle/antiguedad-tex
 import { alertasAcademicas, indiceDelEstudiante, umbralesDeUniversidad } from "@/server/academico/indice";
 import { archivosAcademicos, arbolCatalogo, catalogoDelEstudiante, recordNativoDelEstudiante } from "@/server/universidades/consultas";
 import { Tab360, TabPensum, TabRecord, TabUniversidad } from "@/components/expedientes/detalle/tab-academica";
+import { TabCostos } from "@/components/expedientes/detalle/tab-costos";
 import { TabPatrocinio, TabSeguimiento } from "@/components/expedientes/detalle/tab-seguimiento";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
 import { FormularioEdicionExpediente } from "@/components/expedientes/formulario-edicion-expediente";
@@ -30,10 +31,11 @@ import { asignacionesDelEstudiante } from "@/server/estudiantes/aula";
 import { inscripcionesDelEstudiante } from "@/server/estudiantes/academico";
 import { historial360DelEstudiante } from "@/server/estudiantes/historial-360";
 import { notasDelEstudiante } from "@/server/estudiantes/portal";
+import { costoDeEstudiante, gastosDeEstudiante, periodosParaCostos } from "@/server/costos/consultas";
 import { cuentaVinculada, cuentasEstudianteSinVincular, obtenerExpediente } from "@/server/expedientes/consultas";
 import { cambiosDePlanDelEstudiante, seguimientoDelEstudiante } from "@/server/expedientes/seguimiento";
 
-const PESTANAS = ["info", "family", "academic", "followUp", "edit"] as const;
+const PESTANAS = ["info", "family", "academic", "followUp", "costs", "edit"] as const;
 
 /** Enlaces viejos (`?seccion=record`…) siguen llegando a su sitio: cada pestaña antigua cae en la que la absorbió. */
 const PESTANA_ANTIGUA: Record<string, (typeof PESTANAS)[number]> = {
@@ -44,6 +46,7 @@ const PESTANA_ANTIGUA: Record<string, (typeof PESTANAS)[number]> = {
   curriculum: "academic",
   g360: "academic",
   sponsorship: "followUp",
+  financiero: "costs",
 };
 
 export async function generateMetadata({
@@ -132,6 +135,9 @@ export default async function PaginaExpediente({
 
   const puedeEditar = usuarioTienePermiso(usuario, "expedientes.escribir");
   const puedeEliminar = usuarioTienePermiso(usuario, "expedientes.eliminar");
+  // El costo de un becado es de la Junta y de contabilidad: sin el permiso la
+  // pestaña no existe y las cifras ni se consultan.
+  const puedeVerCostos = usuarioTienePermiso(usuario, "expedientes.costos.leer");
 
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
@@ -152,13 +158,20 @@ export default async function PaginaExpediente({
     umbralesDeUniversidad(expediente.id),
     cambiosDePlanDelEstudiante(expediente.id),
   ]);
+  const [costo, gastos, periodosCosto] = puedeVerCostos
+    ? await Promise.all([costoDeEstudiante(expediente.id), gastosDeEstudiante(expediente.id), periodosParaCostos()])
+    : [null, [], []];
+  // Rastro aparte del de la ficha: las cifras de dinero son lo más sensible que hay aquí.
+  if (puedeVerCostos) {
+    await registrar({ usuarioId: usuario.id, accion: "expediente.costos.consultado", entidad: "estudiante", entidadId: expediente.id, datos: { nombre: expediente.nombre } });
+  }
   const ultimo = record?.periodos[0];
   const alertas = alertasAcademicas(catalogo, indice, umbrales.acumulado, ultimo ? { periodo: ultimo.periodo, indice: ultimo.indice, umbral: umbrales.periodo } : null);
 
   const tiempo = textoAntiguedad(expediente.fecha_ingreso, (k, v) => t(k as never, v as never), idioma);
   const foto = urlDeAvatar(expediente.foto_url);
 
-  const visibles = PESTANAS.filter((p) => p !== "edit" || puedeEditar);
+  const visibles = PESTANAS.filter((p) => (p !== "edit" || puedeEditar) && (p !== "costs" || (puedeVerCostos && costo)));
   // `?editar=1` lo usan la lista y la vista rápida: abre directo la pestaña de edición.
   const pedida = PESTANA_ANTIGUA[seccion ?? ""] ?? seccion ?? (editar === "1" ? "edit" : "info");
   const inicial = (visibles as readonly string[]).includes(pedida) ? pedida : "info";
@@ -269,6 +282,7 @@ export default async function PaginaExpediente({
               <TabPatrocinio seg={seguimiento} />
             </>
           ),
+          costs: costo ? <TabCostos resumen={costo} gastos={gastos} periodos={periodosCosto} /> : null,
           edit: (
             <FormularioEdicionExpediente
               expediente={expediente}

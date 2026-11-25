@@ -128,7 +128,7 @@ export async function crearTarea(
         // aviso los devolvía a su portal sin ver la tarea. La torre es de todos.
         await cliente.query(
           `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-           SELECT u.id, $2, $3, 'tarea', '/administrativo/torre-control'
+           SELECT u.id, $2, $3, 'tarea', '/bandeja?tab=tareas'
              FROM usuario u
             WHERE u.id = ANY($1::uuid[]) AND u.activo`,
           [asignados, titulo, descripcion || titulo],
@@ -366,7 +366,7 @@ export async function guardarProyecto(
  * refrescan, el usuario la crea y no la ve donde la va a buscar.
  */
 function refrescar() {
-  revalidatePath("/[locale]/administrativo/tareas", "page");
+  revalidatePath("/[locale]/bandeja", "page");
   revalidatePath("/[locale]/administrativo/proyectos", "page");
   revalidatePath("/[locale]/calendario", "page");
   revalidatePath("/[locale]/calendario/gantt", "page");

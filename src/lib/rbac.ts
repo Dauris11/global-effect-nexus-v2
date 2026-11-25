@@ -78,6 +78,8 @@ export const PERMISOS = [
   // Permiso de capacidad: habilita la docencia de Global Effect 360 a quien
   // no es `docente` (p. ej. un profesor de Habitudes que da una clase de 360).
   "docencia.impartir",
+  // Costo integral de un becado (0112): solo Junta y contabilidad.
+  "expedientes.costos.leer",
   "expedientes.eliminar",
   "expedientes.escribir",
   "expedientes.leer",
@@ -118,7 +120,8 @@ export type Permiso = (typeof PERMISOS)[number];
 
 /** Portal al que se envía a cada rol tras iniciar sesión. */
 export const PORTAL_POR_ROL: Record<Rol, string> = {
-  super_admin: "/bandeja",
+  // Dirección/Junta aterriza en su tablero; `admin` sigue en la bandeja.
+  super_admin: "/ejecutivo",
   admin: "/bandeja",
   docente: "/portal/profesor",
   estudiante: "/portal/estudiante",
@@ -210,6 +213,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "catalogo.leer",
     "contabilidad.auditar",
     "contabilidad.leer",
+    "expedientes.costos.leer",
     "expedientes.eliminar",
     "expedientes.escribir",
     "expedientes.leer",
@@ -248,6 +252,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "academico.leer",
     "catalogo.escribir",
     "catalogo.leer",
+    "expedientes.costos.leer",
     "expedientes.escribir",
     "expedientes.leer",
     "habitudes.evidencias.auditar",
@@ -314,7 +319,6 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   estudiante: [
     "academico.leer",
     "ia.usar",
-    "reuniones.agendar",
     "reuniones.leer",
   ],
   chofer: [
@@ -334,6 +338,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "contabilidad.leer",
     "contabilidad.nomina",
     "contabilidad.registrar",
+    "expedientes.costos.leer",
     "finanzas.leer",
     "ia.usar",
     "inventario.auditar",

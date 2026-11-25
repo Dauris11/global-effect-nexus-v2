@@ -108,7 +108,7 @@ export default async function PaginaDetalleProyectoGantt({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Link
-              href={verOperaciones ? "/administrativo/proyectos" : "/administrativo/torre-control"}
+              href={verOperaciones ? "/administrativo/proyectos" : "/bandeja?tab=tareas"}
               className="inline-flex items-center text-xs font-semibold text-marca-600 hover:underline"
             >
               <ChevronLeft className="size-3.5 mr-1" />

@@ -1,4 +1,6 @@
 import { redirigir } from "@/i18n/navigation";
+import { requerirUsuario } from "@/lib/auth";
+import { PORTAL_POR_ROL } from "@/lib/rbac";
 
 /**
  * `/dashboard` ya no es una pantalla: la bandeja la sustituyó. La ruta se queda
@@ -12,5 +14,8 @@ export default async function PaginaDashboardAntigua({
 }) {
   const { locale } = await params;
 
-  redirigir("/bandeja", locale);
+  // Cada rol a su inicio: super_admin al tablero ejecutivo, admin a la bandeja.
+  const usuario = await requerirUsuario();
+
+  redirigir(usuario.rol === "super_admin" ? PORTAL_POR_ROL.super_admin : "/bandeja", locale);
 }

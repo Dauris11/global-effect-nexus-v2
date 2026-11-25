@@ -12,12 +12,12 @@ import {
   GraduationCap,
   HeartHandshake,
   HandCoins,
+  Gauge,
   Inbox,
   Landmark,
   Mail,
   Home,
   Library,
-  ListTodo,
   Map,
   Megaphone,
   MoreHorizontal,
@@ -29,7 +29,6 @@ import {
   ScanSearch,
   Sparkles,
   Star,
-  TowerControl,
   UserCog,
   FileCheck2,
   Receipt,
@@ -100,13 +99,14 @@ export type AreaNav = {
 const MENU_ADMINISTRACION: AreaNav[] = [
   {
     clave: "bandeja",
-    etiqueta: "inbox",
+    etiqueta: "pending",
     icono: Inbox,
     secciones: [
       {
-        // Una sola entrada de inicio: la bandeja junta lo que antes eran dos
-        // (portal administrativo y panel) que se pisaban y obligaban a elegir.
-        items: [{ etiqueta: "inbox", href: "/bandeja", icono: Inbox }],
+        // Una sola entrada de inicio: Pendientes junta lo que antes eran la
+        // bandeja, las tareas y la torre de control (tres pantallas con el
+        // mismo trabajo). Cada pestaña se abre con `?tab=`.
+        items: [{ etiqueta: "pending", href: "/bandeja", icono: Inbox }],
       },
     ],
   },
@@ -265,18 +265,6 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
-          },
-          { etiqueta: "tasks", href: "/administrativo/tareas", icono: ListTodo },
-          {
-            etiqueta: "controlTower",
-            href: "/administrativo/torre-control",
-            icono: TowerControl,
-          },
-          {
-            etiqueta: "teamTower",
-            href: "/administrativo/torre-control/equipo",
-            icono: Users,
-            permiso: "operaciones.escribir",
           },
           {
             etiqueta: "projects",
@@ -858,12 +846,23 @@ const AREA_DOCENCIA: AreaNav = {
   ],
 };
 
+// Solo `super_admin`: el tablero de Dirección/Junta va primero y la bandeja sigue debajo.
+const MENU_SUPER_ADMIN: AreaNav[] = [
+  {
+    clave: "ejecutivo",
+    etiqueta: "executiveDashboard",
+    icono: Gauge,
+    secciones: [{ items: [{ etiqueta: "executiveDashboard", href: "/ejecutivo", icono: Gauge }] }],
+  },
+  ...MENU_ADMINISTRACION,
+];
+
 const AREAS_POR_CAPACIDAD: readonly { permiso: Permiso; area: AreaNav }[] = [
   { permiso: "docencia.impartir", area: AREA_DOCENCIA },
 ];
 
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
-  super_admin: MENU_ADMINISTRACION,
+  super_admin: MENU_SUPER_ADMIN,
   admin: MENU_ADMINISTRACION,
   docente: MENU_DOCENTE,
   estudiante: MENU_ESTUDIANTE,
@@ -993,13 +992,13 @@ export type PestanaMovil =
  * orden de siempre. La entrada de cada portal va primero: es "Inicio".
  */
 const PRIORIDAD_MOVIL = [
+  "/ejecutivo",
   "/bandeja",
   "/portal/profesor",
   "/portal/contabilidad",
   "/administrativo/solicitudes",
   "/calendario",
   "/expedientes",
-  "/administrativo/tareas",
   "/academico/clases-360",
   "/contabilidad/recibos",
   "/contabilidad/bancos",
@@ -1007,6 +1006,7 @@ const PRIORIDAD_MOVIL = [
 
 /** Etiqueta corta para la pestaña: en 11 px "Portal administrativo" no cabe. */
 const ETIQUETA_CORTA: Record<string, string> = {
+  "/ejecutivo": "home",
   "/bandeja": "home",
   "/portal/profesor": "home",
   "/portal/contabilidad": "home",

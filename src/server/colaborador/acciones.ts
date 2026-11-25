@@ -92,8 +92,7 @@ export async function cambiarEstadoTareaColaboradorAction(
       datos: { nuevoEstado, titulo: actualizada.titulo },
     });
 
-    revalidatePath("/administrativo/tareas");
-    revalidatePath("/administrativo/tareas/hoy");
+    revalidatePath("/[locale]/bandeja", "page");
     return { ok: true };
   } catch (error) {
     console.error("[colaborador] Error al actualizar estado de tarea:", error);
@@ -156,8 +155,7 @@ export async function crearTareaRapidaColaboradorAction(
       datos: { titulo, prioridad },
     });
 
-    revalidatePath("/administrativo/tareas");
-    revalidatePath("/administrativo/tareas/hoy");
+    revalidatePath("/[locale]/bandeja", "page");
     return { ok: true };
   } catch (error) {
     console.error("[colaborador] Error al crear tarea rápida:", error);
@@ -189,8 +187,7 @@ export async function registrarBitacoraDiariaAction(
       );
     });
 
-    revalidatePath("/administrativo/tareas");
-    revalidatePath("/administrativo/tareas/hoy");
+    revalidatePath("/[locale]/bandeja", "page");
     return { ok: true };
   } catch (error) {
     console.error("[colaborador] Error al registrar bitácora:", error);
@@ -206,6 +203,8 @@ const FORMATOS_COMPROBANTE: Record<string, string> = {
   jpeg: "image/jpeg",
   webp: "image/webp",
 };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const MAXIMO_COMPROBANTE_BYTES = 10 * 1024 * 1024;
 
@@ -251,6 +250,18 @@ export async function enviarRendicionGastoAction(
   const concepto = String(datos.get("concepto") ?? "").trim();
   const archivo = datos.get("comprobante");
   const ocrRaw = String(datos.get("ocr_data") ?? "").trim();
+  const solicitudId = String(datos.get("solicitud_id") ?? "").trim();
+  const estudianteId = String(datos.get("estudiante_id") ?? "").trim() || null;
+
+  // Obligatoria en toda rendición nueva: cierra el ciclo petición →
+  // aprobación → comprobantes. Es regla de la acción y no un NOT NULL porque
+  // las rendiciones anteriores a la 0111 no tienen solicitud.
+  if (!solicitudId || !UUID.test(solicitudId)) {
+    return { ok: false, mensaje: "falta_solicitud" };
+  }
+  if (estudianteId && !UUID.test(estudianteId)) {
+    return { ok: false, mensaje: "estudiante_invalido" };
+  }
 
   if (!proveedorNombre) {
     return { ok: false, mensaje: "falta_proveedor" };
@@ -265,6 +276,37 @@ export async function enviarRendicionGastoAction(
   // Validación de NCF dominicano (B01, B02, B11, B14, B15, E31, etc.)
   if (ncf && !/^[BE][0-9]{8,12}$/.test(ncf)) {
     return { ok: false, mensaje: "ncf_invalido" };
+  }
+
+  // Se comprueba antes de subir el archivo para no dejar un comprobante
+  // huérfano en el bucket; el INSERT repite la regla dentro de la transacción
+  // por si la solicitud se cierra entre esta lectura y la escritura.
+  const solicitud = await consultarUna<{ id: string }>(
+    `SELECT id
+       FROM public.solicitud
+      WHERE id = $1
+        AND solicitante_id = $2
+        AND tipo IN ('gasto', 'compra')
+        AND estado = 'aprobada'`,
+    [solicitudId, usuario.id],
+  );
+  if (!solicitud) {
+    return { ok: false, mensaje: "solicitud_invalida" };
+  }
+
+  // Imputar a un estudiante es ver estudiantes: sin `expedientes.leer` el
+  // selector ni se pinta, pero esconderlo no basta, se vuelve a exigir aquí.
+  if (estudianteId) {
+    if (!usuarioTienePermiso(usuario, "expedientes.leer")) {
+      return { ok: false, mensaje: "estudiante_invalido" };
+    }
+    const becado = await consultarUna<{ id: string }>(
+      `SELECT id FROM public.estudiante WHERE id = $1 AND tipo = 'becado'`,
+      [estudianteId],
+    );
+    if (!becado) {
+      return { ok: false, mensaje: "estudiante_invalido" };
+    }
   }
 
   let ocrJson: Record<string, unknown> | null = null;
@@ -308,8 +350,15 @@ export async function enviarRendicionGastoAction(
         `INSERT INTO public.rendicion_gasto (
            codigo, empleado_id, programa_id, proveedor_nombre, proveedor_rnc,
            ncf, fecha_comprobante, monto_total, monto_itbis, concepto,
-           comprobante_url, ocr_data, estado
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8, $9, $10, $11, $12, 'enviada')
+           comprobante_url, ocr_data, estado, solicitud_id, estudiante_id
+         )
+         SELECT $1, $2, $3, $4, $5, $6, $7::date, $8, $9, $10, $11, $12, 'enviada', $13, $14
+          WHERE EXISTS (
+                  SELECT 1 FROM public.solicitud
+                   WHERE id = $13
+                     AND solicitante_id = $2
+                     AND tipo IN ('gasto', 'compra')
+                     AND estado = 'aprobada')
          RETURNING id`,
         [
           codigo,
@@ -324,8 +373,13 @@ export async function enviarRendicionGastoAction(
           concepto,
           ruta,
           ocrJson ? JSON.stringify(ocrJson) : null,
+          solicitudId,
+          estudianteId,
         ],
       );
+      if (rows.length === 0) {
+        throw new Error("solicitud_invalida");
+      }
 
       // Sin este aviso la rendición solo existía para quien abría la
       // pantalla por su cuenta: nadie de contabilidad se enteraba.
@@ -343,13 +397,16 @@ export async function enviarRendicionGastoAction(
       accion: "rendicion.creada",
       entidad: "rendicion_gasto",
       entidadId: rendicionId,
-      datos: { proveedorNombre, montoTotal, ncf, codigo },
+      datos: { proveedorNombre, montoTotal, ncf, codigo, solicitudId, estudianteId },
     });
 
     refrescarRendiciones();
     return { ok: true };
   } catch (error) {
     await borrarDocumento(ruta);
+    if (error instanceof Error && error.message === "solicitud_invalida") {
+      return { ok: false, mensaje: "solicitud_invalida" };
+    }
     console.error("[rendicion] Error al enviar rendición de gasto:", error);
     return { ok: false, mensaje: "error" };
   }
@@ -537,7 +594,7 @@ export async function guardarAsignacionProyectosRolesAction(
 
     revalidatePath("/administrativo/proyectos");
     revalidatePath("/administrativo/proyectos/roles");
-    revalidatePath("/administrativo/tareas/hoy");
+    revalidatePath("/[locale]/bandeja", "page");
     return { ok: true };
   } catch (error) {
     console.error("[proyectos] Error al asignar roles al proyecto:", error);

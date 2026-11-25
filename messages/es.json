@@ -251,7 +251,10 @@
     "uploadGrades": "Subir calificaciones",
     "leadershipAcademy": "Academia de liderazgo",
     "submissionsToGrade": "Entregas por calificar",
-    "habitudesSupervision": "Supervisión de Habitudes"
+    "habitudesSupervision": "Supervisión de Habitudes",
+    "pending": "Pendientes",
+    "executiveDashboard": "Tablero ejecutivo",
+    "studentCost": "Costo por estudiante"
   },
   "landing": {
     "enter": "Acceder",
@@ -1311,7 +1314,8 @@
         "family": "Familia, vivienda y salud",
         "academic": "Académica",
         "followUp": "Seguimiento y patrocinio",
-        "edit": "Editar"
+        "edit": "Editar",
+        "costs": "Costos"
       },
       "sections": {
         "personal": "Datos personales",
@@ -1410,6 +1414,41 @@
       "title": "Ficha completa al {percent} %",
       "fill": "Completar ahora",
       "missing": "Falta información en: {sections}."
+    },
+    "costs": {
+      "hint": "Cifras visibles solo para la Junta y contabilidad. El aporte del patrocinador es una estimación: monto mensual de su asignación por los meses transcurridos.",
+      "kpi": {
+        "total": "Inversión total",
+        "average": "Promedio por cuatrimestre ({n} cursados)",
+        "sponsor": "Aportes del patrocinador",
+        "balance": "Balance de la beca"
+      },
+      "chart": {
+        "title": "Distribución del gasto",
+        "label": "Gasto por pilar",
+        "empty": "Aún no hay gastos imputados a este becado",
+        "center": "Total"
+      },
+      "pillar": {
+        "universidad": "Universidad",
+        "materiales": "Materiales y equipos",
+        "transporte": "Transporte",
+        "tramites": "Trámites y rendiciones"
+      },
+      "table": {
+        "title": "Gastos imputados",
+        "filter": "Filtrar por período",
+        "all": "Todos",
+        "date": "Fecha",
+        "pillar": "Categoría",
+        "concept": "Concepto",
+        "origin": "Proveedor / origen",
+        "reference": "NCF / referencia",
+        "amount": "Monto (DOP)",
+        "total": "Total",
+        "empty": "Sin gastos en este período",
+        "emptyHint": "Los gastos aparecen al etiquetar al estudiante en una factura, una orden de compra o una rendición."
+      }
     }
   },
   "academic": {
@@ -2578,7 +2617,7 @@
     }
   },
   "bandeja": {
-    "title": "Bandeja",
+    "title": "Pendientes",
     "greeting": "Hola, {name}",
     "seeAll": "Ver todo",
     "attention": {
@@ -2633,6 +2672,17 @@
       "noFinance": "Sin movimientos registrados",
       "projects": "Avance de mis proyectos",
       "projectsEmpty": "Sin proyectos con tareas"
+    },
+    "tabs": {
+      "label": "Secciones de Pendientes",
+      "decide": "Para decidir",
+      "tasks": "Mis tareas",
+      "team": "Equipo"
+    },
+    "views": {
+      "today": "Mi día",
+      "board": "Tablero del equipo",
+      "expense": "Rendir un gasto"
     }
   },
   "sponsorMail": {
@@ -4034,6 +4084,15 @@
         "comprobante": "Comprobante",
         "montos": "Montos",
         "asignacion": "Asignación"
+      },
+      "estudiante": "Imputar a un estudiante",
+      "estudianteAyuda": "Opcional. Suma este gasto al costo del becado.",
+      "pilar": "Tipo de costo",
+      "pilares": {
+        "universidad": "Universidad (matrícula, créditos)",
+        "materiales": "Materiales y equipos",
+        "transporte": "Transporte",
+        "tramites": "Trámites y gastos directos"
       }
     },
     "cajas": {
@@ -5012,6 +5071,15 @@
         "datos": "Datos generales",
         "lineas": "Artículos",
         "justificacion": "Justificación"
+      },
+      "estudiante": "Estudiante (opcional)",
+      "sinEstudiante": "Sin estudiante",
+      "pilar": "Tipo de costo",
+      "pilares": {
+        "universidad": "Universidad (matrícula, créditos)",
+        "materiales": "Materiales y equipos",
+        "transporte": "Transporte",
+        "tramites": "Trámites y gastos directos"
       }
     },
     "retenciones": {
@@ -6396,14 +6464,28 @@
       "formato_invalido": "El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF.",
       "archivo_grande": "El comprobante no puede pasar de 10 MB.",
       "error_subida": "No se pudo subir el comprobante.",
-      "error": "Error al registrar la rendición de gasto."
+      "error": "Error al registrar la rendición de gasto.",
+      "falta_solicitud": "Elige la solicitud aprobada que autorizó este gasto.",
+      "solicitud_invalida": "La solicitud no es tuya, no está aprobada o ya se cerró.",
+      "estudiante_invalido": "El estudiante elegido no es válido o no tienes permiso para imputarle gastos."
     },
     "ocrManualNotice": "Archivo adjuntado. Completa o verifica los datos manualmente.",
     "pasos": {
       "comprobante": "Comprobante y proveedor",
       "montos": "Montos",
-      "destino": "Programa y concepto"
-    }
+      "destino": "Programa y concepto",
+      "solicitud": "Solicitud aprobada"
+    },
+    "noApprovedRequest": "Para rendir un gasto necesitas una solicitud de gasto o de compra aprobada que lo autorice. Ahora mismo no tienes ninguna abierta.",
+    "createRequestLink": "Crear una solicitud",
+    "authorizingRequest": "Solicitud que autorizó el gasto",
+    "selectRequestHint": "Elige la solicitud aprobada",
+    "requestRef": "Solicitud #{folio} · {titulo}",
+    "chargeToStudent": "Estudiante al que se imputa (opcional)",
+    "studentSearchPlaceholder": "Buscar estudiante por nombre",
+    "studentNoResults": "Ningún becado coincide con la búsqueda.",
+    "noStudent": "Sin estudiante: deja este campo vacío si el gasto no es de un becado.",
+    "clearStudent": "Quitar estudiante"
   },
   "moodle": {
     "answerText": "Tu respuesta escrita",
@@ -7140,6 +7222,8 @@
       "academico_escribir": "Editar el catálogo académico",
       "academico_leer": "Ver información académica",
       "calificaciones_registrar": "Registrar calificaciones",
+      "catalogo_escribir": "Editar el catálogo de universidades y planes de estudios",
+      "catalogo_leer": "Ver el catálogo de universidades y planes de estudios",
       "contabilidad_aprobar": "Aprobar movimientos contables",
       "contabilidad_asiento_manual": "Crear asientos manuales",
       "contabilidad_auditar": "Auditar la contabilidad",
@@ -7150,6 +7234,7 @@
       "contabilidad_nomina": "Gestionar la nómina",
       "contabilidad_registrar": "Registrar movimientos contables",
       "docencia_impartir": "Dar clases de Global Effect 360",
+      "expedientes_costos_leer": "Ver el costo de los becados",
       "expedientes_eliminar": "Eliminar expedientes",
       "expedientes_escribir": "Editar expedientes",
       "expedientes_leer": "Ver expedientes",
@@ -7161,8 +7246,8 @@
       "habitudes_recursos_leer": "Ver recursos de Habitudes",
       "habitudes_recursos_subir": "Subir recursos de Habitudes",
       "habitudes_supervisar": "Supervisar Habitudes",
-      "ia_conocimiento": "Editar el conocimiento del asistente de estudiantes",
       "ia_administrar": "Administrar la IA",
+      "ia_conocimiento": "Editar el conocimiento del asistente de estudiantes",
       "ia_usar": "Usar el asistente de IA",
       "inventario_auditar": "Auditar el inventario",
       "inventario_eliminar": "Eliminar del inventario",
@@ -7183,9 +7268,7 @@
       "solicitudes_gestionar": "Gestionar solicitudes",
       "transporte_gestionar": "Gestionar el transporte",
       "transporte_operar": "Operar rutas de transporte",
-      "usuarios_administrar": "Administrar usuarios",
-      "catalogo_leer": "Ver el catálogo de universidades y planes de estudios",
-      "catalogo_escribir": "Editar el catálogo de universidades y planes de estudios"
+      "usuarios_administrar": "Administrar usuarios"
     }
   },
   "lineaTiempo": {
@@ -7587,5 +7670,78 @@
     "noContact": "Sin teléfono ni correo",
     "noCatalog": "Sin universidad asignada",
     "openRecord": "Ver su récord"
+  },
+  "executive": {
+    "title": "Tablero ejecutivo",
+    "sections": {
+      "scholars": "Becados",
+      "money": "Dinero"
+    },
+    "kpi": {
+      "activeScholars": "Becados activos",
+      "avgIndex": "Índice académico promedio",
+      "atRisk": "Becados en riesgo",
+      "noSponsor": "Becados sin patrocinador",
+      "pendingDirection": "Solicitudes por decidir",
+      "activeSponsors": "Patrocinadores activos",
+      "bankDop": "Saldo en bancos (RD$)",
+      "bankUsd": "Saldo en bancos (US$)",
+      "monthlyPledge": "Aporte mensual de patrocinadores"
+    },
+    "charts": {
+      "byUniversity": "Becados por universidad",
+      "byCareer": "Becados por carrera",
+      "career": "Carrera",
+      "scholars": "Becados",
+      "empty": "Sin datos todavía",
+      "unassigned": "Sin asignar",
+      "others": "Otras carreras",
+      "compliance": "Cumplimiento de {mes}",
+      "complianceNone": "Cumplimiento del último mes",
+      "service": "Hicieron servicio",
+      "meeting": "Asistieron a reunión",
+      "registered": "Con registro",
+      "item": "Concepto",
+      "viewMonthly": "Ver servicios mensuales"
+    },
+    "donors": {
+      "title": "Cumplimiento con donantes",
+      "committed": "Comprometido",
+      "collected": "Cobrado",
+      "dueSoon": "Por vencer en 30 días ({n})",
+      "overdue": "Cuotas vencidas",
+      "emptyTitle": "Sin compromisos registrados",
+      "emptyText": "Aparecerán aquí cuando contabilidad registre promesas de donación.",
+      "view": "Ver donaciones"
+    }
+  },
+  "costs": {
+    "title": "Costo por estudiante",
+    "exportCareers": "Exportar por carrera",
+    "exportStudents": "Exportar por estudiante",
+    "kpi": {
+      "total": "Total invertido",
+      "withCost": "Becados con costo registrado",
+      "graduates": "Graduados"
+    },
+    "empty": "No hay becados registrados",
+    "emptyHint": "Cuando haya expedientes con gastos imputados, aquí se compara su costo por carrera.",
+    "chart": {
+      "title": "Promedio por becado y carrera",
+      "label": "Costo promedio por carrera",
+      "empty": "Aún no hay gastos imputados a ningún becado"
+    },
+    "table": {
+      "title": "Detalle por carrera",
+      "university": "Universidad",
+      "career": "Carrera",
+      "students": "Becados con costo",
+      "studentsOf": "{con} de {total}",
+      "total": "Total invertido",
+      "averageStudent": "Promedio por becado",
+      "averageTerm": "Promedio por cuatrimestre",
+      "averageGraduate": "Promedio por graduado"
+    },
+    "hint": "Los promedios cuentan solo a los becados con costo registrado. El promedio por graduado queda vacío hasta que haya graduados con gastos imputados."
   }
 }

@@ -5,6 +5,18 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Costo por estudiante becado, fases 1, 4 y 5 (25 nov 2026, migración `0112`):** plan en [`plan-costo-por-estudiante.md`](plan-costo-por-estudiante.md). `estudiante_id` + `pilar_costo` opcionales en factura de proveedor y línea de orden de compra (selector en `FormularioFactura` y en el diálogo de OC), tablas `estudiante_material_costo` y `estudiante_transporte_costo`, vistas `v_estudiante_costo_detalle` / `v_estudiante_costo_total` (sin doble conteo factura/OC/rendición), permiso `expedientes.costos.leer` (super_admin, contabilidad, admin), pestaña «Costos» en `/expedientes/[id]` y reporte `/contabilidad/reportes/costo-estudiantes` con Excel (`/api/costos/exportar`). El estudiante, docente, chofer y Habitudes no ven estas cifras.
+  - [ ] **Aplicar la `0112` con `npm run db:migrate` DESPUÉS de la `0111`** (necesita `rendicion_gasto.estudiante_id`); la `0112` solo se ensayó con ROLLBACK.
+  - [ ] **Fase 3 sin hacer:** no hay pantalla para registrar materiales entregados (`estudiante_material_costo`) ni el transporte por cuatrimestre (`estudiante_transporte_costo`): hoy se llenan por SQL. El transporte NO se prorratea entre todos los becados: lo usan solo Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo; el prorrateo (combustible + mantenimiento + chofer entre quienes tengan `transporte_inscripcion_recurrente` activa) está por definir.
+  - [ ] **Rendiciones:** el selector de estudiante en el formulario de Rendición de gastos (Fase 2) lo añade el frente de la `0111`; mientras tanto la vista ya suma las rendiciones `aprobada`/`contabilizada` con `estudiante_id`. La rendición no guarda tasa: se suma tal cual (se asume DOP).
+  - [ ] **Aportes del patrocinador** = `asignacion_beca.monto` (mensual) × meses completos transcurridos, solo asignaciones activas/finalizadas: es estimación, no hay tabla de aportes recibidos.
+  - [ ] **Contabilidad no abre `/expedientes/[id]`** (no tiene `expedientes.leer`): ve el costo en el reporte, no en la pestaña.
+  - [ ] **Observado, no tocado:** tras el catálogo contable `0107`, aprobar una factura puede fallar por falta de cuenta de proveedores. `crearOrdenCompra` solo pedía sesión: ahora exige `contabilidad.registrar`.
+
+- [x] **Tablero ejecutivo del `super_admin` (25 nov 2026):** `/ejecutivo` (`src/server/ejecutivo/consultas.ts`, `src/components/ejecutivo/panel-donantes.tsx`), aterrizaje y primera entrada del menú solo de `super_admin`; `admin` sigue en `/bandeja`. Becados activos y reparto por universidad y carrera, índice promedio, becados en riesgo, sin patrocinador, solicitudes `pendiente_direccion`, saldo en bancos (RD$ y US$), aporte mensual de patrocinadores, cuotas de promesas (comprometido, cobrado, por vencer, vencidas) y cumplimiento de servicio y reunión del último mes cerrado.
+  - [ ] **PENDIENTE DEL USUARIO — fórmula del índice académico:** el usuario va a explicar cómo se calcula el índice en cada universidad y en el liceo. Hasta entonces la cifra «Índice académico promedio» del tablero promedia `indice_estudiante()` (reglas de cada universidad, escalas distintas) y es solo orientativa; hoy solo 1 de 6 becados activos tiene índice nativo. No se inventó ni cambió ninguna fórmula. Al definirla, revisar `consultas.ts` del tablero (comentario `PENDIENTE`).
+  - Saldos en bancos y cuotas de donantes salen en 0 / vacío por el reinicio contable y porque no hay promesas registradas.
+
 - [x] **Portales (Chofer, Docente, Estudiante) y Portada (24 nov 2026):**
   - **Portal del Chofer (`src/components/transporte/pasajeros-chofer.tsx`, `messages/{es,en}.json`):** lista de pasajeros con filtros, marcación de abordaje/ausencia y acciones de ruta.
   - **Panel Docente (`src/app/[locale]/(portal)/portal/profesor/page.tsx`, `src/lib/nav.ts`):** botones directos «Asignar tarea (360)» y «Materias asignadas» (`/portal/profesor/materias`) en cabecera y `MENU_DOCENTE`; `src/app/[locale]/(portal)/layout.tsx` oculta `habitudes` del menú si el docente no tiene asignación activa en `habitudes_liceo_profesor`.
@@ -1886,3 +1898,20 @@ Fuente: `auditoria-coherencia-roles-modulos.md`. Contrastada con el código.
 - [x] **Director de Habitudes** con su propio menú (`MENU_DIR_HABITUDES`, «Supervisión de Habitudes»). Es solo el nombre: aún no hay pantallas propias de métricas por liceo.
 - [x] Ya estaban: compra fuera del estudiante, icono, Materias del docente, bandeja de entregas, semáforo de beca, comida en el menú. «Marcar todos presentes» ya existía (`asistencia-clase-360.tsx`, también en materias): el hallazgo estaba desactualizado.
 - [ ] Sin tocar, requiere decisión: `reuniones.agendar` del estudiante; invitados en el bus sin aprobación; facilitador sin `expedientes.leer` (no ve el estado de sus candidatos); `/academias/*` exige `academico.leer`, que Habitudes no tiene; embudo de talento con visto bueno del director; descuento del comedor por falta en la guagua; rendición ligada a solicitud aprobada; imputación de gasto por estudiante; tablero ejecutivo del `super_admin`; admin con área Finanzas en solo lectura (el `super_admin` y `admin` ven los mismos módulos contables).
+
+## Pendientes: bandeja, tareas y torre de control fusionadas (25 nov 2026)
+
+- Un solo módulo «Pendientes» en `/bandeja` con `?tab=decidir|tareas|equipo` (`&vista=tablero` en tareas, `&usuario=<id>` en equipo). Código en `src/components/bandeja/pestana-*.tsx`.
+- `/administrativo/tareas`, `/tareas/hoy`, `/torre-control` y `/torre-control/equipo` redirigen a la pestaña correspondiente.
+- Menú de administración: una entrada «Pendientes»; fuera Tareas, Mi torre de control y Torre del equipo.
+- Cerrado: la torre propia (estadísticas y proyectos de uno mismo) ya no existe aparte; «Mi día» la cubre.
+- Por limpiar: `tareas-bandeja*.tsx` ya no se usan en la bandeja (las tareas viven en «Mis tareas»).
+
+## Decisiones de Dirección sobre la auditoría de coherencia (25 nov 2026)
+
+- [x] Estudiante sin `reuniones.agendar` (0110, aplicada). Lo demás de esa lista quedó **como está por decisión**: invitados en el bus, candidatos del facilitador sin estado, páginas de Academia de Liderazgo.
+- [x] Comedor y transporte NO se acoplan: solo Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo usan la guagua a UCATECI.
+- [x] Rendición ligada a solicitud aprobada y a estudiante opcional (0111, aplicada). Las anteriores quedan con solicitud NULL.
+- [x] Costo por estudiante, fases 1, 4 y 5 (0112, aplicada): pestaña «Costos» y reporte con Excel. Falta la fase 3 (pantalla para materiales y transporte; prorrateo del transporte solo entre los inscritos de esas cinco zonas).
+- [x] Tablero ejecutivo `/ejecutivo` (super_admin) y fusión de Bandeja, Tareas y Torre de control en «Pendientes» (`/bandeja`).
+- [ ] Sin definir: embudo de talento de Habitudes con visto bueno del director.

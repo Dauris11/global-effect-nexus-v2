@@ -75,7 +75,7 @@ export function TorreEquipo({ personas }: { personas: CargaPersona[] }) {
   }, [personas, filtro, texto, orden]);
 
   const rol = (r: string) => (tr.has(r as never) ? tr(r as never) : r);
-  const enlace = (id: string) => `/administrativo/torre-control?usuario=${id}`;
+  const enlace = (id: string) => `/bandeja?tab=equipo&usuario=${id}`;
 
   const topCarga = useMemo(
     () =>
@@ -304,7 +304,7 @@ export function SelectorPersona({
     <select
       aria-label={t("viewAs")}
       value={actual}
-      onChange={(e) => router.push(`/administrativo/torre-control?usuario=${e.target.value}`)}
+      onChange={(e) => router.push(`/bandeja?tab=equipo&usuario=${e.target.value}`)}
       className={`${CLASE_SELECT} sm:w-60`}
     >
       {personas.map((p) => (

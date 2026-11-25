@@ -1,6 +1,6 @@
 import { CargaPagina } from "@/components/ui/carga-pagina";
 
 /** Carga con la forma de la pantalla: lista. */
-export default function CargandoPortalAdministrativoTareasHoy() {
+export default function CargandoCostoEstudiantes() {
   return <CargaPagina variante="lista" />;
 }

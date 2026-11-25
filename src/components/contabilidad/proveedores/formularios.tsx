@@ -15,6 +15,7 @@ import { MONEDAS, montoValido, restarMontos, sumarMontos } from "@/lib/contabili
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { identificacionValida, limpiarIdentificacion } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
+import { PILARES_COSTO } from "@/lib/costos";
 import {
   agregarCuentaProveedor,
   guardarFactura,
@@ -205,6 +206,7 @@ export function FormularioFactura({
   fondos,
   proyectos,
   solicitantes = [],
+  estudiantes = [],
   hoy,
 }: {
   proveedores: (Opcion & { tipo: "fisica" | "juridica"; dias: number; categoria_id: string | null; identificacion?: string })[];
@@ -214,6 +216,8 @@ export function FormularioFactura({
   fondos: Opcion[];
   proyectos: Opcion[];
   solicitantes?: UsuarioSolicitante[];
+  /** Becados a quienes se puede imputar el gasto (costo por estudiante). */
+  estudiantes?: Opcion[];
   hoy: string;
 }) {
   const t = useTranslations("contab.facturaForm");
@@ -236,6 +240,7 @@ export function FormularioFactura({
   const [concepto, setConcepto] = useState(factura?.concepto ?? "");
   const [solicitante, setSolicitante] = useState(factura?.solicitante_id ?? "");
   const [programa, setPrograma] = useState(factura?.programa_codigo ?? "");
+  const [estudiante, setEstudiante] = useState(factura?.estudiante_id ?? "");
 
   // Estado del motor OCR
   const [escaneandoOcr, setEscaneandoOcr] = useState(false);
@@ -462,6 +467,24 @@ export function FormularioFactura({
                 </select>
               </Campo>
             </div>
+
+            {estudiantes.length > 0 && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <Campo id="estudiante" etiqueta={t("estudiante")} ayuda={t("estudianteAyuda")}>
+                  <select id="estudiante" name="estudiante" className={SELECT} value={estudiante} onChange={(e) => setEstudiante(e.target.value)}>
+                    <option value="">{t("ninguno")}</option>
+                    {estudiantes.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                  </select>
+                </Campo>
+                {estudiante && (
+                  <Campo id="pilar_costo" etiqueta={t("pilar")}>
+                    <select id="pilar_costo" name="pilar_costo" className={SELECT} defaultValue={factura?.pilar_costo ?? "universidad"}>
+                      {PILARES_COSTO.map((p) => <option key={p} value={p}>{t(`pilares.${p}`)}</option>)}
+                    </select>
+                  </Campo>
+                )}
+              </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-3">
               <Campo id="categoria" etiqueta={t("categoria")}>

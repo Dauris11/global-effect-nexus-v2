@@ -40,7 +40,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: "Lo que me toca hoy",
         short_name: "Mi Día",
         description: "Torre de control diaria y tareas prioritarias",
-        url: "/es/administrativo/tareas",
+        url: "/es/bandeja?tab=tareas",
       },
       {
         name: "Rendir Gastos",

@@ -28,7 +28,7 @@ export function TareasBandeja({
     <TarjetaBandeja
       icono={ListTodo}
       titulo={t("tasks.title")}
-      verTodo={{ href: "/administrativo/tareas", etiqueta: t("seeAll") }}
+      verTodo={{ href: "/bandeja?tab=tareas&vista=tablero", etiqueta: t("seeAll") }}
     >
       <TareasBandejaInteractiva
         tareasIniciales={tareas}

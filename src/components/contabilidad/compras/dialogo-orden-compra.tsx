@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PILARES_COSTO, type PilarCosto } from "@/lib/costos";
 import { crearOrdenCompra } from "@/server/contabilidad/compras/acciones";
 
 type LineaForm = {
@@ -26,16 +28,30 @@ type LineaForm = {
   cantidad: string;
   precioUnitario: string;
   itbisTasa: string;
+  estudianteId: string;
+  pilarCosto: PilarCosto;
+};
+
+const LINEA_VACIA: LineaForm = {
+  descripcion: "",
+  cantidad: "1",
+  precioUnitario: "",
+  itbisTasa: "0.18",
+  estudianteId: "",
+  pilarCosto: "universidad",
 };
 
 export function DialogoOrdenCompra({
   proveedores,
   fondos,
   categorias,
+  estudiantes = [],
 }: {
   proveedores: { id: string; nombre: string; identificacion: string }[];
   fondos: { id: string; nombre: string }[];
   categorias: { id: string; nombre: string }[];
+  /** Becados a quienes se puede imputar una línea (costo por estudiante). */
+  estudiantes?: { id: string; nombre: string }[];
 }) {
   const t = useTranslations("contab.compras");
   const [abierto, setAbierto] = useState(false);
@@ -50,12 +66,10 @@ export function DialogoOrdenCompra({
   const [categoriaId, setCategoriaId] = useState(categorias[0]?.id ?? "");
   const [justificacion, setJustificacion] = useState("");
 
-  const [lineas, setLineas] = useState<LineaForm[]>([
-    { descripcion: "", cantidad: "1", precioUnitario: "", itbisTasa: "0.18" },
-  ]);
+  const [lineas, setLineas] = useState<LineaForm[]>([LINEA_VACIA]);
 
   function agregarLinea() {
-    setLineas([...lineas, { descripcion: "", cantidad: "1", precioUnitario: "", itbisTasa: "0.18" }]);
+    setLineas([...lineas, LINEA_VACIA]);
   }
 
   function eliminarLinea(idx: number) {
@@ -79,6 +93,8 @@ export function DialogoOrdenCompra({
       cantidad: Number(l.cantidad || 1),
       precioUnitario: Number(l.precioUnitario || 0),
       itbisTasa: Number(l.itbisTasa || 0.18),
+      estudianteId: l.estudianteId || undefined,
+      pilarCosto: l.estudianteId ? l.pilarCosto : undefined,
     }));
 
     const res = await crearOrdenCompra({
@@ -101,7 +117,7 @@ export function DialogoOrdenCompra({
 
     setAbierto(false);
     setJustificacion("");
-    setLineas([{ descripcion: "", cantidad: "1", precioUnitario: "", itbisTasa: "0.18" }]);
+    setLineas([LINEA_VACIA]);
   }
 
   return (
@@ -203,7 +219,8 @@ export function DialogoOrdenCompra({
 
                 <div className="space-y-2">
                   {lineas.map((l, idx) => (
-                    <div key={idx} className="flex items-center gap-2 rounded-lg border border-linea p-2 text-xs dark:border-slate-800">
+                    <div key={idx} className="space-y-2 rounded-lg border border-linea p-2 text-xs dark:border-slate-800">
+                      <div className="flex items-center gap-2">
                       <Input
                         placeholder={t("descripcionArticulo")}
                         value={l.descripcion}
@@ -254,6 +271,34 @@ export function DialogoOrdenCompra({
                         >
                           <Trash2 className="size-3.5" />
                         </Button>
+                      )}
+                      </div>
+                      {estudiantes.length > 0 && (
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <select
+                            aria-label={t("estudiante")}
+                            className={SELECT}
+                            value={l.estudianteId}
+                            onChange={(e) => actualizarLinea(idx, "estudianteId", e.target.value)}
+                          >
+                            <option value="">{t("sinEstudiante")}</option>
+                            {estudiantes.map((e) => (
+                              <option key={e.id} value={e.id}>{e.nombre}</option>
+                            ))}
+                          </select>
+                          {l.estudianteId && (
+                            <select
+                              aria-label={t("pilar")}
+                              className={SELECT}
+                              value={l.pilarCosto}
+                              onChange={(e) => actualizarLinea(idx, "pilarCosto", e.target.value)}
+                            >
+                              {PILARES_COSTO.map((p) => (
+                                <option key={p} value={p}>{t(`pilares.${p}`)}</option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}

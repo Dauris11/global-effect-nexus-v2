@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requerirUsuario } from "@/lib/auth";
 import { enTransaccionComo } from "@/lib/db";
+import { esUuid } from "@/lib/contabilidad/formato";
+import { esPilarCosto, type PilarCosto } from "@/lib/costos";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
@@ -27,9 +29,20 @@ export async function crearOrdenCompra(datos: {
     cantidad: number;
     precioUnitario: number;
     itbisTasa?: number;
+    /** Costo por estudiante (0112): el becado al que sirve la línea y a qué pilar pertenece. */
+    estudianteId?: string;
+    pilarCosto?: PilarCosto;
   }[];
 }): Promise<EstadoAccionOC> {
   const usuario = await requerirUsuario();
+  // La pantalla pide `contabilidad.leer`, pero esconder el botón no es control
+  // de acceso: crear la orden exige poder registrar.
+  if (!usuarioTienePermiso(usuario, "contabilidad.registrar")) {
+    return { ok: false, error: "No tiene permiso para registrar órdenes de compra" };
+  }
+  if (datos.lineas?.some((l) => (l.estudianteId && !esUuid(l.estudianteId)) || (l.pilarCosto && !esPilarCosto(l.pilarCosto)))) {
+    return { ok: false, error: "Estudiante o pilar de costo inválido" };
+  }
 
   if (!datos.lineas || datos.lineas.length === 0) {
     return { ok: false, error: "La orden de compra debe tener al menos una línea" };
@@ -68,6 +81,8 @@ export async function crearOrdenCompra(datos: {
           montoItbis: it,
           subtotal: st,
           total: tot,
+          estudianteId: l.estudianteId || null,
+          pilarCosto: l.estudianteId ? (l.pilarCosto ?? "universidad") : null,
         };
       });
 
@@ -99,8 +114,8 @@ export async function crearOrdenCompra(datos: {
         await cliente.query(
           `INSERT INTO contabilidad.orden_compra_linea (
              orden_compra_id, numero_linea, descripcion, cantidad,
-             precio_unitario, itbis_tasa, monto_itbis, subtotal, total
-           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+             precio_unitario, itbis_tasa, monto_itbis, subtotal, total, estudiante_id, pilar_costo
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             id,
             lin.idx,
@@ -111,6 +126,8 @@ export async function crearOrdenCompra(datos: {
             lin.montoItbis.toFixed(2),
             lin.subtotal.toFixed(2),
             lin.total.toFixed(2),
+            lin.estudianteId,
+            lin.pilarCosto,
           ]
         );
       }

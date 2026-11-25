@@ -158,7 +158,7 @@ export async function comentarTarea(datos: {
       );
       await cliente.query(
         `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-         SELECT ta.usuario_id, $2, $3, 'tarea', '/administrativo/torre-control'
+         SELECT ta.usuario_id, $2, $3, 'tarea', '/bandeja?tab=tareas'
            FROM tarea_asignado ta
           WHERE ta.tarea_id = $1 AND ta.usuario_id <> $4`,
         [datos.id, tarea.titulo, texto.slice(0, 280), usuario.id],
@@ -234,7 +234,7 @@ export async function editarTareaTorre(datos: FormData): Promise<ResultadoTorre>
       if (nuevos.length > 0) {
         await cliente.query(
           `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-           SELECT unnest($1::uuid[]), $2, $2, 'tarea', '/administrativo/torre-control'`,
+           SELECT unnest($1::uuid[]), $2, $2, 'tarea', '/bandeja?tab=tareas'`,
           [nuevos.map((n) => n.usuario_id), titulo],
         );
       }
@@ -345,10 +345,7 @@ export async function guardarEquipoProyecto(datos: FormData): Promise<ResultadoT
 }
 
 function refrescar() {
-  revalidatePath("/[locale]/administrativo/torre-control", "page");
-  revalidatePath("/[locale]/administrativo/torre-control/equipo", "page");
-  revalidatePath("/[locale]/administrativo/tareas", "page");
-  revalidatePath("/[locale]/administrativo/tareas/hoy", "page");
+  revalidatePath("/[locale]/bandeja", "page");
   revalidatePath("/[locale]/administrativo/proyectos", "page");
   revalidatePath("/[locale]/calendario", "page");
 }

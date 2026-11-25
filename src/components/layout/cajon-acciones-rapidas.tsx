@@ -94,7 +94,7 @@ export function CajonAccionesRapidas({
     },
     {
       clave: "today",
-      href: "/administrativo/torre-control",
+      href: "/bandeja?tab=tareas",
       icono: CheckSquare,
       roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "chofer"],
     },

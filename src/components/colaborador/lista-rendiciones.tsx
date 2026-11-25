@@ -13,7 +13,9 @@ import {
   FileText,
   FileX,
   FolderOpen,
+  GraduationCap,
   Loader2,
+  ScrollText,
   Receipt,
   User,
 } from "lucide-react";
@@ -325,6 +327,21 @@ export function ListaRendiciones({
                     <User className="size-3" />
                     {r.empleado_nombre}
                   </span>
+                  {r.solicitud_folio !== null && (
+                    <span className="flex items-center gap-1">
+                      <ScrollText className="size-3" />
+                      {t("requestRef", {
+                        folio: r.solicitud_folio,
+                        titulo: r.solicitud_titulo ?? "",
+                      })}
+                    </span>
+                  )}
+                  {r.estudiante_nombre && (
+                    <span className="flex items-center gap-1">
+                      <GraduationCap className="size-3" />
+                      {r.estudiante_nombre}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     <Calendar className="size-3" />
                     {r.fecha_comprobante}
@@ -420,6 +437,20 @@ export function ListaRendiciones({
                 <p className="text-tinta/70">
                   {t("conceptDescription")}: {rendicionSeleccionada.concepto}
                 </p>
+                {rendicionSeleccionada.solicitud_folio !== null && (
+                  <p className="text-tinta/70">
+                    {t("authorizingRequest")}:{" "}
+                    {t("requestRef", {
+                      folio: rendicionSeleccionada.solicitud_folio,
+                      titulo: rendicionSeleccionada.solicitud_titulo ?? "",
+                    })}
+                  </p>
+                )}
+                {rendicionSeleccionada.estudiante_nombre && (
+                  <p className="text-tinta/70">
+                    {t("chargeToStudent")}: {rendicionSeleccionada.estudiante_nombre}
+                  </p>
+                )}
               </div>
 
               <div>

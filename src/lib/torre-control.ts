@@ -82,6 +82,13 @@ export interface RendicionGastoItem {
   empleado_email: string;
   programa_id: string | null;
   programa_nombre: string | null;
+  /** Solicitud aprobada que autorizó el gasto (0111). NULL en las rendiciones anteriores. */
+  solicitud_id: string | null;
+  solicitud_folio: number | null;
+  solicitud_titulo: string | null;
+  /** Solo viaja para quien puede ver estudiantes; para el resto llega en NULL. */
+  estudiante_id: string | null;
+  estudiante_nombre: string | null;
   proveedor_nombre: string;
   proveedor_rnc: string | null;
   ncf: string | null;

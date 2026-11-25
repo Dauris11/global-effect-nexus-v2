@@ -109,7 +109,6 @@ export async function moverBarra(
   revalidatePath("/[locale]/calendario", "page");
   revalidatePath("/[locale]/calendario/gantt", "page");
   revalidatePath("/[locale]/administrativo/proyectos", "page");
-  revalidatePath("/[locale]/administrativo/tareas", "page");
   revalidatePath("/[locale]/bandeja", "page");
   return { ok: true };
 }

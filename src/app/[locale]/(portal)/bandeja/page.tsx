@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
-import { CalendarPlus, GanttChartSquare, TowerControl } from "lucide-react";
+import { CalendarPlus, GanttChartSquare, Inbox, ListTodo, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { GraficasBandeja } from "@/components/bandeja/graficas-bandeja";
-import { NotificacionesBandeja } from "@/components/bandeja/notificaciones-bandeja";
-import { PendientesBandeja } from "@/components/bandeja/pendientes-bandeja";
-import {
-  ProyectosBandeja,
-} from "@/components/bandeja/proyectos-bandeja";
-import { ReunionesBandeja } from "@/components/bandeja/reuniones-bandeja";
-import { TareasBandeja } from "@/components/bandeja/tareas-bandeja";
+import { PestanaDecidir } from "@/components/bandeja/pestana-decidir";
+import { PestanaEquipo } from "@/components/bandeja/pestana-equipo";
+import { PestanaTareas } from "@/components/bandeja/pestana-tareas";
 import { variantesBoton } from "@/components/ui/button-variantes";
+import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { FilaChips } from "@/components/ui/fila-chips";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { requerirRol } from "@/lib/auth";
-import { cargarBandeja } from "@/server/bandeja/consultas";
+import { requerirUsuario } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 
 export async function generateMetadata({
   params,
@@ -28,110 +25,105 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
+type Pestana = "decidir" | "tareas" | "equipo";
+
 /**
- * Bandeja: inicio de `admin` y `super_admin`, centro de avisos y gráficas.
+ * Pendientes (ruta `/bandeja`): un solo lugar para lo que espera a alguien.
+ * Junta lo que eran la bandeja, las tareas, «Mi día» y la torre de control, que
+ * mostraban el mismo trabajo desde cuatro pantallas.
  *
- * Sustituye al "portal administrativo" y al "panel", que respondían casi a lo
- * mismo en dos pantallas. El orden es el de la urgencia: primero lo que espera
- * una decisión, luego lo que tienes por hacer y tus proyectos, lo que viene en
- * la agenda y los avisos, y al final las gráficas.
+ *  - `?tab=decidir` (admin y super_admin): solicitudes y avisos por decidir,
+ *    proyectos, agenda y gráficas. Es la pestaña de inicio de esos roles.
+ *  - `?tab=tareas`: Mi día y, con `operaciones.leer`, el tablero
+ *    (`&vista=tablero`). Es de todo el personal.
+ *  - `?tab=equipo`: carga del equipo y, con `&usuario=<id>`, el detalle de una
+ *    persona. Pide `operaciones.escribir`.
  *
- * Cada bloque llega `null` si la persona no tiene su permiso (ver
- * `cargarBandeja`) y entonces no se dibuja. `requerirRol` y no un permiso
- * suelto porque esto es la entrada de un rol, no un módulo.
+ * Cada pestaña conserva el control que tenía como pantalla suelta, y una
+ * pestaña pedida sin permiso cae en la primera disponible en vez de dar error:
+ * el enlace puede llegar compartido. El menú solo ofrece esta ruta al admin;
+ * el resto de roles entra por «Mi día» desde sus atajos. Esconder la pestaña no
+ * es control de acceso: las consultas y acciones de cada una lo comprueban.
  *
- * Las gráficas son cliente pero reciben los textos ya traducidos, así que no
- * hace falta `NextIntlClientProvider` ni `mensajesCliente` para ellas.
+ * Solo se consulta la pestaña activa, para no cargar tres pantallas por visita.
  */
-export default async function PaginaBandeja({
+export default async function PaginaPendientes({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tab?: string; vista?: string; usuario?: string }>;
 }) {
-  const { locale } = await params;
+  const [{ locale }, { tab, vista, usuario: usuarioPedido }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const idioma: Locale = locale === "en" ? "en" : "es";
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirUsuario();
+  const esAdmin = usuario.rol === "admin" || usuario.rol === "super_admin";
+  const verEquipo = usuarioTienePermiso(usuario, "operaciones.escribir");
 
-  const [t, tPrioridad, tEstado, tNav, datos] = await Promise.all([
+  const disponibles: Pestana[] = [
+    ...(esAdmin ? (["decidir"] as const) : []),
+    "tareas",
+    ...(verEquipo ? (["equipo"] as const) : []),
+  ];
+  const activa = disponibles.find((p) => p === tab) ?? disponibles[0]!;
+
+  const [t, tNav] = await Promise.all([
     getTranslations({ locale, namespace: "bandeja" }),
-    getTranslations({ locale, namespace: "torre.priority" }),
-    getTranslations({ locale, namespace: "torre.status" }),
     getTranslations({ locale, namespace: "nav" }),
-    cargarBandeja(usuario),
   ]);
+  const etiquetas: Record<Pestana, { texto: string; icono: typeof Inbox }> = {
+    decidir: { texto: t("tabs.decide"), icono: Inbox },
+    tareas: { texto: t("tabs.tasks"), icono: ListTodo },
+    equipo: { texto: t("tabs.team"), icono: Users },
+  };
 
   return (
     <div className="animate-entrada space-y-6 md:space-y-8">
       <EncabezadoPagina
-        titulo={t("greeting", { name: usuario.nombre })}
+        titulo={t("title")}
         acciones={
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/administrativo/torre-control"
-              className={variantesBoton({ variant: "outline", size: "sm" })}
-            >
-              <TowerControl className="size-4" />
-              {tNav("controlTower")}
-            </Link>
-            <Link
-              href="/calendario/gantt"
-              className={variantesBoton({ variant: "outline", size: "sm" })}
-            >
-              <GanttChartSquare className="size-4" />
-              {tNav("timeline")}
-            </Link>
-            <Link
-              href="/reuniones?agendar=true"
-              className={variantesBoton({ size: "sm" })}
-            >
-              <CalendarPlus className="size-4" />
-              {tNav("meetings")}
-            </Link>
-          </div>
+          esAdmin && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/calendario/gantt"
+                className={variantesBoton({ variant: "outline", size: "sm" })}
+              >
+                <GanttChartSquare className="size-4" />
+                {tNav("timeline")}
+              </Link>
+              <Link
+                href="/reuniones?agendar=true"
+                className={variantesBoton({ size: "sm" })}
+              >
+                <CalendarPlus className="size-4" />
+                {tNav("meetings")}
+              </Link>
+            </div>
+          )
         }
       />
 
-      {datos.pendientes && <PendientesBandeja pendientes={datos.pendientes} />}
+      <FilaChips etiqueta={t("tabs.label")}>
+        {disponibles.map((p) => (
+          <ChipFiltro
+            key={p}
+            href={`/bandeja?tab=${p}`}
+            icono={etiquetas[p].icono}
+            etiqueta={etiquetas[p].texto}
+            activo={p === activa}
+          />
+        ))}
+      </FilaChips>
 
-      <GraficasBandeja
-        datos={{
-          tareas: datos.tareasGrafica,
-          flujo: datos.flujo,
-          proyectos: datos.proyectosGrafica,
-        }}
-        etiquetas={{
-          porPrioridad: t("charts.byPriority"),
-          porEstado: t("charts.byStatus"),
-          abiertas: t("charts.tasksTotal"),
-          tareasVacio: t("charts.tasksEmpty"),
-          finanzas: t("charts.finance"),
-          ingresos: t("charts.income"),
-          egresos: t("charts.expenses"),
-          finanzasVacio: t("charts.noFinance"),
-          proyectos: t("charts.projects"),
-          proyectosVacio: t("charts.projectsEmpty"),
-          prioridades: {
-            baja: tPrioridad("baja"),
-            media: tPrioridad("media"),
-            alta: tPrioridad("alta"),
-            urgente: tPrioridad("urgente"),
-          },
-          estados: {
-            por_hacer: tEstado("por_hacer"),
-            en_progreso: tEstado("en_progreso"),
-            en_revision: tEstado("en_revision"),
-            completada: tEstado("completada"),
-          },
-        }}
-      />
-
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        {datos.tareas && <TareasBandeja tareas={datos.tareas} idioma={idioma} />}
-        <NotificacionesBandeja notificaciones={datos.notificaciones} idioma={idioma} />
-        {datos.proyectos && <ProyectosBandeja proyectos={datos.proyectos} />}
-        {datos.reuniones && <ReunionesBandeja reuniones={datos.reuniones} idioma={idioma} />}
-      </div>
+      {activa === "decidir" && <PestanaDecidir usuario={usuario} idioma={idioma} />}
+      {activa === "tareas" && (
+        <PestanaTareas usuario={usuario} idioma={idioma} vista={vista} />
+      )}
+      {activa === "equipo" && <PestanaEquipo idioma={idioma} usuarioPedido={usuarioPedido} />}
     </div>
   );
 }

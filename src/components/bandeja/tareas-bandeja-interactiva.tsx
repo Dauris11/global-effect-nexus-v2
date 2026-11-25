@@ -146,7 +146,7 @@ export function TareasBandejaInteractiva({
               />
 
               <Link
-                href="/administrativo/tareas"
+                href="/bandeja?tab=tareas&vista=tablero"
                 className="group min-w-0 flex-1 space-y-1 rounded-control p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <p className="truncate text-sm font-semibold text-tinta transition-colors group-hover:text-marca-600">

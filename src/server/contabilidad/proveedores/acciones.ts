@@ -20,6 +20,7 @@ import {
   limpiarIdentificacion,
   ncfValido,
 } from "@/lib/contabilidad/identificacion";
+import { esPilarCosto } from "@/lib/costos";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { subirContable } from "@/lib/supabase/almacen";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
@@ -230,10 +231,17 @@ export async function guardarFactura(
 
   const solicitante = idOpcional(datos, "solicitante");
   const programa = texto(datos, "programa", 60) || null;
+  // Costo por estudiante (0112): opcional. El pilar solo cuenta si hay estudiante.
+  const estudiante = idOpcional(datos, "estudiante");
+  if (estudiante && !esUuid(estudiante)) return { estado: "datos_invalidos" };
+  const pilarCrudo = texto(datos, "pilar_costo", 20);
+  if (estudiante && pilarCrudo && !esPilarCosto(pilarCrudo)) return { estado: "datos_invalidos" };
+  const pilar = estudiante && esPilarCosto(pilarCrudo) ? pilarCrudo : null;
 
   const valores = [
     proveedorId, ncf, emision, vencimiento, moneda, tasa, subtotal, itbis, isr, retItbis,
     concepto, categoria, fondo, idOpcional(datos, "proyecto"), solicitante, programa,
+    estudiante, pilar,
   ];
   const contexto = await contextoDe(usuario);
 
@@ -246,7 +254,8 @@ export async function guardarFactura(
                     periodo_id = contabilidad.periodo_para($4), moneda = $6, tasa = $7,
                     subtotal = $8, itbis = $9, retencion_isr = $10, retencion_itbis = $11,
                     concepto = $12, categoria_id = $13, fondo_id = $14, proyecto_id = $15,
-                    solicitante_id = $16, programa_codigo = $17
+                    solicitante_id = $16, programa_codigo = $17,
+                    estudiante_id = $18, pilar_costo = $19
               WHERE id = $1 AND estado = 'borrador' RETURNING id`,
             [id, ...valores],
           )
@@ -254,9 +263,9 @@ export async function guardarFactura(
             `INSERT INTO contabilidad.factura_proveedor
                (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda, tasa,
                 subtotal, itbis, retencion_isr, retencion_itbis, concepto, categoria_id, fondo_id,
-                proyecto_id, solicitante_id, programa_codigo, creado_por)
+                proyecto_id, solicitante_id, programa_codigo, estudiante_id, pilar_costo, creado_por)
              VALUES (contabilidad.siguiente_numero('FP'), $1, $2, $3, $4, contabilidad.periodo_para($3),
-                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
              RETURNING id`,
             [...valores, usuario.id],
           );
