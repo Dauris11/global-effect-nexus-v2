@@ -34,7 +34,6 @@ import {
   Users,
   Utensils,
   Wallet,
-  Wrench,
 } from "lucide-react";
 
 import {
@@ -431,7 +430,7 @@ const MENU_ESTUDIANTE: AreaNav[] = [
           {
             etiqueta: "studentPortal",
             href: "/portal/estudiante",
-            icono: Wrench,
+            icono: GraduationCap,
           },
         ],
       },
@@ -463,6 +462,9 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             href: "/portal/estudiante/global-360",
             icono: Sparkles,
           },
+          // Inscribirse al almuerzo de hoy: el estudiante lo hacía en una página
+          // pública, fuera de su portal, y no sabía que la tenía.
+          { etiqueta: "meals", href: "/comida", icono: Utensils },
           // Ahí está el índice académico, que es lo que decide la beca, y las
           // notas finales de 360.
           {
@@ -556,7 +558,9 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/academico/clases-360",
             icono: Sparkles,
           },
-          { etiqueta: "academic", href: "/academico/materias", icono: Library },
+          // Sus materias con alumnos, notas y asistencia: `/academico/materias` es el
+          // catálogo administrativo y desde ahí el docente no puede calificar.
+          { etiqueta: "academic", href: "/portal/profesor/materias", icono: Library },
         ],
       },
     ],

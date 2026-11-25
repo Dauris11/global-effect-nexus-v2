@@ -260,6 +260,10 @@ export async function crearCompra(
   datos: FormData,
 ): Promise<EstadoFormularioSolicitud> {
   const usuario = await requerirUsuario();
+  // Una compra corporativa (cotización, proveedor, cheque a contabilidad) no es un
+  // trámite estudiantil: el estudiante pide constancias y permisos. Ocultar el
+  // formulario no protege nada, así que el servidor lo rechaza.
+  if (usuario.rol === "estudiante") return { estado: "no_permitido" };
 
   const campos = leerCampos(datos, "compra");
   if (campos === "invalido" || campos === "fecha_invalida") {

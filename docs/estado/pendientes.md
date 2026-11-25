@@ -5,6 +5,11 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+- [x] **Auditoría Integral de QA, Usabilidad y Coherencia Operativa (24 nov 2026):** documento completo en [`docs/estado/informe-qa-portal.md`](informe-qa-portal.md). Diagnóstico de producto, las 10 inconsistencias críticas («cosas sin sentido»: compra en estudiante, ícono wrench, docente desviado a catálogo, chofer con torre sin combustible, dispersión de tareas, etc.), matriz de lo que PUEDEN vs DEBERÍAN poder hacer los 8 roles y roadmap priorizado P0/P1/P2.
+      - [x] **P0 aplicado (24 nov 2026):** formulario de compra fuera del portal del estudiante (y `crearCompra` lo rechaza en el servidor), icono `GraduationCap` en su menú, «Materias» del docente apunta a `/portal/profesor/materias` y acceso directo a Comida en el menú del estudiante.
+      - [ ] **P0 sin aplicar:** menú del chofer (quitar Torre de control y añadir combustible): el código documenta que la torre es por donde le llegan tareas asignadas y el chofer no tiene `rendicion.enviar`; decidir antes de tocarlo.
+      - [ ] **P1 y P2** del informe siguen pendientes.
+
 - [x] **Catálogo de universidades y pénsum — fase 2 del expediente (19 nov 2026, migración `0095`):** universidad → carrera → pénsum → materias (`/academico/universidades`), selector en cascada y matrícula en la pestaña Universidad del expediente, avance de créditos en la pestaña Pénsum. Detalle en `bitacora-tesis.md`.
       - [x] **Pénsum de UCATECI · Ingeniería en Sistemas de Computación (plan ISC-R2-2019, 110 materias, 237 créditos)** cargado desde `db/datos/pensum-ucateci-isc-r2-2019.txt` con `scripts/cargar-pensum.mjs` (base del usuario: `PensumPdf.pdf`). Las opciones de electiva (ISC123-130) no se cargaron: ocupan los cupos ELE013-016, así que una electiva aprobada no suma al avance hasta definir cómo se empareja.
       - [x] **Pénsums de `docs/PENSUMS` cargados (20 nov 2026): 13 de UCATECI y 25 de UNPHU**, cada uno con su carrera en su universidad (`db/datos/pensum-<universidad>-<carrera>-<versión>.txt`, cargados con `scripts/cargar-pensum.mjs`). Salieron de los PDF con un lector propio y solo se cargó lo que cuadra: créditos de cada período = total impreso, créditos del plan = total del plan donde lo trae, todo período con nombre y créditos. UCATECI además coincide campo por campo con la transcripción manual de Sistemas. Notas que quedan en el encabezado de cada `.txt`:
@@ -1841,10 +1846,3 @@ módulo) — esto es solo la cola de pendientes concretos.
 - Abierto: auditoría por rol en `docs/estado/auditoria-roles.md` (recorte de menús y formularios, funciones faltantes). El diagrama de comunicación entre módulos y roles va después de ese recorte.
 
 - Rediseño de gráficos (24 nov 2026): barras en píldora con pista y cifra, anillo redondeado, área suave; `Progress` más grueso, barra apilada de solicitudes con segmentos separados y contador de biografía sobre `Progress`. Sin ver en navegador con sesión.
-
-## Catálogo contable de Global Effect (24 nov 2026, migración `0107`)
-
-- Cerrado: catálogo reemplazado por el del Excel (88 cuentas) con balances en cero. Lo anterior eran datos de prueba: se respaldó (JSON de las 63 tablas, fuera del repo) y se vació con `scripts/reiniciar-contabilidad.mjs`. Se conservan proveedores, empleados, terceros, NCF, tasas, períodos, presupuesto y bitácora.
-- Roto a propósito (el Excel no trae esas cuentas; fallan con mensaje claro): facturas y pagos a proveedores (2.1.1 es agrupadora sin hijas; faltan ITBIS e ISR retenidos), inventario, depreciación de activos fijos, donaciones en especie, sobrante de arqueo, ISR retenido en nómina. Decidir qué cuentas agregar al catálogo.
-- Nómina pasó a base caja: el asiento nace al pagar (5.3.3.x y 5.3.4.x contra 2.3.1 y banco).
-- Dudosos: DOP y USD comparten 1.2.1; «otros ingresos» → 4.3.1; 5.2.1 quedó agrupadora con hijas 5.2.1.1/5.2.1.2 como viene en el Excel; el flujo proyectado trae 50000 fijo en donaciones esperadas.
