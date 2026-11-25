@@ -133,6 +133,16 @@ export async function ejecutarDepreciacionMensual(
       { ctaGasto: string; ctaAcum: string; monto: number }
     >();
 
+    // El catálogo de la Fundación no tiene gasto de depreciación ni
+    // depreciación acumulada. La migración 0107 dejó ambas columnas de la
+    // categoría (NOT NULL) apuntando a 5.4.12 «Otros Gastos»; un asiento con
+    // la misma cuenta a los dos lados sería un engaño, así que se rechaza.
+    if (activos.some((x) => x.cuenta_gasto_depreciacion_id === x.cuenta_depreciacion_acumulada_id)) {
+      throw new Error(
+        "El catálogo contable vigente no tiene cuentas de depreciación. Agrégalas y asígnalas a las categorías de activos antes de depreciar."
+      );
+    }
+
     for (const act of activos) {
       const costo = Number(act.costo_adquisicion);
       const residual = Number(act.valor_residual);

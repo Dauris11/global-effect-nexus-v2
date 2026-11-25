@@ -105,26 +105,26 @@ async function seedCategorias(cliente) {
   // código de la 0011 que devuelve la vista `transaccion`.
   const categorias = [
     // Ingresos
-    { nombre: "Donaciones nacionales",      tipo: "ingreso", cuenta: "4.1.01.01", legado: "donacion" },
-    { nombre: "Donaciones internacionales", tipo: "ingreso", cuenta: "4.1.01.02", legado: "donacion" },
-    { nombre: "Aportes de patrocinadores",  tipo: "ingreso", cuenta: "4.1.01.03", legado: "beca" },
-    { nombre: "Cuotas de programas",        tipo: "ingreso", cuenta: "4.2.01.01", legado: "otro" },
-    { nombre: "Otros ingresos",             tipo: "ingreso", cuenta: "4.9.01.02", legado: "otro" },
+    { nombre: "Donaciones nacionales",      tipo: "ingreso", cuenta: "4.1.1", legado: "donacion" },
+    { nombre: "Donaciones internacionales", tipo: "ingreso", cuenta: "4.1.3", legado: "donacion" },
+    { nombre: "Aportes de patrocinadores",  tipo: "ingreso", cuenta: "4.1.1", legado: "beca" },
+    { nombre: "Cuotas de programas",        tipo: "ingreso", cuenta: "4.2.1", legado: "otro" },
+    { nombre: "Otros ingresos",             tipo: "ingreso", cuenta: "4.3.1", legado: "otro" },
     // Egresos
-    { nombre: "Becas y ayudas",             tipo: "egreso",  cuenta: "5.4.01.03", legado: "beca" },
-    { nombre: "Nómina",                     tipo: "egreso",  cuenta: "5.1.01.01", legado: "salario" },
-    { nombre: "Alquiler",                   tipo: "egreso",  cuenta: "5.2.01.01", legado: "operativo" },
-    { nombre: "Servicios básicos",          tipo: "egreso",  cuenta: "5.2.01.02", legado: "operativo" },
-    { nombre: "Materiales y suministros",   tipo: "egreso",  cuenta: "5.2.01.04", legado: "material" },
-    { nombre: "Transporte",                 tipo: "egreso",  cuenta: "5.2.01.05", legado: "operativo" },
-    { nombre: "Comunicaciones",             tipo: "egreso",  cuenta: "5.2.01.03", legado: "operativo" },
-    { nombre: "Equipos y tecnología",       tipo: "egreso",  cuenta: "1.2.01.01", legado: "material" },
-    { nombre: "Capacitación",               tipo: "egreso",  cuenta: "5.4.01.01", legado: "evento" },
-    { nombre: "Gastos bancarios",           tipo: "egreso",  cuenta: "5.3.01.01", legado: "operativo" },
-    { nombre: "Impuestos y retenciones",    tipo: "egreso",  cuenta: "5.9.01.01", legado: "otro" },
-    { nombre: "Gastos de operación",        tipo: "egreso",  cuenta: "5.2.01.06", legado: "operativo" },
-    { nombre: "Caja chica",                 tipo: "egreso",  cuenta: "5.9.01.01", legado: "operativo" },
-    { nombre: "Otros egresos",              tipo: "egreso",  cuenta: "5.9.01.01", legado: "otro" },
+    { nombre: "Becas y ayudas",             tipo: "egreso",  cuenta: "5.1.2", legado: "beca" },
+    { nombre: "Nómina",                     tipo: "egreso",  cuenta: "5.3.3.5", legado: "salario" },
+    { nombre: "Alquiler",                   tipo: "egreso",  cuenta: "5.3.1", legado: "operativo" },
+    { nombre: "Servicios básicos",          tipo: "egreso",  cuenta: "5.3.2.1", legado: "operativo" },
+    { nombre: "Materiales y suministros",   tipo: "egreso",  cuenta: "5.4.5", legado: "material" },
+    { nombre: "Transporte",                 tipo: "egreso",  cuenta: "5.1.4", legado: "operativo" },
+    { nombre: "Comunicaciones",             tipo: "egreso",  cuenta: "5.4.6.1", legado: "operativo" },
+    { nombre: "Equipos y tecnología",       tipo: "egreso",  cuenta: "1.4.2", legado: "material" },
+    { nombre: "Capacitación",               tipo: "egreso",  cuenta: "5.4.12", legado: "evento" },
+    { nombre: "Gastos bancarios",           tipo: "egreso",  cuenta: "5.4.3", legado: "operativo" },
+    { nombre: "Impuestos y retenciones",    tipo: "egreso",  cuenta: "5.4.12", legado: "otro" },
+    { nombre: "Gastos de operación",        tipo: "egreso",  cuenta: "5.4.12", legado: "operativo" },
+    { nombre: "Caja chica",                 tipo: "egreso",  cuenta: "5.4.12", legado: "operativo" },
+    { nombre: "Otros egresos",              tipo: "egreso",  cuenta: "5.4.12", legado: "otro" },
   ];
 
   for (const c of categorias) {
@@ -141,86 +141,110 @@ async function seedCategorias(cliente) {
 }
 
 async function seedCatalogoCuentas(cliente) {
-  // Catálogo básico para una ASFL (Asociación Sin Fines de Lucro) dominicana.
-  // El contador de la Fundación debe validar y ajustar desde Configuración.
-  // Formato de código: nivel1.nivel2.nivel3
+  // Catálogo de la Fundación Global Effect (88 cuentas, migración 0107), tal
+  // como lo entregó la contabilidad: no se corrigen sus nombres. El padre de
+  // un código es el código sin su último segmento. Si ya existe (la 0107 lo
+  // carga), el ON CONFLICT lo deja igual.
   const cuentas = [
-    // ACTIVOS
-    { codigo: "1",       nombre: "ACTIVOS",                      tipo: "activo",    padre: null, hoja: false },
-    { codigo: "1.1",     nombre: "Activo Corriente",             tipo: "activo",    padre: "1",  hoja: false },
-    { codigo: "1.1.01",  nombre: "Efectivo y Equivalentes",      tipo: "activo",    padre: "1.1",hoja: false },
-    { codigo: "1.1.01.01", nombre: "Caja General",               tipo: "activo",    padre: "1.1.01", hoja: true },
-    { codigo: "1.1.01.02", nombre: "Caja Chica",                 tipo: "activo",    padre: "1.1.01", hoja: true },
-    { codigo: "1.1.02",  nombre: "Bancos",                       tipo: "activo",    padre: "1.1",hoja: false },
-    { codigo: "1.1.02.01", nombre: "Banco Santa Cruz - DOP",     tipo: "activo",    padre: "1.1.02", hoja: true },
-    { codigo: "1.1.02.02", nombre: "Banco Santa Cruz - USD",     tipo: "activo",    padre: "1.1.02", hoja: true },
-    { codigo: "1.1.03",  nombre: "Cuentas por Cobrar",           tipo: "activo",    padre: "1.1",hoja: false },
-    { codigo: "1.1.03.01", nombre: "Anticipos a empleados",      tipo: "activo",    padre: "1.1.03", hoja: true },
-    { codigo: "1.2",     nombre: "Activo No Corriente",          tipo: "activo",    padre: "1",  hoja: false },
-    { codigo: "1.2.01",  nombre: "Equipos y Tecnología",         tipo: "activo",    padre: "1.2",hoja: false },
-    { codigo: "1.2.01.01", nombre: "Computadoras y equipos",     tipo: "activo",    padre: "1.2.01", hoja: true },
-    { codigo: "1.2.01.02", nombre: "Depreciación acumulada - equipos", tipo: "activo", padre: "1.2.01", hoja: true },
-    // PASIVOS
-    { codigo: "2",       nombre: "PASIVOS",                      tipo: "pasivo",    padre: null, hoja: false },
-    { codigo: "2.1",     nombre: "Pasivo Corriente",             tipo: "pasivo",    padre: "2",  hoja: false },
-    { codigo: "2.1.01",  nombre: "Cuentas por Pagar",            tipo: "pasivo",    padre: "2.1",hoja: false },
-    { codigo: "2.1.01.01", nombre: "Proveedores nacionales",     tipo: "pasivo",    padre: "2.1.01", hoja: true },
-    { codigo: "2.1.01.02", nombre: "Proveedores internacionales",tipo: "pasivo",    padre: "2.1.01", hoja: true },
-    { codigo: "2.1.02",  nombre: "Retenciones por pagar",        tipo: "pasivo",    padre: "2.1",hoja: false },
-    { codigo: "2.1.02.01", nombre: "ISR retenido empleados",     tipo: "pasivo",    padre: "2.1.02", hoja: true },
-    { codigo: "2.1.02.02", nombre: "ITBIS retenido proveedores", tipo: "pasivo",    padre: "2.1.02", hoja: true },
-    { codigo: "2.1.03",  nombre: "Nómina por pagar",             tipo: "pasivo",    padre: "2.1",hoja: false },
-    { codigo: "2.1.03.01", nombre: "Sueldos por pagar",          tipo: "pasivo",    padre: "2.1.03", hoja: true },
-    { codigo: "2.1.03.02", nombre: "TSS por pagar (empleado)",   tipo: "pasivo",    padre: "2.1.03", hoja: true },
-    { codigo: "2.1.03.03", nombre: "TSS por pagar (empleador)",  tipo: "pasivo",    padre: "2.1.03", hoja: true },
-    // PATRIMONIO
-    { codigo: "3",       nombre: "PATRIMONIO",                   tipo: "patrimonio", padre: null, hoja: false },
-    { codigo: "3.1",     nombre: "Patrimonio Social",            tipo: "patrimonio", padre: "3",  hoja: false },
-    { codigo: "3.1.01.01", nombre: "Superávit / Déficit del ejercicio", tipo: "patrimonio", padre: "3.1", hoja: true },
-    { codigo: "3.1.01.02", nombre: "Resultados acumulados",      tipo: "patrimonio", padre: "3.1", hoja: true },
-    // INGRESOS
-    { codigo: "4",       nombre: "INGRESOS",                     tipo: "ingreso",   padre: null, hoja: false },
-    { codigo: "4.1",     nombre: "Donaciones y Aportes",         tipo: "ingreso",   padre: "4",  hoja: false },
-    { codigo: "4.1.01.01", nombre: "Donaciones nacionales",      tipo: "ingreso",   padre: "4.1",hoja: true },
-    { codigo: "4.1.01.02", nombre: "Donaciones internacionales", tipo: "ingreso",   padre: "4.1",hoja: true },
-    { codigo: "4.1.01.03", nombre: "Aportes de patrocinadores",  tipo: "ingreso",   padre: "4.1",hoja: true },
-    { codigo: "4.2",     nombre: "Ingresos por Programas",       tipo: "ingreso",   padre: "4",  hoja: false },
-    { codigo: "4.2.01.01", nombre: "Cuotas de programas",        tipo: "ingreso",   padre: "4.2",hoja: true },
-    { codigo: "4.9",     nombre: "Otros Ingresos",               tipo: "ingreso",   padre: "4",  hoja: false },
-    { codigo: "4.9.01.01", nombre: "Intereses bancarios",        tipo: "ingreso",   padre: "4.9",hoja: true },
-    { codigo: "4.9.01.02", nombre: "Otros ingresos varios",      tipo: "ingreso",   padre: "4.9",hoja: true },
-    { codigo: "4.9.01.03", nombre: "Diferencia cambiaria (ganancia)", tipo: "ingreso", padre: "4.9", hoja: true },
-    // GASTOS
-    { codigo: "5",       nombre: "GASTOS",                       tipo: "gasto",     padre: null, hoja: false },
-    { codigo: "5.1",     nombre: "Gastos de Personal",           tipo: "gasto",     padre: "5",  hoja: false },
-    { codigo: "5.1.01.01", nombre: "Sueldos y salarios",         tipo: "gasto",     padre: "5.1",hoja: true },
-    { codigo: "5.1.01.02", nombre: "TSS empleador",              tipo: "gasto",     padre: "5.1",hoja: true },
-    { codigo: "5.1.01.03", nombre: "Regalía pascual",            tipo: "gasto",     padre: "5.1",hoja: true },
-    { codigo: "5.1.01.04", nombre: "Vacaciones",                 tipo: "gasto",     padre: "5.1",hoja: true },
-    { codigo: "5.2",     nombre: "Gastos Operativos",            tipo: "gasto",     padre: "5",  hoja: false },
-    { codigo: "5.2.01.01", nombre: "Alquiler",                   tipo: "gasto",     padre: "5.2",hoja: true },
-    { codigo: "5.2.01.02", nombre: "Electricidad y agua",        tipo: "gasto",     padre: "5.2",hoja: true },
-    { codigo: "5.2.01.03", nombre: "Internet y comunicaciones",  tipo: "gasto",     padre: "5.2",hoja: true },
-    { codigo: "5.2.01.04", nombre: "Materiales y suministros",   tipo: "gasto",     padre: "5.2",hoja: true },
-    { codigo: "5.2.01.05", nombre: "Transporte y movilización",  tipo: "gasto",     padre: "5.2",hoja: true },
-    { codigo: "5.2.01.06", nombre: "Mantenimiento y reparaciones",tipo: "gasto",    padre: "5.2",hoja: true },
-    { codigo: "5.3",     nombre: "Gastos Bancarios",             tipo: "gasto",     padre: "5",  hoja: false },
-    { codigo: "5.3.01.01", nombre: "Comisiones bancarias",       tipo: "gasto",     padre: "5.3",hoja: true },
-    { codigo: "5.3.01.02", nombre: "Diferencial cambiario",      tipo: "gasto",     padre: "5.3",hoja: true },
-    { codigo: "5.4",     nombre: "Gastos de Programas",          tipo: "gasto",     padre: "5",  hoja: false },
-    { codigo: "5.4.01.01", nombre: "Capacitación y formación",   tipo: "gasto",     padre: "5.4",hoja: true },
-    { codigo: "5.4.01.02", nombre: "Materiales de programas",    tipo: "gasto",     padre: "5.4",hoja: true },
-    { codigo: "5.4.01.03", nombre: "Becas otorgadas",            tipo: "gasto",     padre: "5.4",hoja: true },
-    { codigo: "5.9",     nombre: "Otros Gastos",                 tipo: "gasto",     padre: "5",  hoja: false },
-    { codigo: "5.9.01.01", nombre: "Gastos varios",              tipo: "gasto",     padre: "5.9",hoja: true },
-  ];
+    { codigo: "1", nombre: "Activos", tipo: "activo", hoja: false },
+    { codigo: "1.1", nombre: "Efectivo", tipo: "activo", hoja: false },
+    { codigo: "1.1.1", nombre: "Caja Chica", tipo: "activo", hoja: true },
+    { codigo: "1.2", nombre: "Bancos", tipo: "activo", hoja: false },
+    { codigo: "1.2.1", nombre: "Banco Santa Cruz", tipo: "activo", hoja: true },
+    { codigo: "1.3", nombre: "Edificios y Terrenos", tipo: "activo", hoja: false },
+    { codigo: "1.3.1", nombre: "Edifcios", tipo: "activo", hoja: true },
+    { codigo: "1.3.2", nombre: "Terrenos", tipo: "activo", hoja: true },
+    { codigo: "1.4", nombre: "Mobiliario y Equipo de Oficina", tipo: "activo", hoja: false },
+    { codigo: "1.4.1", nombre: "Mobiliario", tipo: "activo", hoja: true },
+    { codigo: "1.4.2", nombre: "Computadoras", tipo: "activo", hoja: true },
+    { codigo: "1.4.3", nombre: "Vehículos", tipo: "activo", hoja: true },
+    { codigo: "1.5", nombre: "Otros Activos", tipo: "activo", hoja: false },
+    { codigo: "1.5.1", nombre: "Otros Activos", tipo: "activo", hoja: true },
+    { codigo: "2", nombre: "Pasivos", tipo: "pasivo", hoja: false },
+    { codigo: "2.1", nombre: "Cuentas por Pagar", tipo: "pasivo", hoja: false },
+    { codigo: "2.1.1", nombre: "Cuentas por Pagar Proveedores", tipo: "pasivo", hoja: false },
+    { codigo: "2.1.2", nombre: "Cuentas por Pagar Universidades", tipo: "pasivo", hoja: false },
+    { codigo: "2.1.2.1", nombre: "Cuentas por Pagar UCATECI", tipo: "pasivo", hoja: true },
+    { codigo: "2.1.2.2", nombre: "Cuentas por Pagar UNPHU", tipo: "pasivo", hoja: true },
+    { codigo: "2.1.2.3", nombre: "Cuentas por Pagar UASD", tipo: "pasivo", hoja: true },
+    { codigo: "2.1.3", nombre: "Otras Cuentas por Pagar", tipo: "pasivo", hoja: false },
+    { codigo: "2.2", nombre: "Prestamos", tipo: "pasivo", hoja: false },
+    { codigo: "2.2.1", nombre: "Prestamos en Entidades Financieras", tipo: "pasivo", hoja: true },
+    { codigo: "2.3", nombre: "Retenciones de Nómina por Pagar", tipo: "pasivo", hoja: false },
+    { codigo: "2.3.1", nombre: "Retenciones TSS por Pagar", tipo: "pasivo", hoja: true },
+    { codigo: "3", nombre: "Capital", tipo: "patrimonio", hoja: false },
+    { codigo: "3.1", nombre: "Resultados de Operaciones", tipo: "patrimonio", hoja: false },
+    { codigo: "3.1.1", nombre: "Balance Excedente", tipo: "patrimonio", hoja: true },
+    { codigo: "3.1.2", nombre: "Balance Acumulado", tipo: "patrimonio", hoja: true },
+    { codigo: "4", nombre: "Ingresos", tipo: "ingreso", hoja: false },
+    { codigo: "4.1", nombre: "Donaciones Recibidas", tipo: "ingreso", hoja: false },
+    { codigo: "4.1.1", nombre: "Donaciones Nacionales en Bancos", tipo: "ingreso", hoja: true },
+    { codigo: "4.1.2", nombre: "Donaciones Nacionales en Efectivo", tipo: "ingreso", hoja: true },
+    { codigo: "4.1.3", nombre: "Donaciones Internacionales en Bancos", tipo: "ingreso", hoja: true },
+    { codigo: "4.1.4", nombre: "Donaciones Internacionales en Efectivo", tipo: "ingreso", hoja: true },
+    { codigo: "4.2", nombre: "Ingresos por Actividades Propias", tipo: "ingreso", hoja: false },
+    { codigo: "4.2.1", nombre: "Ingresos por Eventos", tipo: "ingreso", hoja: true },
+    { codigo: "4.3", nombre: "Otros Ingresos", tipo: "ingreso", hoja: false },
+    { codigo: "4.3.1", nombre: "Ingresos por Dividendos o Rendimiento Bancario", tipo: "ingreso", hoja: true },
+    { codigo: "4.3.2", nombre: "Ingresos por Cambio de Divisas", tipo: "ingreso", hoja: true },
+    { codigo: "5", nombre: "Gastos", tipo: "gasto", hoja: false },
+    { codigo: "5.1", nombre: "Gastos de Programa de Becas", tipo: "gasto", hoja: false },
+    { codigo: "5.1.1", nombre: "Inscripción de Estudiantes", tipo: "gasto", hoja: true },
+    { codigo: "5.1.2", nombre: "Periodo Universitario", tipo: "gasto", hoja: true },
+    { codigo: "5.1.3", nombre: "Libros y Materiales", tipo: "gasto", hoja: true },
+    { codigo: "5.1.4", nombre: "Transporte de Estudiantes", tipo: "gasto", hoja: true },
+    { codigo: "5.2", nombre: "Gastos de Programa de Alojamiento", tipo: "gasto", hoja: false },
+    { codigo: "5.2.1", nombre: "Transporte de Programa de Alojamiento", tipo: "gasto", hoja: false },
+    { codigo: "5.2.1.1", nombre: "Compra Semanal de Programa de Alojamiento", tipo: "gasto", hoja: true },
+    { codigo: "5.2.1.2", nombre: "Recreación y Otros Beneficios", tipo: "gasto", hoja: true },
+    { codigo: "5.2.2", nombre: "Manutención de Programa de Alojamiento", tipo: "gasto", hoja: false },
+    { codigo: "5.2.3", nombre: "Electricidad Programa de Alojamiento", tipo: "gasto", hoja: true },
+    { codigo: "5.2.4", nombre: "Comunicación e Internet Programa de Alojamiento", tipo: "gasto", hoja: true },
+    { codigo: "5.3", nombre: "Gastos Administrativos", tipo: "gasto", hoja: false },
+    { codigo: "5.3.1", nombre: "Alquiler de Locales", tipo: "gasto", hoja: true },
+    { codigo: "5.3.2", nombre: "Electricidad de Locales", tipo: "gasto", hoja: false },
+    { codigo: "5.3.2.1", nombre: "Electricidad de Oficina Principal", tipo: "gasto", hoja: true },
+    { codigo: "5.3.2.2", nombre: "Electricidad de Instituto Técnico", tipo: "gasto", hoja: true },
+    { codigo: "5.3.2.3", nombre: "Electricidad de Otras Oficinas", tipo: "gasto", hoja: true },
+    { codigo: "5.3.3", nombre: "Sueldos y Salarios de Empleados", tipo: "gasto", hoja: false },
+    { codigo: "5.3.3.1", nombre: "Salario de Programa de Habitudes", tipo: "gasto", hoja: true },
+    { codigo: "5.3.3.2", nombre: "Salario de Programa de Alojamiento", tipo: "gasto", hoja: true },
+    { codigo: "5.3.3.3", nombre: "Salario de Programa 360", tipo: "gasto", hoja: true },
+    { codigo: "5.3.3.4", nombre: "Salario de Programa de Becas", tipo: "gasto", hoja: true },
+    { codigo: "5.3.3.5", nombre: "Salario de Personal Administrativo", tipo: "gasto", hoja: true },
+    { codigo: "5.3.4", nombre: "Aportes a la Seguridad Social e INFOTEP", tipo: "gasto", hoja: false },
+    { codigo: "5.3.4.1", nombre: "AFP Empleador (7.10%)", tipo: "gasto", hoja: true },
+    { codigo: "5.3.4.2", nombre: "SFS Empleador (7.09%)", tipo: "gasto", hoja: true },
+    { codigo: "5.3.4.3", nombre: "Riesgo Laboral Empleador (1%)", tipo: "gasto", hoja: true },
+    { codigo: "5.3.4.4", nombre: "INFOTEP (1%)", tipo: "gasto", hoja: true },
+    { codigo: "5.3.5", nombre: "Regalía Pascual", tipo: "gasto", hoja: true },
+    { codigo: "5.4", nombre: "Otros Gastos", tipo: "gasto", hoja: false },
+    { codigo: "5.4.3", nombre: "Comisiones Bancarios", tipo: "gasto", hoja: true },
+    { codigo: "5.4.4", nombre: "Diferencia de Cambios de Moneda", tipo: "gasto", hoja: true },
+    { codigo: "5.4.5", nombre: "Papelería y Suministros", tipo: "gasto", hoja: true },
+    { codigo: "5.4.6", nombre: "Servicios de Comunicación", tipo: "gasto", hoja: false },
+    { codigo: "5.4.6.1", nombre: "Internet", tipo: "gasto", hoja: true },
+    { codigo: "5.4.6.2", nombre: "Telefono", tipo: "gasto", hoja: true },
+    { codigo: "5.4.7", nombre: "Eventos o Campañas", tipo: "gasto", hoja: true },
+    { codigo: "5.4.8", nombre: "Gastos de Viajes y Agenda", tipo: "gasto", hoja: true },
+    { codigo: "5.4.9", nombre: "Donaciones y Aportes a Iglesias", tipo: "gasto", hoja: true },
+    { codigo: "5.4.10", nombre: "Almuerzo Estudiantil", tipo: "gasto", hoja: true },
+    { codigo: "5.4.11", nombre: "Reunión Mensual", tipo: "gasto", hoja: false },
+    { codigo: "5.4.11.1", nombre: "Merienda Reunión Mensual", tipo: "gasto", hoja: true },
+    { codigo: "5.4.11.2", nombre: "Decoración Reunión Mensual", tipo: "gasto", hoja: true },
+    { codigo: "5.4.11.3", nombre: "Alquileres Reunión Mensual", tipo: "gasto", hoja: true },
+    { codigo: "5.4.12", nombre: "Otros Gastos", tipo: "gasto", hoja: true },
+  ].map((c) => ({
+    ...c,
+    padre: c.codigo.includes(".") ? c.codigo.slice(0, c.codigo.lastIndexOf(".")) : null,
+  }));
 
   // Insertar en dos pasadas: primero los que no tienen padre (nivel 1),
   // luego los demás (que referencian a los del nivel anterior).
   // Ordenar por profundidad del código garantiza el orden correcto.
   const ordenados = cuentas.sort((a, b) =>
     (a.codigo.split(".").length - b.codigo.split(".").length) ||
-    a.codigo.localeCompare(b.codigo)
+    a.codigo.localeCompare(b.codigo, undefined, { numeric: true })
   );
 
   for (const c of ordenados) {
@@ -245,7 +269,7 @@ async function seedCatalogoCuentas(cliente) {
       [c.codigo, c.nombre, c.tipo, padreId, c.hoja],
     );
   }
-  console.log("  ✓ Catálogo de cuentas ASFL");
+  console.log("  ✓ Catálogo de cuentas Global Effect");
 }
 
 async function seedParametrosNomina(cliente) {
@@ -565,8 +589,10 @@ async function seedActivosFijos(cliente, usuarioId) {
 }
 
 async function seedArticulosConsumibles(cliente) {
+  // El catálogo de la Fundación no tiene cuentas de inventario: las búsquedas
+  // devuelven vacío y no se siembran artículos (la guarda de abajo).
   const { rows: ctaInv } = await cliente.query(`SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.1.04.01'`);
-  const { rows: ctaGas } = await cliente.query(`SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '5.2.01.07'`);
+  const { rows: ctaGas } = await cliente.query(`SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '5.4.10'`);
 
   if (ctaInv[0] && ctaGas[0]) {
     const articulos = [

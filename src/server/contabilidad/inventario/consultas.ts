@@ -10,10 +10,10 @@ export type ArticuloInventario = {
   centro_costo_id: string | null;
   centro_costo_codigo: string | null;
   centro_costo_nombre: string | null;
-  cuenta_inventario_id: string;
-  cuenta_inventario_codigo: string;
-  cuenta_gasto_id: string;
-  cuenta_gasto_codigo: string;
+  cuenta_inventario_id: string | null;
+  cuenta_inventario_codigo: string | null;
+  cuenta_gasto_id: string | null;
+  cuenta_gasto_codigo: string | null;
   stock_actual: number;
   stock_minimo: number;
   costo_promedio: number;
@@ -81,10 +81,10 @@ export async function listarArticulos(filtros?: {
     centro_costo_id: string | null;
     centro_costo_codigo: string | null;
     centro_costo_nombre: string | null;
-    cuenta_inventario_id: string;
-    cuenta_inventario_codigo: string;
-    cuenta_gasto_id: string;
-    cuenta_gasto_codigo: string;
+    cuenta_inventario_id: string | null;
+    cuenta_inventario_codigo: string | null;
+    cuenta_gasto_id: string | null;
+    cuenta_gasto_codigo: string | null;
     stock_actual: string;
     stock_minimo: string;
     costo_promedio: string;
@@ -111,8 +111,10 @@ export async function listarArticulos(filtros?: {
             a.activo,
             a.creado_en::text AS creado_en
        FROM contabilidad.articulo a
-       JOIN contabilidad.cuenta_contable ci ON ci.id = a.cuenta_inventario_id
-       JOIN contabilidad.cuenta_contable cg ON cg.id = a.cuenta_gasto_id
+  -- LEFT: el catálogo de la Fundación no tiene cuentas de inventario, y un
+  -- artículo sin ellas debe seguir apareciendo en la lista.
+  LEFT JOIN contabilidad.cuenta_contable ci ON ci.id = a.cuenta_inventario_id
+  LEFT JOIN contabilidad.cuenta_contable cg ON cg.id = a.cuenta_gasto_id
   LEFT JOIN contabilidad.centro_costo cc ON cc.id = a.centro_costo_id
       ${whereClausula}
       ORDER BY a.codigo ASC`,

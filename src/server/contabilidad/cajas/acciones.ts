@@ -488,7 +488,9 @@ export async function aprobarArqueoAction(arqueoId: string): Promise<ResultadoCa
       if (diferencia !== 0) {
         if (Number(caja.saldo_actual) + diferencia < 0) throw new Rechazo("saldo_insuficiente");
         const faltante = diferencia < 0;
-        const contra = await idCuenta(cliente, faltante ? CUENTA_FALTANTE_CAJA : CUENTA_SOBRANTE_CAJA);
+        const codigoContra = faltante ? CUENTA_FALTANTE_CAJA : CUENTA_SOBRANTE_CAJA;
+        if (!codigoContra) throw new Rechazo("sin_cuenta_contable");
+        const contra = await idCuenta(cliente, codigoContra);
         const monto = Math.abs(diferencia);
         await cliente.query(
           `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', 'arqueo', $3, $4::jsonb)`,

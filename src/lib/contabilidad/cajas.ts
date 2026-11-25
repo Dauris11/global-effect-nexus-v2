@@ -57,10 +57,15 @@ export const UMBRAL_ALERTA_DIFERENCIA = 200;
 /** Justificación mínima cuando el arqueo no cuadra (lo exige la tabla). */
 export const JUSTIFICACION_MINIMA = 5;
 
-/** Cuentas del catálogo que usa el cuadre. Se buscan por código. */
-export const CUENTA_CAJA_CHICA = "1.1.01.02";
-export const CUENTA_FALTANTE_CAJA = "5.9.01.99";
-export const CUENTA_SOBRANTE_CAJA = "4.9.01.99";
+/**
+ * Cuentas del catálogo que usa el cuadre. Se buscan por código.
+ * El catálogo de la Fundación no tiene cuenta de sobrante de caja (en «Otros
+ * Ingresos» solo hay rendimientos y cambio de divisas), así que es `null` y
+ * aprobar un arqueo con sobrante se rechaza con «falta una cuenta».
+ */
+export const CUENTA_CAJA_CHICA = "1.1.1";
+export const CUENTA_FALTANTE_CAJA = "5.4.12";
+export const CUENTA_SOBRANTE_CAJA: string | null = null;
 
 /** Suma en centavos para que 0.1 + 0.2 no deje un descuadre de 0.0000001. */
 export function totalContado(

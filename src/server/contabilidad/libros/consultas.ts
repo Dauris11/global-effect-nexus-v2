@@ -230,7 +230,7 @@ export async function libroDiario(f: FiltroLibros, tope: number | null = TOPE_DI
       -- Cargos antes que abonos y, dentro de cada lado, agrupado por mayor:
       -- así las auxiliares de una misma mayor quedan juntas bajo ella.
       ORDER BY s.fecha, s.numero, (l.debe > 0) DESC,
-               coalesce(m.codigo, c.codigo) COLLATE "C", c.codigo COLLATE "C", l.id`,
+               contabilidad.clave_codigo(coalesce(m.codigo, c.codigo)), contabilidad.clave_codigo(c.codigo), l.id`,
     [f.desde, f.hasta, tope],
   );
 
@@ -289,15 +289,16 @@ export async function totalesDiario(f: FiltroLibros): Promise<TotalesLibro> {
 /**
  * Árbol del catálogo con la ruta de códigos desde la raíz. Ordenar por la
  * ruta y no por el código deja ver las cuentas sueltas sin padre donde
- * están de verdad: en la raíz. `COLLATE "C"` porque la intercalación del
- * idioma ignora los puntos y pondría "1.10" entre "1.1.01" y "1.1.02".
+ * están de verdad: en la raíz. `clave_codigo` rellena cada segmento con
+ * ceros: ordenar el texto crudo pondría "5.4.10" antes de "5.4.2", y la
+ * intercalación del idioma ignora además los puntos.
  */
 const ARBOL = `arbol AS (
-       SELECT c.id, 0 AS nivel, ARRAY[c.codigo COLLATE "C"] AS ruta
+       SELECT c.id, 0 AS nivel, ARRAY[contabilidad.clave_codigo(c.codigo)] AS ruta
          FROM contabilidad.cuenta_contable c
         WHERE c.padre_id IS NULL
        UNION ALL
-       SELECT h.id, a.nivel + 1, a.ruta || (h.codigo COLLATE "C")
+       SELECT h.id, a.nivel + 1, a.ruta || contabilidad.clave_codigo(h.codigo)
          FROM contabilidad.cuenta_contable h
          JOIN arbol a ON h.padre_id = a.id
      )`;
@@ -403,7 +404,7 @@ export async function mayorGeneral(f: FiltroLibros): Promise<FilaMayor[]> {
             saldo::numeric(14,2)::text AS saldo, con_algo
        FROM aux
      WINDOW w AS (PARTITION BY mayor_id)
-      ORDER BY ruta, codigo COLLATE "C"`,
+      ORDER BY ruta, contabilidad.clave_codigo(codigo)`,
     [f.desde, f.hasta],
   );
 

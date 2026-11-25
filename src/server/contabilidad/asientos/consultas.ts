@@ -216,7 +216,7 @@ export async function lineasDeAsiento(id: string): Promise<LineaAsiento[]> {
        FROM contabilidad.asiento_linea l
        JOIN contabilidad.cuenta_contable c ON c.id = l.cuenta_id
       WHERE l.asiento_id = $1
-      ORDER BY (l.debe > 0) DESC, c.codigo`,
+      ORDER BY (l.debe > 0) DESC, contabilidad.clave_codigo(c.codigo)`,
     [id],
   );
 }
@@ -238,7 +238,7 @@ export async function cuentasDeMovimiento(): Promise<CuentaMovimiento[]> {
   return consultar<CuentaMovimiento>(
     `SELECT id, codigo, nombre, tipo FROM contabilidad.cuenta_contable
       WHERE admite_movimiento AND activa
-      ORDER BY codigo`,
+      ORDER BY contabilidad.clave_codigo(codigo)`,
   );
 }
 

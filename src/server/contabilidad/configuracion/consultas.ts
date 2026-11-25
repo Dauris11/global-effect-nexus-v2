@@ -203,15 +203,15 @@ export type CuentaCatalogo = {
 
 export async function catalogo(): Promise<CuentaCatalogo[]> {
   // El árbol se arma en la base con la ruta de códigos de los ancestros:
-  // ordenar por el código suelto pondría "10" antes que "2" el día que el
-  // catálogo tenga diez cuentas raíz.
+  // ordenar por el código suelto pondría "5.4.10" antes que "5.4.2" (el
+  // catálogo de la Fundación ya los tiene): `clave_codigo` rellena con ceros.
   return consultar<CuentaCatalogo>(
     `WITH RECURSIVE arbol AS (
-       SELECT c.id, ARRAY[c.codigo] AS ruta, 0 AS nivel
+       SELECT c.id, ARRAY[contabilidad.clave_codigo(c.codigo)] AS ruta, 0 AS nivel
          FROM contabilidad.cuenta_contable c
         WHERE c.padre_id IS NULL
        UNION ALL
-       SELECT h.id, a.ruta || h.codigo, a.nivel + 1
+       SELECT h.id, a.ruta || contabilidad.clave_codigo(h.codigo), a.nivel + 1
          FROM contabilidad.cuenta_contable h
          JOIN arbol a ON a.id = h.padre_id
      ),

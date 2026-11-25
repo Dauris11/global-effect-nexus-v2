@@ -6,6 +6,9 @@ import { requerirPermiso } from "@/lib/auth";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
 
+const SIN_CUENTAS_INVENTARIO =
+  "El catálogo contable vigente no tiene cuentas de inventario ni de consumo para este artículo. Agrégalas al catálogo antes de registrar movimientos o conteos.";
+
 export type CrearArticuloInput = {
   codigo: string;
   nombre: string;
@@ -33,6 +36,9 @@ export async function crearArticulo(input: CrearArticuloInput): Promise<{ id: st
 
   const res = await enTransaccionComo(ctx, async (cliente) => {
     await fijarAccion(cliente, "crear_articulo");
+    // El catálogo de la Fundación no tiene cuentas de inventario: sin ellas
+    // el artículo no se podría contabilizar nunca.
+    if (!input.cuenta_inventario_id || !input.cuenta_gasto_id) throw new Error(SIN_CUENTAS_INVENTARIO);
 
     const { rows } = await cliente.query<{ id: string }>(
       `INSERT INTO contabilidad.articulo
@@ -78,8 +84,8 @@ export async function registrarMovimientoInventario(
       nombre: string;
       stock_actual: string;
       costo_promedio: string;
-      cuenta_inventario_id: string;
-      cuenta_gasto_id: string;
+      cuenta_inventario_id: string | null;
+      cuenta_gasto_id: string | null;
       centro_costo_id: string | null;
     }>(
       `SELECT id, codigo, nombre, stock_actual::text AS stock_actual,
@@ -93,6 +99,7 @@ export async function registrarMovimientoInventario(
 
     const art = artRows[0];
     if (!art) throw new Error("Artículo no encontrado.");
+    if (!art.cuenta_inventario_id || !art.cuenta_gasto_id) throw new Error(SIN_CUENTAS_INVENTARIO);
 
     const stockAnt = Number(art.stock_actual);
     const costoPromAnt = Number(art.costo_promedio);
@@ -310,8 +317,8 @@ export async function aplicarConteoFisico(
       articulo_id: string;
       stock_sistema: string;
       costo_unitario: string;
-      cuenta_inventario_id: string;
-      cuenta_gasto_id: string;
+      cuenta_inventario_id: string | null;
+      cuenta_gasto_id: string | null;
     }>(
       `SELECT cfl.id, cfl.articulo_id, cfl.stock_sistema::text AS stock_sistema,
               cfl.costo_unitario::text AS costo_unitario,
@@ -384,6 +391,7 @@ export async function aplicarConteoFisico(
       // Cuenta inventario general y cuenta ajuste/gasto
       const ctaInventario = lineas[0].cuenta_inventario_id;
       const ctaGasto = lineas[0].cuenta_gasto_id;
+      if (!ctaInventario || !ctaGasto) throw new Error(SIN_CUENTAS_INVENTARIO);
       const monto = Math.abs(impactoNeto);
 
       // Sobrante: débito inventario contra ajuste; faltante: al revés.

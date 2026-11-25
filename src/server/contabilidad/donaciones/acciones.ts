@@ -86,40 +86,31 @@ export async function registrarDonacion(datos: {
         );
         const ctaDebe = bcoRows[0]?.cuenta_contable_id;
 
-        const codigoIngreso = datos.tratamiento === "gravado" ? "4.1.01.03" : "4.1.01.01";
+        // El catálogo de la Fundación separa las donaciones por origen y
+        // forma de cobro. Aquí siempre entran por banco (4.1.1 nacional,
+        // 4.1.3 internacional); la moneda es lo único que distingue el
+        // origen. Lo «gravado» ya no tiene cuenta propia y va a la misma.
+        const codigoIngreso = datos.moneda === "USD" ? "4.1.3" : "4.1.1";
         const { rows: ingRows } = await cliente.query<{ id: string }>(
-          `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1`,
+          `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = $1 AND admite_movimiento AND activa`,
           [codigoIngreso]
         );
         const ctaHaber = ingRows[0]?.id;
 
-        if (ctaDebe && ctaHaber) {
-          lineas = [
-            { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Entrada a banco donación" },
-            { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Reconocimiento de donación" },
-          ];
+        if (!ctaDebe || !ctaHaber) {
+          throw new Error(`Falta la cuenta del banco o la cuenta de ingreso ${codigoIngreso} en el catálogo`);
         }
+        lineas = [
+          { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Entrada a banco donación" },
+          { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Reconocimiento de donación" },
+        ];
       } else {
-        // En especie: Débito a cuenta de activo/suministro elegida o default
-        let ctaDebe = datos.cuentaDestinoEspecieId;
-        if (!ctaDebe) {
-          const { rows: defRows } = await cliente.query<{ id: string }>(
-            `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '1.2.01.01' LIMIT 1`
-          );
-          ctaDebe = defRows[0]?.id;
-        }
-
-        const { rows: espRows } = await cliente.query<{ id: string }>(
-          `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '4.1.01.02'`
+        // El catálogo vigente no tiene cuenta de ingreso por donaciones en
+        // especie (ni de inventario o activos recibidos sin costo): no se
+        // inventa una, se rechaza con un mensaje claro.
+        throw new Error(
+          "El catálogo contable vigente no tiene una cuenta para donaciones en especie. Agrégala al catálogo para registrarlas."
         );
-        const ctaHaber = espRows[0]?.id;
-
-        if (ctaDebe && ctaHaber) {
-          lineas = [
-            { cuenta_id: ctaDebe, debe: montoDop, haber: 0, descripcion: "Activo/Bienes recibidos en especie" },
-            { cuenta_id: ctaHaber, debe: 0, haber: montoDop, descripcion: "Ingreso donación en especie" },
-          ];
-        }
       }
 
       const { rows: asientoRows } = await cliente.query<{ id: string }>(

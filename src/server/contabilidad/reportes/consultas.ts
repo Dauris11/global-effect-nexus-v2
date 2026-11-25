@@ -235,7 +235,7 @@ export async function obtenerBalanceGeneral(filtros?: {
        AND a.fecha <= $1
        ${filtroExtra}
      GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.naturaleza, c.es_compensatoria, c.padre_id, c.admite_movimiento
-     ORDER BY c.codigo ASC`,
+     ORDER BY contabilidad.clave_codigo(c.codigo) ASC`,
     params,
   );
 
@@ -266,7 +266,7 @@ export async function obtenerBalanceGeneral(filtros?: {
     let saldo = 0;
     if (r.tipo === "activo") {
       // Cuentas compensatorias/reguladoras de activo (ej. depreciación acumulada) restan en el activo
-      if (r.es_compensatoria || r.naturaleza === "acreedora" || r.codigo.startsWith("1.2.09") || r.codigo.startsWith("1.2.01.02")) {
+      if (r.es_compensatoria || r.naturaleza === "acreedora") {
         saldo = -(haber - debe); // Presentación negativa en activo
       } else {
         saldo = debe - haber;
@@ -289,12 +289,16 @@ export async function obtenerBalanceGeneral(filtros?: {
     });
   }
 
-  // Agrupación de Activos
+  // Agrupación de Activos. En el catálogo de la Fundación el activo corriente
+  // es Efectivo (1.1) y Bancos (1.2); edificios, mobiliario/equipo y otros
+  // activos (1.3 a 1.5) son no corrientes. OJO: antes 1.2 era «No Corriente»;
+  // un prefijo `1.2` mal copiado mostraría el banco como activo fijo.
+  const esActivoCorriente = (codigo: string) => /^1\.[12](\.|$)/.test(codigo);
   const cuentasActivoCorriente = cuentasProcesadas.filter(
-    (c) => c.tipoCuenta === "activo" && c.codigo.startsWith("1.1"),
+    (c) => c.tipoCuenta === "activo" && esActivoCorriente(c.codigo),
   );
   const cuentasActivoNoCorriente = cuentasProcesadas.filter(
-    (c) => c.tipoCuenta === "activo" && (c.codigo.startsWith("1.2") || !c.codigo.startsWith("1.1")),
+    (c) => c.tipoCuenta === "activo" && !esActivoCorriente(c.codigo),
   );
 
   const subtotalActivoCorriente = cuentasActivoCorriente
@@ -432,7 +436,7 @@ export async function obtenerEstadoActividades(filtros?: {
        AND a.fecha BETWEEN $1 AND $2
        ${filtroExtra}
      GROUP BY c.id, c.codigo, c.nombre, c.tipo, c.padre_id, c.admite_movimiento, f.tipo_restriccion
-     ORDER BY c.codigo ASC`,
+     ORDER BY contabilidad.clave_codigo(c.codigo) ASC`,
     params,
   );
 
@@ -548,32 +552,18 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
   const actividades = await obtenerEstadoActividades({ fechaDesde, fechaHasta });
   const superavitNeto = actividades.superavitDeficitNeto;
 
-  // 2. Depreciación de activos fijos (cuenta 5.2.01.09) en el período (partida no monetaria)
-  const filaDepr = await consultarUna<{ depreciacion: string }>(
-    `SELECT COALESCE(SUM(al.debe - al.haber), 0) AS depreciacion
-     FROM contabilidad.asiento_linea al
-     JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
-     JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE c.codigo = '5.2.01.09'
-       AND a.anulado = false AND a.procesado_en IS NOT NULL
-       AND a.fecha BETWEEN $1 AND $2`,
-    [fechaDesde, fechaHasta],
-  );
-  const depreciacionMonto = Number(filaDepr?.depreciacion ?? 0);
-
-  // 3. Cambios en capital de trabajo (CxC, Inventario, CxP, Nómina por pagar)
-  // Calculamos la variación entre fechaDesde y fechaHasta
+  // 2. Cambios en capital de trabajo. El catálogo vigente no tiene cuentas de
+  // depreciación, cuentas por cobrar ni inventarios, así que esas partidas
+  // no existen (no se pueden contabilizar) y no se muestran como ceros
+  // inventados. Quedan las cuentas por pagar (2.1) y las retenciones de
+  // nómina (2.3).
   const filaVariaciones = await consultarUna<{
-    delta_cxc: string;
-    delta_inv: string;
     delta_cxp: string;
     delta_nomina: string;
   }>(
     `SELECT
-       COALESCE(SUM(CASE WHEN c.codigo LIKE '1.1.03%' THEN (al.debe - al.haber) ELSE 0 END), 0) AS delta_cxc,
-       COALESCE(SUM(CASE WHEN c.codigo LIKE '1.1.04%' THEN (al.debe - al.haber) ELSE 0 END), 0) AS delta_inv,
-       COALESCE(SUM(CASE WHEN c.codigo LIKE '2.1.01%' THEN (al.haber - al.debe) ELSE 0 END), 0) AS delta_cxp,
-       COALESCE(SUM(CASE WHEN c.codigo LIKE '2.1.03%' THEN (al.haber - al.debe) ELSE 0 END), 0) AS delta_nomina
+       COALESCE(SUM(CASE WHEN c.codigo ~ '^2\\.1(\\.|$)' THEN (al.haber - al.debe) ELSE 0 END), 0) AS delta_cxp,
+       COALESCE(SUM(CASE WHEN c.codigo ~ '^2\\.3(\\.|$)' THEN (al.haber - al.debe) ELSE 0 END), 0) AS delta_nomina
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
@@ -582,32 +572,26 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
     [fechaDesde, fechaHasta],
   );
 
-  const deltaCxc = -Number(filaVariaciones?.delta_cxc ?? 0); // Si sube CxC, resta efectivo
-  const deltaInv = -Number(filaVariaciones?.delta_inv ?? 0); // Si sube inventario, resta efectivo
   const deltaCxp = Number(filaVariaciones?.delta_cxp ?? 0);   // Si sube CxP, retiene efectivo (suma)
   const deltaNomina = Number(filaVariaciones?.delta_nomina ?? 0);
 
-  const ajustesNoMonetarios: FlujoEfectivoPartida[] = [
-    { concepto: "Depreciación de activos fijos capitalizados", monto: Number(depreciacionMonto.toFixed(2)) },
-  ];
+  const ajustesNoMonetarios: FlujoEfectivoPartida[] = [];
 
   const cambiosCapitalTrabajo: FlujoEfectivoPartida[] = [
-    { concepto: "Variación en cuentas por cobrar y anticipos", monto: Number(deltaCxc.toFixed(2)) },
-    { concepto: "Variación en inventarios de suministros y comedor", monto: Number(deltaInv.toFixed(2)) },
-    { concepto: "Variación en cuentas por pagar a proveedores", monto: Number(deltaCxp.toFixed(2)) },
-    { concepto: "Variación en nóminas y retenciones por pagar", monto: Number(deltaNomina.toFixed(2)) },
+    { concepto: "Variación en cuentas por pagar", monto: Number(deltaCxp.toFixed(2)) },
+    { concepto: "Variación en retenciones de nómina por pagar", monto: Number(deltaNomina.toFixed(2)) },
   ];
 
-  const totalCapitalTrabajo = deltaCxc + deltaInv + deltaCxp + deltaNomina;
-  const totalOperativo = Number((superavitNeto + depreciacionMonto + totalCapitalTrabajo).toFixed(2));
+  const totalCapitalTrabajo = deltaCxp + deltaNomina;
+  const totalOperativo = Number((superavitNeto + totalCapitalTrabajo).toFixed(2));
 
-  // 4. Actividades de Inversión: compras de activo fijo capitalizado (cuentas 1.2.* excepto depreciación)
+  // 4. Actividades de Inversión: compras de activo fijo (edificios 1.3 y mobiliario/equipo 1.4)
   const filaInversion = await consultarUna<{ compras_activo: string }>(
     `SELECT COALESCE(SUM(al.debe - al.haber), 0) AS compras_activo
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE c.codigo LIKE '1.2%' AND c.codigo NOT LIKE '1.2.09%' AND c.codigo NOT LIKE '1.2.01.02%'
+     WHERE c.codigo ~ '^1\\.[34](\\.|$)'
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha BETWEEN $1 AND $2`,
     [fechaDesde, fechaHasta],
@@ -618,7 +602,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
   // 5. Actividades de Financiamiento: aportes recibidos directamente a patrimonio o fondos restringidos
   const totalFinanciamiento = 0; // En ASFL todas las donaciones entran por el Estado de Actividades
 
-  // 6. Saldos de efectivo inicial y final (cuentas 1.1.01 y 1.1.02)
+  // 6. Saldos de efectivo inicial y final (Efectivo 1.1 y Bancos 1.2)
   const filaSaldosEfectivo = await consultarUna<{
     saldo_inicial: string;
     movimiento_neto: string;
@@ -629,7 +613,7 @@ export async function obtenerEstadoFlujoEfectivo(filtros?: {
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE (c.codigo LIKE '1.1.01%' OR c.codigo LIKE '1.1.02%')
+     WHERE c.codigo ~ '^1\\.[12](\\.|$)'
        AND a.anulado = false AND a.procesado_en IS NOT NULL`,
     [fechaDesde, fechaHasta],
   );
@@ -684,7 +668,7 @@ export async function obtenerEstadoCambiosPatrimonio(filtros?: {
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE c.codigo = '3.1.01.02'
+     WHERE c.codigo = '3.1.2'
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha < $1`,
     [fechaDesde],
@@ -804,7 +788,7 @@ export async function obtenerMayorAnalitico(filtros: {
      FROM contabilidad.cuenta_contable c
      WHERE c.admite_movimiento = true
        ${filtroCuenta}
-     ORDER BY c.codigo ASC`,
+     ORDER BY contabilidad.clave_codigo(c.codigo) ASC`,
   );
 
   const resultado: CuentaMayorAnalitico[] = [];
@@ -942,13 +926,13 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
   const mesesTotal = Math.min(Math.max(filtros?.mesesProyeccion ?? 6, 3), 12);
   const fechaInicio = new Date().toISOString().slice(0, 10);
 
-  // 1. Saldo actual disponible en bancos y cajas (1.1.01 y 1.1.02)
+  // 1. Saldo actual disponible en cajas y bancos (1.1 y 1.2)
   const filaSaldo = await consultarUna<{ disponible: string }>(
     `SELECT COALESCE(SUM(al.debe - al.haber), 0) AS disponible
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE (c.codigo LIKE '1.1.01%' OR c.codigo LIKE '1.1.02%')
+     WHERE c.codigo ~ '^1\\.[12](\\.|$)'
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha <= $1`,
     [fechaInicio],
@@ -963,13 +947,13 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
   );
   const gastoNominaMensual = Number(filaNominaEstimada?.total_neto ?? 0);
 
-  // 3. Gastos fijos operativos recurrentes promedio (alquiler, agua, luz, internet 5.2.01.*)
+  // 3. Gastos fijos operativos recurrentes promedio (alquiler 5.3.1, electricidad de locales 5.3.2.x e internet 5.4.6.1)
   const filaGastosFijos = await consultarUna<{ promedio_fijo: string }>(
     `SELECT COALESCE(SUM(al.debe - al.haber) / 3, 0) AS promedio_fijo
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE c.codigo IN ('5.2.01.01', '5.2.01.02', '5.2.01.03')
+     WHERE (c.codigo IN ('5.3.1', '5.4.6.1') OR c.codigo LIKE '5.3.2.%')
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha >= (CURRENT_DATE - INTERVAL '90 days')`,
   );

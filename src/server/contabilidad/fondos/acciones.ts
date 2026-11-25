@@ -140,16 +140,16 @@ export async function liberarFondoRestringido(datos: {
       if (estRows[0]?.estado === "abierto") {
 
         // Buscar cuentas para liberación de fondos ASFL
-        // 3.1.01.02 (Resultados Acumulados / Restringidos) y 3.1.01.01 (Operativo Liberado)
+        // 3.1.2 (Balance Acumulado / restringidos) y 3.1.1 (Balance Excedente / operativo liberado)
         const { rows: ctaRows } = await cliente.query<{ id: string; codigo: string }>(
           `SELECT id, codigo FROM contabilidad.cuenta_contable
-            WHERE codigo IN ('3.1.01.02', '3.1.01.01')
+            WHERE codigo IN ('3.1.2', '3.1.1')
             ORDER BY codigo ASC`
         );
 
         if (ctaRows.length >= 2) {
-          const ctaRestringida = ctaRows.find((c) => c.codigo === "3.1.01.02")?.id ?? ctaRows[0].id;
-          const ctaLiberada = ctaRows.find((c) => c.codigo === "3.1.01.01")?.id ?? ctaRows[1].id;
+          const ctaRestringida = ctaRows.find((c) => c.codigo === "3.1.2")?.id ?? ctaRows[0].id;
+          const ctaLiberada = ctaRows.find((c) => c.codigo === "3.1.1")?.id ?? ctaRows[1].id;
 
           const { rows: secRows } = await cliente.query<{ num: string }>(
             `SELECT contabilidad.siguiente_numero('AS')::text AS num`

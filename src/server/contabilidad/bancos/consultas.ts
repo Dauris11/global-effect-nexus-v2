@@ -286,7 +286,7 @@ export async function cuentasAuxiliaresDeActivo(): Promise<CuentaAuxiliar[]> {
   return consultar<CuentaAuxiliar>(
     `SELECT id, codigo, nombre FROM contabilidad.cuenta_contable
       WHERE tipo = 'activo' AND admite_movimiento AND activa
-      ORDER BY codigo COLLATE "C"`,
+      ORDER BY contabilidad.clave_codigo(codigo)`,
   );
 }
 

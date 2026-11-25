@@ -71,12 +71,12 @@ export async function ejecutarCierreAnual(
     }
     const periodoDiciembreId = perRows[0].id;
 
-    // 2. Obtener la cuenta de Resultados Acumulados (3.1.01.02)
+    // 2. Obtener la cuenta de Balance Acumulado (3.1.2)
     const { rows: ctaRows } = await cliente.query<{ id: string }>(
-      `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '3.1.01.02'`,
+      `SELECT id FROM contabilidad.cuenta_contable WHERE codigo = '3.1.2'`,
     );
     if (ctaRows.length === 0) {
-      throw new Error("No se encontró la cuenta de Resultados Acumulados (3.1.01.02).");
+      throw new Error("No se encontró la cuenta de Balance Acumulado (3.1.2).");
     }
     const cuentaResultadosAcumuladosId = ctaRows[0].id;
 

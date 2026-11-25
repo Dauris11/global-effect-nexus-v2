@@ -110,7 +110,7 @@ export async function listarLineasPresupuesto(presupuestoId: string): Promise<Li
       JOIN contabilidad.cuenta_contable cta ON cta.id = pl.cuenta_id
       LEFT JOIN contabilidad.fondo f ON f.id = pl.fondo_id
      WHERE pl.presupuesto_id = $1
-     ORDER BY cc.codigo ASC, cta.codigo ASC, pl.periodo_mes ASC
+     ORDER BY cc.codigo ASC, contabilidad.clave_codigo(cta.codigo) ASC, pl.periodo_mes ASC
   `;
 
   return consultar<LineaPresupuestoDetalle>(sql, [presupuestoId]);

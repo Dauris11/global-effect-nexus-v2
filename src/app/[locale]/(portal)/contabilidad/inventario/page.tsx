@@ -26,19 +26,14 @@ export default async function PaginaInventario() {
       listarArticulos(),
       listarConteosFisicos(),
       listarCentrosCosto(),
+      // El catálogo de la Fundación no tiene cuentas de inventario (0107): la
+      // lista va vacía a propósito, no por un filtro que se rompió.
+      Promise.resolve([] as { id: string; codigo: string; nombre: string }[]),
       consultar<{ id: string; codigo: string; nombre: string }>(
         `SELECT id, codigo, nombre
            FROM contabilidad.cuenta_contable
-          WHERE codigo LIKE '1.1.04.%'
-            AND admite_movimiento = true
-          ORDER BY codigo ASC`,
-      ),
-      consultar<{ id: string; codigo: string; nombre: string }>(
-        `SELECT id, codigo, nombre
-           FROM contabilidad.cuenta_contable
-          WHERE codigo LIKE '5.2.01.%'
-            AND admite_movimiento = true
-          ORDER BY codigo ASC`,
+          WHERE tipo = 'gasto' AND admite_movimiento = true AND activa
+          ORDER BY contabilidad.clave_codigo(codigo)`,
       ),
       consultar<{
         id: string;
