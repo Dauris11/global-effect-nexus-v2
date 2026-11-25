@@ -1,3 +1,8 @@
+import { CODIGOS_TESORERIA } from "@/lib/contabilidad/codigos/grupo-tesoreria";
+import { CODIGOS_PROVEEDORES } from "@/lib/contabilidad/codigos/grupo-proveedores";
+import { CODIGOS_PATRIMONIO } from "@/lib/contabilidad/codigos/grupo-patrimonio";
+import { CODIGOS_OPERACIONES } from "@/lib/contabilidad/codigos/grupo-operaciones";
+
 /**
  * Códigos de transacción: un código por cada proceso contable que genera
  * líneas de asiento (p. ej. «AFP del empleado por pagar» de la nómina).
@@ -70,6 +75,10 @@ export const ETIQUETA_MODULO: Record<ModuloCodigo, TextoBilingue> = {
 };
 
 export const CODIGOS_TRANSACCION: readonly DefinicionCodigo[] = [
+  ...CODIGOS_TESORERIA,
+  ...CODIGOS_PROVEEDORES,
+  ...CODIGOS_PATRIMONIO,
+  ...CODIGOS_OPERACIONES,
   // ── Nómina: gasto de sueldos por programa (centro de costo) ──
   {
     codigo: "NOM_SUELDO_HABITUDES",
