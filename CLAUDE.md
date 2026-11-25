@@ -58,6 +58,28 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     excepciones de `usuario_permiso`), nunca `tienePermiso(rol, …)`, que es
     solo el reparto de fábrica. Las funciones fuera del rol (p. ej. dar clases
     de 360) se controlan por permiso (`docencia.impartir`), no por `rol ===`.
+11. **Git:** todo se commitea y se sube directo a `main`, sin ramas ni PR. Antes
+    de empujar, `git pull --rebase origin main` (hay más de una persona
+    empujando). La base de Supabase es compartida: una migración y el código
+    que la usa se aplican y se suben juntos (`npm run db:migrate`).
+12. **Fechas:** la Fundación está en `America/Santo_Domingo` y el servidor corre
+    en UTC. «Hoy» sale de `claveDia()` / `diaEnRD()` (`src/lib/fechas.ts`) y, en
+    SQL, de `(now() AT TIME ZONE 'America/Santo_Domingo')::date`. Nunca
+    `CURRENT_DATE` ni `new Date().toISOString().slice(0, 10)`.
+13. **Contabilidad:** el catálogo es el de 88 cuentas del Excel (migración
+    `0107`); no reintroduzcas los códigos viejos (`1.1.01.xx`…). En contabilidad
+    nada se borra: se anula con motivo. El costo por estudiante (`/expedientes`
+    pestaña «Costos» y su reporte) nunca lo ven estudiante, docente, chofer ni
+    Habitudes.
+14. **Gráficos, calendarios y Gantt:** solo a través de `ui/grafico/`,
+    `ui/calendario-base.tsx` y `ui/gantt-base.tsx`. No importes `recharts`,
+    `@fullcalendar/*` ni `@svar-ui/*` en otro sitio.
+15. **«Pendientes»** (`/bandeja`) reemplazó a Bandeja, Tareas y Torre de control:
+    no recrees la Torre de control ni vistas de tareas aparte.
+16. **Transporte:** solo lo usan los estudiantes de Rincón, Jima, Ranchito, Saba
+    Rey y Rancho Viejo. Comedor y transporte no se acoplan.
+17. **Permisos reales** viven en `rol_permiso` (base de datos); `rbac.ts` es el
+    reparto de fábrica y puede diferir. Un cambio de permisos va en migración.
 
 ## Qué leer según la tarea
 
@@ -67,7 +89,11 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
 | Datos / migraciones | `docs/04-modelo-de-datos/` + `db/README.md` |
 | Módulos y portales | `docs/03-modulos-funcionales.md` + `docs/referencia/` |
 | Convenciones | `docs/07-guia-desarrollo.md` |
-| Estado y qué falta | `docs/estado/progreso.md` + `docs/estado/pendientes.md` |
+| Estado y qué falta | `docs/estado/progreso.md` + `docs/estado/pendientes.md` (arriba, «Resumen de lo abierto») |
+| Qué tiene que entregar o decidir el usuario | `docs/estado/por-entregar.md` |
+| Roles y coherencia entre módulos | `docs/estado/auditoria-roles.md` + `docs/estado/auditoria-coherencia-roles-modulos.md` + `docs/referencia/diagrama-comunicacion.html` |
+| Gráficos, calendario, Gantt | `docs/estado/estandar-graficos.md`, `estandar-calendario.md`, `estandar-gantt.md` |
+| Costo por estudiante | `docs/estado/plan-costo-por-estudiante.md` |
 | Rediseño en curso | `docs/prompts/rediseno-app-web.md` |
 
 `docs/prototipo-base44/` es histórico (prototipo v1): no es normativo.

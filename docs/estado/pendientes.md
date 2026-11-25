@@ -5,11 +5,34 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Resumen de lo abierto (cierre del 25 nov 2026)
+
+Detalle de cada punto más abajo. Esto es lo que queda al terminar la sesión.
+
+**Necesita información o una decisión de Dirección**
+- [ ] **Explicar cómo se calcula el índice en cada universidad.** Hasta entonces el semáforo de beca usa el mínimo global y el «índice promedio» del tablero ejecutivo es solo orientativo.
+- [ ] **Récord del liceo:** cuáles son las **cuatro materias principales** y qué años cuentan; qué otros factores pesan para recomendar carrera. El mínimo (89) ya es configurable. Falta el campo del promedio en el candidato y la validación. Ver [`por-entregar.md`](por-entregar.md).
+- [ ] **Embudo de talento de Habitudes** (candidato → evaluado → visto bueno del director → aprobación de beca → expediente activo): sin decidir.
+- [ ] **Prorrateo del transporte** por estudiante (¿por días de asistencia o cuota fija por cuatrimestre?) solo entre quienes usan la guagua (Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo).
+- [ ] **Qué cuentas agregar al catálogo contable** para no perder: facturas y pagos a proveedores (2.1.1 es agrupadora sin hijas), ITBIS/ISR retenidos, inventario, depreciación, donaciones en especie, sobrante de arqueo. Hoy esas funciones fallan con mensaje claro.
+- [ ] **Chofer:** ya no tiene Torre de control; si necesita ver tareas asignadas, decidir dónde (su panel o la campana). Combustible y odómetro: sin construir.
+
+**Técnico, sin necesidad de decisión**
+- [ ] **Probar con sesión de cada rol** (nada de esto se vio con usuarios reales): calendario (arrastrar y crear), Gantt (tema, tooltip, móvil, acento negro), bandeja de entregas del docente, semáforo de beca, «Pendientes», tablero ejecutivo, rendición con solicitud, costos por estudiante, menús por rol.
+- [ ] Semáforo de beca: usar el mínimo de **cada universidad** (`umbralesDeUniversidad`) y horas de servicio si algún día se registran.
+- [ ] `admin` ve en su menú Habitudes y Clases 360 pero la base le quitó esos permisos; alinear menú y permisos (informe 01 §2.1–2.3). `rbac.ts` trae para `admin` y `docente` permisos de Habitudes que la base no tiene: es el reparto de fábrica, pero conviene sincronizarlo.
+- [ ] Contadores de Bandeja que se contradicen y tarjeta «Entregas esperando nota» (informe 03 §1.4 y §1.6).
+- [ ] Nombres de roles únicos (`ROLE_LABELS`), rutas sin convención y redirects (informe 01 §4 y §6); UX por rol (informe 02); tokens de movimiento (informe 03 §3).
+- [ ] Bandeja de aprobaciones unificada para administración, expediente por pasos y 14 módulos de contabilidad retirados que siguen vivos en el código (informe QA P1/P2).
+- [ ] Segregación de funciones contables y «Ver como persona» (informe 01 §3 y §5): política, aún sin decidir.
+- [ ] Estados vacíos de varios gráficos muestran el título; faltan mensajes propios.
+- [ ] `flujo de caja proyectado` trae 50000 fijo de donaciones esperadas.
+
+
 - [x] **Costo por estudiante becado, fases 1, 4 y 5 (25 nov 2026, migración `0112`):** plan en [`plan-costo-por-estudiante.md`](plan-costo-por-estudiante.md). `estudiante_id` + `pilar_costo` opcionales en factura de proveedor y línea de orden de compra (selector en `FormularioFactura` y en el diálogo de OC), tablas `estudiante_material_costo` y `estudiante_transporte_costo`, vistas `v_estudiante_costo_detalle` / `v_estudiante_costo_total` (sin doble conteo factura/OC/rendición), permiso `expedientes.costos.leer` (super_admin, contabilidad, admin), pestaña «Costos» en `/expedientes/[id]` y reporte `/contabilidad/reportes/costo-estudiantes` con Excel (`/api/costos/exportar`). El estudiante, docente, chofer y Habitudes no ven estas cifras.
-  - [ ] **Aplicar la `0112` con `npm run db:migrate` DESPUÉS de la `0111`** (necesita `rendicion_gasto.estudiante_id`); la `0112` solo se ensayó con ROLLBACK.
+  - [x] **`0111`, `0112` y `0113` aplicadas en la base** (25 nov 2026).
   - [x] **Fase 3 (registro manual, 25 nov 2026, migración `0113`):** pantalla `/contabilidad/reportes/costo-estudiantes/registro` (enlazada desde el reporte) y acciones en la pestaña «Costos» del expediente para cargar materiales entregados (concepto, cantidad, costo unitario, fecha, artículo de inventario opcional) y transporte por estudiante y cuatrimestre (días, costo, observaciones). Escribir exige `contabilidad.registrar` y `expedientes.costos.leer`. Nada se borra: se anula con motivo (columnas `anulado_*`, la vista de detalle ignora lo anulado) y cada alta o anulación deja su fila en `audit_log`. El selector marca a quien tiene inscripción de transporte y avisa si no la tiene. Código en `src/server/costos/acciones.ts` y `src/components/costos/`.
   - [ ] **Prorrateo automático del transporte sin definir:** hoy el cobro por cuatrimestre se carga a mano y solo a quien usa la guagua (Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo); falta decidir la fórmula (combustible + mantenimiento + chofer entre quienes tengan `transporte_inscripcion_recurrente` activa). Tampoco hay corrección en sitio: se anula y se vuelve a registrar.
-  - [ ] **Aplicar la `0113` en remoto** (`npm run db:migrate`): ensayada con ROLLBACK, aún no aplicada.
   - [ ] **Rendiciones:** el selector de estudiante en el formulario de Rendición de gastos (Fase 2) lo añade el frente de la `0111`; mientras tanto la vista ya suma las rendiciones `aprobada`/`contabilizada` con `estudiante_id`. La rendición no guarda tasa: se suma tal cual (se asume DOP).
   - [ ] **Aportes del patrocinador** = `asignacion_beca.monto` (mensual) × meses completos transcurridos, solo asignaciones activas/finalizadas: es estimación, no hay tabla de aportes recibidos.
   - [x] **Contabilidad no abre `/expedientes/[id]`** (no tiene `expedientes.leer`): ve el costo en el reporte y registra materiales y transporte en `/contabilidad/reportes/costo-estudiantes/registro`.
