@@ -627,11 +627,6 @@ const MENU_DOCENTE: AreaNav[] = [
             icono: Receipt,
             permiso: "rendicion.enviar",
           },
-          {
-            etiqueta: "controlTower",
-            href: "/administrativo/torre-control",
-            icono: TowerControl,
-          },
         ],
       },
     ],
@@ -677,11 +672,6 @@ const MENU_HABITUDES: AreaNav[] = [
             icono: Receipt,
             permiso: "rendicion.enviar",
           },
-          {
-            etiqueta: "controlTower",
-            href: "/administrativo/torre-control",
-            icono: TowerControl,
-          },
           // Tienen `reuniones.agendar`/`leer` (y el director, `gestionar`),
           // pero sin estas entradas una reunión a la que los convocaban solo
           // se encontraba escribiendo la dirección a mano.
@@ -703,6 +693,21 @@ const MENU_HABITUDES: AreaNav[] = [
  * más las herramientas operativas institucionales (Calendario, Reuniones, Chat IA).
  * Cada área se dibuja con su icono y encabezado en la barra lateral.
  */
+/**
+ * El director supervisa a los facilitadores: su entrada a `/habitudes` abre en
+ * la pestaña de supervisión (mapa de liceos, visitas, evidencias por auditar),
+ * no en los recursos, y así se llama en su menú.
+ */
+const MENU_DIR_HABITUDES: AreaNav[] = MENU_HABITUDES.map((area) => ({
+  ...area,
+  secciones: area.secciones.map((seccion) => ({
+    ...seccion,
+    items: seccion.items.map((item) =>
+      item.href === "/habitudes" ? { ...item, etiqueta: "habitudesSupervision" } : item,
+    ),
+  })),
+}));
+
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
     clave: "contab_general",
@@ -769,7 +774,6 @@ const MENU_CONTABILIDAD: AreaNav[] = [
       {
         items: [
           ...modulosDeGrupo("departamento").map(itemDeModulo),
-          { etiqueta: "controlTower", href: "/administrativo/torre-control", icono: TowerControl },
           { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
           { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
           { etiqueta: "chatIaAdmin", href: "/chat-ia", icono: Bot, permiso: "ia.usar" },
@@ -812,14 +816,17 @@ const MENU_CHOFER: AreaNav[] = [
             href: "/administrativo/solicitudes",
             icono: Inbox,
           },
-          // Al chofer también se le asignan tareas y se le convoca: sin la
-          // torre y el calendario, lo asignado no tenía por dónde llegarle.
+          // Rinde el gasoil, el pinchazo o el peaje: es quien más gasta efectivo en la
+          // calle y no tenía por dónde entregar la factura.
           {
-            etiqueta: "controlTower",
-            href: "/administrativo/torre-control",
-            icono: TowerControl,
+            etiqueta: "expenseReports",
+            href: "/administrativo/rendiciones",
+            icono: Receipt,
+            permiso: "rendicion.enviar",
           },
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays },
+          // Las reuniones a las que lo convocan; ya no la torre de control ni el
+          // calendario corporativo, que no son de alguien al volante.
+          { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
         ],
       },
     ],
@@ -862,7 +869,7 @@ const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
   estudiante: MENU_ESTUDIANTE,
   contabilidad: MENU_CONTABILIDAD,
   habitudes: MENU_HABITUDES,
-  dir_habitudes: MENU_HABITUDES,
+  dir_habitudes: MENU_DIR_HABITUDES,
   chofer: MENU_CHOFER,
 };
 

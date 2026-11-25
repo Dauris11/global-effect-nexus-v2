@@ -248,7 +248,6 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
     "academico.leer",
     "catalogo.escribir",
     "catalogo.leer",
-    "expedientes.eliminar",
     "expedientes.escribir",
     "expedientes.leer",
     "habitudes.evidencias.auditar",
@@ -320,6 +319,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
   ],
   chofer: [
     "ia.usar",
+    "rendicion.enviar",
     "reuniones.leer",
     "transporte.operar",
   ],
