@@ -1,5 +1,6 @@
 "use client";
 
+import { Progress } from "@/components/ui/progress";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -300,17 +301,8 @@ export function FormularioPerfil({
         />
 
         {/* Barra de progreso de caracteres */}
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${
-              texto.length > MAXIMO_DESCRIPCION * 0.9
-                ? "bg-marca-700"
-                : "bg-marca-500"
-            }`}
-            style={{ width: `${porcentajeBio}%` }}
-          />
-        </div>
-      </div>
+        <Progress value={porcentajeBio} tono={texto.length > MAXIMO_DESCRIPCION * 0.9 ? "tinta" : "acento"} aria-hidden="true" />
+              </div>
 
       {/* Alerta de estado */}
       {estado.estado !== "inicial" && (

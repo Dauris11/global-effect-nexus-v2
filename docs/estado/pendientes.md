@@ -1839,3 +1839,5 @@ módulo) — esto es solo la cola de pendientes concretos.
 - Abierto, sin ver en navegador: arrastre y alta en calendario, tooltip y tema del Gantt, vista móvil, contraste del acento negro en modo oscuro, alturas de gráficos.
 - Abierto: barra apilada de solicitudes del estudiante sigue a mano; estados vacíos de gráficos muestran el título (faltan claves propias).
 - Abierto: auditoría por rol en `docs/estado/auditoria-roles.md` (recorte de menús y formularios, funciones faltantes). El diagrama de comunicación entre módulos y roles va después de ese recorte.
+
+- Rediseño de gráficos (24 nov 2026): barras en píldora con pista y cifra, anillo redondeado, área suave; `Progress` más grueso, barra apilada de solicitudes con segmentos separados y contador de biografía sobre `Progress`. Sin ver en navegador con sesión.

@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import type { PeriodoConNotas } from "@/components/estudiante/periodos";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { GraficoAnillo, GraficoBarras, TONO, acortar } from "@/components/ui/grafico";
@@ -238,12 +239,7 @@ export function NotasRecientesInteractivo({
                       </Badge>
                     </div>
                   </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-marca-500 transition-all duration-700"
-                      style={{ width: `${Math.min(100, Math.max(0, fila.nota))}%` }}
-                    />
-                  </div>
+                  <Progress value={fila.nota} className="mt-1.5" aria-label={fila.letra} />
                 </li>
               ))}
             </ul>
@@ -322,23 +318,23 @@ export function SolicitudesInteractivo({
         {/* Barra de distribución visual */}
         {conteos.total > 0 && (
           <div className="space-y-2">
-            <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div className="flex h-3 w-full gap-1">
               <div
-                className="transition-all duration-500"
+                className="rounded-full transition-all duration-500"
                 style={{
                   width: `${(conteos.aprobadas / total) * 100}%`,
                   backgroundColor: AZUL,
                 }}
               />
               <div
-                className="transition-all duration-500"
+                className="rounded-full transition-all duration-500"
                 style={{
                   width: `${(conteos.enProceso / total) * 100}%`,
                   backgroundColor: AZUL_SUAVE,
                 }}
               />
               <div
-                className="transition-all duration-500"
+                className="rounded-full transition-all duration-500"
                 style={{
                   width: `${(conteos.rechazadas / total) * 100}%`,
                   backgroundColor: NEUTRO,
