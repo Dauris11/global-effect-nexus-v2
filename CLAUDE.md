@@ -85,6 +85,9 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     y debe ser el mismo que exige la pantalla; no hay pantalla de visibilidad ni
     tabla `visibilidad_menu` (migración `0114`). `npx tsx
     scripts/probar-menu-por-permisos.ts` falla si una entrada queda sin declarar.
+18. **Asientos automáticos:** se arman con códigos de transacción
+    (`src/lib/contabilidad/codigos-transaccion.ts`), no con códigos de cuenta
+    literales. Ver `docs/referencia/codigos-de-transaccion.md`.
 
 ## Qué leer según la tarea
 
@@ -97,6 +100,7 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
 | Estado y qué falta | `docs/estado/progreso.md` + `docs/estado/pendientes.md` (arriba, «Resumen de lo abierto») |
 | Qué tiene que entregar o decidir el usuario | `docs/estado/por-entregar.md` |
 | Roles y coherencia entre módulos | `docs/estado/auditoria-roles.md` + `docs/estado/auditoria-coherencia-roles-modulos.md` + `docs/referencia/diagrama-comunicacion.html` |
+| Asientos automáticos / códigos de transacción | `docs/referencia/codigos-de-transaccion.md` |
 | Gráficos, calendario, Gantt | `docs/estado/estandar-graficos.md`, `estandar-calendario.md`, `estandar-gantt.md` |
 | Costo por estudiante | `docs/estado/plan-costo-por-estudiante.md` |
 | Rediseño en curso | `docs/prompts/rediseno-app-web.md` |

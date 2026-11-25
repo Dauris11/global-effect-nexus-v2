@@ -4485,7 +4485,8 @@
         "entidad": "Entity",
         "parametros": "Legal parameters",
         "periodos": "Periods",
-        "catalogo": "Chart of accounts"
+        "catalogo": "Chart of accounts",
+        "codigos": "Transaction codes"
       },
       "entidad": {
         "titulo": "Foundation details",
@@ -4670,7 +4671,14 @@
           "titulo": "New top-level account",
           "descripcion": "Creates a first-level heading. It starts as a grouping account: its sub-accounts are the ones that accept entries.",
           "confirmar": "Create account"
-        }
+        },
+        "codigosTitulo": "Transaction codes",
+        "codigosAyuda": "Check the processes that will use this account. The automatic entry will place it on the side configured for each code.",
+        "codigosMover": "Already in {cuenta}; it will be moved here",
+        "codigosVacio": "No transaction codes are defined.",
+        "codigosGuardar": "Save codes",
+        "codigosGuardado": "Codes saved",
+        "codigosInsignia": "{n, plural, one {# transaction code} other {# transaction codes}}"
       },
       "error": {
         "no_permitido": "Your account does not have permission to do this.",
@@ -4706,6 +4714,31 @@
         "error": "It could not be completed. Try again and, if it persists, tell the technical team.",
         "cuenta_con_movimientos": "The account or its sub-accounts already have entries: code, type and whether it accepts entries can't change. The name can.",
         "cuenta_con_hijas": "The account has sub-accounts: it can't accept entries."
+      },
+      "codigos": {
+        "explicacion": "Each code names an accounting process. Here you set whether the code goes to debit or credit; its account is assigned in the Chart of accounts. New codes are added by the technical team in the system code.",
+        "vacioTitulo": "No transaction codes are defined",
+        "nombre": "Code",
+        "proceso": "Process",
+        "lado": "Side",
+        "cuenta": "Assigned account",
+        "debito": "Debit",
+        "credito": "Credit",
+        "ladoDe": "Side of {codigo}",
+        "sinCuenta": "No account assigned",
+        "cuentaInactiva": "Inactive or parent account",
+        "asignarEnCatalogo": "Assign in the Chart of accounts",
+        "defecto": "Default",
+        "guardado": "Saved",
+        "guardando": "Saving",
+        "error": {
+          "no_permitido": "You do not have permission to configure transaction codes.",
+          "codigo_desconocido": "That transaction code does not exist.",
+          "naturaleza_invalida": "The side must be debit or credit.",
+          "cuenta_invalida": "The account must be active and accept postings.",
+          "datos_invalidos": "The submitted data is not valid.",
+          "error": "Could not save. Try again."
+        }
       }
     },
     "asientos": {
@@ -5378,7 +5411,18 @@
         "pago": "Payment and withholdings",
         "periodo": "Period",
         "fechas": "Dates"
-      }
+      },
+      "asientoTitulo": "Entry that will be generated",
+      "asientoCuenta": "Account",
+      "asientoDebe": "Debit",
+      "asientoHaber": "Credit",
+      "asientoTotal": "Totals",
+      "asientoBancoPendiente": "Bank (chosen when paying)",
+      "asientoCargando": "Calculating the entry",
+      "asientoSinCuenta": "Codes without an assigned account: {codigos}. Assign them in Accounting settings > Transaction codes and Chart of accounts.",
+      "asientoCuentaInactiva": "Codes with an inactive or parent account: {codigos}.",
+      "asientoDescuadre": "The entry does not balance with the current configuration. Check the side of the codes.",
+      "asientoError": "The preview could not be calculated."
     },
     "activosFijos": {
       "antetitulo": "Accounting",

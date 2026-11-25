@@ -3,6 +3,7 @@ import { Building2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { PestanasConfig } from "@/components/contabilidad/configuracion/pestanas";
+import { SeccionCodigos } from "@/components/contabilidad/configuracion/seccion-codigos";
 import { SeccionCatalogo } from "@/components/contabilidad/configuracion/seccion-catalogo";
 import { SeccionEntidad } from "@/components/contabilidad/configuracion/seccion-entidad";
 import { SeccionParametros } from "@/components/contabilidad/configuracion/seccion-parametros";
@@ -11,6 +12,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { requerirPermiso } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { listarCodigos } from "@/server/contabilidad/codigos-transaccion/consultas";
 import {
   catalogo,
   entidad,
@@ -59,7 +61,7 @@ export default async function PaginaConfiguracionContable({
         subtitulo={puedeConfigurar || puedeCerrar ? undefined : t("subtituloLectura")}
       />
       <PestanasConfig activa={pestana} />
-      <Seccion pestana={pestana} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />
+      <Seccion pestana={pestana} locale={locale} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />
     </div>
   );
 }
@@ -67,10 +69,12 @@ export default async function PaginaConfiguracionContable({
 /** Cada pestaña consulta solo lo suyo. */
 async function Seccion({
   pestana,
+  locale,
   puedeConfigurar,
   puedeCerrar,
 }: {
   pestana: PestanaConfig;
+  locale: string;
   puedeConfigurar: boolean;
   puedeCerrar: boolean;
 }) {
@@ -80,7 +84,15 @@ async function Seccion({
     case "periodos":
       return <SeccionPeriodos periodos={await periodos()} puedeCerrar={puedeCerrar} />;
     case "catalogo":
-      return <SeccionCatalogo cuentas={await catalogo()} puedeEditar={puedeConfigurar} />;
+      return (
+        <SeccionCatalogo
+          cuentas={await catalogo()}
+          codigos={await listarCodigos(locale)}
+          puedeEditar={puedeConfigurar}
+        />
+      );
+    case "codigos":
+      return <SeccionCodigos codigos={await listarCodigos(locale)} puedeEditar={puedeConfigurar} />;
     default: {
       const datos = await entidad();
       if (!datos) {

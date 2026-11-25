@@ -10,7 +10,7 @@ import { consultar, consultarUna } from "@/lib/db";
  * La conversión de fracción a porcentaje la hace la base con NUMERIC.
  */
 
-export const PESTANAS_CONFIG = ["entidad", "parametros", "periodos", "catalogo"] as const;
+export const PESTANAS_CONFIG = ["entidad", "parametros", "periodos", "catalogo", "codigos"] as const;
 export type PestanaConfig = (typeof PESTANAS_CONFIG)[number];
 
 export function esPestanaConfig(valor: unknown): valor is PestanaConfig {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CircleSlash, Loader2, Power, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { CodigosDeCuenta } from "@/components/contabilidad/configuracion/codigos-de-cuenta";
 import { AvisoEstado, useAccionConfig } from "@/components/contabilidad/configuracion/aviso-estado";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,7 @@ import {
   editarCuenta,
 } from "@/server/contabilidad/configuracion/acciones";
 import { TIPOS_CUENTA, type TipoCuenta } from "@/lib/contabilidad/catalogo";
+import type { CodigoConfigurado } from "@/server/contabilidad/codigos-transaccion/consultas";
 import type { CuentaCatalogo } from "@/server/contabilidad/configuracion/consultas";
 
 export type ModoCuenta = "subcuenta" | "editar" | "raiz" | "desactivar" | "activar";
@@ -45,11 +47,13 @@ const ACCION = {
 export function DialogoCuenta({
   modo,
   cuenta,
+  codigos,
   alCerrar,
 }: {
   modo: ModoCuenta;
   /** `null` solo en `raiz`: una cuenta de primer nivel no cuelga de ninguna. */
   cuenta: CuentaCatalogo | null;
+  codigos: CodigoConfigurado[];
   alCerrar: () => void;
 }) {
   const t = useTranslations("contab.config.cuenta");
@@ -162,6 +166,9 @@ export function DialogoCuenta({
           )}
 
           <AvisoEstado estado={estado} />
+          {modo === "editar" && cuenta?.admiteMovimiento && cuenta.activa && (
+            <CodigosDeCuenta cuentaId={cuenta.id} codigos={codigos} />
+          )}
           <DialogFooter>
             <Button type="submit" variant={modo === "desactivar" ? "destructive" : "default"} cargando={enviando}>
               {enviando ? (

@@ -1,10 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { enTransaccionComo, consultarUna, consultar } from "@/lib/db";
+import { enTransaccion, enTransaccionComo, consultarUna, consultar } from "@/lib/db";
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe } from "@/server/contabilidad/sesion";
+import {
+  construirLineasPorCodigo,
+  ErrorCodigosTransaccion,
+  previsualizarLineasPorCodigo,
+} from "@/server/contabilidad/codigos-transaccion/asiento";
+import { descripcionDesembolso, partidasDeNomina } from "@/server/contabilidad/nomina/asiento";
 
 export type CrearEmpleadoInput = {
   tercero_id: string;
@@ -404,114 +410,6 @@ export async function crearNomina(input: CrearNominaInput): Promise<{ id: string
   return res;
 }
 
-/** Gasto de sueldos por programa del centro de costo (catálogo de la Fundación). */
-const CUENTA_SUELDOS_POR_PROGRAMA: Record<string, string> = {
-  habitudes: "5.3.3.1",
-  comedor: "5.3.3.2", // el comedor es parte del programa de alojamiento
-  formacion_360: "5.3.3.3",
-  becas: "5.3.3.4",
-  administrativo: "5.3.3.5",
-  institucional: "5.3.3.5",
-};
-const CUENTA_SUELDOS_OTROS = "5.3.3.5";
-const CUENTA_TSS_POR_PAGAR = "2.3.1";
-const CUENTAS_APORTES = { afp: "5.3.4.1", sfs: "5.3.4.2", srl: "5.3.4.3", infotep: "5.3.4.4" } as const;
-
-type CuentasNomina = Map<string, string>;
-
-/**
- * Busca las cuentas que usa la nómina. Faltar alguna es un error claro: el
- * catálogo de la Fundación debe tenerlas (5.3.3.x, 5.3.4.x y 2.3.1).
- */
-async function resolverCuentasNomina(cliente: import("pg").PoolClient): Promise<CuentasNomina> {
-  const codigos = [
-    ...new Set([...Object.values(CUENTA_SUELDOS_POR_PROGRAMA), CUENTA_SUELDOS_OTROS, CUENTA_TSS_POR_PAGAR, ...Object.values(CUENTAS_APORTES)]),
-  ];
-  const { rows } = await cliente.query<{ codigo: string; id: string }>(
-    `SELECT codigo, id FROM contabilidad.cuenta_contable
-      WHERE codigo = ANY($1::text[]) AND admite_movimiento AND activa`,
-    [codigos],
-  );
-  const mapa: CuentasNomina = new Map(rows.map((r) => [r.codigo, r.id]));
-  const faltan = codigos.filter((c) => !mapa.has(c));
-  if (faltan.length) {
-    throw new Error(`Faltan cuentas de nómina en el catálogo (con movimiento): ${faltan.join(", ")}.`);
-  }
-  return mapa;
-}
-
-/**
- * Líneas del asiento de una nómina. El ISR retenido no tiene cuenta en el
- * catálogo vigente (ni «ISR por pagar» ni «Sueldos por pagar»): si hay ISR
- * se rechaza el pago en vez de repartirlo en otra cuenta sin avisar.
- */
-async function lineasAsientoNomina(
-  cliente: import("pg").PoolClient,
-  nominaId: string,
-  codigoNomina: string,
-  cuentas: CuentasNomina,
-  cuentaBancoId: string,
-) {
-  const { rows: tot } = await cliente.query<{
-    afp_emp: string; sfs_emp: string; isr: string; neto: string;
-    afp_pat: string; sfs_pat: string; srl_pat: string; infotep_pat: string;
-  }>(
-    `SELECT total_afp_empleado::text AS afp_emp, total_sfs_empleado::text AS sfs_emp,
-            total_isr_empleado::text AS isr, total_neto::text AS neto,
-            total_afp_empleador::text AS afp_pat, total_sfs_empleador::text AS sfs_pat,
-            total_srl_empleador::text AS srl_pat, total_infotep_empleador::text AS infotep_pat
-       FROM contabilidad.nomina WHERE id = $1`,
-    [nominaId],
-  );
-  const t = tot[0];
-  if (Number(t.isr) > 0) {
-    throw new Error(
-      "La nómina tiene ISR retenido y el catálogo vigente no tiene una cuenta de ISR por pagar. Agrégala al catálogo antes de pagar.",
-    );
-  }
-
-  const { rows: porPrograma } = await cliente.query<{ programa: string; devengado: string }>(
-    `SELECT cc.programa, sum(nl.total_devengado)::text AS devengado
-       FROM contabilidad.nomina_linea nl
-       JOIN contabilidad.centro_costo cc ON cc.id = nl.centro_costo_id
-      WHERE nl.nomina_id = $1
-      GROUP BY cc.programa`,
-    [nominaId],
-  );
-
-  // Se agrupa por cuenta: dos programas pueden caer en 5.3.3.5.
-  const sueldos = new Map<string, number>();
-  for (const f of porPrograma) {
-    const codigo = CUENTA_SUELDOS_POR_PROGRAMA[f.programa] ?? CUENTA_SUELDOS_OTROS;
-    sueldos.set(codigo, (sueldos.get(codigo) ?? 0) + Number(f.devengado));
-  }
-
-  const aportes: [string, number][] = [
-    [CUENTAS_APORTES.afp, Number(t.afp_pat)],
-    [CUENTAS_APORTES.sfs, Number(t.sfs_pat)],
-    [CUENTAS_APORTES.srl, Number(t.srl_pat)],
-    [CUENTAS_APORTES.infotep, Number(t.infotep_pat)],
-  ];
-  const totalAportes = aportes.reduce((a, [, m]) => a + m, 0);
-  const tssEmpleado = Number(t.afp_emp) + Number(t.sfs_emp);
-
-  // `crear_asiento` descarta las líneas en cero.
-  return [
-    ...[...sueldos].map(([codigo, monto]) => ({
-      cuenta_id: cuentas.get(codigo), debe: monto, haber: 0, descripcion: `Sueldos nómina ${codigoNomina}`,
-    })),
-    ...aportes.map(([codigo, monto]) => ({
-      cuenta_id: cuentas.get(codigo), debe: monto, haber: 0, descripcion: `Aporte patronal nómina ${codigoNomina}`,
-    })),
-    {
-      cuenta_id: cuentas.get(CUENTA_TSS_POR_PAGAR), debe: 0,
-      haber: Number((tssEmpleado + totalAportes).toFixed(2)),
-      descripcion: `TSS por pagar (empleado y empleador) nómina ${codigoNomina}`,
-    },
-    { cuenta_id: cuentaBancoId, debe: 0, haber: Number(t.neto), descripcion: `Desembolso de sueldos netos nómina ${codigoNomina}` },
-  ];
-}
-
 /**
  * Aprueba una corrida de nómina. El asiento contable nace al pagarla (ver
  * `pagarNomina`): el catálogo vigente no tiene pasivo de sueldos.
@@ -567,9 +465,21 @@ export async function aprobarNomina(nominaId: string): Promise<{ asientoId: null
 
     // El catálogo de la Fundación no tiene «Sueldos por pagar»: no se puede
     // devengar la nómina (gasto contra pasivo). El asiento se hace al pagar,
-    // gasto contra banco y TSS por pagar. Aprobar solo exige que las cuentas
-    // existan, para fallar aquí y no después de que alguien preparó el pago.
-    await resolverCuentasNomina(cliente);
+    // gasto contra banco y por pagar. Aprobar solo exige que cada código de
+    // transacción usado tenga cuenta, para fallar aquí y no después de que
+    // alguien preparó el pago (el banco se elige al pagar, por eso va vacío).
+    const { partidas, neto } = await partidasDeNomina(cliente, nominaId, nom.codigo);
+    const previa = await previsualizarLineasPorCodigo(cliente, partidas, [
+      { cuenta_id: null, debe: 0, haber: neto, descripcion: "" },
+    ]);
+    if (previa.sinCuenta.length || previa.cuentaInactiva.length) {
+      const faltan = [...previa.sinCuenta, ...previa.cuentaInactiva];
+      throw new ErrorCodigosTransaccion(
+        previa.sinCuenta.length ? "codigo_sin_cuenta" : "cuenta_no_usable",
+        `Estos códigos de transacción de nómina no tienen una cuenta válida: ${faltan.join(", ")}. Asígnalos en Configuración contable > Catálogo.`,
+        faltan,
+      );
+    }
 
     // Actualizar estado de la nómina (sin asiento: nace al pagarse)
     await cliente.query(
@@ -589,10 +499,11 @@ export async function aprobarNomina(nominaId: string): Promise<{ asientoId: null
 }
 
 /**
- * Paga una nómina aprobada: un solo asiento con los sueldos por programa
- * (5.3.3.x), los aportes patronales (5.3.4.x), las retenciones y aportes de
- * TSS por pagar (2.3.1) y el desembolso del neto por el banco. Pasa la
- * nómina a 'pagada'.
+ * Paga una nómina aprobada: un solo asiento con los sueldos por programa, los
+ * aportes patronales, lo que queda por pagar a la TSS y la DGII y el
+ * desembolso del neto por el banco. Las cuentas y los lados salen de los
+ * códigos de transacción de nómina (Configuración contable). Pasa la nómina
+ * a 'pagada'.
  */
 export async function pagarNomina(
   nominaId: string,
@@ -626,8 +537,11 @@ export async function pagarNomina(
       throw new Error(`La nómina debe estar aprobada para poder pagarse (actual: '${nom.estado}').`);
     }
 
-    const cuentas = await resolverCuentasNomina(cliente);
-    const lineas = await lineasAsientoNomina(cliente, nominaId, nom.codigo, cuentas, cuentaBancoId);
+    const { partidas, neto } = await partidasDeNomina(cliente, nominaId, nom.codigo);
+    // El banco es una elección de quien paga, no un proceso con código: va como línea extra.
+    const lineas = await construirLineasPorCodigo(cliente, partidas, [
+      { cuenta_id: cuentaBancoId, debe: 0, haber: neto, descripcion: descripcionDesembolso(nom.codigo) },
+    ]);
 
     const { rows: asRows } = await cliente.query<{ id: string }>(
       `SELECT contabilidad.crear_asiento($1::date, $2, 'ajuste', 'contabilidad.nomina', $3, $4::jsonb) AS id`,
@@ -692,4 +606,35 @@ export async function obtenerDetalleNominaAccion(nominaId: string) {
 export async function generarTxtTssAccion(nominaId: string) {
   const { generarTxtTssSuirPlus } = await import("./consultas");
   return generarTxtTssSuirPlus(nominaId);
+}
+
+/**
+ * Vista previa del asiento que generaría el pago: mismo motor y mismas
+ * partidas que `pagarNomina`, pero sin escribir nada (por eso no necesita la
+ * transacción con usuario que exige la bitácora).
+ */
+export async function previsualizarAsientoNominaAccion(nominaId: string, cuentaBancoId: string | null) {
+  await requerirPermiso("contabilidad.nomina");
+  return enTransaccion(async (cliente) => {
+    const nom = (await cliente.query<{ codigo: string; estado: string }>(
+      `SELECT codigo, estado FROM contabilidad.nomina WHERE id = $1`, [nominaId],
+    )).rows[0];
+    if (!nom) throw new Error("Nómina no encontrada.");
+    const { partidas, neto } = await partidasDeNomina(cliente, nominaId, nom.codigo);
+    const previa = await previsualizarLineasPorCodigo(cliente, partidas, [
+      { cuenta_id: cuentaBancoId, debe: 0, haber: neto, descripcion: descripcionDesembolso(nom.codigo) },
+    ]);
+    const ids = previa.lineas.map((l) => l.cuenta_id).filter((x): x is string => !!x);
+    const cuentas = (await cliente.query<{ id: string; codigo: string; nombre: string }>(
+      `SELECT id, codigo, nombre FROM contabilidad.cuenta_contable WHERE id = ANY($1::uuid[])`, [ids],
+    )).rows;
+    const porId = new Map(cuentas.map((c) => [c.id, c]));
+    return {
+      ...previa,
+      lineas: previa.lineas.map((l) => ({
+        ...l,
+        cuenta: l.cuenta_id ? porId.get(l.cuenta_id) ?? null : null,
+      })),
+    };
+  });
 }

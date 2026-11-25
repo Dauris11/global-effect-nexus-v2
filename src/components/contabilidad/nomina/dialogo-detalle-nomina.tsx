@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { AsientoPrevio } from "./asiento-previo";
 import type { NominaDetallada } from "@/server/contabilidad/nomina/consultas";
 import {
   aprobarNomina,
@@ -235,6 +236,15 @@ export function DialogoDetalleNomina({
                 </tbody>
               </table>
             </div>
+
+            {/* El asiento del pago, calculado por códigos de transacción (no escribe nada) */}
+            {(nomina.estado === "borrador" || nomina.estado === "aprobada") && (
+              <AsientoPrevio
+                nominaId={nominaId}
+                cuentaBancoId={cuentaBancoSeleccionada || null}
+                version={nomina.estado}
+              />
+            )}
 
             {/* Opciones de pago si está aprobada */}
             {nomina.estado === "aprobada" && cuentasBanco.length > 0 && (

@@ -4485,7 +4485,8 @@
         "entidad": "Entidad",
         "parametros": "Parámetros legales",
         "periodos": "Períodos",
-        "catalogo": "Catálogo de cuentas"
+        "catalogo": "Catálogo de cuentas",
+        "codigos": "Código de transacciones"
       },
       "entidad": {
         "titulo": "Datos de la Fundación",
@@ -4670,7 +4671,14 @@
           "titulo": "Nueva cuenta principal",
           "descripcion": "Crea un rubro de primer nivel. Nace agrupadora: sus subcuentas son las que reciben asientos.",
           "confirmar": "Crear cuenta"
-        }
+        },
+        "codigosTitulo": "Códigos de transacción",
+        "codigosAyuda": "Marca los procesos que usarán esta cuenta. El asiento automático la pondrá del lado configurado de cada código.",
+        "codigosMover": "Ya está en {cuenta}; se moverá aquí",
+        "codigosVacio": "No hay códigos de transacción definidos.",
+        "codigosGuardar": "Guardar códigos",
+        "codigosGuardado": "Códigos guardados",
+        "codigosInsignia": "{n, plural, one {# código de transacción} other {# códigos de transacción}}"
       },
       "error": {
         "no_permitido": "Tu cuenta no tiene permiso para hacer esto.",
@@ -4706,6 +4714,31 @@
         "error": "No se pudo completar. Inténtalo de nuevo y, si sigue, avisa al equipo técnico.",
         "cuenta_con_movimientos": "La cuenta o sus subcuentas ya tienen asientos: no se puede cambiar su código, tipo ni si recibe asientos. El nombre sí.",
         "cuenta_con_hijas": "La cuenta tiene subcuentas: no puede recibir asientos."
+      },
+      "codigos": {
+        "explicacion": "Cada código nombra un proceso contable. Aquí defines si el código va al débito o al crédito; la cuenta se le asigna en el Catálogo. Los códigos nuevos los añade el equipo técnico en el código del sistema.",
+        "vacioTitulo": "No hay códigos de transacción definidos",
+        "nombre": "Código",
+        "proceso": "Proceso",
+        "lado": "Lado",
+        "cuenta": "Cuenta asignada",
+        "debito": "Débito",
+        "credito": "Crédito",
+        "ladoDe": "Lado de {codigo}",
+        "sinCuenta": "Sin cuenta asignada",
+        "cuentaInactiva": "Cuenta inactiva o agrupadora",
+        "asignarEnCatalogo": "Asignar en el Catálogo",
+        "defecto": "Por defecto",
+        "guardado": "Guardado",
+        "guardando": "Guardando",
+        "error": {
+          "no_permitido": "No tienes permiso para configurar los códigos de transacción.",
+          "codigo_desconocido": "Ese código de transacción no existe.",
+          "naturaleza_invalida": "El lado debe ser débito o crédito.",
+          "cuenta_invalida": "La cuenta debe estar activa y admitir movimientos.",
+          "datos_invalidos": "Los datos enviados no son válidos.",
+          "error": "No se pudo guardar. Inténtalo de nuevo."
+        }
       }
     },
     "asientos": {
@@ -5378,7 +5411,18 @@
         "pago": "Pago y retenciones",
         "periodo": "Periodo",
         "fechas": "Fechas"
-      }
+      },
+      "asientoTitulo": "Asiento que se generará",
+      "asientoCuenta": "Cuenta",
+      "asientoDebe": "Debe",
+      "asientoHaber": "Haber",
+      "asientoTotal": "Totales",
+      "asientoBancoPendiente": "Banco (se elige al pagar)",
+      "asientoCargando": "Calculando el asiento",
+      "asientoSinCuenta": "Códigos sin cuenta asignada: {codigos}. Asígnalos en Configuración contable > Código de transacciones y Catálogo.",
+      "asientoCuentaInactiva": "Códigos con cuenta inactiva o agrupadora: {codigos}.",
+      "asientoDescuadre": "El asiento no cuadra con la configuración actual. Revisa el lado de los códigos.",
+      "asientoError": "No se pudo calcular la vista previa."
     },
     "activosFijos": {
       "antetitulo": "Contabilidad",
