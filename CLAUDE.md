@@ -66,11 +66,11 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     en UTC. «Hoy» sale de `claveDia()` / `diaEnRD()` (`src/lib/fechas.ts`) y, en
     SQL, de `(now() AT TIME ZONE 'America/Santo_Domingo')::date`. Nunca
     `CURRENT_DATE` ni `new Date().toISOString().slice(0, 10)`.
-13. **Contabilidad:** el catálogo es el de 88 cuentas del Excel (migración
-    `0107`); no reintroduzcas los códigos viejos (`1.1.01.xx`…). En contabilidad
-    nada se borra: se anula con motivo. El costo por estudiante (`/expedientes`
-    pestaña «Costos» y su reporte) nunca lo ven estudiante, docente, chofer ni
-    Habitudes.
+13. **Contabilidad:** el catálogo es el de 103 cuentas del Excel (migración
+    `0121`; reemplazó el de 88 de la `0107`); no reintroduzcas los códigos
+    viejos (`1.1.01.xx`…). En contabilidad nada se borra: se anula con motivo.
+    El costo por estudiante (`/expedientes` pestaña «Costos» y su reporte)
+    nunca lo ven estudiante, docente, chofer ni Habitudes.
 14. **Gráficos, calendarios y Gantt:** solo a través de `ui/grafico/`,
     `ui/calendario-base.tsx` y `ui/gantt-base.tsx`. No importes `recharts`,
     `@fullcalendar/*` ni `@svar-ui/*` en otro sitio.

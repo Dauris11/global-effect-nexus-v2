@@ -4628,8 +4628,8 @@
           "ingreso": "Revenue",
           "gasto": "Expense"
         },
-        "movimiento": "Posting",
-        "agrupadora": "Summary",
+        "movimiento": "YES",
+        "agrupadora": "NO",
         "inactiva": "Inactive",
         "agregar": "Add sub-account",
         "agregarSub": "Add a sub-account to {codigo}",

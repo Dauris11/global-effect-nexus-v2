@@ -4628,8 +4628,8 @@
           "ingreso": "Ingreso",
           "gasto": "Gasto"
         },
-        "movimiento": "De movimiento",
-        "agrupadora": "Agrupadora",
+        "movimiento": "SI",
+        "agrupadora": "NO",
         "inactiva": "Inactiva",
         "agregar": "Agregar subcuenta",
         "agregarSub": "Agregar una subcuenta a {codigo}",

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Genera el bloque VALUES del catálogo contable de la migración 0107.
+"""Genera el bloque VALUES del catálogo contable de la migración 0121.
 
 Uso: python3 -I scripts/generar-catalogo-sql.py "<ruta al .xlsx>"
 
-Reescribe, dentro de db/migrations/0107_catalogo_global_effect.sql, lo que hay
+Reescribe, dentro de db/migrations/0121_catalogo_global_effect_v2.sql, lo que hay
 entre las marcas `-- INICIO-CATALOGO` y `-- FIN-CATALOGO`. Se deja el script en
 el repo para que el SQL de la migración sea reproducible desde el Excel que
 entregó la Fundación y no una transcripción a mano.
 
 Por qué se valida tanto: en el Excel los códigos vienen mezclados (números
-como 1.1 y textos como '1.1.1'), y un 5.4.10 leído como número sería 5.4.
+como 1.1 y textos como '1.1.1'), y un 5.2.3.10 leído como número sería 5.2.3.1.
 """
 import re
 import sys
@@ -19,7 +19,7 @@ import openpyxl
 
 TIPOS = {"1": "activo", "2": "pasivo", "3": "patrimonio", "4": "ingreso", "5": "gasto"}
 RAIZ = Path(__file__).resolve().parent.parent
-MIGRACION = RAIZ / "db" / "migrations" / "0107_catalogo_global_effect.sql"
+MIGRACION = RAIZ / "db" / "migrations" / "0121_catalogo_global_effect_v2.sql"
 
 
 def a_texto(valor) -> str:
@@ -36,15 +36,21 @@ def clave(codigo: str):
 def main(ruta: str) -> None:
     hoja = openpyxl.load_workbook(ruta, data_only=True).active
     filas = []
+    banco_n = 0
     for cuenta, nombre, recibe in list(hoja.iter_rows(values_only=True))[1:]:
         if cuenta is None:
             continue
         codigo = a_texto(cuenta)
         if not re.fullmatch(r"\d+(\.\d+)*", codigo):
             sys.exit(f"Código inválido: {codigo!r}")
-        if recibe not in ("SI", "NO"):
+        recibe_norm = "NO" if recibe is None else str(recibe).strip().upper()
+        if recibe_norm not in ("SI", "NO"):
             sys.exit(f"Recibe Movimiento inválido en {codigo}: {recibe!r}")
-        filas.append((codigo, str(nombre).strip(), recibe == "SI"))
+        desc = str(nombre).strip()
+        if desc == "Banco Santa Cruz (No. de Cuenta)":
+            banco_n += 1
+            desc = f"Banco Santa Cruz (No. de Cuenta {banco_n})"
+        filas.append((codigo, desc, recibe_norm == "SI"))
 
     codigos = [f[0] for f in filas]
     if len(set(codigos)) != len(codigos):

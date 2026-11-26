@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookOpen, CircleSlash, ListChecks, Pencil, Plus, Power, Search } from "lucide-react";
+import { BookOpen, CircleSlash, Pencil, Plus, Power, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Monto } from "@/components/contabilidad/comun";
@@ -32,18 +32,8 @@ export function SeccionCatalogo({
   puedeEditar: boolean;
 }) {
   const t = useTranslations("contab.config.catalogo");
-  const tc = useTranslations("contab.config.cuenta");
   const [busqueda, setBusqueda] = useState("");
   const [seleccion, setSeleccion] = useState<Seleccion>(null);
-
-  // Los códigos de transacción de cada cuenta, para la insignia de la fila.
-  const codigosPorCuenta = useMemo(() => {
-    const mapa = new Map<string, CodigoConfigurado[]>();
-    for (const c of codigos) {
-      if (c.cuenta) mapa.set(c.cuenta.id, [...(mapa.get(c.cuenta.id) ?? []), c]);
-    }
-    return mapa;
-  }, [codigos]);
 
   const visibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -101,15 +91,6 @@ export function SeccionCatalogo({
         {cuenta.admiteMovimiento ? t("movimiento") : t("agrupadora")}
       </Badge>
       {!cuenta.activa && <Badge variant="solida">{t("inactiva")}</Badge>}
-      {(codigosPorCuenta.get(cuenta.id)?.length ?? 0) > 0 && (
-        <Badge
-          variant="outline"
-          title={codigosPorCuenta.get(cuenta.id)!.map((c) => c.nombre).join(", ")}
-        >
-          <ListChecks className="size-3.5" />
-          {tc("codigosInsignia", { n: codigosPorCuenta.get(cuenta.id)!.length })}
-        </Badge>
-      )}
     </>
   );
 

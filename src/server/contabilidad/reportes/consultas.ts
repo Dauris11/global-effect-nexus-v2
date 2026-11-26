@@ -289,11 +289,10 @@ export async function obtenerBalanceGeneral(filtros?: {
     });
   }
 
-  // Agrupación de Activos. En el catálogo de la Fundación el activo corriente
-  // es Efectivo (1.1) y Bancos (1.2); edificios, mobiliario/equipo y otros
-  // activos (1.3 a 1.5) son no corrientes. OJO: antes 1.2 era «No Corriente»;
-  // un prefijo `1.2` mal copiado mostraría el banco como activo fijo.
-  const esActivoCorriente = (codigo: string) => /^1\.[12](\.|$)/.test(codigo);
+  // Agrupación de Activos. En el catálogo de la Fundación (0121):
+  // 1.1 = Activos Corrientes (Cajas y Bancos 1.1.1, Inventario 1.1.2) y
+  // 1.2 = Activos Fijos (Edificaciones, Mobiliario/Equipo y Otros Activos).
+  const esActivoCorriente = (codigo: string) => /^1\.1(\.|$)/.test(codigo);
   const cuentasActivoCorriente = cuentasProcesadas.filter(
     (c) => c.tipoCuenta === "activo" && esActivoCorriente(c.codigo),
   );
@@ -662,13 +661,13 @@ export async function obtenerEstadoCambiosPatrimonio(filtros?: {
   const fechaDesde = `${ejercicio}-01-01`;
   const fechaHasta = `${ejercicio}-12-31`;
 
-  // Saldos acumulados antes del ejercicio para resultados acumulados
+  // Saldos acumulados antes del ejercicio (3.1.1 Beneficios/Pérdidas de Ejercicios Anteriores)
   const filaInicial = await consultarUna<{ acumulado_historico: string }>(
     `SELECT COALESCE(SUM(al.haber - al.debe), 0) AS acumulado_historico
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE c.codigo = '3.1.2'
+     WHERE c.codigo = '3.1.1'
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha < $1`,
     [fechaDesde],
@@ -947,13 +946,13 @@ export async function obtenerFlujoCajaProyectado(filtros?: {
   );
   const gastoNominaMensual = Number(filaNominaEstimada?.total_neto ?? 0);
 
-  // 3. Gastos fijos operativos recurrentes promedio (alquiler 5.3.1, electricidad de locales 5.3.2.x e internet 5.4.6.1)
+  // 3. Gastos fijos operativos recurrentes promedio (agua/luz/teléfono/internet 5.2.1.x y alquileres 5.2.3.1.x)
   const filaGastosFijos = await consultarUna<{ promedio_fijo: string }>(
     `SELECT COALESCE(SUM(al.debe - al.haber) / 3, 0) AS promedio_fijo
      FROM contabilidad.asiento_linea al
      JOIN contabilidad.cuenta_contable c ON c.id = al.cuenta_id
      JOIN contabilidad.asiento a ON a.id = al.asiento_id
-     WHERE (c.codigo IN ('5.3.1', '5.4.6.1') OR c.codigo LIKE '5.3.2.%')
+     WHERE (c.codigo LIKE '5.2.1.%' OR c.codigo LIKE '5.2.3.1.%')
        AND a.anulado = false AND a.procesado_en IS NOT NULL
        AND a.fecha >= ((now() AT TIME ZONE 'America/Santo_Domingo')::date - INTERVAL '90 days')`,
   );

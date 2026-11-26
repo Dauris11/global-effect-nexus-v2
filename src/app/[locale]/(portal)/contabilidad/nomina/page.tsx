@@ -26,8 +26,16 @@ export default async function PaginaNomina() {
     consultar<{ id: string; codigo: string; nombre: string }>(
       `SELECT id, codigo, nombre
          FROM contabilidad.cuenta_contable
-        WHERE codigo LIKE '1.2.%'
-          AND admite_movimiento = true
+        WHERE admite_movimiento = true
+          AND activa = true
+          AND (
+            (codigo LIKE '1.1.1.%' AND codigo <> '1.1.1.1')
+            OR id IN (
+              SELECT cuenta_contable_id
+                FROM contabilidad.cuenta_bancaria
+               WHERE estado = 'activa'
+            )
+          )
         ORDER BY contabilidad.clave_codigo(codigo)`,
     ),
   ]);
