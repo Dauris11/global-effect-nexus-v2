@@ -10,6 +10,7 @@ import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   formatearMonto,
@@ -52,10 +53,36 @@ function useIrA(estado: EstadoProveedor, destino: (id: string) => string) {
   }, [estado, router, destino]);
 }
 
-function Campo({ id, etiqueta, ayuda, children }: { id: string; etiqueta: string; ayuda?: React.ReactNode; children: React.ReactNode }) {
+function Campo({
+  id,
+  etiqueta,
+  obligatorio,
+  tooltip,
+  etiquetaTooltip,
+  ayuda,
+  children,
+}: {
+  id: string;
+  etiqueta: string;
+  obligatorio?: boolean;
+  tooltip?: string | string[];
+  etiquetaTooltip?: string;
+  ayuda?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-sm font-medium">{etiqueta}</Label>
+      <div className="flex items-center gap-1.5">
+        <Label htmlFor={id} className="text-sm font-medium">
+          {etiqueta}
+          {obligatorio && (
+            <span aria-hidden className="ml-0.5 text-[#B4342B]">
+              *
+            </span>
+          )}
+        </Label>
+        {tooltip && <TooltipAyuda texto={tooltip} etiqueta={etiquetaTooltip ?? etiqueta} />}
+      </div>
       {children}
       {ayuda && <div className="texto-meta">{ayuda}</div>}
     </div>
@@ -84,12 +111,14 @@ export function FormularioProveedor({
   const error = useError(estado);
   useIrA(estado, fichaProveedor);
 
-  // La consulta DGII solo admite dígitos sin guiones; el servidor valida lo mismo.
-  const tieneGuiones = identificacion.includes("-");
+  const esJuridica = tipo === "juridica";
+  // La consulta DGII (formal/jurídico) solo admite dígitos sin guiones; en informal se ingresa la cédula sin consultar DGII.
+  const tieneGuiones = esJuridica && identificacion.includes("-");
   const limpia = limpiarIdentificacion(identificacion);
-  const longitudEsperada = tipo === "juridica" ? 9 : 11;
+  const longitudEsperada = esJuridica ? 9 : 11;
   const completa = !tieneGuiones && limpia.length === longitudEsperada;
   const malDigito = completa && !identificacionValida(limpia, tipo);
+  const etiquetaInfo = t("masInformacion");
 
   async function onConsultarDgii() {
     setAvisoRnc(null);
@@ -98,7 +127,7 @@ export function FormularioProveedor({
       setAvisoRnc({ tipo: "error", mensaje: t("rncError.sin_guiones") });
       return;
     }
-    if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) {
+    if (!/^[0-9]{9}$/.test(entrada)) {
       setAvisoRnc({ tipo: "error", mensaje: t("rncError.formato_invalido") });
       return;
     }
@@ -128,13 +157,21 @@ export function FormularioProveedor({
       <FormularioGuiado>
         <PasoFormulario titulo={t("pasos.identificacion")}>
           <div className="grid gap-4 md:grid-cols-2">
-            <Campo id="tipo" etiqueta={t("tipo")}>
+            <Campo
+              id="tipo"
+              etiqueta={t("tipo")}
+              tooltip={t("tipoAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
               <select
                 id="tipo"
                 name="tipo"
                 className={SELECT}
                 value={tipo}
-                onChange={(e) => setTipo(e.target.value as "fisica" | "juridica")}
+                onChange={(e) => {
+                  setTipo(e.target.value as "fisica" | "juridica");
+                  if (avisoRnc) setAvisoRnc(null);
+                }}
               >
                 <option value="juridica">{tc("tipoProveedor.juridica")}</option>
                 <option value="fisica">{tc("tipoProveedor.fisica")}</option>
@@ -143,6 +180,9 @@ export function FormularioProveedor({
             <Campo
               id="identificacion"
               etiqueta={t("identificacion")}
+              obligatorio
+              tooltip={esJuridica ? t("identificacionAyudaJuridica") : t("identificacionAyudaFisica")}
+              etiquetaTooltip={etiquetaInfo}
               ayuda={
                 tieneGuiones
                   ? t("rncError.sin_guiones")
@@ -164,16 +204,18 @@ export function FormularioProveedor({
                   }}
                   aria-invalid={tieneGuiones || malDigito || undefined}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onConsultarDgii}
-                  disabled={consultandoRnc || tieneGuiones || !/^[0-9]{9}$|^[0-9]{11}$/.test(identificacion.trim())}
-                  className="shrink-0"
-                >
-                  {consultandoRnc ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-                  {consultandoRnc ? t("consultandoDgii") : t("consultarDgii")}
-                </Button>
+                {esJuridica && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onConsultarDgii}
+                    disabled={consultandoRnc || tieneGuiones || !/^[0-9]{9}$/.test(identificacion.trim())}
+                    className="shrink-0"
+                  >
+                    {consultandoRnc ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                    {consultandoRnc ? t("consultandoDgii") : t("consultarDgii")}
+                  </Button>
+                )}
               </div>
             </Campo>
             {avisoRnc && (
@@ -185,7 +227,13 @@ export function FormularioProveedor({
                 )}
               </div>
             )}
-            <Campo id="nombre" etiqueta={t("nombre")}>
+            <Campo
+              id="nombre"
+              etiqueta={t("nombre")}
+              obligatorio
+              tooltip={t("nombreAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
               <Input
                 id="nombre"
                 name="nombre"
@@ -195,7 +243,12 @@ export function FormularioProveedor({
                 onChange={(e) => setNombre(e.target.value)}
               />
             </Campo>
-            <Campo id="nombre_comercial" etiqueta={t("nombreComercial")}>
+            <Campo
+              id="nombre_comercial"
+              etiqueta={t("nombreComercial")}
+              tooltip={t("nombreComercialAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
               <Input
                 id="nombre_comercial"
                 name="nombre_comercial"
@@ -204,16 +257,28 @@ export function FormularioProveedor({
                 onChange={(e) => setNombreComercial(e.target.value)}
               />
             </Campo>
-            <Campo id="actividad_economica" etiqueta={t("actividadEconomica")}>
+            <Campo
+              id="actividad_economica"
+              etiqueta={t("actividadEconomica")}
+              obligatorio
+              tooltip={t("actividadEconomicaAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
               <Input
                 id="actividad_economica"
                 name="actividad_economica"
+                required
                 maxLength={300}
                 value={actividadEconomica}
                 onChange={(e) => setActividadEconomica(e.target.value)}
               />
             </Campo>
-            <Campo id="administracion_local" etiqueta={t("administracionLocal")}>
+            <Campo
+              id="administracion_local"
+              etiqueta={t("administracionLocal")}
+              tooltip={t("administracionLocalAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
               <Input
                 id="administracion_local"
                 name="administracion_local"
@@ -236,17 +301,35 @@ export function FormularioProveedor({
               <Input id="email" name="email" type="email" maxLength={120} defaultValue={proveedor?.email ?? ""} />
             </Campo>
           </div>
-          <Campo id="direccion" etiqueta={t("direccion")}>
-            <Textarea id="direccion" name="direccion" rows={2} maxLength={300} defaultValue={proveedor?.direccion ?? ""} />
+          <Campo
+            id="direccion"
+            etiqueta={t("direccion")}
+            obligatorio
+            tooltip={t("direccionAyuda")}
+            etiquetaTooltip={etiquetaInfo}
+          >
+            <Textarea id="direccion" name="direccion" rows={2} required maxLength={300} defaultValue={proveedor?.direccion ?? ""} />
           </Campo>
         </PasoFormulario>
         <PasoFormulario titulo={t("pasos.condiciones")}>
           <div className="grid gap-4 md:grid-cols-2">
-            <Campo id="condiciones" etiqueta={t("condiciones")}>
-              <Input id="condiciones" name="condiciones" type="number" min={0} max={365} defaultValue={proveedor?.condiciones_pago_dias ?? 30} />
+            <Campo
+              id="condiciones"
+              etiqueta={t("condiciones")}
+              obligatorio
+              tooltip={t("condicionesAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
+              <Input id="condiciones" name="condiciones" type="number" required min={0} max={365} defaultValue={proveedor?.condiciones_pago_dias ?? 30} />
             </Campo>
-            <Campo id="estado" etiqueta={t("estado")}>
-              <select id="estado" name="estado" className={SELECT} defaultValue={proveedor?.estado ?? "activo"}>
+            <Campo
+              id="estado"
+              etiqueta={t("estado")}
+              obligatorio
+              tooltip={t("estadoAyuda")}
+              etiquetaTooltip={etiquetaInfo}
+            >
+              <select id="estado" name="estado" className={SELECT} required defaultValue={proveedor?.estado ?? "activo"}>
                 <option value="activo">{tc("estadoProveedor.activo")}</option>
                 <option value="inactivo">{tc("estadoProveedor.inactivo")}</option>
               </select>

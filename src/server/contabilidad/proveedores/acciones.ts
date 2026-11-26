@@ -172,21 +172,34 @@ export async function guardarProveedor(
   const tipo = texto(datos, "tipo", 10);
   const identificacion = limpiarIdentificacion(texto(datos, "identificacion", 20));
   const nombre = texto(datos, "nombre", 160);
-  const dias = Number(texto(datos, "condiciones", 3) || "30");
-  const estado = texto(datos, "estado", 10) === "inactivo" ? "inactivo" : "activo";
+  const actividadEconomica = texto(datos, "actividad_economica", 300);
+  const direccion = texto(datos, "direccion", 300);
+  const condicionesTexto = texto(datos, "condiciones", 3);
+  const dias = condicionesTexto === "" ? Number.NaN : Number(condicionesTexto);
+  const estadoCrudo = texto(datos, "estado", 10);
+  const estado = estadoCrudo === "activo" || estadoCrudo === "inactivo" ? estadoCrudo : "";
 
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
-  if ((tipo !== "fisica" && tipo !== "juridica") || !nombre || !Number.isInteger(dias) || dias < 0 || dias > 365) {
+  if (
+    (tipo !== "fisica" && tipo !== "juridica") ||
+    !nombre ||
+    !actividadEconomica ||
+    !direccion ||
+    !estado ||
+    !Number.isInteger(dias) ||
+    dias < 0 ||
+    dias > 365
+  ) {
     return { estado: "datos_invalidos" };
   }
   if (!identificacionValida(identificacion, tipo)) return { estado: "identificacion_invalida" };
 
   const valores = [
     tipo, identificacion, nombre, texto(datos, "nombre_comercial", 160) || null,
-    texto(datos, "actividad_economica", 300) || null,
+    actividadEconomica,
     texto(datos, "administracion_local", 160) || null,
     texto(datos, "contacto", 120) || null, texto(datos, "telefono", 40) || null,
-    texto(datos, "email", 120) || null, texto(datos, "direccion", 300) || null,
+    texto(datos, "email", 120) || null, direccion,
     dias, idOpcional(datos, "categoria"), estado,
   ];
 
