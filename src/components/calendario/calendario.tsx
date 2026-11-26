@@ -23,6 +23,7 @@ import { FiltroMenu, FiltroPuesto } from "./filtros-calendario";
 const ORIGENES: readonly Entrada["origen"][] = [
   "evento",
   "tarea",
+  "actividad",
   "asignacion",
   "cita",
   "reunion",

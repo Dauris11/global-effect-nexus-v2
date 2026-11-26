@@ -153,6 +153,12 @@
   --fc-event-text-color: var(--background);
 }
 
+.fc-origen-actividad {
+  --fc-event-bg-color: var(--color-est-progreso);
+  --fc-event-border-color: var(--color-est-progreso);
+  --fc-event-text-color: white;
+}
+
 .fc-origen-evento {
   --fc-event-bg-color: var(--color-marca-500);
   --fc-event-border-color: var(--color-marca-500);

@@ -2,6 +2,7 @@ import {
   BookOpen,
   CalendarCheck2,
   CalendarClock,
+  FolderKanban,
   ClipboardList,
   Inbox,
   ListTodo,
@@ -24,6 +25,7 @@ import {
 export type OrigenCalendario =
   | "evento"
   | "tarea"
+  | "actividad"
   | "asignacion"
   | "cita"
   | "reunion"
@@ -38,6 +40,7 @@ export const ORIGEN_VISUAL: Record<
 > = {
   evento: { icono: CalendarCheck2, llave: "event" },
   tarea: { icono: ListTodo, llave: "task" },
+  actividad: { icono: FolderKanban, llave: "activity" },
   asignacion: { icono: ClipboardList, llave: "assignment" },
   cita: { icono: CalendarClock, llave: "appointment" },
   reunion: { icono: Users, llave: "meeting" },
@@ -68,7 +71,7 @@ export type VistaCalendario = "mes" | "semana" | "dia" | "lista";
  * lo que hace falta para el diálogo de detalle y la edición.
  */
 export type Entrada = {
-  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion" | "clase";
+  origen: "evento" | "tarea" | "actividad" | "asignacion" | "cita" | "reunion" | "clase";
   id: string;
   titulo: string;
   detalle: string | null;

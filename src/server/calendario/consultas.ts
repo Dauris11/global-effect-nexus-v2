@@ -21,7 +21,7 @@ import type { Rol } from "@/lib/rbac";
  */
 
 export type EntradaCalendario = {
-  origen: "evento" | "tarea" | "asignacion" | "cita" | "reunion" | "clase";
+  origen: "evento" | "tarea" | "actividad" | "asignacion" | "cita" | "reunion" | "clase";
   id: string;
   titulo: string;
   /** Tipo del evento, proyecto de la tarea o estado de la cita. */
@@ -100,6 +100,28 @@ export async function calendarioDelMes({
         AND t.fecha_limite IS NOT NULL
         AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision')
         AND t.fecha_limite BETWEEN $2::date AND $3::date
+
+      UNION ALL
+
+     -- Una actividad sale en su día de cierre (o el de inicio si no tiene
+     -- fin), solo para quien la lleva y mientras siga viva.
+     SELECT 'actividad' AS origen,
+            a.id,
+            a.nombre AS titulo,
+            p.nombre AS detalle,
+            to_char(COALESCE(a.fecha_fin, a.fecha_inicio), 'YYYY-MM-DD') AS dia,
+            NULL AS hora,
+            a.estado,
+            NULL AS ubicacion,
+            NULL AS hora_fin,
+            NULL AS descripcion,
+            a.prioridad::text AS prioridad
+       FROM actividad a
+       JOIN proyecto p ON p.id = a.proyecto_id
+      WHERE a.responsable_id = $1
+        AND COALESCE(a.fecha_fin, a.fecha_inicio) IS NOT NULL
+        AND a.estado IN ('planificacion', 'en_curso', 'pausado')
+        AND COALESCE(a.fecha_fin, a.fecha_inicio) BETWEEN $2::date AND $3::date
 
       ORDER BY dia, hora NULLS FIRST`,
     [usuarioId, desde, hasta],

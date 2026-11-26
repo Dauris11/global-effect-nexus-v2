@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState } from "react";
 import {
   AlertCircle,
   CalendarDays,
@@ -11,14 +11,17 @@ import {
   Save,
   Search,
   Users,
-  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
+import { KanbanBase } from "@/components/operaciones/kanban-base";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AccionesFormulario,
   FormularioGuiado,
@@ -28,17 +31,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Locale } from "@/i18n/routing";
+import { visualPrioridad } from "@/lib/estados-trabajo";
 import { fechaCorta } from "@/lib/fechas";
-import { COLUMNAS, type Columna } from "@/lib/operaciones";
-import {
-  ALERTA_RIESGO,
-  ANIMACION,
-  AZUL,
-  AZUL_OSCURO,
-  AZUL_SUAVE,
-  NEUTRO,
-  PRIORIDAD,
-} from "@/lib/paleta";
+import { COLUMNAS } from "@/lib/operaciones";
+import { ALERTA_RIESGO, ANIMACION } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
 import {
   crearTarea,
@@ -46,6 +42,7 @@ import {
   moverTarea,
 } from "@/server/operaciones/acciones";
 import type {
+  OpcionActividad,
   OpcionOperaciones,
   TareaTablero,
 } from "@/server/operaciones/consultas";
@@ -54,145 +51,69 @@ import type {
 const SELECT =
   "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
+type Alcance = "hoy" | "semana" | "todas";
+const ALCANCES: readonly Alcance[] = ["hoy", "semana", "todas"];
+
 /**
- * Tablero de tareas: tres columnas y arrastrar para mover.
+ * «Mis tareas»: Kanban de lo que tengo asignado, con el color del estado en la
+ * columna y el de la prioridad en cada tarjeta. Cada tarjeta dice a qué
+ * proyecto y actividad pertenece, y la fecha límite es la misma que ve el
+ * calendario. Hoy / Esta semana / Todas es la planificación del día.
  *
- * ARRASTRAR NO ES LA ÚNICA FORMA DE MOVER, y eso no es un extra: con solo
- * arrastre, quien navega con teclado o usa un lector de pantalla no puede
- * cambiar el estado de una tarea. Cada tarjeta lleva además un botón que la
- * empuja a la siguiente columna, y las dos formas llaman a la MISMA acción.
+ * Las gráficas no van aquí: viven en los reportes y el dashboard.
  *
- * El arrastre es HTML nativo (`draggable`, `onDragStart`, `onDrop`), igual que
- * el del calendario: sin librería, sin dependencia nueva y con el mismo
- * comportamiento en todo el sistema.
- *
- * La tarjeta se mueve en pantalla ANTES de que el servidor conteste
- * (`useTransition` + estado local). Un tablero en el que la tarjeta se queda
- * quieta medio segundo después de soltarla se siente roto, y si la escritura
- * falla se devuelve a su sitio y se dice por qué.
+ * Con `soloMias` todas las tarjetas son mías y se pueden mover aunque el rol
+ * no tenga `operaciones.escribir` (la acción lo comprueba en el servidor);
+ * crear tareas sí exige `puedeEscribir`.
  */
 export function TableroTareas({
   tareas,
   proyectos,
+  actividades,
   personas,
   puedeEscribir,
+  soloMias = false,
 }: {
   tareas: readonly TareaTablero[];
   proyectos: readonly OpcionOperaciones[];
+  actividades: readonly OpcionActividad[];
   personas: readonly OpcionOperaciones[];
   puedeEscribir: boolean;
+  soloMias?: boolean;
 }) {
   const t = useTranslations("admin");
   const [nueva, setNueva] = useState(false);
-
-  /*
-   * Los movimientos que aún no ha confirmado el servidor. Se guardan aparte de
-   * `tareas` —que llega del servidor y se rehace en cada revalidación— para que
-   * la respuesta buena pise el estado optimista en vez de pelearse con él.
-   */
-  const [movidas, setMovidas] = useState<Record<string, Columna>>({});
-  const [arrastrada, setArrastrada] = useState<string | null>(null);
-  const [columnaHover, setColumnaHover] = useState<Columna | null>(null);
-  const [fallo, setFallo] = useState(false);
-  const [, empezar] = useTransition();
-
   const [busqueda, setBusqueda] = useState("");
-  const [proyectoFiltro, setProyectoFiltro] = useState<string>("todos");
-  const [prioridadFiltro, setPrioridadFiltro] = useState<string>("todas");
-  const [soloVencidas, setSoloVencidas] = useState(false);
-
-  const estadoDe = (tarea: TareaTablero) =>
-    movidas[tarea.id] ?? (tarea.estado as Columna);
+  const [alcance, setAlcance] = useState<Alcance>("hoy");
 
   const texto = busqueda.trim().toLowerCase();
-  const hayFiltros =
-    texto.length > 0 ||
-    proyectoFiltro !== "todos" ||
-    prioridadFiltro !== "todas" ||
-    soloVencidas;
-
-  const tareasFiltradas = tareas.filter((tarea) => {
-    if (soloVencidas && !tarea.vencida) return false;
-    if (prioridadFiltro !== "todas" && tarea.prioridad !== prioridadFiltro) return false;
-    if (proyectoFiltro === "__sin__") {
-      if (tarea.proyecto_id !== null) return false;
-    } else if (proyectoFiltro !== "todos" && tarea.proyecto_id !== proyectoFiltro) {
-      return false;
-    }
-    if (texto.length > 0) {
-      const enTitulo = tarea.titulo.toLowerCase().includes(texto);
-      const enDesc = tarea.descripcion?.toLowerCase().includes(texto) ?? false;
-      const enAsig = tarea.asignados?.toLowerCase().includes(texto) ?? false;
-      if (!enTitulo && !enDesc && !enAsig) return false;
-    }
-    return true;
+  const visibles = tareas.filter((tarea) => {
+    // Lo vencido y sin cerrar se queda en «Hoy»: es lo primero que toca.
+    if (alcance === "hoy" && !tarea.es_hoy && !tarea.vencida) return false;
+    if (alcance === "semana" && !tarea.esta_semana && !tarea.vencida) return false;
+    if (texto.length === 0) return true;
+    return (
+      tarea.titulo.toLowerCase().includes(texto) ||
+      (tarea.proyecto?.toLowerCase().includes(texto) ?? false) ||
+      (tarea.actividad?.toLowerCase().includes(texto) ?? false)
+    );
   });
 
-  const totalVencidas = tareas.filter((tarea) => tarea.vencida).length;
-
-  const COLOR_COLUMNA: Record<Columna, string> = {
-    por_hacer: NEUTRO,
-    en_progreso: AZUL,
-    en_revision: AZUL_SUAVE,
-    completada: AZUL_OSCURO,
-  };
-
-  const serieEstado = COLUMNAS.map((col) => ({
-    nombre: t(`taskStatus.${col}`),
-    valor: tareasFiltradas.filter((tarea) => estadoDe(tarea) === col).length,
-    color: COLOR_COLUMNA[col],
-  }));
-
-  const conteoPorProyecto = new Map<string, number>();
-  for (const tarea of tareasFiltradas) {
-    const nombre = tarea.proyecto ?? t("board.noProject");
-    conteoPorProyecto.set(nombre, (conteoPorProyecto.get(nombre) ?? 0) + 1);
-  }
-  const serieProyectos = [...conteoPorProyecto.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([nombre, valor], idx) => ({
-      nombre: nombre.length > 20 ? `${nombre.slice(0, 19)}…` : nombre,
-      valor,
-      color: idx === 0 ? AZUL_OSCURO : AZUL,
-    }));
-
-  function mover(id: string, destino: Columna) {
-    if (!puedeEscribir) return;
-
-    const actual = tareas.find((tarea) => tarea.id === id);
-
-    if (!actual || estadoDe(actual) === destino) return;
-
-    setFallo(false);
-    setMovidas((previo) => ({ ...previo, [id]: destino }));
-
-    empezar(async () => {
-      const datos = new FormData();
-      datos.set("id", id);
-      datos.set("estado", destino);
-
-      const resultado = await moverTarea({ estado: "inicial" }, datos);
-
-      if (resultado.estado !== "ok") {
-        // Vuelve a su columna: mentirle a quien mira sobre dónde está una tarea
-        // es peor que no dejarle moverla.
-        setMovidas((previo) => {
-          const copia = { ...previo };
-          delete copia[id];
-          return copia;
-        });
-        setFallo(true);
-      }
-    });
-  }
+  const conteo = (a: Alcance) =>
+    tareas.filter((tarea) =>
+      a === "hoy"
+        ? tarea.es_hoy || tarea.vencida
+        : a === "semana"
+          ? tarea.esta_semana || tarea.vencida
+          : true,
+    ).length;
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <div className="relative min-w-48 flex-1 sm:max-w-64">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-3" />
             <Input
               type="search"
               value={busqueda}
@@ -202,324 +123,181 @@ export function TableroTareas({
             />
           </div>
 
-          <select
-            aria-label={t("task.project")}
-            value={proyectoFiltro}
-            onChange={(e) => setProyectoFiltro(e.target.value)}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-card px-2.5 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-          >
-            <option value="todos">{t("board.allProjects")}</option>
-            <option value="__sin__">{t("board.noProject")}</option>
-            {proyectos.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
-              </option>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {ALCANCES.map((a) => (
+              <button
+                key={a}
+                type="button"
+                onClick={() => setAlcance(a)}
+                aria-pressed={alcance === a}
+                className={cn(
+                  "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors",
+                  alcance === a
+                    ? "border-marca-500 bg-marca-50 text-marca-700"
+                    : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+                )}
+              >
+                {t(`board.scope${a === "hoy" ? "Today" : a === "semana" ? "Week" : "All"}`)}
+                <span className="tabular-nums opacity-75">{conteo(a)}</span>
+              </button>
             ))}
-          </select>
-
-          <select
-            aria-label={t("task.priority")}
-            value={prioridadFiltro}
-            onChange={(e) => setPrioridadFiltro(e.target.value)}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-card px-2.5 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-          >
-            <option value="todas">{t("board.allPriorities")}</option>
-            {(["urgente", "alta", "media", "baja"] as const).map((p) => (
-              <option key={p} value={p}>
-                {t(`priority.${p}`)}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={() => setSoloVencidas((v) => !v)}
-            className={cn(
-              "inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors",
-              soloVencidas
-                ? "border-marca-500 bg-marca-50 text-marca-700"
-                : "border-input bg-card text-tinta-2 hover:bg-muted/50",
-            )}
-          >
-            <span>{t("board.onlyOverdue")}</span>
-            <Badge className="bg-muted text-tinta text-[10px]">{totalVencidas}</Badge>
-          </button>
-
-          {hayFiltros && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setBusqueda("");
-                setProyectoFiltro("todos");
-                setPrioridadFiltro("todas");
-                setSoloVencidas(false);
-              }}
-              className="h-9 gap-1 text-xs"
-            >
-              <X className="size-3.5" />
-              {t("board.clearFilters")}
-            </Button>
-          )}
+          </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 sm:justify-end">
-          {hayFiltros && (
-            <span className="text-muted-foreground text-xs tabular-nums">
-              {t("board.showingCount", {
-                visibles: tareasFiltradas.length,
-                total: tareas.length,
-              })}
-            </span>
-          )}
-          {puedeEscribir && !nueva && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setNueva(true)}
-              className="transition-transform duration-150 active:scale-95"
-            >
-              <Plus className="size-3.5" />
-              {t("tasks.new")}
-            </Button>
-          )}
-        </div>
+        {puedeEscribir && (
+          <Button type="button" size="sm" onClick={() => setNueva(true)}>
+            <Plus className="size-4" />
+            {t("tasks.new")}
+          </Button>
+        )}
       </div>
 
-      {fallo && (
-        <p role="alert" className={ALERTA_RIESGO.contenedor}>
-          <AlertCircle className={ALERTA_RIESGO.icono} />
-          <span className={ALERTA_RIESGO.texto}>{t("board.moveError")}</span>
-        </p>
-      )}
+      <KanbanBase
+        columnas={COLUMNAS}
+        etiquetaColumna={(c) => t(`taskStatus.${c}` as never)}
+        items={visibles}
+        idDe={(tarea) => tarea.id}
+        estadoDe={(tarea) => tarea.estado}
+        puedeMover={() => puedeEscribir || soloMias}
+        alMover={async (id, destino) => {
+          const datos = new FormData();
+          datos.set("id", id);
+          datos.set("estado", destino);
+          return (await moverTarea({ estado: "inicial" }, datos)).estado === "ok";
+        }}
+        vacio={t("board.empty")}
+        errorMover={t("board.moveError")}
+        tarjeta={(tarea, { siguiente, empujar, puedeMover }) => (
+          <Tarjeta
+            tarea={tarea}
+            mostrarAsignados={!soloMias}
+            siguiente={puedeMover ? siguiente : null}
+            alEmpujar={empujar}
+          />
+        )}
+      />
 
-      {nueva && (
-        <Card>
-          <CardContent className="pt-5">
+      <Dialog open={nueva} onOpenChange={setNueva}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("newTask.title")}</DialogTitle>
+          </DialogHeader>
+          {nueva && (
             <FormularioTarea
               proyectos={proyectos}
+              actividades={actividades}
               personas={personas}
               alTerminar={() => setNueva(false)}
             />
-          </CardContent>
-        </Card>
-      )}
-
-      {tareas.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("board.chartStatusTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid items-center gap-3 sm:grid-cols-2">
-                <GraficaAnillo
-                  datos={serieEstado}
-                  total={tareasFiltradas.length}
-                  etiquetaTotal=""
-                  vacio={t("board.chartEmpty")}
-                />
-                <ul className="divide-y divide-linea">
-                  {serieEstado.map((fila) => (
-                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: fila.color }}
-                      />
-                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("board.chartProjectsTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GraficaBarras datos={serieProyectos} vacio={t("board.chartEmpty")} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {COLUMNAS.map((columna) => {
-          const dentro = tareasFiltradas.filter((tarea) => estadoDe(tarea) === columna);
-          const enHover = columnaHover === columna && arrastrada !== null;
-
-          return (
-            <div
-              key={columna}
-              onDragOver={(evento) => {
-                if (puedeEscribir) {
-                  evento.preventDefault();
-                  if (columnaHover !== columna) setColumnaHover(columna);
-                }
-              }}
-              onDragLeave={() => {
-                if (columnaHover === columna) setColumnaHover(null);
-              }}
-              onDrop={() => {
-                if (arrastrada) mover(arrastrada, columna);
-                setArrastrada(null);
-                setColumnaHover(null);
-              }}
-              className={cn(
-                "bg-muted/30 min-h-32 rounded-xl p-3 transition-all",
-                enHover && "bg-marca-50/40 ring-2 ring-marca-500/40",
-              )}
-            >
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase">
-                  {t(`taskStatus.${columna}`)}
-                </p>
-                <Badge className="bg-marca-50 text-marca-700 text-[10px]">
-                  {dentro.length}
-                </Badge>
-              </div>
-
-              {dentro.length === 0 ? (
-                <p className="text-muted-foreground py-6 text-center text-xs">
-                  {t("board.empty")}
-                </p>
-              ) : (
-                <ul className="space-y-2">
-                  {dentro.map((tarea) => (
-                    <Tarjeta
-                      key={tarea.id}
-                      tarea={tarea}
-                      columna={columna}
-                      puedeEscribir={puedeEscribir}
-                      alArrastrar={() => setArrastrada(tarea.id)}
-                      alEmpujar={() => {
-                        const siguiente =
-                          COLUMNAS[COLUMNAS.indexOf(columna) + 1];
-                        if (siguiente) mover(tarea.id, siguiente);
-                      }}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-/** Una tarea. El peso de la píldora dice su prioridad. */
+/** Una tarea: la barra izquierda y el icono dicen su prioridad. */
 function Tarjeta({
   tarea,
-  columna,
-  puedeEscribir,
-  alArrastrar,
+  mostrarAsignados,
+  siguiente,
   alEmpujar,
 }: {
   tarea: TareaTablero;
-  columna: Columna;
-  puedeEscribir: boolean;
-  alArrastrar: () => void;
+  mostrarAsignados: boolean;
+  siguiente: string | null;
   alEmpujar: () => void;
 }) {
   const t = useTranslations("admin");
   const idioma = useLocale() as Locale;
-
-  const prioridad =
-    PRIORIDAD[tarea.prioridad as keyof typeof PRIORIDAD] ?? PRIORIDAD.media;
-  const ultima = columna === COLUMNAS[COLUMNAS.length - 1];
+  const prioridad = visualPrioridad(tarea.prioridad);
+  const IconoPrioridad = prioridad.icono;
 
   return (
-    <li
-      draggable={puedeEscribir}
-      onDragStart={alArrastrar}
+    <div
       className={cn(
-        "bg-card group rounded-lg border p-2.5 shadow-xs transition-all duration-200",
-        puedeEscribir && "cursor-grab hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing",
+        "group rounded-card border border-l-4 border-linea bg-card p-3 shadow-card transition-shadow hover:shadow-elevada",
+        prioridad.barra,
       )}
     >
       <div className="flex items-start gap-2">
-        <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", prioridad.punto)} />
+        <p className="min-w-0 flex-1 text-sm leading-snug font-medium text-tinta">
+          {tarea.titulo}
+        </p>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-sm leading-snug font-medium">{tarea.titulo}</p>
-
-          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px]">
-            <span className="inline-flex items-center gap-1">
-              <FolderOpen className="size-3 shrink-0" />
-              {tarea.proyecto ?? t("board.noProject")}
-            </span>
-
-            {tarea.fecha_limite && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1",
-                  // Vencida en tinta y no en rojo: la marca no tiene rojo, y el
-                  // peso máximo es justo lo que hay que mirar primero.
-                  tarea.vencida && "font-semibold text-[#171A1D]",
-                )}
-              >
-                <CalendarDays className="size-3 shrink-0" />
-                {fechaCorta(tarea.fecha_limite, idioma)}
-              </span>
-            )}
-          </div>
-
-          {tarea.asignados && (
-            <p className="text-muted-foreground mt-1 flex items-center gap-1 truncate text-[11px]">
-              <Users className="size-3 shrink-0" />
-              {tarea.asignados}
-            </p>
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+            prioridad.suave,
+            prioridad.texto,
           )}
-        </div>
+          title={t(`priority.${tarea.prioridad}` as never)}
+        >
+          <IconoPrioridad className="size-3.5" aria-hidden />
+          <span className="sr-only">{t(`priority.${tarea.prioridad}` as never)}</span>
+        </span>
 
-        {/* El respaldo del arrastre. Sin esto, mover una tarea sería imposible
-            con teclado o con lector de pantalla. */}
-        {puedeEscribir && !ultima && (
+        {siguiente && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={alEmpujar}
-            title={t("taskStatus." + COLUMNAS[COLUMNAS.indexOf(columna) + 1])}
-            aria-label={t("taskStatus." + COLUMNAS[COLUMNAS.indexOf(columna) + 1])}
-            className="size-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+            title={t(`taskStatus.${siguiente}` as never)}
+            aria-label={t(`taskStatus.${siguiente}` as never)}
+            className="size-7 shrink-0"
           >
             <ChevronRight className="size-3.5" />
           </Button>
         )}
       </div>
 
-      <div className="mt-1.5 flex flex-wrap items-center gap-1">
-        <Badge className={cn("text-[10px]", prioridad.clases)}>
-          {t(`priority.${tarea.prioridad}` as never)}
-        </Badge>
+      <div className="mt-2 flex flex-col gap-1 text-xs text-tinta-2">
+        <span className="inline-flex min-w-0 items-center gap-1">
+          <FolderOpen className="size-3 shrink-0" />
+          <span className="truncate">
+            {tarea.proyecto ?? t("board.noProject")}
+            {tarea.actividad ? ` › ${tarea.actividad}` : ""}
+          </span>
+        </span>
 
-        {/* Solo se marca «todo el equipo»: es la excepción. `asignados` es lo
-            normal y ponerle insignia a cada tarjeta sería ruido. */}
-        {tarea.visibilidad === "todos" && (
-          <Badge className="bg-muted text-[10px] text-tinta-2">
-            {t("visibility.todos")}
-          </Badge>
+        {tarea.fecha_limite && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1",
+              tarea.vencida && "font-semibold text-[#B4342B]",
+            )}
+          >
+            {tarea.vencida ? (
+              <AlertCircle className="size-3 shrink-0" />
+            ) : (
+              <CalendarDays className="size-3 shrink-0" />
+            )}
+            {fechaCorta(tarea.fecha_limite, idioma)}
+          </span>
+        )}
+
+        {mostrarAsignados && tarea.asignados && (
+          <span className="inline-flex min-w-0 items-center gap-1">
+            <Users className="size-3 shrink-0" />
+            <span className="truncate">{tarea.asignados}</span>
+          </span>
         )}
       </div>
-    </li>
+
+    </div>
   );
 }
 
 /** Alta de una tarea, con sus asignados. */
 function FormularioTarea({
   proyectos,
+  actividades,
   personas,
   alTerminar,
 }: {
   proyectos: readonly OpcionOperaciones[];
+  actividades: readonly OpcionActividad[];
   personas: readonly OpcionOperaciones[];
   alTerminar: () => void;
 }) {
@@ -535,10 +313,6 @@ function FormularioTarea({
 
   return (
     <form action={enviar} className="space-y-3">
-      <div>
-        <p className="text-sm font-semibold">{t("newTask.title")}</p>
-      </div>
-
       <FormularioGuiado>
         <PasoFormulario titulo={t("pasos.tarea")}>
           <div className="space-y-1.5">
@@ -567,6 +341,18 @@ function FormularioTarea({
                 {proyectos.map((proyecto) => (
                   <option key={proyecto.id} value={proyecto.id}>
                     {proyecto.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="t-actividad">{t("task.activity")}</Label>
+              <select id="t-actividad" name="actividad" className={SELECT}>
+                <option value="">{t("activities.none")}</option>
+                {actividades.map((actividad) => (
+                  <option key={actividad.id} value={actividad.id}>
+                    {actividad.nombre}
                   </option>
                 ))}
               </select>

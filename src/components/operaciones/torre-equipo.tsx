@@ -12,16 +12,14 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Link, useRouter } from "@/i18n/navigation";
-import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
 import { UMBRAL_CARGA_ALTA, type CargaPersona } from "@/lib/torre-control";
 
 import { CLASE_SELECT } from "./torre-dialogos";
@@ -77,78 +75,8 @@ export function TorreEquipo({ personas }: { personas: CargaPersona[] }) {
   const rol = (r: string) => (tr.has(r as never) ? tr(r as never) : r);
   const enlace = (id: string) => `/bandeja?tab=equipo&usuario=${id}`;
 
-  const topCarga = useMemo(
-    () =>
-      [...visibles]
-        .sort((a, b) => b.abiertas - a.abiertas)
-        .slice(0, 6)
-        .map((p) => ({
-          nombre: p.nombre.split(" ")[0] ?? p.nombre,
-          valor: p.abiertas,
-          color: p.abiertas >= UMBRAL_CARGA_ALTA ? AZUL_OSCURO : AZUL,
-        })),
-    [visibles],
-  );
-
-  const balanceEquipo = useMemo(() => {
-    const vencidas = visibles.reduce((s, p) => s + p.vencidas, 0);
-    const abiertasAlDia = Math.max(
-      0,
-      visibles.reduce((s, p) => s + p.abiertas, 0) - vencidas,
-    );
-    const hechas = visibles.reduce((s, p) => s + p.completadas_7d, 0);
-    return [
-      { nombre: t("team.open"), valor: abiertasAlDia, color: AZUL },
-      { nombre: t("team.overdue"), valor: vencidas, color: AZUL_OSCURO },
-      { nombre: t("team.chartDoneLabel"), valor: hechas, color: AZUL_SUAVE.length ? AZUL_SUAVE : NEUTRO },
-    ];
-  }, [visibles, t]);
-
-  const totalBalance = balanceEquipo.reduce((s, f) => s + f.valor, 0);
-
   return (
     <section className="space-y-4">
-      {personas.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("team.chartLoadTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GraficaBarras datos={topCarga} vacio={t("team.chartEmpty")} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("team.chartSummaryTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid items-center gap-3 sm:grid-cols-2">
-                <GraficaAnillo
-                  datos={balanceEquipo}
-                  total={totalBalance}
-                  etiquetaTotal=""
-                  vacio={t("team.chartEmpty")}
-                />
-                <ul className="divide-y divide-linea">
-                  {balanceEquipo.map((fila) => (
-                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: fila.color }}
-                      />
-                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
       <FilaChips etiqueta={t("team.filtersLabel")}>
         {FILTROS.map((f) => (
           <ChipFiltro

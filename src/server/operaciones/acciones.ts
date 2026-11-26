@@ -76,7 +76,8 @@ export async function crearTarea(
 
   const titulo = String(datos.get("titulo") ?? "").trim().slice(0, 160);
   const descripcion = String(datos.get("descripcion") ?? "").trim().slice(0, 900);
-  const proyectoId = String(datos.get("proyecto") ?? "").trim();
+  let proyectoId = String(datos.get("proyecto") ?? "").trim();
+  const actividadId = String(datos.get("actividad") ?? "").trim();
   const prioridad = String(datos.get("prioridad") ?? "media");
   const visibilidad = String(datos.get("visibilidad") ?? "asignados");
   const limite = String(datos.get("limite") ?? "").trim();
@@ -88,6 +89,19 @@ export async function crearTarea(
 
   if (!titulo) return { estado: "titulo_vacio" };
   if (proyectoId && !esUuid(proyectoId)) return { estado: "invalido" };
+  if (actividadId && !esUuid(actividadId)) return { estado: "invalido" };
+
+  // La actividad manda: la tarea cuelga del proyecto de su actividad, así un
+  // formulario con proyecto y actividad que no se corresponden no deja datos
+  // incoherentes.
+  if (actividadId) {
+    const actividad = await consultarUna<{ proyecto_id: string }>(
+      `SELECT proyecto_id FROM actividad WHERE id = $1`,
+      [actividadId],
+    );
+    if (!actividad) return { estado: "no_encontrado" };
+    proyectoId = actividad.proyecto_id;
+  }
 
   const prioridadOk = PRIORIDADES.includes(prioridad) ? prioridad : "media";
   const visibilidadOk = VISIBILIDADES.includes(visibilidad)
@@ -98,10 +112,11 @@ export async function crearTarea(
     const creada = await enTransaccion(async (cliente) => {
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO tarea
-                (titulo, descripcion, proyecto_id, visibilidad, prioridad, fecha_limite, estado)
-         VALUES ($1, NULLIF($2, ''), NULLIF($3, '')::uuid, $4, $5, NULLIF($6, '')::date, 'por_hacer')
+                (titulo, descripcion, proyecto_id, actividad_id, visibilidad, prioridad, fecha_limite, estado)
+         VALUES ($1, NULLIF($2, ''), NULLIF($3, '')::uuid, NULLIF($7, '')::uuid, $4, $5,
+                 NULLIF($6, '')::date, 'por_hacer')
          RETURNING id`,
-        [titulo, descripcion, proyectoId, visibilidadOk, prioridadOk, limite],
+        [titulo, descripcion, proyectoId, visibilidadOk, prioridadOk, limite, actividadId],
       );
 
       const tareaId = rows[0]?.id;
@@ -182,15 +197,21 @@ export async function moverTarea(
 ): Promise<EstadoOperaciones> {
   const usuario = await requerirUsuario();
 
-  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
-    return { estado: "no_permitido" };
-  }
-
   const id = String(datos.get("id") ?? "");
   const estado = String(datos.get("estado") ?? "");
 
   if (!esUuid(id)) return { estado: "no_encontrado" };
   if (!ESTADOS_TAREA.includes(estado)) return { estado: "invalido" };
+
+  // «Mis tareas» es un Kanban propio: quien tiene la tarea asignada la mueve
+  // aunque su rol no tenga `operaciones.escribir`. Coordinación mueve todas.
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
+    const mia = await consultarUna<{ ok: boolean }>(
+      `SELECT true AS ok FROM tarea_asignado WHERE tarea_id = $1 AND usuario_id = $2`,
+      [id, usuario.id],
+    );
+    if (!mia) return { estado: "no_permitido" };
+  }
 
   try {
     const movida = await enTransaccion(async (cliente) => {
@@ -358,6 +379,157 @@ export async function guardarProyecto(
   return { estado: "ok" };
 }
 
+/** Cambia solo el estado de un proyecto: es el arrastre del Kanban de proyectos. */
+export async function moverProyecto(
+  _previo: EstadoOperaciones,
+  datos: FormData,
+): Promise<EstadoOperaciones> {
+  const usuario = await requerirUsuario();
+
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "");
+  const estado = String(datos.get("estado") ?? "");
+
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+  if (!ESTADOS_PROYECTO.includes(estado)) return { estado: "invalido" };
+
+  try {
+    const fila = await consultarUna<{ id: string }>(
+      `UPDATE proyecto SET estado = $2 WHERE id = $1 RETURNING id`,
+      [id, estado],
+    );
+    if (!fila) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "proyecto.movido",
+      entidad: "proyecto",
+      entidadId: id,
+      datos: { estado },
+    });
+  } catch (error) {
+    console.error("[operaciones] no se pudo mover el proyecto", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
+}
+
+/** Alta y edición de una actividad de proyecto. Con `id` vacío, es un alta. */
+export async function guardarActividad(
+  _previo: EstadoOperaciones,
+  datos: FormData,
+): Promise<EstadoOperaciones> {
+  const usuario = await requerirUsuario();
+
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "").trim();
+  const proyectoId = String(datos.get("proyecto") ?? "").trim();
+  const nombre = String(datos.get("nombre") ?? "").trim().slice(0, 160);
+  const estado = String(datos.get("estado") ?? "planificacion");
+  const prioridad = String(datos.get("prioridad") ?? "media");
+  const responsable = String(datos.get("responsable") ?? "").trim();
+  const inicio = String(datos.get("inicio") ?? "").trim();
+  const fin = String(datos.get("fin") ?? "").trim();
+
+  if (!nombre) return { estado: "nombre_vacio" };
+  if (!esUuid(proyectoId)) return { estado: "no_encontrado" };
+  if (id && !esUuid(id)) return { estado: "no_encontrado" };
+  if (responsable && !esUuid(responsable)) return { estado: "invalido" };
+  if (inicio && fin && fin < inicio) return { estado: "fin_antes_de_inicio" };
+
+  const estadoOk = ESTADOS_PROYECTO.includes(estado) ? estado : "planificacion";
+  const prioridadOk = PRIORIDADES.includes(prioridad) ? prioridad : "media";
+
+  try {
+    const guardada = id
+      ? await consultarUna<{ id: string }>(
+          `UPDATE actividad
+              SET nombre = $2, estado = $3, prioridad = $4,
+                  responsable_id = NULLIF($5, '')::uuid,
+                  fecha_inicio = NULLIF($6, '')::date,
+                  fecha_fin    = NULLIF($7, '')::date
+            WHERE id = $1 AND proyecto_id = $8
+          RETURNING id`,
+          [id, nombre, estadoOk, prioridadOk, responsable, inicio, fin, proyectoId],
+        )
+      : await consultarUna<{ id: string }>(
+          `INSERT INTO actividad
+                  (proyecto_id, nombre, estado, prioridad, responsable_id, fecha_inicio, fecha_fin)
+           SELECT p.id, $2, $3, $4, NULLIF($5, '')::uuid, NULLIF($6, '')::date, NULLIF($7, '')::date
+             FROM proyecto p WHERE p.id = $1
+           RETURNING id`,
+          [proyectoId, nombre, estadoOk, prioridadOk, responsable, inicio, fin],
+        );
+
+    if (!guardada) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: id ? "actividad.editada" : "actividad.creada",
+      entidad: "actividad",
+      entidadId: guardada.id,
+      datos: { nombre, estado: estadoOk },
+    });
+  } catch (error) {
+    console.error("[operaciones] no se pudo guardar la actividad", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
+}
+
+/** Cambia el estado de una actividad (arrastre del Kanban del proyecto). */
+export async function moverActividad(
+  _previo: EstadoOperaciones,
+  datos: FormData,
+): Promise<EstadoOperaciones> {
+  const usuario = await requerirUsuario();
+
+  if (!usuarioTienePermiso(usuario, "operaciones.escribir")) {
+    return { estado: "no_permitido" };
+  }
+
+  const id = String(datos.get("id") ?? "");
+  const estado = String(datos.get("estado") ?? "");
+
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+  if (!ESTADOS_PROYECTO.includes(estado)) return { estado: "invalido" };
+
+  try {
+    const fila = await consultarUna<{ id: string }>(
+      `UPDATE actividad SET estado = $2 WHERE id = $1 RETURNING id`,
+      [id, estado],
+    );
+    if (!fila) return { estado: "no_encontrado" };
+
+    await registrar({
+      usuarioId: usuario.id,
+      accion: "actividad.movida",
+      entidad: "actividad",
+      entidadId: id,
+      datos: { estado },
+    });
+  } catch (error) {
+    console.error("[operaciones] no se pudo mover la actividad", error);
+    return { estado: "error" };
+  }
+
+  refrescar();
+
+  return { estado: "ok" };
+}
+
 /**
  * Lo que cambia al tocar una tarea o un proyecto.
  *
@@ -368,6 +540,7 @@ export async function guardarProyecto(
 function refrescar() {
   revalidatePath("/[locale]/bandeja", "page");
   revalidatePath("/[locale]/administrativo/proyectos", "page");
+  revalidatePath("/[locale]/administrativo/proyectos/[id]", "page");
   revalidatePath("/[locale]/calendario", "page");
   revalidatePath("/[locale]/calendario/gantt", "page");
   revalidatePath("/[locale]/dashboard", "page");

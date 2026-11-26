@@ -35,6 +35,10 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
    `#5FB8D4`, tinta `#171A1D` y grises. Nada de arcoíris. `SEMAFORO`
    (`#1E9E6A`/`#B4342B`) solo para estados de entidad y siempre con icono.
    Usa los tokens y `src/lib/paleta.ts`, no hex sueltos.
+   **Excepción del trabajo (nov 2026):** el Kanban de proyectos, actividades y
+   tareas colorea estado y prioridad con los tokens `est-*` y `pri-*` de
+   `globals.css`, solo a través de `src/lib/estados-trabajo.ts` y siempre con
+   su icono. Nunca en botones, banners ni gráficas.
 2. **i18n:** todo texto visible va en `messages/es.json` **y** `messages/en.json`.
    Cero cadenas literales en JSX.
 3. **SQL:** parametrizado con `consultar` / `consultarUna` / `enTransaccion`

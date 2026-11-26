@@ -511,7 +511,8 @@
       "statsProgress": "Avance global",
       "chartStatusTitle": "Proyectos por estado",
       "chartProgressTitle": "Avance por proyecto (%)",
-      "chartEmpty": "Sin tareas para graficar"
+      "chartEmpty": "Sin tareas para graficar",
+      "moveError": "No se pudo mover el proyecto. Vuelve a intentarlo."
     },
     "board": {
       "empty": "Sin tareas",
@@ -532,7 +533,10 @@
       "showingCount": "Mostrando {visibles} de {total}",
       "chartStatusTitle": "Distribución por estado",
       "chartProjectsTitle": "Tareas por proyecto (top 5)",
-      "chartEmpty": "Sin tareas para graficar"
+      "chartEmpty": "Sin tareas para graficar",
+      "scopeToday": "Hoy",
+      "scopeWeek": "Esta semana",
+      "scopeAll": "Todas"
     },
     "task": {
       "title": "Título",
@@ -543,7 +547,8 @@
       "visibility": "Visibilidad",
       "dueDate": "Fecha límite",
       "assignees": "Asignados",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "activity": "Actividad"
     },
     "newTask": {
       "title": "Nueva tarea",
@@ -739,6 +744,23 @@
         "errRegistrarAuditoria": "Error al registrar la auditoría in situ.",
         "errArchivoQr": "No se detectó ningún código QR legible en la imagen seleccionada."
       }
+    },
+    "activities": {
+      "title": "Actividades",
+      "new": "Nueva actividad",
+      "empty": "Sin actividades",
+      "moveError": "No se pudo mover la actividad. Vuelve a intentarlo.",
+      "editTitle": "Editar actividad",
+      "newTitle": "Nueva actividad",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre de la actividad",
+      "lead": "Responsable",
+      "noLead": "Sin responsable",
+      "create": "Crear actividad",
+      "error": "No se pudo guardar la actividad. Revisa los datos e inténtalo otra vez.",
+      "nameRequired": "Escribe un nombre para la actividad.",
+      "edit": "Editar actividad",
+      "none": "Sin actividad"
     }
   },
   "calendar": {
@@ -795,7 +817,8 @@
       "meeting": "Reunión institucional",
       "class": "Clase",
       "request": "Trámite",
-      "forum": "Foro o anuncio"
+      "forum": "Foro o anuncio",
+      "activity": "Actividad"
     },
     "eventType": {
       "academico": "Académico",

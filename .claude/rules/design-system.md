@@ -40,6 +40,17 @@ de app en el móvil (pestañas abajo, hojas que suben desde abajo).
   `src/lib/solicitudes.ts`), para que la diferencia sobreviva en grises.
 - Escrito como `bg-[#1E9E6A]`, nunca `green-*` / `red-*`.
 
+### La segunda excepción: colores de trabajo (nov 2026)
+
+Estado y prioridad de proyectos, actividades y tareas en el Kanban
+administrativo y en «Mis tareas»: tokens `est-pendiente|progreso|revision|pausa|listo`
+y `pri-urgente|alta|media|baja` de `globals.css`.
+
+- Solo vía `src/lib/estados-trabajo.ts` (`visualEstado`, `visualPrioridad`):
+  clases como `bg-est-progreso/10`, nunca hex ni `amber-*`.
+- **Siempre** con icono (estado y prioridad), para que se lea en grises.
+- Nunca en botones, banners ni gráficas.
+
 ## 2b. Un solo acento y cero degradados
 
 - **Prohibido todo degradado** (`bg-gradient-*`, `bg-linear-*`, `linear-gradient`),

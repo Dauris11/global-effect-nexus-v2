@@ -511,7 +511,8 @@
       "statsProgress": "Overall progress",
       "chartStatusTitle": "Projects by status",
       "chartProgressTitle": "Progress by project (%)",
-      "chartEmpty": "No tasks to chart"
+      "chartEmpty": "No tasks to chart",
+      "moveError": "The project could not be moved. Try again."
     },
     "board": {
       "empty": "No tasks",
@@ -532,7 +533,10 @@
       "showingCount": "Showing {visibles} of {total}",
       "chartStatusTitle": "Breakdown by status",
       "chartProjectsTitle": "Tasks by project (top 5)",
-      "chartEmpty": "No tasks to chart"
+      "chartEmpty": "No tasks to chart",
+      "scopeToday": "Today",
+      "scopeWeek": "This week",
+      "scopeAll": "All"
     },
     "task": {
       "title": "Title",
@@ -543,7 +547,8 @@
       "visibility": "Visibility",
       "dueDate": "Due date",
       "assignees": "Assignees",
-      "close": "Close"
+      "close": "Close",
+      "activity": "Activity"
     },
     "newTask": {
       "title": "New task",
@@ -739,6 +744,23 @@
         "errRegistrarAuditoria": "Error recording the on-site audit.",
         "errArchivoQr": "No readable QR code was detected in the selected image."
       }
+    },
+    "activities": {
+      "title": "Activities",
+      "new": "New activity",
+      "empty": "No activities",
+      "moveError": "The activity could not be moved. Try again.",
+      "editTitle": "Edit activity",
+      "newTitle": "New activity",
+      "name": "Name",
+      "namePlaceholder": "Activity name",
+      "lead": "Lead",
+      "noLead": "No lead",
+      "create": "Create activity",
+      "error": "The activity could not be saved. Check the data and try again.",
+      "nameRequired": "Enter a name for the activity.",
+      "edit": "Edit activity",
+      "none": "No activity"
     }
   },
   "calendar": {
@@ -795,7 +817,8 @@
       "meeting": "Institutional meeting",
       "class": "Class",
       "request": "Request",
-      "forum": "Forum or announcement"
+      "forum": "Forum or announcement",
+      "activity": "Activity"
     },
     "eventType": {
       "academico": "Academic",

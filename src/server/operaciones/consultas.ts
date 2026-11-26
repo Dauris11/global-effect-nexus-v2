@@ -34,6 +34,11 @@ export type TareaTablero = {
   fecha_limite: string | null;
   proyecto_id: string | null;
   proyecto: string | null;
+  actividad_id: string | null;
+  actividad: string | null;
+  /** Hoy y esta semana, ya calculados en el día de la Fundación. */
+  es_hoy: boolean;
+  esta_semana: boolean;
   /** Nombres de quienes la llevan, ya unidos. Vacío si no hay nadie. */
   asignados: string | null;
   /** Si la fecha límite ya pasó y la tarea sigue abierta. Lo decide la base. */
@@ -54,10 +59,13 @@ export type TareaTablero = {
 export async function tareasDelTablero({
   usuarioId,
   puedeTodo,
+  soloMias = false,
 }: {
   usuarioId: string;
   /** `operaciones.escribir`: ve el tablero completo. */
   puedeTodo: boolean;
+  /** «Mis tareas»: solo las que tengo asignadas, sea cual sea mi permiso. */
+  soloMias?: boolean;
 }): Promise<TareaTablero[]> {
   return consultar<TareaTablero>(
     `SELECT t.id,
@@ -69,6 +77,11 @@ export async function tareasDelTablero({
             t.fecha_limite::text AS fecha_limite,
             t.proyecto_id,
             p.nombre AS proyecto,
+            t.actividad_id,
+            a.nombre AS actividad,
+            (t.fecha_limite = (now() AT TIME ZONE 'America/Santo_Domingo')::date) AS es_hoy,
+            (t.fecha_limite BETWEEN (now() AT TIME ZONE 'America/Santo_Domingo')::date
+                                AND (now() AT TIME ZONE 'America/Santo_Domingo')::date + 6) AS esta_semana,
             (SELECT string_agg(u.nombre, ', ' ORDER BY u.nombre)
                FROM tarea_asignado ta
                JOIN usuario u ON u.id = ta.usuario_id
@@ -78,12 +91,17 @@ export async function tareasDelTablero({
              AND t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision')) AS vencida
        FROM tarea t
        LEFT JOIN proyecto p ON p.id = t.proyecto_id
+       LEFT JOIN actividad a ON a.id = t.actividad_id
       WHERE t.estado IN ('por_hacer', 'pendiente', 'en_progreso', 'en_revision', 'completada')
-        AND ($2::boolean
+        AND (CASE WHEN $3::boolean
+                  THEN EXISTS (SELECT 1 FROM tarea_asignado ta
+                                WHERE ta.tarea_id = t.id AND ta.usuario_id = $1)
+                  ELSE ($2::boolean
              OR t.visibilidad = 'todos'
              OR EXISTS (SELECT 1 FROM tarea_asignado ta
                          WHERE ta.tarea_id = t.id
                            AND ta.usuario_id = $1))
+             END)
       ORDER BY CASE coalesce(t.prioridad, 'media')
                  WHEN 'urgente' THEN 0
                  WHEN 'alta'    THEN 1
@@ -92,7 +110,7 @@ export async function tareasDelTablero({
                END,
                t.fecha_limite NULLS LAST,
                t.created_at`,
-    [usuarioId, puedeTodo],
+    [usuarioId, puedeTodo, soloMias],
   );
 }
 
@@ -167,5 +185,51 @@ export async function usuariosAsignables(): Promise<OpcionOperaciones[]> {
       WHERE u.activo
         AND r.nombre <> 'estudiante'
       ORDER BY u.nombre`,
+  );
+}
+
+export type ActividadProyecto = {
+  id: string;
+  proyecto_id: string;
+  nombre: string;
+  estado: string;
+  prioridad: string;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  responsable_id: string | null;
+  responsable: string | null;
+  tareas: number;
+  hechas: number;
+};
+
+/** Las actividades de un proyecto con el conteo de sus tareas (sin canceladas). */
+export async function actividadesDeProyecto(proyectoId: string): Promise<ActividadProyecto[]> {
+  return consultar<ActividadProyecto>(
+    `SELECT a.id, a.proyecto_id, a.nombre, a.estado, a.prioridad,
+            a.fecha_inicio::text AS fecha_inicio,
+            a.fecha_fin::text    AS fecha_fin,
+            a.responsable_id,
+            u.nombre AS responsable,
+            (SELECT count(*)::int FROM tarea t
+              WHERE t.actividad_id = a.id AND t.estado <> 'cancelada') AS tareas,
+            (SELECT count(*)::int FROM tarea t
+              WHERE t.actividad_id = a.id AND t.estado = 'completada') AS hechas
+       FROM actividad a
+       LEFT JOIN usuario u ON u.id = a.responsable_id
+      WHERE a.proyecto_id = $1
+      ORDER BY a.fecha_inicio NULLS LAST, a.created_at`,
+    [proyectoId],
+  );
+}
+
+export type OpcionActividad = { id: string; nombre: string; proyecto_id: string };
+
+/** Las actividades vivas, para el desplegable del formulario de tarea. */
+export async function actividadesSimples(): Promise<OpcionActividad[]> {
+  return consultar<OpcionActividad>(
+    `SELECT id, nombre, proyecto_id
+       FROM actividad
+      WHERE estado <> 'completado'
+      ORDER BY nombre`,
   );
 }

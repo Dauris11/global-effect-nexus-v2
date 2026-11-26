@@ -70,6 +70,14 @@ icono (`ESTADO_VISUAL` en `lib/expedientes.ts`, `ESTADO_SOLICITUD_VISUAL` en
 También el borde de un input con `aria-invalid`. Nunca en botones, banners ni
 gráficas.
 
+
+### 2.3b Colores de trabajo (nov 2026)
+
+El Kanban de proyectos, actividades y tareas colorea estado y prioridad con los
+tokens `est-*` y `pri-*` (`globals.css`), solo mediante
+`src/lib/estados-trabajo.ts` y siempre con icono. Son la segunda excepción a
+«un solo acento»; no valen para botones, banners ni gráficas.
+
 ### 2.4 Tipografía
 
 Inter, única familia. Cuerpo **15 px** en el portal y 16 px en la landing.

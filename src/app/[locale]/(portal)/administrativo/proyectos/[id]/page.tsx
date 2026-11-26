@@ -12,13 +12,14 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { ActividadesProyecto } from "@/components/operaciones/actividades-proyecto";
 import { EquipoProyecto } from "@/components/operaciones/equipo-proyecto";
 import { GanttBase } from "@/components/ui/gantt-base";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { moverBarra } from "@/server/calendario/acciones-gantt";
 import { hoyEnLaBase } from "@/server/calendario/gantt";
 import { esIncoherente, tramoDe, type SeccionTiempo } from "@/lib/linea-tiempo";
-import { usuariosAsignables } from "@/server/operaciones/consultas";
+import { actividadesDeProyecto, usuariosAsignables } from "@/server/operaciones/consultas";
 import { proyectoParaGantt } from "@/server/operaciones/gantt-consultas";
 import { equipoDeProyecto, participaEnProyecto } from "@/server/operaciones/torre-consultas";
 
@@ -64,6 +65,10 @@ export default async function PaginaDetalleProyectoGantt({
   const [equipo, personas, mensajes] = puedeEditar
     ? await Promise.all([equipoDeProyecto(id), usuariosAsignables(), mensajesCliente(["torre"])])
     : [null, [], null];
+  const [actividades, mensajesAdmin] = await Promise.all([
+    actividadesDeProyecto(id),
+    mensajesCliente(["admin"]),
+  ]);
 
   const [t, tNav, tc, tl, hoy] = await Promise.all([
     getTranslations({ locale, namespace: "admin" }),
@@ -119,9 +124,6 @@ export default async function PaginaDetalleProyectoGantt({
             <FolderKanban className="size-6 text-marca-500" />
             {proyecto.nombre}
           </h1>
-          {proyecto.descripcion && (
-            <p className="texto-meta max-w-3xl text-sm">{proyecto.descripcion}</p>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -135,6 +137,15 @@ export default async function PaginaDetalleProyectoGantt({
           )}
         </div>
       </div>
+
+      <NextIntlClientProvider messages={mensajesAdmin}>
+        <ActividadesProyecto
+          proyectoId={id}
+          actividades={actividades}
+          personas={personas}
+          puedeEscribir={puedeEditar}
+        />
+      </NextIntlClientProvider>
 
       {rango && (
         <GanttBase

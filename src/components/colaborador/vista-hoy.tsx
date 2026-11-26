@@ -22,7 +22,6 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraficaAnillo } from "@/components/dashboard/graficas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   AccionesFormulario,
@@ -33,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { fechaCorta } from "@/lib/fechas";
-import { ALERTA_RIESGO, AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
+import { ALERTA_RIESGO } from "@/lib/paleta";
 import type {
   BitacoraEntrada,
   EstadoTareaColaborador,
@@ -142,25 +141,6 @@ export function VistaHoy({
     (item) => item.estado === "en_progreso" || item.estado === "en_revision",
   ).length;
 
-  const serieHoy = [
-    { nombre: t("filterTodo"), valor: pendientesVivas, color: NEUTRO },
-    {
-      nombre: t("filterDoing"),
-      valor: tareas.filter((item) => item.estado === "en_progreso").length,
-      color: AZUL,
-    },
-    {
-      nombre: t("filterReview"),
-      valor: tareas.filter((item) => item.estado === "en_revision").length,
-      color: AZUL_SUAVE,
-    },
-    {
-      nombre: t("filterDone"),
-      valor: tareas.filter((item) => item.estado === "completada").length,
-      color: AZUL_OSCURO,
-    },
-  ];
-
   const formatearHoras = (minutos: number) => {
     const h = Math.floor(minutos / 60);
     const m = minutos % 60;
@@ -223,38 +203,6 @@ export function VistaHoy({
           </div>
         </div>
       </div>
-
-      {/* 1b. Progreso visual de tareas del día */}
-      {tareas.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">{t("chartProgressTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid items-center gap-4 sm:grid-cols-2">
-              <GraficaAnillo
-                datos={serieHoy}
-                total={tareas.length}
-                etiquetaTotal=""
-                vacio={t("chartEmpty")}
-              />
-              <ul className="divide-y divide-linea">
-                {serieHoy.map((fila) => (
-                  <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                    <span
-                      aria-hidden
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: fila.color }}
-                    />
-                    <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                    <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* 2. Programas Asignados a mi Rol */}
       {proyectosAsignados.length > 0 && (

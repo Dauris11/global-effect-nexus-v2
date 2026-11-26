@@ -19,6 +19,9 @@
  *     toman de las constantes de `paleta.ts`, pero a veces lo escriben en el
  *     propio SVG.
  *
+ * Los colores de estado y prioridad del trabajo (`est-*`, `pri-*`) son tokens de
+ * `globals.css`, no hex ni arcoíris de Tailwind: pasan esta auditoría por diseño.
+ *
  * Uso: npm run audit:ui
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
