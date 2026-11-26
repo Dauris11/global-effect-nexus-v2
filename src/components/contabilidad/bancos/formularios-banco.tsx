@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { ArrowLeftRight, CheckCircle2, CloudUpload, FileSpreadsheet, Link2, Loader2, Save, Upload, X } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, CloudUpload, FileSpreadsheet, Link2, Loader2, Save, Settings, Upload, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
-import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
+import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import {
@@ -26,6 +26,7 @@ import {
   type FormatoEstadoBanco,
   type ResultadoVistaPreviaCsv,
 } from "@/lib/contabilidad/formato-estado-banco";
+import type { Moneda } from "@/lib/contabilidad/formato";
 import {
   registrarTasa,
   subirEstadoFormatoBanco,
@@ -34,7 +35,7 @@ import {
   type EstadoBanco,
 } from "@/server/contabilidad/bancos/acciones";
 import { asientoPreviaTransferencia } from "@/server/contabilidad/bancos/acciones-asiento";
-import type { OpcionCuenta } from "@/server/contabilidad/recibos/consultas";
+import type { TasaDelDia } from "@/server/contabilidad/bancos/consultas";
 
 const INICIAL: EstadoBanco = { estado: "inicial" };
 
@@ -65,17 +66,44 @@ function Campo({
   );
 }
 
+export type CuentaTransferencia = {
+  id: string;
+  nombre: string;
+  moneda: Moneda;
+  tasa_compra: string | null;
+  tasa_venta: string | null;
+};
+
+function parsearDecimalPositivo(crudo: string): number | null {
+  const limpio = crudo.replace(/,/g, "").trim();
+  if (!limpio) return null;
+  const n = Number(limpio);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 /**
- * Transferencia entre cuentas propias. El segundo monto solo se pide si
- * las monedas difieren: entre dos cuentas en pesos sale y entra lo mismo,
- * y pedirlo dos veces solo abre la puerta a un error de tecleo.
+ * Transferencia entre cuentas propias:
+ *   · Cuenta origen (izq.) y Cuenta destino (der.).
+ *   · Monto a transferir debajo de Cuenta origen; Monto a recibir debajo de
+ *     Cuenta destino en modo lectura por defecto.
+ *   · Caso DOP → USD: Monto a transferir pasa a lectura y se edita Monto a
+ *     recibir (USD). Monto a transferir = monto a recibir × tasa compra BCRD.
+ *     Debajo aparece Diferencia de cambio en lectura:
+ *       (monto a recibir × tasa venta banco) − (monto a recibir × tasa compra BCRD),
+ *     que se contabiliza como gasto por cambio de divisas.
  */
-export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]; hoy: string }) {
+export function DialogoTransferencia({
+  cuentas,
+  tasaBcrd,
+  hoy,
+}: {
+  cuentas: CuentaTransferencia[];
+  tasaBcrd: TasaDelDia | null;
+  hoy: string;
+}) {
   const t = useTranslations("contab.bancos.transferencia");
   const tb = useTranslations("contab.bancos");
   const [abierto, setAbierto] = useState(false);
-  // El diálogo se cierra desde la acción misma, al volver "ok", y no con
-  // un efecto que observe el estado.
   const [estado, enviar, enviando] = useActionState(
     async (previo: EstadoBanco, datos: FormData) => {
       const resultado = await transferirEntreCuentas(previo, datos);
@@ -86,22 +114,65 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
   );
   const [origen, setOrigen] = useState(cuentas[0]?.id ?? "");
   const [destino, setDestino] = useState(cuentas[1]?.id ?? "");
+  const [montoTransferirInput, setMontoTransferirInput] = useState("");
+  const [montoRecibirInput, setMontoRecibirInput] = useState("");
   const error = useError(estado);
-  // «Asiento» lee lo escrito hasta ahora en el formulario (los pasos ocultos
-  // siguen montados, ver FormularioGuiado) y calcula la diferencia cambiaria.
   const formulario = useRef<HTMLFormElement>(null);
-  const monedaOrigen = cuentas.find((c) => c.id === origen)?.moneda;
-  const monedaDestino = cuentas.find((c) => c.id === destino)?.moneda;
+
+  const cuentaOrigen = cuentas.find((c) => c.id === origen);
+  const cuentaDestino = cuentas.find((c) => c.id === destino);
+  const monedaOrigen = cuentaOrigen?.moneda;
+  const monedaDestino = cuentaDestino?.moneda;
+  const esDopAUsd = monedaOrigen === "DOP" && monedaDestino === "USD";
+  const esUsdADop = monedaOrigen === "USD" && monedaDestino === "DOP";
+
+  const tasaCompraBcrd = tasaBcrd ? Number(tasaBcrd.compra) : null;
+  const tasaVentaBanco = cuentaDestino?.tasa_venta ? Number(cuentaDestino.tasa_venta) : null;
+  const tasaCompraBancoOrigen = cuentaOrigen?.tasa_compra ? Number(cuentaOrigen.tasa_compra) : null;
+
+  const numRecibir = parsearDecimalPositivo(montoRecibirInput);
+  const numTransferir = parsearDecimalPositivo(montoTransferirInput);
+
+  const valorMontoTransferir = esDopAUsd
+    ? numRecibir !== null && tasaCompraBcrd !== null
+      ? (numRecibir * tasaCompraBcrd).toFixed(2)
+      : ""
+    : montoTransferirInput;
+
+  const valorMontoRecibir = esDopAUsd
+    ? montoRecibirInput
+    : esUsdADop
+      ? numTransferir !== null && (tasaCompraBancoOrigen ?? tasaCompraBcrd) !== null
+        ? (numTransferir * (tasaCompraBancoOrigen ?? tasaCompraBcrd ?? 0)).toFixed(2)
+        : ""
+      : montoTransferirInput;
+
+  const diferenciaCambio =
+    esDopAUsd && numRecibir !== null && tasaCompraBcrd !== null && tasaVentaBanco !== null
+      ? (numRecibir * tasaVentaBanco - numRecibir * tasaCompraBcrd).toFixed(2)
+      : "";
+
+  const faltaTasaBcrd = esDopAUsd && tasaCompraBcrd === null;
+  const faltaTasaVentaBanco = esDopAUsd && tasaVentaBanco === null;
+  const bloqueadoPorTasas = faltaTasaBcrd || faltaTasaVentaBanco;
+
+  function manejarCambioAbierto(siguiente: boolean) {
+    setAbierto(siguiente);
+    if (!siguiente) {
+      setMontoTransferirInput("");
+      setMontoRecibirInput("");
+    }
+  }
 
   return (
-    <Dialog open={abierto} onOpenChange={setAbierto}>
+    <Dialog open={abierto} onOpenChange={manejarCambioAbierto}>
       <DialogTrigger asChild>
         <Button variant="secondary">
           <ArrowLeftRight className="size-4" />
           {tb("transferir")}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
         </DialogHeader>
@@ -110,31 +181,94 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
             <PasoFormulario titulo={t("pasos.cuentas")}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Campo id="origen" etiqueta={t("origen")}>
-                  <select id="origen" name="origen" className={SELECT} value={origen} onChange={(e) => setOrigen(e.target.value)}>
+                  <select
+                    id="origen"
+                    name="origen"
+                    className={SELECT}
+                    value={origen}
+                    onChange={(e) => setOrigen(e.target.value)}
+                  >
                     {cuentas.map((c) => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                      <option key={c.id} value={c.id}>
+                        {`${c.nombre} (${c.moneda})`}
+                      </option>
                     ))}
                   </select>
                 </Campo>
+
                 <Campo id="destino" etiqueta={t("destino")}>
-                  <select id="destino" name="destino" className={SELECT} value={destino} onChange={(e) => setDestino(e.target.value)}>
+                  <select
+                    id="destino"
+                    name="destino"
+                    className={SELECT}
+                    value={destino}
+                    onChange={(e) => setDestino(e.target.value)}
+                  >
                     {cuentas.map((c) => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                      <option key={c.id} value={c.id}>
+                        {`${c.nombre} (${c.moneda})`}
+                      </option>
                     ))}
                   </select>
                 </Campo>
+
+                <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
+                  <Input
+                    id="monto_origen"
+                    name="monto_origen"
+                    inputMode="decimal"
+                    required
+                    readOnly={esDopAUsd}
+                    value={valorMontoTransferir}
+                    onChange={(e) => {
+                      if (!esDopAUsd) setMontoTransferirInput(e.target.value);
+                    }}
+                    className={esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+                  />
+                </Campo>
+
+                <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino ?? ""})`}>
+                  <Input
+                    id="monto_destino"
+                    name="monto_destino"
+                    inputMode="decimal"
+                    required
+                    readOnly={!esDopAUsd}
+                    value={valorMontoRecibir}
+                    onChange={(e) => {
+                      if (esDopAUsd) setMontoRecibirInput(e.target.value);
+                    }}
+                    className={!esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+                  />
+                </Campo>
+
+                {esDopAUsd && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="diferencia_cambio" className="text-sm font-medium">
+                        {t("diferenciaCambio")} (DOP)
+                      </Label>
+                      <TooltipAyuda
+                        texto={t("diferenciaCambioAyuda")}
+                        etiqueta={t("masInformacion")}
+                      />
+                    </div>
+                    <Input
+                      id="diferencia_cambio"
+                      readOnly
+                      value={diferenciaCambio}
+                      className="bg-muted/50 tabular-nums"
+                    />
+                  </div>
+                )}
+
                 <Campo id="fecha_tr" etiqueta={t("fecha")}>
                   <Input id="fecha_tr" name="fecha" type="date" defaultValue={hoy} required />
                 </Campo>
-                <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
-                  <Input id="monto_origen" name="monto_origen" inputMode="decimal" required />
-                </Campo>
-                {monedaOrigen && monedaDestino && monedaOrigen !== monedaDestino && (
-                  <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino})`}>
-                    <Input id="monto_destino" name="monto_destino" inputMode="decimal" required />
-                  </Campo>
-                )}
               </div>
+
+              {faltaTasaBcrd && <AvisoError>{t("faltaTasaBcrd")}</AvisoError>}
+              {faltaTasaVentaBanco && <AvisoError>{t("faltaTasaVentaBanco")}</AvisoError>}
             </PasoFormulario>
             <PasoFormulario titulo={t("pasos.detalle")}>
               <Campo id="concepto_tr" etiqueta={t("concepto")}>
@@ -149,7 +283,7 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
               <BotonAsiento
                 cargar={() => asientoPreviaTransferencia(new FormData(formulario.current ?? undefined))}
               />
-              <Button type="submit" cargando={enviando}>
+              <Button type="submit" disabled={bloqueadoPorTasas} cargando={enviando}>
                 {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                 {t("guardar")}
               </Button>
@@ -161,34 +295,116 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
   );
 }
 
-export function FormularioTasa({ hoy }: { hoy: string }) {
+/**
+ * Tuerca junto al título «Bancos» para configurar la tasa de cambio de compra
+ * y venta del BCRD.
+ */
+export function DialogoTasaBcrd({
+  hoy,
+  tasa,
+  puedeEditar,
+}: {
+  hoy: string;
+  tasa: TasaDelDia | null;
+  puedeEditar: boolean;
+}) {
   const t = useTranslations("contab.bancos.tasaForm");
-  const [estado, enviar, enviando] = useActionState(registrarTasa, INICIAL);
+  const [abierto, setAbierto] = useState(false);
+  const [estado, enviar, enviando] = useActionState(
+    async (previo: EstadoBanco, datos: FormData) => {
+      const resultado = await registrarTasa(previo, datos);
+      if (resultado.estado === "ok") setAbierto(false);
+      return resultado;
+    },
+    INICIAL,
+  );
   const error = useError(estado);
 
   return (
-    <form action={enviar} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Campo id="fecha_tasa" etiqueta={t("fecha")}>
-          <Input id="fecha_tasa" name="fecha" type="date" defaultValue={hoy} required />
-        </Campo>
-        <Campo id="compra" etiqueta={t("compra")}>
-          <Input id="compra" name="compra" inputMode="decimal" required />
-        </Campo>
-        <Campo id="venta" etiqueta={t("venta")}>
-          <Input id="venta" name="venta" inputMode="decimal" required />
-        </Campo>
-        <Campo id="fuente" etiqueta={t("fuente")}>
-          <Input id="fuente" name="fuente" defaultValue="BCRD" maxLength={60} />
-        </Campo>
-      </div>
-      {error && <AvisoError>{error}</AvisoError>}
-      {estado.estado === "ok" && <AvisoOk>{t("ok")}</AvisoOk>}
-      <Button type="submit" variant="secondary" cargando={enviando}>
-        {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-        {t("guardar")}
-      </Button>
-    </form>
+    <Dialog open={abierto} onOpenChange={setAbierto}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t("botonConfig")}
+          title={t("botonConfig")}
+          className="size-9 rounded-full text-tinta-2 hover:bg-muted hover:text-tinta"
+        >
+          <Settings className="size-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="inline-flex items-center justify-center gap-1.5">
+            <span>{t("tituloBcrd")}</span>
+            <TooltipAyuda texto={t("ayudaBcrd")} etiqueta={t("masInformacion")} />
+          </DialogTitle>
+        </DialogHeader>
+        <form action={enviar} className="space-y-4">
+          <input type="hidden" name="fuente" value="BCRD" />
+          <div className="space-y-1.5">
+            <Label htmlFor="fecha_tasa_bcrd" className="text-sm font-medium">
+              {t("fecha")}
+              <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+            </Label>
+            <Input
+              id="fecha_tasa_bcrd"
+              name="fecha"
+              type="date"
+              defaultValue={tasa?.fecha ?? hoy}
+              required
+              readOnly={!puedeEditar}
+              className={!puedeEditar ? "bg-muted/50" : undefined}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="compra_bcrd" className="text-sm font-medium">
+                {t("compra")}
+                <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+              </Label>
+              <Input
+                id="compra_bcrd"
+                name="compra"
+                inputMode="decimal"
+                defaultValue={tasa?.compra ?? ""}
+                required
+                readOnly={!puedeEditar}
+                className={!puedeEditar ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="venta_bcrd" className="text-sm font-medium">
+                {t("venta")}
+                <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+              </Label>
+              <Input
+                id="venta_bcrd"
+                name="venta"
+                inputMode="decimal"
+                defaultValue={tasa?.venta ?? ""}
+                required
+                readOnly={!puedeEditar}
+                className={!puedeEditar ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+              />
+            </div>
+          </div>
+          {error && <AvisoError>{error}</AvisoError>}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+              {t("cerrar")}
+            </Button>
+            {puedeEditar && (
+              <Button type="submit" cargando={enviando}>
+                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {t("guardar")}
+              </Button>
+            )}
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -578,8 +578,8 @@ function saldoConSignoValido(crudo: string): string | null {
 }
 
 /**
- * Actualiza Título, No. de cuenta, Moneda, Auxiliar contable y Saldo actual
- * de una cuenta bancaria. Exclusivo del rol `contabilidad`.
+ * Actualiza Título, No. de cuenta, Moneda (con tasas de compra/venta si es USD),
+ * Auxiliar contable y Saldo actual de una cuenta bancaria. Exclusivo del rol `contabilidad`.
  */
 export async function actualizarCuentaBancaria(
   _previo: EstadoBanco,
@@ -594,8 +594,13 @@ export async function actualizarCuentaBancaria(
   const moneda = texto(datos, "moneda", 3);
   const contable = texto(datos, "cuenta_contable", 40);
   const saldoActual = saldoConSignoValido(texto(datos, "saldo_actual", 24));
+  const tasaCompra = moneda === "USD" ? tasaValida(texto(datos, "tasa_compra", 20)) : null;
+  const tasaVenta = moneda === "USD" ? tasaValida(texto(datos, "tasa_venta", 20)) : null;
 
   if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable)) {
+    return { estado: "datos_invalidos" };
+  }
+  if (moneda === "USD" && (!tasaCompra || !tasaVenta)) {
     return { estado: "datos_invalidos" };
   }
   if (saldoActual === null) return { estado: "monto_invalido" };
@@ -613,7 +618,9 @@ export async function actualizarCuentaBancaria(
                   SELECT sum(m.importe)
                     FROM contabilidad.movimiento_bancario m
                    WHERE m.cuenta_id = cb.id AND m.estado = 'vigente'
-                ), 0)
+                ), 0),
+                tasa_compra = $7,
+                tasa_venta = $8
           WHERE cb.id = $1
             AND EXISTS (
               SELECT 1 FROM contabilidad.cuenta_contable c
@@ -626,7 +633,7 @@ export async function actualizarCuentaBancaria(
                  WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL
               )
             )`,
-        [cuenta, nombre, numero, moneda, contable, saldoActual],
+        [cuenta, nombre, numero, moneda, contable, saldoActual, tasaCompra, tasaVenta],
       );
       if (!rowCount) throw new RechazoBanco("datos_invalidos");
     });
@@ -657,8 +664,13 @@ export async function solicitarCambioCuentaBancaria(
   const contable = texto(datos, "cuenta_contable", 40);
   const saldoActual = saldoConSignoValido(texto(datos, "saldo_actual", 24));
   const motivo = texto(datos, "motivo", 300);
+  const tasaCompra = moneda === "USD" ? tasaValida(texto(datos, "tasa_compra", 20)) : null;
+  const tasaVenta = moneda === "USD" ? tasaValida(texto(datos, "tasa_venta", 20)) : null;
 
   if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable) || !motivo) {
+    return { estado: "datos_invalidos" };
+  }
+  if (moneda === "USD" && (!tasaCompra || !tasaVenta)) {
     return { estado: "datos_invalidos" };
   }
   if (saldoActual === null) return { estado: "monto_invalido" };
@@ -667,15 +679,15 @@ export async function solicitarCambioCuentaBancaria(
     const solicitudId = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.solicitud_cambio_cuenta_bancaria
-           (cuenta_id, solicitado_por, nombre, numero, moneda, cuenta_contable_id, saldo_actual, motivo)
-         SELECT $1, $2, $3, $4, $5, $6, $7, $8
+           (cuenta_id, solicitado_por, nombre, numero, moneda, cuenta_contable_id, saldo_actual, motivo, tasa_compra, tasa_venta)
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
           WHERE EXISTS (SELECT 1 FROM contabilidad.cuenta_bancaria WHERE id = $1)
             AND EXISTS (
               SELECT 1 FROM contabilidad.cuenta_contable c
                WHERE c.id = $6 AND c.tipo = 'activo' AND c.admite_movimiento AND c.activa
             )
          RETURNING id`,
-        [cuenta, usuario.id, nombre, numero, moneda, contable, saldoActual, motivo],
+        [cuenta, usuario.id, nombre, numero, moneda, contable, saldoActual, motivo, tasaCompra, tasaVenta],
       );
       if (!rows[0]) throw new RechazoBanco("datos_invalidos");
       return rows[0].id;
@@ -734,10 +746,13 @@ export async function resolverSolicitudCambioBanco(
         nombre: string;
         numero: string;
         moneda: string;
+        tasa_compra: string | null;
+        tasa_venta: string | null;
         cuenta_contable_id: string;
         saldo_actual: string;
       }>(
         `SELECT id, cuenta_id, solicitado_por, nombre, numero, moneda,
+                tasa_compra::text AS tasa_compra, tasa_venta::text AS tasa_venta,
                 cuenta_contable_id, saldo_actual::text AS saldo_actual
            FROM contabilidad.solicitud_cambio_cuenta_bancaria
           WHERE id = $1 AND estado = 'pendiente'
@@ -759,7 +774,9 @@ export async function resolverSolicitudCambioBanco(
                     SELECT sum(m.importe)
                       FROM contabilidad.movimiento_bancario m
                      WHERE m.cuenta_id = cb.id AND m.estado = 'vigente'
-                  ), 0)
+                  ), 0),
+                  tasa_compra = $7,
+                  tasa_venta = $8
             WHERE cb.id = $1
               AND (
                 cb.cuenta_contable_id = $5
@@ -768,7 +785,16 @@ export async function resolverSolicitudCambioBanco(
                    WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL
                 )
               )`,
-          [sol.cuenta_id, sol.nombre, sol.numero, sol.moneda, sol.cuenta_contable_id, sol.saldo_actual],
+          [
+            sol.cuenta_id,
+            sol.nombre,
+            sol.numero,
+            sol.moneda,
+            sol.cuenta_contable_id,
+            sol.saldo_actual,
+            sol.moneda === "USD" ? sol.tasa_compra : null,
+            sol.moneda === "USD" ? sol.tasa_venta : null,
+          ],
         );
         if (!rowCount) throw new RechazoBanco("datos_invalidos");
       } else {

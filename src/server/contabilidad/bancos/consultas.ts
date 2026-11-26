@@ -24,12 +24,18 @@ export type CuentaConSaldo = {
   numero: string;
   tipo: "corriente" | "ahorro";
   moneda: Moneda;
+  tasa_compra: string | null;
+  tasa_venta: string | null;
   saldo: string;
   /** Equivalente en pesos con la tasa de referencia de hoy; null si no hay tasa. */
   saldo_dop: string | null;
+  /** Suma neta de movimientos bancarios del extracto ya conciliados. */
+  saldo_conciliado: string;
+  /** Suma neta de movimientos bancarios del extracto aún sin conciliar. */
+  saldo_sin_conciliar: string;
   estado: "activa" | "cerrada";
   movimientos: number;
-  /** Fecha de la última transacción del banco ya conciliada. */
+  /** Fecha (DD/MM/YYYY) de la última vez que se concilió esta cuenta. */
   ultima_conciliacion: string | null;
   /** La cuenta contable auxiliar del banco: con ella se buscan los asientos a conciliar. */
   cuenta_contable_id: string;
@@ -39,16 +45,35 @@ export type CuentaConSaldo = {
 export async function cuentasConSaldo(): Promise<CuentaConSaldo[]> {
   return consultar<CuentaConSaldo>(
     `SELECT cb.id, cb.nombre, b.nombre AS banco, cb.numero, cb.tipo, cb.moneda, cb.estado,
+            cb.tasa_compra::text AS tasa_compra,
+            cb.tasa_venta::text AS tasa_venta,
             (cb.saldo_inicial + coalesce(s.suma, 0))::text AS saldo,
             CASE cb.moneda
               WHEN 'DOP' THEN (cb.saldo_inicial + coalesce(s.suma, 0))
               ELSE round((cb.saldo_inicial + coalesce(s.suma, 0))
                          * contabilidad.tasa_referencia((now() AT TIME ZONE 'America/Santo_Domingo')::date), 2)
             END::text AS saldo_dop,
+            coalesce((
+              SELECT sum(e.monto)
+                FROM contabilidad.extracto_linea e
+               WHERE e.cuenta_id = cb.id
+                 AND EXISTS (
+                   SELECT 1 FROM contabilidad.conciliacion_partida p
+                    WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+                 )
+            ), 0)::numeric(14,2)::text AS saldo_conciliado,
+            coalesce((
+              SELECT sum(e.monto)
+                FROM contabilidad.extracto_linea e
+               WHERE e.cuenta_id = cb.id
+                 AND NOT EXISTS (
+                   SELECT 1 FROM contabilidad.conciliacion_partida p
+                    WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+                 )
+            ), 0)::numeric(14,2)::text AS saldo_sin_conciliar,
             coalesce(s.n, 0)::int AS movimientos,
-            (SELECT max(e.fecha)::text
+            (SELECT to_char(max(p.conciliado_en AT TIME ZONE 'America/Santo_Domingo'), 'DD/MM/YYYY')
                FROM contabilidad.conciliacion_partida p
-               JOIN contabilidad.extracto_linea e ON e.id = p.extracto_linea_id
               WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL) AS ultima_conciliacion,
             cb.cuenta_contable_id, cc.codigo || ' · ' || cc.nombre AS cuenta_contable
        FROM contabilidad.cuenta_bancaria cb
@@ -417,6 +442,8 @@ export type SolicitudCambioBanco = {
   nombre: string;
   numero: string;
   moneda: Moneda;
+  tasa_compra: string | null;
+  tasa_venta: string | null;
   cuenta_contable_id: string;
   cuenta_contable: string;
   saldo_actual: string;
@@ -441,6 +468,8 @@ export async function solicitudesCambioBanco(
             s.nombre,
             s.numero,
             s.moneda,
+            s.tasa_compra::text AS tasa_compra,
+            s.tasa_venta::text AS tasa_venta,
             s.cuenta_contable_id,
             cc.codigo || ' · ' || cc.nombre AS cuenta_contable,
             s.saldo_actual::numeric(14,2)::text AS saldo_actual,
