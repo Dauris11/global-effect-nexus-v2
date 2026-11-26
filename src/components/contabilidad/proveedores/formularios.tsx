@@ -22,6 +22,7 @@ import {
 import { identificacionValida, limpiarIdentificacion } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
 import {
+  calcularItbis,
   calcularMontoRetencion,
   retencionesParaProveedor,
 } from "@/lib/contabilidad/retenciones-dgii";
@@ -90,6 +91,7 @@ function Campo({
 }
 
 const fichaProveedor = (id: string) => `/contabilidad/proveedores/${id}`;
+const listaProveedores = () => "/contabilidad/proveedores";
 const fichaFactura = (id: string) => `/contabilidad/facturas/${id}`;
 
 export function FormularioProveedor({
@@ -109,7 +111,7 @@ export function FormularioProveedor({
   const [consultandoRnc, setConsultandoRnc] = useState(false);
   const [avisoRnc, setAvisoRnc] = useState<{ tipo: "ok" | "error"; mensaje: string } | null>(null);
   const error = useError(estado);
-  useIrA(estado, fichaProveedor);
+  useIrA(estado, proveedor ? fichaProveedor : listaProveedores);
 
   const esJuridica = tipo === "juridica";
   // La consulta DGII (formal/jurídico) solo admite dígitos sin guiones; en informal se ingresa la cédula sin consultar DGII.
@@ -388,10 +390,11 @@ export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string
 }
 
 /**
- * Factura de proveedor para ASFL (sin ITBIS facturado). El tipo de gasto
- * enlaza directamente con las cuentas contables marcadas con «Agregar a Facturas»
- * (mostrando solo su nombre), y las retenciones se eligen en listas simples
- * con cálculo automático en centavos exactos.
+ * Factura de proveedor. El tipo de gasto enlaza directamente con las cuentas
+ * contables marcadas con «Agregar a Facturas» (mostrando solo su nombre), el
+ * check «Exento de ITBIS» controla si se suma 18% de ITBIS al total, las
+ * retenciones se eligen en listas simples con cálculo automático en centavos
+ * exactos y las asignaciones opcionales se muestran bajo demanda.
  */
 export function FormularioFactura({
   proveedores,
@@ -416,24 +419,46 @@ export function FormularioFactura({
   hoy: string;
 }) {
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations("contab.facturaForm");
   const tc = useTranslations("contab");
   const [estado, enviar, enviando] = useActionState(guardarFactura, INICIAL);
   const error = useError(estado);
-  useIrA(estado, fichaFactura);
 
   const [proveedor, setProveedor] = useState(factura?.proveedor_id ?? proveedorId ?? proveedores[0]?.id ?? "");
   const datosProveedor = proveedores.find((p) => p.id === proveedor);
   const [moneda, setMoneda] = useState<string>(factura?.moneda ?? "DOP");
   const [emision, setEmision] = useState(factura?.fecha_emision ?? hoy);
   const [monto, setMonto] = useState(factura?.subtotal ?? "");
+  const [exentoItbis, setExentoItbis] = useState(
+    factura ? Number(factura.itbis) === 0 : true,
+  );
   const [tipoRetencionIsr, setTipoRetencionIsr] = useState(factura?.tipo_retencion_isr ?? "");
   const [tipoRetencionItbis, setTipoRetencionItbis] = useState(factura?.tipo_retencion_itbis ?? "");
   const [ncf, setNcf] = useState(factura?.ncf ?? "");
   const [concepto, setConcepto] = useState(factura?.concepto ?? "");
+  const [cuentaGastoId, setCuentaGastoId] = useState(factura?.cuenta_gasto_id ?? "");
+  const [incluirAsignaciones, setIncluirAsignaciones] = useState(
+    Boolean(
+      factura?.solicitante_id ||
+        factura?.programa_codigo ||
+        factura?.proyecto_id ||
+        factura?.estudiante_id,
+    ),
+  );
+  const [fondo, setFondo] = useState(factura?.fondo_id ?? fondos[0]?.id ?? "");
+  const [proyecto, setProyecto] = useState(factura?.proyecto_id ?? "");
   const [solicitante, setSolicitante] = useState(factura?.solicitante_id ?? "");
   const [programa, setPrograma] = useState(factura?.programa_codigo ?? "");
   const [estudiante, setEstudiante] = useState(factura?.estudiante_id ?? "");
+
+  // Tras guardar la factura, llevar siempre al resumen del proveedor.
+  useEffect(() => {
+    if (estado.estado === "ok") {
+      const destino = estado.proveedorId ?? proveedor;
+      router.push(destino ? fichaProveedor(destino) : "/contabilidad/proveedores");
+    }
+  }, [estado, proveedor, router]);
 
   // Estado del motor OCR
   const [escaneandoOcr, setEscaneandoOcr] = useState(false);
@@ -502,10 +527,12 @@ export function FormularioFactura({
   const opcionesItbis = retencionesParaProveedor("itbis", datosProveedor?.tipo);
 
   const base = montoValido(monto) ?? "0";
+  const itbisCalculado = exentoItbis ? "0.00" : calcularItbis(base);
+  const totalFactura = sumarMontos([base, itbisCalculado]);
   const retencionIsr = calcularMontoRetencion(base, tipoRetencionIsr);
   const retencionItbis = calcularMontoRetencion(base, tipoRetencionItbis);
   const totalRetenciones = sumarMontos([retencionIsr, retencionItbis]);
-  const neto = restarMontos(base, totalRetenciones);
+  const neto = restarMontos(totalFactura, totalRetenciones);
   const monedaVista = moneda === "USD" ? "USD" : "DOP";
 
   return (
@@ -559,12 +586,22 @@ export function FormularioFactura({
 
       <form action={enviar} className="space-y-5">
         {factura && <input type="hidden" name="id" value={factura.id} />}
-        <input type="hidden" name="itbis" value="0" />
-        <FormularioGuiado>
-          <PasoFormulario titulo={t("pasos.comprobante")}>
-            <div className="grid gap-4 md:grid-cols-2">
+        <input type="hidden" name="exento_itbis" value={exentoItbis ? "1" : "0"} />
+        {!incluirAsignaciones && <input type="hidden" name="fondo" value={fondo} />}
+
+        <div className="space-y-4">
+          {/* Fila 1: Proveedor + RNC automático + NCF o e-CF */}
+          <div className="grid gap-4 md:grid-cols-12">
+            <div className="md:col-span-6">
               <Campo id="proveedor" etiqueta={t("proveedor")}>
-                <select id="proveedor" name="proveedor" className={SELECT} value={proveedor} onChange={(e) => setProveedor(e.target.value)} required>
+                <select
+                  id="proveedor"
+                  name="proveedor"
+                  className={SELECT}
+                  value={proveedor}
+                  onChange={(e) => setProveedor(e.target.value)}
+                  required
+                >
                   {proveedores.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.nombre} ({tc(`tipoProveedor.${p.tipo}` as never)})
@@ -572,214 +609,351 @@ export function FormularioFactura({
                   ))}
                 </select>
               </Campo>
-              <Campo id="ncf" etiqueta={t("ncf")}>
-                <Input id="ncf" name="ncf" maxLength={13} value={ncf} onChange={(e) => setNcf(e.target.value.toUpperCase())} className="uppercase font-mono" />
-              </Campo>
-              <Campo id="fecha_emision" etiqueta={t("emision")}>
-                <Input id="fecha_emision" name="fecha_emision" type="date" required value={emision} onChange={(e) => setEmision(e.target.value)} />
-              </Campo>
-              <Campo id="fecha_vencimiento" etiqueta={t("vencimiento")}>
-                <Input key={sugerido} id="fecha_vencimiento" name="fecha_vencimiento" type="date" required defaultValue={factura?.fecha_vencimiento ?? sugerido} />
-              </Campo>
-              <Campo id="moneda" etiqueta={t("moneda")}>
-                <select id="moneda" name="moneda" className={SELECT} value={moneda} onChange={(e) => setMoneda(e.target.value)}>
-                  {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
-                </select>
-              </Campo>
-              {moneda === "USD" && (
-                <Campo id="tasa" etiqueta={t("tasa")}>
-                  <Input id="tasa" name="tasa" inputMode="decimal" required defaultValue={factura?.tasa ?? ""} />
-                </Campo>
-              )}
             </div>
-
-          </PasoFormulario>
-
-          <PasoFormulario titulo={t("pasos.montos")}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Campo id="subtotal" etiqueta={t("monto")}>
+            <div className="md:col-span-3">
+              <Campo id="rnc_proveedor" etiqueta={t("rnc")}>
                 <Input
-                  id="subtotal"
-                  name="subtotal"
+                  id="rnc_proveedor"
+                  value={datosProveedor?.identificacion ?? ""}
+                  readOnly
+                  tabIndex={-1}
+                  className="bg-muted/40 font-mono text-tinta-2"
+                />
+              </Campo>
+            </div>
+            <div className="md:col-span-3">
+              <Campo id="ncf" etiqueta={t("ncf")} obligatorio>
+                <Input
+                  id="ncf"
+                  name="ncf"
+                  required
+                  maxLength={13}
+                  value={ncf}
+                  onChange={(e) => setNcf(e.target.value.toUpperCase())}
+                  className="uppercase font-mono"
+                />
+              </Campo>
+            </div>
+          </div>
+
+          {/* Fila 2: Tipo de gasto (debajo de Proveedor) | Fecha de emisión (al lado) */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo
+              id="cuenta_gasto_id"
+              etiqueta={t("tipoGasto")}
+              obligatorio
+              ayuda={tiposGasto.length === 0 ? t("sinTiposGasto") : undefined}
+            >
+              <select
+                id="cuenta_gasto_id"
+                name="cuenta_gasto_id"
+                className={SELECT}
+                required
+                value={cuentaGastoId}
+                onChange={(e) => setCuentaGastoId(e.target.value)}
+              >
+                <option value="">{t("seleccionarTipoGasto")}</option>
+                {tiposGasto.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+            <Campo id="fecha_emision" etiqueta={t("emision")} obligatorio>
+              <Input
+                id="fecha_emision"
+                name="fecha_emision"
+                type="date"
+                required
+                value={emision}
+                onChange={(e) => setEmision(e.target.value)}
+              />
+            </Campo>
+          </div>
+
+          {/* Fila 3: Concepto (izquierda) | Fecha de vencimiento (debajo de Fecha de emisión) */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo id="concepto" etiqueta={t("concepto")} obligatorio>
+              <Input
+                id="concepto"
+                name="concepto"
+                required
+                maxLength={200}
+                value={concepto}
+                onChange={(e) => setConcepto(e.target.value)}
+              />
+            </Campo>
+            <Campo id="fecha_vencimiento" etiqueta={t("vencimiento")}>
+              <Input
+                key={sugerido}
+                id="fecha_vencimiento"
+                name="fecha_vencimiento"
+                type="date"
+                required
+                defaultValue={factura?.fecha_vencimiento ?? sugerido}
+              />
+            </Campo>
+          </div>
+
+          {/* Fila 4: Monto (debajo de Concepto) | Moneda (al lado de Monto) */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Campo id="subtotal" etiqueta={t("monto")} obligatorio>
+              <Input
+                id="subtotal"
+                name="subtotal"
+                inputMode="decimal"
+                required
+                value={monto}
+                onChange={(e) => setMonto(e.target.value)}
+              />
+            </Campo>
+            <Campo id="moneda" etiqueta={t("moneda")} obligatorio>
+              <select
+                id="moneda"
+                name="moneda"
+                className={SELECT}
+                required
+                value={moneda}
+                onChange={(e) => setMoneda(e.target.value)}
+              >
+                {MONEDAS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+          </div>
+
+          {moneda === "USD" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <Campo id="tasa" etiqueta={t("tasa")} obligatorio>
+                <Input
+                  id="tasa"
+                  name="tasa"
                   inputMode="decimal"
                   required
-                  value={monto}
-                  onChange={(e) => setMonto(e.target.value)}
-                />
-              </Campo>
-              <Campo id="concepto" etiqueta={t("concepto")}>
-                <Input
-                  id="concepto"
-                  name="concepto"
-                  required
-                  maxLength={200}
-                  value={concepto}
-                  onChange={(e) => setConcepto(e.target.value)}
+                  defaultValue={factura?.tasa ?? ""}
                 />
               </Campo>
             </div>
+          )}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Campo id="tipo_retencion_isr" etiqueta={t("retencionIsr")}>
-                <select
-                  id="tipo_retencion_isr"
-                  name="tipo_retencion_isr"
-                  className={SELECT}
-                  value={tipoRetencionIsr}
-                  onChange={(e) => setTipoRetencionIsr(e.target.value)}
-                >
-                  <option value="">{t("sinRetencion")}</option>
-                  {opcionesIsr.map((r) => (
-                    <option key={r.codigo} value={r.codigo}>
-                      {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
+          {/* Fila 5: Retenciones (debajo de Monto y Moneda) + Check «Exento de ITBIS» al lado */}
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+            <Campo id="tipo_retencion_isr" etiqueta={t("retencionIsr")}>
+              <select
+                id="tipo_retencion_isr"
+                name="tipo_retencion_isr"
+                className={SELECT}
+                value={tipoRetencionIsr}
+                onChange={(e) => setTipoRetencionIsr(e.target.value)}
+              >
+                <option value="">{t("sinRetencion")}</option>
+                {opcionesIsr.map((r) => (
+                  <option key={r.codigo} value={r.codigo}>
+                    {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
+                  </option>
+                ))}
+              </select>
+            </Campo>
 
-              <Campo id="tipo_retencion_itbis" etiqueta={t("retencionItbis")}>
-                <select
-                  id="tipo_retencion_itbis"
-                  name="tipo_retencion_itbis"
-                  className={SELECT}
-                  value={tipoRetencionItbis}
-                  onChange={(e) => setTipoRetencionItbis(e.target.value)}
-                >
-                  <option value="">{t("sinRetencion")}</option>
-                  {opcionesItbis.map((r) => (
-                    <option key={r.codigo} value={r.codigo}>
-                      {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
+            <Campo id="tipo_retencion_itbis" etiqueta={t("retencionItbis")}>
+              <select
+                id="tipo_retencion_itbis"
+                name="tipo_retencion_itbis"
+                className={SELECT}
+                value={tipoRetencionItbis}
+                onChange={(e) => setTipoRetencionItbis(e.target.value)}
+              >
+                <option value="">{t("sinRetencion")}</option>
+                {opcionesItbis.map((r) => (
+                  <option key={r.codigo} value={r.codigo}>
+                    {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+
+            <label className="flex h-11 cursor-pointer items-center gap-2 rounded-control border border-linea px-3 text-sm font-medium text-tinta whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={exentoItbis}
+                onChange={(e) => setExentoItbis(e.target.checked)}
+                className="size-4 accent-marca-500"
+              />
+              <span>{t("exentoItbis")}</span>
+            </label>
+          </div>
+
+          {/* Fila 6: Totales (debajo de las retenciones) */}
+          <dl className="grid gap-4 rounded-control bg-superficie/60 p-4 text-sm sm:grid-cols-3 lg:grid-cols-6">
+            <div>
+              <dt className="texto-meta">{t("monto")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(base, monedaVista)}</dd>
             </div>
-
-            <dl className="grid gap-4 rounded-control bg-superficie/60 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <dt className="texto-meta">{t("total")}</dt>
-                <dd className="font-semibold text-tinta">{formatearMonto(base, monedaVista)}</dd>
-              </div>
-              <div>
-                <dt className="texto-meta">{t("retencionIsr")}</dt>
-                <dd className="font-medium text-tinta">−{formatearMonto(retencionIsr, monedaVista)}</dd>
-              </div>
-              <div>
-                <dt className="texto-meta">{t("retencionItbis")}</dt>
-                <dd className="font-medium text-tinta">−{formatearMonto(retencionItbis, monedaVista)}</dd>
-              </div>
-              <div>
-                <dt className="texto-meta">{t("neto")}</dt>
-                <dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd>
-              </div>
-            </dl>
-          </PasoFormulario>
-
-          <PasoFormulario titulo={t("pasos.asignacion")}>
-            {/* Asignación Institucional (Persona y Programa) */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <Campo id="solicitante" etiqueta={t("solicitante")}>
-                <select
-                  id="solicitante"
-                  name="solicitante"
-                  className={SELECT}
-                  value={solicitante}
-                  onChange={(e) => setSolicitante(e.target.value)}
-                >
-                  <option value="">{t("ninguno")}</option>
-                  {solicitantes.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.nombre} ({s.rol})
-                    </option>
-                  ))}
-                </select>
-              </Campo>
-
-              <Campo id="programa" etiqueta={t("programa")}>
-                <select
-                  id="programa"
-                  name="programa"
-                  className={SELECT}
-                  value={programa}
-                  onChange={(e) => setPrograma(e.target.value)}
-                >
-                  <option value="">{t("ninguno")}</option>
-                  {PROGRAMAS_INSTITUCIONALES.map((prg) => (
-                    <option key={prg.codigo} value={prg.codigo}>
-                      {prg.nombre}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
+            <div>
+              <dt className="texto-meta">{t("itbis18")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(itbisCalculado, monedaVista)}</dd>
             </div>
+            <div>
+              <dt className="texto-meta">{t("total")}</dt>
+              <dd className="font-semibold text-tinta">{formatearMonto(totalFactura, monedaVista)}</dd>
+            </div>
+            <div>
+              <dt className="texto-meta">{t("retencionIsr")}</dt>
+              <dd className="font-medium text-tinta">−{formatearMonto(retencionIsr, monedaVista)}</dd>
+            </div>
+            <div>
+              <dt className="texto-meta">{t("retencionItbis")}</dt>
+              <dd className="font-medium text-tinta">−{formatearMonto(retencionItbis, monedaVista)}</dd>
+            </div>
+            <div>
+              <dt className="texto-meta">{t("neto")}</dt>
+              <dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd>
+            </div>
+          </dl>
 
-            {estudiantes.length > 0 && (
-              <div className="grid gap-4 md:grid-cols-2">
-                <Campo id="estudiante" etiqueta={t("estudiante")}>
-                  <select id="estudiante" name="estudiante" className={SELECT} value={estudiante} onChange={(e) => setEstudiante(e.target.value)}>
-                    <option value="">{t("ninguno")}</option>
-                    {estudiantes.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                  </select>
-                </Campo>
-                {estudiante && (
-                  <Campo id="pilar_costo" etiqueta={t("pilar")}>
-                    <select id="pilar_costo" name="pilar_costo" className={SELECT} defaultValue={factura?.pilar_costo ?? "universidad"}>
-                      {PILARES_COSTO.map((p) => <option key={p} value={p}>{t(`pilares.${p}`)}</option>)}
+          {/* Fila 7: Check «Incluir asignaciones» */}
+          <div className="space-y-4 rounded-control border border-linea p-4">
+            <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-tinta">
+              <input
+                type="checkbox"
+                checked={incluirAsignaciones}
+                onChange={(e) => setIncluirAsignaciones(e.target.checked)}
+                className="size-4 accent-marca-500"
+              />
+              <span>{t("incluirAsignaciones")}</span>
+            </label>
+
+            {incluirAsignaciones && (
+              <div className="space-y-4 border-t border-linea pt-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Campo id="fondo" etiqueta={t("fondo")}>
+                    <select
+                      id="fondo"
+                      name="fondo"
+                      className={SELECT}
+                      value={fondo}
+                      onChange={(e) => setFondo(e.target.value)}
+                      required
+                    >
+                      {fondos.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.nombre}
+                        </option>
+                      ))}
                     </select>
                   </Campo>
+                  <Campo id="proyecto" etiqueta={t("proyecto")}>
+                    <select
+                      id="proyecto"
+                      name="proyecto"
+                      className={SELECT}
+                      value={proyecto}
+                      onChange={(e) => setProyecto(e.target.value)}
+                    >
+                      <option value="">{t("ninguno")}</option>
+                      {proyectos.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </Campo>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Campo id="solicitante" etiqueta={t("solicitante")}>
+                    <select
+                      id="solicitante"
+                      name="solicitante"
+                      className={SELECT}
+                      value={solicitante}
+                      onChange={(e) => setSolicitante(e.target.value)}
+                    >
+                      <option value="">{t("ninguno")}</option>
+                      {solicitantes.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.nombre} ({s.rol})
+                        </option>
+                      ))}
+                    </select>
+                  </Campo>
+                  <Campo id="programa" etiqueta={t("programa")}>
+                    <select
+                      id="programa"
+                      name="programa"
+                      className={SELECT}
+                      value={programa}
+                      onChange={(e) => setPrograma(e.target.value)}
+                    >
+                      <option value="">{t("ninguno")}</option>
+                      {PROGRAMAS_INSTITUCIONALES.map((prg) => (
+                        <option key={prg.codigo} value={prg.codigo}>
+                          {prg.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </Campo>
+                </div>
+
+                {estudiantes.length > 0 && (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Campo id="estudiante" etiqueta={t("estudiante")}>
+                      <select
+                        id="estudiante"
+                        name="estudiante"
+                        className={SELECT}
+                        value={estudiante}
+                        onChange={(e) => setEstudiante(e.target.value)}
+                      >
+                        <option value="">{t("ninguno")}</option>
+                        {estudiantes.map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </Campo>
+                    {estudiante && (
+                      <Campo id="pilar_costo" etiqueta={t("pilar")}>
+                        <select
+                          id="pilar_costo"
+                          name="pilar_costo"
+                          className={SELECT}
+                          defaultValue={factura?.pilar_costo ?? "universidad"}
+                        >
+                          {PILARES_COSTO.map((p) => (
+                            <option key={p} value={p}>
+                              {t(`pilares.${p}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </Campo>
+                    )}
+                  </div>
                 )}
               </div>
             )}
+          </div>
+        </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <Campo
-                id="cuenta_gasto_id"
-                etiqueta={t("tipoGasto")}
-                ayuda={tiposGasto.length === 0 ? t("sinTiposGasto") : undefined}
-              >
-                <select
-                  id="cuenta_gasto_id"
-                  name="cuenta_gasto_id"
-                  className={SELECT}
-                  required
-                  defaultValue={factura?.cuenta_gasto_id ?? ""}
-                >
-                  <option value="">{t("seleccionarTipoGasto")}</option>
-                  {tiposGasto.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.nombre}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
-              <Campo id="fondo" etiqueta={t("fondo")}>
-                <select id="fondo" name="fondo" className={SELECT} defaultValue={factura?.fondo_id ?? ""} required>
-                  {fondos.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
-                </select>
-              </Campo>
-              <Campo id="proyecto" etiqueta={t("proyecto")}>
-                <select id="proyecto" name="proyecto" className={SELECT} defaultValue={factura?.proyecto_id ?? ""}>
-                  <option value="">{t("ninguno")}</option>
-                  {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                </select>
-              </Campo>
-            </div>
-          </PasoFormulario>
-          {error && <AvisoError>{error}</AvisoError>}
-          <AccionesFormulario>
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" cargando={enviando}>
-                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {t("guardar")}
-              </Button>
-              <Button asChild variant="ghost">
-                <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
-                  {t("cancelar")}
-                </Link>
-              </Button>
-            </div>
-          </AccionesFormulario>
-        </FormularioGuiado>
+        {error && <AvisoError>{error}</AvisoError>}
+        <AccionesFormulario>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" cargando={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {t("guardar")}
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
+                {t("cancelar")}
+              </Link>
+            </Button>
+          </div>
+        </AccionesFormulario>
       </form>
     </div>
   );

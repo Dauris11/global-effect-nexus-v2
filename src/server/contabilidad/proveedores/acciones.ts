@@ -21,6 +21,7 @@ import {
   ncfValido,
 } from "@/lib/contabilidad/identificacion";
 import {
+  calcularItbis,
   calcularMontoRetencion,
   retencionPorCodigo,
 } from "@/lib/contabilidad/retenciones-dgii";
@@ -77,6 +78,7 @@ export type EstadoProveedor = {
     | "proveedor_cuenta_no_valida"
     | EstadoErrorContable;
   id?: string;
+  proveedorId?: string;
   /** Nombre del código de transacción implicado (para el texto del error). */
   codigo?: string;
 };
@@ -291,13 +293,15 @@ export async function guardarFactura(
   const vencimiento = texto(datos, "fecha_vencimiento", 10);
   const moneda = texto(datos, "moneda", 3);
   const subtotal = montoValido(texto(datos, "subtotal", 20));
-  // Al ser una entidad sin fines de lucro (ASFL), no se registra ITBIS por separado en la factura.
-  const itbis = "0";
+  const exentoItbis = datos.get("exento_itbis") === "1";
   const tipoRetencionIsr = texto(datos, "tipo_retencion_isr", 60) || null;
   const tipoRetencionItbis = texto(datos, "tipo_retencion_itbis", 60) || null;
   const cuentaGastoId = idOpcional(datos, "cuenta_gasto_id");
   const categoria = idOpcional(datos, "categoria");
-  const fondo = idOpcional(datos, "fondo");
+  const fondoEnviado = idOpcional(datos, "fondo");
+  const fondo = fondoEnviado
+    ?? (await consultarUna<{ id: string }>(`SELECT id FROM contabilidad.fondo ORDER BY id LIMIT 1`))?.id
+    ?? null;
   const concepto = texto(datos, "concepto");
 
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
@@ -306,6 +310,8 @@ export async function guardarFactura(
     return { estado: "datos_invalidos" };
   }
   if (!subtotal) return { estado: "monto_invalido" };
+  if (!ncf) return { estado: "ncf_requerido" };
+  if (!ncfValido(ncf)) return { estado: "ncf_invalido" };
   if (tipoRetencionIsr && retencionPorCodigo(tipoRetencionIsr)?.impuesto !== "isr") {
     return { estado: "datos_invalidos" };
   }
@@ -321,7 +327,9 @@ export async function guardarFactura(
   );
   if (!cuentaGastoValida?.ok) return { estado: "datos_invalidos" };
 
-  // Las retenciones se calculan en el servidor a partir del monto y del tipo elegido.
+  // Si la factura está marcada como exenta de ITBIS, el ITBIS es 0; si no, se calcula el 18%.
+  const itbis = exentoItbis ? "0" : calcularItbis(subtotal);
+  // Las retenciones se calculan en el servidor a partir del monto base y del tipo elegido.
   const isr = tipoRetencionIsr ? calcularMontoRetencion(subtotal, tipoRetencionIsr) : "0";
   const retItbis = tipoRetencionItbis ? calcularMontoRetencion(subtotal, tipoRetencionItbis) : "0";
   const tasa = moneda === "USD" ? tasaValida(texto(datos, "tasa", 20)) : null;
@@ -332,8 +340,6 @@ export async function guardarFactura(
     [proveedorId],
   );
   if (!proveedor) return { estado: "no_encontrado" };
-  if (ncf && !ncfValido(ncf)) return { estado: "ncf_invalido" };
-  if (!ncf && proveedor.tipo === "juridica") return { estado: "ncf_requerido" };
 
   const solicitante = idOpcional(datos, "solicitante");
   const programa = texto(datos, "programa", 60) || null;
@@ -382,7 +388,7 @@ export async function guardarFactura(
     });
     if (!guardado) return { estado: "no_es_borrador" };
     refrescar();
-    return { estado: "ok", id: guardado };
+    return { estado: "ok", id: guardado, proveedorId };
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : "";
     if (mensaje.includes("factura_proveedor_proveedor_id_ncf_key")) {

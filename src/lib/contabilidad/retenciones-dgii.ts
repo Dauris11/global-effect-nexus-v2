@@ -353,3 +353,13 @@ export function calcularMontoRetencion(
   const centavosRet = Math.round(centavosBase * regla.tasa);
   return (centavosRet / 100).toFixed(2);
 }
+
+/** Calcula el ITBIS general (18%) en centavos exactos sobre el monto base. */
+export function calcularItbis(montoStr: string): string {
+  const limpio = montoStr.replace(/,/g, "").trim();
+  const num = Number(limpio);
+  if (!Number.isFinite(num) || num <= 0) return "0.00";
+  const centavosBase = Math.round(num * 100);
+  const centavosItbis = Math.round(centavosBase * 0.18);
+  return (centavosItbis / 100).toFixed(2);
+}
