@@ -1,7 +1,11 @@
 import * as L from "leaflet";
 
-import { AZUL, AZUL_OSCURO, BLANCO, SEMAFORO, TINTA } from "@/lib/paleta";
-import type { EstadoViaje } from "@/lib/transporte";
+import {
+  type DatosGuagua,
+  etiquetaVelocidad,
+  htmlGuagua3D,
+  variablesGuagua,
+} from "./guagua-3d-html";
 
 /**
  * La guagua en 3D de verdad: un prisma con ocho caras reales (techo, frente,
@@ -18,81 +22,14 @@ import type { EstadoViaje } from "@/lib/transporte";
  * crea UNA vez y luego se actualiza con `actualizarGuagua3D`: sustituir el icono
  * en cada lectura reiniciaría las animaciones y las ruedas «saltarían».
  */
-export type DatosGuagua = {
-  rumbo?: number;
-  estado?: EstadoViaje;
-  velocidadKmh?: number;
-  /** Texto cuando está detenida; llega traducido, aquí no hay literales. */
-  etiquetaParada: string;
-};
-
-/** Colores como variables CSS: el CSS no repite ningún valor de la marca. */
-function variables(estado: EstadoViaje): string {
-  const averiada = estado === "averiado";
-
-  return [
-    `--g-color:${averiada ? SEMAFORO.alerta : AZUL}`,
-    `--g-borde:${averiada ? TINTA : AZUL_OSCURO}`,
-    `--g-tinta:${TINTA}`,
-    `--g-blanco:${BLANCO}`,
-    `--g-alerta:${SEMAFORO.alerta}`,
-  ].join(";");
-}
-
-const CARAS_COSTADO = (lado: "izq" | "der") => `
-  <div class="guagua3d-cara guagua3d-costado guagua3d-${lado}">
-    <div class="guagua3d-ventanas"></div>
-    <span class="guagua3d-puerta"></span>
-  </div>`;
-
-const RUEDA = (lado: "izq" | "der", pos: "del" | "tras") => `
-  <div class="guagua3d-rueda guagua3d-rueda-${lado} guagua3d-rueda-${pos}">
-    <div class="guagua3d-rueda-giro"><span></span></div>
-  </div>`;
-
-function etiquetaVelocidad(datos: DatosGuagua): string {
-  const velocidad = datos.velocidadKmh ?? 0;
-
-  return velocidad > 0 ? `${Math.round(velocidad)} km/h` : datos.etiquetaParada;
-}
+export type { DatosGuagua };
 
 export function iconoGuagua3D(datos: DatosGuagua): L.DivIcon {
-  const estado = datos.estado ?? "en_curso";
-  const velocidad = datos.velocidadKmh ?? 0;
-  const html = `
-    <div class="guagua3d" data-estado="${estado}" data-mov="${velocidad > 0 ? "1" : "0"}"
-         style="${variables(estado)};--g-giro:${Math.max(0.25, 1.6 - velocidad / 40).toFixed(2)}s">
-      <div class="guagua3d-onda"></div>
-      <div class="guagua3d-escena">
-        <div class="guagua3d-giro" style="transform:rotateZ(${datos.rumbo ?? 0}deg)">
-          <div class="guagua3d-sombra"></div>
-          <div class="guagua3d-bus">
-            <div class="guagua3d-cara guagua3d-techo"><b>GE</b></div>
-            <div class="guagua3d-cara guagua3d-frente">
-              <span class="guagua3d-parabrisas"></span>
-              <i class="guagua3d-faro guagua3d-faro-izq"></i>
-              <i class="guagua3d-faro guagua3d-faro-der"></i>
-            </div>
-            <div class="guagua3d-cara guagua3d-trasera">
-              <i class="guagua3d-luz guagua3d-luz-izq"></i>
-              <i class="guagua3d-luz guagua3d-luz-der"></i>
-            </div>
-            ${CARAS_COSTADO("izq")}
-            ${CARAS_COSTADO("der")}
-            ${RUEDA("izq", "del")}${RUEDA("der", "del")}
-            ${RUEDA("izq", "tras")}${RUEDA("der", "tras")}
-          </div>
-        </div>
-      </div>
-      <div class="guagua3d-etiqueta">${etiquetaVelocidad(datos)}</div>
-    </div>
-  `;
-
   return L.divIcon({
-    html,
+    html: htmlGuagua3D(datos),
     className: "marcador-guagua-3d",
-    iconSize: [72, 72],
-    iconAnchor: [36, 36],
+    iconSize: [104, 104],
+    iconAnchor: [52, 52],
   });
 }
 
@@ -102,15 +39,9 @@ export function actualizarGuagua3D(marcador: L.Marker, datos: DatosGuagua): void
 
   if (!raiz) return;
 
-  const estado = datos.estado ?? "en_curso";
-  const velocidad = datos.velocidadKmh ?? 0;
-
-  raiz.dataset.estado = estado;
-  raiz.dataset.mov = velocidad > 0 ? "1" : "0";
-  raiz.setAttribute(
-    "style",
-    `${variables(estado)};--g-giro:${Math.max(0.25, 1.6 - velocidad / 40).toFixed(2)}s`,
-  );
+  raiz.dataset.estado = datos.estado ?? "en_curso";
+  raiz.dataset.mov = (datos.velocidadKmh ?? 0) > 0 ? "1" : "0";
+  raiz.setAttribute("style", variablesGuagua(datos));
 
   const giro = raiz.querySelector<HTMLElement>(".guagua3d-giro");
   if (giro) giro.style.transform = `rotateZ(${datos.rumbo ?? 0}deg)`;

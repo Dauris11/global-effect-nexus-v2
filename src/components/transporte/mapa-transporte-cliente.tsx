@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 import {
   clasificarParadaInstitucional,
   construirGeometriaRuta,
-  iconoInsigniaCorredorTimob,
   iconoNodoParadaTimob,
   iconoUbicacionCiudadanoTimob,
   interpolarEstadoSimulacion,
@@ -61,10 +60,7 @@ export function MapaTransporteCliente({
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<L.Map | null>(null);
   const marcadorGuaguaRef = useRef<L.Marker | null>(null);
-  const capaRutaCasingRef = useRef<L.Polyline | null>(null);
-  const capaRutaLineaRef = useRef<L.Polyline | null>(null);
   const capaRecorridoRef = useRef<L.Polyline | null>(null);
-  const marcadorInsigniaRutaRef = useRef<L.Marker | null>(null);
   const marcadoresParadasRef = useRef<Map<string, L.Marker>>(new Map());
   const marcadorUsuarioRef = useRef<L.Marker | null>(null);
   const circuloPrecisionRef = useRef<L.Circle | null>(null);
@@ -78,7 +74,7 @@ export function MapaTransporteCliente({
   >("inactivo");
 
   // Estado cinemático continuo estilo TIMOB (progreso 0..1 y sentido ida/retorno)
-  const [simulacion, setSimulacion] = useState<{
+  const [simulacion] = useState<{
     progreso: number;
     direccion: "ida" | "retorno";
   }>({
@@ -328,87 +324,13 @@ export function MapaTransporteCliente({
     const mapa = mapaRef.current;
     if (!mapa || paradas.length === 0) return;
 
-    if (capaRutaCasingRef.current) {
-      mapa.removeLayer(capaRutaCasingRef.current);
-    }
-    if (capaRutaLineaRef.current) {
-      mapa.removeLayer(capaRutaLineaRef.current);
-    }
-    if (marcadorInsigniaRutaRef.current) {
-      mapa.removeLayer(marcadorInsigniaRutaRef.current);
-    }
     marcadoresParadasRef.current.forEach((m) => mapa.removeLayer(m));
     marcadoresParadasRef.current.clear();
-
-    // Halo blanco exterior de vía (estilo `casing` de TIMOB `drawGeoRoutes`)
-    const casing = L.polyline(geoCoords, {
-      color: BLANCO,
-      weight: 9,
-      opacity: 0.92,
-      lineCap: "round",
-      lineJoin: "round",
-    }).addTo(mapa);
-
-    // Línea principal del corredor institucional
-    const polyline = L.polyline(geoCoords, {
-      color: AZUL,
-      weight: 5,
-      opacity: 0.96,
-      lineCap: "round",
-      lineJoin: "round",
-    }).addTo(mapa);
-
-    const kmTotal = (telemetria.longitudTotalMetros / 1000).toFixed(1);
-    const listaParadasHtml = paradas
-      .map(
-        (p) =>
-          `<li class="py-0.5"><span class="font-semibold text-tinta">${p.orden}. ${escapar(p.nombre)}</span></li>`,
-      )
-      .join("");
-
-    const popupCorredorHtml = `
-      <div class="space-y-2 font-sans text-xs">
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center rounded-full bg-marca-500 px-2 py-0.5 text-[10px] font-bold text-white">
-            ${escapar(t("timob.corridorBadge"))}
-          </span>
-          <div>
-            <strong class="block text-sm font-bold text-tinta">
-              ${escapar(t("timob.corridorTitle"))}
-            </strong>
-            <span class="text-[11px] text-tinta-2">
-              ${escapar(t("timob.corridorMeta", { km: kmTotal, count: paradas.length }))}
-            </span>
-          </div>
-        </div>
-        <ol class="divide-y divide-linea/60 border-t border-linea pt-1.5 text-tinta-2">
-          ${listaParadasHtml}
-        </ol>
-      </div>
-    `;
-
-    polyline.bindPopup(popupCorredorHtml);
-
-    // Insignia del corredor en el punto medio del trazado (estilo TIMOB `omsa-route-badge`)
-    const puntoMedio = geoCoords[Math.floor(geoCoords.length * 0.52)] ?? geoCoords[0];
-    if (puntoMedio) {
-      const badgeMarker = L.marker(puntoMedio, {
-        icon: iconoInsigniaCorredorTimob(t("timob.corridorBadge")),
-        keyboard: false,
-      }).addTo(mapa);
-      badgeMarker.on("click", () => {
-        polyline.openPopup(puntoMedio);
-      });
-      marcadorInsigniaRutaRef.current = badgeMarker;
-    }
-
-    capaRutaCasingRef.current = casing;
-    capaRutaLineaRef.current = polyline;
 
     // Marcadores de paradas (Edificio Global Effect y Universidades UCATECI, UNPHU, UASD, UTESA)
     paradas.forEach((parada) => {
       const info = clasificarParadaInstitucional(parada);
-      const eta = telemetria.etasPorParada[parada.id];
+      const eta = tieneGpsChoferEnVivo ? telemetria.etasPorParada[parada.id] : undefined;
       const etaTexto = eta?.enParada
         ? t("timob.atStopNow")
         : t("timob.etaMinutes", { minutes: eta?.minutos ?? parada.minutos_estimados });
@@ -540,7 +462,7 @@ export function MapaTransporteCliente({
       if (!marker) return;
 
       const info = clasificarParadaInstitucional(parada);
-      const eta = telemetria.etasPorParada[parada.id];
+      const eta = tieneGpsChoferEnVivo ? telemetria.etasPorParada[parada.id] : undefined;
       const etaTexto = eta?.enParada
         ? t("timob.atStopNow")
         : t("timob.etaMinutes", { minutes: eta?.minutos ?? parada.minutos_estimados });
@@ -558,12 +480,20 @@ export function MapaTransporteCliente({
         }),
       );
     });
-  }, [paradas, telemetria, filtroActivo, t]);
+  }, [paradas, telemetria, filtroActivo, t, tieneGpsChoferEnVivo]);
 
   // 4. Actualización del marcador 3D de la guagua institucional
   useEffect(() => {
     const mapa = mapaRef.current;
     if (!mapa) return;
+
+    // Sin chofer transmitiendo no hay guagua en el mapa: antes se dibujaba una
+    // simulada que recorría un trazado inventado.
+    if (!tieneGpsChoferEnVivo) {
+      marcadorGuaguaRef.current?.remove();
+      marcadorGuaguaRef.current = null;
+      return;
+    }
 
     const estadoVisual =
       viaje?.estado === "averiado" ? "averiado" : "en_curso";
@@ -613,35 +543,7 @@ export function MapaTransporteCliente({
     if (seguirGuagua) {
       mapa.panTo([telemetria.lat, telemetria.lng], { animate: true });
     }
-  }, [telemetria, viaje, seguirGuagua, t]);
-
-  // 5. Bucle de simulación cinemática continua (1 segundo) estilo `ActiveFleetSimulator` de TIMOB
-  useEffect(() => {
-    if (tieneGpsChoferEnVivo || viaje?.estado === "averiado") {
-      return;
-    }
-
-    const intervalo = setInterval(() => {
-      setSimulacion((prev) => {
-        const delta = 0.0045; // Avance suave sobre los 162 vértices viales de La Vega
-        if (prev.direccion === "ida") {
-          const siguiente = prev.progreso + delta;
-          if (siguiente >= 1) {
-            return { progreso: 0.995, direccion: "retorno" };
-          }
-          return { progreso: siguiente, direccion: "ida" };
-        } else {
-          const siguiente = prev.progreso - delta;
-          if (siguiente <= 0) {
-            return { progreso: 0.005, direccion: "ida" };
-          }
-          return { progreso: siguiente, direccion: "retorno" };
-        }
-      });
-    }, 1000);
-
-    return () => clearInterval(intervalo);
-  }, [tieneGpsChoferEnVivo, viaje?.estado]);
+  }, [telemetria, viaje, seguirGuagua, t, tieneGpsChoferEnVivo]);
 
   // 6. Sondeo periódico al servidor cada 4 segundos cuando existe un viaje activo en BD
   useEffect(() => {

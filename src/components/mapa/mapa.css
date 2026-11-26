@@ -71,14 +71,18 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Guagua 3D (`marcador-guagua-3d.ts`). Un prisma real con transformaciones CSS 3D:
-   ejes X = ancho (20), Y = largo (44, el frente es -Y), Z = alto (16).
-   Colores solo por variables `--g-*`; sin degradados.
+   Guagua 3D (`guagua-3d-html.ts`). Un prisma real con transformaciones CSS 3D:
+   X = ancho, Y = largo (el frente es -Y), Z = alto. Medidas en variables.
+   Colores solo por variables `--g-*`.
    ─────────────────────────────────────────────────────────────────────────── */
 .guagua3d {
+  --l: 60px;
+  --a: 28px;
+  --h: 26px;
+  --r: 12px;
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 104px;
+  height: 104px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,10 +90,10 @@
 
 .guagua3d-onda {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--g-color) 22%, transparent);
+  background: color-mix(in srgb, var(--g-color) 20%, transparent);
   animation: guagua3d-onda 2.2s ease-out infinite;
   pointer-events: none;
 }
@@ -98,7 +102,7 @@
   position: relative;
   width: 0;
   height: 0;
-  perspective: 260px;
+  perspective: 420px;
   transform-style: preserve-3d;
   transform: rotateX(58deg);
 }
@@ -126,13 +130,12 @@
 
 .guagua3d-sombra {
   position: absolute;
-  left: -14px;
-  top: -26px;
-  width: 28px;
-  height: 52px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--g-tinta) 40%, transparent);
-  filter: blur(3px);
+  width: calc(var(--a) + 10px);
+  height: calc(var(--l) + 10px);
+  margin: calc((var(--l) + 10px) / -2) 0 0 calc((var(--a) + 10px) / -2);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--g-tinta) 38%, transparent);
+  filter: blur(4px);
   transform: translateZ(0.5px);
 }
 
@@ -140,145 +143,172 @@
   position: absolute;
   left: 0;
   top: 0;
+  box-sizing: border-box;
   background: var(--g-color);
   border: 1.5px solid var(--g-borde);
-  box-sizing: border-box;
-  backface-visibility: visible;
 }
 
-/* Techo: 20 × 44, a 16 de alto. */
+/* Techo: blanco, con las iniciales en el color de la guagua. */
 .guagua3d-techo {
-  width: 20px;
-  height: 44px;
-  margin: -22px 0 0 -10px;
-  transform: translateZ(16px);
+  width: var(--a);
+  height: var(--l);
+  margin: calc(var(--l) / -2) 0 0 calc(var(--a) / -2);
+  transform: translateZ(var(--h));
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 6px;
+  background: var(--g-blanco);
 }
 .guagua3d-techo b {
-  color: var(--g-blanco);
-  font-size: 8px;
+  color: var(--g-color);
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: -0.5px;
   writing-mode: vertical-rl;
   user-select: none;
 }
 
-/* Frente y trasera: 20 × 16, de pie sobre el plano XZ. */
+/* Frente y trasera: de pie sobre el plano XZ. */
 .guagua3d-frente,
 .guagua3d-trasera {
-  width: 20px;
-  height: 16px;
-  margin: -8px 0 0 -10px;
+  width: var(--a);
+  height: var(--h);
+  margin: calc(var(--h) / -2) 0 0 calc(var(--a) / -2);
 }
 .guagua3d-frente {
-  transform: translate3d(0, -22px, 8px) rotateX(90deg);
+  transform: translate3d(0, calc(var(--l) / -2), calc(var(--h) / 2)) rotateX(90deg);
+  border-radius: 4px 4px 0 0;
 }
 .guagua3d-trasera {
-  transform: translate3d(0, 22px, 8px) rotateX(90deg);
+  transform: translate3d(0, calc(var(--l) / 2), calc(var(--h) / 2)) rotateX(90deg);
+  border-radius: 4px 4px 0 0;
 }
 .guagua3d-parabrisas {
   position: absolute;
-  left: 2px;
-  right: 2px;
-  top: 2px;
-  height: 7px;
+  left: 3px;
+  right: 3px;
+  top: 3px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--g-tinta);
+}
+.guagua3d-luneta {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 4px;
+  height: 8px;
   border-radius: 2px;
+  background: var(--g-tinta);
+}
+.guagua3d-parachoques {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
+  height: 5px;
   background: var(--g-tinta);
 }
 .guagua3d-faro,
 .guagua3d-luz {
   position: absolute;
-  bottom: 2px;
-  width: 4px;
-  height: 3px;
+  bottom: 6px;
+  width: 6px;
+  height: 4px;
   border-radius: 1px;
 }
 .guagua3d-faro {
   background: var(--g-blanco);
-  box-shadow: 0 0 5px var(--g-blanco);
+  box-shadow: 0 0 6px var(--g-blanco);
 }
 .guagua3d-luz {
   background: var(--g-alerta);
+  border: 1px solid var(--g-blanco);
 }
 .guagua3d-faro-izq,
 .guagua3d-luz-izq {
-  left: 2px;
+  left: 3px;
 }
 .guagua3d-faro-der,
 .guagua3d-luz-der {
-  right: 2px;
+  right: 3px;
 }
 
-/* Costados: 44 × 16, de pie sobre el plano YZ. */
+/* Costados: de pie sobre el plano YZ. */
 .guagua3d-costado {
-  width: 44px;
-  height: 16px;
-  margin: -8px 0 0 -22px;
+  width: var(--l);
+  height: var(--h);
+  margin: calc(var(--h) / -2) 0 0 calc(var(--l) / -2);
 }
 .guagua3d-izq {
-  transform: translate3d(-10px, 0, 8px) rotateZ(90deg) rotateX(90deg);
+  transform: translate3d(calc(var(--a) / -2), 0, calc(var(--h) / 2)) rotateZ(90deg) rotateX(90deg);
 }
 .guagua3d-der {
-  transform: translate3d(10px, 0, 8px) rotateZ(90deg) rotateX(90deg);
+  transform: translate3d(calc(var(--a) / 2), 0, calc(var(--h) / 2)) rotateZ(90deg) rotateX(90deg);
 }
 .guagua3d-ventanas {
   position: absolute;
   left: 4px;
   right: 4px;
   top: 3px;
-  height: 6px;
-  border-radius: 2px;
+  height: 11px;
+  border-radius: 3px;
   background: var(--g-tinta);
-  /* Los marcos entre ventanas: rayas de color de carrocería, no degradado. */
+  /* Los marcos entre ventanas: franjas del color de la carrocería. */
   background-image: repeating-linear-gradient(
     90deg,
-    transparent 0 7px,
-    var(--g-color) 7px 8.5px
+    transparent 0 10px,
+    var(--g-color) 10px 12px
   );
+}
+.guagua3d-franja {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7px;
+  height: 3px;
+  background: var(--g-blanco);
 }
 .guagua3d-puerta {
   position: absolute;
-  left: 6px;
+  left: 8px;
   bottom: 1px;
-  width: 7px;
-  height: 4px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--g-blanco) 70%, transparent);
+  width: 12px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid var(--g-blanco);
+  background: transparent;
 }
 
-/* Ruedas: discos de 8 en el plano YZ, a cada esquina. */
+/* Ruedas: discos en el plano YZ, a cada esquina. */
 .guagua3d-rueda {
   position: absolute;
   left: 0;
   top: 0;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
+  width: var(--r);
+  height: var(--r);
+  margin: calc(var(--r) / -2) 0 0 calc(var(--r) / -2);
+  transform: translate3d(var(--lado), var(--largo), calc(var(--r) / 2)) rotateY(90deg);
 }
 .guagua3d-rueda-izq {
-  --lado: -11px;
+  --lado: calc(var(--a) / -2 - 1px);
 }
 .guagua3d-rueda-der {
-  --lado: 11px;
+  --lado: calc(var(--a) / 2 + 1px);
 }
 .guagua3d-rueda-del {
-  --largo: -14px;
+  --largo: calc(var(--l) * -0.3);
 }
 .guagua3d-rueda-tras {
-  --largo: 14px;
-}
-.guagua3d-rueda {
-  transform: translate3d(var(--lado), var(--largo), 4px) rotateY(90deg);
+  --largo: calc(var(--l) * 0.3);
 }
 .guagua3d-rueda-giro {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   background: var(--g-tinta);
-  border: 1px solid var(--g-blanco);
+  border: 2px solid var(--g-tinta);
+  box-shadow: inset 0 0 0 2px var(--g-blanco);
   position: relative;
   animation: guagua3d-rueda var(--g-giro, 1s) linear infinite;
   animation-play-state: paused;
@@ -287,9 +317,13 @@
   position: absolute;
   left: 50%;
   top: 0;
-  width: 1px;
+  width: 2px;
   height: 100%;
+  margin-left: -1px;
   background: var(--g-blanco);
+}
+.guagua3d-rueda-giro span + span {
+  transform: rotate(90deg);
 }
 .guagua3d[data-mov="1"] .guagua3d-rueda-giro {
   animation-play-state: running;
@@ -303,13 +337,13 @@
 
 .guagua3d-etiqueta {
   position: absolute;
-  top: -6px;
-  padding: 1px 6px;
+  top: 0;
+  padding: 1px 7px;
   border-radius: 10px;
   background: var(--g-tinta);
   color: var(--g-blanco);
   border: 1px solid color-mix(in srgb, var(--g-blanco) 20%, transparent);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
   pointer-events: none;
@@ -321,7 +355,7 @@
 }
 @keyframes guagua3d-balanceo {
   0%, 100% { transform: translateZ(0) rotateX(0deg); }
-  50% { transform: translateZ(1.4px) rotateX(1.2deg); }
+  50% { transform: translateZ(1.6px) rotateX(1.2deg); }
 }
 @keyframes guagua3d-rueda {
   to { transform: rotate(360deg); }
