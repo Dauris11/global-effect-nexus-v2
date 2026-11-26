@@ -3962,8 +3962,8 @@
       "imprimir": "Imprimir o guardar como PDF"
     },
     "tipoProveedor": {
-      "fisica": "Persona física",
-      "juridica": "Persona jurídica"
+      "fisica": "Informal / Profesional independiente",
+      "juridica": "Formal / Jurídico"
     },
     "estadoProveedor": {
       "activo": "Activo",
@@ -4000,11 +4000,23 @@
     "proveedorForm": {
       "tituloNuevo": "Nuevo proveedor",
       "tituloEditar": "Editar proveedor",
-      "tipo": "Tipo",
-      "identificacion": "RNC o cédula",
-      "identificacionAyuda": "RNC de 9 dígitos (persona jurídica) o cédula de 11 (persona física). Se comprueba el dígito verificador.",
+      "tipo": "Tipo de proveedor",
+      "identificacion": "RNC o cédula (sin guiones)",
+      "identificacionAyuda": "Solo dígitos sin guiones: RNC de 9 dígitos (formal/jurídico) o cédula de 11 (informal/profesional independiente).",
+      "consultarDgii": "Consultar DGII",
+      "consultandoDgii": "Consultando...",
+      "rncOk": "Datos cargados desde la DGII. Revisa antes de guardar.",
+      "rncError": {
+        "no_permitido": "No tienes permiso para consultar RNC.",
+        "sin_guiones": "Ingresa el RNC o cédula sin guiones para consultar en la DGII.",
+        "formato_invalido": "El RNC debe tener 9 dígitos o la cédula 11 dígitos, sin guiones.",
+        "no_encontrado": "Este RNC o cédula no aparece registrado como contribuyente en la DGII. Puedes completar los datos a mano.",
+        "servicio_no_disponible": "No se pudo consultar la DGII en este momento. Puedes llenar los campos manualmente."
+      },
       "nombre": "Nombre o razón social",
       "nombreComercial": "Nombre comercial",
+      "actividadEconomica": "Actividad económica",
+      "administracionLocal": "Administración local",
       "contacto": "Persona de contacto",
       "telefono": "Teléfono",
       "email": "Correo",
@@ -4060,9 +4072,16 @@
       "moneda": "Moneda",
       "tasa": "Tasa (pesos por dólar)",
       "subtotal": "Subtotal",
+      "monto": "Monto",
+      "exentoItbisAyuda": "Como entidad sin fines de lucro no se registra ITBIS por separado.",
       "itbis": "ITBIS",
       "retencionIsr": "Retención de ISR",
       "retencionItbis": "Retención de ITBIS",
+      "sinRetencion": "Sin retención (0%)",
+      "buscarRetencion": "Buscar por concepto, % o norma DGII...",
+      "sinResultadosRetencion": "Ninguna retención coincide con la búsqueda.",
+      "recomendadaProveedor": "Aplica a este tipo de proveedor",
+      "retencionCalculada": "Calculado automáticamente: {monto}",
       "total": "Total de la factura",
       "neto": "Neto a pagar",
       "concepto": "Concepto",
@@ -4073,7 +4092,7 @@
       "solicitante": "Persona responsable / Solicitante",
       "programa": "Programa de la Fundación",
       "ocrTitulo": "Escanear Factura con OCR (IA)",
-      "ocrSubtitulo": "Sube el comprobante escaneado (PDF o imagen) para extraer automáticamente RNC, NCF, montos e ITBIS.",
+      "ocrSubtitulo": "Sube el comprobante escaneado (PDF o imagen) para extraer automáticamente RNC, NCF y monto.",
       "ocrBoton": "Escanear comprobante",
       "ocrProcesando": "Leyendo comprobante con IA...",
       "ocrExito": "Comprobante leído con éxito ({confianza}% de certeza). Revisa los campos sugeridos.",

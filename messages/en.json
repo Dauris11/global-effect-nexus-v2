@@ -3962,8 +3962,8 @@
       "imprimir": "Print or save as PDF"
     },
     "tipoProveedor": {
-      "fisica": "Individual",
-      "juridica": "Company"
+      "fisica": "Informal / Independent professional",
+      "juridica": "Formal / Legal entity"
     },
     "estadoProveedor": {
       "activo": "Active",
@@ -4000,11 +4000,23 @@
     "proveedorForm": {
       "tituloNuevo": "New supplier",
       "tituloEditar": "Edit supplier",
-      "tipo": "Type",
-      "identificacion": "RNC or ID number",
-      "identificacionAyuda": "9-digit RNC (company) or 11-digit ID number (individual). The check digit is verified.",
+      "tipo": "Supplier type",
+      "identificacion": "RNC or ID number (no hyphens)",
+      "identificacionAyuda": "Digits only without hyphens: 9-digit RNC (formal/legal entity) or 11-digit ID number (informal/independent professional).",
+      "consultarDgii": "Lookup DGII",
+      "consultandoDgii": "Looking up...",
+      "rncOk": "Details loaded from DGII. Review before saving.",
+      "rncError": {
+        "no_permitido": "You do not have permission to look up RNC records.",
+        "sin_guiones": "Enter the RNC or ID number without hyphens to query DGII.",
+        "formato_invalido": "RNC must be 9 digits or ID number 11 digits, without hyphens.",
+        "no_encontrado": "This RNC or ID is not registered as a taxpayer with DGII. You can enter the details manually.",
+        "servicio_no_disponible": "Could not reach DGII right now. You can fill the fields manually."
+      },
       "nombre": "Name or legal name",
       "nombreComercial": "Trade name",
+      "actividadEconomica": "Economic activity",
+      "administracionLocal": "Local tax office",
       "contacto": "Contact person",
       "telefono": "Phone",
       "email": "Email",
@@ -4060,9 +4072,16 @@
       "moneda": "Currency",
       "tasa": "Rate (pesos per dollar)",
       "subtotal": "Subtotal",
+      "monto": "Amount",
+      "exentoItbisAyuda": "As a non-profit entity, ITBIS is not recorded separately.",
       "itbis": "ITBIS (VAT)",
       "retencionIsr": "Income tax withheld",
       "retencionItbis": "ITBIS withheld",
+      "sinRetencion": "No withholding (0%)",
+      "buscarRetencion": "Search by concept, % or DGII rule...",
+      "sinResultadosRetencion": "No withholding matches your search.",
+      "recomendadaProveedor": "Applies to this supplier type",
+      "retencionCalculada": "Automatically calculated: {monto}",
       "total": "Invoice total",
       "neto": "Net payable",
       "concepto": "Description",
@@ -4073,7 +4092,7 @@
       "solicitante": "Responsible person / Requester",
       "programa": "Foundation program",
       "ocrTitulo": "Scan Invoice with OCR (AI)",
-      "ocrSubtitulo": "Upload scanned receipt/invoice (PDF or image) to automatically extract TIN, NCF, amounts and VAT.",
+      "ocrSubtitulo": "Upload scanned receipt/invoice (PDF or image) to automatically extract TIN, NCF and amount.",
       "ocrBoton": "Scan invoice",
       "ocrProcesando": "Reading receipt with AI...",
       "ocrExito": "Receipt read successfully ({confianza}% confidence). Review suggested fields.",

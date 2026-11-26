@@ -128,6 +128,16 @@ export default async function PaginaDetalleProveedor({
           <Dato etiqueta="Condiciones de pago">
             {proveedor.condiciones_pago_dias} días
           </Dato>
+          {proveedor.actividad_economica && (
+            <Dato etiqueta={tc("proveedorForm.actividadEconomica")}>
+              {proveedor.actividad_economica}
+            </Dato>
+          )}
+          {proveedor.administracion_local && (
+            <Dato etiqueta={tc("proveedorForm.administracionLocal")}>
+              {proveedor.administracion_local}
+            </Dato>
+          )}
           {proveedor.contacto && (
             <Dato etiqueta="Persona de contacto">
               <span className="flex items-center gap-1.5">

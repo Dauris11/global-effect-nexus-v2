@@ -24,6 +24,7 @@ import { consultar } from "@/lib/db";
 import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { nombrePrograma } from "@/lib/contabilidad/programas";
+import { retencionPorCodigo } from "@/lib/contabilidad/retenciones-dgii";
 import { facturaPorId } from "@/server/contabilidad/proveedores/consultas";
 
 
@@ -169,28 +170,48 @@ export default async function PaginaDetalleFactura({
 
         {/* Desglose de montos */}
         <div className="border-t border-linea pt-5">
-          <h3 className="text-xs uppercase font-semibold text-tinta-2 mb-3">Desglose de montos</h3>
+          <h3 className="text-xs uppercase font-semibold text-tinta-2 mb-3">{tc("facturaForm.pasos.montos")}</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-superficie/60 p-4 rounded-control text-sm">
             <div>
-              <span className="texto-meta block">Subtotal</span>
+              <span className="texto-meta block">{tc("facturaForm.monto")}</span>
               <Monto valor={factura.subtotal} moneda={factura.moneda} className="text-base font-medium" />
             </div>
+            {Number(factura.itbis) > 0 && (
+              <div>
+                <span className="texto-meta block">{tc("facturaForm.itbis")}</span>
+                <Monto valor={factura.itbis} moneda={factura.moneda} className="text-base font-medium" />
+              </div>
+            )}
             <div>
-              <span className="texto-meta block">ITBIS</span>
-              <Monto valor={factura.itbis} moneda={factura.moneda} className="text-base font-medium" />
-            </div>
-            <div>
-              <span className="texto-meta block">Retenciones (ISR + ITBIS)</span>
+              <span className="texto-meta block">{tc("facturaForm.retencionIsr")}</span>
               <span className="text-base font-medium text-tinta">
-                −{Number(factura.retencion_isr) + Number(factura.retencion_itbis) > 0 ? (
-                  factura.moneda === "USD"
-                    ? `$${(Number(factura.retencion_isr) + Number(factura.retencion_itbis)).toFixed(2)}`
-                    : `RD$${(Number(factura.retencion_isr) + Number(factura.retencion_itbis)).toFixed(2)}`
-                ) : "0.00"}
+                −<Monto valor={factura.retencion_isr} moneda={factura.moneda} />
               </span>
+              {retencionPorCodigo(factura.tipo_retencion_isr) && (
+                <span className="texto-meta block text-xs">
+                  {retencionPorCodigo(factura.tipo_retencion_isr)!.etiquetaTasa} ·{" "}
+                  {locale === "en"
+                    ? retencionPorCodigo(factura.tipo_retencion_isr)!.nombre.en
+                    : retencionPorCodigo(factura.tipo_retencion_isr)!.nombre.es}
+                </span>
+              )}
             </div>
             <div>
-              <span className="texto-meta block">Monto Neto a Pagar</span>
+              <span className="texto-meta block">{tc("facturaForm.retencionItbis")}</span>
+              <span className="text-base font-medium text-tinta">
+                −<Monto valor={factura.retencion_itbis} moneda={factura.moneda} />
+              </span>
+              {retencionPorCodigo(factura.tipo_retencion_itbis) && (
+                <span className="texto-meta block text-xs">
+                  {retencionPorCodigo(factura.tipo_retencion_itbis)!.etiquetaTasa} ·{" "}
+                  {locale === "en"
+                    ? retencionPorCodigo(factura.tipo_retencion_itbis)!.nombre.en
+                    : retencionPorCodigo(factura.tipo_retencion_itbis)!.nombre.es}
+                </span>
+              )}
+            </div>
+            <div>
+              <span className="texto-meta block">{tc("facturaForm.neto")}</span>
               <Monto valor={factura.neto} moneda={factura.moneda} className="text-lg font-bold text-marca-700" />
             </div>
           </div>

@@ -20,6 +20,10 @@ import {
   limpiarIdentificacion,
   ncfValido,
 } from "@/lib/contabilidad/identificacion";
+import {
+  calcularMontoRetencion,
+  retencionPorCodigo,
+} from "@/lib/contabilidad/retenciones-dgii";
 import { esPilarCosto } from "@/lib/costos";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { subirContable } from "@/lib/supabase/almacen";
@@ -86,17 +90,75 @@ function idOpcional(datos: FormData, campo: string): string | null {
   return esUuid(valor) ? valor : null;
 }
 
-/** Monto que puede ser cero (ITBIS, retenciones). Vacío cuenta como cero. */
-function montoOCero(datos: FormData, campo: string): string | null {
-  const valor = texto(datos, campo, 20);
-  if (!valor) return "0";
-  if (/^0+(\.0+)?$/.test(valor.replace(/,/g, ""))) return "0";
-  return montoValido(valor);
-}
-
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad", "layout");
   revalidatePath("/[locale]/portal/contabilidad", "page");
+}
+
+export type DatosRncDgii = {
+  nombreRazonSocial: string;
+  nombreComercial: string;
+  actividadEconomica: string;
+  administracionLocal: string;
+};
+
+export type ResultadoConsultaRnc =
+  | { ok: true; datos: DatosRncDgii }
+  | { ok: false; error: "no_permitido" | "sin_guiones" | "formato_invalido" | "no_encontrado" | "servicio_no_disponible" };
+
+/**
+ * Consulta la ficha DGII (https://rnc.megaplus.com.do/api/consulta) solo sin guiones
+ * y devuelve exclusivamente los cuatro campos autorizados para proveedores.
+ */
+export async function consultarRncProveedorAction(rncCrudo: string): Promise<ResultadoConsultaRnc> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.registrar")) {
+    return { ok: false, error: "no_permitido" };
+  }
+
+  const entrada = String(rncCrudo ?? "").trim();
+  if (entrada.includes("-")) return { ok: false, error: "sin_guiones" };
+  if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) return { ok: false, error: "formato_invalido" };
+
+  try {
+    const res = await fetch(`https://rnc.megaplus.com.do/api/consulta?rnc=${encodeURIComponent(entrada)}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    const data = (await res.json().catch(() => null)) as {
+      error?: boolean;
+      codigo_http?: number;
+      nombre_razon_social?: string | null;
+      nombre_comercial?: string | null;
+      actividad_economica?: string | null;
+      administracion_local?: string | null;
+    } | null;
+
+    if (res.status === 404 || data?.codigo_http === 404) {
+      return { ok: false, error: "no_encontrado" };
+    }
+    if (res.status === 400 || data?.codigo_http === 400) {
+      return { ok: false, error: "formato_invalido" };
+    }
+    if (!res.ok || !data || data.error) {
+      return { ok: false, error: "servicio_no_disponible" };
+    }
+
+    return {
+      ok: true,
+      datos: {
+        nombreRazonSocial: String(data.nombre_razon_social ?? "").trim(),
+        nombreComercial: String(data.nombre_comercial ?? "").trim(),
+        actividadEconomica: String(data.actividad_economica ?? "").trim(),
+        administracionLocal: String(data.administracion_local ?? "").trim(),
+      },
+    };
+  } catch {
+    return { ok: false, error: "servicio_no_disponible" };
+  }
 }
 
 export async function guardarProveedor(
@@ -121,6 +183,8 @@ export async function guardarProveedor(
 
   const valores = [
     tipo, identificacion, nombre, texto(datos, "nombre_comercial", 160) || null,
+    texto(datos, "actividad_economica", 300) || null,
+    texto(datos, "administracion_local", 160) || null,
     texto(datos, "contacto", 120) || null, texto(datos, "telefono", 40) || null,
     texto(datos, "email", 120) || null, texto(datos, "direccion", 300) || null,
     dias, idOpcional(datos, "categoria"), estado,
@@ -132,16 +196,18 @@ export async function guardarProveedor(
         ? await cliente.query<{ id: string }>(
             `UPDATE contabilidad.proveedor
                 SET tipo = $2, identificacion = $3, nombre = $4, nombre_comercial = $5,
-                    contacto = $6, telefono = $7, email = $8, direccion = $9,
-                    condiciones_pago_dias = $10, categoria_id = $11, estado = $12
+                    actividad_economica = $6, administracion_local = $7,
+                    contacto = $8, telefono = $9, email = $10, direccion = $11,
+                    condiciones_pago_dias = $12, categoria_id = $13, estado = $14
               WHERE id = $1 RETURNING id`,
             [id, ...valores],
           )
         : await cliente.query<{ id: string }>(
             `INSERT INTO contabilidad.proveedor
-               (tipo, identificacion, nombre, nombre_comercial, contacto, telefono, email,
-                direccion, condiciones_pago_dias, categoria_id, estado, creado_por)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+               (tipo, identificacion, nombre, nombre_comercial, actividad_economica,
+                administracion_local, contacto, telefono, email, direccion,
+                condiciones_pago_dias, categoria_id, estado, creado_por)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
             [...valores, usuario.id],
           );
       return rows[0]?.id ?? null;
@@ -212,9 +278,10 @@ export async function guardarFactura(
   const vencimiento = texto(datos, "fecha_vencimiento", 10);
   const moneda = texto(datos, "moneda", 3);
   const subtotal = montoValido(texto(datos, "subtotal", 20));
-  const itbis = montoOCero(datos, "itbis");
-  const isr = montoOCero(datos, "retencion_isr");
-  const retItbis = montoOCero(datos, "retencion_itbis");
+  // Al ser una entidad sin fines de lucro (ASFL), no se registra ITBIS por separado en la factura.
+  const itbis = "0";
+  const tipoRetencionIsr = texto(datos, "tipo_retencion_isr", 60) || null;
+  const tipoRetencionItbis = texto(datos, "tipo_retencion_itbis", 60) || null;
   const categoria = idOpcional(datos, "categoria");
   const fondo = idOpcional(datos, "fondo");
   const concepto = texto(datos, "concepto");
@@ -224,7 +291,17 @@ export async function guardarFactura(
       || !esMoneda(moneda) || !categoria || !fondo || !concepto) {
     return { estado: "datos_invalidos" };
   }
-  if (!subtotal || itbis === null || isr === null || retItbis === null) return { estado: "monto_invalido" };
+  if (!subtotal) return { estado: "monto_invalido" };
+  if (tipoRetencionIsr && retencionPorCodigo(tipoRetencionIsr)?.impuesto !== "isr") {
+    return { estado: "datos_invalidos" };
+  }
+  if (tipoRetencionItbis && retencionPorCodigo(tipoRetencionItbis)?.impuesto !== "itbis") {
+    return { estado: "datos_invalidos" };
+  }
+
+  // Las retenciones se calculan en el servidor a partir del monto y del tipo elegido.
+  const isr = tipoRetencionIsr ? calcularMontoRetencion(subtotal, tipoRetencionIsr) : "0";
+  const retItbis = tipoRetencionItbis ? calcularMontoRetencion(subtotal, tipoRetencionItbis) : "0";
   const tasa = moneda === "USD" ? tasaValida(texto(datos, "tasa", 20)) : null;
   if (moneda === "USD" && !tasa) return { estado: "tasa_requerida" };
 
@@ -247,6 +324,7 @@ export async function guardarFactura(
 
   const valores = [
     proveedorId, ncf, emision, vencimiento, moneda, tasa, subtotal, itbis, isr, retItbis,
+    tipoRetencionIsr, tipoRetencionItbis,
     concepto, categoria, fondo, idOpcional(datos, "proyecto"), solicitante, programa,
     estudiante, pilar,
   ];
@@ -260,19 +338,21 @@ export async function guardarFactura(
                 SET proveedor_id = $2, ncf = $3, fecha_emision = $4, fecha_vencimiento = $5,
                     periodo_id = contabilidad.periodo_para($4), moneda = $6, tasa = $7,
                     subtotal = $8, itbis = $9, retencion_isr = $10, retencion_itbis = $11,
-                    concepto = $12, categoria_id = $13, fondo_id = $14, proyecto_id = $15,
-                    solicitante_id = $16, programa_codigo = $17,
-                    estudiante_id = $18, pilar_costo = $19
+                    tipo_retencion_isr = $12, tipo_retencion_itbis = $13,
+                    concepto = $14, categoria_id = $15, fondo_id = $16, proyecto_id = $17,
+                    solicitante_id = $18, programa_codigo = $19,
+                    estudiante_id = $20, pilar_costo = $21
               WHERE id = $1 AND estado = 'borrador' RETURNING id`,
             [id, ...valores],
           )
         : await cliente.query<{ id: string }>(
             `INSERT INTO contabilidad.factura_proveedor
                (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda, tasa,
-                subtotal, itbis, retencion_isr, retencion_itbis, concepto, categoria_id, fondo_id,
-                proyecto_id, solicitante_id, programa_codigo, estudiante_id, pilar_costo, creado_por)
+                subtotal, itbis, retencion_isr, retencion_itbis, tipo_retencion_isr, tipo_retencion_itbis,
+                concepto, categoria_id, fondo_id, proyecto_id, solicitante_id, programa_codigo,
+                estudiante_id, pilar_costo, creado_por)
              VALUES (contabilidad.siguiente_numero('FP'), $1, $2, $3, $4, contabilidad.periodo_para($3),
-                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
              RETURNING id`,
             [...valores, usuario.id],
           );

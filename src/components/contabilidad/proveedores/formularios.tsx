@@ -1,23 +1,31 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { CheckCircle2, FileText, Loader2, Save, Sparkles, Upload } from "lucide-react";
+import { CheckCircle2, Loader2, Save, Search, Sparkles, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
+import { ComboboxRetencion } from "@/components/contabilidad/proveedores/combobox-retencion";
 import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/navigation";
-import { MONEDAS, montoValido, restarMontos, sumarMontos } from "@/lib/contabilidad/formato";
-import { formatearMonto } from "@/lib/contabilidad/formato";
+import {
+  formatearMonto,
+  MONEDAS,
+  montoValido,
+  restarMontos,
+  sumarMontos,
+} from "@/lib/contabilidad/formato";
 import { identificacionValida, limpiarIdentificacion } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
+import { calcularMontoRetencion } from "@/lib/contabilidad/retenciones-dgii";
 import { PILARES_COSTO } from "@/lib/costos";
 import {
   agregarCuentaProveedor,
+  consultarRncProveedorAction,
   guardarFactura,
   guardarProveedor,
   procesarFacturaOcrAction,
@@ -67,13 +75,52 @@ export function FormularioProveedor({
   const [estado, enviar, enviando] = useActionState(guardarProveedor, INICIAL);
   const [tipo, setTipo] = useState<"fisica" | "juridica">(proveedor?.tipo ?? "juridica");
   const [identificacion, setIdentificacion] = useState(proveedor?.identificacion ?? "");
+  const [nombre, setNombre] = useState(proveedor?.nombre ?? "");
+  const [nombreComercial, setNombreComercial] = useState(proveedor?.nombre_comercial ?? "");
+  const [actividadEconomica, setActividadEconomica] = useState(proveedor?.actividad_economica ?? "");
+  const [administracionLocal, setAdministracionLocal] = useState(proveedor?.administracion_local ?? "");
+  const [consultandoRnc, setConsultandoRnc] = useState(false);
+  const [avisoRnc, setAvisoRnc] = useState<{ tipo: "ok" | "error"; mensaje: string } | null>(null);
   const error = useError(estado);
   useIrA(estado, fichaProveedor);
 
-  // Aviso mientras se escribe; el servidor vuelve a comprobarlo.
+  // La consulta DGII solo admite dígitos sin guiones; el servidor valida lo mismo.
+  const tieneGuiones = identificacion.includes("-");
   const limpia = limpiarIdentificacion(identificacion);
-  const completa = limpia.length === (tipo === "juridica" ? 9 : 11);
+  const longitudEsperada = tipo === "juridica" ? 9 : 11;
+  const completa = !tieneGuiones && limpia.length === longitudEsperada;
   const malDigito = completa && !identificacionValida(limpia, tipo);
+
+  async function onConsultarDgii() {
+    setAvisoRnc(null);
+    const entrada = identificacion.trim();
+    if (entrada.includes("-")) {
+      setAvisoRnc({ tipo: "error", mensaje: t("rncError.sin_guiones") });
+      return;
+    }
+    if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) {
+      setAvisoRnc({ tipo: "error", mensaje: t("rncError.formato_invalido") });
+      return;
+    }
+
+    setConsultandoRnc(true);
+    try {
+      const res = await consultarRncProveedorAction(entrada);
+      if (res.ok) {
+        if (res.datos.nombreRazonSocial) setNombre(res.datos.nombreRazonSocial);
+        setNombreComercial(res.datos.nombreComercial);
+        setActividadEconomica(res.datos.actividadEconomica);
+        setAdministracionLocal(res.datos.administracionLocal);
+        setAvisoRnc({ tipo: "ok", mensaje: t("rncOk") });
+      } else {
+        setAvisoRnc({ tipo: "error", mensaje: t(`rncError.${res.error}` as never) });
+      }
+    } catch {
+      setAvisoRnc({ tipo: "error", mensaje: t("rncError.servicio_no_disponible") });
+    } finally {
+      setConsultandoRnc(false);
+    }
+  }
 
   return (
     <form action={enviar} className="space-y-5">
@@ -82,27 +129,99 @@ export function FormularioProveedor({
         <PasoFormulario titulo={t("pasos.identificacion")}>
           <div className="grid gap-4 md:grid-cols-2">
             <Campo id="tipo" etiqueta={t("tipo")}>
-              <select id="tipo" name="tipo" className={SELECT} value={tipo} onChange={(e) => setTipo(e.target.value as "fisica" | "juridica")}>
+              <select
+                id="tipo"
+                name="tipo"
+                className={SELECT}
+                value={tipo}
+                onChange={(e) => setTipo(e.target.value as "fisica" | "juridica")}
+              >
                 <option value="juridica">{tc("tipoProveedor.juridica")}</option>
                 <option value="fisica">{tc("tipoProveedor.fisica")}</option>
               </select>
             </Campo>
-            <Campo id="identificacion" etiqueta={t("identificacion")} ayuda={malDigito ? tc("error.identificacion_invalida") : t("identificacionAyuda")}>
+            <Campo
+              id="identificacion"
+              etiqueta={t("identificacion")}
+              ayuda={
+                tieneGuiones
+                  ? t("rncError.sin_guiones")
+                  : malDigito
+                    ? tc("error.identificacion_invalida")
+                    : t("identificacionAyuda")
+              }
+            >
+              <div className="flex gap-2">
+                <Input
+                  id="identificacion"
+                  name="identificacion"
+                  inputMode="numeric"
+                  required
+                  placeholder={tipo === "juridica" ? "131996035" : "00113918205"}
+                  value={identificacion}
+                  onChange={(e) => {
+                    setIdentificacion(e.target.value);
+                    if (avisoRnc) setAvisoRnc(null);
+                  }}
+                  aria-invalid={tieneGuiones || malDigito || undefined}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onConsultarDgii}
+                  disabled={consultandoRnc || tieneGuiones || !/^[0-9]{9}$|^[0-9]{11}$/.test(identificacion.trim())}
+                  className="shrink-0"
+                >
+                  {consultandoRnc ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                  {consultandoRnc ? t("consultandoDgii") : t("consultarDgii")}
+                </Button>
+              </div>
+            </Campo>
+            {avisoRnc && (
+              <div className="md:col-span-2">
+                {avisoRnc.tipo === "ok" ? (
+                  <AvisoOk>{avisoRnc.mensaje}</AvisoOk>
+                ) : (
+                  <AvisoError>{avisoRnc.mensaje}</AvisoError>
+                )}
+              </div>
+            )}
+            <Campo id="nombre" etiqueta={t("nombre")}>
               <Input
-                id="identificacion"
-                name="identificacion"
-                inputMode="numeric"
+                id="nombre"
+                name="nombre"
                 required
-                value={identificacion}
-                onChange={(e) => setIdentificacion(e.target.value)}
-                aria-invalid={malDigito || undefined}
+                maxLength={160}
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
               />
             </Campo>
-            <Campo id="nombre" etiqueta={t("nombre")}>
-              <Input id="nombre" name="nombre" required maxLength={160} defaultValue={proveedor?.nombre ?? ""} />
-            </Campo>
             <Campo id="nombre_comercial" etiqueta={t("nombreComercial")}>
-              <Input id="nombre_comercial" name="nombre_comercial" maxLength={160} defaultValue={proveedor?.nombre_comercial ?? ""} />
+              <Input
+                id="nombre_comercial"
+                name="nombre_comercial"
+                maxLength={160}
+                value={nombreComercial}
+                onChange={(e) => setNombreComercial(e.target.value)}
+              />
+            </Campo>
+            <Campo id="actividad_economica" etiqueta={t("actividadEconomica")}>
+              <Input
+                id="actividad_economica"
+                name="actividad_economica"
+                maxLength={300}
+                value={actividadEconomica}
+                onChange={(e) => setActividadEconomica(e.target.value)}
+              />
+            </Campo>
+            <Campo id="administracion_local" etiqueta={t("administracionLocal")}>
+              <Input
+                id="administracion_local"
+                name="administracion_local"
+                maxLength={160}
+                value={administracionLocal}
+                onChange={(e) => setAdministracionLocal(e.target.value)}
+              />
             </Campo>
           </div>
         </PasoFormulario>
@@ -194,9 +313,10 @@ export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string
 }
 
 /**
- * Factura de proveedor. El total y el neto se calculan a la vista con
- * aritmética de centavos (nada de float); el servidor guarda los
- * componentes y la base calcula total y neto como columnas generadas.
+ * Factura de proveedor para ASFL (sin ITBIS facturado). Las retenciones de ISR
+ * y de ITBIS se eligen en combobox según el folleto DGII y se calculan
+ * automáticamente en centavos exactos a partir del monto; el servidor vuelve a
+ * calcularlas antes de guardar.
  */
 export function FormularioFactura({
   proveedores,
@@ -222,6 +342,7 @@ export function FormularioFactura({
 }) {
   const t = useTranslations("contab.facturaForm");
   const tp = useTranslations("contab.proveedor");
+  const tc = useTranslations("contab");
   const [estado, enviar, enviando] = useActionState(guardarFactura, INICIAL);
   const error = useError(estado);
   useIrA(estado, fichaFactura);
@@ -230,12 +351,9 @@ export function FormularioFactura({
   const datosProveedor = proveedores.find((p) => p.id === proveedor);
   const [moneda, setMoneda] = useState<string>(factura?.moneda ?? "DOP");
   const [emision, setEmision] = useState(factura?.fecha_emision ?? hoy);
-  const [montos, setMontos] = useState({
-    subtotal: factura?.subtotal ?? "",
-    itbis: factura?.itbis ?? "",
-    retencion_isr: factura?.retencion_isr ?? "",
-    retencion_itbis: factura?.retencion_itbis ?? "",
-  });
+  const [monto, setMonto] = useState(factura?.subtotal ?? "");
+  const [tipoRetencionIsr, setTipoRetencionIsr] = useState(factura?.tipo_retencion_isr ?? "");
+  const [tipoRetencionItbis, setTipoRetencionItbis] = useState(factura?.tipo_retencion_itbis ?? "");
   const [ncf, setNcf] = useState(factura?.ncf ?? "");
   const [concepto, setConcepto] = useState(factura?.concepto ?? "");
   const [solicitante, setSolicitante] = useState(factura?.solicitante_id ?? "");
@@ -264,13 +382,7 @@ export function FormularioFactura({
         if (d.fechaEmision) setEmision(d.fechaEmision);
         if (d.moneda) setMoneda(d.moneda);
         if (d.concepto) setConcepto(d.concepto);
-
-        setMontos({
-          subtotal: d.subtotal !== null ? String(d.subtotal) : montos.subtotal,
-          itbis: d.itbis ? String(d.itbis) : "0",
-          retencion_isr: d.retencionIsr ? String(d.retencionIsr) : "0",
-          retencion_itbis: d.retencionItbis ? String(d.retencionItbis) : "0",
-        });
+        if (d.subtotal !== null) setMonto(String(d.subtotal));
 
         if (d.rnc) {
           const coincidente = proveedores.find(
@@ -311,9 +423,11 @@ export function FormularioFactura({
     return d.toISOString().slice(0, 10);
   })();
 
-  const valor = (v: string) => montoValido(v) ?? "0";
-  const total = sumarMontos([valor(montos.subtotal), valor(montos.itbis)]);
-  const neto = restarMontos(total, sumarMontos([valor(montos.retencion_isr), valor(montos.retencion_itbis)]));
+  const base = montoValido(monto) ?? "0";
+  const retencionIsr = calcularMontoRetencion(base, tipoRetencionIsr);
+  const retencionItbis = calcularMontoRetencion(base, tipoRetencionItbis);
+  const totalRetenciones = sumarMontos([retencionIsr, retencionItbis]);
+  const neto = restarMontos(base, totalRetenciones);
   const monedaVista = moneda === "USD" ? "USD" : "DOP";
 
   return (
@@ -368,12 +482,17 @@ export function FormularioFactura({
 
       <form action={enviar} className="space-y-5">
         {factura && <input type="hidden" name="id" value={factura.id} />}
+        <input type="hidden" name="itbis" value="0" />
         <FormularioGuiado>
           <PasoFormulario titulo={t("pasos.comprobante")}>
             <div className="grid gap-4 md:grid-cols-2">
               <Campo id="proveedor" etiqueta={t("proveedor")}>
                 <select id="proveedor" name="proveedor" className={SELECT} value={proveedor} onChange={(e) => setProveedor(e.target.value)} required>
-                  {proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                  {proveedores.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre} ({tc(`tipoProveedor.${p.tipo}` as never)})
+                    </option>
+                  ))}
                 </select>
               </Campo>
               <Campo id="ncf" etiqueta={t("ncf")} ayuda={t("ncfAyuda")}>
@@ -403,34 +522,83 @@ export function FormularioFactura({
           </PasoFormulario>
 
           <PasoFormulario titulo={t("pasos.montos")}>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {(["subtotal", "itbis", "retencion_isr", "retencion_itbis"] as const).map((campo) => (
-                <Campo key={campo} id={campo} etiqueta={t(campo === "subtotal" ? "subtotal" : campo === "itbis" ? "itbis" : campo === "retencion_isr" ? "retencionIsr" : "retencionItbis")}>
-                  <Input
-                    id={campo}
-                    name={campo}
-                    inputMode="decimal"
-                    required={campo === "subtotal"}
-                    placeholder="0.00"
-                    value={montos[campo]}
-                    onChange={(e) => setMontos((m) => ({ ...m, [campo]: e.target.value }))}
-                  />
-                </Campo>
-              ))}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Campo id="subtotal" etiqueta={t("monto")} ayuda={t("exentoItbisAyuda")}>
+                <Input
+                  id="subtotal"
+                  name="subtotal"
+                  inputMode="decimal"
+                  required
+                  placeholder="0.00"
+                  value={monto}
+                  onChange={(e) => setMonto(e.target.value)}
+                />
+              </Campo>
+              <Campo id="concepto" etiqueta={t("concepto")}>
+                <Input
+                  id="concepto"
+                  name="concepto"
+                  required
+                  maxLength={200}
+                  value={concepto}
+                  onChange={(e) => setConcepto(e.target.value)}
+                />
+              </Campo>
             </div>
-            <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-              <div><dt className="texto-meta">{t("total")}</dt><dd className="font-semibold">{formatearMonto(total, monedaVista)}</dd></div>
-              <div><dt className="texto-meta">{t("neto")}</dt><dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd></div>
-            </dl>
 
-            <Campo id="concepto" etiqueta={t("concepto")}>
-              <Input id="concepto" name="concepto" required maxLength={200} value={concepto} onChange={(e) => setConcepto(e.target.value)} />
-            </Campo>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Campo
+                id="tipo_retencion_isr"
+                etiqueta={t("retencionIsr")}
+                ayuda={t("retencionCalculada", { monto: formatearMonto(retencionIsr, monedaVista) })}
+              >
+                <ComboboxRetencion
+                  id="tipo_retencion_isr"
+                  name="tipo_retencion_isr"
+                  impuesto="isr"
+                  tipoProveedor={datosProveedor?.tipo}
+                  valor={tipoRetencionIsr}
+                  onCambiar={setTipoRetencionIsr}
+                />
+              </Campo>
+
+              <Campo
+                id="tipo_retencion_itbis"
+                etiqueta={t("retencionItbis")}
+                ayuda={t("retencionCalculada", { monto: formatearMonto(retencionItbis, monedaVista) })}
+              >
+                <ComboboxRetencion
+                  id="tipo_retencion_itbis"
+                  name="tipo_retencion_itbis"
+                  impuesto="itbis"
+                  tipoProveedor={datosProveedor?.tipo}
+                  valor={tipoRetencionItbis}
+                  onCambiar={setTipoRetencionItbis}
+                />
+              </Campo>
+            </div>
+
+            <dl className="grid gap-4 rounded-control bg-superficie/60 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="texto-meta">{t("total")}</dt>
+                <dd className="font-semibold text-tinta">{formatearMonto(base, monedaVista)}</dd>
+              </div>
+              <div>
+                <dt className="texto-meta">{t("retencionIsr")}</dt>
+                <dd className="font-medium text-tinta">−{formatearMonto(retencionIsr, monedaVista)}</dd>
+              </div>
+              <div>
+                <dt className="texto-meta">{t("retencionItbis")}</dt>
+                <dd className="font-medium text-tinta">−{formatearMonto(retencionItbis, monedaVista)}</dd>
+              </div>
+              <div>
+                <dt className="texto-meta">{t("neto")}</dt>
+                <dd className="font-semibold text-marca-700">{formatearMonto(neto, monedaVista)}</dd>
+              </div>
+            </dl>
           </PasoFormulario>
 
           <PasoFormulario titulo={t("pasos.asignacion")}>
-
             {/* Asignación Institucional (Persona y Programa) */}
             <div className="grid gap-4 md:grid-cols-2">
               <Campo id="solicitante" etiqueta={t("solicitante")}>
@@ -525,4 +693,3 @@ export function FormularioFactura({
     </div>
   );
 }
-

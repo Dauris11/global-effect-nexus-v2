@@ -48,6 +48,8 @@ export type DetalleProveedor = {
   identificacion: string;
   nombre: string;
   nombre_comercial: string | null;
+  actividad_economica: string | null;
+  administracion_local: string | null;
   contacto: string | null;
   telefono: string | null;
   email: string | null;
@@ -62,7 +64,8 @@ export type DetalleProveedor = {
 export async function proveedorPorId(id: string): Promise<DetalleProveedor | null> {
   if (!esUuid(id)) return null;
   return consultarUna<DetalleProveedor>(
-    `SELECT p.id, p.tipo, p.identificacion, p.nombre, p.nombre_comercial, p.contacto, p.telefono,
+    `SELECT p.id, p.tipo, p.identificacion, p.nombre, p.nombre_comercial,
+            p.actividad_economica, p.administracion_local, p.contacto, p.telefono,
             p.email, p.direccion, p.condiciones_pago_dias, p.categoria_id, c.nombre AS categoria,
             p.estado, u.nombre AS creado_por
        FROM contabilidad.proveedor p
@@ -174,6 +177,8 @@ export type DetalleFactura = FilaFactura & {
   itbis: string;
   retencion_isr: string;
   retencion_itbis: string;
+  tipo_retencion_isr: string | null;
+  tipo_retencion_itbis: string | null;
   categoria_id: string;
   categoria: string;
   fondo_id: string;
@@ -201,6 +206,7 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
             f.proveedor_id, p.nombre AS proveedor, p.tipo AS proveedor_tipo, f.tasa::text AS tasa,
             f.subtotal::text AS subtotal, f.itbis::text AS itbis,
             f.retencion_isr::text AS retencion_isr, f.retencion_itbis::text AS retencion_itbis,
+            f.tipo_retencion_isr, f.tipo_retencion_itbis,
             f.categoria_id, c.nombre AS categoria, f.fondo_id, f.proyecto_id, pr.nombre AS proyecto,
             f.solicitante_id, us.nombre AS solicitante_nombre, f.programa_codigo,
             f.estudiante_id, f.pilar_costo,
