@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { BarraInferior } from "@/components/layout/barra-inferior";
 import type { AvisoVisible } from "@/components/layout/campana";
+import { Migas } from "@/components/layout/migas";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ProveedorPermisos } from "@/components/layout/proveedor-permisos";
 import { TopBar } from "@/components/layout/topbar";
@@ -103,6 +104,7 @@ export function AppShell({
             Abajo, en el móvil, el alto de la barra inferior más el área
             segura: sin él, la barra tapa el último botón de cada página. */}
           <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
+            <Migas rol={rol} />
             {children}
           </main>
         </div>

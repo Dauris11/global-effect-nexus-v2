@@ -14,6 +14,7 @@ import {
   HandCoins,
   Gauge,
   Inbox,
+  LayoutDashboard,
   Landmark,
   Mail,
   Home,
@@ -288,6 +289,15 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         etiqueta: "admin",
         items: [
+          // El resumen del módulo: cifras que llevan a cada pantalla y todos
+          // los módulos que esta persona puede abrir. Universal, porque se
+          // arma solo con lo que sus permisos habilitan.
+          {
+            etiqueta: "adminHome",
+            href: "/administrativo",
+            icono: LayoutDashboard,
+            universal: true,
+          },
           // Primero: es lo que espera respuesta de alguien. Universal, porque
           // todo el personal puede pedir algo; lo que cada uno puede RESOLVER
           // lo decide la pantalla con los permisos de solicitudes.
@@ -1069,6 +1079,33 @@ export function areaDeRuta(rol: Rol, ruta: string): AreaNav | null {
     .sort((a, b) => b.href.length - a.href.length);
 
   return candidatos[0]?.area ?? null;
+}
+
+/** Dónde está la persona dentro del menú: para las migas de pan. */
+export type MigaRuta = {
+  area: AreaNav;
+  seccion: SeccionNav;
+  item: ItemNav;
+  /** La ruta es más profunda que la entrada del menú (una ficha, un detalle). */
+  esDetalle: boolean;
+};
+
+/** Área › sección › entrada de la ruta actual, con la coincidencia más específica. */
+export function migasDeRuta(
+  rol: Rol,
+  ruta: string,
+  permisos?: ReadonlySet<Permiso>,
+): MigaRuta | null {
+  const candidatos = menuDe(rol, permisos).flatMap((area) =>
+    area.secciones.flatMap((seccion) =>
+      seccion.items
+        .filter((item) => esRutaActiva(ruta, item.href))
+        .map((item) => ({ area, seccion, item })),
+    ),
+  );
+  const mejor = candidatos.sort((a, b) => b.item.href.length - a.item.href.length)[0];
+
+  return mejor ? { ...mejor, esDetalle: ruta !== mejor.item.href } : null;
 }
 
 /**

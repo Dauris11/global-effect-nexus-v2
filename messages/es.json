@@ -248,7 +248,10 @@
     "habitudesSupervision": "Supervisión de Habitudes",
     "pending": "Pendientes",
     "executiveDashboard": "Tablero ejecutivo",
-    "studentCost": "Costo por estudiante"
+    "studentCost": "Costo por estudiante",
+    "adminHome": "Resumen",
+    "breadcrumbDetail": "Detalle",
+    "breadcrumbLabel": "Ruta de navegación"
   },
   "landing": {
     "enter": "Acceder",
@@ -761,6 +764,11 @@
       "nameRequired": "Escribe un nombre para la actividad.",
       "edit": "Editar actividad",
       "none": "Sin actividad"
+    },
+    "home": {
+      "toAttend": "Por atender",
+      "activeProjects": "Proyectos en curso",
+      "tasksToday": "Mis tareas de hoy"
     }
   },
   "calendar": {

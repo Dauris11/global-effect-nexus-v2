@@ -248,7 +248,10 @@
     "habitudesSupervision": "Habitudes supervision",
     "pending": "To-do",
     "executiveDashboard": "Executive dashboard",
-    "studentCost": "Cost per student"
+    "studentCost": "Cost per student",
+    "adminHome": "Overview",
+    "breadcrumbDetail": "Detail",
+    "breadcrumbLabel": "Breadcrumb"
   },
   "landing": {
     "enter": "Sign in",
@@ -761,6 +764,11 @@
       "nameRequired": "Enter a name for the activity.",
       "edit": "Edit activity",
       "none": "No activity"
+    },
+    "home": {
+      "toAttend": "To attend",
+      "activeProjects": "Active projects",
+      "tasksToday": "My tasks today"
     }
   },
   "calendar": {
