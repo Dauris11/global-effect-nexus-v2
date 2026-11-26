@@ -175,7 +175,9 @@ export async function participaEnProyecto(
                            WHERE m.proyecto_id = p.id AND m.usuario_id = $1)
                OR EXISTS (SELECT 1 FROM tarea t
                             JOIN tarea_asignado ta ON ta.tarea_id = t.id AND ta.usuario_id = $1
-                           WHERE t.proyecto_id = p.id))
+                           WHERE t.proyecto_id = p.id)
+               OR EXISTS (SELECT 1 FROM actividad a
+                           WHERE a.proyecto_id = p.id AND a.responsable_id = $1))
      ) AS participa`,
     [usuarioId, proyectoId],
   );

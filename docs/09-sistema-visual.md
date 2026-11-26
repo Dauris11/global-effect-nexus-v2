@@ -21,13 +21,13 @@ en forma de prompt para reconstruirlo. Esto ya no es un prompt: es la regla.
    tarjetas grandes con radio generoso y sombras suaves.
 2. **Un acento.** El turquesa `#2096BA` va **solo** en el CTA principal, en lo
    activo de la navegación, en los enlaces y en el icono de lo seleccionado. Todo
-   lo demás es tinta y grises. Un módulo no tiene color propio; un rol tampoco.
+   lo demás es tinta y grises. Un módulo no tiene color propio salvo el del estándar de §2.3b; un rol tampoco.
 3. **Se separa con espacio y con línea, no con cajas.** El fondo es blanco; las
    secciones se distinguen por aire y por una línea fina `linea`, no por
    rectángulos grises.
 4. **El significado lo lleva el peso, no el matiz.** Cuanto más oscuro, más
    importa. Un error no es rojo: es tinta con su icono. La única excepción es
-   `SEMAFORO` (§2.3).
+   `SEMAFORO` (§2.3) y los colores de estado de §2.3b.
 5. **Se comporta como app en el teléfono:** pestañas abajo, hojas que suben
    desde abajo, objetivos táctiles de 44 px como mínimo.
 
@@ -71,13 +71,14 @@ También el borde de un input con `aria-invalid`. Nunca en botones, banners ni
 gráficas.
 
 
-### 2.3b Colores de estado, prioridad y módulo (nov 2026)
+### 2.3b Excepción: colores de estado, prioridad y módulo (nov 2026)
 
-La marca y la paleta no cambian. Estados, estatus, prioridades y módulos pueden
-llevar color, pero de un solo estándar: los tokens `est-*` y `pri-*`
-(`globals.css`) mediante `src/lib/estados-trabajo.ts` o `ESTADO` de `paleta.ts`.
-Siempre con icono; no valen para botones, banners ni gráficas, y no se inventan
-colores por pantalla.
+Los colores de la marca no se ven afectados: la paleta, los botones, los enlaces
+y la navegación siguen exactamente igual. Es una EXCEPCIÓN acotada: estados,
+estatus, prioridades y módulos pueden llevar color, pero de un solo estándar, los
+tokens `est-*` y `pri-*` (`globals.css`) mediante `src/lib/estados-trabajo.ts` o
+`ESTADO` de `paleta.ts`. Siempre con icono; no valen para botones, banners ni
+gráficas, y no se inventan colores por pantalla.
 
 ### 2.4 Tipografía
 

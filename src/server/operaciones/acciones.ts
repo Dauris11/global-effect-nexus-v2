@@ -472,6 +472,18 @@ export async function guardarActividad(
 
     if (!guardada) return { estado: "no_encontrado" };
 
+    // Quien queda como responsable se entera dentro del sistema, igual que con
+    // una tarea; el aviso lleva al proyecto (participar en él le da acceso).
+    if (responsable && responsable !== usuario.id) {
+      await consultarUna(
+        `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+         SELECT u.id, $2, $2, 'tarea', $3
+           FROM usuario u WHERE u.id = $1 AND u.activo
+         RETURNING id`,
+        [responsable, nombre, `/administrativo/proyectos/${proyectoId}`],
+      );
+    }
+
     await registrar({
       usuarioId: usuario.id,
       accion: id ? "actividad.editada" : "actividad.creada",

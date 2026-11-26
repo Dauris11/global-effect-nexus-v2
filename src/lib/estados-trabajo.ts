@@ -15,8 +15,9 @@ import {
 /**
  * Estado y prioridad del trabajo (proyectos, actividades y tareas) con color.
  *
- * Es la única excepción a «un solo acento» (decidida en nov 2026 para el
- * Kanban administrativo): los colores son tokens `est-*` y `pri-*` de
+ * EXCEPCIÓN acotada a «un solo acento» (nov 2026): los colores de la marca no
+ * se ven afectados. Estados, estatus, prioridades y módulos pueden llevar color,
+ * pero solo de este estándar: los colores son tokens `est-*` y `pri-*` de
  * `globals.css`. Cada estado y cada prioridad lleva SIEMPRE su icono, para que
  * la diferencia sobreviva en grises. Las clases van escritas completas para que
  * Tailwind las vea.

@@ -103,7 +103,36 @@ export default async function PaginaDetalleProyectoGantt({
     });
     porFase.set(titulo, seccion);
   }
-  const secciones = [...porFase.values()];
+  // Las actividades con fechas van arriba como su propia sección: el Gantt
+  // enseña el año del proyecto y dentro de él las tareas por fase.
+  const barrasActividad = actividades
+    .filter(
+      (a) =>
+        a.fecha_inicio !== null &&
+        a.fecha_fin !== null &&
+        !esIncoherente({ inicio: a.fecha_inicio, fin: a.fecha_fin }),
+    )
+    .map((a) => ({
+      id: a.id,
+      clase: "actividad",
+      claseEtiqueta: t("activities.title"),
+      titulo: a.nombre,
+      grupo: null,
+      inicio: a.fecha_inicio as string,
+      fin: a.fecha_fin as string,
+      detalle: a.responsable,
+      editable: false,
+      progreso: a.tareas > 0 ? Math.round((a.hechas / a.tareas) * 100) : 0,
+      hito: false,
+      tono: a.estado === "completado" ? ("apagado" as const) : ("marca" as const),
+      dependenciasIds: [],
+    }));
+  const secciones: SeccionTiempo[] = [
+    ...(barrasActividad.length > 0
+      ? [{ clave: "actividades", titulo: t("activities.title"), barras: barrasActividad }]
+      : []),
+    ...porFase.values(),
+  ];
   const rango = tramoDe(secciones.flatMap((s) => s.barras), hoy);
 
   return (

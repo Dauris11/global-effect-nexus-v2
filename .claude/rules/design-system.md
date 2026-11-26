@@ -42,14 +42,17 @@ de app en el móvil (pestañas abajo, hojas que suben desde abajo).
 
 ### La segunda excepción: colores de estado, prioridad y módulo (nov 2026)
 
-La marca y la paleta no se tocan. Los estados, estatus, prioridades y módulos
-pueden llevar color, pero todo sale de UN estándar: los tokens
+**Los colores de la marca no se ven afectados.** Turquesa, hover, oscuro, suave,
+tinta y grises siguen mandando en identidad, botones, enlaces y navegación. Esto
+es una EXCEPCIÓN acotada: estados, estatus, prioridades y módulos pueden llevar
+color, pero todo sale de UN estándar: los tokens
 `est-pendiente|progreso|revision|pausa|listo` y `pri-urgente|alta|media|baja`
 de `globals.css`.
 
 - Solo vía `src/lib/estados-trabajo.ts` (`visualEstado`, `visualPrioridad`) o
   `ESTADO` de `src/lib/paleta.ts`: clases como `bg-est-progreso/10`, nunca hex
-  ni `amber-*`. Si hace falta un estado nuevo, se agrega ahí, no en la pantalla.
+  ni `amber-*`. Si hace falta un estado o un color de módulo nuevo, se agrega
+  ahí, no en la pantalla.
 - **Siempre** con icono, para que se lea en grises.
 - Nunca en botones, banners ni gráficas.
 
