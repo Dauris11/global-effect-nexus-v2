@@ -3726,6 +3726,30 @@
         "fuente": "Fuente",
         "guardar": "Guardar tasa",
         "ok": "Tasa guardada."
+      },
+      "configCuenta": {
+        "boton": "Configurar cuenta bancaria",
+        "titulo": "Configuración de la cuenta",
+        "masInformacion": "Más información",
+        "ayudaContabilidad": "Como rol Contabilidad puedes modificar directamente los datos de la cuenta y aprobar o rechazar solicitudes de otros roles.",
+        "ayudaOtroRol": "Solo el rol de Contabilidad puede aplicar cambios directos. Al enviar este formulario se notificará a Contabilidad para su autorización.",
+        "avisoAutorizacion": "Solo el rol de Contabilidad puede modificar esta cuenta directamente. Tus cambios se enviarán como solicitud de autorización.",
+        "campoTitulo": "Título",
+        "campoNumero": "No. de cuenta",
+        "campoMoneda": "Moneda",
+        "campoAuxiliar": "Auxiliar contable",
+        "campoSaldo": "Saldo actual",
+        "campoMotivo": "Motivo de la solicitud",
+        "guardar": "Guardar cambios",
+        "solicitar": "Solicitar autorización",
+        "cerrar": "Cerrar",
+        "solicitudEnviada": "Solicitud enviada a Contabilidad para autorización.",
+        "pendientesTitulo": "Solicitudes de autorización pendientes ({n})",
+        "misPendientes": "Tus solicitudes pendientes",
+        "pendiente": "Pendiente",
+        "aprobar": "Aprobar",
+        "rechazar": "Rechazar",
+        "solicitudResuelta": "Solicitud procesada correctamente."
       }
     },
     "libro": {

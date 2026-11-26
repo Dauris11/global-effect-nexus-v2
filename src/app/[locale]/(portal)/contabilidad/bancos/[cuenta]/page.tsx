@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Download, Link2, ListChecks, Rows3, Scale } from "lucide-react";
+import { ChevronLeft, Download, ListChecks, Rows3, Scale } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { BotonAnularPartida, Conciliador } from "@/components/contabilidad/bancos/conciliador";
-import { DialogoSubirEstado, DialogoVincularCuenta } from "@/components/contabilidad/bancos/formularios-banco";
+import { DialogoConfigurarCuentaBanco } from "@/components/contabilidad/bancos/dialogo-configurar-banco";
+import { DialogoSubirEstado } from "@/components/contabilidad/bancos/formularios-banco";
 import { LibroBanco } from "@/components/contabilidad/bancos/libro-banco";
 import { Monto } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import { enmascararCuenta, numeroDocumento } from "@/lib/contabilidad/formato";
+import { numeroDocumento } from "@/lib/contabilidad/formato";
 import { fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
@@ -28,6 +29,7 @@ import {
   leerFiltroExtracto,
   partidasConciliadas,
   porConciliar,
+  solicitudesCambioBanco,
 } from "@/server/contabilidad/bancos/consultas";
 import { formatosEstadoBanco } from "@/server/contabilidad/configuracion/consultas";
 
@@ -68,14 +70,15 @@ export default async function PaginaCuentaBanco({
   const crudo = await searchParams;
   const vista: Vista = (VISTAS as readonly unknown[]).includes(crudo.vista) ? (crudo.vista as Vista) : "movimientos";
   const concilia = usuarioTienePermiso(usuario, "contabilidad.conciliar") && cuenta.estado === "activa";
-  const configura = usuarioTienePermiso(usuario, "contabilidad.configurar");
+  const esContabilidad = usuario.rol === "contabilidad";
 
-  const [t, tc, mensajes, formatos, auxiliares] = await Promise.all([
+  const [t, tc, mensajes, formatos, auxiliares, solicitudesPendientes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.conciliacion" }),
     getTranslations({ locale, namespace: "contab" }),
     mensajesCliente(["contab"]),
     concilia ? formatosEstadoBanco(true) : Promise.resolve([]),
-    configura ? cuentasAuxiliaresDeActivo() : Promise.resolve([]),
+    cuentasAuxiliaresDeActivo(),
+    solicitudesCambioBanco(cuenta.id, esContabilidad ? undefined : usuario.id),
   ]);
 
   return (
@@ -87,7 +90,17 @@ export default async function PaginaCuentaBanco({
 
       <NextIntlClientProvider messages={mensajes}>
         <EncabezadoPagina
-          titulo={cuenta.nombre}
+          titulo={
+            <span className="inline-flex items-center gap-2">
+              <span>{cuenta.nombre}</span>
+              <DialogoConfigurarCuentaBanco
+                cuenta={cuenta}
+                auxiliares={auxiliares}
+                esContabilidad={esContabilidad}
+                solicitudesPendientes={solicitudesPendientes}
+              />
+            </span>
+          }
           acciones={
             <div className="flex flex-wrap items-center gap-2">
               {concilia && <DialogoSubirEstado cuentaId={cuenta.id} formatos={formatos} />}
@@ -100,16 +113,6 @@ export default async function PaginaCuentaBanco({
             </div>
           }
         />
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="texto-meta">{`${cuenta.banco} · ${enmascararCuenta(cuenta.numero)} · ${cuenta.moneda}`}</span>
-          <Link2 className="size-4 text-tinta-3" />
-          <span className="text-tinta-2">{t("vinculada")}</span>
-          <span className="font-medium text-tinta">{cuenta.cuenta_contable}</span>
-          {configura && (
-            <DialogoVincularCuenta cuentaId={cuenta.id} actual={cuenta.cuenta_contable_id} opciones={auxiliares} />
-          )}
-        </div>
       </NextIntlClientProvider>
 
       <FilaChips etiqueta={t("vistas")}>

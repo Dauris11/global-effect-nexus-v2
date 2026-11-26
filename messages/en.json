@@ -3726,6 +3726,30 @@
         "fuente": "Source",
         "guardar": "Save rate",
         "ok": "Rate saved."
+      },
+      "configCuenta": {
+        "boton": "Configure bank account",
+        "titulo": "Account settings",
+        "masInformacion": "More information",
+        "ayudaContabilidad": "As Accounting role you can edit account details directly and approve or reject authorization requests from other roles.",
+        "ayudaOtroRol": "Only the Accounting role can apply direct changes. Submitting this form sends an authorization request to Accounting.",
+        "avisoAutorizacion": "Only the Accounting role can modify this account directly. Your changes will be submitted as an authorization request.",
+        "campoTitulo": "Title",
+        "campoNumero": "Account number",
+        "campoMoneda": "Currency",
+        "campoAuxiliar": "Ledger subsidiary account",
+        "campoSaldo": "Current balance",
+        "campoMotivo": "Reason for request",
+        "guardar": "Save changes",
+        "solicitar": "Request authorization",
+        "cerrar": "Close",
+        "solicitudEnviada": "Request sent to Accounting for authorization.",
+        "pendientesTitulo": "Pending authorization requests ({n})",
+        "misPendientes": "Your pending requests",
+        "pendiente": "Pending",
+        "aprobar": "Approve",
+        "rechazar": "Reject",
+        "solicitudResuelta": "Request processed successfully."
       }
     },
     "libro": {

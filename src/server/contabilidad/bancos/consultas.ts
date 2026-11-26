@@ -407,3 +407,53 @@ export async function configuracionEstado(
     [cuentaId],
   );
 }
+
+export type SolicitudCambioBanco = {
+  id: string;
+  cuenta_id: string;
+  solicitado_por: string;
+  solicitante_nombre: string;
+  solicitado_en: string;
+  nombre: string;
+  numero: string;
+  moneda: Moneda;
+  cuenta_contable_id: string;
+  cuenta_contable: string;
+  saldo_actual: string;
+  motivo: string;
+  estado: "pendiente" | "aprobada" | "rechazada";
+};
+
+/**
+ * Solicitudes pendientes de cambio de configuración para una cuenta bancaria.
+ * Contabilidad ve todas; otros roles ven solo las suyas.
+ */
+export async function solicitudesCambioBanco(
+  cuentaId: string,
+  soloUsuarioId?: string,
+): Promise<SolicitudCambioBanco[]> {
+  return consultar<SolicitudCambioBanco>(
+    `SELECT s.id,
+            s.cuenta_id,
+            s.solicitado_por,
+            u.nombre AS solicitante_nombre,
+            to_char(s.solicitado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD HH24:MI') AS solicitado_en,
+            s.nombre,
+            s.numero,
+            s.moneda,
+            s.cuenta_contable_id,
+            cc.codigo || ' · ' || cc.nombre AS cuenta_contable,
+            s.saldo_actual::numeric(14,2)::text AS saldo_actual,
+            s.motivo,
+            s.estado
+       FROM contabilidad.solicitud_cambio_cuenta_bancaria s
+       JOIN public.usuario u ON u.id = s.solicitado_por
+       JOIN contabilidad.cuenta_contable cc ON cc.id = s.cuenta_contable_id
+      WHERE s.cuenta_id = $1
+        AND s.estado = 'pendiente'
+        AND ($2::uuid IS NULL OR s.solicitado_por = $2)
+      ORDER BY s.solicitado_en DESC
+      LIMIT 20`,
+    [cuentaId, soloUsuarioId ?? null],
+  );
+}

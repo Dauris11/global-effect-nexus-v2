@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { requerirUsuario } from "@/lib/auth";
-import { consultarUna, enTransaccionComo } from "@/lib/db";
-import { esFechaIso, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/formato";
+import { consultar, consultarUna, enTransaccionComo } from "@/lib/db";
+import { esFechaIso, esMoneda, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/formato";
 import { usuarioTienePermiso } from "@/lib/rbac";
+import { notificarUsuario } from "@/server/compartidos/notificaciones";
 import { obtenerAdaptador, type ColumnasEstado } from "@/server/contabilidad/bancos";
 import { claveDeTransaccion } from "@/lib/contabilidad/extracto";
 import {
@@ -564,6 +565,244 @@ export async function vincularCuentaContable(_previo: EstadoBanco, datos: FormDa
     return { estado: "ok" };
   } catch (error) {
     if (error instanceof RechazoBanco) return { estado: error.estado };
+    return { estado: estadoDeError(error) };
+  }
+}
+
+function saldoConSignoValido(crudo: string): string | null {
+  const limpio = crudo.replace(/,/g, "").trim();
+  if (!/^-?\d+(?:\.\d{1,2})?$/.test(limpio)) return null;
+  const n = Number(limpio);
+  if (!Number.isFinite(n) || Math.abs(n) > 999_999_999_999.99) return null;
+  return n.toFixed(2);
+}
+
+/**
+ * Actualiza Título, No. de cuenta, Moneda, Auxiliar contable y Saldo actual
+ * de una cuenta bancaria. Exclusivo del rol `contabilidad`.
+ */
+export async function actualizarCuentaBancaria(
+  _previo: EstadoBanco,
+  datos: FormData,
+): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (usuario.rol !== "contabilidad") return { estado: "no_permitido" };
+
+  const cuenta = texto(datos, "cuenta", 40);
+  const nombre = texto(datos, "nombre", 120);
+  const numero = texto(datos, "numero", 60);
+  const moneda = texto(datos, "moneda", 3);
+  const contable = texto(datos, "cuenta_contable", 40);
+  const saldoActual = saldoConSignoValido(texto(datos, "saldo_actual", 24));
+
+  if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable)) {
+    return { estado: "datos_invalidos" };
+  }
+  if (saldoActual === null) return { estado: "monto_invalido" };
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "editar", "Configuración directa de cuenta bancaria.");
+      const { rowCount } = await cliente.query(
+        `UPDATE contabilidad.cuenta_bancaria cb
+            SET nombre = $2,
+                numero = $3,
+                moneda = $4,
+                cuenta_contable_id = $5,
+                saldo_inicial = $6::numeric - coalesce((
+                  SELECT sum(m.importe)
+                    FROM contabilidad.movimiento_bancario m
+                   WHERE m.cuenta_id = cb.id AND m.estado = 'vigente'
+                ), 0)
+          WHERE cb.id = $1
+            AND EXISTS (
+              SELECT 1 FROM contabilidad.cuenta_contable c
+               WHERE c.id = $5 AND c.tipo = 'activo' AND c.admite_movimiento AND c.activa
+            )
+            AND (
+              cb.cuenta_contable_id = $5
+              OR NOT EXISTS (
+                SELECT 1 FROM contabilidad.conciliacion_partida p
+                 WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL
+              )
+            )`,
+        [cuenta, nombre, numero, moneda, contable, saldoActual],
+      );
+      if (!rowCount) throw new RechazoBanco("datos_invalidos");
+    });
+    refrescar();
+    return { estado: "ok", id: cuenta };
+  } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
+    if ((error as { code?: string })?.code === "23505") return { estado: "datos_invalidos" };
+    return { estado: estadoDeError(error) };
+  }
+}
+
+/**
+ * Envía una solicitud de autorización al rol `contabilidad` para cambiar
+ * la configuración de una cuenta bancaria (para cualquier otro rol).
+ */
+export async function solicitarCambioCuentaBancaria(
+  _previo: EstadoBanco,
+  datos: FormData,
+): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.leer")) return { estado: "no_permitido" };
+
+  const cuenta = texto(datos, "cuenta", 40);
+  const nombre = texto(datos, "nombre", 120);
+  const numero = texto(datos, "numero", 60);
+  const moneda = texto(datos, "moneda", 3);
+  const contable = texto(datos, "cuenta_contable", 40);
+  const saldoActual = saldoConSignoValido(texto(datos, "saldo_actual", 24));
+  const motivo = texto(datos, "motivo", 300);
+
+  if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable) || !motivo) {
+    return { estado: "datos_invalidos" };
+  }
+  if (saldoActual === null) return { estado: "monto_invalido" };
+
+  try {
+    const solicitudId = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const { rows } = await cliente.query<{ id: string }>(
+        `INSERT INTO contabilidad.solicitud_cambio_cuenta_bancaria
+           (cuenta_id, solicitado_por, nombre, numero, moneda, cuenta_contable_id, saldo_actual, motivo)
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8
+          WHERE EXISTS (SELECT 1 FROM contabilidad.cuenta_bancaria WHERE id = $1)
+            AND EXISTS (
+              SELECT 1 FROM contabilidad.cuenta_contable c
+               WHERE c.id = $6 AND c.tipo = 'activo' AND c.admite_movimiento AND c.activa
+            )
+         RETURNING id`,
+        [cuenta, usuario.id, nombre, numero, moneda, contable, saldoActual, motivo],
+      );
+      if (!rows[0]) throw new RechazoBanco("datos_invalidos");
+      return rows[0].id;
+    });
+
+    // Notificar a todos los usuarios activos con rol `contabilidad`.
+    const destinatarios = await consultar<{ id: string }>(
+      `SELECT u.id
+         FROM public.usuario u
+         JOIN public.rol r ON r.id = u.rol_id
+        WHERE r.nombre = 'contabilidad' AND u.activo = true`,
+    );
+    await Promise.all(
+      destinatarios.map((d) =>
+        notificarUsuario({
+          usuarioId: d.id,
+          titulo: "Solicitud de cambio en cuenta bancaria",
+          mensaje: `${usuario.nombre} solicitó modificar «${nombre}»: ${motivo}`,
+          tipo: "alerta",
+          enlace: `/contabilidad/bancos/${cuenta}`,
+        }),
+      ),
+    );
+
+    refrescar();
+    return { estado: "ok", id: solicitudId };
+  } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
+    return { estado: estadoDeError(error) };
+  }
+}
+
+/**
+ * Aprueba o rechaza una solicitud de cambio en cuenta bancaria.
+ * Exclusivo del rol `contabilidad`.
+ */
+export async function resolverSolicitudCambioBanco(
+  _previo: EstadoBanco,
+  datos: FormData,
+): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (usuario.rol !== "contabilidad") return { estado: "no_permitido" };
+
+  const solicitudId = texto(datos, "solicitud_id", 40);
+  const decision = texto(datos, "decision", 12);
+  if (!esUuid(solicitudId) || (decision !== "aprobada" && decision !== "rechazada")) {
+    return { estado: "datos_invalidos" };
+  }
+
+  try {
+    const info = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const { rows } = await cliente.query<{
+        id: string;
+        cuenta_id: string;
+        solicitado_por: string;
+        nombre: string;
+        numero: string;
+        moneda: string;
+        cuenta_contable_id: string;
+        saldo_actual: string;
+      }>(
+        `SELECT id, cuenta_id, solicitado_por, nombre, numero, moneda,
+                cuenta_contable_id, saldo_actual::text AS saldo_actual
+           FROM contabilidad.solicitud_cambio_cuenta_bancaria
+          WHERE id = $1 AND estado = 'pendiente'
+          FOR UPDATE`,
+        [solicitudId],
+      );
+      const sol = rows[0];
+      if (!sol) throw new RechazoBanco("datos_invalidos");
+
+      if (decision === "aprobada") {
+        await fijarAccion(cliente, "aprobar", "Aprobación de solicitud de cambio en cuenta bancaria.");
+        const { rowCount } = await cliente.query(
+          `UPDATE contabilidad.cuenta_bancaria cb
+              SET nombre = $2,
+                  numero = $3,
+                  moneda = $4,
+                  cuenta_contable_id = $5,
+                  saldo_inicial = $6::numeric - coalesce((
+                    SELECT sum(m.importe)
+                      FROM contabilidad.movimiento_bancario m
+                     WHERE m.cuenta_id = cb.id AND m.estado = 'vigente'
+                  ), 0)
+            WHERE cb.id = $1
+              AND (
+                cb.cuenta_contable_id = $5
+                OR NOT EXISTS (
+                  SELECT 1 FROM contabilidad.conciliacion_partida p
+                   WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL
+                )
+              )`,
+          [sol.cuenta_id, sol.nombre, sol.numero, sol.moneda, sol.cuenta_contable_id, sol.saldo_actual],
+        );
+        if (!rowCount) throw new RechazoBanco("datos_invalidos");
+      } else {
+        await fijarAccion(cliente, "anular", "Rechazo de solicitud de cambio en cuenta bancaria.");
+      }
+
+      await cliente.query(
+        `UPDATE contabilidad.solicitud_cambio_cuenta_bancaria
+            SET estado = $2, resuelto_por = $3, resuelto_en = now()
+          WHERE id = $1`,
+        [solicitudId, decision, usuario.id],
+      );
+      return sol;
+    });
+
+    await notificarUsuario({
+      usuarioId: info.solicitado_por,
+      titulo:
+        decision === "aprobada"
+          ? "Cambio de cuenta bancaria aprobado"
+          : "Cambio de cuenta bancaria rechazado",
+      mensaje:
+        decision === "aprobada"
+          ? `Contabilidad aprobó tu solicitud sobre «${info.nombre}».`
+          : `Contabilidad rechazó tu solicitud sobre «${info.nombre}».`,
+      tipo: decision === "aprobada" ? "info" : "alerta",
+      enlace: `/contabilidad/bancos/${info.cuenta_id}`,
+    });
+
+    refrescar();
+    return { estado: "ok", id: solicitudId };
+  } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
+    if ((error as { code?: string })?.code === "23505") return { estado: "datos_invalidos" };
     return { estado: estadoDeError(error) };
   }
 }
