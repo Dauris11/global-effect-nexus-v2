@@ -45,7 +45,6 @@ export async function TabSeguimiento({ e, seg }: { e: ExpedienteCompleto; seg: S
             </table>
           </div>
         )}
-        <p className="texto-meta mt-3">{t("v2.followUp.hint")}</p>
       </Seccion>
 
       <Seccion titulo={t("v2.followUp.notes")}>

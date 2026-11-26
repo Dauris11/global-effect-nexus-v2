@@ -80,9 +80,6 @@ export default async function PaginaLogin({
         <LoginForm />
       </div>
 
-      <p className="texto-meta mt-8 border-t border-linea pt-5 text-center">
-        {t("needAccess")}
-      </p>
     </div>
   );
 }

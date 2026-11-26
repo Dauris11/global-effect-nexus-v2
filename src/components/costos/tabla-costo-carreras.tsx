@@ -18,7 +18,7 @@ const dop = (n: number | null) => (n === null ? "—" : formatearMonto(n, "DOP")
 export function TablaCostoCarreras({ filas }: { filas: FilaCostoCarrera[] }) {
   const t = useTranslations("costs");
 
-  if (filas.length === 0) return <EstadoVacio icono={Table2} titulo={t("empty")} texto={t("emptyHint")} />;
+  if (filas.length === 0) return <EstadoVacio icono={Table2} titulo={t("empty")} />;
 
   const barras = filas
     .filter((f) => f.promedio_por_becado !== null)
@@ -87,7 +87,6 @@ export function TablaCostoCarreras({ filas }: { filas: FilaCostoCarrera[] }) {
             </li>
           ))}
         </ul>
-        <p className="texto-meta">{t("hint")}</p>
       </section>
     </>
   );

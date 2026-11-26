@@ -379,7 +379,6 @@ export function BuzonTareaMoodle({
                   id="comentarios"
                   value={comentarioEstudiante}
                   onChange={(e) => setComentarioEstudiante(e.target.value)}
-                  placeholder={t("studentNotesPlaceholder")}
                   rows={2}
                   className="mt-1"
                 />

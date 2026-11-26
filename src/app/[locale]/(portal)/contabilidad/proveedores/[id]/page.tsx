@@ -76,11 +76,6 @@ export default async function PaginaDetalleProveedor({
         <EncabezadoPagina
           antetitulo={tc(`tipoProveedor.${proveedor.tipo}` as never)}
           titulo={proveedor.nombre}
-          subtitulo={
-            proveedor.nombre_comercial
-              ? `${proveedor.nombre_comercial} · ${formatearIdentificacion(proveedor.identificacion)}`
-              : formatearIdentificacion(proveedor.identificacion)
-          }
           acciones={
             <div className="flex flex-wrap items-center gap-2">
               {puedeRegistrar && (
@@ -104,12 +99,6 @@ export default async function PaginaDetalleProveedor({
         />
       </div>
 
-      {proveedor.tipo === "fisica" && (
-        <div className="rounded-control bg-marca-50 border border-marca-200 p-4 text-sm text-marca-800">
-          {t("sinComprobante")}
-        </div>
-      )}
-
       {/* Datos generales */}
       <section className="rounded-tarjeta border border-linea bg-background p-6">
         <h2 className="texto-titulo-seccion mb-4">{t("datos")}</h2>
@@ -117,6 +106,9 @@ export default async function PaginaDetalleProveedor({
           <Dato etiqueta="RNC / Cédula">
             <span className="font-mono">{formatearIdentificacion(proveedor.identificacion)}</span>
           </Dato>
+          {proveedor.nombre_comercial && (
+            <Dato etiqueta={tc("proveedorForm.nombreComercial")}>{proveedor.nombre_comercial}</Dato>
+          )}
           <Dato etiqueta="Estado">
             <Badge
               className={proveedor.estado === "activo" ? undefined : INSIGNIA_SEMAFORO.alerta}

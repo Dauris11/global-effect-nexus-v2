@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -62,7 +61,6 @@ export function DialogoPresupuesto() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("modalCrearTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalCrearDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -102,7 +100,6 @@ export function DialogoPresupuesto() {
               rows={3}
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
-              placeholder="Base de cálculo, supuestos económicos..."
             />
           </div>
 

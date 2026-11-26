@@ -136,7 +136,6 @@ export function SeccionCodigos({
       <Link
         href="/contabilidad/configuracion?tab=catalogo"
         className="inline-flex items-center gap-1.5 text-sm text-tinta-2 underline-offset-2 hover:text-marca-600 hover:underline"
-        title={t("asignarEnCatalogo")}
       >
         <CircleAlert className="size-4 shrink-0" />
         {t("sinCuenta")}
@@ -146,7 +145,6 @@ export function SeccionCodigos({
   const modulos = [...new Set(codigos.map((c) => c.modulo))];
   return (
     <div className="space-y-6">
-      <p className="max-w-3xl text-[15px] text-tinta-2">{t("explicacion")}</p>
       {modulos.map((modulo) => {
         const filas = codigos.filter((c) => c.modulo === modulo);
         return (

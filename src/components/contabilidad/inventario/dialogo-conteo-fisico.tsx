@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -58,7 +57,6 @@ export function DialogoConteoFisico() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("tomaFisicaTitulo")}</DialogTitle>
-            <DialogDescription>{t("tomaFisicaDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -85,7 +83,6 @@ export function DialogoConteoFisico() {
                 id="conf-desc"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Ej. Cierre físico mensual almacén de cocina y útiles"
                 required
               />
             </div>

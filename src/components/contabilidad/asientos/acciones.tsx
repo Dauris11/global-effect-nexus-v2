@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -65,7 +64,6 @@ export function DialogoRevertir({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("titulo", { numero })}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="id" value={id} />
@@ -84,7 +82,6 @@ export function DialogoRevertir({
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
             />
-            <p className="texto-meta">{t("motivoAyuda", { n: MOTIVO_MINIMO })}</p>
           </div>
           {error && <AvisoError>{error}</AvisoError>}
           <DialogFooter>

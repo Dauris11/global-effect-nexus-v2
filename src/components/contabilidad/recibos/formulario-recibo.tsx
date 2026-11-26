@@ -105,7 +105,6 @@ export function FormularioRecibo({
                 name="monto"
                 inputMode="decimal"
                 required
-                placeholder="0.00"
                 defaultValue={recibo?.monto ?? ""}
               />
             </Campo>
@@ -203,7 +202,7 @@ export function FormularioRecibo({
               </Campo>
             )}
 
-            <Campo etiqueta={t("formulario.referencia")} id="referencia" ayuda={t("formulario.referenciaAyuda")}>
+            <Campo etiqueta={t("formulario.referencia")} id="referencia">
               <Input id="referencia" name="referencia" maxLength={120} defaultValue={recibo?.referencia ?? ""} />
             </Campo>
           </div>

@@ -158,7 +158,7 @@ export function EditorAgente({
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
             <Label htmlFor={`ag-mod-${clave}`}>{t("agents.model")}</Label>
-            <Input id={`ag-mod-${clave}`} name="modelo" defaultValue={modelo} placeholder={t("agents.modelHint")} />
+            <Input id={`ag-mod-${clave}`} name="modelo" defaultValue={modelo} />
           </div>
           <div>
             <Label htmlFor={`ag-max-${clave}`}>{t("agents.maxTokens")}</Label>

@@ -363,8 +363,6 @@ function FilaPeriodo({
           nombre={periodo.nombre}
           alEditar={alEditar}
           eliminar={eliminarPeriodo}
-          avisoBorrado={t("terms.deleteHint")}
-          avisoEnUso={t("terms.inUseHint")}
         />
       )}
     </div>

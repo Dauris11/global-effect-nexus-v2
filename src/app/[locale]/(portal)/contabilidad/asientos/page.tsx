@@ -92,7 +92,6 @@ export default async function PaginaAsientos({
         <EstadoVacio
           icono={NotebookPen}
           titulo={hayFiltro ? t("vacioFiltro") : t("vacio")}
-         
         />
       ) : (
         <>

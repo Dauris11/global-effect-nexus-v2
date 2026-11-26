@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -18,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import {
   cambiarEstadoCuenta,
   crearCuentaRaiz,
@@ -73,7 +71,6 @@ export function DialogoCuenta({
   const [agregarAFacturas, setAgregarAFacturas] = useState(
     modo === "editar" ? (cuenta?.agregarAFacturas ?? false) : false,
   );
-  const etiqueta = cuenta ? `${cuenta.codigo} · ${cuenta.nombre}` : "";
   const maxSegmento = prefijo ? 4 : 2;
   const pideNombre = modo === "subcuenta" || modo === "editar" || modo === "raiz";
   const pideCodigo = pideNombre;
@@ -83,7 +80,6 @@ export function DialogoCuenta({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t(`${modo}.titulo`)}</DialogTitle>
-          <DialogDescription>{t(`${modo}.descripcion`, { cuenta: etiqueta })}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           {modo === "subcuenta" && <input type="hidden" name="padre_id" value={cuenta?.id} />}
@@ -94,18 +90,9 @@ export function DialogoCuenta({
 
           {pideCodigo && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="cuenta-segmento" className="text-sm font-medium">
-                  {t("codigo")}
-                </Label>
-                <TooltipAyuda
-                  etiqueta={t("masInformacion")}
-                  texto={[
-                    prefijo ? t("codigoAyuda") : t("codigoAyudaRaiz"),
-                    ...(modo === "editar" ? [t("editar.avisoBloqueo")] : []),
-                  ]}
-                />
-              </div>
+              <Label htmlFor="cuenta-segmento" className="text-sm font-medium">
+                {t("codigo")}
+              </Label>
               <div className="flex items-center gap-2">
                 {prefijo && <span className="font-mono text-sm text-tinta-2">{prefijo}</span>}
                 <Input
@@ -171,23 +158,17 @@ export function DialogoCuenta({
                 }}
                 className="size-4 accent-marca-500"
               />
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="cuenta-movimiento" className="cursor-pointer text-sm font-medium text-tinta">
-                  {t("recibeAsientos")}
-                </Label>
-                <TooltipAyuda etiqueta={t("masInformacion")} texto={t("recibeAsientosAyuda")} />
-              </div>
+              <Label htmlFor="cuenta-movimiento" className="cursor-pointer text-sm font-medium text-tinta">
+                {t("recibeAsientos")}
+              </Label>
             </div>
           )}
 
           {(modo === "subcuenta" || (modo === "editar" && movimiento)) && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
-                  {t("agregarAFacturas")}
-                </Label>
-                <TooltipAyuda etiqueta={t("masInformacion")} texto={t("agregarAFacturasAyuda")} />
-              </div>
+              <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
+                {t("agregarAFacturas")}
+              </Label>
               <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
               <Select
                 value={agregarAFacturas ? "1" : "0"}
@@ -204,7 +185,6 @@ export function DialogoCuenta({
             </div>
           )}
 
-          {modo === "subcuenta" && cuenta?.admiteMovimiento && <p className="texto-meta">{t("subcuenta.aviso")}</p>}
           {(modo === "activar" || modo === "desactivar") && (
             <input type="hidden" name="activar" value={modo === "activar" ? "1" : "0"} />
           )}

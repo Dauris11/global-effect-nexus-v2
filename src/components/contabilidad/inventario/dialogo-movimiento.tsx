@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -98,7 +97,6 @@ export function DialogoMovimiento({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalMovimientoTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalMovimientoDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -185,7 +183,6 @@ export function DialogoMovimiento({
                       min="0"
                       value={costoUnitario}
                       onChange={(e) => setCostoUnitario(e.target.value)}
-                      placeholder="55.00"
                     />
                   </div>
                 ) : (
@@ -213,7 +210,6 @@ export function DialogoMovimiento({
                   id="mov-motivo"
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
-                  placeholder="Ej. Suministro para almuerzo de 120 becados en Comedor"
                 />
               </div>
             </PasoFormulario>

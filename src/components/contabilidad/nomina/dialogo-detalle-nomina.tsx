@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -133,7 +132,6 @@ export function DialogoDetalleNomina({
               </Badge>
             )}
           </div>
-          <DialogDescription>{t("detalleDesc")}</DialogDescription>
         </DialogHeader>
 
         {error && (
@@ -251,10 +249,6 @@ export function DialogoDetalleNomina({
                 <div>
                   <div className="text-xs font-semibold text-tinta dark:text-slate-200">
                     {t("bancoDesembolso")}
-                  </div>
-                  <div className="text-xs text-tinta-2 dark:text-slate-400">
-                    Generará el asiento de salida de efectivo por RD${" "}
-                    {nomina.total_neto.toLocaleString("es-DO", { minimumFractionDigits: 2 })}.
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

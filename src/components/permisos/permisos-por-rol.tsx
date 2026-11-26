@@ -93,8 +93,6 @@ export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
         ))}
       </FilaChips>
 
-      <p className="texto-meta">{t("help")}</p>
-
       <VistaModulos rol={seleccionado} permisos={actuales} />
 
       {error && (

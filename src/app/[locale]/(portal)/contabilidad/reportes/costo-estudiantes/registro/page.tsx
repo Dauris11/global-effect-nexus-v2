@@ -64,7 +64,6 @@ export default async function PaginaRegistroCostos({
       <SelectorEstudianteCosto estudiantes={estudiantes} seleccionado={elegido} />
 
       {datos && puedeRegistrar && <PanelRegistroCostos datos={datos} />}
-      {datos && !puedeRegistrar && <p className="texto-meta">{t("readOnly")}</p>}
     </div>
   );
 }

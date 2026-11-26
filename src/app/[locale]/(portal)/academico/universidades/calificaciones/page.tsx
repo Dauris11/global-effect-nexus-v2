@@ -35,15 +35,6 @@ export default async function PaginaSubirCalificaciones({ params }: { params: Pr
     <div className="animate-entrada mx-auto max-w-3xl space-y-6">
       <EncabezadoPagina titulo={t("title")} />
 
-      <section className="rounded-card border border-linea bg-card p-4">
-        <h2 className="texto-titulo-tarjeta">{t("intro.title")}</h2>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-[15px]">
-          <li>{t("intro.step1")}</li>
-          <li>{t("intro.step2")}</li>
-          <li>{t("intro.step3")}</li>
-        </ol>
-      </section>
-
       <NextIntlClientProvider messages={mensajes}>
         <FormularioCarga universidades={universidades} anioInicial={new Date().getFullYear()} />
       </NextIntlClientProvider>

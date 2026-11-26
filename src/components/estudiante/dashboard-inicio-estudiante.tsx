@@ -103,7 +103,6 @@ export function KpisAnimadosEstudiante({
       progreso: promedio !== null ? Math.min(100, Math.max(0, promedio)) : 0,
       icono: TrendingUp,
       href: "/portal/estudiante/calificaciones",
-      detalle: t("dashboard.averageHint"),
     },
     {
       etiqueta: `${t("gradesPage.gpaShort")} ${t("gpaScale")}`,
@@ -111,7 +110,6 @@ export function KpisAnimadosEstudiante({
       progreso: indice !== null ? Math.min(100, Math.max(0, (indice / 4) * 100)) : 0,
       icono: Sparkles,
       href: "/portal/estudiante/calificaciones",
-      detalle: t("dashboard.gpaHint"),
     },
     {
       etiqueta: t("stats.passed"),
@@ -119,7 +117,6 @@ export function KpisAnimadosEstudiante({
       progreso: Math.min(100, aprobadas * 12),
       icono: Award,
       href: "/portal/estudiante/calificaciones",
-      detalle: t("dashboard.passedHint"),
     },
     {
       etiqueta: t("stats.credits"),
@@ -127,7 +124,6 @@ export function KpisAnimadosEstudiante({
       progreso: Math.min(100, creditos * 5),
       icono: BookOpen,
       href: "/portal/estudiante/prematricula",
-      detalle: t("dashboard.creditsHint"),
     },
   ];
 
@@ -154,8 +150,7 @@ export function KpisAnimadosEstudiante({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Progress value={item.progreso} aria-label={item.detalle} className="h-1.5" />
-                  <p className="truncate text-[11px] text-tinta-3">{item.detalle}</p>
+                  <Progress value={item.progreso} aria-label={item.etiqueta} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
@@ -242,11 +237,6 @@ export function DashboardGraficoEstudiante({
     return dias;
   }, [tareas, hoyIso, locale]);
 
-  const totalPendientesSemana = useMemo(
-    () => datosSemana.reduce((acc, d) => acc + d.pendientes, 0),
-    [datosSemana],
-  );
-
   // 2. Todo lo que tiene fecha, para el calendario compacto de la tarjeta.
   const entradasCalendario = useMemo<EntradaCompacta[]>(() => {
     const lista: EntradaCompacta[] = [];
@@ -309,9 +299,6 @@ export function DashboardGraficoEstudiante({
                 <ClipboardList className="size-4 text-marca-600" />
                 {t("weeklyTasksTitle")}
               </CardTitle>
-              <p className="mt-1 text-xs text-tinta-3">
-                {t("weeklyTasksSubtitle", { count: totalPendientesSemana })}
-              </p>
             </div>
             <Link
               href="/portal/estudiante/aula-virtual"

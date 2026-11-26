@@ -64,7 +64,6 @@ export function ListaProveedores({
           <p className="font-medium text-tinta">
             {busqueda ? t("vacioFiltro") : t("vacio")}
           </p>
-          {!busqueda && <p className="mt-1 text-sm">{t("vacioTexto")}</p>}
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { ComboboxBuscador } from "@/components/ui/combobox-buscador";
-import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { asignarCodigosACuenta } from "@/server/contabilidad/codigos-transaccion/acciones";
 import type { CodigoConfigurado } from "@/server/contabilidad/codigos-transaccion/consultas";
 
@@ -64,10 +63,7 @@ export function CodigosDeCuenta({
 
   return (
     <fieldset className="space-y-3">
-      <legend className="flex items-center gap-1.5 text-sm font-medium text-tinta">
-        <span>{t("codigosTitulo")}</span>
-        <TooltipAyuda etiqueta={t("masInformacion")} texto={t("codigosAyuda")} />
-      </legend>
+      <legend className="text-sm font-medium text-tinta">{t("codigosTitulo")}</legend>
       <ComboboxBuscador
         opciones={codigos}
         obtenerValor={(c) => c.codigo}

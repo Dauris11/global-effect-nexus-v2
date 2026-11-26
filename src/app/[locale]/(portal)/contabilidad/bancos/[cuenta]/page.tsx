@@ -87,7 +87,6 @@ export default async function PaginaCuentaBanco({
       <NextIntlClientProvider messages={mensajes}>
         <EncabezadoPagina
           titulo={cuenta.nombre}
-          subtitulo={`${cuenta.banco} · ${enmascararCuenta(cuenta.numero)} · ${cuenta.moneda}`}
           acciones={
             <div className="flex flex-wrap items-center gap-2">
               {concilia && config && <DialogoSubirEstado cuentaId={cuenta.id} config={config.config} />}
@@ -102,6 +101,7 @@ export default async function PaginaCuentaBanco({
         />
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span className="texto-meta">{`${cuenta.banco} · ${enmascararCuenta(cuenta.numero)} · ${cuenta.moneda}`}</span>
           <Link2 className="size-4 text-tinta-3" />
           <span className="text-tinta-2">{t("vinculada")}</span>
           <span className="font-medium text-tinta">{cuenta.cuenta_contable}</span>

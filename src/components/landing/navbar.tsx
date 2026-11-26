@@ -53,7 +53,6 @@ export function Navbar({
     cerrarMenu: string;
     secciones: string;
     pregunta: string;
-    ayuda: string;
     porRol: string;
     logo: string;
   };
@@ -95,7 +94,7 @@ export function Navbar({
     <BuscadorPortal
       destinos={destinos}
       roles={roles}
-      textos={{ pregunta: textos.pregunta, ayuda: textos.ayuda, porRol: textos.porRol }}
+      textos={{ pregunta: textos.pregunta, porRol: textos.porRol }}
     />
   );
 

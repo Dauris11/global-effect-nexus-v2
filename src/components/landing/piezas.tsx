@@ -34,15 +34,13 @@ export const SECCION = "scroll-mt-36 border-t border-linea py-16 md:scroll-mt-24
 export const TITULO_SECCION =
   "text-[28px] leading-[1.12] font-semibold tracking-[-0.025em] text-balance text-tinta md:text-[40px]";
 
-/** Título de sección, con su línea de apoyo y una acción opcional a la derecha. */
+/** Título de sección con una acción opcional a la derecha. */
 export function CabeceraSeccion({
   titulo,
-  texto,
   accion,
   id,
 }: {
   titulo: string;
-  texto?: string;
   accion?: React.ReactNode;
   id?: string;
 }) {
@@ -52,7 +50,6 @@ export function CabeceraSeccion({
         <h2 id={id} className={TITULO_SECCION}>
           {titulo}
         </h2>
-        {texto && <p className="mt-3 text-lg leading-relaxed text-tinta-2">{texto}</p>}
       </div>
       {accion}
     </div>

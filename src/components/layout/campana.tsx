@@ -110,9 +110,6 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
               <Bell className="size-5" />
             </span>
             <p className="mt-2 text-sm font-medium">{t("empty")}</p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              {t("emptyHint")}
-            </p>
           </div>
         ) : (
           <ul className="max-h-96 overflow-y-auto">

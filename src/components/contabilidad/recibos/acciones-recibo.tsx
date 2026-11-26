@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -50,7 +49,6 @@ export function BotonContabilizar({ id }: { id: string }) {
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
         {t("contabilizar")}
       </Button>
-      <p className="texto-meta">{t("contabilizarAyuda")}</p>
       {error && <AvisoError>{error}</AvisoError>}
     </form>
   );
@@ -74,7 +72,6 @@ export function DialogoAnular({ id, numero }: { id: string; numero: string }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("anularTitulo", { numero })}</DialogTitle>
-          <DialogDescription>{t("anularDescripcion")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="id" value={id} />
@@ -122,7 +119,6 @@ export function FormularioAdjunto({ id }: { id: string }) {
           {t("adjuntar")}
         </Button>
       </div>
-      <p className="texto-meta">{t("adjuntoAyuda")}</p>
       {error && <AvisoError>{error}</AvisoError>}
     </form>
   );

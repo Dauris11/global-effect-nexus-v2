@@ -52,7 +52,6 @@ export function CalculadoraLaboral() {
           <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
             {t("calculadoraTitulo")}
           </h3>
-          <p className="text-xs text-muted-foreground">{t("calculadoraDesc")}</p>
         </div>
       </div>
 

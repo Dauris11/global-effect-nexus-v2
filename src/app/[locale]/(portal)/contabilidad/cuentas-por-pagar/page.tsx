@@ -61,7 +61,6 @@ export default async function PaginaCxp({
         }
       />
 
-
       <TablaAntiguedad datos={antiguedad} />
 
       <ListaCxp cuentas={lista} estadoActual={estadoValido} />

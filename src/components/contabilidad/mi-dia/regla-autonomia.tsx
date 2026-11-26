@@ -80,11 +80,8 @@ export function ReglaAutonomia({
         </div>
       </form>
 
-      {!puedeConfigurar && <p className="texto-meta">{t("rule.readOnly")}</p>}
-
       {nivel === 2 && (
         <form action={procesar} className="space-y-2">
-          <p className="texto-meta">{t("rule.level2Hint")}</p>
           <div className="flex items-center gap-3">
             <Button type="submit" variant="outline" cargando={procesando}>
               {procesando ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}

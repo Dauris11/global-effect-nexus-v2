@@ -78,8 +78,6 @@ export function TabCostos({
           valor={hayAportes ? `${balance >= 0 ? "+" : ""}${dop(balance)}` : "—"}
         />
       </div>
-      <p className="texto-meta">{t("hint")}</p>
-
       <Seccion titulo={t("chart.title")}>
         <div className="grid items-center gap-6 md:grid-cols-[minmax(0,260px)_1fr]">
           <GraficoAnillo
@@ -112,7 +110,7 @@ export function TabCostos({
         )}
 
         {visibles.length === 0 ? (
-          <EstadoVacio icono={Receipt} titulo={t("table.empty")} texto={t("table.emptyHint")} />
+          <EstadoVacio icono={Receipt} titulo={t("table.empty")} />
         ) : (
           <>
             <div className="hidden overflow-x-auto md:block">

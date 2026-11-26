@@ -45,9 +45,6 @@ export function VistaInventario({
           <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorInventario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
-            {t("kpiCostoPromedioNIIF")}
-          </div>
         </div>
 
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
@@ -55,7 +52,6 @@ export function VistaInventario({
           <div className="mt-1 text-xl font-bold tabular-nums text-tinta dark:text-slate-100">
             {t("kpiArticulosConteo", { n: articulos.length })}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">{t("kpiArticulosDesc")}</div>
         </div>
 
         <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
@@ -70,7 +66,6 @@ export function VistaInventario({
             </span>
             {articulosBajoStock.length > 0 && <AlertTriangle className="h-5 w-5 text-[#B4342B]" />}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">{t("kpiAlertasDesc")}</div>
         </div>
       </div>
 

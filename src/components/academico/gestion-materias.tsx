@@ -481,8 +481,6 @@ function FilaMateria({
           nombre={materia.nombre}
           alEditar={alEditar}
           eliminar={eliminarMateria}
-          avisoBorrado={t("subjects.deleteHint")}
-          avisoEnUso={t("subjects.inUseHint")}
         />
       )}
     </div>
@@ -670,7 +668,6 @@ function FormularioMateria({
                 id={`m-horario-${clave}`}
                 name="horario"
                 defaultValue={materia?.horario ?? ""}
-                placeholder={t("newSubject.scheduleHint")}
                 maxLength={120}
               />
             </div>

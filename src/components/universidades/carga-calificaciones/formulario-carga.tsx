@@ -100,8 +100,6 @@ export function FormularioCarga({ universidades, anioInicial }: { universidades:
             </div>
           )}
 
-          <p className="texto-meta">{t("form.help")}</p>
-
           {estado.estado !== "inicial" && estado.estado !== "ok" && (
             <p role="alert" className={ALERTA_RIESGO.contenedor}>
               <AlertCircle className={ALERTA_RIESGO.icono} />

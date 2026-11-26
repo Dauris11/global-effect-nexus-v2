@@ -56,10 +56,7 @@ export default async function PaginaConfiguracionContable({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
-      <EncabezadoPagina
-        titulo={t("titulo")}
-        subtitulo={puedeConfigurar || puedeCerrar ? undefined : t("subtituloLectura")}
-      />
+      <EncabezadoPagina titulo={t("titulo")} />
       <PestanasConfig activa={pestana} />
       <Seccion pestana={pestana} locale={locale} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />
     </div>

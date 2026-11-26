@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -58,7 +57,6 @@ export function DialogoVigencia({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("titulo", { nombre })}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <FormularioVigencia
           clave={clave}
@@ -108,14 +106,13 @@ function FormularioVigencia({
             maxLength={20}
             placeholder={esTasa ? t("tasaEjemplo") : t("montoEjemplo")}
           />
-          <p className="texto-meta">{esTasa ? t("tasaAyuda") : t("montoAyuda")}</p>
         </div>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="vig-fuente" className="text-sm font-medium">
           {t("fuente")}
         </Label>
-        <Input id="vig-fuente" name="fuente" required minLength={3} maxLength={200} placeholder={t("fuenteEjemplo")} />
+        <Input id="vig-fuente" name="fuente" required minLength={3} maxLength={200} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="vig-nota" className="text-sm font-medium">

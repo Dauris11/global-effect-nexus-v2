@@ -9,19 +9,15 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ESTADOS_ESTUDIANTE, llevaCuenta } from "@/lib/expedientes";
+import { ESTADOS_ESTUDIANTE } from "@/lib/expedientes";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cambiarSituacionExpediente, type EstadoSituacion } from "@/server/expedientes/acciones";
 
 const CLASE_SELECT =
   "h-11 w-full rounded-control border border-linea-fuerte bg-background px-3 text-base text-tinta outline-none focus-visible:border-tinta focus-visible:ring-1 focus-visible:ring-tinta sm:text-[15px]";
 
-/**
- * Cambiar la situación de un estudiante, paso a paso: a cuál pasa, por qué y desde cuándo.
- * Avisa de lo que implica (se suelta la cuenta; un postulado todavía no es de la Fundación;
- * para ser activo hay que llenar la universidad).
- */
-export function CambiarSituacion({ estudianteId, estadoActual, tieneCuenta }: { estudianteId: string; estadoActual: string; tieneCuenta: boolean }) {
+/** Cambiar la situación de un estudiante: a cuál pasa, por qué y desde cuándo. */
+export function CambiarSituacion({ estudianteId, estadoActual }: { estudianteId: string; estadoActual: string; tieneCuenta: boolean }) {
   const t = useTranslations("records.situation");
   const te = useTranslations("records.status");
   const [abierto, setAbierto] = useState(false);
@@ -33,8 +29,6 @@ export function CambiarSituacion({ estudianteId, estadoActual, tieneCuenta }: { 
 
     return r;
   }, { estado: "inicial" });
-
-  const previoEnEmbudo = ["reclutado", "postulado", "academia_liderazgo"].includes(estadoActual);
 
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
@@ -62,10 +56,6 @@ export function CambiarSituacion({ estudianteId, estadoActual, tieneCuenta }: { 
               ))}
             </select>
           </div>
-
-          {previoEnEmbudo && <p className="texto-meta">{t("applicantNote")}</p>}
-          {nuevo === "activo" && <p className="texto-meta">{t("activeNeeds")}</p>}
-          {nuevo !== "" && !llevaCuenta(nuevo) && tieneCuenta && <p className="texto-meta">{t("releasesAccount")}</p>}
 
           <div className="space-y-1.5">
             <Label htmlFor="sit-motivo">{t("reason")}</Label>

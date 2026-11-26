@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -50,9 +49,6 @@ export function DialogoPeriodo({
           <DialogTitle>
             {modo === "cerrar" ? t("cerrarTitulo", { nombre }) : t("reabrirTitulo", { nombre })}
           </DialogTitle>
-          <DialogDescription>
-            {modo === "cerrar" ? t("cerrarDescripcion") : t("reabrirDescripcion")}
-          </DialogDescription>
         </DialogHeader>
         <FormularioPeriodo id={id} modo={modo} alTerminar={() => setAbierto(false)} />
       </DialogContent>
@@ -85,7 +81,6 @@ function FormularioPeriodo({
             {t("motivo")}
           </Label>
           <Textarea id={`motivo-${id}`} name="motivo" required minLength={10} maxLength={500} rows={3} />
-          <p className="texto-meta">{t("motivoAyuda")}</p>
         </div>
       )}
       <AvisoEstado estado={estado} />

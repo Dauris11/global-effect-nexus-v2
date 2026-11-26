@@ -15,7 +15,6 @@ export function LanzadorModulos({
 }: {
   grupos: readonly { grupo: GrupoContable; modulos: readonly ModuloContable[] }[];
 }) {
-  const t = useTranslations("contab.modulos");
   const tn = useTranslations("nav");
 
   return (
@@ -39,7 +38,6 @@ export function LanzadorModulos({
                       <span className="block font-medium text-tinta">
                         {tn(modulo.etiqueta as never)}
                       </span>
-                      <span className="texto-meta block">{t(`${modulo.clave}` as never)}</span>
                     </span>
                   </Link>
                 </li>

@@ -96,7 +96,7 @@ export type TextosFormulario = {
   error: string;
   faltaNombre: string;
   /** Registro rápido o completo al dar de alta. */
-  modoAlta?: { titulo: string; rapido: string; completo: string; ayudaRapido: string; ayudaCompleto: string };
+  modoAlta?: { titulo: string; rapido: string; completo: string };
   cancelar: string;
   opcional: string;
   pestanas: Record<string, string>;
@@ -189,7 +189,6 @@ export function FormularioExpediente({ textos, catalogo }: { textos: TextosFormu
               className={`rounded-card border p-3 text-left transition-colors ${rapido === valor ? "border-marca-500 bg-marca-50" : "border-linea hover:bg-muted"}`}
             >
               <span className="block text-sm font-semibold">{valor ? textos.modoAlta?.rapido : textos.modoAlta?.completo}</span>
-              <span className="texto-meta mt-0.5 block">{valor ? textos.modoAlta?.ayudaRapido : textos.modoAlta?.ayudaCompleto}</span>
             </button>
           ))}
         </div>
@@ -340,9 +339,6 @@ function LectorFicha({
         </p>
       )}
 
-      <p className="text-muted-foreground text-[11px] leading-relaxed">
-        {textos.replaceHint}
-      </p>
     </form>
   );
 }
@@ -692,15 +688,10 @@ export function CamposExpediente({
             <input type="hidden" name="municipio" value={municipio} />
 
             <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-linea dark:border-slate-800">
-              <div className="space-y-0.5">
-                <span className="flex items-center gap-1.5 text-sm font-medium text-tinta">
-                  <MapPin className="size-4 text-marca-600" />
-                  {tMapa("titulo")}
-                </span>
-                <p className="texto-meta">
-                  {soloLectura ? tMapa("ayudaLectura") : tMapa("ayudaEdicion")}
-                </p>
-              </div>
+              <span className="flex items-center gap-1.5 text-sm font-medium text-tinta">
+                <MapPin className="size-4 text-marca-600" />
+                {tMapa("titulo")}
+              </span>
               <CuandoSeVea>
                 <MapaLaVega
                   modo={soloLectura ? "vista_vivienda" : "seleccion"}

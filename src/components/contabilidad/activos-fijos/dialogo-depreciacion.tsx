@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,7 +65,6 @@ export function DialogoDepreciacion() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalDeprecTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalDeprecDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (

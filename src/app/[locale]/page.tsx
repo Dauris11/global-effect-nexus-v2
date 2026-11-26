@@ -131,13 +131,12 @@ export default async function PaginaInicio({
    * llegar a ellos, no rutas nuevas.
    */
   const destinos: DestinoPortal[] = [
-    { icono: "portal", titulo: t("access_portal_title"), texto: t("access_portal_desc"), href: "/login" },
-    { icono: "comida", titulo: t("access_meals_title"), texto: t("access_meals_desc"), href: "/comida" },
-    { icono: "transporte", titulo: t("access_transport_title"), texto: t("access_transport_desc"), href: "/transporte" },
+    { icono: "portal", titulo: t("access_portal_title"), href: "/login" },
+    { icono: "comida", titulo: t("access_meals_title"), href: "/comida" },
+    { icono: "transporte", titulo: t("access_transport_title"), href: "/transporte" },
     {
       icono: "solicitudes",
       titulo: t("access_requests_title"),
-      texto: t("access_requests_desc"),
       href: "/portal/estudiante/solicitudes",
     },
   ];
@@ -163,7 +162,6 @@ export default async function PaginaInicio({
           cerrarMenu: t("menuClose"),
           secciones: t("menuSections"),
           pregunta: t("searchPill"),
-          ayuda: t("searchPillHint"),
           porRol: t("accessRolesTitle"),
           logo: tComun("foundation"),
         }}

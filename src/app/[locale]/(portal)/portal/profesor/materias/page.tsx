@@ -79,7 +79,7 @@ export default async function PaginaMateriasDocente({
 
   return (
     <div className="animate-entrada space-y-6">
-      <EncabezadoPagina titulo={t("title")} subtitulo={t("subtitle")} />
+      <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
         <GestionMateriasDocente

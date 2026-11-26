@@ -412,7 +412,6 @@ export function RegistroVisitaLiceo({
               id="observaciones"
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
-              placeholder={t("observationsPlaceholder")}
               rows={2}
               maxLength={1200}
             />

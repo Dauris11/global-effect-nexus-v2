@@ -151,7 +151,6 @@ export default async function PortalProfesor({
       <div className="space-y-6">
         <EncabezadoPagina
           titulo={t("greeting", { name: usuario.nombre })}
-          subtitulo={t("summary")}
           acciones={
             <div className="flex flex-wrap items-center gap-2">
               <Link

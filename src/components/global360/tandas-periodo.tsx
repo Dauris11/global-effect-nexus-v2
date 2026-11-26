@@ -46,7 +46,6 @@ export function TandasPeriodo360({
             <p className="font-semibold">
               {t("tandaPending", { n: ventana.ronda })}
             </p>
-            <p className="text-sm">{t("tandaRule")}</p>
             {enlazar && (
               <Link
                 href="/portal/estudiante/global-360"

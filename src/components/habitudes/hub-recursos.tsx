@@ -319,7 +319,6 @@ export function HubRecursos({
                 id="descripcion"
                 name="descripcion"
                 rows={2}
-                placeholder={t("resourceDescriptionPlaceholder")}
                 maxLength={600}
               />
             </div>

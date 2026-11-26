@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -88,7 +87,6 @@ export function DialogoActivoFijo({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalCrearTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalCrearDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -133,7 +131,6 @@ export function DialogoActivoFijo({
                   id="af-nom"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej. Servidor central y switches de red"
                   required
                 />
               </div>
@@ -201,7 +198,7 @@ export function DialogoActivoFijo({
                   <Label htmlFor="af-qr">{t("enlaceInventarioQr")}</Label>
                   <Select value={inventarioActivoId} onValueChange={setInventarioActivoId}>
                     <SelectTrigger id="af-qr">
-                      <SelectValue placeholder="Sin enlace / Activo contable puro" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {activosFisicos.map((af) => (
@@ -221,7 +218,7 @@ export function DialogoActivoFijo({
                   onChange={(e) => setEsDonado(e.target.checked)}
                   className="rounded border-linea-fuerte text-marca-500 focus:ring-marca-500"
                 />
-                <span>{t("esDonado")} (Aporte de patrocinador)</span>
+                <span>{t("esDonado")}</span>
               </label>
             </PasoFormulario>
 

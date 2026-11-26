@@ -23,12 +23,10 @@ const MESES = Array.from({ length: 12 }, (_, i) => i + 1);
 function Campo({
   id,
   etiqueta,
-  ayuda,
   children,
 }: {
   id: string;
   etiqueta: string;
-  ayuda?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -37,7 +35,6 @@ function Campo({
         {etiqueta}
       </Label>
       {children}
-      {ayuda && <p className="texto-meta">{ayuda}</p>}
     </div>
   );
 }
@@ -71,7 +68,7 @@ export function SeccionEntidad({ entidad, puedeEditar }: { entidad: Entidad; pue
                 <Campo id="nombre_comercial" etiqueta={t("nombreComercial")}>
                   <Input id="nombre_comercial" name="nombre_comercial" maxLength={200} defaultValue={entidad.nombreComercial ?? ""} />
                 </Campo>
-                <Campo id="rnc" etiqueta={t("rnc")} ayuda={t("rncAyuda")}>
+                <Campo id="rnc" etiqueta={t("rnc")}>
                   <Input
                     id="rnc"
                     name="rnc"
@@ -85,7 +82,7 @@ export function SeccionEntidad({ entidad, puedeEditar }: { entidad: Entidad; pue
             </PasoFormulario>
             <PasoFormulario titulo={t("pasos.ejercicio")}>
               <div className="grid gap-5 md:grid-cols-2">
-                <Campo id="inicio_ejercicio_mes" etiqueta={t("inicioEjercicio")} ayuda={t("inicioEjercicioAyuda")}>
+                <Campo id="inicio_ejercicio_mes" etiqueta={t("inicioEjercicio")}>
                   <select
                     id="inicio_ejercicio_mes"
                     name="inicio_ejercicio_mes"
@@ -99,7 +96,7 @@ export function SeccionEntidad({ entidad, puedeEditar }: { entidad: Entidad; pue
                     ))}
                   </select>
                 </Campo>
-                <Campo id="decimales" etiqueta={t("decimales")} ayuda={t("decimalesAyuda")}>
+                <Campo id="decimales" etiqueta={t("decimales")}>
                   <select id="decimales" name="decimales" defaultValue={String(entidad.decimales)} className={`${SELECT} h-12`}>
                     {[0, 1, 2, 3, 4].map((n) => (
                       <option key={n} value={n}>
@@ -149,16 +146,13 @@ export function SeccionEntidad({ entidad, puedeEditar }: { entidad: Entidad; pue
         <AvisoEstado estado={estado} mostrarOk />
       </form>
 
-      {/* Solo informa: la bandera no tiene interruptor porque encenderla
-          exige un facturador homologado que la Fundación no tiene. */}
+      {/* La bandera no tiene interruptor: encenderla exige un facturador
+          homologado que la Fundación no tiene. */}
       <div className="flex items-start gap-3 rounded-card bg-marca-50 p-4 text-marca-700">
         <Info className="mt-0.5 size-5 shrink-0" />
-        <div className="space-y-1">
-          <p className="text-sm font-semibold">
-            {entidad.emisionHabilitada ? t("emisionSi") : t("emisionNo")}
-          </p>
-          <p className="text-sm">{t("emisionTexto")}</p>
-        </div>
+        <p className="text-sm font-semibold">
+          {entidad.emisionHabilitada ? t("emisionSi") : t("emisionNo")}
+        </p>
       </div>
     </div>
   );

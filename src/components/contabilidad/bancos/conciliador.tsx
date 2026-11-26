@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -218,7 +217,6 @@ export function BotonAnularPartida({ id }: { id: string }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("anularTitulo")}</DialogTitle>
-          <DialogDescription>{t("anularTexto")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="id" value={id} />

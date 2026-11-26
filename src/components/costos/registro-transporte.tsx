@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { Bus, Info, Loader2, Save } from "lucide-react";
+import { Bus, Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AnularCosto } from "@/components/costos/anular-costo";
@@ -32,7 +32,6 @@ export function RegistroTransporte({
   estudianteId,
   registros,
   periodos,
-  diasTransporte,
 }: {
   estudianteId: string;
   registros: TransporteRegistrado[];
@@ -56,11 +55,6 @@ export function RegistroTransporte({
   return (
     <section className="space-y-4">
       <h2 className="texto-titulo-seccion">{t("transport.title")}</h2>
-
-      <p className="bg-marca-50 text-marca-700 flex items-start gap-2 rounded-control p-3 text-sm">
-        <Info className="mt-0.5 size-4 shrink-0" />
-        <span>{diasTransporte > 0 ? t("transport.enrolled", { n: diasTransporte }) : t("transport.notEnrolled")}</span>
-      </p>
 
       <form ref={formulario} action={enviar} className="rounded-card border border-linea bg-card space-y-4 p-5">
         <input type="hidden" name="estudiante_id" value={estudianteId} />
@@ -99,7 +93,7 @@ export function RegistroTransporte({
       </form>
 
       {registros.length === 0 ? (
-        <EstadoVacio icono={Bus} titulo={t("transport.empty")} texto={t("transport.emptyHint")} />
+        <EstadoVacio icono={Bus} titulo={t("transport.empty")} />
       ) : (
         <ul className="rounded-card border border-linea bg-card divide-y divide-linea">
           {registros.map((r) => (

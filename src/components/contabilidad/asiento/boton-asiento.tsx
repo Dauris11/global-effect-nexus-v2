@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { PanelAsiento } from "@/components/contabilidad/asiento/panel-asiento";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { VistaAsiento } from "@/lib/contabilidad/vista-asiento";
 
@@ -64,7 +64,6 @@ export function BotonAsiento({
       <DialogContent className="md:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         {estado.tipo === "cargando" && (
           <div className="space-y-3" role="status" aria-label={t("cargando")}>

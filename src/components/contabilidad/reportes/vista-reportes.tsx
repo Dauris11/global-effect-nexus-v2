@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -472,7 +472,7 @@ export function VistaReportes({
               {t("tabs.flujo")}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Método Indirecto ({flujoInicial.fechaDesde} — {flujoInicial.fechaHasta})
+              {flujoInicial.fechaDesde} — {flujoInicial.fechaHasta}
             </p>
           </div>
 
@@ -613,9 +613,6 @@ export function VistaReportes({
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {t("tabs.mayor")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Movimientos detallados y saldos progresivos
-            </p>
           </div>
 
           {mayorInicial.length === 0 ? (
@@ -692,9 +689,6 @@ export function VistaReportes({
               <h2 className="text-xl font-bold tracking-tight text-foreground">
                 {t("tabs.proyeccion")}
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Estimación de liquidez y compromisos futuros a 6 meses
-              </p>
             </div>
             <div className="mt-2 sm:mt-0 text-right">
               <span className="text-xs text-muted-foreground block">
@@ -754,9 +748,6 @@ export function VistaReportes({
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {t("tabs.snapshots")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Fotografías auditables e inmutables generadas
-            </p>
           </div>
 
           {snapshotsInicial.length === 0 ? (
@@ -799,7 +790,6 @@ export function VistaReportes({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("snapshots.tituloModal")}</DialogTitle>
-            <DialogDescription>{t("snapshots.descModal")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-3">
@@ -809,7 +799,6 @@ export function VistaReportes({
                 id="tituloSnapshot"
                 value={tituloSnapshot}
                 onChange={(e) => setTituloSnapshot(e.target.value)}
-                placeholder={t("snapshots.tituloPlaceholder")}
               />
             </div>
           </div>

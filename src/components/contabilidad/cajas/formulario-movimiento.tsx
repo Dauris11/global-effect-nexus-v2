@@ -149,7 +149,6 @@ export function FormularioMovimientoCaja({
             </PasoFormulario>
 
             <PasoFormulario titulo={t("pasos.soporte")}>
-
               {tipo === "gasto" && (
                 <div className="space-y-1.5">
                   <Label htmlFor="mov-categoria">{t("categoria")}</Label>
@@ -163,7 +162,6 @@ export function FormularioMovimientoCaja({
                       </option>
                     ))}
                   </select>
-                  <p className="texto-meta">{t("contabilizaGasto")}</p>
                 </div>
               )}
 
@@ -206,9 +204,6 @@ export function FormularioMovimientoCaja({
                   required={requiereAdjunto}
                   onChange={(e) => setArchivo(e.target.files?.[0]?.name ?? null)}
                 />
-                <p className="texto-meta">
-                  {t("reglaSoporte", { monto: formatearMonto(caja.umbralAdjunto, caja.moneda) })}
-                </p>
               </div>
             </PasoFormulario>
 

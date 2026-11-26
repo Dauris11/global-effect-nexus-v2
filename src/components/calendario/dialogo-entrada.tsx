@@ -198,7 +198,6 @@ function FormularioEvento({
               id="ev-titulo"
               name="titulo"
               defaultValue={entrada?.titulo}
-              placeholder={t("newEvent.titlePlaceholder")}
               required
               maxLength={160}
             />

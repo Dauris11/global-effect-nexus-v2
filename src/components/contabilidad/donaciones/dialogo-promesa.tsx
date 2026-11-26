@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -81,7 +80,6 @@ export function DialogoPromesa({
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("registrarPromesaCompromiso")}</DialogTitle>
-            <DialogDescription>{t("descripcionPromesa")}</DialogDescription>
           </DialogHeader>
 
           {error && <div className="rounded-md border border-linea-fuerte bg-muted p-3 text-sm font-medium text-tinta">{error}</div>}
@@ -133,7 +131,6 @@ export function DialogoPromesa({
             </PasoFormulario>
 
             <PasoFormulario titulo={t("pasos.calendario")}>
-
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t("frecuenciaCobro")}</Label>

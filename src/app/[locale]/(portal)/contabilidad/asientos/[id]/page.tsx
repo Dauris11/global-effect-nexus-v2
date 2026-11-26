@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Info } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -78,11 +78,11 @@ export default async function PaginaAsiento({
       <EncabezadoPagina
         antetitulo={ta(`tipo.${asiento.tipo}`)}
         titulo={<span className="tabular-nums">{numero}</span>}
-        subtitulo={asiento.concepto}
         acciones={<InsigniaEstadoAsiento estado={asiento.estado} procesado={asiento.procesado} t={ta} />}
       />
 
       <Card className="p-5 md:p-6">
+        <p className="mb-4 font-medium text-tinta">{asiento.concepto}</p>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Dato etiqueta={t("fecha")}>{fechaLarga(asiento.fecha, idioma)}</Dato>
           <Dato etiqueta={t("periodo")}>
@@ -144,20 +144,6 @@ export default async function PaginaAsiento({
           </li>
         )}
       </ol>
-
-      {pendiente && (
-        <p className="flex items-start gap-2 rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">
-          <Info className="mt-0.5 size-4 shrink-0" />
-          <span>{ta("procesar.ayuda")}</span>
-        </p>
-      )}
-
-      {asiento.tipo === "automatico" && asiento.estado === "vigente" && (
-        <p className="flex items-start gap-2 rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">
-          <Info className="mt-0.5 size-4 shrink-0" />
-          <span>{t("automaticoAyuda")}</span>
-        </p>
-      )}
 
       {(puedeRevertir || puedeProcesar) && (
         <section className="flex flex-wrap items-start gap-3 border-t border-linea pt-6">

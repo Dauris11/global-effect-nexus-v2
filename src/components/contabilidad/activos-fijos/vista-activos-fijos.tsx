@@ -66,7 +66,6 @@ export function VistaActivosFijos({
           <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorLibros.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
-          <div className="mt-1 text-[11px] text-marca-500/80">{t("kpiPatrimonioVigente")}</div>
         </div>
       </div>
 

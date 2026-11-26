@@ -32,7 +32,6 @@
       "estudiantes": "{n, plural, one {# student} other {# students}}",
       "comoLlegar": "Get directions",
       "cercaDe": "Near {municipio}",
-      "ayudaSeleccion": "Tap the map, drag the pin or use your location to set the point.",
       "sinUbicacion": "No location on record.",
       "fueraDeLaVega": "That point is outside La Vega province. Pick one inside it.",
       "tuUbicacionFuera": "Your current location is outside La Vega province.",
@@ -77,9 +76,7 @@
         "noDisponible": "Your location couldn't be determined."
       },
       "vivienda": {
-        "titulo": "Home location",
-        "ayudaLectura": "Point on record within La Vega province.",
-        "ayudaEdicion": "Tap the map, drag the pin or use your location to mark the student's home."
+        "titulo": "Home location"
       }
     },
     "formularioGuiado": {
@@ -108,16 +105,13 @@
     "notRegistered": "Your account is not registered. Contact the administrator.",
     "oauth": "Could not sign in with Google. Please try again.",
     "backHome": "Back to home",
-    "needAccess": "No access yet? Users are invited from administration.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "or": "or",
     "signInHeading": "Sign in to your portal",
     "setPassword": {
       "title": "Choose your password",
-      "intro": "Choose the password you will use to sign in to the portal.",
       "password": "New password",
-      "hint": "At least 8 characters.",
       "repeat": "Repeat the password",
       "save": "Save and sign in",
       "tooShort": "Use at least 8 characters.",
@@ -292,7 +286,6 @@
     "access_portal_title": "System portal",
     "access_meals_title": "Meal sign-up",
     "access_transport_title": "Live transport",
-    "footerTagline": "Bringing Hope · Changing Lives · Transforming Communities",
     "footerTagline2": "Integrated education management platform",
     "footerRights": "All rights reserved.",
     "footerAddress": "La Vega, Dominican Republic",
@@ -372,10 +365,6 @@
     "role_estudiante": "Student",
     "role_contabilidad": "Accounting",
     "role_habitudes": "Habitudes",
-    "access_portal_desc": "Students, teachers and staff sign in here with their account.",
-    "access_meals_desc": "Sign up for today's lunch before the cut-off time.",
-    "access_transport_desc": "Track the bus in real time and sign up for the daily route.",
-    "access_requests_desc": "Request a certificate, a letter or a meeting with administration.",
     "footerContact": "Contact",
     "heroCarousel": "Images of the Foundation",
     "menuSections": "Sections",
@@ -383,7 +372,6 @@
     "role_teachers": "Teachers",
     "role_accounting": "Accounting",
     "searchPill": "Where do you want to go?",
-    "searchPillHint": "Portal, meals, transport or requests",
     "statsTitle": "The Foundation in numbers",
     "stats_students": "{n, plural, =1 {active scholar} other {active scholars}}",
     "stats_g360": "{n, plural, =1 {student in Global Effect 360} other {students in Global Effect 360}}",
@@ -635,7 +623,6 @@
         "detalle": "Photo and notes"
       },
       "tituloSeccion": "General Asset Details",
-      "subtituloSeccion": "Descriptive information for identification and control",
       "nombreLabel": "Descriptive asset name",
       "nombrePlaceholder": "E.g., DeWalt 20V Max Industrial Hammer Drill",
       "categoriaLabel": "Asset category",
@@ -653,7 +640,6 @@
       "fotoLabel": "Photo URL",
       "fotoPlaceholder": "https://...",
       "notasLabel": "Notes and specifications",
-      "notasPlaceholder": "Included accessories, physical condition or usage notes...",
       "cancelar": "Cancel",
       "guardarCambios": "Save Changes",
       "crearActivo": "Create Asset and Generate QR",
@@ -838,7 +824,6 @@
       "action": "New event",
       "title": "New event",
       "subtitle": "It goes on the whole team's calendar.",
-      "titlePlaceholder": "What is being held or met about?",
       "timeHint": "Leave empty if it lasts all day.",
       "create": "Create event",
       "creating": "Creating…",
@@ -945,7 +930,6 @@
     "creating": "Creating…",
     "cancel": "Cancel",
     "passwordTitle": "Temporary password",
-    "passwordHint": "Shown once only. Give it to its owner and have them change it on first sign-in.",
     "copy": "Copy",
     "copied": "Copied",
     "done": "Got it",
@@ -1191,7 +1175,6 @@
         "completado": "Completed",
         "error": "Error"
       },
-      "replaceHint": "Careful: pre-filling replaces whatever you have already typed in the form, so read the document before filling it in by hand.",
       "notFound": "No name could be read from the document. Fill the form in by hand.",
       "noKey": "The reader is not configured: a valid API key is missing. Let the technical team know and fill the form in by hand.",
       "reviewHint": "AI proposes; a person confirms. Always review before accepting a value."
@@ -1208,10 +1191,7 @@
       "confirmDelete": "Yes, delete permanently",
       "deleting": "Deleting…",
       "confirmTitle": "Delete {name}'s record?",
-      "deleteHint": "The whole file goes: personal details, family, housing, health and situation. This can't be undone.",
-      "confirmHint": "This is the second and final warning: once confirmed, there's no going back.",
       "inUseTitle": "{name}'s record has history",
-      "inUseHint": "Other modules hold records about this person and deleting them would take those down too. Change their status to inactive, graduated or suspended: they leave day-to-day work and nothing is lost.",
       "understood": "Got it",
       "error": "Couldn't delete it. Try again.",
       "deps": {
@@ -1280,7 +1260,6 @@
       "cuentaSoloActivos": "Only active students have a portal account",
       "noActivoDesvincular": "This record is no longer active: you can unlink the account it kept.",
       "invitarTitulo": "Create their account and invite them by email",
-      "invitarAyuda": "An email goes to {correo} with a button to choose their password. You do not have to type any.",
       "invitarSinCorreo": "To invite them, first write their email under “Edit”.",
       "invitarBoton": "Create account and invite",
       "invitarErrores": {
@@ -1359,7 +1338,6 @@
         "service": "Service",
         "meeting": "Meeting",
         "letter": "Letter to sponsor",
-        "hint": "The letter is derived from what reached the Foundation mailbox; service and meeting are marked by administration in Monthly services.",
         "notes": "Follow-up notes",
         "stages": "Stage history",
         "noStages": "No stage changes recorded yet.",
@@ -1390,9 +1368,6 @@
       "newState": "¿En qué situación queda?",
       "reason": "¿Por qué? (obligatorio)",
       "date": "Desde qué fecha",
-      "releasesAccount": "With this state the portal account is released and deactivated: the student will no longer be able to sign in. If they become active again, they get the same account back.",
-      "activeNeeds": "Para pasar a activo hay que llenar primero la universidad, la carrera, el plan de estudios y la matrícula en «Editar».",
-      "applicantNote": "Un postulado todavía no es parte de la Fundación: primero pasa los filtros y la Academia de Liderazgo.",
       "save": "Guardar el cambio",
       "saved": "Listo, la situación quedó actualizada.",
       "errors": {
@@ -1406,9 +1381,7 @@
     "quickCreate": {
       "title": "How do you want to register them?",
       "quick": "Quick registration",
-      "full": "Full registration",
-      "quickHelp": "Just the basics: name, contact and university. The rest is completed later, when the information is available.",
-      "fullHelp": "The whole file now: family, housing, health and background."
+      "full": "Full registration"
     },
     "complete": {
       "title": "File {percent}% complete",
@@ -1416,7 +1389,6 @@
       "missing": "Information is missing in: {sections}."
     },
     "costs": {
-      "hint": "Figures visible only to the Board and accounting. The sponsor contribution is an estimate: the monthly amount of their assignment times the months elapsed.",
       "kpi": {
         "total": "Total investment",
         "average": "Average per term ({n} completed)",
@@ -1446,8 +1418,7 @@
         "reference": "NCF / reference",
         "amount": "Amount (DOP)",
         "total": "Total",
-        "empty": "No expenses in this period",
-        "emptyHint": "Expenses appear when the student is tagged on an invoice, a purchase order or an expense report."
+        "empty": "No expenses in this period"
       }
     }
   },
@@ -1481,8 +1452,6 @@
         "active": "Active",
         "credits": "Active credits"
       },
-      "deleteHint": "This can't be undone. Academic history isn't affected: it stores the subject name as text, not as a reference.",
-      "inUseHint": "It has enrollments attached, and deleting it would take them down with it. Mark it inactive instead: it leaves day-to-day work without losing anything.",
       "tasks": "Tasks",
       "filterAll": "All",
       "filterWithTeacher": "With teacher",
@@ -1512,7 +1481,6 @@
       "empty": "There are no Global Effect 360 classes",
       "emptyHint": "Classes come from the programme catalogue and are assigned to a teacher in Pre-enrolment.",
       "forbidden": "You don't have access to 360 classes",
-      "forbiddenHint": "This screen is for teachers and academic coordination.",
       "students": "Students",
       "enrolled": "Enrolled",
       "tasks": "Tasks",
@@ -1608,7 +1576,6 @@
       "taskFormats": "Allowed formats",
       "taskMaxPoints": "Maximum score",
       "taskRubric": "Submission instructions and rubric",
-      "taskRubricPlaceholder": "Write the grading criteria, the required report structure or the project guidelines...",
       "taskAllowLate": "Allow late submissions (they're flagged as late)",
       "cancel": "Cancel",
       "pasos": {
@@ -1642,7 +1609,6 @@
       "title": "New subject",
       "subtitle": "The term is optional: you can plan before it exists.",
       "namePlaceholder": "Programming I",
-      "scheduleHint": "For example: Mon & Wed 6:00–8:00 PM",
       "create": "Create subject",
       "creating": "Creating…",
       "nameRequired": "The name is required",
@@ -1696,9 +1662,7 @@
         "subjects": "Subjects",
         "enrollments": "Enrollments",
         "enrollments360": "360 enrolments"
-      },
-      "deleteHint": "This can't be undone.",
-      "inUseHint": "It has records attached and deleting it would take them down with it. Mark it completed: the term closes and everything stays put."
+      }
     },
     "newTerm": {
       "title": "New term",
@@ -1847,11 +1811,9 @@
     },
     "subjectsTitle": "Current subjects",
     "subjectsEmpty": "You have no subjects enrolled",
-    "subjectsEmptyHint": "Once coordination closes your pre-registration, your subjects will show up here.",
     "creditsShort": "{count} cr.",
     "gradesTitle": "My grades",
     "gradesEmpty": "No grades recorded yet",
-    "gradesEmptyHint": "Your grades will appear once the first term closes.",
     "termSummary": "GPA {gpa} · average {average}",
     "table": {
       "subject": "Subject",
@@ -1916,7 +1878,6 @@
         "windowSoon": "Pre-enrolment announced",
         "windowFrom": "From {abre} to {cierra}",
         "windowClosed": "Pre-enrolment is closed",
-        "windowClosedHint": "Coordination opens it at the start of each term. Until then, you can only review what you already have.",
         "forTerm": "Term {periodo}",
         "catalogEmpty": "This term has no subjects in the catalogue yet.",
         "add": "Enrol me",
@@ -2048,7 +2009,6 @@
       "eyebrow": "Assistant",
       "title": "Chat with the assistant",
       "description": "Ask about your subjects, your grades or how to plan your week.",
-      "privacy": "To answer you, the assistant looks at your subjects, grades and pending work. It does not access your record and does not talk about other students. If you need something from administration, ask for it under \"My requests\".",
       "placeholder": "Type your question…",
       "send": "Send",
       "thinking": "Thinking…",
@@ -2061,8 +2021,7 @@
       "errorRefused": "The assistant can't answer that. Try asking it another way, or write to coordination.",
       "errorInput": "Your message looks like it contains code, structured data or instructions for the AI. Write it as a normal question.",
       "error": "Couldn't answer right now. Please try again.",
-      "forbidden": "The assistant is not available for your account",
-      "forbiddenHint": "Your profile doesn't have the assistant enabled. Write to the Foundation's coordination team if you think it should."
+      "forbidden": "The assistant is not available for your account"
     },
     "requestsTitle": "My requests",
     "requestsDesc": "Certificates, letters, leave and appointments with administration.",
@@ -2077,21 +2036,15 @@
     "quarterlyRequirement": {
       "currentTerm": "current term",
       "onlyUniversityTitle": "Requirement exclusive to university students",
-      "onlyUniversityHint": "The mandatory minimum of 2 classes per quarter applies only to university students.",
       "metTitle": "University requirement met: you have {taken} of {min} mandatory classes in {term}.",
       "metDetail": "Includes {c360} Global Effect 360 class(es) and {career} degree subject(s).",
       "pendingTitle": "Mandatory university requirement: you have {taken} of {min} classes in {term} ({missing} remaining).",
-      "pendingDetail": "Every university student must take at least 2 classes per quarter.",
       "go360": "Go to Global Effect 360",
       "goEnrollment": "Go to Enrollment"
     },
     "dashboard": {
-      "averageHint": "0 to 100 scale · view grades",
       "gpaHint": "Cumulative GPA · view history",
-      "passedHint": "Passed subjects",
-      "creditsHint": "Active credits · view enrollment",
       "weeklyTasksTitle": "Weekly assignments",
-      "weeklyTasksSubtitle": "{count} pending this week",
       "openClassroom": "Go to Virtual Classroom",
       "legendPending": "Pending",
       "legendDone": "Submitted",
@@ -2106,10 +2059,8 @@
       "dayAgendaTitle": "Schedule · {date}",
       "dayEmpty": "No activities scheduled for this day.",
       "viewFullAgenda": "View full schedule",
-      "subjectsInteractiveHint": "Distribution of {credits} active credits",
       "manageSubjects": "Go to enrollment",
       "gradeLabel": "Grade",
-      "requestsInteractiveHint": "Filter your requests by status",
       "openRequests": "View all",
       "reqFilterAll": "All",
       "reqFilterPending": "In progress",
@@ -2124,7 +2075,6 @@
     },
     "moduleCharts": {
       "gradesTrendTitle": "Average trend by term",
-      "gradesTrendHint": "Historical trend of your grades",
       "averageSeries": "Average",
       "classroomChartTitle": "Submission summary",
       "classroomChartHint": "{done} of {total} activities submitted or graded",
@@ -2140,7 +2090,6 @@
       "attendanceBarTitle": "Attendance by 360 class",
       "attendanceSeries": "Attendance (%)",
       "enrollmentChartTitle": "Credit load by subject",
-      "enrollmentChartHint": "Distribution of your active subjects",
       "creditsSeries": "Credits"
     },
     "fullCalendar": {
@@ -2248,7 +2197,6 @@
       "title": "Assigned subjects",
       "subtitle": "Manage the subjects assigned to you by administration: take attendance, post tasks and grade submissions.",
       "emptyTitle": "You have no assigned subjects yet",
-      "emptyHint": "Once administration assigns a subject to you, it will appear here to take attendance and post tasks.",
       "noTerm": "No term",
       "noSchedule": "Schedule TBD",
       "studentsCount": "{count} enrolled",
@@ -2287,8 +2235,6 @@
       "publishTask": "Publish",
       "noPosts": "There are no posts in this subject yet.",
       "deletePost": "Delete post",
-      "taskTitlePlaceholder": "e.g. Lab assignment #1",
-      "taskDescriptionPlaceholder": "Instructions and activity details",
       "statusActive": "Active",
       "statusApproved": "Passed",
       "statusFailed": "Failed",
@@ -2300,12 +2246,7 @@
       "attendancePct": "{pct}% attendance"
     },
     "dashboard": {
-      "classesHint": "360 classes and active subjects",
-      "studentsHint": "Currently enrolled students",
-      "gradesHint": "Final grades closed",
-      "toReviewHint": "Submissions awaiting grading",
       "classesChartTitle": "Students and final grades per class",
-      "classesChartHint": "Enrolled students vs closed final grades",
       "enrolledSeries": "Enrolled",
       "gradesSeries": "Final grades",
       "noClassesChart": "You do not have active classes to chart yet.",
@@ -2426,7 +2367,6 @@
     "eyebrow": "Home page",
     "title": "Hero announcements",
     "desc": "What rotates on the public home page. Publish one when there is something real to announce.",
-    "fallback": "None are active right now, so the home page shows its default introduction.",
     "liveNow": "Live on the home page",
     "hidden": "Hidden",
     "active": "Active",
@@ -2434,10 +2374,8 @@
     "newTitle": "New announcement",
     "fieldTitle": "Headline",
     "fieldImage": "Image",
-    "fieldImageHint": "A /public path or a full URL. Left empty, the three hero images are used in turn.",
     "fieldCtaText": "Button",
     "fieldCtaLink": "Button link",
-    "fieldCtaHint": "With both filled in, the announcement carries its own button.",
     "create": "Publish",
     "save": "Save",
     "cancel": "Cancel",
@@ -2590,7 +2528,6 @@
     "tanda1": "Block 1",
     "tanda2": "Block 2",
     "tandaPending": "You must choose your subject for block {n}",
-    "tandaRule": "Global Effect 360 is compulsory: one subject per block, two per term.",
     "tandaChooseNow": "Choose now",
     "tandasTitle": "Your blocks · {periodo}",
     "tandaOpenNow": "open now",
@@ -3023,7 +2960,6 @@
       "author": "Author",
       "link": "Link",
       "file": "File",
-      "fileHint": "PDF, image, presentation or document, up to 20 MB. You can leave it empty and add only a link.",
       "fileReplaceHint": "It currently has “{name}”. Uploading another replaces it."
     },
     "programs": {
@@ -3048,9 +2984,7 @@
       "participants": "{count, plural, =0 {No participants} one {# participant} other {# participants}}",
       "materials": "{count, plural, =0 {No material} one {# material} other {# materials}}",
       "confirmTitle": "Delete “{name}”?",
-      "deleteWarning": "The program is deleted. It cannot be restored from the site.",
       "inUseTitle": "“{name}” has material",
-      "inUseHint": "{count, plural, one {There is # material attached to this program, and deleting it would take it down too.} other {There are # materials attached to this program, and deleting it would take them down too.}} Delete them first, or mark the program “Inactive” to retire it while keeping what it has.",
       "empty": "No programs yet",
       "emptyHint": "Create the first one and it will show up here with its facilitator and dates.",
       "noMatches": "No program matches the filter",
@@ -3078,8 +3012,6 @@
       "editTitle": "Edit material",
       "formSubtitle": "Upload a file, add a link, or both. It has to carry something.",
       "confirmTitle": "Delete “{name}”?",
-      "deleteWarning": "The material is removed from the repository.",
-      "deleteWarningFile": "The material and its file in the store are both deleted. This cannot be undone.",
       "empty": "No materials yet",
       "emptyHint": "Upload the first guide or paste a link, and it will be filed under its program.",
       "noMatches": "No material matches the filter",
@@ -3122,11 +3054,9 @@
     "sourceHint": "This screen carries no hand-written list: it walks the same menu that draws the sidebar, for all seven roles. A new module shows up here on its own.",
     "settingsArea": "Settings (Configuration)",
     "byRole": "Each role's menu",
-    "sourceBadge": "Updates itself",
     "finder": {
       "title": "Where is…?",
       "placeholder": "Type what you look for: “knowledge base”, “AI quotas”, “permissions”…",
-      "help": "Type one or more words. I will tell you which menu it is in and whether your account can open it.",
       "empty": "Nothing found with those words. Try a single one, such as “mail”, “grades” or “AI”.",
       "howTo": "How to get there",
       "open": "Open",
@@ -3197,8 +3127,7 @@
       "tasks": "Tasks by state",
       "tasksHint": "Includes the ones that hang off no project: they are the team's work just the same.",
       "progress": "Progress by project",
-      "progressHint": "Completed tasks over live tasks. Cancelled ones do not count, so cancelling one never lowers the progress.",
-      "withoutTasks": "{count, plural, one {# project has no tasks yet, so it is not shown: its progress is not 0%, it is not known yet.} other {# projects have no tasks yet, so they are not shown: their progress is not 0%, it is not known yet.}}"
+      "progressHint": "Completed tasks over live tasks. Cancelled ones do not count, so cancelling one never lowers the progress."
     },
     "academic": {
       "term": "Term",
@@ -3237,7 +3166,6 @@
     "send": "Ask",
     "thinking": "Thinking…",
     "empty": "Ask it whatever you need",
-    "emptyHint": "It knows what the dashboards show: figures, project progress, grades and upcoming events. Start with one of the suggestions.",
     "prompt": {
       "balance": "How is this month's balance?",
       "projects": "Which projects are furthest behind?",
@@ -3267,8 +3195,7 @@
       "reunion": "Meeting"
     },
     "markAll": "Mark all",
-    "empty": "No notifications",
-    "emptyHint": "Tasks assigned to you and requests that reach you show up here."
+    "empty": "No notifications"
   },
   "audit": {
     "eyebrow": "Audit",
@@ -3480,11 +3407,9 @@
       "newCandidate": "New candidate (if they have no record yet)",
       "newCandidatePlaceholder": "Candidate's full name",
       "amount": "Amount (USD)",
-      "amountHint": "From {umbral} USD it also needs director approval.",
       "time": "Preferred time",
       "timeAny": "Any time",
       "detail": "Details",
-      "detailPlaceholder": "What the reviewer needs to know.",
       "submit": "Send request",
       "sending": "Sending…",
       "success": "Request sent. You'll see every step in the list.",
@@ -3503,9 +3428,7 @@
     "purchase": {
       "title": "Purchase request to accounting",
       "description": "What needs to be bought and why",
-      "descriptionPlaceholder": "What is being bought, how many, and why it is needed.",
       "quote": "Quote",
-      "quoteHint": "PDF, PNG, JPG or DOCX. Maximum {mb} MB.",
       "submit": "Send purchase",
       "success": "Purchase sent to accounting. You will see its status in the list.",
       "download": "Download the quote",
@@ -3714,7 +3637,6 @@
       "viewOriginal": "View original file",
       "noAttachment": "Receipt recorded without scanned file.",
       "notesLabel": "Notes / Observation for the employee",
-      "notesPlaceholder": "Indicate if NCF is missing, if valid for reimbursement, or rejection reason…",
       "markObserved": "Mark as observed",
       "reject": "Reject",
       "approveAndValidate": "Approve and validate",
@@ -3740,7 +3662,6 @@
         "fecha": "Date",
         "montoOrigen": "Amount out",
         "montoDestino": "Amount in",
-        "montoDestinoAyuda": "Only across currencies: what the bank credited to the other account.",
         "concepto": "Description",
         "referencia": "Reference",
         "guardar": "Record transfer",
@@ -3813,7 +3734,6 @@
       "conciliadaPor": "Reconciled by {nombre} on {fecha}",
       "anular": "Undo",
       "anularTitulo": "Undo this reconciliation?",
-      "anularTexto": "The bank transaction and the entry go back to unreconciled. It is recorded in the audit log.",
       "anularConfirmar": "Undo reconciliation",
       "importar": {
         "boton": "Upload statement (.csv)",
@@ -3904,7 +3824,6 @@
       "beneficiario": "Supplier or payee",
       "formaPago": "Payment method",
       "referencia": "Reference",
-      "referenciaAyuda": "Transfer, deposit or document number.",
       "notas": "Notes",
       "guardar": "Save draft",
       "cancelar": "Cancel",
@@ -3925,20 +3844,16 @@
       "tasa": "Rate",
       "asiento": "Journal entry",
       "cheque": "Check",
-      "migrado": "Migrated from the previous table, without rate or journal entry.",
       "editar": "Edit",
       "contabilizar": "Post",
-      "contabilizarAyuda": "Moves the bank ledger and creates the journal entry. It cannot be undone, only voided.",
       "anular": "Void",
       "anularTitulo": "Void {numero}",
-      "anularDescripcion": "The receipt keeps its number. If it was posted, a reversing entry dated today is created.",
       "motivoCampo": "Reason",
       "confirmarAnular": "Void receipt",
       "imprimir": "Print",
       "adjuntos": "Attachments",
       "adjuntosVacio": "No attachments",
       "adjuntar": "Upload attachment",
-      "adjuntoAyuda": "PDF, JPG or PNG, up to 10 MB.",
       "descargar": "Download {nombre}"
     },
     "impreso": {
@@ -3990,7 +3905,6 @@
       "buscarBoton": "Search",
       "vacio": "No suppliers",
       "vacioFiltro": "No supplier matches",
-      "vacioTexto": "Add the first one with “New supplier”.",
       "debe": "Owed",
       "alDia": "Up to date",
       "facturas": "{n, plural, =0 {No invoices} one {# invoice} other {# invoices}}",
@@ -4002,7 +3916,6 @@
       "tituloEditar": "Edit supplier",
       "tipo": "Supplier type",
       "identificacion": "RNC or ID number (no hyphens)",
-      "identificacionAyuda": "Digits only without hyphens: 9-digit RNC (formal/legal entity) or 11-digit ID number (informal/independent professional).",
       "consultarDgii": "Lookup DGII",
       "consultandoDgii": "Looking up...",
       "rncOk": "Details loaded from DGII. Review before saving.",
@@ -4044,7 +3957,6 @@
       "cuentaReemplazada": "Replaced on {fecha}",
       "cuentaAlta": "Recorded by {nombre} on {fecha}",
       "nuevaCuenta": "Record account",
-      "nuevaCuentaAyuda": "If there is already an active account in that currency, it is replaced (not deleted) and the auditor gets an alert.",
       "banco": "Bank",
       "tipoCuenta": "Type",
       "moneda": "Currency",
@@ -4058,22 +3970,19 @@
       "abono": "Payment",
       "saldo": "Balance",
       "documento": "Document",
-      "fecha": "Date",
-      "sinComprobante": "Individual without a fiscal receipt: the Foundation must issue a purchase receipt and apply the applicable withholdings (check with the accountant)."
+      "fecha": "Date"
     },
     "facturaForm": {
       "tituloNueva": "New supplier invoice",
       "tituloEditar": "Edit invoice",
       "proveedor": "Supplier",
       "ncf": "NCF or e-CF",
-      "ncfAyuda": "B + 10 digits or E + 12 digits. Empty only if the supplier is an individual without a receipt.",
       "emision": "Issue date",
       "vencimiento": "Due date",
       "moneda": "Currency",
       "tasa": "Rate (pesos per dollar)",
       "subtotal": "Subtotal",
       "monto": "Amount",
-      "exentoItbisAyuda": "As a non-profit entity, ITBIS is not recorded separately.",
       "itbis": "ITBIS (VAT)",
       "retencionIsr": "Income tax withheld",
       "retencionItbis": "ITBIS withheld",
@@ -4081,7 +3990,6 @@
       "buscarRetencion": "Search by concept, % or DGII rule...",
       "sinResultadosRetencion": "No withholding matches your search.",
       "recomendadaProveedor": "Applies to this supplier type",
-      "retencionCalculada": "Automatically calculated: {monto}",
       "total": "Invoice total",
       "neto": "Net payable",
       "concepto": "Description",
@@ -4095,7 +4003,6 @@
       "solicitante": "Responsible person / Requester",
       "programa": "Foundation program",
       "ocrTitulo": "Scan Invoice with OCR (AI)",
-      "ocrSubtitulo": "Upload scanned receipt/invoice (PDF or image) to automatically extract TIN, NCF and amount.",
       "ocrBoton": "Scan invoice",
       "ocrProcesando": "Reading receipt with AI...",
       "ocrExito": "Receipt read successfully ({confianza}% confidence). Review suggested fields.",
@@ -4108,7 +4015,6 @@
         "asignacion": "Allocation"
       },
       "estudiante": "Charge to a student",
-      "estudianteAyuda": "Optional. Adds this expense to the scholarship student's cost.",
       "pilar": "Cost type",
       "pilares": {
         "universidad": "University (tuition, credits)",
@@ -4171,8 +4077,6 @@
       "ultimoArqueo": "Last count",
       "nunca": "Never",
       "porAprobar": "Count awaiting approval",
-      "reglaSoporte": "Receipt required from {monto}",
-      "ecuacion": "Cash + advances + expenses to replenish = fixed fund",
       "activa": "Active",
       "inactiva": "Inactive",
       "tipoGasto": "Expense",
@@ -4222,12 +4126,10 @@
       "reponerBoton": "Replenish",
       "sinCuentas": "No accounts in {moneda}",
       "conceptoReposicion": "Fixed fund replenishment · {caja}",
-      "justificacionAyuda": "Reason for the shortage or overage",
       "totalContado": "Total counted",
       "firmaConteo": "Counted by {nombre}. Someone else with approval rights signs it off.",
       "montoReponer": "Amount to replenish",
       "sugerido": "Expenses to replenish: {monto}",
-      "contabilizaGasto": "Posted on save: expense against petty cash.",
       "errores": {
         "datos_invalidos": "Check the data: something is missing or invalid.",
         "no_permitido": "You don't have permission for this.",
@@ -4269,10 +4171,8 @@
       "volverProveedor": "Back to supplier",
       "datos": "Invoice details",
       "aprobar": "Approve",
-      "aprobarAyuda": "Records the expense and creates the payable for the net amount.",
       "anular": "Void",
       "anularTitulo": "Void {numero}",
-      "anularDescripcion": "If it is approved and unpaid, its payable is voided too and a reversing entry is created.",
       "motivo": "Reason",
       "confirmarAnular": "Void invoice",
       "editar": "Edit",
@@ -4281,9 +4181,7 @@
       "aprobadaPor": "Approved by {nombre}",
       "adjuntos": "Scanned invoice",
       "adjuntar": "Upload file",
-      "adjuntoAyuda": "PDF, JPG or PNG, up to 10 MB.",
-      "asientoContable": "Accounting entry",
-      "asientoContableAyuda": "The accounts, debits and credits this invoice was posted with."
+      "asientoContable": "Accounting entry"
     },
     "cxp": {
       "titulo": "Payables",
@@ -4299,7 +4197,6 @@
         "total": "Total"
       },
       "vacio": "No payables",
-      "vacioTexto": "They are created when a supplier invoice or an expense request is approved.",
       "vence": "Due {fecha}",
       "vencida": "Overdue by {n, plural, one {# day} other {# days}}",
       "venceHoy": "Due today",
@@ -4318,7 +4215,6 @@
       "pagado": "Paid",
       "saldo": "Balance",
       "programar": "Schedule payment",
-      "programarAyuda": "Planned date and paying account. For items from a request, the category is corrected here.",
       "fechaProgramada": "Planned date",
       "cuentaSalida": "Paying account",
       "categoria": "Category",
@@ -4327,7 +4223,6 @@
       "ninguno": "None",
       "guardarProgramacion": "Save schedule",
       "pagar": "Record payment",
-      "pagarAyuda": "Creates the payment voucher, the bank ledger entry and the journal entry, in a single operation.",
       "fechaPago": "Payment date",
       "montoPago": "Amount",
       "formaPago": "Payment method",
@@ -4365,18 +4260,14 @@
       "mi-dia": "Your decision queue for today: receipts, due dates and signals",
       "reportes-financieros": "Financial statements, trial balance and reports by program",
       "cierre-contable": "Period and year-end closing, with a checklist",
-      "comprobantes-recibidos": "Invoices and photos arriving from chat, to review and classify",
       "bancos": "Accounts, bank books and reconciliation",
       "cajas": "Petty cash, cash vouchers, and cash drawer counts",
       "recibos": "Income receipts and donation vouchers",
       "donaciones": "Cash and in-kind donations, pledges and schedule",
-      "ordenes-compra": "Purchase orders and approval workflow",
       "proveedores": "Directory and received invoices",
       "cxp": "Due dates, payments and ageing",
       "retenciones": "Issued tax withholding certificates",
       "rendiciones": "Expenses submitted by staff",
-      "terceros": "Directory and due diligence for donors and suppliers",
-      "impuestos": "Forms 606 to 609 (TXT/Excel), tax settlements and calendar",
       "calculadoras": "Calculators for ITBIS, withholdings, DGII late fees and payroll",
       "inventario": "Fixed assets with their QR code",
       "solicitudes": "Expenses and requests to approve",
@@ -4385,13 +4276,10 @@
       "asientos": "Manual, adjusting and recurring entries",
       "libros": "Journal, ledger and trial balance",
       "configuracion": "Entity, parameters, periods and chart of accounts",
-      "centros-costo": "Institutional programs and cost centers",
       "presupuesto": "Annual budget, execution and overrun alerts",
       "fondos": "Restricted and unrestricted funds with release",
       "rendicion": "Traceability donation → fund → expenses by donor",
-      "nomina": "Staff payroll, social security TSS calculations, and pay slips",
-      "activos-fijos": "Fixed assets registry and periodic depreciation",
-      "consumibles": "Consumables inventory, stationery, and supplies"
+      "nomina": "Staff payroll, social security TSS calculations, and pay slips"
     },
     "impuestos": {
       "antetitulo": "Accounting",
@@ -4405,15 +4293,12 @@
       "descargarTxt": "Download official TXT",
       "envioEnCero": "File with zero",
       "excel": "Excel",
-      "exencionAsflLey122": "General income tax exemption for ASFL (Law 122-05)",
       "ingresosExentos": "Exempt donation income",
       "itbisCompras": "Purchases ITBIS (to cost)",
       "itbisRetenido": "Supplier ITBIS withheld",
-      "retencionesProveedoresYHonorarios": "Withholdings applied to independent contractors and individuals",
       "baseHonorarios": "Fees taxable base",
       "isrRetenidoHonorarios": "Withheld income tax on fees",
       "totalAPagarDgii": "Total payable to DGII",
-      "declaracionJuradaAsfl": "Annual tax return for non-profit organizations",
       "donacionesEfectivo": "Cash donations",
       "donacionesEspecie": "In-kind donations",
       "superavitSocial": "Fiscal year surplus or deficit",
@@ -4507,7 +4392,6 @@
       "titulo": "Accounting settings",
       "antetitulo": "Accounting",
       "subtitulo": "The Foundation's details, legal parameters with their effective dates, periods and the chart of accounts.",
-      "subtituloLectura": "Read only: you can see the settings but not change them.",
       "guardado": "Changes saved. They were recorded in the audit log.",
       "tabs": {
         "etiqueta": "Settings sections",
@@ -4522,11 +4406,8 @@
         "razonSocial": "Legal name",
         "nombreComercial": "Trade name",
         "rnc": "RNC (tax ID)",
-        "rncAyuda": "Nine digits, with or without dashes. The check digit is verified before saving.",
         "inicioEjercicio": "Start of the fiscal year",
-        "inicioEjercicioAyuda": "Month in which the accounting year begins.",
         "decimales": "Rounding decimals",
-        "decimalesAyuda": "The DGII works with two.",
         "telefono": "Phone",
         "email": "Email",
         "direccion": "Address",
@@ -4535,7 +4416,6 @@
         "guardar": "Save changes",
         "emisionSi": "Receipt issuance enabled",
         "emisionNo": "The Foundation does not issue tax receipts",
-        "emisionTexto": "Receipt numbers issued outside the system are entered by hand on each document. This option cannot be changed here.",
         "vacioTitulo": "The Foundation record is missing",
         "vacioTexto": "Migration 0048 creates it. Ask the technical team to apply it.",
         "pasos": {
@@ -4545,7 +4425,6 @@
         }
       },
       "parametros": {
-        "explicacion": "Each parameter has an effective date. A change does not edit the previous value: it creates a new effective period and closes the previous one, so past months are still calculated with the figure in force at the time.",
         "grupos": {
           "itbis": "ITBIS (VAT)",
           "retencion": "Withholdings",
@@ -4598,18 +4477,14 @@
         "descripcion": "The current row ends the day before the date you choose, and the new one applies from that date. The previous value is not deleted.",
         "desde": "Effective from",
         "tasa": "Rate (%)",
-        "tasaAyuda": "As a percentage: type 18 for 18%. Up to four decimals.",
         "tasaEjemplo": "18",
         "monto": "Amount (RD$)",
-        "montoAyuda": "In pesos, with at most two decimals.",
         "montoEjemplo": "0.00",
         "fuente": "Legal source",
-        "fuenteEjemplo": "Law, regulation or ruling that sets it",
         "nota": "Note (optional)",
         "guardar": "Save effective period"
       },
       "periodos": {
-        "explicacion": "A closed period accepts no new entries or changes. To close it, no draft receipt or invoice can remain in the month. Reopening requires a reason and is recorded in the audit log.",
         "periodo": "Period",
         "estadoColumna": "Status",
         "historia": "Closings and reopenings",
@@ -4626,18 +4501,14 @@
         "cerrar": "Close",
         "reabrir": "Reopen",
         "cerrarTitulo": "Close {nombre}?",
-        "cerrarDescripcion": "Once closed, nobody can record or correct anything dated in this month. If a change is needed, an adjustment is recorded in an open period.",
         "confirmarCerrar": "Yes, close the period",
         "reabrirTitulo": "Reopen {nombre}?",
-        "reabrirDescripcion": "Reopening a closed month allows its records to be changed again. The auditor receives an alert and the reason is recorded in the audit log.",
         "motivo": "Reason for reopening",
-        "motivoAyuda": "At least 10 characters. Explain what needs to be corrected and why.",
         "confirmarReabrir": "Yes, reopen the period",
         "vacioTitulo": "No periods yet",
         "vacioTexto": "The first period is created automatically when the month's first document is recorded."
       },
       "catalogo": {
-        "explicacion": "Only posting accounts receive journal entries; summary accounts add up their sub-accounts. No account is deleted: it is deactivated once it has no balance.",
         "buscar": "Search by code or name",
         "sinResultados": "No account matches the search",
         "cuenta": "Account",
@@ -4668,7 +4539,6 @@
       },
       "cuenta": {
         "codigo": "Code",
-        "codigoAyuda": "Only the last segment, one to four digits. The prefix is the parent account's code.",
         "nombre": "Account name",
         "subcuenta": {
           "titulo": "New sub-account",
@@ -4687,18 +4557,13 @@
           "confirmar": "Yes, activate"
         },
         "tipo": "Account type",
-        "codigoAyudaRaiz": "One or two digits, for example 7.",
         "recibeAsientos": "Accepts entries",
-        "recibeAsientosAyuda": "If checked, the account is used in journal entries; otherwise it only sums its sub-accounts.",
         "agregarAFacturas": "Add to Invoices",
-        "agregarAFacturasAyuda": "If set to “Yes”, this account appears by name in the Expense type list when registering invoices.",
         "si": "Yes",
         "no": "No",
-        "masInformacion": "More information",
         "editar": {
           "titulo": "Edit account",
           "descripcion": "Change the details of {cuenta}.",
-          "avisoBloqueo": "Code, type and whether it accepts entries can only change on accounts with no entries and nothing using them. The name can always be changed.",
           "confirmar": "Save changes"
         },
         "raiz": {
@@ -4707,7 +4572,6 @@
           "confirmar": "Create account"
         },
         "codigosTitulo": "Transaction codes",
-        "codigosAyuda": "Check the processes that will use this account. The automatic entry will place it on the side configured for each code.",
         "codigosMover": "Will move here from {cuenta}",
         "codigosVacio": "No transaction codes are defined.",
         "codigosGuardar": "Save codes",
@@ -4756,7 +4620,6 @@
         "cuenta_con_hijas": "The account has sub-accounts: it can't accept entries."
       },
       "codigos": {
-        "explicacion": "Each code names an accounting process. Here you set whether the code goes to debit or credit and whether it increases or decreases the account; its account is assigned in the Chart of accounts. New codes are added by the technical team in the system code.",
         "vacioTitulo": "No transaction codes are defined",
         "nombre": "Code",
         "proceso": "Process",
@@ -4771,7 +4634,6 @@
         "efectoDe": "Effect of {codigo}",
         "sinCuenta": "No account assigned",
         "cuentaInactiva": "Inactive or parent account",
-        "asignarEnCatalogo": "Assign in the Chart of accounts",
         "defecto": "Default",
         "guardado": "Saved",
         "guardando": "Saving",
@@ -4859,7 +4721,6 @@
         "revertidoCon": "Reversed by entry",
         "sinMarca": "its period was closed, so the original was not modified",
         "revierteA": "Reverses entry",
-        "automaticoAyuda": "This entry was generated by a document. To reverse it, void the document so the receipt, the bank and the books stay in step.",
         "col": {
           "cuenta": "Account",
           "descripcion": "Description",
@@ -4874,19 +4735,16 @@
         "descripcion": "An entry with the same lines swapped and today's date is recorded. The original is not deleted.",
         "cerradoAviso": "This entry's period is closed: the original is not modified and the reversal stays linked to it.",
         "motivo": "Reason",
-        "motivoAyuda": "At least {n} characters. It is kept in the audit log.",
         "confirmar": "Reverse entry"
       },
       "formulario": {
         "titulo": "New journal entry",
         "subtitulo": "Double entry by hand: debits must equal credits.",
         "fecha": "Date",
-        "fechaAyuda": "It must fall in an open period.",
         "tipo": "Type",
         "concepto": "Description",
         "guardar": "Save entry",
         "cancelar": "Cancel",
-        "ayudaEnvio": "To save: a description, at least two lines with an account, each with a debit or a credit (not both), and debits equal to credits.",
         "pasos": {
           "datos": "Entry details",
           "lineas": "Lines"
@@ -4941,7 +4799,6 @@
           "subtitulo": "It is saved balanced and generates one entry per month when someone asks for it.",
           "nombre": "Name",
           "dia": "Day of month",
-          "diaAyuda": "If the month has no such day, the entry falls on the last day of the month.",
           "concepto": "Entry description",
           "guardar": "Save template",
           "pasos": {
@@ -4988,7 +4845,6 @@
       "subtitulo": "Donors, suppliers and staff with RNC/ID validation and due diligence (Law 155-17).",
       "nuevoTercero": "New third party",
       "registrarTercero": "Register Third Party",
-      "descripcionTercero": "Enter details for the donor, supplier, or staff member.",
       "tipoPersona": "Person type",
       "tipoId": "ID type",
       "identificacion": "Tax ID / ID / Passport",
@@ -5021,9 +4877,7 @@
       "rechazado": "Rejected",
       "sinEvaluar": "Unassessed",
       "evaluacionLey155": "Law 155-17 Assessment",
-      "cumplimientoPrevencion": "Anti-money laundering and due diligence compliance",
       "origenFondos": "Declared source of funds",
-      "placeholderOrigenFondos": "E.g. Corporate donations from operating profits...",
       "personaExpuestaPoliticamente": "Politically Exposed Person (PEP) or associate",
       "verificacionListasInternacionales": "Screened against watchlist (OFAC, UN)",
       "dictamenFinal": "Compliance Officer Ruling",
@@ -5047,7 +4901,6 @@
       "nuevaDonacion": "Record donation",
       "nuevaPromesa": "New pledge",
       "registrarDonacion": "Record Donation",
-      "descripcionDonacion": "Enter received cash or in-kind donation details.",
       "donante": "Donor / Sponsor",
       "seleccioneDonante": "Select a donor...",
       "fecha": "Receipt date",
@@ -5066,7 +4919,6 @@
       "fondoDestino": "Target fund",
       "cuentaBancariaReceptora": "Receiving bank account",
       "descripcionBienesEspecie": "Description of in-kind goods received",
-      "placeholderBienes": "E.g. 20 laptops for the virtual classroom...",
       "notasOpcionales": "Notes or remarks",
       "cancelar": "Cancel",
       "confirmarDonacion": "Confirm & post journal entry",
@@ -5085,7 +4937,6 @@
       "cuota": "Installment",
       "cuotasMas": "more installments",
       "registrarPromesaCompromiso": "New Donation Pledge",
-      "descripcionPromesa": "Record a formal contribution pledge and generate its payment schedule.",
       "montoTotalCompromiso": "Total pledged amount",
       "frecuenciaCobro": "Billing frequency",
       "mensual": "Monthly",
@@ -5111,7 +4962,6 @@
       "subtitulo": "Purchasing management, requisitions and tiered approval flow.",
       "nuevaOrdenCompra": "New purchase order",
       "crearOrdenCompra": "Create Purchase Order",
-      "descripcionOrdenCompra": "Enter requested items or services for approval.",
       "proveedor": "Supplier",
       "seleccioneProveedor": "Select a supplier...",
       "fechaEmision": "Issue date",
@@ -5124,7 +4974,6 @@
       "cant": "Qty",
       "precioUnitario": "Unit price",
       "justificacionCompra": "Purchase justification",
-      "placeholderJustificacion": "Explain program purpose or project requirement...",
       "cancelar": "Cancel",
       "enviarAAprobacion": "Submit for approval",
       "guardando": "Saving...",
@@ -5164,12 +5013,10 @@
       "subtitulo": "Official ITBIS and Income Tax withholding vouchers issued to suppliers.",
       "emitirComprobante": "Issue voucher",
       "emitirComprobanteRetencion": "Issue Withholding Certificate",
-      "descripcionRetencion": "Generate official certificate for taxes withheld on an approved invoice.",
       "noHayFacturasConRetencion": "No approved invoices with pending withholding vouchers.",
       "facturaProveedor": "Supplier invoice",
       "fechaEmision": "Issue date",
       "conceptoConstancia": "Certificate concept",
-      "placeholderConcepto": "Withholding applied as per DGII regulations...",
       "cancelar": "Cancel",
       "emitiendo": "Issuing...",
       "emitir": "Issue certificate",
@@ -5233,7 +5080,6 @@
       "subtotalFacturado": "Billed subtotal",
       "netoAlProveedor": "Resulting net payment",
       "calculadoraRecargosYMora": "Late Fees & Indemnity Interest",
-      "normativaRecargos": "Art. 251 (10% + 4% monthly) and Art. 252 (1.10% monthly indemnity interest)",
       "impuestoPendiente": "Unpaid tax amount (RD$)",
       "fechaVencimientoLegal": "Statutory due date",
       "fechaEfectivaPago": "Estimated payment date",
@@ -5271,7 +5117,6 @@
       "inactivo": "Inactive",
       "sinCentros": "No cost centers registered",
       "crearTitulo": "Register Cost Center",
-      "crearDesc": "Create an accounting cost allocation unit by program.",
       "guardar": "Save",
       "cancelar": "Cancel",
       "guardando": "Saving...",
@@ -5306,9 +5151,7 @@
       "soporte": "Supporting doc / Entry",
       "usuario": "Logged by",
       "modalLiberarTitulo": "Release Restricted Fund",
-      "modalLiberarDesc": "Record the release of resources upon fulfilling the donor covenant.",
       "montoALiberar": "Amount to release (RD$)",
-      "justificacionPlaceholder": "Detail purpose fulfillment (e.g. Authorized food purchase as per grant agreement)",
       "confirmarLiberacion": "Confirm release",
       "procesando": "Processing...",
       "guardar": "Save fund",
@@ -5343,7 +5186,6 @@
         "sobregiro": "Overrun (> 100%)"
       },
       "modalCrearTitulo": "New Annual Budget",
-      "modalCrearDesc": "Start an institutional annual budget exercise.",
       "guardar": "Create budget",
       "cancelar": "Cancel"
     },
@@ -5389,9 +5231,7 @@
       "sinNominas": "No payroll runs recorded",
       "sinEmpleados": "No employees registered on payroll",
       "modalNominaTitulo": "Generate Payroll Run",
-      "modalNominaDesc": "Automatically calculates TSS and ISR contributions with current effective parameters.",
       "modalEmpleadoTitulo": "Accounting Employee File",
-      "modalEmpleadoDesc": "Links an employee with their cost center and payroll terms.",
       "anio": "Year",
       "mes": "Month",
       "tipoPeriodo": "Period type",
@@ -5431,7 +5271,6 @@
       "descargarTss": "Download TXT TSS SUIR Plus",
       "verDetalle": "View pay slip & breakdown",
       "detalleTitulo": "Payroll Run Breakdown: {codigo}",
-      "detalleDesc": "Detailed lines per employee, social security contributions, and tax withholdings.",
       "diasTrabajados": "Days",
       "sueldoBruto": "Gross earnings",
       "deducciones": "Deductions",
@@ -5440,7 +5279,6 @@
       "bancoDesembolso": "Disbursement bank account",
       "confirmarPago": "Confirm bank disbursement",
       "calculadoraTitulo": "Labor Severance Calculator (Dominican Labor Code)",
-      "calculadoraDesc": "Notice, severance, accrued vacation, and Christmas bonus calculation (Law 16-92).",
       "fechaSalida": "Termination date",
       "incluyePreaviso": "Include Notice period (if not worked)",
       "incluyeCesantia": "Include Severance Pay (employer dismissal)",
@@ -5485,14 +5323,12 @@
       "sinActivos": "No fixed assets recorded",
       "sinDepreciaciones": "No depreciation runs executed",
       "modalCrearTitulo": "Capitalize Fixed Asset",
-      "modalCrearDesc": "Records an institutional asset for property control and monthly amortization.",
       "valorResidual": "Residual / salvage value",
       "enlaceInventarioQr": "Link to physical QR asset (optional)",
       "guardar": "Save asset",
       "cancelar": "Cancel",
       "procesando": "Processing...",
       "modalDeprecTitulo": "Monthly Depreciation Run",
-      "modalDeprecDesc": "Calculates straight-line amortization for all active assets and creates the journal entry.",
       "anio": "Year",
       "mes": "Month",
       "fechaAsiento": "Journal entry date",
@@ -5506,7 +5342,6 @@
       "kpiCapitalizados": "{n} capitalized assets",
       "kpiDeprecAcum": "Total Accumulated Depreciation",
       "kpiPorcentajeAmortizado": "{pct}% amortized",
-      "kpiPatrimonioVigente": "Active institutional equity",
       "activosAmortizados": "Amortized assets",
       "vidaUtilMesesAnios": "{meses} months ({anios} years)",
       "pasos": {
@@ -5541,14 +5376,12 @@
       "sinMovimientos": "No movements recorded in kardex",
       "sinTomas": "No physical inventory counts recorded",
       "modalArticuloTitulo": "Register Consumable Item",
-      "modalArticuloDesc": "Adds an office supply, food item, or educational material for kardex tracking.",
       "cuentaInventario": "Inventory GL account",
       "cuentaGasto": "Expense/consumption GL account",
       "guardar": "Save item",
       "cancelar": "Cancel",
       "procesando": "Processing...",
       "modalMovimientoTitulo": "Inventory Movement",
-      "modalMovimientoDesc": "Receipts via purchase or donation, and issues for kitchen or program consumption.",
       "tipoMovimiento": "Movement type",
       "entrada_compra": "Receipt from purchase",
       "entrada_donacion": "Receipt from in-kind donation",
@@ -5564,18 +5397,14 @@
       "stockPosterior": "Post stock",
       "total": "Total cost",
       "tomaFisicaTitulo": "Physical Inventory Count",
-      "tomaFisicaDesc": "Physical count audit to reconcile warehouse quantities against accounting ledgers.",
       "descripcion": "Count description",
       "iniciarConteo": "Generate count sheet",
       "diferencia": "Difference",
       "impacto": "Monetary impact",
       "kpiValorizacion": "Total Inventory Valuation",
-      "kpiCostoPromedioNIIF": "Weighted Average Cost (IFRS / IAS 2)",
       "kpiArticulosCatalogo": "Catalog Items",
       "kpiArticulosConteo": "{n} items",
-      "kpiArticulosDesc": "Dining hall, supplies and educational materials",
       "kpiAlertasReabastecimiento": "Restock Alerts",
-      "kpiAlertasDesc": "Stock at or below minimum threshold",
       "colEstado": "Status",
       "optimo": "Optimal",
       "colMotivoPrograma": "Reason / Program",
@@ -5691,9 +5520,7 @@
       },
       "snapshots": {
         "tituloModal": "Freeze Official Snapshot",
-        "descModal": "Stores an immutable copy of the current financial statement for external audit and DGII filing.",
         "titulo": "Snapshot title",
-        "tituloPlaceholder": "e.g. Q1 2026 Audited Balance Sheet",
         "guardar": "Save snapshot",
         "cancelar": "Cancel",
         "guardando": "Saving...",
@@ -5724,12 +5551,9 @@
       "cerrarMes": "Close month",
       "reabrirMes": "Reopen month",
       "modalReabrirTitulo": "Reopen Accounting Period",
-      "modalReabrirDesc": "Reopening a period allows editing or posting new entries. Requires a justified reason recorded in the immutable audit trail.",
       "motivo": "Reopening justification (min 10 characters)",
-      "motivoPlaceholder": "e.g. Authorized correction by external auditor on tax withholdings...",
       "confirmarReabrir": "Reopen period",
       "modalCierreAnualTitulo": "Execute Annual Fiscal Year Closing",
-      "modalCierreAnualDesc": "This procedure automatically generates the closing entry zeroing all revenue and expense accounts and transferring the net result to 3.1.01.02 Accumulated Results.",
       "alertaMesesAbiertos": "Cannot execute annual close: open months remain. Please close all individual months first.",
       "ingresosLiquidar": "Total revenue accounts to debit",
       "gastosLiquidar": "Total expense accounts to credit",
@@ -5738,7 +5562,6 @@
       "deficit": "Net deficit",
       "cuentaDestino": "Target account: 3.1.01.02 Accumulated Results",
       "notas": "Closing memo / explanatory notes",
-      "notasPlaceholder": "Accountant notes regarding the annual close...",
       "ejecutarCierre": "Confirm and execute annual close",
       "ejecutando": "Closing year...",
       "cierreExitoso": "Fiscal year successfully closed with entry #{asiento}",
@@ -5878,7 +5701,6 @@
       "instructions": "Additional instructions",
       "instructionsHint": "Added to the base prompt. They do not replace the safety rules.",
       "model": "Model",
-      "modelHint": "Empty = default model",
       "maxTokens": "Max tokens per reply (0 = default)",
       "hourlyLimit": "Requests per hour per person",
       "active": "Agent active"
@@ -5973,8 +5795,6 @@
       "emptyText": "When a receipt arrives through chat, it shows up here already classified.",
       "selectReady": "Select approvable ones",
       "approve": "Approve selected ({n})",
-      "shortcut": "Shortcut: A approves what is selected",
-      "levelZero": "Batch approval is off (level 0: the system only suggests).",
       "select": "Select receipt {folio}",
       "noSupplier": "No supplier",
       "suggested": "Suggested: category {categoria} · center {centro} · fund {fondo}",
@@ -5997,7 +5817,6 @@
     },
     "recent": {
       "title": "Approved this week",
-      "hint": "While they have no journal entry you can send them back to the queue.",
       "auto": "approved by automatic rule",
       "undo": "Send back to queue"
     },
@@ -6014,7 +5833,6 @@
     },
     "anomalies": {
       "title": "Worth a second look",
-      "hint": "These are signals, not accusations: a reason to ask, not to conclude.",
       "none": "No signals in the last 30 days.",
       "compra_fraccionada": "Possible split purchase from {proveedor}: {n} receipts in 7 days total {monto}, each below {umbral}.",
       "monto_atipico": "Unusual amount from {proveedor}: {monto}, far above their average ({media}).",
@@ -6028,8 +5846,7 @@
       "accepted": "Suggestions accepted unchanged",
       "noData": "No data",
       "minutes": "{n} min",
-      "hours": "{n} h",
-      "clicksNote": "Clicks per task are not measured here: they are counted in usability tests with the accountant."
+      "hours": "{n} h"
     },
     "rule": {
       "title": "Classification autonomy",
@@ -6045,7 +5862,6 @@
       "saved": "Saved.",
       "failed": "Could not save.",
       "readOnly": "Only someone with the configuration permission can change the level.",
-      "level2Hint": "It only processes items above the minimum confidence, within the maximum amount, with no problems or duplicates. Nothing runs on its own: you launch it, and you can send any receipt back to the queue.",
       "process": "Process automatic ones now"
     }
   },
@@ -6233,68 +6049,52 @@
     },
     "items": {
       "comedor_apertura": {
-        "label": "Sign-up opens",
-        "hint": "From this time people can sign up for lunch."
+        "label": "Sign-up opens"
       },
       "comedor_cierre": {
-        "label": "Sign-up closes",
-        "hint": "After this time nobody else gets in: it decides how much food is cooked."
+        "label": "Sign-up closes"
       },
       "becas_indice_minimo": {
-        "label": "Minimum academic index",
-        "hint": "Out of 4.00. Below it, the student goes into academic observation."
+        "label": "Minimum academic index"
       },
       "becas_asistencia_minima": {
-        "label": "Minimum attendance (%)",
-        "hint": "To classes and workshops. Unexcused absences put the scholarship at risk."
+        "label": "Minimum attendance (%)"
       },
       "becas_horas_servicio_mes": {
-        "label": "Community service hours per month",
-        "hint": "On projects approved by the Foundation."
+        "label": "Community service hours per month"
       },
       "becas_nota_minima_360": {
-        "label": "Passing grade in Global Effect 360",
-        "hint": "Minimum to pass each subject of the program."
+        "label": "Passing grade in Global Effect 360"
       },
       "becas_creditos_maximos_ucateci": {
-        "label": "Maximum credits · UCATECI",
-        "hint": "Credit limit per quarter according to UCATECI academic guidelines."
+        "label": "Maximum credits · UCATECI"
       },
       "becas_creditos_maximos_unphu": {
-        "label": "Maximum credits · UNPHU",
-        "hint": "Credit limit per term according to UNPHU academic guidelines."
+        "label": "Maximum credits · UNPHU"
       },
       "becas_creditos_maximos_uasd": {
-        "label": "Maximum credits · UASD",
-        "hint": "Credit limit per semester according to UASD academic guidelines."
+        "label": "Maximum credits · UASD"
       },
       "becas_creditos_maximos_utesa": {
-        "label": "Maximum credits · UTESA",
-        "hint": "Credit limit per quarter according to UTESA academic guidelines."
+        "label": "Maximum credits · UTESA"
       },
       "becas_creditos_maximos_cuatrimestre": {
-        "label": "Maximum credits · General",
-        "hint": "Default credit limit per term when none of the four universities above is specified."
+        "label": "Maximum credits · General"
       },
       "asistente_dias_sin_verificar": {
-        "label": "Days before asking for a rule to be reviewed",
-        "hint": "After this period, the assistant warns that the rule has not been reviewed."
+        "label": "Days before asking for a rule to be reviewed"
       },
       "correos_dia_limite": {
-        "label": "Letter deadline day",
-        "hint": "Up to this day of the month (inclusive, La Vega time) a letter counts as on time. After that it is late."
+        "label": "Letter deadline day"
       },
       "correos_reenvio_automatico": {
-        "label": "Forward clean letters automatically",
-        "hint": "1 = the agent forwards them by itself; 0 = they wait for administration approval (recommended during the pilot)."
+        "label": "Forward clean letters automatically"
       },
       "contacto_correo": {
-        "label": "Contact email",
-        "hint": "It shows in the home page footer and in the sponsors section."
+        "label": "Contact email"
       },
       "becas_promedio_liceo_minimo": {
-        "label": "Minimum high-school average for candidates",
-        "hint": "Out of 100, on the high-school grade record. Not converted to the university scale: it helps decide the career."
+        "label": "Minimum high-school average for candidates"
       }
     },
     "normal": "Default: {valor}",
@@ -6339,11 +6139,8 @@
     "confirmarLimpiar": "Do you want to clear the conversation history?",
     "modo": "Operating mode",
     "modoConsultas": "Q&A",
-    "modoConsultasDesc": "Questions about rules, scholarships, subjects, and institutional data.",
     "modoAcciones": "Actions",
-    "modoAccionesDesc": "Execute navigation and system tasks via voice commands or text.",
     "modoAccionesRestringido": "Q&A only for students",
-    "modoAccionesRestringidoDesc": "Action mode is not available for students. You can ask questions about rules and academic life.",
     "rolEstudiante": "Student",
     "rolContabilidad": "Accounting",
     "rolDocente": "Teacher",
@@ -6466,7 +6263,6 @@
     "expensesWaiting": "Expense reports",
     "inReview": "In accounting review",
     "assignedPrograms": "Programs assigned to your role",
-    "assignedProgramsSubtitle": "Active projects established by institutional governance (click to filter)",
     "clearProgramFilter": "All programs",
     "chartProgressTitle": "My tasks progress",
     "chartEmpty": "No tasks to chart",
@@ -6478,9 +6274,7 @@
     "newQuickTask": "New Quick Task",
     "newQuickTaskTitle": "Log Quick Task",
     "taskTitle": "Task title",
-    "taskTitlePlaceholder": "E.g. Purchase electrodes for workshop",
     "taskDescription": "Details or instructions",
-    "taskDescriptionPlaceholder": "Specific instructions...",
     "taskPriority": "Priority",
     "priorityMedia": "Medium",
     "priorityAlta": "High",
@@ -6494,13 +6288,11 @@
     "logActivity": "Daily Log",
     "logActivityTitle": "Record Today's Activity",
     "activityDescription": "What did you accomplish today",
-    "activityPlaceholder": "Breakdown of progress and tasks accomplished...",
     "minutesSpent": "Minutes spent",
     "linkedTask": "Related task (optional)",
     "noTask": "General (unlinked)",
     "saveLog": "Save to Daily Log",
     "noTasksTitle": "No pending tasks in this filter",
-    "noTasksSubtitle": "Great job, you're all caught up with your prioritized activities.",
     "overdue": "Overdue",
     "logTimeForThis": "Log time for this task",
     "statePorHacer": "To do",
@@ -6539,10 +6331,8 @@
     "formSubtitle": "Upload photos or receipts of operational expenses with automatic NCF & RNC extraction for DGII",
     "ocrScanning": "Analyzing fiscal voucher with OCR...",
     "uploadReceiptPrompt": "Take photo or upload receipt / invoice",
-    "ocrHint": "Supported formats: JPG, PNG, or PDF. Automatic detection of RNC, NCF, and amounts.",
     "ocrAutoExtracted": "Fiscal data automatically extracted",
     "providerName": "Provider Name",
-    "providerPlaceholder": "E.g. Ferreteria El Progreso SRL",
     "providerRnc": "Provider RNC or ID",
     "ncf": "Fiscal Invoice Number (NCF)",
     "receiptDate": "Receipt Date",
@@ -6551,7 +6341,6 @@
     "assignProgram": "Assign to Social Program / Project",
     "selectProgramHint": "Select a program or project...",
     "conceptDescription": "Expense Concept / Justification",
-    "conceptPlaceholder": "E.g. Procurement of materials for welding workshop...",
     "submitVoucher": "Submit Voucher to Accounting",
     "submitSuccess": "Voucher successfully submitted to Accounting.",
     "submitError": "Could not submit voucher.",
@@ -6569,7 +6358,6 @@
     "postToAccounting": "Post to Accounting",
     "reviewVoucherModalTitle": "Validate Expense Voucher (DGII)",
     "rejectReasonOptional": "Rejection reason (required if rejecting)",
-    "rejectReasonPlaceholder": "E.g. NCF does not match DGII lookup or receipt is illegible",
     "rejectButton": "Reject",
     "approveButton": "Approve for Accounting",
     "rejectReasonLabel": "Rejection reason: {motivo}",
@@ -6672,7 +6460,6 @@
     "previewStudentViewSubtitle": "Interactive simulation mode: verify exactly how students experience and submit this assignment.",
     "previewBadge": "Student Preview",
     "previewNoticeHeading": "Safe Demonstration Environment",
-    "previewNoticeBody": "In this mode you can test file uploads, verify size limits and formats without modifying real student grades.",
     "noSubmissionsTitle": "No submissions recorded",
     "noSubmissionsSubtitle": "Students have not submitted files to this dropbox yet.",
     "lateBadge": "Late",
@@ -6731,7 +6518,6 @@
     "fileLabel": "File",
     "selectFileButton": "Select file",
     "descriptionLabel": "Description or classroom instructions",
-    "resourceDescriptionPlaceholder": "Describe key points or workshop objectives...",
     "cancel": "Cancel",
     "publishResourceButton": "Publish to Hub",
     "errFileRequired": "You must attach a file to publish.",
@@ -6760,7 +6546,6 @@
     "takePhotoOrUpload": "Take photo with camera or upload from gallery",
     "photoCaptureHint": "Capture classroom group, facilitator speaking, or worksheet activities (JPG, PNG).",
     "observationsLabel": "Facilitator Observations / Group Dynamics",
-    "observationsPlaceholder": "Note student engagement, key questions asked, or follow-ups with school leadership...",
     "savingVisit": "Saving report...",
     "submitVisitButton": "Save Visit & Photos",
     "errHighSchoolRequired": "You must select a high school.",
@@ -6903,7 +6688,6 @@
       "linkVirtual": "Virtual link (Google Meet / Zoom)",
       "roomPlaceholder": "e.g., Board Room B or meet.google.com/...",
       "descriptionLabel": "Meeting purpose / Agenda points",
-      "descPlaceholder": "Outline key discussion points...",
       "inviteParticipants": "Invite staff or students",
       "searchAttendeesPlaceholder": "Search by name or email..."
     },
@@ -6955,13 +6739,11 @@
     },
     "liveRoom": {
       "liveBadge": "Live",
-      "embeddedHint": "Video call embedded inside the platform",
       "openExternal": "Open separately",
       "expand": "Expand room",
       "collapse": "Collapse room",
       "leave": "Leave room",
       "externalOnlyTitle": "This meeting uses an external link",
-      "externalOnlyHint": "The external provider blocks embedding the call inside another page; you can join in a new tab.",
       "joinExternalNow": "Open external call",
       "activeCallsTitle": "Active calls now",
       "joinInWeb": "Join call",
@@ -7196,7 +6978,6 @@
     "chartTypesTitle": "Booking type",
     "chartEmpty": "No passengers to chart",
     "reportIncidentTitle": "Report problem or breakdown",
-    "reportIncidentDesc": "Submitting this report will immediately notify students enrolled on this trip.",
     "incidentType": {
       "mechanical": "Mechanical breakdown",
       "traffic": "Heavy traffic",
@@ -7204,7 +6985,6 @@
       "emergency": "Accident / Emergency"
     },
     "incidentDetailsLabel": "Incident details",
-    "incidentDetailsPlaceholder": "E.g. Flat tire in Rincón, 20 minute delay…",
     "cancel": "Cancel",
     "sendIncidentAlert": "Send report and alert",
     "weeklyScheduleTitle": "My Weekly Recurring Schedule",
@@ -7239,7 +7019,6 @@
     "officialSchedulesTitle": "Official Route Schedules",
     "officialSchedulesSubtitle": "4 daily fixed trips connecting the Global Effect Foundation Building with UCATECI, UNPHU, UASD and UTESA.",
     "routeStopsTitle": "Live Stops and Estimated Arrivals",
-    "routeStopsSubtitle": "Click any university or the Global Effect Building to focus its stop on the map and inspect the live ETA.",
     "timob": {
       "radarTitle": "Interactive University Circuit Map",
       "liveBadge": "LIVE",
@@ -7396,7 +7175,6 @@
       "transporte_operar": "Operate transport routes",
       "usuarios_administrar": "Manage users"
     },
-    "help": "What they can't open, they don't see: each person's menu is computed from their permissions, with no separate visibility list.",
     "unlocks": "Unlocks: {modules}",
     "preview": {
       "title": "Will see these modules",
@@ -7496,7 +7274,6 @@
       "load": "Load subjects",
       "loadButton": "Load list",
       "loadPlaceholder": "ISC-101 ; Introduction to programming ; 4 ; 1 ;\nISC-201 ; Data structures ; 3 ; 2 ; ISC-101",
-      "loadHelp": "One subject per line: code ; name ; credits ; term ; prerequisites (comma-separated). Empty credits count as 3. An existing code is updated.",
       "loaded": "{count} subjects loaded.",
       "rejected": "These lines could not be read: {lines}.",
       "fromFile": "Load from a file (.csv or .txt)"
@@ -7568,16 +7345,13 @@
       "maxIndex": "Maximum index (scale)",
       "minPeriod": "Term minimum",
       "minOverall": "Overall minimum",
-      "alertsHelp": "Empty = not set: the general scholarship minimum is used. With these values the record warns when the term or overall index falls below them.",
       "confirmed": "I already confirmed these rules with the university regulations",
-      "help": "If in doubt, leave it as is: the system marks these rules as “to confirm” until someone verifies them.",
       "confirmedBadge": "Rules verified",
       "pendingBadge": "Rules to be confirmed",
       "summary": "Points: {points} · Passes from {min} · Withdrawn: {withdrawn} · {rounding}"
     },
     "logo": {
       "label": "Logo (PNG, JPG or WebP)",
-      "help": "Up to 1 MB. Without a logo the acronym is shown.",
       "remove": "Remove the current logo"
     },
     "files": {
@@ -7585,7 +7359,6 @@
       "none": "There are no files yet.",
       "typeLabel": "What it is",
       "file": "PDF file",
-      "help": "PDF only, up to 10 MB. For now the file is stored for reference; reading it automatically will come with a review screen.",
       "upload": "Upload",
       "remove": "Remove this file",
       "done": "File uploaded.",
@@ -7687,8 +7460,7 @@
         "file": "File (PDF, JPG, PNG or WebP, up to 5 MB)",
         "list": "One row per line: student ID ; name ; code ; letter ; score",
         "submit": "Read the document",
-        "reading": "Reading the document…",
-        "help": "The system reads the document and looks up each student and subject. Before anything is saved, you review what it understood. The file is not kept."
+        "reading": "Reading the document…"
       },
       "errors": {
         "no_permitido": "You do not have permission to upload grades.",
@@ -7742,8 +7514,7 @@
           "borrador": "To review",
           "confirmada": "Confirmed",
           "descartada": "Discarded"
-        },
-        "blocked": "Some rows have warnings. Only students whose rows are all fine are saved; check the warnings before saving."
+        }
       },
       "problems": {
         "sin_estudiante": "Student not found",
@@ -7758,8 +7529,7 @@
       "intro": {
         "title": "How it works",
         "step1": "Choose the university and the term of the grades.",
-        "step2": "Upload the photo or PDF of the list, or paste the list.",
-        "step3": "Check what the system understood and press “Save the grades”."
+        "step2": "Upload the photo or PDF of the list, or paste the list."
       }
     }
   },
@@ -7791,7 +7561,6 @@
     "back": "Back to records",
     "count": "{count, plural, one {# student needs attention} other {# students need attention}}",
     "emptyTitle": "Nobody is at risk right now",
-    "emptyText": "When an active student falls below their university's minimum index or fails a subject, they will show up here.",
     "reason": {
       "cumulative": "Their cumulative index is {indice} and their university's minimum is {minimo}.",
       "period": "Their index for {periodo} is {indice} and the minimum is {minimo}.",
@@ -7844,7 +7613,6 @@
       "dueSoon": "Due in 30 days ({n})",
       "overdue": "Overdue installments",
       "emptyTitle": "No pledges recorded",
-      "emptyText": "They will appear here once accounting records donation pledges.",
       "view": "View donations"
     }
   },
@@ -7858,7 +7626,6 @@
       "graduates": "Graduates"
     },
     "empty": "No scholarship students yet",
-    "emptyHint": "Once records have expenses charged to them, their cost is compared by degree here.",
     "chart": {
       "title": "Average per student and degree",
       "label": "Average cost by degree",
@@ -7875,7 +7642,6 @@
       "averageTerm": "Average per term",
       "averageGraduate": "Average per graduate"
     },
-    "hint": "Averages only count students with a recorded cost. The per-graduate average stays empty until graduates have expenses charged to them.",
     "register": {
       "link": "Record materials and transport",
       "title": "Record materials and transport",
@@ -7896,13 +7662,11 @@
         "noArticle": "No inventory item",
         "save": "Record material",
         "each": "each",
-        "empty": "No materials recorded yet",
-        "emptyHint": "Uniforms, laptops, books or instruments given to this scholar appear here."
+        "empty": "No materials recorded yet"
       },
       "transport": {
         "title": "Transport per term",
         "enrolled": "Has a transport enrollment: {n} days per week. Record the cost assigned for each term; it is not split among the other scholars.",
-        "notEnrolled": "This student has no active transport enrollment. Only students from Rincón, Jima, Ranchito, Saba Rey and Rancho Viejo ride the bus; confirm it applies before recording.",
         "term": "Term",
         "chooseTerm": "Choose a term",
         "days": "Assigned days",
@@ -7910,8 +7674,7 @@
         "cost": "Assigned cost (DOP)",
         "notes": "Notes",
         "save": "Record transport",
-        "empty": "No transport recorded yet",
-        "emptyHint": "The bus cost of each term is entered by hand for the students who ride it."
+        "empty": "No transport recorded yet"
       },
       "void": {
         "button": "Void",

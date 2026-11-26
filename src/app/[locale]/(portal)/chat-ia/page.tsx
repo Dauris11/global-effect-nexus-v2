@@ -123,7 +123,6 @@ export default async function PaginaChatIA({
               enviar: t("send"),
               pensando: t("thinking"),
               vacio: t("empty"),
-              vacioPista: t("emptyHint"),
               errorVacia: t("errorEmpty"),
               errorLarga: t("errorTooLong"),
               errorLimite: t("errorLimit"),

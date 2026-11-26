@@ -180,7 +180,6 @@ export default async function PaginaMiDia({
           <p className="texto-titulo-seccion">{t("recent.title")}</p>
           <Card className={TARJETA.contenido}>
             <CardContent className="pt-5">
-              <p className="texto-meta mb-2">{t("recent.hint")}</p>
               <ul className="divide-linea divide-y">
                 {recientes.map((r) => (
                   <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-[15px]">
@@ -226,10 +225,7 @@ export default async function PaginaMiDia({
       </section>
 
       <section className="space-y-3">
-        <div>
-          <p className="texto-titulo-seccion">{t("anomalies.title")}</p>
-          <p className="texto-meta">{t("anomalies.hint")}</p>
-        </div>
+        <p className="texto-titulo-seccion">{t("anomalies.title")}</p>
         <Card className={TARJETA.contenido}>
           <CardContent className="pt-5">
             {senales.length === 0 ? (
@@ -255,7 +251,6 @@ export default async function PaginaMiDia({
           <StatCard valor={duracion(metricas.segundosPorComprobante)} etiqueta={t("metrics.time")} icono={Clock} variant="centrada" />
           <StatCard valor={pctAceptadas === null ? "—" : `${pctAceptadas} %`} etiqueta={t("metrics.accepted")} icono={CheckCircle2} variant="centrada" />
         </div>
-        <p className="texto-meta">{t("metrics.clicksNote")}</p>
       </section>
 
       <section className="space-y-3">

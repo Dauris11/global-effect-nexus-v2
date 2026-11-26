@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -79,10 +78,9 @@ export function DialogoDebidaDiligencia({
       <DialogContent className="max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>{t("evaluacionLey155")}</DialogTitle>
-            <DialogDescription>
-              {nombreTercero} — {t("cumplimientoPrevencion")}
-            </DialogDescription>
+            <DialogTitle>
+              {t("evaluacionLey155")} — {nombreTercero}
+            </DialogTitle>
           </DialogHeader>
 
           {error && <div className="rounded-md border border-linea-fuerte bg-muted p-3 text-sm text-tinta">{error}</div>}
@@ -94,7 +92,6 @@ export function DialogoDebidaDiligencia({
                 <Textarea
                   value={origenFondos}
                   onChange={(e) => setOrigenFondos(e.target.value)}
-                  placeholder={t("placeholderOrigenFondos")}
                   required
                   rows={2}
                 />

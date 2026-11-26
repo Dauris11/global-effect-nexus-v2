@@ -69,7 +69,6 @@ export function ListaCxp({
       {cuentas.length === 0 ? (
         <div className="rounded-tarjeta border border-linea bg-background p-8 text-center text-tinta-2">
           <p className="font-medium text-tinta">{t("vacio")}</p>
-          <p className="mt-1 text-sm">{t("vacioTexto")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-tarjeta border border-linea bg-background">

@@ -282,7 +282,6 @@ export function PanelRevisionComprobante({
               <textarea
                 value={observacion}
                 onChange={(e) => setObservacion(e.target.value)}
-                placeholder={t("notesPlaceholder")}
                 className="w-full rounded-control border border-linea p-3 text-sm focus:border-marca-500 focus:outline-none"
                 rows={2}
               />

@@ -62,10 +62,7 @@ export function AccionesFactura({
       {factura.estado === "borrador" && puedeAprobar && (
         <div className="rounded-control border border-linea bg-background p-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold text-tinta">{t("aprobar")}</p>
-              <p className="text-xs text-tinta-2">{t("aprobarAyuda")}</p>
-            </div>
+            <p className="font-semibold text-tinta">{t("aprobar")}</p>
             <div className="flex flex-wrap items-center gap-2">
               {/* Antes de aprobar: el asiento que saldría y qué cuenta falta. */}
               <BotonAsiento cargar={() => asientoDeFactura(factura.id)} />
@@ -89,10 +86,7 @@ export function AccionesFactura({
       {/* Ya contabilizada (o anulada): el asiento real, visible para quien lee contabilidad. */}
       {factura.asiento_id && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-linea bg-background p-4">
-          <div>
-            <p className="font-semibold text-tinta">{t("asientoContable")}</p>
-            <p className="text-xs text-tinta-2">{t("asientoContableAyuda")}</p>
-          </div>
+          <p className="font-semibold text-tinta">{t("asientoContable")}</p>
           <BotonAsiento cargar={() => asientoDeFactura(factura.id)} />
         </div>
       )}
@@ -101,10 +95,7 @@ export function AccionesFactura({
         <div className="rounded-control border border-linea bg-background p-4 space-y-3">
           {!mostrarAnular ? (
             <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-tinta">{t("anular")}</p>
-                <p className="text-xs text-tinta-2">{t("anularDescripcion")}</p>
-              </div>
+              <p className="font-semibold text-tinta">{t("anular")}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -128,7 +119,6 @@ export function AccionesFactura({
                   required
                   minLength={5}
                   maxLength={500}
-                  placeholder="Explica por qué se anula esta factura..."
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
                 />
@@ -162,10 +152,7 @@ export function AccionesFactura({
 
       {puedeRegistrar && (
         <div className="rounded-control border border-linea bg-background p-4 space-y-3">
-          <div>
-            <p className="font-semibold text-tinta">{t("adjuntos")}</p>
-            <p className="text-xs text-tinta-2">{t("adjuntoAyuda")}</p>
-          </div>
+          <p className="font-semibold text-tinta">{t("adjuntos")}</p>
           <form action={enviarAdjunto} className="space-y-3">
             <input type="hidden" name="id" value={factura.id} />
             <div className="flex flex-wrap items-center gap-3">

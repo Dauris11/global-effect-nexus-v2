@@ -91,11 +91,7 @@ export function ListaPorRevisar({
           {pendiente ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
           {t("queue.approve", { n: marcados.size })}
         </Button>
-
-        <span className="texto-meta hidden sm:inline">{t("queue.shortcut")}</span>
       </div>
-
-      {nivel === 0 && <p className="texto-meta">{t("queue.levelZero")}</p>}
 
       {estado.estado === "ok" && (
         <p role="status" className="text-marca-700 flex items-center gap-1.5 text-sm font-medium">

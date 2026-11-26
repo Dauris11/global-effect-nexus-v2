@@ -34,7 +34,6 @@ export function AvisoMinimoCuatrimestral({
         <Info className="mt-0.5 size-5 shrink-0 text-tinta-3" aria-hidden />
         <div>
           <p className="font-semibold text-tinta">{t("onlyUniversityTitle")}</p>
-          <p className="mt-0.5 text-tinta-2">{t("onlyUniversityHint")}</p>
         </div>
       </div>
     );
@@ -86,7 +85,6 @@ export function AvisoMinimoCuatrimestral({
             term: periodo,
           })}
         </p>
-        <p className="opacity-90">{t("pendingDetail")}</p>
         {enlazar && (
           <div className="flex flex-wrap gap-4 pt-0.5">
             <Link

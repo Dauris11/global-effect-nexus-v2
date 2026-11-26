@@ -62,9 +62,6 @@ export function VistaEstudianteModal({
             <UserCheck className="size-4 text-marca-500" />
             {t("previewNoticeHeading")}
           </p>
-          <p className="mt-1 text-tinta/70 leading-relaxed">
-            {t("previewNoticeBody")}
-          </p>
         </div>
 
         {/* Vista interactiva exacta del estudiante */}

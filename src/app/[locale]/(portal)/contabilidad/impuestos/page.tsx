@@ -204,7 +204,6 @@ export default async function PaginaImpuestos({
               <li className="flex min-h-11 flex-wrap items-center gap-3 border-b border-linea px-4 py-3 last:border-b-0">
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium text-tinta">{t("cxp.nombre")}</span>
-                  <span className="texto-meta block">{t("cxp.texto")}</span>
                 </span>
                 <Button asChild size="sm" variant="outline">
                   <a href="/api/contabilidad/exportar/cxp" download>
@@ -246,9 +245,6 @@ export default async function PaginaImpuestos({
                 <span className="font-bold text-tinta dark:text-slate-100">IT-1 (ITBIS)</span>
                 <Badge variant="outline">{elegido}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("exencionAsflLey122")}
-              </p>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                 <div className="flex justify-between py-1">
                   <span className="text-muted-foreground font-sans">{t("ingresosExentos")}:</span>
@@ -273,9 +269,6 @@ export default async function PaginaImpuestos({
                 <span className="font-bold text-tinta dark:text-slate-100">IR-17 (Retenciones)</span>
                 <Badge variant="outline">{elegido}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("retencionesProveedoresYHonorarios")}
-              </p>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                 <div className="flex justify-between py-1">
                   <span className="text-muted-foreground font-sans">{t("baseHonorarios")}:</span>
@@ -302,9 +295,6 @@ export default async function PaginaImpuestos({
                 <span className="font-bold text-tinta dark:text-slate-100">ISFL-01 (Anual)</span>
                 <Badge variant="outline">{anio}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("declaracionJuradaAsfl")}
-              </p>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                 <div className="flex justify-between py-1">
                   <span className="text-muted-foreground font-sans">{t("donacionesEfectivo")}:</span>
@@ -346,7 +336,6 @@ export default async function PaginaImpuestos({
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-medium text-tinta dark:text-slate-100">{ev.nombre}</div>
-                      <div className="text-xs text-muted-foreground">{ev.descripcion}</div>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-slate-400">
                       {ev.fechaVencimiento} (Día {ev.diaLimite})

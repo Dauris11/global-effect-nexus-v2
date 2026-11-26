@@ -56,14 +56,9 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-description"
-      className={cn("text-sm text-tinta-2", className)}
-      {...props}
-    />
-  );
+/** No pinta nada: las tarjetas van solo con título (nov 2026). */
+function CardDescription(_props: React.ComponentProps<"div">) {
+  return null;
 }
 
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {

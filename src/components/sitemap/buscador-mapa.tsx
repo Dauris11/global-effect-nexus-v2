@@ -36,7 +36,6 @@ const raiz = (p: string) => (p.length > 4 && p.endsWith("s") ? p.slice(0, -1) : 
 type Textos = {
   placeholder: string;
   vacio: string;
-  ayuda: string;
   comoLlegar: string;
   abrir: string;
   sinAcceso: string;
@@ -91,9 +90,7 @@ export function BuscadorMapa({ entradas, textos }: { entradas: readonly EntradaI
         />
       </div>
 
-      {consulta.trim() === "" ? (
-        <p className="texto-meta">{textos.ayuda}</p>
-      ) : resultados.length === 0 ? (
+      {consulta.trim() === "" ? null : resultados.length === 0 ? (
         <p role="status" className="text-sm">
           {textos.vacio}
         </p>
@@ -104,7 +101,6 @@ export function BuscadorMapa({ entradas, textos }: { entradas: readonly EntradaI
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[15px] font-semibold break-words">{e.etiqueta}</p>
-                  {e.descripcion && <p className="texto-meta">{e.descripcion}</p>}
                 </div>
 
                 {e.puedo ? (

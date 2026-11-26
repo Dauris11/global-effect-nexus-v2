@@ -120,7 +120,6 @@ export default async function PaginaRecibos({
         <EstadoVacio
           icono={ReceiptText}
           titulo={hayFiltro ? t("vacioFiltro") : t("vacio")}
-         
         />
       ) : (
         <>

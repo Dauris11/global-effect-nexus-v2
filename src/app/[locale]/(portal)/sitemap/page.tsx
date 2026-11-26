@@ -5,7 +5,6 @@ import { getTranslations } from "next-intl/server";
 import { CifraAcademica } from "@/components/academico/cifra";
 import { BloqueRol } from "@/components/sitemap/bloque-rol";
 import { BuscadorMapa } from "@/components/sitemap/buscador-mapa";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { requerirRol } from "@/lib/auth";
@@ -101,9 +100,8 @@ export default async function PaginaSitemap({
           <BuscadorMapa
             entradas={indice}
             textos={{
-              placeholder: t("finder.placeholder"),
+              placeholder: t("finder.title"),
               vacio: t("finder.empty"),
-              ayuda: t("finder.help"),
               comoLlegar: t("finder.howTo"),
               abrir: t("finder.open"),
               sinAcceso: t("finder.locked"),
@@ -127,10 +125,7 @@ export default async function PaginaSitemap({
       </section>
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="texto-titulo-seccion">{t("byRole")}</p>
-          <Badge variant="neutra">{t("sourceBadge")}</Badge>
-        </div>
+        <p className="texto-titulo-seccion">{t("byRole")}</p>
         {menus.map((menu) => (
           <BloqueRol key={menu.rol} menu={menu} abierto={menu.rol === usuario.rol} />
         ))}

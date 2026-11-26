@@ -101,7 +101,7 @@ export function VincularCuenta({
           <form action={invitar} className="space-y-2 rounded-control border border-linea p-3">
             <input type="hidden" name="estudiante" value={estudianteId} />
             <p className="text-sm font-medium">{t("invitarTitulo")}</p>
-            <p className="texto-meta">{correoEstudiante ? t("invitarAyuda", { correo: correoEstudiante }) : t("invitarSinCorreo")}</p>
+            {correoEstudiante ? <p className="texto-meta">{correoEstudiante}</p> : <p className="texto-meta">{t("invitarSinCorreo")}</p>}
             {invitacion.estado !== "inicial" && invitacion.estado !== "ok" && (
               <p role="alert" className={ALERTA_RIESGO.contenedor}>
                 <AlertCircle className={ALERTA_RIESGO.icono} />

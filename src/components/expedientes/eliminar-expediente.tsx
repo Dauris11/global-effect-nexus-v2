@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -43,10 +42,7 @@ export function EliminarExpediente({
     deleting: string;
     cancel: string;
     confirmTitle: string;
-    deleteHint: string;
-    confirmHint: string;
     inUseTitle: string;
-    inUseHint: string;
     understood: string;
     error: string;
     deps: Record<DepClave, string>;
@@ -95,7 +91,6 @@ export function EliminarExpediente({
                 <AlertTriangle className="size-5 shrink-0 text-[#171A1D] dark:text-white" />
                 {textos.inUseTitle}
               </DialogTitle>
-              <DialogDescription>{textos.inUseHint}</DialogDescription>
             </DialogHeader>
 
             <ul className="space-y-1.5 text-sm">
@@ -126,9 +121,6 @@ export function EliminarExpediente({
                 <AlertTriangle className="size-5 shrink-0 text-[#171A1D] dark:text-white" />
                 {textos.confirmTitle}
               </DialogTitle>
-              <DialogDescription>
-                {armado ? textos.confirmHint : textos.deleteHint}
-              </DialogDescription>
             </DialogHeader>
 
             {conError && (

@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
 export function EstadoVacio({
   icono: Icono,
   titulo,
-  texto,
   accion,
   className,
 }: {
   icono: LucideIcon;
   titulo: string;
+  /** Se acepta y no se pinta: el vacío va solo con título (nov 2026). */
   texto?: string;
   accion?: React.ReactNode;
   className?: string;
@@ -29,7 +29,6 @@ export function EstadoVacio({
         <Icono className="size-7" />
       </span>
       <p className={VACIO.titulo}>{titulo}</p>
-      {texto && <p className={VACIO.descripcion}>{texto}</p>}
       {accion && <div className="mt-5 flex justify-center">{accion}</div>}
     </div>
   );

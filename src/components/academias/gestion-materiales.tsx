@@ -26,7 +26,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -340,11 +339,6 @@ function DialogoBorrado({ fila }: { fila: MaterialFila }) {
             <DialogTitle>
               {t("materials.confirmTitle", { name: fila.titulo })}
             </DialogTitle>
-            <DialogDescription>
-              {fila.storage_key
-                ? t("materials.deleteWarningFile")
-                : t("materials.deleteWarning")}
-            </DialogDescription>
           </DialogHeader>
 
           {estado.estado !== "inicial" && estado.estado !== "ok" && (
@@ -512,11 +506,11 @@ function Formulario({
                 accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
                 className="cursor-pointer"
               />
-              <p className="text-muted-foreground text-[10px] leading-relaxed">
-                {material?.archivo_nombre
-                  ? t("field.fileReplaceHint", { name: material.archivo_nombre })
-                  : t("field.fileHint")}
-              </p>
+              {material?.archivo_nombre && (
+                <p className="text-muted-foreground text-[10px] leading-relaxed">
+                  {t("field.fileReplaceHint", { name: material.archivo_nombre })}
+                </p>
+              )}
             </div>
           </div>
         </PasoFormulario>

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -48,17 +47,6 @@ export function AccionesFila({
   nombre,
   alEditar,
   eliminar,
-  /** Texto que explica qué implica borrar esta clase de fila. */
-  avisoBorrado,
-  /**
-   * Qué proponer cuando no se puede borrar: archivar en vez de eliminar.
-   *
-   * Opcional porque no toda fila tiene de qué colgar. De una calificación no
-   * cuelga nada, así que su acción no puede responder `tiene_datos` y este
-   * diálogo no se abre nunca; obligar a pasar un texto ahí sería obligar a
-   * escribir una frase que nadie va a leer.
-   */
-  avisoEnUso,
 }: {
   id: string;
   nombre: string;
@@ -67,8 +55,6 @@ export function AccionesFila({
     previo: EstadoCatalogo,
     datos: FormData,
   ) => Promise<EstadoCatalogo>;
-  avisoBorrado: string;
-  avisoEnUso?: string;
 }) {
   const t = useTranslations("academic");
   const [abierto, setAbierto] = useState(false);
@@ -126,9 +112,6 @@ export function AccionesFila({
                 ? t("rowActions.inUseTitle", { name: nombre })
                 : t("rowActions.confirmTitle", { name: nombre })}
             </DialogTitle>
-            <DialogDescription>
-              {enUso ? (avisoEnUso ?? t("rowActions.error")) : avisoBorrado}
-            </DialogDescription>
           </DialogHeader>
 
           {enUso && dependencias.length > 0 && (

@@ -407,7 +407,6 @@ export function SuiteCalculadoras() {
         <TabsContent value="mora" className="mt-6">
           <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
             <h3 className="font-semibold text-tinta dark:text-slate-100">{t("calculadoraRecargosYMora")}</h3>
-            <p className="text-xs text-muted-foreground">{t("normativaRecargos")}</p>
             <div className="space-y-1.5">
               <Label>{t("impuestoPendiente")}</Label>
               <Input

@@ -226,9 +226,8 @@ async function Operaciones({ locale }: { locale: string }) {
 
   // Los proyectos sin ninguna tarea se quedan fuera de la gráfica de avance: su
   // avance no es 0%, es «todavía no se sabe», y una barra vacía diría lo
-  // primero. Se cuentan aparte, debajo, para que no desaparezcan sin más.
+  // primero.
   const conTareas = proyectos.filter((fila) => fila.tareas > 0);
-  const sinTareas = proyectos.length - conTareas.length;
 
   return (
     <div className="space-y-6">
@@ -290,11 +289,6 @@ async function Operaciones({ locale }: { locale: string }) {
           vacio={t("empty")}
         />
 
-        {sinTareas > 0 && (
-          <p className="text-muted-foreground mt-2 text-xs">
-            {t("ops.withoutTasks", { count: sinTareas })}
-          </p>
-        )}
       </Panel>
     </div>
   );

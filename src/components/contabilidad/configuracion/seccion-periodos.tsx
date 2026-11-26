@@ -68,8 +68,6 @@ export async function SeccionPeriodos({
 
   return (
     <div className="space-y-4">
-      <p className="max-w-3xl text-[15px] text-tinta-2">{t("explicacion")}</p>
-
       <div className={`${TARJETA.contenido} hidden overflow-hidden md:block`}>
         <table className="w-full text-sm">
           <thead className="texto-meta border-b border-linea text-left">

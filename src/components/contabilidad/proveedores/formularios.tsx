@@ -148,7 +148,7 @@ export function FormularioProveedor({
                   ? t("rncError.sin_guiones")
                   : malDigito
                     ? tc("error.identificacion_invalida")
-                    : t("identificacionAyuda")
+                    : undefined
               }
             >
               <div className="flex gap-2">
@@ -157,7 +157,6 @@ export function FormularioProveedor({
                   name="identificacion"
                   inputMode="numeric"
                   required
-                  placeholder={tipo === "juridica" ? "131996035" : "00113918205"}
                   value={identificacion}
                   onChange={(e) => {
                     setIdentificacion(e.target.value);
@@ -295,7 +294,6 @@ export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string
         </Campo>
         <Campo id="numero" etiqueta={t("numero")}><Input id="numero" name="numero" required inputMode="numeric" maxLength={40} /></Campo>
       </div>
-      <p className="texto-meta">{t("nuevaCuentaAyuda")}</p>
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{tc("cxp.ok")}</AvisoOk>}
       <Button type="submit" variant="secondary" cargando={enviando}>
@@ -336,7 +334,6 @@ export function FormularioFactura({
 }) {
   const locale = useLocale();
   const t = useTranslations("contab.facturaForm");
-  const tp = useTranslations("contab.proveedor");
   const tc = useTranslations("contab");
   const [estado, enviar, enviando] = useActionState(guardarFactura, INICIAL);
   const error = useError(estado);
@@ -438,7 +435,6 @@ export function FormularioFactura({
               <Sparkles className="size-4 text-marca-600" />
               <h3 className="text-sm font-semibold text-tinta">{t("ocrTitulo")}</h3>
             </div>
-            <p className="text-xs text-tinta-2">{t("ocrSubtitulo")}</p>
           </div>
           <div>
             <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control bg-marca px-3.5 py-2 text-xs font-medium text-white shadow-sm hover:bg-marca-hover transition-colors">
@@ -493,7 +489,7 @@ export function FormularioFactura({
                   ))}
                 </select>
               </Campo>
-              <Campo id="ncf" etiqueta={t("ncf")} ayuda={t("ncfAyuda")}>
+              <Campo id="ncf" etiqueta={t("ncf")}>
                 <Input id="ncf" name="ncf" maxLength={13} value={ncf} onChange={(e) => setNcf(e.target.value.toUpperCase())} className="uppercase font-mono" />
               </Campo>
               <Campo id="fecha_emision" etiqueta={t("emision")}>
@@ -514,20 +510,16 @@ export function FormularioFactura({
               )}
             </div>
 
-            {datosProveedor?.tipo === "fisica" && !ncf && (
-              <p className="rounded-control bg-marca-50 px-3 py-2.5 text-sm text-marca-700">{tp("sinComprobante")}</p>
-            )}
           </PasoFormulario>
 
           <PasoFormulario titulo={t("pasos.montos")}>
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo id="subtotal" etiqueta={t("monto")} ayuda={t("exentoItbisAyuda")}>
+              <Campo id="subtotal" etiqueta={t("monto")}>
                 <Input
                   id="subtotal"
                   name="subtotal"
                   inputMode="decimal"
                   required
-                  placeholder="0.00"
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
                 />
@@ -545,11 +537,7 @@ export function FormularioFactura({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo
-                id="tipo_retencion_isr"
-                etiqueta={t("retencionIsr")}
-                ayuda={t("retencionCalculada", { monto: formatearMonto(retencionIsr, monedaVista) })}
-              >
+              <Campo id="tipo_retencion_isr" etiqueta={t("retencionIsr")}>
                 <select
                   id="tipo_retencion_isr"
                   name="tipo_retencion_isr"
@@ -566,11 +554,7 @@ export function FormularioFactura({
                 </select>
               </Campo>
 
-              <Campo
-                id="tipo_retencion_itbis"
-                etiqueta={t("retencionItbis")}
-                ayuda={t("retencionCalculada", { monto: formatearMonto(retencionItbis, monedaVista) })}
-              >
+              <Campo id="tipo_retencion_itbis" etiqueta={t("retencionItbis")}>
                 <select
                   id="tipo_retencion_itbis"
                   name="tipo_retencion_itbis"
@@ -648,7 +632,7 @@ export function FormularioFactura({
 
             {estudiantes.length > 0 && (
               <div className="grid gap-4 md:grid-cols-2">
-                <Campo id="estudiante" etiqueta={t("estudiante")} ayuda={t("estudianteAyuda")}>
+                <Campo id="estudiante" etiqueta={t("estudiante")}>
                   <select id="estudiante" name="estudiante" className={SELECT} value={estudiante} onChange={(e) => setEstudiante(e.target.value)}>
                     <option value="">{t("ninguno")}</option>
                     {estudiantes.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}

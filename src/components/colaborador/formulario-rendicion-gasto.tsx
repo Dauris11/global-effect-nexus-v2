@@ -301,9 +301,9 @@ export function FormularioRendicionGasto({
                 <p className="text-sm font-semibold text-tinta">
                   {escaneandoOcr ? t("ocrScanning") : t("uploadReceiptPrompt")}
                 </p>
-                <p className="text-xs text-tinta/60">
-                  {archivoNombre ? archivoNombre : t("ocrHint")}
-                </p>
+                {archivoNombre && (
+                  <p className="text-xs text-tinta/60">{archivoNombre}</p>
+                )}
               </div>
             </label>
 
@@ -328,7 +328,6 @@ export function FormularioRendicionGasto({
                 id="proveedor"
                 value={proveedorNombre}
                 onChange={(e) => setProveedorNombre(e.target.value)}
-                placeholder={t("providerPlaceholder")}
                 required
                 className="mt-1"
               />
@@ -475,7 +474,6 @@ export function FormularioRendicionGasto({
                       )}
                     </ul>
                   )}
-                  <p className="text-xs text-tinta-3">{t("noStudent")}</p>
                 </div>
               )}
             </div>
@@ -487,7 +485,6 @@ export function FormularioRendicionGasto({
               id="concepto"
               value={concepto}
               onChange={(e) => setConcepto(e.target.value)}
-              placeholder={t("conceptPlaceholder")}
               required
               rows={2}
               className="mt-1"

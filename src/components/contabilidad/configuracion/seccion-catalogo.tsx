@@ -96,7 +96,6 @@ export function SeccionCatalogo({
 
   return (
     <div className="space-y-4">
-      <p className="max-w-3xl text-[15px] text-tinta-2">{t("explicacion")}</p>
       <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="relative w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-2" />

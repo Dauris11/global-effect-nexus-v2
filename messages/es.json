@@ -32,7 +32,6 @@
       "estudiantes": "{n, plural, one {# estudiante} other {# estudiantes}}",
       "comoLlegar": "Cómo llegar",
       "cercaDe": "Cerca de {municipio}",
-      "ayudaSeleccion": "Toca el mapa, arrastra la chincheta o usa tu ubicación para fijar el punto.",
       "sinUbicacion": "Sin ubicación registrada.",
       "fueraDeLaVega": "Ese punto queda fuera de la provincia de La Vega. Elige uno dentro.",
       "tuUbicacionFuera": "Tu ubicación actual está fuera de la provincia de La Vega.",
@@ -77,9 +76,7 @@
         "noDisponible": "No se pudo obtener tu ubicación."
       },
       "vivienda": {
-        "titulo": "Ubicación de la vivienda",
-        "ayudaLectura": "Punto registrado en la provincia de La Vega.",
-        "ayudaEdicion": "Toca el mapa, arrastra la chincheta o usa tu ubicación para marcar el hogar del estudiante."
+        "titulo": "Ubicación de la vivienda"
       }
     },
     "formularioGuiado": {
@@ -108,16 +105,13 @@
     "notRegistered": "Tu cuenta no está registrada. Contacta al administrador.",
     "oauth": "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
     "backHome": "Volver al inicio",
-    "needAccess": "¿No tienes acceso? Los usuarios se invitan desde administración.",
     "showPassword": "Ver la contraseña",
     "hidePassword": "Ocultar la contraseña",
     "or": "o",
     "signInHeading": "Entra a tu portal",
     "setPassword": {
       "title": "Elige tu contraseña",
-      "intro": "Elige la contraseña con la que vas a entrar al portal.",
       "password": "Contraseña nueva",
-      "hint": "Mínimo 8 caracteres.",
       "repeat": "Repite la contraseña",
       "save": "Guardar y entrar",
       "tooShort": "Usa al menos 8 caracteres.",
@@ -292,7 +286,6 @@
     "access_portal_title": "Portal del sistema",
     "access_meals_title": "Inscripción de comida",
     "access_transport_title": "Transporte en vivo",
-    "footerTagline": "Bringing Hope · Changing Lives · Transforming Communities",
     "footerTagline2": "Plataforma integral de gestión educativa",
     "footerRights": "Todos los derechos reservados.",
     "footerAddress": "La Vega, República Dominicana",
@@ -372,10 +365,6 @@
     "role_estudiante": "Estudiante",
     "role_contabilidad": "Contabilidad",
     "role_habitudes": "Habitudes",
-    "access_portal_desc": "Estudiantes, docentes y personal entran aquí con su cuenta.",
-    "access_meals_desc": "Apúntate al almuerzo del día antes de la hora de corte.",
-    "access_transport_desc": "Sigue la guagua en tiempo real y regístrate para la ruta del día.",
-    "access_requests_desc": "Pide una constancia, una carta o una cita con administración.",
     "footerContact": "Contacto",
     "heroCarousel": "Imágenes de la Fundación",
     "menuSections": "Secciones",
@@ -383,7 +372,6 @@
     "role_teachers": "Docentes",
     "role_accounting": "Contabilidad",
     "searchPill": "¿A dónde quieres ir?",
-    "searchPillHint": "Portal, comida, transporte o trámites",
     "statsTitle": "La Fundación en cifras",
     "stats_students": "{n, plural, =1 {becado activo} other {becados activos}}",
     "stats_g360": "{n, plural, =1 {estudiante en Global Effect 360} other {estudiantes en Global Effect 360}}",
@@ -635,7 +623,6 @@
         "detalle": "Foto y notas"
       },
       "tituloSeccion": "Datos Generales del Activo",
-      "subtituloSeccion": "Información descriptiva para identificación y control",
       "nombreLabel": "Nombre descriptivo del activo",
       "nombrePlaceholder": "Ej: Taladro Percutor Industrial Dewalt 20V Max",
       "categoriaLabel": "Categoría patrimonial",
@@ -653,7 +640,6 @@
       "fotoLabel": "URL de Fotografía",
       "fotoPlaceholder": "https://...",
       "notasLabel": "Notas y especificaciones",
-      "notasPlaceholder": "Accesorios incluidos, condiciones físicas o advertencias de uso...",
       "cancelar": "Cancelar",
       "guardarCambios": "Guardar Cambios",
       "crearActivo": "Crear Activo y Generar QR",
@@ -838,7 +824,6 @@
       "action": "Nuevo evento",
       "title": "Nuevo evento",
       "subtitle": "Queda en el calendario de todo el equipo.",
-      "titlePlaceholder": "¿Qué se celebra o se reúne?",
       "timeHint": "Déjala vacía si dura todo el día.",
       "create": "Crear evento",
       "creating": "Creando…",
@@ -945,7 +930,6 @@
     "creating": "Creando…",
     "cancel": "Cancelar",
     "passwordTitle": "Contraseña temporal",
-    "passwordHint": "Se muestra una sola vez. Pásasela a su dueño y que la cambie al entrar.",
     "copy": "Copiar",
     "copied": "Copiada",
     "done": "Entendido",
@@ -1191,7 +1175,6 @@
         "completado": "Completado",
         "error": "Error"
       },
-      "replaceHint": "Ojo: precargar reemplaza lo que ya hayas escrito en el formulario, así que lee el documento antes de rellenar a mano.",
       "notFound": "No se pudo leer un nombre en el documento. Rellena el formulario a mano.",
       "noKey": "El lector no está configurado: falta una clave de API válida. Avisa al equipo técnico y rellena el formulario a mano.",
       "reviewHint": "La IA propone; la persona confirma. Revisa siempre antes de dar por bueno un dato."
@@ -1208,10 +1191,7 @@
       "confirmDelete": "Sí, eliminar definitivamente",
       "deleting": "Eliminando…",
       "confirmTitle": "¿Eliminar el expediente de {name}?",
-      "deleteHint": "Se borra la ficha completa: datos personales, familia, vivienda, salud y situación. No se puede deshacer.",
-      "confirmHint": "Este es el segundo y último aviso: al confirmar, no hay vuelta atrás.",
       "inUseTitle": "El expediente de {name} tiene historial",
-      "inUseHint": "Hay registros de otros módulos sobre esta persona y borrarla se los llevaría por delante. Cámbiale el estado a inactivo, graduado o suspendido: sale del trabajo diario y no se pierde nada.",
       "understood": "Entendido",
       "error": "No se pudo eliminar. Inténtalo de nuevo.",
       "deps": {
@@ -1280,7 +1260,6 @@
       "cuentaSoloActivos": "Solo los estudiantes activos tienen cuenta del portal",
       "noActivoDesvincular": "Este expediente ya no está activo: puedes desvincular la cuenta que le quedó.",
       "invitarTitulo": "Crear su cuenta e invitarlo por correo",
-      "invitarAyuda": "Le llega un correo a {correo} con un botón para elegir su contraseña. Tú no tienes que escribir ninguna.",
       "invitarSinCorreo": "Para invitarlo, primero escribe su correo en «Editar».",
       "invitarBoton": "Crear cuenta e invitar",
       "invitarErrores": {
@@ -1359,7 +1338,6 @@
         "service": "Servicio",
         "meeting": "Reunión",
         "letter": "Carta al patrocinador",
-        "hint": "La carta se deduce de lo que llegó al buzón de la Fundación; el servicio y la reunión los marca administración en Servicios mensuales.",
         "notes": "Notas de seguimiento",
         "stages": "Historial de etapas",
         "noStages": "Todavía no hay cambios de etapa registrados.",
@@ -1390,9 +1368,6 @@
       "newState": "¿En qué situación queda?",
       "reason": "¿Por qué? (obligatorio)",
       "date": "Desde qué fecha",
-      "releasesAccount": "Al pasar a este estado se suelta la cuenta del portal y se desactiva: el estudiante ya no podrá entrar. Si vuelve a ser activo, recupera su misma cuenta.",
-      "activeNeeds": "Para pasar a activo hay que llenar primero la universidad, la carrera, el plan de estudios y la matrícula en «Editar».",
-      "applicantNote": "Un postulado todavía no es parte de la Fundación: primero pasa los filtros y la Academia de Liderazgo.",
       "save": "Guardar el cambio",
       "saved": "Listo, la situación quedó actualizada.",
       "errors": {
@@ -1406,9 +1381,7 @@
     "quickCreate": {
       "title": "¿Cómo quieres registrarlo?",
       "quick": "Registro rápido",
-      "full": "Registro completo",
-      "quickHelp": "Solo lo básico: nombre, contacto y universidad. El resto se completa después, cuando se tenga la información.",
-      "fullHelp": "Toda la ficha ahora: familia, vivienda, salud y entorno."
+      "full": "Registro completo"
     },
     "complete": {
       "title": "Ficha completa al {percent} %",
@@ -1416,7 +1389,6 @@
       "missing": "Falta información en: {sections}."
     },
     "costs": {
-      "hint": "Cifras visibles solo para la Junta y contabilidad. El aporte del patrocinador es una estimación: monto mensual de su asignación por los meses transcurridos.",
       "kpi": {
         "total": "Inversión total",
         "average": "Promedio por cuatrimestre ({n} cursados)",
@@ -1446,8 +1418,7 @@
         "reference": "NCF / referencia",
         "amount": "Monto (DOP)",
         "total": "Total",
-        "empty": "Sin gastos en este período",
-        "emptyHint": "Los gastos aparecen al etiquetar al estudiante en una factura, una orden de compra o una rendición."
+        "empty": "Sin gastos en este período"
       }
     }
   },
@@ -1481,8 +1452,6 @@
         "active": "Activas",
         "credits": "Créditos activos"
       },
-      "deleteHint": "Esta acción no se puede deshacer. El historial académico no se toca: guarda el nombre de la materia como texto, no como referencia.",
-      "inUseHint": "Tiene matrícula asociada, y borrarla se llevaría por delante esas inscripciones. Márcala como inactiva: desaparece del trabajo diario sin perder nada.",
       "tasks": "Tareas",
       "filterAll": "Todas",
       "filterWithTeacher": "Con docente",
@@ -1512,7 +1481,6 @@
       "empty": "No hay clases de Global Effect 360",
       "emptyHint": "Las clases salen del catálogo del programa y se asignan a un docente desde Prematrícula.",
       "forbidden": "No tienes acceso a las clases de 360",
-      "forbiddenHint": "Esta pantalla es para docentes y para coordinación académica.",
       "students": "Estudiantes",
       "enrolled": "Inscritos",
       "tasks": "Tareas",
@@ -1608,7 +1576,6 @@
       "taskFormats": "Formatos permitidos",
       "taskMaxPoints": "Puntaje máximo",
       "taskRubric": "Instrucciones de entrega y rúbrica",
-      "taskRubricPlaceholder": "Escribe los criterios de evaluación, estructura requerida del informe o pautas del proyecto...",
       "taskAllowLate": "Permitir entregas tardías (quedan marcadas con aviso de retraso)",
       "cancel": "Cancelar",
       "pasos": {
@@ -1642,7 +1609,6 @@
       "title": "Nueva materia",
       "subtitle": "El período es opcional: se puede planificar antes de que exista.",
       "namePlaceholder": "Programación I",
-      "scheduleHint": "Por ejemplo: Lun y Mié 6:00–8:00 PM",
       "create": "Crear materia",
       "creating": "Creando…",
       "nameRequired": "El nombre es obligatorio",
@@ -1696,9 +1662,7 @@
         "subjects": "Materias",
         "enrollments": "Inscripciones",
         "enrollments360": "Inscripciones de 360"
-      },
-      "deleteHint": "Esta acción no se puede deshacer.",
-      "inUseHint": "Tiene registros colgando y borrarlo se los llevaría por delante. Márcalo como completado: el cuatrimestre se cierra y todo queda donde está."
+      }
     },
     "newTerm": {
       "title": "Nuevo período",
@@ -1847,11 +1811,9 @@
     },
     "subjectsTitle": "Materias en curso",
     "subjectsEmpty": "No tienes materias inscritas",
-    "subjectsEmptyHint": "Cuando la coordinación cierre tu prematrícula, tus materias aparecerán aquí.",
     "creditsShort": "{count} cr.",
     "gradesTitle": "Mis calificaciones",
     "gradesEmpty": "Todavía no tienes notas registradas",
-    "gradesEmptyHint": "Tus calificaciones aparecerán al cerrar el primer cuatrimestre.",
     "termSummary": "Índice {gpa} · promedio {average}",
     "table": {
       "subject": "Materia",
@@ -1916,7 +1878,6 @@
         "windowSoon": "Prematrícula anunciada",
         "windowFrom": "Del {abre} al {cierra}",
         "windowClosed": "La prematrícula está cerrada",
-        "windowClosedHint": "Coordinación la abre al inicio de cada período. Hasta entonces, aquí solo puedes consultar lo que ya tienes.",
         "forTerm": "Período {periodo}",
         "catalogEmpty": "Este período todavía no tiene materias en el catálogo.",
         "add": "Inscribirme",
@@ -2048,7 +2009,6 @@
       "eyebrow": "Asistente",
       "title": "Chat con el asistente",
       "description": "Pregúntale por tus materias, tus notas o cómo organizar la semana.",
-      "privacy": "Para responderte, el asistente consulta tus materias, tus notas y tus pendientes. No accede a tu expediente y no habla de otros estudiantes. Si necesitas algo de administración, pídelo en «Mis solicitudes».",
       "placeholder": "Escribe tu pregunta…",
       "send": "Enviar",
       "thinking": "Pensando…",
@@ -2061,8 +2021,7 @@
       "errorRefused": "El asistente no puede responder a eso. Prueba a preguntarlo de otra forma o escríbele a coordinación.",
       "errorInput": "Tu mensaje parece contener código, datos estructurados o instrucciones para la IA. Escríbelo como una pregunta normal.",
       "error": "No se pudo responder ahora mismo. Inténtalo de nuevo.",
-      "forbidden": "El asistente no está disponible para tu cuenta",
-      "forbiddenHint": "Tu perfil no tiene habilitado el uso del asistente. Escríbele a la coordinación de la Fundación si crees que debería estarlo."
+      "forbidden": "El asistente no está disponible para tu cuenta"
     },
     "requestsTitle": "Mis solicitudes",
     "requestsDesc": "Constancias, cartas, permisos y citas con administración.",
@@ -2077,21 +2036,15 @@
     "quarterlyRequirement": {
       "currentTerm": "cuatrimestre vigente",
       "onlyUniversityTitle": "Requisito exclusivo para estudiantes universitarios",
-      "onlyUniversityHint": "La obligatoriedad de tomar al menos 2 clases por cuatrimestre aplica únicamente a los estudiantes universitarios.",
       "metTitle": "Requisito universitario cumplido: llevas {taken} de {min} clases obligatorias en {term}.",
       "metDetail": "Incluye {c360} clase(s) de Global Effect 360 y {career} materia(s) de carrera.",
       "pendingTitle": "Requisito obligatorio universitario: llevas {taken} de {min} clases en {term} (te falta(n) {missing}).",
-      "pendingDetail": "Todo estudiante universitario debe cursar al menos 2 clases por cuatrimestre de manera obligatoria.",
       "go360": "Ir a Global Effect 360",
       "goEnrollment": "Ir a Prematrícula"
     },
     "dashboard": {
-      "averageHint": "Escala de 0 a 100 · ver notas",
       "gpaHint": "Índice acumulado · ver historial",
-      "passedHint": "Materias aprobadas",
-      "creditsHint": "Créditos en curso · ver matrícula",
       "weeklyTasksTitle": "Tareas semanales",
-      "weeklyTasksSubtitle": "{count} pendiente(s) esta semana",
       "openClassroom": "Ir al Aula Virtual",
       "legendPending": "Pendientes",
       "legendDone": "Entregadas",
@@ -2106,10 +2059,8 @@
       "dayAgendaTitle": "Agenda · {date}",
       "dayEmpty": "Sin actividades programadas para este día.",
       "viewFullAgenda": "Ver agenda completa",
-      "subjectsInteractiveHint": "Distribución de {credits} créditos activos",
       "manageSubjects": "Ir a matrícula",
       "gradeLabel": "Calificación",
-      "requestsInteractiveHint": "Filtra tus trámites por estado",
       "openRequests": "Ver todas",
       "reqFilterAll": "Todas",
       "reqFilterPending": "En proceso",
@@ -2124,7 +2075,6 @@
     },
     "moduleCharts": {
       "gradesTrendTitle": "Evolución de promedio por período",
-      "gradesTrendHint": "Tendencia histórica de tus calificaciones",
       "averageSeries": "Promedio",
       "classroomChartTitle": "Resumen de entregas",
       "classroomChartHint": "{done} de {total} actividades entregadas o calificadas",
@@ -2140,7 +2090,6 @@
       "attendanceBarTitle": "Asistencia por clase 360",
       "attendanceSeries": "Asistencia (%)",
       "enrollmentChartTitle": "Carga de créditos por materia",
-      "enrollmentChartHint": "Distribución de tus asignaturas activas",
       "creditsSeries": "Créditos"
     },
     "fullCalendar": {
@@ -2248,7 +2197,6 @@
       "title": "Materias asignadas",
       "subtitle": "Gestiona las materias que administración te asignó: pasa lista, publica tareas y califica entregas.",
       "emptyTitle": "Aún no tienes materias asignadas",
-      "emptyHint": "Cuando administración te asigne una materia, aparecerá aquí para pasar lista y publicar tareas.",
       "noTerm": "Sin período",
       "noSchedule": "Horario por definir",
       "studentsCount": "{count} inscritos",
@@ -2287,8 +2235,6 @@
       "publishTask": "Publicar",
       "noPosts": "Aún no hay publicaciones en esta materia.",
       "deletePost": "Eliminar publicación",
-      "taskTitlePlaceholder": "Ej. Práctica de laboratorio #1",
-      "taskDescriptionPlaceholder": "Instrucciones y detalles de la actividad",
       "statusActive": "Activa",
       "statusApproved": "Aprobada",
       "statusFailed": "Reprobada",
@@ -2300,12 +2246,7 @@
       "attendancePct": "{pct}% asistencia"
     },
     "dashboard": {
-      "classesHint": "Clases 360 y materias activas",
-      "studentsHint": "Alumnos inscritos actualmente",
-      "gradesHint": "Notas finales cerradas",
-      "toReviewHint": "Entregas esperando calificación",
       "classesChartTitle": "Estudiantes y notas finales por clase",
-      "classesChartHint": "Comparativa de inscritos frente a notas cerradas",
       "enrolledSeries": "Inscritos",
       "gradesSeries": "Notas finales",
       "noClassesChart": "Aún no tienes clases activas para graficar.",
@@ -2426,7 +2367,6 @@
     "eyebrow": "Página de inicio",
     "title": "Anuncios del hero",
     "desc": "Lo que rota en la portada pública. Publica uno cuando haya algo que anunciar de verdad.",
-    "fallback": "Ahora mismo no hay ninguno activo, así que el inicio muestra su presentación por defecto.",
     "liveNow": "En el inicio ahora",
     "hidden": "Ocultos",
     "active": "Activo",
@@ -2434,10 +2374,8 @@
     "newTitle": "Nuevo anuncio",
     "fieldTitle": "Titular",
     "fieldImage": "Imagen",
-    "fieldImageHint": "Ruta de /public o URL completa. Vacío, se reparten las tres del hero.",
     "fieldCtaText": "Botón",
     "fieldCtaLink": "Enlace del botón",
-    "fieldCtaHint": "Con los dos puestos, el anuncio lleva su propio botón.",
     "create": "Publicar",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -2590,7 +2528,6 @@
     "tanda1": "Tanda 1",
     "tanda2": "Tanda 2",
     "tandaPending": "Debes elegir tu materia de la tanda {n}",
-    "tandaRule": "Global Effect 360 es obligatorio: una materia por tanda, dos por cuatrimestre.",
     "tandaChooseNow": "Elegir ahora",
     "tandasTitle": "Tus tandas · {periodo}",
     "tandaOpenNow": "abierta ahora",
@@ -3023,7 +2960,6 @@
       "author": "Autor",
       "link": "Enlace",
       "file": "Archivo",
-      "fileHint": "PDF, imagen, presentación o documento, hasta 20 MB. Puedes dejarlo vacío y poner solo un enlace.",
       "fileReplaceHint": "Ahora tiene «{name}». Si subes otro, lo sustituye."
     },
     "programs": {
@@ -3048,9 +2984,7 @@
       "participants": "{count, plural, =0 {Sin participantes} one {# participante} other {# participantes}}",
       "materials": "{count, plural, =0 {Sin material} one {# material} other {# materiales}}",
       "confirmTitle": "¿Eliminar «{name}»?",
-      "deleteWarning": "Se borra el programa. No se puede recuperar desde el sitio.",
       "inUseTitle": "«{name}» tiene material",
-      "inUseHint": "{count, plural, one {Hay # material colgando del programa y el borrado se lo llevaría por delante.} other {Hay # materiales colgando del programa y el borrado se los llevaría por delante.}} Bórralos primero, o marca el programa «Inactiva» para retirarlo conservando lo que tiene.",
       "empty": "Todavía no hay programas",
       "emptyHint": "Crea el primero y aparecerá aquí con su facilitador y sus fechas.",
       "noMatches": "Ningún programa cumple el filtro",
@@ -3078,8 +3012,6 @@
       "editTitle": "Editar material",
       "formSubtitle": "Sube un archivo, pon un enlace, o las dos cosas. Algo tiene que llevar.",
       "confirmTitle": "¿Eliminar «{name}»?",
-      "deleteWarning": "Se borra el material del repositorio.",
-      "deleteWarningFile": "Se borra el material y también su archivo del almacén. No se puede recuperar.",
       "empty": "Todavía no hay materiales",
       "emptyHint": "Sube la primera guía o pega un enlace, y quedará ordenado por programa.",
       "noMatches": "Ningún material cumple el filtro",
@@ -3122,11 +3054,9 @@
     "sourceHint": "Esta pantalla no lleva ninguna lista escrita a mano: recorre el mismo menú que dibuja la barra lateral, para los siete roles. Un módulo nuevo aparece aquí solo.",
     "settingsArea": "Ajustes (Configuración)",
     "byRole": "El menú de cada rol",
-    "sourceBadge": "Se actualiza solo",
     "finder": {
       "title": "¿Dónde está…?",
       "placeholder": "Escribe lo que buscas: «base de conocimiento», «cuotas de la IA», «permisos»…",
-      "help": "Escribe una o varias palabras. Te digo en qué menú está y si tu cuenta puede abrirlo.",
       "empty": "No encontré nada con esas palabras. Prueba con una sola, por ejemplo «correo», «notas» o «IA».",
       "howTo": "Cómo llegar",
       "open": "Abrir",
@@ -3197,8 +3127,7 @@
       "tasks": "Tareas por estado",
       "tasksHint": "Incluye las que no cuelgan de ningún proyecto: son trabajo del equipo igual que las demás.",
       "progress": "Avance por proyecto",
-      "progressHint": "Tareas completadas sobre tareas vivas. Las canceladas no cuentan, así que cancelar una nunca baja el avance.",
-      "withoutTasks": "{count, plural, one {# proyecto no tiene ninguna tarea todavía, así que no aparece: su avance no es 0%, es que aún no se sabe.} other {# proyectos no tienen ninguna tarea todavía, así que no aparecen: su avance no es 0%, es que aún no se sabe.}}"
+      "progressHint": "Tareas completadas sobre tareas vivas. Las canceladas no cuentan, así que cancelar una nunca baja el avance."
     },
     "academic": {
       "term": "Período",
@@ -3237,7 +3166,6 @@
     "send": "Preguntar",
     "thinking": "Pensando…",
     "empty": "Pregúntale lo que necesites",
-    "emptyHint": "Sabe lo que enseñan los paneles: cifras, avance de proyectos, notas y próximos eventos. Empieza por una de las sugerencias.",
     "prompt": {
       "balance": "¿Cómo va el balance del mes?",
       "projects": "¿Qué proyectos van más atrasados?",
@@ -3267,8 +3195,7 @@
       "reunion": "Reunión"
     },
     "markAll": "Marcar todos",
-    "empty": "No tienes avisos",
-    "emptyHint": "Aquí aparecen las tareas que se te asignan y las solicitudes que te llegan."
+    "empty": "No tienes avisos"
   },
   "audit": {
     "eyebrow": "Auditoría",
@@ -3480,11 +3407,9 @@
       "newCandidate": "Candidato nuevo (si aún no tiene ficha)",
       "newCandidatePlaceholder": "Nombre completo del candidato",
       "amount": "Monto (USD)",
-      "amountHint": "Desde {umbral} USD lo aprueba también dirección.",
       "time": "Hora preferida",
       "timeAny": "Cualquier hora",
       "detail": "Detalle",
-      "detailPlaceholder": "Lo que quien lo revise necesita saber.",
       "submit": "Enviar solicitud",
       "sending": "Enviando…",
       "success": "Solicitud enviada. Verás cada paso en la lista.",
@@ -3503,9 +3428,7 @@
     "purchase": {
       "title": "Compra a contabilidad",
       "description": "Qué hay que comprar y para qué",
-      "descriptionPlaceholder": "Qué se compra, cuántas unidades y por qué hace falta.",
       "quote": "Cotización",
-      "quoteHint": "PDF, PNG, JPG o DOCX. Máximo {mb} MB.",
       "submit": "Enviar compra",
       "success": "Compra enviada a contabilidad. Verás su estado en la lista.",
       "download": "Descargar la cotización",
@@ -3714,7 +3637,6 @@
       "viewOriginal": "Ver archivo original",
       "noAttachment": "Comprobante registrado sin archivo escaneado.",
       "notesLabel": "Notas / Observación para el empleado",
-      "notesPlaceholder": "Indica si falta el NCF, si es válido para reembolso o el motivo de rechazo…",
       "markObserved": "Marcar observado",
       "reject": "Rechazar",
       "approveAndValidate": "Aprobar y validar",
@@ -3740,7 +3662,6 @@
         "fecha": "Fecha",
         "montoOrigen": "Monto que sale",
         "montoDestino": "Monto que entra",
-        "montoDestinoAyuda": "Solo entre monedas distintas: lo que acreditó el banco en la otra cuenta.",
         "concepto": "Concepto",
         "referencia": "Referencia",
         "guardar": "Registrar transferencia",
@@ -3813,7 +3734,6 @@
       "conciliadaPor": "Conciliada por {nombre} el {fecha}",
       "anular": "Anular",
       "anularTitulo": "¿Anular esta conciliación?",
-      "anularTexto": "La transacción del banco y el asiento vuelven a quedar por conciliar. Queda registrado en la bitácora.",
       "anularConfirmar": "Anular conciliación",
       "importar": {
         "boton": "Subir estado (.csv)",
@@ -3904,7 +3824,6 @@
       "beneficiario": "Proveedor o beneficiario",
       "formaPago": "Forma de pago",
       "referencia": "Referencia",
-      "referenciaAyuda": "Número de transferencia, de depósito o del documento.",
       "notas": "Notas",
       "guardar": "Guardar borrador",
       "cancelar": "Cancelar",
@@ -3925,20 +3844,16 @@
       "tasa": "Tasa",
       "asiento": "Asiento",
       "cheque": "Cheque",
-      "migrado": "Migrado de la tabla anterior, sin tasa ni asiento.",
       "editar": "Editar",
       "contabilizar": "Contabilizar",
-      "contabilizarAyuda": "Mueve el libro de banco y genera el asiento. No se puede deshacer: solo anular.",
       "anular": "Anular",
       "anularTitulo": "Anular {numero}",
-      "anularDescripcion": "El recibo conserva su número. Si estaba contabilizado se genera el contra-asiento con fecha de hoy.",
       "motivoCampo": "Motivo",
       "confirmarAnular": "Anular recibo",
       "imprimir": "Imprimir",
       "adjuntos": "Adjuntos",
       "adjuntosVacio": "Sin adjuntos",
       "adjuntar": "Subir adjunto",
-      "adjuntoAyuda": "PDF, JPG o PNG, hasta 10 MB.",
       "descargar": "Descargar {nombre}"
     },
     "impreso": {
@@ -3990,7 +3905,6 @@
       "buscarBoton": "Buscar",
       "vacio": "No hay proveedores",
       "vacioFiltro": "Ningún proveedor coincide",
-      "vacioTexto": "Registra el primero con «Nuevo proveedor».",
       "debe": "Se le debe",
       "alDia": "Al día",
       "facturas": "{n, plural, =0 {Sin facturas} one {# factura} other {# facturas}}",
@@ -4002,7 +3916,6 @@
       "tituloEditar": "Editar proveedor",
       "tipo": "Tipo de proveedor",
       "identificacion": "RNC o cédula (sin guiones)",
-      "identificacionAyuda": "Solo dígitos sin guiones: RNC de 9 dígitos (formal/jurídico) o cédula de 11 (informal/profesional independiente).",
       "consultarDgii": "Consultar DGII",
       "consultandoDgii": "Consultando...",
       "rncOk": "Datos cargados desde la DGII. Revisa antes de guardar.",
@@ -4044,7 +3957,6 @@
       "cuentaReemplazada": "Reemplazada el {fecha}",
       "cuentaAlta": "Registrada por {nombre} el {fecha}",
       "nuevaCuenta": "Registrar cuenta",
-      "nuevaCuentaAyuda": "Si ya hay una cuenta activa en esa moneda, queda reemplazada (no se borra) y el auditor recibe una alerta.",
       "banco": "Banco",
       "tipoCuenta": "Tipo",
       "moneda": "Moneda",
@@ -4058,22 +3970,19 @@
       "abono": "Abono",
       "saldo": "Saldo",
       "documento": "Documento",
-      "fecha": "Fecha",
-      "sinComprobante": "Persona física sin comprobante: la Fundación debe emitir un comprobante de compras y aplicar las retenciones que correspondan (validar con el contador)."
+      "fecha": "Fecha"
     },
     "facturaForm": {
       "tituloNueva": "Nueva factura de proveedor",
       "tituloEditar": "Editar factura",
       "proveedor": "Proveedor",
       "ncf": "NCF o e-CF",
-      "ncfAyuda": "B + 10 dígitos o E + 12 dígitos. Vacío solo si el proveedor es persona física sin comprobante.",
       "emision": "Fecha de emisión",
       "vencimiento": "Fecha de vencimiento",
       "moneda": "Moneda",
       "tasa": "Tasa (pesos por dólar)",
       "subtotal": "Subtotal",
       "monto": "Monto",
-      "exentoItbisAyuda": "Como entidad sin fines de lucro no se registra ITBIS por separado.",
       "itbis": "ITBIS",
       "retencionIsr": "Retención de ISR",
       "retencionItbis": "Retención de ITBIS",
@@ -4081,7 +3990,6 @@
       "buscarRetencion": "Buscar por concepto, % o norma DGII...",
       "sinResultadosRetencion": "Ninguna retención coincide con la búsqueda.",
       "recomendadaProveedor": "Aplica a este tipo de proveedor",
-      "retencionCalculada": "Calculado automáticamente: {monto}",
       "total": "Total de la factura",
       "neto": "Neto a pagar",
       "concepto": "Concepto",
@@ -4095,7 +4003,6 @@
       "solicitante": "Persona responsable / Solicitante",
       "programa": "Programa de la Fundación",
       "ocrTitulo": "Escanear Factura con OCR (IA)",
-      "ocrSubtitulo": "Sube el comprobante escaneado (PDF o imagen) para extraer automáticamente RNC, NCF y monto.",
       "ocrBoton": "Escanear comprobante",
       "ocrProcesando": "Leyendo comprobante con IA...",
       "ocrExito": "Comprobante leído con éxito ({confianza}% de certeza). Revisa los campos sugeridos.",
@@ -4108,7 +4015,6 @@
         "asignacion": "Asignación"
       },
       "estudiante": "Imputar a un estudiante",
-      "estudianteAyuda": "Opcional. Suma este gasto al costo del becado.",
       "pilar": "Tipo de costo",
       "pilares": {
         "universidad": "Universidad (matrícula, créditos)",
@@ -4171,8 +4077,6 @@
       "ultimoArqueo": "Último arqueo",
       "nunca": "Nunca",
       "porAprobar": "Arqueo por aprobar",
-      "reglaSoporte": "Comprobante obligatorio desde {monto}",
-      "ecuacion": "Efectivo + vales + gastos por reponer = fondo fijo",
       "activa": "Activa",
       "inactiva": "Inactiva",
       "tipoGasto": "Gasto",
@@ -4222,12 +4126,10 @@
       "reponerBoton": "Reponer",
       "sinCuentas": "Sin cuentas en {moneda}",
       "conceptoReposicion": "Reposición de fondo fijo · {caja}",
-      "justificacionAyuda": "Motivo del faltante o sobrante",
       "totalContado": "Total contado",
       "firmaConteo": "Cuenta {nombre}. Lo aprueba otra persona con permiso de aprobar.",
       "montoReponer": "Monto a reponer",
       "sugerido": "Gastos por reponer: {monto}",
-      "contabilizaGasto": "Se contabiliza al registrar: gasto contra caja chica.",
       "errores": {
         "datos_invalidos": "Revisa los datos: falta algo o no es válido.",
         "no_permitido": "No tienes permiso para esto.",
@@ -4269,10 +4171,8 @@
       "volverProveedor": "Volver al proveedor",
       "datos": "Datos de la factura",
       "aprobar": "Aprobar",
-      "aprobarAyuda": "Registra el gasto y crea la cuenta por pagar por el neto.",
       "anular": "Anular",
       "anularTitulo": "Anular {numero}",
-      "anularDescripcion": "Si está aprobada y sin pagos, se anula también su cuenta por pagar y se genera el contra-asiento.",
       "motivo": "Motivo",
       "confirmarAnular": "Anular factura",
       "editar": "Editar",
@@ -4281,9 +4181,7 @@
       "aprobadaPor": "Aprobada por {nombre}",
       "adjuntos": "Factura escaneada",
       "adjuntar": "Subir archivo",
-      "adjuntoAyuda": "PDF, JPG o PNG, hasta 10 MB.",
-      "asientoContable": "Asiento contable",
-      "asientoContableAyuda": "Las cuentas, el debe y el haber con que quedó registrada esta factura."
+      "asientoContable": "Asiento contable"
     },
     "cxp": {
       "titulo": "Cuentas por pagar",
@@ -4299,7 +4197,6 @@
         "total": "Total"
       },
       "vacio": "No hay cuentas por pagar",
-      "vacioTexto": "Nacen al aprobar una factura de proveedor o una solicitud de gasto.",
       "vence": "Vence {fecha}",
       "vencida": "Vencida hace {n, plural, one {# día} other {# días}}",
       "venceHoy": "Vence hoy",
@@ -4318,7 +4215,6 @@
       "pagado": "Pagado",
       "saldo": "Saldo",
       "programar": "Programar pago",
-      "programarAyuda": "Fecha prevista y cuenta de salida. Para lo que vino de una solicitud, aquí se corrige la categoría.",
       "fechaProgramada": "Fecha prevista",
       "cuentaSalida": "Cuenta de salida",
       "categoria": "Categoría",
@@ -4327,7 +4223,6 @@
       "ninguno": "Ninguno",
       "guardarProgramacion": "Guardar programación",
       "pagar": "Registrar pago",
-      "pagarAyuda": "Crea el comprobante de egreso, el movimiento en el libro de banco y el asiento, en una sola operación.",
       "fechaPago": "Fecha del pago",
       "montoPago": "Monto",
       "formaPago": "Forma de pago",
@@ -4365,18 +4260,14 @@
       "mi-dia": "Tu cola de decisiones de hoy: comprobantes, vencimientos y señales",
       "reportes-financieros": "Estados financieros, balanza y reportes por programa",
       "cierre-contable": "Cierre de periodos y del año, con lista de verificación",
-      "comprobantes-recibidos": "Facturas y fotos que llegan del chat, por revisar y clasificar",
       "bancos": "Cuentas, libros de banco y conciliación",
       "cajas": "Cajas chicas, vales menores y cuadre/arqueo de caja",
       "recibos": "Recibos de ingreso y comprobantes de donaciones",
       "donaciones": "Donaciones en efectivo y especie, promesas y calendario",
-      "ordenes-compra": "Órdenes de compra y circuito de aprobación",
       "proveedores": "Directorio y facturas recibidas",
       "cxp": "Vencimientos, pagos y antigüedad de saldos",
       "retenciones": "Comprobantes de retención fiscal emitidos",
       "rendiciones": "Gastos que rinden los colaboradores",
-      "terceros": "Directorio y debida diligencia de donantes y proveedores",
-      "impuestos": "Formatos 606 a 609 (TXT/Excel), liquidaciones y calendario",
       "calculadoras": "Herramientas de ITBIS, retenciones, mora DGII y nómina",
       "inventario": "Activos fijos con su código QR",
       "solicitudes": "Gastos y trámites por aprobar",
@@ -4385,13 +4276,10 @@
       "asientos": "Asientos manuales, de ajuste y recurrentes",
       "libros": "Diario, mayor y balanza de comprobación",
       "configuracion": "Entidad, parámetros, períodos y catálogo",
-      "centros-costo": "Programas institucionales y centros de costo",
       "presupuesto": "Presupuesto anual, ejecución y alertas de sobregiro",
       "fondos": "Fondos restringidos y no restringidos con liberación",
       "rendicion": "Trazabilidad donación → fondo → gastos por donante",
-      "nomina": "Nómina institucional, cálculo TSS y recibos de pago",
-      "activos-fijos": "Activos fijos institucionales y depreciación periódica",
-      "consumibles": "Kardex de consumibles, papelería y suministros"
+      "nomina": "Nómina institucional, cálculo TSS y recibos de pago"
     },
     "impuestos": {
       "antetitulo": "Contabilidad",
@@ -4405,15 +4293,12 @@
       "descargarTxt": "Descargar TXT oficial",
       "envioEnCero": "Envío en cero",
       "excel": "Excel",
-      "exencionAsflLey122": "Exención general de ingresos ASFL (Ley 122-05)",
       "ingresosExentos": "Ingresos exentos donaciones",
       "itbisCompras": "ITBIS compras (al costo)",
       "itbisRetenido": "ITBIS retenido proveedores",
-      "retencionesProveedoresYHonorarios": "Retenciones aplicadas a proveedores de servicios y personas físicas",
       "baseHonorarios": "Base honorarios",
       "isrRetenidoHonorarios": "ISR retenido honorarios",
       "totalAPagarDgii": "Total a pagar DGII",
-      "declaracionJuradaAsfl": "Declaración Jurada anual de entidades sin fines de lucro",
       "donacionesEfectivo": "Donaciones efectivo",
       "donacionesEspecie": "Donaciones especie",
       "superavitSocial": "Superávit o déficit del ejercicio",
@@ -4507,7 +4392,6 @@
       "titulo": "Configuración contable",
       "antetitulo": "Contabilidad",
       "subtitulo": "Los datos de la Fundación, los parámetros legales con su vigencia, los períodos y el catálogo de cuentas.",
-      "subtituloLectura": "Solo lectura: puedes ver la configuración, pero no cambiarla.",
       "guardado": "Cambios guardados. Quedaron en la bitácora.",
       "tabs": {
         "etiqueta": "Secciones de la configuración",
@@ -4522,11 +4406,8 @@
         "razonSocial": "Razón social",
         "nombreComercial": "Nombre comercial",
         "rnc": "RNC",
-        "rncAyuda": "Nueve dígitos, con o sin guiones. Se verifica el dígito final antes de guardar.",
         "inicioEjercicio": "Inicio del ejercicio fiscal",
-        "inicioEjercicioAyuda": "Mes en que empieza el año contable.",
         "decimales": "Decimales de redondeo",
-        "decimalesAyuda": "La DGII trabaja con dos.",
         "telefono": "Teléfono",
         "email": "Correo electrónico",
         "direccion": "Dirección",
@@ -4535,7 +4416,6 @@
         "guardar": "Guardar cambios",
         "emisionSi": "Emisión de comprobantes habilitada",
         "emisionNo": "La Fundación no emite comprobantes",
-        "emisionTexto": "Los números de comprobante que se emiten fuera del sistema se registran a mano en cada documento. Esta opción no se cambia desde aquí.",
         "vacioTitulo": "Falta la ficha de la Fundación",
         "vacioTexto": "La crea la migración 0048. Avisa al equipo técnico para que la aplique.",
         "pasos": {
@@ -4545,7 +4425,6 @@
         }
       },
       "parametros": {
-        "explicacion": "Cada parámetro tiene fecha de vigencia. Un cambio no edita el valor anterior: crea una vigencia nueva y cierra la anterior, para que los meses pasados se sigan calculando con la cifra de entonces.",
         "grupos": {
           "itbis": "ITBIS",
           "retencion": "Retenciones",
@@ -4598,18 +4477,14 @@
         "descripcion": "La fila actual se cierra el día antes de la fecha que elijas y la nueva rige desde esa fecha. El valor anterior no se borra.",
         "desde": "Rige desde",
         "tasa": "Tasa (%)",
-        "tasaAyuda": "En porcentaje: escribe 18 para el 18 %. Hasta cuatro decimales.",
         "tasaEjemplo": "18",
         "monto": "Monto (RD$)",
-        "montoAyuda": "En pesos, con dos decimales como máximo.",
         "montoEjemplo": "0.00",
         "fuente": "Fuente legal",
-        "fuenteEjemplo": "Ley, norma o resolución que lo establece",
         "nota": "Nota (opcional)",
         "guardar": "Guardar vigencia"
       },
       "periodos": {
-        "explicacion": "Un período cerrado no admite registros nuevos ni cambios. Para cerrarlo no puede quedar ningún borrador de recibo ni de factura en el mes. Reabrirlo exige un motivo y queda en la bitácora.",
         "periodo": "Período",
         "estadoColumna": "Estado",
         "historia": "Cierres y reaperturas",
@@ -4626,18 +4501,14 @@
         "cerrar": "Cerrar",
         "reabrir": "Reabrir",
         "cerrarTitulo": "¿Cerrar {nombre}?",
-        "cerrarDescripcion": "Después de cerrarlo nadie podrá registrar ni corregir nada con fecha de este mes. Si hace falta un cambio, se registra un ajuste en un período abierto.",
         "confirmarCerrar": "Sí, cerrar el período",
         "reabrirTitulo": "¿Reabrir {nombre}?",
-        "reabrirDescripcion": "Reabrir un mes cerrado permite volver a cambiar sus registros. El auditor recibe una alerta y el motivo queda en la bitácora.",
         "motivo": "Motivo de la reapertura",
-        "motivoAyuda": "Al menos 10 caracteres. Explica qué hay que corregir y por qué.",
         "confirmarReabrir": "Sí, reabrir el período",
         "vacioTitulo": "Todavía no hay períodos",
         "vacioTexto": "El primer período se crea solo al registrar el primer documento del mes."
       },
       "catalogo": {
-        "explicacion": "Solo las cuentas de movimiento reciben asientos; las agrupadoras suman a sus subcuentas. Ninguna cuenta se borra: se desactiva cuando ya no tiene saldo.",
         "buscar": "Buscar por código o nombre",
         "sinResultados": "Ninguna cuenta coincide con la búsqueda",
         "cuenta": "Cuenta",
@@ -4668,7 +4539,6 @@
       },
       "cuenta": {
         "codigo": "Código",
-        "codigoAyuda": "Solo el último segmento, de uno a cuatro dígitos. El prefijo es el código de la cuenta madre.",
         "nombre": "Nombre de la cuenta",
         "subcuenta": {
           "titulo": "Nueva subcuenta",
@@ -4687,18 +4557,13 @@
           "confirmar": "Sí, activar"
         },
         "tipo": "Tipo de cuenta",
-        "codigoAyudaRaiz": "De uno o dos dígitos, por ejemplo 7.",
         "recibeAsientos": "Recibe asientos",
-        "recibeAsientosAyuda": "Si la marcas, la cuenta se usa en asientos; si no, solo suma a sus subcuentas.",
         "agregarAFacturas": "Agregar a Facturas",
-        "agregarAFacturasAyuda": "Si eliges «Sí», esta cuenta aparecerá por su nombre en la lista de Tipo de gasto al registrar facturas.",
         "si": "Sí",
         "no": "No",
-        "masInformacion": "Más información",
         "editar": {
           "titulo": "Editar la cuenta",
           "descripcion": "Cambia los datos de {cuenta}.",
-          "avisoBloqueo": "El código, el tipo y si recibe asientos solo cambian en cuentas sin asientos y sin nada que las use. El nombre siempre se puede cambiar.",
           "confirmar": "Guardar cambios"
         },
         "raiz": {
@@ -4707,7 +4572,6 @@
           "confirmar": "Crear cuenta"
         },
         "codigosTitulo": "Códigos de transacción",
-        "codigosAyuda": "Marca los procesos que usarán esta cuenta. El asiento automático la pondrá del lado configurado de cada código.",
         "codigosMover": "Se moverá aquí desde {cuenta}",
         "codigosVacio": "No hay códigos de transacción definidos.",
         "codigosGuardar": "Guardar códigos",
@@ -4756,7 +4620,6 @@
         "cuenta_con_hijas": "La cuenta tiene subcuentas: no puede recibir asientos."
       },
       "codigos": {
-        "explicacion": "Cada código nombra un proceso contable. Aquí defines si el código va al débito o al crédito y si aumenta o disminuye la cuenta; la cuenta se le asigna en el Catálogo. Los códigos nuevos los añade el equipo técnico en el código del sistema.",
         "vacioTitulo": "No hay códigos de transacción definidos",
         "nombre": "Código",
         "proceso": "Proceso",
@@ -4771,7 +4634,6 @@
         "efectoDe": "Efecto de {codigo}",
         "sinCuenta": "Sin cuenta asignada",
         "cuentaInactiva": "Cuenta inactiva o agrupadora",
-        "asignarEnCatalogo": "Asignar en el Catálogo",
         "defecto": "Por defecto",
         "guardado": "Guardado",
         "guardando": "Guardando",
@@ -4859,7 +4721,6 @@
         "revertidoCon": "Lo revierte el asiento",
         "sinMarca": "su período estaba cerrado, así que el original no se modificó",
         "revierteA": "Revierte el asiento",
-        "automaticoAyuda": "Este asiento lo generó un documento. Para revertirlo, anula el documento: así el recibo, el banco y la contabilidad quedan iguales.",
         "col": {
           "cuenta": "Cuenta",
           "descripcion": "Descripción",
@@ -4874,19 +4735,16 @@
         "descripcion": "Se registra un asiento con las mismas líneas cruzadas y fecha de hoy. El original no se borra.",
         "cerradoAviso": "El período de este asiento está cerrado: el original no se modifica y el reverso queda enlazado a él.",
         "motivo": "Motivo",
-        "motivoAyuda": "Al menos {n} caracteres. Queda en la bitácora.",
         "confirmar": "Revertir asiento"
       },
       "formulario": {
         "titulo": "Nuevo asiento",
         "subtitulo": "Partida doble a mano: los débitos tienen que ser iguales a los créditos.",
         "fecha": "Fecha",
-        "fechaAyuda": "Tiene que caer en un período abierto.",
         "tipo": "Tipo",
         "concepto": "Concepto",
         "guardar": "Guardar asiento",
         "cancelar": "Cancelar",
-        "ayudaEnvio": "Para guardar: concepto, al menos dos líneas con cuenta, cada una con débito o crédito (no los dos), y débitos iguales a créditos.",
         "pasos": {
           "datos": "Datos del asiento",
           "lineas": "Líneas"
@@ -4941,7 +4799,6 @@
           "subtitulo": "Se guarda cuadrada y genera un asiento por mes cuando alguien lo pide.",
           "nombre": "Nombre",
           "dia": "Día del mes",
-          "diaAyuda": "Si el mes no tiene ese día, el asiento cae el último día del mes.",
           "concepto": "Concepto del asiento",
           "guardar": "Guardar plantilla",
           "pasos": {
@@ -4988,7 +4845,6 @@
       "subtitulo": "Donantes, proveedores y colaboradores con validación de RNC/cédula y debida diligencia (Ley 155-17).",
       "nuevoTercero": "Nuevo tercero",
       "registrarTercero": "Registrar Tercero",
-      "descripcionTercero": "Ingresa los datos del donante, proveedor o colaborador.",
       "tipoPersona": "Tipo de persona",
       "tipoId": "Tipo de documento",
       "identificacion": "RNC / Cédula / Pasaporte",
@@ -5021,9 +4877,7 @@
       "rechazado": "Rechazado",
       "sinEvaluar": "Sin evaluar",
       "evaluacionLey155": "Evaluación Ley 155-17",
-      "cumplimientoPrevencion": "Prevención de lavado de activos y debida diligencia",
       "origenFondos": "Origen declarado de los fondos",
-      "placeholderOrigenFondos": "Ej. Aportes corporativos de utilidades operativas...",
       "personaExpuestaPoliticamente": "Persona Expuesta Políticamente (PEP) o vinculada",
       "verificacionListasInternacionales": "Verificado contra listas de control (OFAC, ONU)",
       "dictamenFinal": "Dictamen del Oficial de Cumplimiento",
@@ -5047,7 +4901,6 @@
       "nuevaDonacion": "Registrar donación",
       "nuevaPromesa": "Nueva promesa",
       "registrarDonacion": "Registrar Donación",
-      "descripcionDonacion": "Ingresa los datos del aporte recibido en efectivo o en especie.",
       "donante": "Donante / Patrocinador",
       "seleccioneDonante": "Seleccione un donante...",
       "fecha": "Fecha de recepción",
@@ -5066,7 +4919,6 @@
       "fondoDestino": "Fondo de destino",
       "cuentaBancariaReceptora": "Cuenta bancaria receptora",
       "descripcionBienesEspecie": "Descripción de bienes recibidos en especie",
-      "placeholderBienes": "Ej. 20 computadoras portátiles para aula virtual...",
       "notasOpcionales": "Notas u observaciones",
       "cancelar": "Cancelar",
       "confirmarDonacion": "Confirmar y contabilizar",
@@ -5085,7 +4937,6 @@
       "cuota": "Cuota",
       "cuotasMas": "cuotas más",
       "registrarPromesaCompromiso": "Nueva Promesa de Donación",
-      "descripcionPromesa": "Registra un compromiso formal de aporte y genera su calendario de cobro.",
       "montoTotalCompromiso": "Monto total comprometido",
       "frecuenciaCobro": "Frecuencia de cobro",
       "mensual": "Mensual",
@@ -5111,7 +4962,6 @@
       "subtitulo": "Gestión de compras, requisiciones y circuito de aprobación por monto.",
       "nuevaOrdenCompra": "Nueva orden de compra",
       "crearOrdenCompra": "Crear Orden de Compra",
-      "descripcionOrdenCompra": "Ingresa los artículos o servicios solicitados para aprobación.",
       "proveedor": "Proveedor",
       "seleccioneProveedor": "Seleccione un proveedor...",
       "fechaEmision": "Fecha de emisión",
@@ -5124,7 +4974,6 @@
       "cant": "Cant.",
       "precioUnitario": "Precio unit.",
       "justificacionCompra": "Justificación de la compra",
-      "placeholderJustificacion": "Indica para qué programa o actividad se requiere esta compra...",
       "cancelar": "Cancelar",
       "enviarAAprobacion": "Enviar a aprobación",
       "guardando": "Guardando...",
@@ -5164,12 +5013,10 @@
       "subtitulo": "Constancias de retención de ITBIS e ISR emitidas a proveedores.",
       "emitirComprobante": "Emitir constancia",
       "emitirComprobanteRetencion": "Emitir Comprobante de Retención",
-      "descripcionRetencion": "Genera la constancia oficial de retención practicada sobre una factura.",
       "noHayFacturasConRetencion": "No hay facturas aprobadas con retenciones pendientes de emitir comprobante.",
       "facturaProveedor": "Factura del proveedor",
       "fechaEmision": "Fecha de emisión",
       "conceptoConstancia": "Concepto o detalle",
-      "placeholderConcepto": "Retención practicada según normativa DGII...",
       "cancelar": "Cancelar",
       "emitiendo": "Emitiendo...",
       "emitir": "Emitir constancia",
@@ -5233,7 +5080,6 @@
       "subtotalFacturado": "Subtotal facturado",
       "netoAlProveedor": "Neto resultante a pagar",
       "calculadoraRecargosYMora": "Recargos por Mora e Interés Indemnizatorio",
-      "normativaRecargos": "Art. 251 (10% + 4% mensual) y Art. 252 (1.10% interés indemnizatorio)",
       "impuestoPendiente": "Monto del impuesto pendiente (RD$)",
       "fechaVencimientoLegal": "Fecha de vencimiento legal",
       "fechaEfectivaPago": "Fecha estimada de pago",
@@ -5271,7 +5117,6 @@
       "inactivo": "Inactivo",
       "sinCentros": "No hay centros de costo registrados",
       "crearTitulo": "Registrar Centro de Costo",
-      "crearDesc": "Crea una unidad de imputación contable por programa.",
       "guardar": "Guardar",
       "cancelar": "Cancelar",
       "guardando": "Guardando...",
@@ -5306,9 +5151,7 @@
       "soporte": "Doc. Soporte / Asiento",
       "usuario": "Registrado por",
       "modalLiberarTitulo": "Liberación de Fondo Restringido",
-      "modalLiberarDesc": "Registra la liberación de recursos al cumplir con el gasto del donante.",
       "montoALiberar": "Monto a liberar (RD$)",
-      "justificacionPlaceholder": "Detalle el cumplimiento del fin (ej. Compra de alimentos autorizada según convenio)",
       "confirmarLiberacion": "Confirmar liberación",
       "procesando": "Procesando...",
       "guardar": "Guardar fondo",
@@ -5343,7 +5186,6 @@
         "sobregiro": "Sobregiro (> 100%)"
       },
       "modalCrearTitulo": "Nuevo Presupuesto Anual",
-      "modalCrearDesc": "Inicia un ejercicio de presupuestación anual institucional.",
       "guardar": "Crear presupuesto",
       "cancelar": "Cancelar"
     },
@@ -5389,9 +5231,7 @@
       "sinNominas": "No hay corridas de nómina registradas",
       "sinEmpleados": "No hay empleados registrados en nómina",
       "modalNominaTitulo": "Generar Corrida de Nómina",
-      "modalNominaDesc": "Calcula de forma automática los aportes TSS e ISR con los parámetros vigentes.",
       "modalEmpleadoTitulo": "Expediente de Personal Contable",
-      "modalEmpleadoDesc": "Vincula un colaborador con su centro de costo y condiciones de nómina.",
       "anio": "Año",
       "mes": "Mes",
       "tipoPeriodo": "Tipo de período",
@@ -5431,7 +5271,6 @@
       "descargarTss": "Descargar TXT TSS SUIR Plus",
       "verDetalle": "Ver volante y líneas",
       "detalleTitulo": "Detalle de Corrida de Nómina: {codigo}",
-      "detalleDesc": "Desglose por empleado, aportes a la seguridad social y retención fiscal.",
       "diasTrabajados": "Días",
       "sueldoBruto": "Sueldo bruto",
       "deducciones": "Deducciones",
@@ -5440,7 +5279,6 @@
       "bancoDesembolso": "Cuenta bancaria para el desembolso",
       "confirmarPago": "Confirmar pago bancario",
       "calculadoraTitulo": "Calculadora de Prestaciones Laborales (Código de Trabajo RD)",
-      "calculadoraDesc": "Cálculo de Preaviso, Cesantía, Vacaciones y Regalía Pascual según la Ley 16-92.",
       "fechaSalida": "Fecha de terminación",
       "incluyePreaviso": "Incluir Preaviso (si no fue laborado)",
       "incluyeCesantia": "Incluir Auxilio de Cesantía (desahucio del empleador)",
@@ -5485,14 +5323,12 @@
       "sinActivos": "No hay activos fijos registrados",
       "sinDepreciaciones": "No se han ejecutado corridas de depreciación",
       "modalCrearTitulo": "Capitalizar Activo Fijo",
-      "modalCrearDesc": "Registra un bien mueble o inmueble para su control patrimonial y amortización.",
       "valorResidual": "Valor residual / desecho",
       "enlaceInventarioQr": "Enlazar a activo físico QR (opcional)",
       "guardar": "Guardar activo",
       "cancelar": "Cancelar",
       "procesando": "Procesando...",
       "modalDeprecTitulo": "Corrida Mensual de Depreciación",
-      "modalDeprecDesc": "Calcula la alícuota en línea recta para todos los activos activos y genera su asiento contable.",
       "anio": "Año",
       "mes": "Mes",
       "fechaAsiento": "Fecha del asiento",
@@ -5506,7 +5342,6 @@
       "kpiCapitalizados": "{n} activos capitalizados",
       "kpiDeprecAcum": "Depreciación Acumulada Total",
       "kpiPorcentajeAmortizado": "{pct}% amortizado",
-      "kpiPatrimonioVigente": "Patrimonio institucional vigente",
       "activosAmortizados": "Activos amortizados",
       "vidaUtilMesesAnios": "{meses} meses ({anios} años)",
       "pasos": {
@@ -5541,14 +5376,12 @@
       "sinMovimientos": "No hay movimientos registrados en el kardex",
       "sinTomas": "No hay tomas físicas de inventario registradas",
       "modalArticuloTitulo": "Registrar Artículo Consumible",
-      "modalArticuloDesc": "Agrega un suministro, alimento o material para control en el kardex.",
       "cuentaInventario": "Cuenta contable de inventario",
       "cuentaGasto": "Cuenta contable de gasto/consumo",
       "guardar": "Guardar artículo",
       "cancelar": "Cancelar",
       "procesando": "Procesando...",
       "modalMovimientoTitulo": "Movimiento de Inventario",
-      "modalMovimientoDesc": "Entradas por compra o donación, y salidas por consumo en el comedor o programas.",
       "tipoMovimiento": "Tipo de movimiento",
       "entrada_compra": "Entrada por compra",
       "entrada_donacion": "Entrada por donación en especie",
@@ -5564,18 +5397,14 @@
       "stockPosterior": "Stock post.",
       "total": "Costo total",
       "tomaFisicaTitulo": "Toma Física de Inventario",
-      "tomaFisicaDesc": "Levantamiento físico para conciliar existencias contra el sistema contable.",
       "descripcion": "Descripción del conteo",
       "iniciarConteo": "Generar planilla de conteo",
       "diferencia": "Diferencia",
       "impacto": "Impacto monetario",
       "kpiValorizacion": "Valorización Total de Inventario",
-      "kpiCostoPromedioNIIF": "Costo Promedio Ponderado (NIIF / NIC 2)",
       "kpiArticulosCatalogo": "Artículos en Catálogo",
       "kpiArticulosConteo": "{n} artículos",
-      "kpiArticulosDesc": "Comedor, suministros y material didáctico",
       "kpiAlertasReabastecimiento": "Alertas de Reabastecimiento",
-      "kpiAlertasDesc": "Existencias en o bajo el stock mínimo",
       "colEstado": "Estado",
       "optimo": "Óptimo",
       "colMotivoPrograma": "Motivo / Programa",
@@ -5691,9 +5520,7 @@
       },
       "snapshots": {
         "tituloModal": "Congelar Snapshot Oficial",
-        "descModal": "Guarda una copia inmutable del estado financiero actual para fines de auditoría externa o fiscalización DGII.",
         "titulo": "Título del snapshot",
-        "tituloPlaceholder": "Ej. Balance General Auditado Trimestre 1 - 2026",
         "guardar": "Guardar snapshot",
         "cancelar": "Cancelar",
         "guardando": "Guardando...",
@@ -5724,12 +5551,9 @@
       "cerrarMes": "Cerrar mes",
       "reabrirMes": "Reabrir mes",
       "modalReabrirTitulo": "Reabrir Período Contable",
-      "modalReabrirDesc": "Al reabrir un mes se permite modificar o registrar nuevos asientos. Requiere un motivo justificado que queda registrado en la bitácora inmutable.",
       "motivo": "Motivo de la reapertura (mínimo 10 caracteres)",
-      "motivoPlaceholder": "Ej. Corrección autorizada por auditoría externa en retenciones DGII...",
       "confirmarReabrir": "Reabrir período",
       "modalCierreAnualTitulo": "Ejecutar Cierre Anual del Ejercicio",
-      "modalCierreAnualDesc": "Este proceso genera automáticamente el asiento de cierre liquidando todas las cuentas de ingresos y gastos, trasladando el resultado neto a la cuenta 3.1.01.02 Resultados Acumulados.",
       "alertaMesesAbiertos": "No se puede ejecutar el cierre anual: existen meses que aún están abiertos. Cierre primero todos los meses del ejercicio.",
       "ingresosLiquidar": "Total de ingresos a liquidar al débito",
       "gastosLiquidar": "Total de gastos a liquidar al crédito",
@@ -5738,7 +5562,6 @@
       "deficit": "Déficit neto",
       "cuentaDestino": "Cuenta destino: 3.1.01.02 Resultados Acumulados",
       "notas": "Notas o memoria explicativa del cierre",
-      "notasPlaceholder": "Observaciones del contador sobre el cierre de ejercicio...",
       "ejecutarCierre": "Confirmar y ejecutar cierre anual",
       "ejecutando": "Cerrando ejercicio...",
       "cierreExitoso": "Ejercicio cerrado exitosamente con asiento #{asiento}",
@@ -5878,7 +5701,6 @@
       "instructions": "Instrucciones adicionales",
       "instructionsHint": "Se añaden al prompt base. No sustituyen las reglas de seguridad.",
       "model": "Modelo",
-      "modelHint": "Vacío = el modelo por defecto",
       "maxTokens": "Máximo de tokens por respuesta (0 = por defecto)",
       "hourlyLimit": "Consultas por hora y persona",
       "active": "Agente activo"
@@ -5973,8 +5795,6 @@
       "emptyText": "Cuando llegue un comprobante por el chat, aparece aquí ya clasificado.",
       "selectReady": "Marcar los aprobables",
       "approve": "Aprobar seleccionados ({n})",
-      "shortcut": "Atajo: A aprueba lo marcado",
-      "levelZero": "La aprobación en lote está apagada (nivel 0: el sistema solo sugiere).",
       "select": "Marcar el comprobante {folio}",
       "noSupplier": "Sin proveedor",
       "suggested": "Sugerido: categoría {categoria} · centro {centro} · fondo {fondo}",
@@ -5997,7 +5817,6 @@
     },
     "recent": {
       "title": "Aprobados esta semana",
-      "hint": "Mientras no tengan asiento puedes devolverlos a la cola.",
       "auto": "aprobado por regla automática",
       "undo": "Devolver a la cola"
     },
@@ -6014,7 +5833,6 @@
     },
     "anomalies": {
       "title": "Para mirar dos veces",
-      "hint": "Son señales, no acusaciones: un motivo para preguntar, no para concluir.",
       "none": "Sin señales en los últimos 30 días.",
       "compra_fraccionada": "Posible compra fraccionada a {proveedor}: {n} comprobantes en 7 días suman {monto}, cada uno por debajo de {umbral}.",
       "monto_atipico": "Monto atípico de {proveedor}: {monto}, muy por encima de su promedio ({media}).",
@@ -6028,8 +5846,7 @@
       "accepted": "Sugerencias aceptadas sin corregir",
       "noData": "Sin datos",
       "minutes": "{n} min",
-      "hours": "{n} h",
-      "clicksNote": "Los clics por tarea no se miden aquí: se cuentan en las pruebas de uso con la contadora."
+      "hours": "{n} h"
     },
     "rule": {
       "title": "Autonomía de la clasificación",
@@ -6045,7 +5862,6 @@
       "saved": "Guardado.",
       "failed": "No se pudo guardar.",
       "readOnly": "Solo quien tiene el permiso de configuración puede cambiar el nivel.",
-      "level2Hint": "Solo procesa lo que supera la confianza mínima, no pasa del monto máximo y no tiene problemas ni duplicado. Nada corre por su cuenta: lo lanzas tú, y puedes devolver cualquier comprobante a la cola.",
       "process": "Procesar automáticos ahora"
     }
   },
@@ -6233,68 +6049,52 @@
     },
     "items": {
       "comedor_apertura": {
-        "label": "Abre la inscripción",
-        "hint": "Desde esta hora se puede apuntar al almuerzo."
+        "label": "Abre la inscripción"
       },
       "comedor_cierre": {
-        "label": "Cierra la inscripción",
-        "hint": "Pasada esta hora no entra nadie más: es la que decide cuánta comida se cocina."
+        "label": "Cierra la inscripción"
       },
       "becas_indice_minimo": {
-        "label": "Índice académico mínimo",
-        "hint": "Sobre 4.00. Por debajo, el estudiante entra en observación académica."
+        "label": "Índice académico mínimo"
       },
       "becas_asistencia_minima": {
-        "label": "Asistencia mínima (%)",
-        "hint": "A clases y talleres. Las faltas injustificadas ponen en riesgo la beca."
+        "label": "Asistencia mínima (%)"
       },
       "becas_horas_servicio_mes": {
-        "label": "Horas de servicio comunitario al mes",
-        "hint": "En proyectos aprobados por la Fundación."
+        "label": "Horas de servicio comunitario al mes"
       },
       "becas_nota_minima_360": {
-        "label": "Nota aprobatoria en Global Effect 360",
-        "hint": "Mínimo para aprobar cada materia del programa."
+        "label": "Nota aprobatoria en Global Effect 360"
       },
       "becas_creditos_maximos_ucateci": {
-        "label": "Créditos máximos · UCATECI",
-        "hint": "Tope de créditos por cuatrimestre según pauta de la Universidad Católica del Cibao (UCATECI)."
+        "label": "Créditos máximos · UCATECI"
       },
       "becas_creditos_maximos_unphu": {
-        "label": "Créditos máximos · UNPHU",
-        "hint": "Tope de créditos por período según pauta de la Universidad Nacional Pedro Henríquez Ureña (UNPHU)."
+        "label": "Créditos máximos · UNPHU"
       },
       "becas_creditos_maximos_uasd": {
-        "label": "Créditos máximos · UASD",
-        "hint": "Tope de créditos por semestre según pauta de la Universidad Autónoma de Santo Domingo (UASD)."
+        "label": "Créditos máximos · UASD"
       },
       "becas_creditos_maximos_utesa": {
-        "label": "Créditos máximos · UTESA",
-        "hint": "Tope de créditos por cuatrimestre según pauta de la Universidad Tecnológica de Santiago (UTESA)."
+        "label": "Créditos máximos · UTESA"
       },
       "becas_creditos_maximos_cuatrimestre": {
-        "label": "Créditos máximos · General",
-        "hint": "Tope de créditos por período cuando el expediente no especifica una de las cuatro universidades anteriores."
+        "label": "Créditos máximos · General"
       },
       "asistente_dias_sin_verificar": {
-        "label": "Días antes de pedir revisar una norma",
-        "hint": "Pasado este plazo, el asistente avisa de que la norma no se ha revisado."
+        "label": "Días antes de pedir revisar una norma"
       },
       "correos_dia_limite": {
-        "label": "Día límite de la carta",
-        "hint": "Hasta este día del mes (inclusive, hora de La Vega) la carta cuenta a tiempo. Después queda como tardía."
+        "label": "Día límite de la carta"
       },
       "correos_reenvio_automatico": {
-        "label": "Reenviar las cartas limpias automáticamente",
-        "hint": "1 = el agente las reenvía solo; 0 = esperan la aprobación de administración (recomendado durante el piloto)."
+        "label": "Reenviar las cartas limpias automáticamente"
       },
       "contacto_correo": {
-        "label": "Correo de contacto",
-        "hint": "Sale en el pie de la portada y en la sección de patrocinadores."
+        "label": "Correo de contacto"
       },
       "becas_promedio_liceo_minimo": {
-        "label": "Promedio mínimo del liceo para candidatos",
-        "hint": "Sobre 100, en el récord de notas del liceo. No se convierte a la escala universitaria: ayuda a decidir la carrera."
+        "label": "Promedio mínimo del liceo para candidatos"
       }
     },
     "normal": "Normal: {valor}",
@@ -6339,11 +6139,8 @@
     "confirmarLimpiar": "¿Deseas borrar el historial de esta conversación?",
     "modo": "Modo de operación",
     "modoConsultas": "Consultas",
-    "modoConsultasDesc": "Preguntas sobre normativas, becas, materias y datos institucionales.",
     "modoAcciones": "Acciones",
-    "modoAccionesDesc": "Ejecuta navegación y tareas del sistema mediante comandos de voz o texto.",
     "modoAccionesRestringido": "Solo consultas para estudiantes",
-    "modoAccionesRestringidoDesc": "El modo de acciones no está disponible para estudiantes. Puedes consultar sobre normativas y vida académica.",
     "rolEstudiante": "Estudiante",
     "rolContabilidad": "Contabilidad",
     "rolDocente": "Docente",
@@ -6466,7 +6263,6 @@
     "expensesWaiting": "Rendiciones",
     "inReview": "En revisión contable",
     "assignedPrograms": "Programas asignados a tu rol",
-    "assignedProgramsSubtitle": "Proyectos activos determinados por gobernanza institucional (haz clic para filtrar)",
     "clearProgramFilter": "Todos los programas",
     "chartProgressTitle": "Progreso de mis tareas",
     "chartEmpty": "Sin tareas para graficar",
@@ -6478,9 +6274,7 @@
     "newQuickTask": "Nueva Tarea Rápida",
     "newQuickTaskTitle": "Registrar Tarea Rápida",
     "taskTitle": "Título de la tarea",
-    "taskTitlePlaceholder": "Ej. Comprar electrodos para taller",
     "taskDescription": "Detalles o instrucciones",
-    "taskDescriptionPlaceholder": "Instrucciones específicas...",
     "taskPriority": "Prioridad",
     "priorityMedia": "Media",
     "priorityAlta": "Alta",
@@ -6494,13 +6288,11 @@
     "logActivity": "Bitácora",
     "logActivityTitle": "Registrar Actividad del Día",
     "activityDescription": "Qué hiciste hoy",
-    "activityPlaceholder": "Detalle de los avances y gestiones logradas...",
     "minutesSpent": "Minutos dedicados",
     "linkedTask": "Tarea relacionada (opcional)",
     "noTask": "General (sin vincular)",
     "saveLog": "Guardar en Bitácora",
     "noTasksTitle": "No hay tareas pendientes en este filtro",
-    "noTasksSubtitle": "Buen trabajo, estás al día con tus actividades prioritarias.",
     "overdue": "Vencida",
     "logTimeForThis": "Registrar tiempo en bitácora para esta tarea",
     "statePorHacer": "Por hacer",
@@ -6539,10 +6331,8 @@
     "formSubtitle": "Carga fotos o facturas de compras operativas con lectura automática de NCF y RNC ante DGII",
     "ocrScanning": "Analizando comprobante fiscal con OCR...",
     "uploadReceiptPrompt": "Tomar foto o subir comprobante / factura",
-    "ocrHint": "Formatos admitidos: JPG, PNG o PDF. Detección automática de RNC, NCF y montos.",
     "ocrAutoExtracted": "Datos fiscales extraídos automáticamente",
     "providerName": "Nombre del Proveedor",
-    "providerPlaceholder": "Ej. Ferretería El Progreso SRL",
     "providerRnc": "RNC o Cédula del Proveedor",
     "ncf": "Número de Comprobante Fiscal (NCF)",
     "receiptDate": "Fecha del Comprobante",
@@ -6551,7 +6341,6 @@
     "assignProgram": "Asignar a Programa Social / Proyecto",
     "selectProgramHint": "Selecciona un programa o proyecto...",
     "conceptDescription": "Concepto / Justificación del Gasto",
-    "conceptPlaceholder": "Ej. Adquisición de materiales para el taller de herrería...",
     "submitVoucher": "Enviar Rendición a Contabilidad",
     "submitSuccess": "Comprobante enviado a Contabilidad exitosamente.",
     "submitError": "No se pudo enviar el comprobante.",
@@ -6569,7 +6358,6 @@
     "postToAccounting": "Contabilizar",
     "reviewVoucherModalTitle": "Validar Rendición de Gastos (DGII)",
     "rejectReasonOptional": "Motivo del rechazo (obligatorio si rechaza)",
-    "rejectReasonPlaceholder": "Ej. NCF no coincide con consulta DGII o comprobante ilegible",
     "rejectButton": "Rechazar",
     "approveButton": "Aprobar para Contabilidad",
     "rejectReasonLabel": "Motivo del rechazo: {motivo}",
@@ -6672,7 +6460,6 @@
     "previewStudentViewSubtitle": "Modo de simulación interactiva: comprueba exactamente cómo experimentan y entregan tus estudiantes esta tarea.",
     "previewBadge": "Vista Previa de Estudiante",
     "previewNoticeHeading": "Entorno Seguro de Demostración",
-    "previewNoticeBody": "En este modo puedes probar la carga de archivos, verificar límites de tamaño y formatos sin alterar calificaciones reales.",
     "noSubmissionsTitle": "No hay entregas registradas",
     "noSubmissionsSubtitle": "Los estudiantes aún no han enviado archivos a este buzón.",
     "lateBadge": "Tarde",
@@ -6731,7 +6518,6 @@
     "fileLabel": "Archivo",
     "selectFileButton": "Seleccionar archivo",
     "descriptionLabel": "Descripción o instrucciones de uso en aula",
-    "resourceDescriptionPlaceholder": "Describe los puntos clave a proyectar o el objetivo de la dinámica...",
     "cancel": "Cancelar",
     "publishResourceButton": "Publicar en el Hub",
     "errFileRequired": "Debes adjuntar un archivo para publicar.",
@@ -6760,7 +6546,6 @@
     "takePhotoOrUpload": "Tomar foto con la cámara o subir de galería",
     "photoCaptureHint": "Captura al grupo en el aula, facilitador exponiendo o entrega de materiales (JPG, PNG).",
     "observationsLabel": "Observaciones del Facilitador / Dinámica del grupo",
-    "observationsPlaceholder": "Comenta la receptividad de los alumnos, preguntas clave o acuerdos con la dirección del centro...",
     "savingVisit": "Guardando reporte...",
     "submitVisitButton": "Registrar Visita y Evidencias",
     "errHighSchoolRequired": "Debes seleccionar un liceo.",
@@ -6903,7 +6688,6 @@
       "linkVirtual": "Enlace virtual (Google Meet / Zoom)",
       "roomPlaceholder": "Ej. Sala de Juntas B o meet.google.com/...",
       "descriptionLabel": "Objetivo de la reunión / Puntos a tratar",
-      "descPlaceholder": "Indica los puntos de la agenda a discutir...",
       "inviteParticipants": "Invitar colaboradores o estudiantes",
       "searchAttendeesPlaceholder": "Buscar por nombre o correo..."
     },
@@ -6955,13 +6739,11 @@
     },
     "liveRoom": {
       "liveBadge": "En vivo",
-      "embeddedHint": "Videollamada integrada en la plataforma",
       "openExternal": "Abrir aparte",
       "expand": "Ampliar sala",
       "collapse": "Reducir sala",
       "leave": "Salir de la sala",
       "externalOnlyTitle": "Esta reunión usa un enlace externo",
-      "externalOnlyHint": "El proveedor externo bloquea abrir la llamada dentro de otra página; puedes unirte en una pestaña nueva.",
       "joinExternalNow": "Abrir llamada externa",
       "activeCallsTitle": "Llamadas activas ahora",
       "joinInWeb": "Entrar a la llamada",
@@ -7196,7 +6978,6 @@
     "chartTypesTitle": "Tipo de registro",
     "chartEmpty": "Sin pasajeros para graficar",
     "reportIncidentTitle": "Reportar problema o avería",
-    "reportIncidentDesc": "Al emitir este reporte, se notificará de inmediato a los estudiantes inscritos en este viaje.",
     "incidentType": {
       "mechanical": "Avería mecánica",
       "traffic": "Tráfico pesado",
@@ -7204,7 +6985,6 @@
       "emergency": "Accidente / Emergencia"
     },
     "incidentDetailsLabel": "Detalles de la incidencia",
-    "incidentDetailsPlaceholder": "Ej. Neumático pinchado en Rincón, retraso de 20 minutos…",
     "cancel": "Cancelar",
     "sendIncidentAlert": "Enviar reporte y alertar",
     "weeklyScheduleTitle": "Mi Horario Semanal Recurrente",
@@ -7239,7 +7019,6 @@
     "officialSchedulesTitle": "Horarios Oficiales de la Ruta",
     "officialSchedulesSubtitle": "4 viajes diarios fijos conectando el Edificio Fundación Global Effect con UCATECI, UNPHU, UASD y UTESA.",
     "routeStopsTitle": "Paradas y Tiempos Estimados en Vivo",
-    "routeStopsSubtitle": "Haz clic en cualquier universidad o en el Edificio Global Effect para enfocar su parada y ver el arribo estimado.",
     "timob": {
       "radarTitle": "Mapa Interactivo del Circuito Universitario",
       "liveBadge": "EN VIVO",
@@ -7396,7 +7175,6 @@
       "transporte_operar": "Operar rutas de transporte",
       "usuarios_administrar": "Administrar usuarios"
     },
-    "help": "Lo que no puede abrir, no lo ve: el menú de cada persona se calcula con sus permisos, sin una lista de visibilidad aparte.",
     "unlocks": "Habilita: {modules}",
     "preview": {
       "title": "Verá estos módulos",
@@ -7496,7 +7274,6 @@
       "load": "Cargar materias",
       "loadButton": "Cargar lista",
       "loadPlaceholder": "ISC-101 ; Introducción a la programación ; 4 ; 1 ;\nISC-201 ; Estructuras de datos ; 3 ; 2 ; ISC-101",
-      "loadHelp": "Una materia por línea: código ; nombre ; créditos ; período ; prerrequisitos (separados por coma). Créditos vacíos valen 3. Si un código ya existe, se actualiza.",
       "loaded": "{count} materias cargadas.",
       "rejected": "No se pudieron leer las líneas: {lines}.",
       "fromFile": "Cargar desde un archivo (.csv o .txt)"
@@ -7568,16 +7345,13 @@
       "maxIndex": "Índice máximo (escala)",
       "minPeriod": "Mínimo del período",
       "minOverall": "Mínimo acumulado",
-      "alertsHelp": "Vacío = sin definir: se usa el mínimo general de becas. Con estos valores el expediente avisa cuando el índice del período o el acumulado queda por debajo.",
       "confirmed": "Ya confirmé estas reglas con el reglamento de la universidad",
-      "help": "Si dudas, déjalo como está: el sistema marca estas reglas como «por confirmar» hasta que alguien las verifique.",
       "confirmedBadge": "Reglas verificadas",
       "pendingBadge": "Reglas por confirmar",
       "summary": "Puntos: {points} · Aprueba desde {min} · Retirada: {withdrawn} · {rounding}"
     },
     "logo": {
       "label": "Logo (PNG, JPG o WebP)",
-      "help": "Hasta 1 MB. Si no hay logo se muestran las siglas.",
       "remove": "Quitar el logo actual"
     },
     "files": {
@@ -7585,7 +7359,6 @@
       "none": "Todavía no hay archivos.",
       "typeLabel": "Qué es",
       "file": "Archivo PDF",
-      "help": "Solo PDF, hasta 10 MB. Por ahora se guarda el archivo para consultarlo; leerlo automáticamente llegará con una pantalla de revisión.",
       "upload": "Subir",
       "remove": "Quitar este archivo",
       "done": "Archivo subido.",
@@ -7687,8 +7460,7 @@
         "file": "Archivo (PDF, JPG, PNG o WebP, hasta 5 MB)",
         "list": "Una fila por línea: matrícula ; nombre ; código ; letra ; nota",
         "submit": "Leer el documento",
-        "reading": "Leyendo el documento…",
-        "help": "El sistema lee el documento y busca a cada estudiante y su materia. Antes de guardar nada, tú revisas lo que entendió. El archivo no se guarda."
+        "reading": "Leyendo el documento…"
       },
       "errors": {
         "no_permitido": "No tienes permiso para cargar calificaciones.",
@@ -7742,8 +7514,7 @@
           "borrador": "Por revisar",
           "confirmada": "Confirmada",
           "descartada": "Descartada"
-        },
-        "blocked": "Hay filas con avisos. Solo se guardan las notas de los estudiantes que están completamente bien; revisa los avisos antes de guardar."
+        }
       },
       "problems": {
         "sin_estudiante": "No se encontró al estudiante",
@@ -7758,8 +7529,7 @@
       "intro": {
         "title": "Cómo funciona",
         "step1": "Elige la universidad y el período de las notas.",
-        "step2": "Sube la foto o el PDF del listado, o pega la lista.",
-        "step3": "Revisa lo que entendió el sistema y pulsa «Guardar las notas»."
+        "step2": "Sube la foto o el PDF del listado, o pega la lista."
       }
     }
   },
@@ -7791,7 +7561,6 @@
     "back": "Volver a expedientes",
     "count": "{count, plural, one {# estudiante necesita atención} other {# estudiantes necesitan atención}}",
     "emptyTitle": "Nadie está en riesgo ahora",
-    "emptyText": "Cuando un estudiante activo baje del índice mínimo de su universidad o repruebe una materia, aparecerá aquí.",
     "reason": {
       "cumulative": "Su índice acumulado es {indice} y el mínimo de su universidad es {minimo}.",
       "period": "Su índice del período {periodo} es {indice} y el mínimo es {minimo}.",
@@ -7844,7 +7613,6 @@
       "dueSoon": "Por vencer en 30 días ({n})",
       "overdue": "Cuotas vencidas",
       "emptyTitle": "Sin compromisos registrados",
-      "emptyText": "Aparecerán aquí cuando contabilidad registre promesas de donación.",
       "view": "Ver donaciones"
     }
   },
@@ -7858,7 +7626,6 @@
       "graduates": "Graduados"
     },
     "empty": "No hay becados registrados",
-    "emptyHint": "Cuando haya expedientes con gastos imputados, aquí se compara su costo por carrera.",
     "chart": {
       "title": "Promedio por becado y carrera",
       "label": "Costo promedio por carrera",
@@ -7875,7 +7642,6 @@
       "averageTerm": "Promedio por cuatrimestre",
       "averageGraduate": "Promedio por graduado"
     },
-    "hint": "Los promedios cuentan solo a los becados con costo registrado. El promedio por graduado queda vacío hasta que haya graduados con gastos imputados.",
     "register": {
       "link": "Registrar materiales y transporte",
       "title": "Registrar materiales y transporte",
@@ -7896,13 +7662,11 @@
         "noArticle": "Sin artículo de inventario",
         "save": "Registrar material",
         "each": "c/u",
-        "empty": "Aún no hay materiales registrados",
-        "emptyHint": "Uniformes, laptops, libros o instrumentos entregados a este becado aparecen aquí."
+        "empty": "Aún no hay materiales registrados"
       },
       "transport": {
         "title": "Transporte por cuatrimestre",
         "enrolled": "Tiene inscripción de transporte: {n} días por semana. Registra el costo asignado de cada cuatrimestre; no se reparte entre los demás becados.",
-        "notEnrolled": "Este estudiante no tiene inscripción de transporte activa. La guagua la usan solo quienes viven en Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo; confirma que corresponde antes de registrar.",
         "term": "Cuatrimestre",
         "chooseTerm": "Elige un cuatrimestre",
         "days": "Días asignados",
@@ -7910,8 +7674,7 @@
         "cost": "Costo asignado (DOP)",
         "notes": "Observaciones",
         "save": "Registrar transporte",
-        "empty": "Aún no hay transporte registrado",
-        "emptyHint": "El costo de la guagua de cada cuatrimestre se carga a mano para quien la usa."
+        "empty": "Aún no hay transporte registrado"
       },
       "void": {
         "button": "Anular",

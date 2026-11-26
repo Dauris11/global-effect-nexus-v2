@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -45,7 +44,6 @@ export function DialogoIncidenciaChofer({
             <AlertTriangle className="size-5" />
             {t("reportIncidentTitle")}
           </DialogTitle>
-          <DialogDescription>{t("reportIncidentDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -77,7 +75,6 @@ export function DialogoIncidenciaChofer({
               rows={3}
               value={descripcionIncidencia}
               onChange={(e) => alCambiarDescripcion(e.target.value)}
-              placeholder={t("incidentDetailsPlaceholder")}
               className="text-xs"
             />
           </div>

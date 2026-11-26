@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -227,14 +226,12 @@ export function PrevisualizarExpediente({
               <DialogTitle className="text-base leading-snug">
                 {fila.nombre}
               </DialogTitle>
-              <DialogDescription asChild>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge className={cn("gap-1 text-[10px]", colorEstado)}>
-                    <IconoEstado className="size-3 shrink-0" />
-                    {textos.status}
-                  </Badge>
-                </div>
-              </DialogDescription>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Badge className={cn("gap-1 text-[10px]", colorEstado)}>
+                  <IconoEstado className="size-3 shrink-0" />
+                  {textos.status}
+                </Badge>
+              </div>
             </div>
           </div>
         </DialogHeader>

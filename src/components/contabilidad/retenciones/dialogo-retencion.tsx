@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -74,7 +73,6 @@ export function DialogoRetencion({
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("emitirComprobanteRetencion")}</DialogTitle>
-            <DialogDescription>{t("descripcionRetencion")}</DialogDescription>
           </DialogHeader>
 
           {error && <div className="rounded-md border border-linea-fuerte bg-muted p-3 text-sm font-medium text-tinta">{error}</div>}
@@ -116,7 +114,6 @@ export function DialogoRetencion({
                 <Input
                   value={concepto}
                   onChange={(e) => setConcepto(e.target.value)}
-                  placeholder={t("placeholderConcepto")}
                 />
               </div>
             </>

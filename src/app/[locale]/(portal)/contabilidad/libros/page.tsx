@@ -150,7 +150,6 @@ async function SinAsientos() {
     <EstadoVacio
       icono={BookOpen}
       titulo={t("vacio.titulo")}
-     
       accion={
         <Button asChild variant="secondary">
           <Link href="/contabilidad/asientos">

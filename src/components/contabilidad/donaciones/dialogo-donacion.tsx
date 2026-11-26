@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -93,7 +92,6 @@ export function DialogoDonacion({
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("registrarDonacion")}</DialogTitle>
-            <DialogDescription>{t("descripcionDonacion")}</DialogDescription>
           </DialogHeader>
 
           {error && <div className="rounded-md border border-linea-fuerte bg-muted p-3 text-sm text-tinta">{error}</div>}
@@ -137,7 +135,6 @@ export function DialogoDonacion({
             </PasoFormulario>
 
             <PasoFormulario titulo={t("pasos.montos")}>
-
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t("tratamientoFiscal")}</Label>
@@ -232,7 +229,6 @@ export function DialogoDonacion({
                   <Textarea
                     value={descripcionEspecie}
                     onChange={(e) => setDescripcionEspecie(e.target.value)}
-                    placeholder={t("placeholderBienes")}
                     required
                     rows={2}
                   />

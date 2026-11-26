@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -74,7 +73,6 @@ export function DialogoCentroCosto() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("crearTitulo")}</DialogTitle>
-            <DialogDescription>{t("crearDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (

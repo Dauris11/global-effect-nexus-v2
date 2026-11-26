@@ -55,10 +55,7 @@ export default async function ComprobantesRecibidosPage({
 
   return (
     <div className="space-y-6 animate-entrada">
-      <EncabezadoPagina
-        antetitulo={t("eyebrow")}
-        titulo={t("titulo")}
-      />
+      <EncabezadoPagina titulo={t("titulo")} />
 
       {/* Métricas rápidas de la bandeja */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

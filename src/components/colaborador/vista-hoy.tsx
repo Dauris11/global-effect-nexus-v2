@@ -263,9 +263,6 @@ export function VistaHoy({
             <FolderOpen className="size-4" />
             {t("assignedPrograms")}
           </div>
-          <p className="mt-0.5 text-xs text-tinta/70">
-            {t("assignedProgramsSubtitle")}
-          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {proyectoFiltro && (
               <button
@@ -372,7 +369,6 @@ export function VistaHoy({
                   <Input
                     id="titulo"
                     name="titulo"
-                    placeholder={t("taskTitlePlaceholder")}
                     required
                     className="mt-1"
                   />
@@ -383,7 +379,6 @@ export function VistaHoy({
                   <Textarea
                     id="descripcion"
                     name="descripcion"
-                    placeholder={t("taskDescriptionPlaceholder")}
                     rows={2}
                     className="mt-1"
                   />
@@ -489,7 +484,6 @@ export function VistaHoy({
                   <Textarea
                     id="descripcion_bitacora"
                     name="descripcion"
-                    placeholder={t("activityPlaceholder")}
                     required
                     rows={3}
                     className="mt-1"
@@ -560,9 +554,6 @@ export function VistaHoy({
             <h3 className="mt-3 text-base font-semibold text-tinta">
               {t("noTasksTitle")}
             </h3>
-            <p className="mt-1 text-sm text-tinta/60">
-              {t("noTasksSubtitle")}
-            </p>
           </div>
         ) : (
           tareasFiltradas.map((tarea) => {

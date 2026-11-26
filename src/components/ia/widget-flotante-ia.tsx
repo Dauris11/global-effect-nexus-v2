@@ -520,13 +520,6 @@ export function WidgetFlotanteIA({
                       aria-selected={activo}
                       disabled={bloqueado}
                       onClick={() => setModo(opcion)}
-                      title={
-                        opcion === "consultas"
-                          ? t("modoConsultasDesc")
-                          : bloqueado
-                            ? t("modoAccionesRestringidoDesc")
-                            : t("modoAccionesDesc")
-                      }
                       className={cn(
                         "focus-visible:ring-ring relative flex min-h-9 items-center justify-center gap-1.5 rounded-full font-medium outline-none focus-visible:ring-2",
                         activo ? "text-tinta" : "text-tinta-3 hover:text-tinta",

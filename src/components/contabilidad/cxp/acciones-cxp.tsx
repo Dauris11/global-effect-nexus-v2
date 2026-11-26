@@ -68,13 +68,10 @@ export function AccionesCxp({
       {/* Programar pago */}
       {abierta && puedeRegistrar && (
         <div className="rounded-tarjeta border border-linea bg-background p-6 space-y-4">
-          <div>
-            <h3 className="font-semibold text-tinta flex items-center gap-2">
-              <Calendar className="size-4 text-tinta-2" />
-              {t("programar")}
-            </h3>
-            <p className="text-xs text-tinta-2 mt-1">{t("programarAyuda")}</p>
-          </div>
+          <h3 className="font-semibold text-tinta flex items-center gap-2">
+            <Calendar className="size-4 text-tinta-2" />
+            {t("programar")}
+          </h3>
 
           <form action={enviarProgramar} className="space-y-4">
             <input type="hidden" name="id" value={cxp.id} />
@@ -195,13 +192,10 @@ export function AccionesCxp({
       {/* Registrar pago */}
       {abierta && puedeAprobar && (
         <div className="rounded-tarjeta border border-linea bg-background p-6 space-y-4">
-          <div>
-            <h3 className="font-semibold text-tinta flex items-center gap-2">
-              <DollarSign className="size-4 text-tinta-2" />
-              {t("pagar")}
-            </h3>
-            <p className="text-xs text-tinta-2 mt-1">{t("pagarAyuda")}</p>
-          </div>
+          <h3 className="font-semibold text-tinta flex items-center gap-2">
+            <DollarSign className="size-4 text-tinta-2" />
+            {t("pagar")}
+          </h3>
 
           <form action={enviarPagar} className="space-y-4">
             <input type="hidden" name="id" value={cxp.id} />
@@ -254,7 +248,6 @@ export function AccionesCxp({
               </PasoFormulario>
 
               <PasoFormulario titulo={t("pasos.medio")}>
-
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="forma_pago" className="text-sm font-medium">
@@ -283,7 +276,6 @@ export function AccionesCxp({
                       id="referencia"
                       name="referencia"
                       maxLength={120}
-                      placeholder={formaPago === "cheque" ? "Núm. de cheque" : "Núm. de transferencia"}
                     />
                   </div>
                 </div>

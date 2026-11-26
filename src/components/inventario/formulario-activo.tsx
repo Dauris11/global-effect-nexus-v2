@@ -137,7 +137,6 @@ export function FormularioActivo({
       <FormularioGuiado>
         <div className="rounded-2xl border border-linea bg-card p-5 shadow-xs">
           <h2 className="text-sm font-bold text-tinta">{t("tituloSeccion")}</h2>
-          <p className="text-xs text-tinta-2">{t("subtituloSeccion")}</p>
 
           <div className="mt-4 space-y-6">
             <PasoFormulario titulo={tPasos("identificacion")}>
@@ -290,7 +289,6 @@ export function FormularioActivo({
                     rows={3}
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
-                    placeholder={t("notasPlaceholder")}
                     className="mt-1 w-full rounded-xl border border-linea bg-background px-3 py-2 text-xs outline-none focus:border-marca-500"
                   />
                 </div>

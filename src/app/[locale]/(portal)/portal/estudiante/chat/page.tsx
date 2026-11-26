@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lock, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Cabecera } from "@/components/estudiante/cabecera";
@@ -59,7 +59,6 @@ export default async function PaginaChatEstudiante({
       <EstadoVacio
         icono={ShieldAlert}
         titulo={t("chat.forbidden")}
-        texto={t("chat.forbiddenHint")}
         className="mx-auto max-w-xl"
       />
     );
@@ -75,13 +74,6 @@ export default async function PaginaChatEstudiante({
       <Cabecera
         titulo={t("chat.title")}
       />
-
-      {/* Aviso estándar del sistema (docs/09-sistema-visual.md §5): azul
-          claro con su icono. Dice qué datos ve el asistente y cuáles no. */}
-      <div className="flex items-start gap-3 rounded-control bg-marca-50 p-4 text-marca-700">
-        <Lock className="mt-0.5 size-4 shrink-0" />
-        <p className="text-sm leading-relaxed">{t("chat.privacy")}</p>
-      </div>
 
       <ChatIA
         idioma={idioma}
@@ -111,7 +103,6 @@ export default async function PaginaChatEstudiante({
           enviar: t("chat.send"),
           pensando: t("chat.thinking"),
           vacio: t("chat.empty"),
-          vacioPista: t("chat.emptyHint"),
           errorVacia: t("chat.errorEmpty"),
           errorLarga: t("chat.errorTooLong"),
           errorLimite: t("chat.errorLimit"),

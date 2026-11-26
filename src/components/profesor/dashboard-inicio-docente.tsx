@@ -80,7 +80,6 @@ export function KpisAnimadosDocente({
       progreso: Math.min(100, totalClases * 15),
       icono: Sparkles,
       href: "/academico/clases-360",
-      detalle: t("dashboard.classesHint"),
     },
     {
       etiqueta: t("stats.students"),
@@ -88,7 +87,6 @@ export function KpisAnimadosDocente({
       progreso: Math.min(100, estudiantes * 4),
       icono: Users,
       href: "/portal/profesor/materias",
-      detalle: t("dashboard.studentsHint"),
     },
     {
       etiqueta: t("stats.grades"),
@@ -96,7 +94,6 @@ export function KpisAnimadosDocente({
       progreso: estudiantes > 0 ? Math.min(100, (notas / Math.max(1, estudiantes)) * 100) : 0,
       icono: Award,
       href: "/academico/clases-360",
-      detalle: t("dashboard.gradesHint"),
     },
     {
       etiqueta: t("stats.toReview"),
@@ -104,7 +101,6 @@ export function KpisAnimadosDocente({
       progreso: Math.min(100, porRevisar * 10),
       icono: ClipboardList,
       href: "/portal/profesor/materias",
-      detalle: t("dashboard.toReviewHint"),
     },
   ];
 
@@ -131,8 +127,7 @@ export function KpisAnimadosDocente({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Progress value={item.progreso} aria-label={item.detalle} className="h-1.5" />
-                  <p className="truncate text-[11px] text-tinta-3">{item.detalle}</p>
+                  <Progress value={item.progreso} aria-label={item.etiqueta} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
@@ -211,7 +206,6 @@ export function DashboardGraficoDocente({
                   <BookOpen className="size-4 text-marca-600" />
                   {t("classesChartTitle")}
                 </CardTitle>
-                <p className="mt-1 text-xs text-tinta-3">{t("classesChartHint")}</p>
               </div>
               <div className="flex items-center gap-3 text-xs text-tinta-2">
                 <span className="inline-flex items-center gap-1.5">

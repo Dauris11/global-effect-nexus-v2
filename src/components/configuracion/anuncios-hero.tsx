@@ -55,8 +55,7 @@ export function AnunciosHero({
 
   return (
     <div className="space-y-6">
-      {/* Lo que se ve ahora en la portada. Si no hay ninguno activo se dice, y
-          se dice qué sale en su lugar: el hero traducido de `messages`. */}
+      {/* Lo que se ve ahora en la portada. */}
       <section className="space-y-3">
         <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
           <Eye className="size-4" />
@@ -66,23 +65,17 @@ export function AnunciosHero({
           </Badge>
         </h2>
 
-        {activos.length === 0 ? (
-          <p className="text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
-            {t("fallback")}
-          </p>
-        ) : (
-          activos.map((anuncio, indice) => (
-            <Fila
-              key={anuncio.id}
-              anuncio={anuncio}
-              primero={indice === 0}
-              ultimo={indice === activos.length - 1}
-              abierto={abierto === anuncio.id}
-              alAbrir={() => setAbierto(abierto === anuncio.id ? null : anuncio.id)}
-              alCerrar={() => setAbierto(null)}
-            />
-          ))
-        )}
+        {activos.map((anuncio, indice) => (
+          <Fila
+            key={anuncio.id}
+            anuncio={anuncio}
+            primero={indice === 0}
+            ultimo={indice === activos.length - 1}
+            abierto={abierto === anuncio.id}
+            alAbrir={() => setAbierto(abierto === anuncio.id ? null : anuncio.id)}
+            alCerrar={() => setAbierto(null)}
+          />
+        ))}
       </section>
 
       {ocultos.length > 0 && (
@@ -308,16 +301,11 @@ function Formulario({
             placeholder="/hero-slide-1.webp"
             aria-invalid={estado.campo === "imagen" || undefined}
           />
-          <p
-            className={cn(
-              "text-xs",
-              estado.campo === "imagen"
-                ? "text-destructive"
-                : "text-muted-foreground",
-            )}
-          >
-            {estado.campo === "imagen" ? t("errImage") : t("fieldImageHint")}
-          </p>
+          {estado.campo === "imagen" && (
+            <p role="alert" className="text-destructive text-xs">
+              {t("errImage")}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -344,16 +332,11 @@ function Formulario({
             placeholder="/login"
             aria-invalid={estado.campo === "enlace" || undefined}
           />
-          <p
-            className={cn(
-              "text-xs",
-              estado.campo === "enlace"
-                ? "text-destructive"
-                : "text-muted-foreground",
-            )}
-          >
-            {estado.campo === "enlace" ? t("errLink") : t("fieldCtaHint")}
-          </p>
+          {estado.campo === "enlace" && (
+            <p role="alert" className="text-destructive text-xs">
+              {t("errLink")}
+            </p>
+          )}
         </div>
       </div>
 

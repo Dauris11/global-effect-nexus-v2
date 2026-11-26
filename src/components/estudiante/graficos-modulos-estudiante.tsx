@@ -43,7 +43,6 @@ export function GraficoEvolucionCalificaciones({
             <Award className="size-4 text-marca-600" />
             {t("gradesTrendTitle")}
           </CardTitle>
-          <span className="text-xs text-tinta-3">{t("gradesTrendHint")}</span>
         </div>
 
         <GraficoLinea
@@ -222,7 +221,6 @@ export function GraficoCargaPrematricula({
             <BookOpen className="size-4 text-marca-600" />
             {t("enrollmentChartTitle")}
           </CardTitle>
-          <span className="text-xs text-tinta-3">{t("enrollmentChartHint")}</span>
         </div>
 
         <GraficoBarras

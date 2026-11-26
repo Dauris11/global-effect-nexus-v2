@@ -105,7 +105,6 @@ export function GestionMateriasDocente({
       <EstadoVacio
         icono={Library}
         titulo={tProf("emptyTitle")}
-        texto={tProf("emptyHint")}
       />
     );
   }
@@ -420,7 +419,6 @@ function FormularioTareaMateria({
             name="titulo"
             required
             maxLength={160}
-            placeholder={tProf("taskTitlePlaceholder")}
           />
         </div>
 
@@ -447,7 +445,6 @@ function FormularioTareaMateria({
           name="descripcion"
           rows={2}
           maxLength={900}
-          placeholder={tProf("taskDescriptionPlaceholder")}
         />
       </div>
 
@@ -521,7 +518,6 @@ function FormularioTareaMateria({
           name="instrucciones_entrega"
           rows={2}
           maxLength={1500}
-          placeholder={t("taskRubricPlaceholder")}
         />
       </div>
 

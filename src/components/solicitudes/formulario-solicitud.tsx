@@ -19,7 +19,6 @@ import {
   MAXIMO_TITULO,
   REGLAS,
   type TipoSolicitud,
-  UMBRAL_DIRECCION_USD,
 } from "@/lib/solicitudes";
 import {
   crearSolicitudInterna,
@@ -200,11 +199,6 @@ export function FormularioSolicitud({
               inputMode="decimal"
               required={regla.monto === "obligatorio"}
             />
-            {tipo === "gasto" && (
-              <p className="text-muted-foreground text-[11px]">
-                {t("form.amountHint", { umbral: UMBRAL_DIRECCION_USD })}
-              </p>
-            )}
           </div>
         )}
 
@@ -249,7 +243,6 @@ export function FormularioSolicitud({
           name="detalle"
           rows={3}
           maxLength={MAXIMO_TEXTO}
-          placeholder={t("form.detailPlaceholder")}
         />
       </div>
       </PasoFormulario>

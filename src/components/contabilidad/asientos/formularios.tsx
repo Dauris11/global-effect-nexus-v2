@@ -59,7 +59,7 @@ export function FormularioAsiento({ cuentas, hoy }: { cuentas: CuentaMovimiento[
       <FormularioGuiado className="space-y-6">
         <PasoFormulario titulo={t("pasos.datos")}>
           <div className="grid gap-4 md:grid-cols-2">
-            <Campo etiqueta={t("fecha")} id="fecha" ayuda={t("fechaAyuda")}>
+            <Campo etiqueta={t("fecha")} id="fecha">
               <Input id="fecha" name="fecha" type="date" required defaultValue={hoy} />
             </Campo>
             <Campo etiqueta={t("tipo")} id="tipo">
@@ -134,7 +134,6 @@ export function FormularioPlantilla({ cuentas }: { cuentas: CuentaMovimiento[] }
               <Input id="dia_del_mes" name="dia_del_mes" type="number" min={1} max={31} required defaultValue={1} />
             </Campo>
           </div>
-          <p className="texto-meta -mt-2">{t("diaAyuda")}</p>
           <Campo etiqueta={t("concepto")} id="concepto">
             <Input
               id="concepto"
@@ -189,7 +188,6 @@ function Acciones({
           <Link href={volver}>{t("cancelar")}</Link>
         </Button>
       </div>
-      {!listo && <p className="texto-meta">{t("ayudaEnvio")}</p>}
     </div>
   );
 }
@@ -197,12 +195,10 @@ function Acciones({
 function Campo({
   etiqueta,
   id,
-  ayuda,
   children,
 }: {
   etiqueta: string;
   id: string;
-  ayuda?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -211,7 +207,6 @@ function Campo({
         {etiqueta}
       </Label>
       {children}
-      {ayuda && <p className="texto-meta">{ayuda}</p>}
     </div>
   );
 }

@@ -96,7 +96,7 @@ export default async function PaginaRiesgo({ params }: { params: Promise<{ local
       </div>
 
       {filas.length === 0 ? (
-        <EstadoVacio icono={ShieldCheck} titulo={t("emptyTitle")} texto={t("emptyText")} />
+        <EstadoVacio icono={ShieldCheck} titulo={t("emptyTitle")} />
       ) : (
         <>
           <p className="texto-meta flex items-center gap-2">

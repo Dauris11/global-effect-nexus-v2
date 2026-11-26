@@ -17,7 +17,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -53,7 +52,6 @@ export type ClaveIcono = keyof typeof ICONOS;
 export type DestinoPortal = {
   icono: ClaveIcono;
   titulo: string;
-  texto?: string;
   href: string;
 };
 
@@ -65,7 +63,7 @@ export function BuscadorPortal({
 }: {
   destinos: readonly DestinoPortal[];
   roles: readonly DestinoPortal[];
-  textos: { pregunta: string; ayuda: string; porRol: string };
+  textos: { pregunta: string; porRol: string };
   className?: string;
 }) {
   return (
@@ -80,7 +78,6 @@ export function BuscadorPortal({
           <span className="block truncate text-sm font-semibold text-tinta">
             {textos.pregunta}
           </span>
-          <span className="block truncate text-xs text-tinta-2">{textos.ayuda}</span>
         </span>
         {/* El círculo turquesa es el "botón de buscar" de la píldora: el
             acento que marca dónde se pulsa. */}
@@ -92,7 +89,6 @@ export function BuscadorPortal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{textos.pregunta}</DialogTitle>
-          <DialogDescription>{textos.ayuda}</DialogDescription>
         </DialogHeader>
 
         <ul className="-mx-2">
@@ -111,11 +107,6 @@ export function BuscadorPortal({
                     <span className="block text-sm font-semibold text-tinta">
                       {destino.titulo}
                     </span>
-                    {destino.texto && (
-                      <span className="line-clamp-1 block text-sm text-tinta-2">
-                        {destino.texto}
-                      </span>
-                    )}
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-tinta-3" />
                 </Link>

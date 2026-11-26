@@ -80,11 +80,9 @@ export function EstablecerClave() {
 
   return (
     <form onSubmit={(e) => void guardar(e)} className="space-y-4">
-      <p className="texto-meta">{t("intro")}</p>
       <div className="space-y-1.5">
         <Label htmlFor="clave-nueva">{t("password")}</Label>
         <Input id="clave-nueva" type="password" autoComplete="new-password" required minLength={8} value={clave} onChange={(e) => setClave(e.target.value)} />
-        <p className="texto-meta">{t("hint")}</p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="clave-repetida">{t("repeat")}</Label>

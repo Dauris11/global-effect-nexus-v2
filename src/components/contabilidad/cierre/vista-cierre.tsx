@@ -15,7 +15,7 @@ import {
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -120,14 +120,9 @@ export function VistaCierre({
     <div className="space-y-6">
       {/* Cabecera */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("antetitulo")}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {t("titulo")}
-          </h1>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          {t("titulo")}
+        </h1>
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground font-medium">{t("ejercicio")}:</span>
@@ -193,9 +188,6 @@ export function VistaCierre({
             <h2 className="text-lg font-bold tracking-tight text-foreground">
               {t("seccionMeses")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Bloqueo contra modificaciones y control de borradores pendientes
-            </p>
           </div>
         </div>
 
@@ -308,9 +300,6 @@ export function VistaCierre({
             <h2 className="text-lg font-bold tracking-tight text-foreground">
               {t("seccionCierreAnual")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Liquidación de cuentas de ingresos y gastos hacia Resultados Acumulados
-            </p>
           </div>
 
           {!resumenPreCierreInicial.yaCerrado && (
@@ -381,9 +370,6 @@ export function VistaCierre({
           <h2 className="text-lg font-bold tracking-tight text-foreground">
             {t("seccionHistorial")}
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Registro formal inmutable de ejercicios cerrados
-          </p>
         </div>
 
         {cierresAnualesIniciales.length === 0 ? (
@@ -445,7 +431,6 @@ export function VistaCierre({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("modalReabrirTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalReabrirDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-3">
@@ -461,7 +446,6 @@ export function VistaCierre({
                 id="motivoReapertura"
                 value={motivoReapertura}
                 onChange={(e) => setMotivoReapertura(e.target.value)}
-                placeholder={t("motivoPlaceholder")}
                 rows={3}
               />
             </div>
@@ -491,7 +475,6 @@ export function VistaCierre({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("modalCierreAnualTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalCierreAnualDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-3 text-xs">
@@ -522,7 +505,6 @@ export function VistaCierre({
                 id="notasCierre"
                 value={notasCierreAnual}
                 onChange={(e) => setNotasCierreAnual(e.target.value)}
-                placeholder={t("notasPlaceholder")}
                 rows={3}
               />
             </div>

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -81,7 +80,6 @@ export function DialogoArticulo({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalArticuloTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalArticuloDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -99,7 +97,6 @@ export function DialogoArticulo({
                     id="art-cod"
                     value={codigo}
                     onChange={(e) => setCodigo(e.target.value)}
-                    placeholder="ART-001"
                     required
                   />
                 </div>
@@ -129,7 +126,6 @@ export function DialogoArticulo({
                   id="art-nom"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej. Arroz Selecto en saco 125 lbs"
                   required
                 />
               </div>

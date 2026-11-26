@@ -459,7 +459,6 @@ export function ListaRendiciones({
                   id="motivo"
                   value={motivoRechazo}
                   onChange={(e) => setMotivoRechazo(e.target.value)}
-                  placeholder={t("rejectReasonPlaceholder")}
                   rows={2}
                   className="mt-1"
                 />

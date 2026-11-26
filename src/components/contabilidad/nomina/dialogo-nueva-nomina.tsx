@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -72,7 +71,6 @@ export function DialogoNuevaNomina() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalNominaTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalNominaDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -162,7 +160,6 @@ export function DialogoNuevaNomina() {
                     id="nom-notas"
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
-                    placeholder="Ej. Nómina quincenal regular personal docente y operativo"
                   />
                 </div>
               </PasoFormulario>

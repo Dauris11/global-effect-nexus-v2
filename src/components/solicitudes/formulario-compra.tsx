@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FORMATOS_COTIZACION,
-  MAXIMO_COTIZACION_BYTES,
   MAXIMO_TEXTO,
   MAXIMO_TITULO,
 } from "@/lib/solicitudes";
@@ -98,7 +97,6 @@ export function FormularioCompra() {
           name="detalle"
           rows={3}
           maxLength={MAXIMO_TEXTO}
-          placeholder={t("purchase.descriptionPlaceholder")}
         />
       </div>
 
@@ -113,13 +111,7 @@ export function FormularioCompra() {
           type="file"
           required
           accept={ACEPTA}
-          aria-describedby="compra-cotizacion-ayuda"
         />
-        <p id="compra-cotizacion-ayuda" className="texto-meta">
-          {t("purchase.quoteHint", {
-            mb: MAXIMO_COTIZACION_BYTES / (1024 * 1024),
-          })}
-        </p>
       </div>
 
       {error && (

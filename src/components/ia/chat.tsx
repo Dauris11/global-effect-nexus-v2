@@ -77,7 +77,6 @@ export function ChatIA({
     enviar: string;
     pensando: string;
     vacio: string;
-    vacioPista: string;
     errorVacia: string;
     errorLarga: string;
     errorLimite: string;

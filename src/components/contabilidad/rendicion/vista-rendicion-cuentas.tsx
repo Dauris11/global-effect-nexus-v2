@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Download, FileText, HandHeart, Layers, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -87,9 +86,6 @@ export function VistaRendicionCuentas({
                   {rendicion.donante.email && ` • ${rendicion.donante.email}`}
                 </div>
               </div>
-              <Badge variant="outline" className="border-marca-200 bg-marca-50 text-marca-700 w-fit">
-                Trazabilidad ASFL Ley 122-05
-              </Badge>
             </div>
 
             {/* KPIs de Rendición */}

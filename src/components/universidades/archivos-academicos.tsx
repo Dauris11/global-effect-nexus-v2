@@ -79,7 +79,6 @@ export function ArchivosAcademicos({
             <Label htmlFor={`arch-file-${id}`}>{t("files.file")}</Label>
             <input id={`arch-file-${id}`} name="archivo" type="file" accept="application/pdf" required
               className="block w-full text-sm file:mr-3 file:rounded-control file:border file:border-linea-fuerte file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium" />
-            <p className="texto-meta">{t("files.help")}</p>
           </div>
           {estado.estado !== "inicial" && estado.estado !== "ok" && (
             <p role="alert" className={ALERTA_RIESGO.contenedor}>

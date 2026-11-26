@@ -75,6 +75,7 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        aria-describedby={undefined}
         onEscapeKeyDown={(e) => {
           // Un combobox con la lista abierta usa Escape para cerrarla; el
           // diálogo solo se cierra con la siguiente pulsación.
@@ -166,17 +167,16 @@ function DialogTitle({
   );
 }
 
-function DialogDescription({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return (
-    <DialogPrimitive.Description
-      data-slot="dialog-description"
-      className={cn("text-sm text-tinta-2", className)}
-      {...props}
-    />
-  );
+/**
+ * No pinta nada: los diálogos van solo con título (decisión nov 2026, panel
+ * sin subtítulos ni descripciones). Se conserva el componente para no romper
+ * los importadores mientras se retiran; `DialogContent` ya quita
+ * `aria-describedby`, así que Radix no avisa por la descripción ausente.
+ */
+function DialogDescription(
+  _props: React.ComponentProps<typeof DialogPrimitive.Description>,
+) {
+  return null;
 }
 
 export {

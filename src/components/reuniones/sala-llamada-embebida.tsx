@@ -60,7 +60,6 @@ export function SalaLlamadaEmbebida({
                 {reunion.titulo}
               </h3>
             </div>
-            <p className="text-xs text-tinta-3">{t("embeddedHint")}</p>
           </div>
         </div>
 
@@ -109,7 +108,6 @@ export function SalaLlamadaEmbebida({
         ) : (
           <div className="space-y-3 p-8 text-center">
             <p className="text-sm font-medium text-tinta">{t("externalOnlyTitle")}</p>
-            <p className="text-xs text-tinta-3">{t("externalOnlyHint")}</p>
             <Button asChild size="sm">
               <a href={enlaceBase} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />

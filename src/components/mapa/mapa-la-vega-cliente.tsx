@@ -491,7 +491,7 @@ export function MapaLaVegaCliente({
               </a>
             </>
           ) : (
-            <span className="text-tinta-3">{editable ? t("ayudaSeleccion") : t("sinUbicacion")}</span>
+            !editable && <span className="text-tinta-3">{t("sinUbicacion")}</span>
           )}
         </div>
       )}

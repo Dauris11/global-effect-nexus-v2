@@ -83,12 +83,6 @@ export function PlanillaServicios({
 
   return (
     <div className="space-y-3">
-      {!puedeEscribir && (
-        <p className="text-muted-foreground text-xs print:hidden">
-          {t("readOnly")}
-        </p>
-      )}
-
       {fallo && (
         <p role="alert" className={cn(ALERTA_RIESGO.contenedor, "print:hidden")}>
           <AlertCircle className={ALERTA_RIESGO.icono} />

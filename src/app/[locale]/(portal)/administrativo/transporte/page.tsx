@@ -59,7 +59,6 @@ export default async function PaginaAdminTransporte({
         <EncabezadoPagina
           antetitulo={t("eyebrow")}
           titulo={tAdmin("title")}
-          subtitulo={tAdmin("subtitle")}
         />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

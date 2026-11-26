@@ -922,9 +922,6 @@ export function MapaTransporteCliente({
               <Bus className="size-4 text-marca-500" />
               {t("routeStopsTitle")}
             </h3>
-            <p className="mt-1 text-xs text-tinta-2">
-              {t("routeStopsSubtitle")}
-            </p>
           </div>
         </div>
 

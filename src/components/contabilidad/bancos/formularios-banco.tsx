@@ -11,7 +11,6 @@ import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/componen
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -42,12 +41,10 @@ function useError(estado: EstadoBanco): string | null {
 function Campo({
   id,
   etiqueta,
-  ayuda,
   children,
 }: {
   id: string;
   etiqueta: string;
-  ayuda?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -56,7 +53,6 @@ function Campo({
         {etiqueta}
       </Label>
       {children}
-      {ayuda && <p className="texto-meta">{ayuda}</p>}
     </div>
   );
 }
@@ -100,7 +96,6 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <form ref={formulario} action={enviar} className="space-y-4">
           <FormularioGuiado>
@@ -127,7 +122,7 @@ export function DialogoTransferencia({ cuentas, hoy }: { cuentas: OpcionCuenta[]
                   <Input id="monto_origen" name="monto_origen" inputMode="decimal" required />
                 </Campo>
                 {monedaOrigen && monedaDestino && monedaOrigen !== monedaDestino && (
-                  <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino})`} ayuda={t("montoDestinoAyuda")}>
+                  <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino})`}>
                     <Input id="monto_destino" name="monto_destino" inputMode="decimal" required />
                   </Campo>
                 )}
@@ -223,7 +218,6 @@ export function DialogoSubirEstado({ cuentaId, config }: { cuentaId: string; con
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-5">
           <input type="hidden" name="cuenta" value={cuentaId} />
@@ -304,7 +298,6 @@ export function DialogoVincularCuenta({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
-          <DialogDescription>{t("descripcion")}</DialogDescription>
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="cuenta" value={cuentaId} />

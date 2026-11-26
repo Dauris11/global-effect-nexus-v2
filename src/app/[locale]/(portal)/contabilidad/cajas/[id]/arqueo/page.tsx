@@ -49,8 +49,8 @@ export default async function PaginaRealizarArqueo({
         <EncabezadoPagina
           antetitulo={`${t("cuadreArqueo")} · ${caja.codigo}`}
           titulo={t("nuevoArqueo")}
-          subtitulo={caja.arqueosPorAprobar > 0 ? t("errores.arqueo_pendiente") : t("ecuacion")}
         />
+        {caja.arqueosPorAprobar > 0 && <p className="texto-meta">{t("errores.arqueo_pendiente")}</p>}
       </div>
       <ContadorArqueo caja={caja} hoy={claveDia()} contador={usuario.nombre} />
     </div>

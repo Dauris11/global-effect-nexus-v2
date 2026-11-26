@@ -65,11 +65,6 @@ export default async function PaginaDetalleCxp({
 
         <EncabezadoPagina
           titulo={cxp.tercero}
-          subtitulo={`${cxp.concepto} · ${
-            cxp.origen === "factura"
-              ? t("origenFactura")
-              : t("origenSolicitud", { folio: cxp.solicitud_folio ?? "" })
-          }`}
           acciones={
             <div className="flex items-center gap-2">
               <Badge
@@ -134,6 +129,7 @@ export default async function PaginaDetalleCxp({
               cxp.tercero
             )}
           </Dato>
+          <Dato etiqueta={t("col.concepto")}>{cxp.concepto}</Dato>
           <Dato etiqueta="Origen">
             {cxp.factura_id ? (
               <Link

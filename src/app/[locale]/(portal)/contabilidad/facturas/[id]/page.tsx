@@ -77,7 +77,6 @@ export default async function PaginaDetalleFactura({
 
         <EncabezadoPagina
           titulo={numFormateado}
-          subtitulo={`${factura.proveedor} ${factura.ncf ? `· ${factura.ncf}` : ""}`}
           acciones={
             <div className="flex items-center gap-2">
               <Badge

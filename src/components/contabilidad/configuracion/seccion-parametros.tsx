@@ -156,7 +156,6 @@ export async function SeccionParametros({
 
   return (
     <div className="space-y-10">
-      <p className="max-w-3xl text-[15px] text-tinta-2">{t("explicacion")}</p>
       {grupos
         .filter(({ lista }) => lista.length > 0)
         .map(({ grupo, lista }) => (

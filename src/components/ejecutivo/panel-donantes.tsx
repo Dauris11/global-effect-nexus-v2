@@ -28,7 +28,7 @@ export async function PanelDonantes({ cuotas }: { cuotas: readonly CuotasDonante
       </CardHeader>
       <CardContent>
         {cuotas.length === 0 ? (
-          <EstadoVacio icono={HandCoins} titulo={t("emptyTitle")} texto={t("emptyText")} />
+          <EstadoVacio icono={HandCoins} titulo={t("emptyTitle")} />
         ) : (
           <ul className="divide-y divide-linea">
             {cuotas.map((c) => {

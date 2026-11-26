@@ -16,7 +16,6 @@ import { parametros } from "@/server/parametros/consultas";
 import { asistenciaDeClases360 } from "@/server/profesor/asistencia";
 import {
   asignacionesDeClases360,
-  cifrasDocente,
   clases360,
   entregasDeClases360,
   entregasPorRevisar,
@@ -78,7 +77,6 @@ export default async function PaginaClases360({
     return (
       <div className="mx-auto max-w-2xl py-12 text-center">
         <p className="text-sm font-semibold">{t("forbidden")}</p>
-        <p className="text-tinta-3 mt-1 text-xs">{t("forbiddenHint")}</p>
       </div>
     );
   }
@@ -89,7 +87,6 @@ export default async function PaginaClases360({
   await iniciarInscripcionesVigentes();
 
   const [
-    cifras,
     clases,
     entregasBrutas,
     todasEntregasBrutas,
@@ -99,7 +96,6 @@ export default async function PaginaClases360({
     mensajes,
     valoresParametros,
   ] = await Promise.all([
-    cifrasDocente(docenteId),
     clases360(docenteId),
     entregasPorRevisar(docenteId, 20),
     entregasDeClases360(docenteId),
@@ -150,19 +146,6 @@ export default async function PaginaClases360({
       <EncabezadoPagina
         antetitulo={t("eyebrow")}
         titulo={t("title")}
-        subtitulo={
-          <span className="flex flex-wrap gap-x-4">
-            <span>
-              {t("classes")}: <b>{cifras.clases_360}</b>
-            </span>
-            <span>
-              {t("students")}: <b>{cifras.estudiantes}</b>
-            </span>
-            <span>
-              {t("toReview")}: <b>{cifras.por_revisar}</b>
-            </span>
-          </span>
-        }
       />
 
       <NextIntlClientProvider messages={mensajes}>

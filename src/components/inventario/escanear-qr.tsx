@@ -216,7 +216,6 @@ export function EscanearQrActivo() {
             </div>
             <div>
               <p className="font-semibold text-tinta">{t("titulo")}</p>
-              <p className="mt-1 text-xs text-tinta-2">{t("descripcion")}</p>
             </div>
             <Button onClick={iniciarCamara} className="flex items-center gap-2">
               <Camera className="size-4" />

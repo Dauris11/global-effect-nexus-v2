@@ -66,7 +66,7 @@ export function AsignarEstudiante({
 }
 
 /** Confirmar (escribe las notas y muestra las alertas) o descartar la carga. */
-export function AccionesCarga({ cargaId, hayProblemas }: { cargaId: string; hayProblemas: boolean }) {
+export function AccionesCarga({ cargaId }: { cargaId: string; hayProblemas: boolean }) {
   const t = useTranslations("catalog.upload.review");
   const [confirmacion, confirmar, confirmando] = useActionState<EstadoCarga, FormData>(confirmarCargaCalificaciones, INICIAL);
   const [descarte, descartar, descartando] = useActionState<EstadoCarga, FormData>(descartarCargaCalificaciones, INICIAL);
@@ -103,7 +103,6 @@ export function AccionesCarga({ cargaId, hayProblemas }: { cargaId: string; hayP
 
   return (
     <div className="space-y-3">
-      {hayProblemas && <p className="texto-meta">{t("blocked")}</p>}
       <div className="flex flex-wrap items-center gap-2">
         <form action={confirmar}>
           <input type="hidden" name="carga" value={cargaId} />

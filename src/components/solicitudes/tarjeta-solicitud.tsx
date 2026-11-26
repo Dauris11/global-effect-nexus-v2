@@ -276,7 +276,6 @@ export function TarjetaSolicitud({
                 onChange={() => setSinMotivo(false)}
                 rows={2}
                 maxLength={MAXIMO_TEXTO}
-                placeholder={t("step.commentPlaceholder")}
                 aria-label={t("step.comment")}
                 className="text-sm"
               />

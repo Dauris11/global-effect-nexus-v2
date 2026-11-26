@@ -102,7 +102,7 @@ export function RegistroMateriales({
       </form>
 
       {materiales.length === 0 ? (
-        <EstadoVacio icono={Package} titulo={t("materials.empty")} texto={t("materials.emptyHint")} />
+        <EstadoVacio icono={Package} titulo={t("materials.empty")} />
       ) : (
         <ul className="rounded-card border border-linea bg-card divide-y divide-linea">
           {materiales.map((m) => (

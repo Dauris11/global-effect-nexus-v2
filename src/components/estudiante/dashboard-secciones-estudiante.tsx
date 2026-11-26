@@ -69,9 +69,6 @@ export function MateriasEnCursoInteractivo({
                 {materias.length}
               </Badge>
             </CardTitle>
-            <p className="mt-1 text-xs text-tinta-3">
-              {tDash("subjectsInteractiveHint", { credits: totalCreditos })}
-            </p>
           </div>
           <Link
             href="/portal/estudiante/prematricula"
@@ -85,7 +82,6 @@ export function MateriasEnCursoInteractivo({
         {materias.length === 0 ? (
           <div className="rounded-card border border-dashed border-linea p-6 text-center">
             <p className="text-sm font-medium text-tinta">{t("subjectsEmpty")}</p>
-            <p className="mt-1 text-xs text-tinta-3">{t("subjectsEmptyHint")}</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-[170px_1fr] sm:items-center">
@@ -188,9 +184,7 @@ export function NotasRecientesInteractivo({
               <Sparkles className="size-4 text-marca-600" />
               {t("gradesTitle")}
             </CardTitle>
-            <p className="mt-1 text-xs text-tinta-3">
-              {periodo ? periodo.nombre : t("gradesEmpty")}
-            </p>
+            {periodo && <p className="mt-1 text-xs text-tinta-3">{periodo.nombre}</p>}
           </div>
           <Link
             href="/portal/estudiante/calificaciones"
@@ -204,7 +198,6 @@ export function NotasRecientesInteractivo({
         {!periodo || periodo.notas.length === 0 ? (
           <div className="rounded-card border border-dashed border-linea p-6 text-center">
             <p className="text-sm font-medium text-tinta">{t("gradesEmpty")}</p>
-            <p className="mt-1 text-xs text-tinta-3">{t("gradesEmptyHint")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -304,7 +297,6 @@ export function SolicitudesInteractivo({
                 {conteos.total}
               </Badge>
             </CardTitle>
-            <p className="mt-1 text-xs text-tinta-3">{tDash("requestsInteractiveHint")}</p>
           </div>
           <Link
             href="/portal/estudiante/solicitudes"

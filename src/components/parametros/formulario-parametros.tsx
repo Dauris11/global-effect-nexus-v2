@@ -60,7 +60,6 @@ export function FormularioParametros({
                 <div key={campo.clave} className="grid gap-3 p-4 sm:grid-cols-[1fr_14rem] sm:items-start">
                   <div className="min-w-0">
                     <Label htmlFor={`p-${k}`}>{t(`items.${k}.label`)}</Label>
-                    <p className="texto-meta mt-0.5">{t(`items.${k}.hint`)}</p>
                     {campo.ultimoCambio && <p className="texto-meta mt-1">{campo.ultimoCambio}</p>}
                   </div>
 

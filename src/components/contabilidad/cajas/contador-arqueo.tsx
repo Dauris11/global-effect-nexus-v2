@@ -157,7 +157,6 @@ export function ContadorArqueo({
             minLength={JUSTIFICACION_MINIMA}
             maxLength={500}
             rows={2}
-            placeholder={t("justificacionAyuda")}
             value={justificacion}
             onChange={(e) => setJustificacion(e.target.value)}
           />

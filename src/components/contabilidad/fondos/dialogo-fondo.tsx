@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -85,7 +84,6 @@ export function DialogoFondo({ donantes }: { donantes: { id: string; nombre: str
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("nuevo")}</DialogTitle>
-            <DialogDescription>{t("subtitulo")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -108,7 +106,6 @@ export function DialogoFondo({ donantes }: { donantes: { id: string; nombre: str
                 <div className="space-y-1.5">
                   <Label>Código</Label>
                   <Input
-                    placeholder="FND-XXX"
                     value={codigo}
                     onChange={(e) => setCodigo(e.target.value.toUpperCase())}
                   />
@@ -170,7 +167,6 @@ export function DialogoFondo({ donantes }: { donantes: { id: string; nombre: str
                     rows={2}
                     value={proposito}
                     onChange={(e) => setProposito(e.target.value)}
-                    placeholder="Finalidad convenida por el donante..."
                   />
                 </div>
               </PasoFormulario>

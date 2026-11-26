@@ -80,7 +80,6 @@ export default async function PaginaDetalleCaja({
         <EncabezadoPagina
           antetitulo={`${t("antetitulo")} · ${caja.codigo}`}
           titulo={caja.nombre}
-          subtitulo={t("responsableDe", { nombre: caja.responsableNombre, departamento: caja.departamento })}
           acciones={
             puedeRegistrar ? (
               <>
@@ -120,7 +119,7 @@ export default async function PaginaDetalleCaja({
           ))}
         </dl>
         <p className="texto-meta">
-          {t("ecuacion")} · {t("reglaSoporte", { monto: m(caja.umbralAdjunto) })} · {t("ultimoArqueo")}:{" "}
+          {t("responsableDe", { nombre: caja.responsableNombre, departamento: caja.departamento })} · {t("ultimoArqueo")}:{" "}
           {caja.ultimoArqueo ?? t("nunca")}
           {caja.cuentaContableCodigo && ` · ${t("cuentaContable")}: ${caja.cuentaContableCodigo}`}
         </p>

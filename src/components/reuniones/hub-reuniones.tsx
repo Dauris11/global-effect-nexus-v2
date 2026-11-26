@@ -28,7 +28,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -900,7 +899,6 @@ export function HubReuniones({
                   <Textarea
                     id="reu-desc"
                     rows={2}
-                    placeholder={t("dialogSchedule.descPlaceholder")}
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     className="border-linea text-xs resize-none"
@@ -1093,10 +1091,6 @@ export function HubReuniones({
                 <FileText className="size-5 text-marca-600" />
                 {t("dialogMinuta.title")}
               </DialogTitle>
-              <DialogDescription className="text-xs text-tinta-2">
-                {reunionParaMinuta?.titulo} (#{reunionParaMinuta?.folio}) —{" "}
-                {reunionParaMinuta?.fecha}
-              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
@@ -1108,7 +1102,6 @@ export function HubReuniones({
                   id="reu-minuta-texto"
                   required
                   rows={6}
-                  placeholder={t("dialogMinuta.placeholder")}
                   value={textoMinuta}
                   onChange={(e) => setTextoMinuta(e.target.value)}
                   className="border-linea text-xs font-sans"
@@ -1219,12 +1212,6 @@ export function HubReuniones({
                 <Ban className="size-5 text-tinta" />
                 {t("dialogCancel.title")}
               </DialogTitle>
-              <DialogDescription className="text-xs text-tinta-2">
-                {t("dialogCancel.description", {
-                  folio: reunionParaCancelar?.folio ?? 0,
-                  titulo: reunionParaCancelar?.titulo ?? "",
-                })}
-              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-1">
@@ -1235,7 +1222,6 @@ export function HubReuniones({
                 id="reu-motivo-cancel"
                 required
                 rows={3}
-                placeholder={t("dialogCancel.reasonPlaceholder")}
                 value={motivoCancelacion}
                 onChange={(e) => setMotivoCancelacion(e.target.value)}
                 className="border-linea text-xs"

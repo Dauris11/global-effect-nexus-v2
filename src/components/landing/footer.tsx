@@ -34,7 +34,6 @@ export async function Footer({ secciones }: { secciones: readonly { ancla: strin
               // El logo es blanco: sobre el gris claro se pasa a negro.
               className="h-9 w-auto brightness-0 dark:brightness-100"
             />
-            <p className="mt-4 text-sm text-tinta-2">{t("footerTagline")}</p>
           </div>
 
           <Columna titulo={t("footerThisPage")}>

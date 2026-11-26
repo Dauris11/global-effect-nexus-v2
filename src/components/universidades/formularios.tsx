@@ -163,7 +163,6 @@ export function FormUniversidad({
             <Label htmlFor={`u-logo-${k}`}>{t("logo.label")}</Label>
             <input id={`u-logo-${k}`} name="logo" type="file" accept="image/png,image/jpeg,image/webp"
               className="block w-full text-sm file:mr-3 file:rounded-control file:border file:border-linea-fuerte file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium" />
-            <p className="texto-meta">{t("logo.help")}</p>
             {universidad?.logo && (
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="quitar_logo" value="si" className="size-4" />
@@ -208,12 +207,10 @@ export function FormUniversidad({
               <Input id={`u-minacu-${k}`} name="minimo_acumulado" inputMode="decimal" maxLength={5} defaultValue={universidad?.indice_minimo_acumulado ?? ""} />
             </Campo>
           </div>
-          <p className="texto-meta">{t("rules.alertsHelp")}</p>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="confirmadas" value="si" defaultChecked={universidad?.reglas_confirmadas} className="size-4" />
             {t("rules.confirmed")}
           </label>
-          <p className="texto-meta">{t("rules.help")}</p>
             </div>
           </details>
           {universidad && (
@@ -318,7 +315,6 @@ export function FormCargaMaterias({ pensumId }: { pensumId: string }) {
             if (archivo && cuadro && archivo.size <= 200_000) cuadro.value = await archivo.text();
           }} />
       </div>
-      <p className="texto-meta">{t("pensum.loadHelp")}</p>
     </Cascaron>
   );
 }

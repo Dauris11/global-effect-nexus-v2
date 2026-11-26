@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -80,7 +79,6 @@ export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("modalLiberarTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalLiberarDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -131,7 +129,6 @@ export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
               <div className="space-y-1.5">
                 <Label>{t("soporte")}</Label>
                 <Input
-                  placeholder="Ej. B-001 / Factura B150000001"
                   value={documentoReferencia}
                   onChange={(e) => setDocumentoReferencia(e.target.value)}
                 />
@@ -143,7 +140,6 @@ export function DialogoLiberarFondo({ fondos }: { fondos: FondoItem[] }) {
                   rows={3}
                   value={justificacion}
                   onChange={(e) => setJustificacion(e.target.value)}
-                  placeholder={t("justificacionPlaceholder")}
                   required
                 />
               </div>

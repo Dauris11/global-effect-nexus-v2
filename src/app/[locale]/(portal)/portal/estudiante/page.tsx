@@ -180,7 +180,6 @@ export default async function PortalEstudiante({
       <div className="space-y-6">
         <EncabezadoPagina
           titulo={t("greeting", { name: estudiante.nombre })}
-          subtitulo={t("summary")}
         />
 
         <NextIntlClientProvider messages={mensajes}>

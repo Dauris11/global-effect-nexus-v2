@@ -26,7 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -369,11 +368,6 @@ function DialogoBorrado({ fila }: { fila: AcademiaFila }) {
                 ? t("programs.inUseTitle", { name: fila.nombre })
                 : t("programs.confirmTitle", { name: fila.nombre })}
             </DialogTitle>
-            <DialogDescription>
-              {enUso
-                ? t("programs.inUseHint", { count: estado.materiales ?? 0 })
-                : t("programs.deleteWarning")}
-            </DialogDescription>
           </DialogHeader>
 
           {estado.estado !== "inicial" &&

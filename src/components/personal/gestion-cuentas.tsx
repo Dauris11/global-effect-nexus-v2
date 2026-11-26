@@ -375,8 +375,6 @@ function Contrasena({
         </Button>
       </div>
 
-      <p className="text-muted-foreground text-xs">{t("passwordHint")}</p>
-
       <Button type="button" size="sm" onClick={alCerrar}>
         {t("done")}
       </Button>

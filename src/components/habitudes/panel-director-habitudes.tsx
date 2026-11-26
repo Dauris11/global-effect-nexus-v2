@@ -151,9 +151,6 @@ export function PanelDirectorHabitudes({
                 {tDir("rol")}
               </span>
             </div>
-            <p className="text-xs text-tinta-2 mt-0.5">
-              {tDir("descripcion")}
-            </p>
           </div>
         </div>
 

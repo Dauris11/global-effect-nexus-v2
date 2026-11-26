@@ -14,7 +14,6 @@ import { AZUL, AZUL_OSCURO } from "@/lib/paleta";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -210,9 +209,6 @@ export function PasajerosChofer({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("addPassenger")}</DialogTitle>
-            <DialogDescription className="sr-only">
-              {t("addPassenger")}
-            </DialogDescription>
           </DialogHeader>
           <FormularioPuntual
             sinTarjeta

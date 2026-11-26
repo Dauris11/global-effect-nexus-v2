@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -94,7 +93,6 @@ export function DialogoTercero() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{t("registrarTercero")}</DialogTitle>
-            <DialogDescription>{t("descripcionTercero")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -159,7 +157,6 @@ export function DialogoTercero() {
                   <Input
                     value={identificacion}
                     onChange={(e) => setIdentificacion(e.target.value)}
-                    placeholder={tipoId === "rnc" ? "101000000" : "04700000000"}
                     required
                   />
                 </div>

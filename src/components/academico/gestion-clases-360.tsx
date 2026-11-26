@@ -657,7 +657,6 @@ function FormularioTarea({
             <Textarea
               id={`t-instrucciones-${materiaId}`}
               name="instrucciones_entrega"
-              placeholder={t("taskRubricPlaceholder")}
               maxLength={1500}
               rows={2}
             />

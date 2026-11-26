@@ -211,10 +211,7 @@ export default async function PaginaExpediente({
               deleting: t("rowActions.deleting"),
               cancel: t("form.cancel"),
               confirmTitle: t("rowActions.confirmTitle", { name: expediente.nombre }),
-              deleteHint: t("rowActions.deleteHint"),
-              confirmHint: t("rowActions.confirmHint"),
               inUseTitle: t("rowActions.inUseTitle", { name: expediente.nombre }),
-              inUseHint: t("rowActions.inUseHint"),
               understood: t("rowActions.understood"),
               error: t("rowActions.error"),
               deps: {

@@ -90,11 +90,6 @@ export function ElegirMaterias({
         <p className="texto-meta font-medium">
           {t("subjectsPage.enrol.forTerm", { periodo })}
         </p>
-        {!abierta && (
-          <p className="max-w-2xl text-sm text-tinta-2">
-            {t("subjectsPage.enrol.windowClosedHint")}
-          </p>
-        )}
       </div>
 
       {materias.length === 0 ? (

@@ -81,7 +81,6 @@ export default async function PaginaRecibo({
       <EncabezadoPagina
         antetitulo={tc(`tipo.${recibo.tipo}`)}
         titulo={numero}
-        subtitulo={recibo.concepto}
         acciones={
           <>
             <InsigniaEstadoRecibo estado={recibo.estado} etiqueta={tc(`estado.${recibo.estado}`)} />
@@ -104,6 +103,7 @@ export default async function PaginaRecibo({
           <Monto valor={recibo.monto} moneda={recibo.moneda} />
         </p>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Dato etiqueta={tc("formulario.concepto")}>{recibo.concepto}</Dato>
           <Dato etiqueta={tc("recibos.col.fecha")}>{fechaLarga(recibo.fecha, idioma)}</Dato>
           <Dato etiqueta={tc("recibos.cuenta")}>{recibo.cuenta}</Dato>
           <Dato etiqueta={tc("formulario.formaPago")}>
@@ -130,7 +130,6 @@ export default async function PaginaRecibo({
           )}
         </dl>
         {recibo.notas && <p className="mt-5 whitespace-pre-line text-[15px] text-tinta-2">{recibo.notas}</p>}
-        {recibo.migrado && <p className="texto-meta mt-3">{t("migrado")}</p>}
       </Card>
 
       <ol className="space-y-1 text-sm text-tinta-2">

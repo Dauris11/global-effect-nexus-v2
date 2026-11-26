@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -92,7 +91,6 @@ export function DialogoNuevoEmpleado({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("modalEmpleadoTitulo")}</DialogTitle>
-            <DialogDescription>{t("modalEmpleadoDesc")}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -145,7 +143,6 @@ export function DialogoNuevoEmpleado({
                       id="emp-cod"
                       value={codigoEmpleado}
                       onChange={(e) => setCodigoEmpleado(e.target.value)}
-                      placeholder="EMP-001"
                       required
                     />
                   </div>
@@ -155,7 +152,6 @@ export function DialogoNuevoEmpleado({
                       id="emp-cargo"
                       value={cargo}
                       onChange={(e) => setCargo(e.target.value)}
-                      placeholder="Coordinador Pedagógico"
                       required
                     />
                   </div>
@@ -165,7 +161,6 @@ export function DialogoNuevoEmpleado({
                       id="emp-depto"
                       value={departamento}
                       onChange={(e) => setDepartamento(e.target.value)}
-                      placeholder="Operaciones"
                       required
                     />
                   </div>
@@ -213,7 +208,6 @@ export function DialogoNuevoEmpleado({
                       min="1"
                       value={salarioBase}
                       onChange={(e) => setSalarioBase(e.target.value)}
-                      placeholder="35000.00"
                       required
                     />
                   </div>
@@ -237,7 +231,6 @@ export function DialogoNuevoEmpleado({
                       id="emp-cuenta"
                       value={bancoCuenta}
                       onChange={(e) => setBancoCuenta(e.target.value)}
-                      placeholder="100-XXXXX-X"
                     />
                   </div>
                   <div className="space-y-1">
