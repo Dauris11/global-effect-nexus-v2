@@ -637,6 +637,45 @@ export async function entregasPorRevisar(
   );
 }
 
+/**
+ * Todas las entregas —por calificar y ya calificadas— de las tareas de las
+ * clases de este docente, universitarias y de 360. Es lo que alimenta el
+ * revisor: una sola consulta para los dos tipos de clase.
+ */
+export async function entregasDelDocente(
+  docenteId: string | null,
+  limite = 500,
+): Promise<(EntregaPorRevisar & { asignacion_id: string })[]> {
+  return consultar<EntregaPorRevisar & { asignacion_id: string }>(
+    `SELECT d.id,
+            d.asignacion_id,
+            a.materia_id,
+            a.materia_360_id,
+            a.titulo AS asignacion,
+            coalesce(mu.nombre, m3.nombre, '—') AS unidad,
+            e.nombre AS estudiante,
+            d.estado::text AS estado,
+            d.fecha_entrega,
+            d.archivo_url,
+            d.texto_respuesta,
+            d.calificacion::float8 AS calificacion,
+            coalesce(a.puntaje_maximo, 100)::float8 AS puntaje_maximo,
+            d.comentario_profesor
+       FROM entrega_estudiante d
+       JOIN asignacion  a  ON a.id = d.asignacion_id
+       JOIN estudiante  e  ON e.id = d.estudiante_id
+       LEFT JOIN materia     mu ON mu.id = a.materia_id
+       LEFT JOIN materia_360 m3 ON m3.id = a.materia_360_id
+      WHERE d.estado IN ('entregado', 'tarde', 'calificado')
+        AND ($1::uuid IS NULL
+             OR mu.profesor_usuario_id = $1
+             OR m3.docente_id          = $1)
+      ORDER BY a.titulo, e.nombre
+      LIMIT $2`,
+    [docenteId, limite],
+  );
+}
+
 export type CifrasDocente = {
   clases_360: number;
   estudiantes: number;

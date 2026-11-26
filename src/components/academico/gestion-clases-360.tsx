@@ -9,7 +9,6 @@ import {
   Info,
   Loader2,
   Plus,
-  Save,
   Sparkles,
   Trash2,
   Users,
@@ -33,11 +32,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { NOTA_APROBADA } from "@/lib/notas";
 import { AZUL, AZUL_OSCURO, CUADRO } from "@/lib/paleta";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   borrarAsignacion360,
   publicarTarea,
-  revisarEntrega,
   type EstadoAcademico,
 } from "@/server/profesor/acciones";
 import type { AsistenciaDeClases } from "@/server/profesor/asistencia";
@@ -183,32 +182,19 @@ export function GestionClases360({
         </div>
       )}
 
-      {/* ── 1. Por revisar ───────────────────────────────────────── */}
-      <Card>
-        <CardContent className="pt-5">
-          <CardTitle className="mb-3">
-            <GraduationCap className="size-4" />
-            {t("toReview")}
-            {entregas.length > 0 && (
-              <Badge className="bg-tinta text-background ml-1 text-[10px]">
-                {entregas.length}
-              </Badge>
-            )}
-          </CardTitle>
-
-          {entregas.length === 0 ? (
-            <p className="text-tinta-3 py-6 text-center text-sm">
-              {t("reviewEmpty")}
-            </p>
-          ) : (
-            <ul className="divide-linea divide-y">
-              {entregas.map((entrega) => (
-                <FilaEntrega key={entrega.id} entrega={entrega} />
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* ── 1. La calificación vive en un solo sitio: el revisor ── */}
+      <Link
+        href="/portal/profesor/entregas"
+        className="rounded-card flex min-h-11 items-center justify-between gap-3 border border-linea bg-card p-4 shadow-card hover:shadow-elevada"
+      >
+        <span className="flex items-center gap-2 font-medium text-tinta">
+          <GraduationCap className="size-4" />
+          {t("reviewOpen")}
+        </span>
+        {entregas.length > 0 && (
+          <Badge className="bg-tinta text-background text-[10px]">{entregas.length}</Badge>
+        )}
+      </Link>
 
       {/* ── 2. Clases ────────────────────────────────────────────── */}
       <Card>
@@ -402,104 +388,6 @@ function TablaInscritos({
         ))}
       </ul>
     </div>
-  );
-}
-
-/** Una entrega esperando nota. */
-function FilaEntrega({
-  entrega,
-}: {
-  entrega: EntregaPorRevisar & { enlace: string | null };
-}) {
-  const t = useTranslations("academic.classes360");
-  const [estado, enviar, enviando] = useActionState<EstadoAcademico, FormData>(
-    revisarEntrega,
-    { estado: "inicial" },
-  );
-
-  return (
-    <li className="space-y-2 py-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{entrega.estudiante}</p>
-          <p className="text-tinta-3 truncate text-xs">
-            {entrega.asignacion} · {entrega.unidad}
-          </p>
-        </div>
-
-        {/* El enlace lo firma el servidor y caduca: el bucket es privado. */}
-        {entrega.enlace && (
-          <a
-            href={entrega.enlace}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-marca-600 inline-flex shrink-0 items-center gap-1 text-xs font-semibold hover:underline"
-          >
-            <ExternalLink className="size-3.5" />
-            {t("openFile")}
-          </a>
-        )}
-      </div>
-
-      {entrega.texto_respuesta && (
-        <blockquote className="max-h-48 overflow-y-auto rounded-control bg-muted/50 p-3 text-sm whitespace-pre-line text-tinta">
-          {entrega.texto_respuesta}
-        </blockquote>
-      )}
-
-      <form action={enviar} className="flex flex-wrap items-end gap-2">
-        <input type="hidden" name="id" value={entrega.id} />
-
-        <label className="flex flex-col gap-1">
-          <span className="text-tinta-3 text-[11px] font-medium">
-            {t("grade")} · {t("gradeMax", { max: entrega.puntaje_maximo })}
-          </span>
-          <Input
-            name="nota"
-            type="number"
-            min={0}
-            max={entrega.puntaje_maximo}
-            step="0.1"
-            defaultValue={entrega.calificacion ?? ""}
-            className="h-8 w-24 text-xs"
-            aria-invalid={estado.estado === "nota_invalida" || undefined}
-          />
-        </label>
-
-        <label className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-tinta-3 text-[11px] font-medium">{t("comment")}</span>
-          <Input
-            name="comentario"
-            defaultValue={entrega.comentario_profesor ?? ""}
-            maxLength={900}
-            className="h-8 text-xs"
-          />
-        </label>
-
-        <Button type="submit" size="sm" disabled={enviando}>
-          {enviando ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Save className="size-3.5" />
-          )}
-          {t("review")}
-        </Button>
-      </form>
-
-      {estado.estado === "ok" && (
-        <p className="text-marca-600 text-[11px] font-medium">{t("reviewed")}</p>
-      )}
-
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive text-[11px]">
-          {estado.estado === "nota_invalida"
-            ? t("errGradeScale", { max: entrega.puntaje_maximo })
-            : estado.estado === "no_encontrado"
-              ? t("errOwner")
-              : t("errGeneric")}
-        </p>
-      )}
-    </li>
   );
 }
 
@@ -766,7 +654,6 @@ function ListaAsignacionesClase360({
         {filas.map((fila) => {
           const evaluable = fila.tipo === "tarea" || fila.tipo === "examen";
           const entregasDeTarea = entregasPorAsignacion[fila.id] ?? [];
-          const desplegada = abiertaId === fila.id;
 
           return (
             <li
@@ -803,17 +690,13 @@ function ListaAsignacionesClase360({
 
                 <div className="flex shrink-0 items-center gap-1.5">
                   {evaluable && entregasDeTarea.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      aria-expanded={desplegada}
-                      onClick={() => setAbiertaId(desplegada ? null : fila.id)}
-                      className="h-7 px-2 text-xs text-marca-600"
+                    <Link
+                      href={`/portal/profesor/entregas?tarea=${fila.id}`}
+                      className="inline-flex h-7 items-center gap-1 px-2 text-xs font-medium text-marca-600 hover:underline"
                     >
                       <GraduationCap className="size-3.5" />
                       {t("submissionsCount", { n: entregasDeTarea.length })}
-                    </Button>
+                    </Link>
                   )}
 
                   {fila.archivo_url && (
@@ -846,13 +729,6 @@ function ListaAsignacionesClase360({
                 </div>
               </div>
 
-              {desplegada && entregasDeTarea.length > 0 && (
-                <ul className="divide-linea border-linea divide-y border-t pt-2">
-                  {entregasDeTarea.map((entrega) => (
-                    <FilaEntrega key={entrega.id} entrega={entrega} />
-                  ))}
-                </ul>
-              )}
             </li>
           );
         })}

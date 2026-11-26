@@ -1613,7 +1613,8 @@
         "tarea": "Assignment",
         "evaluacion": "Grading",
         "entrega": "Submission"
-      }
+      },
+      "reviewOpen": "Review submissions"
     },
     "termKind": {
       "label": "Length",
@@ -2304,6 +2305,20 @@
       "count": "{count, plural, =1 {1 submission waiting for a grade} other {# submissions waiting for a grade}}",
       "late": "Late",
       "grade": "Grade out of {max}"
+    },
+    "review": {
+      "task": "Task",
+      "pick": "Pick a submission",
+      "filter": {
+        "pendientes": "To grade",
+        "calificadas": "Graded",
+        "todas": "All"
+      },
+      "download": "Download",
+      "previewOf": "{nombre}'s submission",
+      "nothingAttached": "No file or text attached.",
+      "saveNext": "Save and next",
+      "save": "Save grade"
     }
   },
   "modules": {

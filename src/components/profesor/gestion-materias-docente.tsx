@@ -20,16 +20,17 @@ import { AsistenciaClase360 } from "@/components/academico/asistencia-clase-360"
 import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "@/i18n/navigation";
 import { NOTA_APROBADA } from "@/lib/notas";
 import { AZUL, AZUL_OSCURO, CUADRO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
-import { calificarEntregaMoodleAction } from "@/server/moodle/acciones";
 import {
   borrarAsignacionMateria,
   calificarInscripcionMateria,
@@ -165,36 +166,21 @@ export function GestionMateriasDocente({
         </Card>
       </div>
 
-      {/* ── 1. Bandeja de entregas pendientes de calificar en materias asignadas ── */}
-      <Card>
-        <CardContent className="pt-5">
-          <CardTitle className="mb-3">
-            <GraduationCap className="size-4" />
-            {t("toReview")}
-            {entregasPendientes.length > 0 && (
-              <Badge className="ml-1 bg-tinta text-[10px] text-background">
-                {entregasPendientes.length}
-              </Badge>
-            )}
-          </CardTitle>
-
-          {entregasPendientes.length === 0 ? (
-            <p className="py-4 text-center text-sm text-tinta-3">
-              {t("reviewEmpty")}
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {entregasPendientes.map((entrega) => (
-                <FilaEntregaMateria
-                  key={entrega.id}
-                  entrega={entrega}
-                  mostrarMateria
-                />
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* ── 1. La calificación vive en un solo sitio: el revisor ── */}
+      <Link
+        href="/portal/profesor/entregas"
+        className="rounded-card flex min-h-11 items-center justify-between gap-3 border border-linea bg-card p-4 shadow-card hover:shadow-elevada"
+      >
+        <span className="flex items-center gap-2 font-medium text-tinta">
+          <GraduationCap className="size-4" />
+          {t("reviewOpen")}
+        </span>
+        {entregasPendientes.length > 0 && (
+          <Badge className="bg-tinta text-[10px] text-background">
+            {entregasPendientes.length}
+          </Badge>
+        )}
+      </Link>
 
       {/* ── 2. Materias asignadas al profesor ── */}
       <div className="space-y-4">
@@ -567,16 +553,6 @@ function ListaPublicacionesMateria({
 }) {
   const t = useTranslations("academic.classes360");
   const tProf = useTranslations("teacherPortal.assignedSubjects");
-  const [abierta, setAbierta] = useState<string | null>(() => {
-    const conPendientes = asignaciones.find((item) =>
-      entregas.some(
-        (e) =>
-          e.asignacion_id === item.id &&
-          (e.estado === "entregado" || e.estado === "tarde"),
-      ),
-    );
-    return conPendientes?.id ?? null;
-  });
   const [borrando, iniciarBorrado] = useTransition();
 
   if (asignaciones.length === 0) {
@@ -589,7 +565,6 @@ function ListaPublicacionesMateria({
     <ul className="space-y-3">
       {asignaciones.map((item) => {
         const entregasItem = entregas.filter((e) => e.asignacion_id === item.id);
-        const expandida = abierta === item.id;
         const evaluable = item.tipo === "tarea" || item.tipo === "examen";
 
         return (
@@ -639,16 +614,12 @@ function ListaPublicacionesMateria({
                 )}
 
                 {entregasItem.length > 0 && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setAbierta(expandida ? null : item.id)}
+                  <Link
+                    href={`/portal/profesor/entregas?tarea=${item.id}`}
+                    className={variantesBoton({ variant: "outline", size: "sm" })}
                   >
-                    {expandida
-                      ? tProf("hideSubmissions")
-                      : `${tProf("viewSubmissions")} (${entregasItem.length})`}
-                  </Button>
+                    {`${t("reviewOpen")} (${entregasItem.length})`}
+                  </Link>
                 )}
                 <Button
                   type="button"
@@ -668,117 +639,10 @@ function ListaPublicacionesMateria({
               </div>
             </div>
 
-            {expandida && entregasItem.length > 0 && (
-              <ul className="mt-3 space-y-2 border-t border-linea pt-3">
-                {entregasItem.map((entrega) => (
-                  <FilaEntregaMateria key={entrega.id} entrega={entrega} />
-                ))}
-              </ul>
-            )}
           </li>
         );
       })}
     </ul>
-  );
-}
-
-function FilaEntregaMateria({
-  entrega,
-  mostrarMateria = false,
-}: {
-  entrega: EntregaConEnlace;
-  mostrarMateria?: boolean;
-}) {
-  const tProf = useTranslations("teacherPortal.assignedSubjects");
-  const [nota, setNota] = useState(
-    entrega.calificacion !== null ? String(entrega.calificacion) : "",
-  );
-  const [comentario, setComentario] = useState(
-    entrega.comentario_profesor ?? "",
-  );
-  const [guardando, iniciar] = useTransition();
-  const [estado, setEstado] = useState<string | null>(null);
-
-  function guardar() {
-    setEstado(null);
-    iniciar(async () => {
-      const fd = new FormData();
-      fd.set("entrega_id", entrega.id);
-      fd.set("calificacion", nota);
-      fd.set("comentario_profesor", comentario);
-      const res = await calificarEntregaMoodleAction(fd);
-      setEstado(res.ok ? "ok" : (res.mensaje ?? "error"));
-    });
-  }
-
-  return (
-    <li className="space-y-2 rounded-control border border-linea bg-card p-3 text-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="font-semibold text-tinta">{entrega.estudiante}</p>
-          {mostrarMateria && (
-            <p className="text-[11px] text-tinta-3">
-              {entrega.asignacion} · {entrega.unidad}
-            </p>
-          )}
-          {entrega.texto_respuesta && (
-            <p className="mt-1 whitespace-pre-wrap text-tinta-2">
-              {entrega.texto_respuesta}
-            </p>
-          )}
-        </div>
-        {entrega.enlace && (
-          <a
-            href={entrega.enlace}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 font-medium text-marca-600 underline"
-          >
-            {tProf("openAttachment")}
-            <ExternalLink className="size-3" />
-          </a>
-        )}
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-[110px_1fr_auto]">
-        <Input
-          type="number"
-          min={0}
-          max={entrega.puntaje_maximo}
-          step="0.5"
-          value={nota}
-          onChange={(e) => setNota(e.target.value)}
-          placeholder={`/ ${entrega.puntaje_maximo}`}
-          className="h-8 text-xs"
-        />
-        <Input
-          value={comentario}
-          onChange={(e) => setComentario(e.target.value)}
-          placeholder={tProf("feedbackPlaceholder")}
-          className="h-8 text-xs"
-        />
-        <Button
-          type="button"
-          size="sm"
-          className="h-8"
-          cargando={guardando}
-          onClick={guardar}
-        >
-          {guardando ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : (
-            <Save className="size-3" />
-          )}
-          {tProf("grade")}
-        </Button>
-      </div>
-      {estado === "ok" && (
-        <p className="font-medium text-marca-700">{tProf("graded")}</p>
-      )}
-      {estado && estado !== "ok" && (
-        <p className="font-medium text-destructive">{tProf("gradeError")}</p>
-      )}
-    </li>
   );
 }
 

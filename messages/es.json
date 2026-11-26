@@ -1613,7 +1613,8 @@
         "tarea": "Tarea",
         "evaluacion": "Evaluación",
         "entrega": "Entrega"
-      }
+      },
+      "reviewOpen": "Revisar entregas"
     },
     "termKind": {
       "label": "Duración",
@@ -2304,6 +2305,20 @@
       "count": "{count, plural, =1 {1 entrega esperando nota} other {# entregas esperando nota}}",
       "late": "Tarde",
       "grade": "Nota sobre {max}"
+    },
+    "review": {
+      "task": "Tarea",
+      "pick": "Elige una entrega",
+      "filter": {
+        "pendientes": "Por calificar",
+        "calificadas": "Calificadas",
+        "todas": "Todas"
+      },
+      "download": "Descargar",
+      "previewOf": "Entrega de {nombre}",
+      "nothingAttached": "No adjuntó archivo ni texto.",
+      "saveNext": "Guardar y siguiente",
+      "save": "Guardar nota"
     }
   },
   "modules": {
