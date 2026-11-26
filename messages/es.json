@@ -4694,6 +4694,7 @@
         "agregarAFacturasAyuda": "Si eliges «Sí», esta cuenta aparecerá por su nombre en la lista de Tipo de gasto al registrar facturas.",
         "si": "Sí",
         "no": "No",
+        "masInformacion": "Más información",
         "editar": {
           "titulo": "Editar la cuenta",
           "descripcion": "Cambia los datos de {cuenta}.",

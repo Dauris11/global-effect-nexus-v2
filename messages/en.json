@@ -4694,6 +4694,7 @@
         "agregarAFacturasAyuda": "If set to “Yes”, this account appears by name in the Expense type list when registering invoices.",
         "si": "Yes",
         "no": "No",
+        "masInformacion": "More information",
         "editar": {
           "titulo": "Edit account",
           "descripcion": "Change the details of {cuenta}.",

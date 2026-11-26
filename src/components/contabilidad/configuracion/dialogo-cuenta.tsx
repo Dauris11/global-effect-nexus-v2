@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import {
   cambiarEstadoCuenta,
   crearCuentaRaiz,
@@ -93,9 +94,18 @@ export function DialogoCuenta({
 
           {pideCodigo && (
             <div className="space-y-1.5">
-              <Label htmlFor="cuenta-segmento" className="text-sm font-medium">
-                {t("codigo")}
-              </Label>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="cuenta-segmento" className="text-sm font-medium">
+                  {t("codigo")}
+                </Label>
+                <TooltipAyuda
+                  etiqueta={t("masInformacion")}
+                  texto={[
+                    prefijo ? t("codigoAyuda") : t("codigoAyudaRaiz"),
+                    ...(modo === "editar" ? [t("editar.avisoBloqueo")] : []),
+                  ]}
+                />
+              </div>
               <div className="flex items-center gap-2">
                 {prefijo && <span className="font-mono text-sm text-tinta-2">{prefijo}</span>}
                 <Input
@@ -108,8 +118,6 @@ export function DialogoCuenta({
                   className="max-w-32 font-mono"
                 />
               </div>
-              <p className="texto-meta">{prefijo ? t("codigoAyuda") : t("codigoAyudaRaiz")}</p>
-              {modo === "editar" && <p className="texto-meta">{t("editar.avisoBloqueo")}</p>}
             </div>
           )}
 
@@ -150,9 +158,10 @@ export function DialogoCuenta({
           )}
 
           {modo === "editar" && (
-            <label className="flex items-start gap-3 text-sm">
+            <div className="flex items-center gap-2.5 text-sm">
               <input type="hidden" name="movimiento" value={movimiento ? "1" : "0"} />
               <input
+                id="cuenta-movimiento"
                 type="checkbox"
                 checked={movimiento}
                 onChange={(e) => {
@@ -160,20 +169,25 @@ export function DialogoCuenta({
                   setMovimiento(activo);
                   if (!activo) setAgregarAFacturas(false);
                 }}
-                className="mt-0.5 size-4 accent-marca-500"
+                className="size-4 accent-marca-500"
               />
-              <span>
-                <span className="font-medium text-tinta">{t("recibeAsientos")}</span>
-                <span className="texto-meta block">{t("recibeAsientosAyuda")}</span>
-              </span>
-            </label>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="cuenta-movimiento" className="cursor-pointer text-sm font-medium text-tinta">
+                  {t("recibeAsientos")}
+                </Label>
+                <TooltipAyuda etiqueta={t("masInformacion")} texto={t("recibeAsientosAyuda")} />
+              </div>
+            </div>
           )}
 
           {(modo === "subcuenta" || (modo === "editar" && movimiento)) && (
             <div className="space-y-1.5">
-              <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
-                {t("agregarAFacturas")}
-              </Label>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
+                  {t("agregarAFacturas")}
+                </Label>
+                <TooltipAyuda etiqueta={t("masInformacion")} texto={t("agregarAFacturasAyuda")} />
+              </div>
               <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
               <Select
                 value={agregarAFacturas ? "1" : "0"}
@@ -187,7 +201,6 @@ export function DialogoCuenta({
                   <SelectItem value="0">{t("no")}</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="texto-meta">{t("agregarAFacturasAyuda")}</p>
             </div>
           )}
 
