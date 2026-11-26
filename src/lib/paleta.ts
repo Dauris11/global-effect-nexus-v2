@@ -138,21 +138,21 @@ export function esPrioridad(valor: string): valor is Prioridad {
 }
 
 /**
- * Estado de un proyecto, una tarea o una cita.
- *
- * Tres pesos: lo que está en marcha va en azul relleno, lo terminado en azul
- * suave, y lo que no ha empezado o se canceló en gris. Un estado que no esté en
- * la lista cae en gris, que es lo que menos afirma.
+ * Estado de un proyecto, una tarea o una cita, con el color ESTÁNDAR de estado
+ * (tokens `est-*` de `globals.css`, los mismos de `src/lib/estados-trabajo.ts`).
+ * Un estado que no esté en la lista cae en gris, que es lo que menos afirma.
  */
 export const ESTADO = {
-  en_curso: "bg-marca-50 text-marca-700",
-  en_progreso: "bg-marca-50 text-marca-700",
-  programada: "bg-marca-50 text-marca-700",
-  completado: "bg-marca-700 text-white",
-  completada: "bg-marca-700 text-white",
-  pausado: "bg-linea-fuerte text-tinta",
-  planificacion: "bg-muted text-tinta-2",
-  pendiente: "bg-muted text-tinta-2",
+  en_curso: "bg-est-progreso/10 text-est-progreso",
+  en_progreso: "bg-est-progreso/10 text-est-progreso",
+  programada: "bg-est-progreso/10 text-est-progreso",
+  en_revision: "bg-est-revision/10 text-est-revision",
+  completado: "bg-est-listo/10 text-est-listo",
+  completada: "bg-est-listo/10 text-est-listo",
+  pausado: "bg-est-pausa/10 text-est-pausa",
+  planificacion: "bg-est-pendiente/10 text-est-pendiente",
+  pendiente: "bg-est-pendiente/10 text-est-pendiente",
+  por_hacer: "bg-est-pendiente/10 text-est-pendiente",
   cancelada: "bg-muted text-tinta-3",
   cancelado: "bg-muted text-tinta-3",
 } as const;

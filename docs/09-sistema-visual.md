@@ -71,12 +71,13 @@ También el borde de un input con `aria-invalid`. Nunca en botones, banners ni
 gráficas.
 
 
-### 2.3b Colores de trabajo (nov 2026)
+### 2.3b Colores de estado, prioridad y módulo (nov 2026)
 
-El Kanban de proyectos, actividades y tareas colorea estado y prioridad con los
-tokens `est-*` y `pri-*` (`globals.css`), solo mediante
-`src/lib/estados-trabajo.ts` y siempre con icono. Son la segunda excepción a
-«un solo acento»; no valen para botones, banners ni gráficas.
+La marca y la paleta no cambian. Estados, estatus, prioridades y módulos pueden
+llevar color, pero de un solo estándar: los tokens `est-*` y `pri-*`
+(`globals.css`) mediante `src/lib/estados-trabajo.ts` o `ESTADO` de `paleta.ts`.
+Siempre con icono; no valen para botones, banners ni gráficas, y no se inventan
+colores por pantalla.
 
 ### 2.4 Tipografía
 
