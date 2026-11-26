@@ -28,7 +28,7 @@ export type FilaCxp = {
   fecha_programada: string | null;
   cuenta_salida_id: string | null;
   cuenta_salida: string | null;
-  categoria_id: string;
+  categoria_id: string | null;
   fondo_id: string;
   proyecto_id: string | null;
   proyecto: string | null;

@@ -2,10 +2,9 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { CheckCircle2, Loader2, Save, Search, Sparkles, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
-import { ComboboxRetencion } from "@/components/contabilidad/proveedores/combobox-retencion";
 import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,10 @@ import {
 } from "@/lib/contabilidad/formato";
 import { identificacionValida, limpiarIdentificacion } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
-import { calcularMontoRetencion } from "@/lib/contabilidad/retenciones-dgii";
+import {
+  calcularMontoRetencion,
+  retencionesParaProveedor,
+} from "@/lib/contabilidad/retenciones-dgii";
 import { PILARES_COSTO } from "@/lib/costos";
 import {
   agregarCuentaProveedor,
@@ -32,7 +34,7 @@ import {
   type EstadoProveedor,
 } from "@/server/contabilidad/proveedores/acciones";
 import type { DetalleFactura, DetalleProveedor, UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
-import type { Opcion, OpcionCategoria } from "@/server/contabilidad/recibos/consultas";
+import type { Opcion } from "@/server/contabilidad/recibos/consultas";
 
 
 const INICIAL: EstadoProveedor = { estado: "inicial" };
@@ -65,10 +67,8 @@ const fichaFactura = (id: string) => `/contabilidad/facturas/${id}`;
 
 export function FormularioProveedor({
   proveedor,
-  categorias,
 }: {
   proveedor?: DetalleProveedor;
-  categorias: Opcion[];
 }) {
   const t = useTranslations("contab.proveedorForm");
   const tc = useTranslations("contab");
@@ -246,12 +246,6 @@ export function FormularioProveedor({
             <Campo id="condiciones" etiqueta={t("condiciones")}>
               <Input id="condiciones" name="condiciones" type="number" min={0} max={365} defaultValue={proveedor?.condiciones_pago_dias ?? 30} />
             </Campo>
-            <Campo id="categoria" etiqueta={t("categoria")}>
-              <select id="categoria" name="categoria" className={SELECT} defaultValue={proveedor?.categoria_id ?? ""}>
-                <option value="">{t("ninguna")}</option>
-                {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-              </select>
-            </Campo>
             <Campo id="estado" etiqueta={t("estado")}>
               <select id="estado" name="estado" className={SELECT} defaultValue={proveedor?.estado ?? "activo"}>
                 <option value="activo">{tc("estadoProveedor.activo")}</option>
@@ -313,26 +307,26 @@ export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string
 }
 
 /**
- * Factura de proveedor para ASFL (sin ITBIS facturado). Las retenciones de ISR
- * y de ITBIS se eligen en combobox según el folleto DGII y se calculan
- * automáticamente en centavos exactos a partir del monto; el servidor vuelve a
- * calcularlas antes de guardar.
+ * Factura de proveedor para ASFL (sin ITBIS facturado). El tipo de gasto
+ * enlaza directamente con las cuentas contables marcadas con «Agregar a Facturas»
+ * (mostrando solo su nombre), y las retenciones se eligen en listas simples
+ * con cálculo automático en centavos exactos.
  */
 export function FormularioFactura({
   proveedores,
   proveedorId,
   factura,
-  categorias,
+  tiposGasto,
   fondos,
   proyectos,
   solicitantes = [],
   estudiantes = [],
   hoy,
 }: {
-  proveedores: (Opcion & { tipo: "fisica" | "juridica"; dias: number; categoria_id: string | null; identificacion?: string })[];
+  proveedores: (Opcion & { tipo: "fisica" | "juridica"; dias: number; identificacion?: string })[];
   proveedorId?: string;
   factura?: DetalleFactura;
-  categorias: OpcionCategoria[];
+  tiposGasto: Opcion[];
   fondos: Opcion[];
   proyectos: Opcion[];
   solicitantes?: UsuarioSolicitante[];
@@ -340,6 +334,7 @@ export function FormularioFactura({
   estudiantes?: Opcion[];
   hoy: string;
 }) {
+  const locale = useLocale();
   const t = useTranslations("contab.facturaForm");
   const tp = useTranslations("contab.proveedor");
   const tc = useTranslations("contab");
@@ -422,6 +417,9 @@ export function FormularioFactura({
     d.setUTCDate(d.getUTCDate() + (datosProveedor?.dias ?? 30));
     return d.toISOString().slice(0, 10);
   })();
+
+  const opcionesIsr = retencionesParaProveedor("isr", datosProveedor?.tipo);
+  const opcionesItbis = retencionesParaProveedor("itbis", datosProveedor?.tipo);
 
   const base = montoValido(monto) ?? "0";
   const retencionIsr = calcularMontoRetencion(base, tipoRetencionIsr);
@@ -552,14 +550,20 @@ export function FormularioFactura({
                 etiqueta={t("retencionIsr")}
                 ayuda={t("retencionCalculada", { monto: formatearMonto(retencionIsr, monedaVista) })}
               >
-                <ComboboxRetencion
+                <select
                   id="tipo_retencion_isr"
                   name="tipo_retencion_isr"
-                  impuesto="isr"
-                  tipoProveedor={datosProveedor?.tipo}
-                  valor={tipoRetencionIsr}
-                  onCambiar={setTipoRetencionIsr}
-                />
+                  className={SELECT}
+                  value={tipoRetencionIsr}
+                  onChange={(e) => setTipoRetencionIsr(e.target.value)}
+                >
+                  <option value="">{t("sinRetencion")}</option>
+                  {opcionesIsr.map((r) => (
+                    <option key={r.codigo} value={r.codigo}>
+                      {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
+                    </option>
+                  ))}
+                </select>
               </Campo>
 
               <Campo
@@ -567,14 +571,20 @@ export function FormularioFactura({
                 etiqueta={t("retencionItbis")}
                 ayuda={t("retencionCalculada", { monto: formatearMonto(retencionItbis, monedaVista) })}
               >
-                <ComboboxRetencion
+                <select
                   id="tipo_retencion_itbis"
                   name="tipo_retencion_itbis"
-                  impuesto="itbis"
-                  tipoProveedor={datosProveedor?.tipo}
-                  valor={tipoRetencionItbis}
-                  onCambiar={setTipoRetencionItbis}
-                />
+                  className={SELECT}
+                  value={tipoRetencionItbis}
+                  onChange={(e) => setTipoRetencionItbis(e.target.value)}
+                >
+                  <option value="">{t("sinRetencion")}</option>
+                  {opcionesItbis.map((r) => (
+                    <option key={r.codigo} value={r.codigo}>
+                      {r.etiquetaTasa} — {locale === "en" ? r.nombre.en : r.nombre.es}
+                    </option>
+                  ))}
+                </select>
               </Campo>
             </div>
 
@@ -655,10 +665,24 @@ export function FormularioFactura({
             )}
 
             <div className="grid gap-4 md:grid-cols-3">
-              <Campo id="categoria" etiqueta={t("categoria")}>
-                <select key={proveedor} id="categoria" name="categoria" className={SELECT} required
-                  defaultValue={factura?.categoria_id ?? datosProveedor?.categoria_id ?? ""}>
-                  {categorias.filter((c) => c.tipo !== "ingreso").map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              <Campo
+                id="cuenta_gasto_id"
+                etiqueta={t("tipoGasto")}
+                ayuda={tiposGasto.length === 0 ? t("sinTiposGasto") : undefined}
+              >
+                <select
+                  id="cuenta_gasto_id"
+                  name="cuenta_gasto_id"
+                  className={SELECT}
+                  required
+                  defaultValue={factura?.cuenta_gasto_id ?? ""}
+                >
+                  <option value="">{t("seleccionarTipoGasto")}</option>
+                  {tiposGasto.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.nombre}
+                    </option>
+                  ))}
                 </select>
               </Campo>
               <Campo id="fondo" etiqueta={t("fondo")}>

@@ -102,7 +102,7 @@ const CONDICION = `($1::date IS NULL OR r.fecha >= $1)
 
 const DESDE = `FROM contabilidad.recibo r
   JOIN contabilidad.cuenta_bancaria cb ON cb.id = r.cuenta_bancaria_id
-  JOIN contabilidad.categoria ca ON ca.id = r.categoria_id
+  LEFT JOIN contabilidad.categoria ca ON ca.id = r.categoria_id
   JOIN contabilidad.fondo f ON f.id = r.fondo_id
   JOIN usuario uc ON uc.id = r.creado_por
   LEFT JOIN usuario ua ON ua.id = r.contabilizado_por
@@ -139,7 +139,7 @@ export type FilaRecibo = {
 
 const COLUMNAS = `r.id, r.tipo, r.numero::text AS numero, r.fecha::text AS fecha,
   cb.nombre AS cuenta, r.moneda, r.monto::text AS monto, r.monto_dop::text AS monto_dop,
-  r.concepto, ca.nombre AS categoria, f.nombre AS fondo, pr.nombre AS proyecto,
+  r.concepto, coalesce(ca.nombre, '—') AS categoria, f.nombre AS fondo, pr.nombre AS proyecto,
   coalesce(pa.nombre, r.beneficiario) AS tercero, r.forma_pago, r.referencia, r.estado,
   uc.nombre AS creado_por, ua.nombre AS aprobado_por`;
 
@@ -181,7 +181,7 @@ export async function totalesRecibos(filtro: FiltroRecibos): Promise<TotalRecibo
 export type DetalleRecibo = FilaRecibo & {
   serie: string;
   cuenta_id: string;
-  categoria_id: string;
+  categoria_id: string | null;
   fondo_id: string;
   proyecto_id: string | null;
   patrocinador_id: string | null;

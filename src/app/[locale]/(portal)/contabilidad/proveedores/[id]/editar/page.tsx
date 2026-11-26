@@ -6,7 +6,6 @@ import { FormularioProveedor } from "@/components/contabilidad/proveedores/formu
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { requerirPermiso } from "@/lib/auth";
 import { proveedorPorId } from "@/server/contabilidad/proveedores/consultas";
-import { opcionesRecibo } from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
   params,
@@ -26,11 +25,9 @@ export default async function PaginaEditarProveedor({
   const { locale, id } = await params;
   await requerirPermiso("contabilidad.registrar");
 
-  const [t, tp, proveedor, opciones] = await Promise.all([
+  const [t, proveedor] = await Promise.all([
     getTranslations({ locale, namespace: "contab.proveedorForm" }),
-    getTranslations({ locale, namespace: "contab.proveedores" }),
     proveedorPorId(id),
-    opcionesRecibo(),
   ]);
 
   if (!proveedor) notFound();
@@ -42,10 +39,7 @@ export default async function PaginaEditarProveedor({
       />
 
       <div className="rounded-tarjeta border border-linea bg-background p-6">
-        <FormularioProveedor
-          proveedor={proveedor}
-          categorias={opciones.categorias}
-        />
+        <FormularioProveedor proveedor={proveedor} />
       </div>
     </div>
   );

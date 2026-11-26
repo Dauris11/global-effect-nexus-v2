@@ -282,13 +282,14 @@ export async function guardarFactura(
   const itbis = "0";
   const tipoRetencionIsr = texto(datos, "tipo_retencion_isr", 60) || null;
   const tipoRetencionItbis = texto(datos, "tipo_retencion_itbis", 60) || null;
+  const cuentaGastoId = idOpcional(datos, "cuenta_gasto_id");
   const categoria = idOpcional(datos, "categoria");
   const fondo = idOpcional(datos, "fondo");
   const concepto = texto(datos, "concepto");
 
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
   if (!proveedorId || !esFechaIso(emision) || !esFechaIso(vencimiento) || vencimiento < emision
-      || !esMoneda(moneda) || !categoria || !fondo || !concepto) {
+      || !esMoneda(moneda) || !cuentaGastoId || !fondo || !concepto) {
     return { estado: "datos_invalidos" };
   }
   if (!subtotal) return { estado: "monto_invalido" };
@@ -298,6 +299,14 @@ export async function guardarFactura(
   if (tipoRetencionItbis && retencionPorCodigo(tipoRetencionItbis)?.impuesto !== "itbis") {
     return { estado: "datos_invalidos" };
   }
+
+  const cuentaGastoValida = await consultarUna<{ ok: boolean }>(
+    `SELECT (activa AND admite_movimiento) AS ok
+       FROM contabilidad.cuenta_contable
+      WHERE id = $1`,
+    [cuentaGastoId],
+  );
+  if (!cuentaGastoValida?.ok) return { estado: "datos_invalidos" };
 
   // Las retenciones se calculan en el servidor a partir del monto y del tipo elegido.
   const isr = tipoRetencionIsr ? calcularMontoRetencion(subtotal, tipoRetencionIsr) : "0";
@@ -325,7 +334,7 @@ export async function guardarFactura(
   const valores = [
     proveedorId, ncf, emision, vencimiento, moneda, tasa, subtotal, itbis, isr, retItbis,
     tipoRetencionIsr, tipoRetencionItbis,
-    concepto, categoria, fondo, idOpcional(datos, "proyecto"), solicitante, programa,
+    concepto, cuentaGastoId, categoria, fondo, idOpcional(datos, "proyecto"), solicitante, programa,
     estudiante, pilar,
   ];
   const contexto = await contextoDe(usuario);
@@ -339,9 +348,9 @@ export async function guardarFactura(
                     periodo_id = contabilidad.periodo_para($4), moneda = $6, tasa = $7,
                     subtotal = $8, itbis = $9, retencion_isr = $10, retencion_itbis = $11,
                     tipo_retencion_isr = $12, tipo_retencion_itbis = $13,
-                    concepto = $14, categoria_id = $15, fondo_id = $16, proyecto_id = $17,
-                    solicitante_id = $18, programa_codigo = $19,
-                    estudiante_id = $20, pilar_costo = $21
+                    concepto = $14, cuenta_gasto_id = $15, categoria_id = $16, fondo_id = $17,
+                    proyecto_id = $18, solicitante_id = $19, programa_codigo = $20,
+                    estudiante_id = $21, pilar_costo = $22
               WHERE id = $1 AND estado = 'borrador' RETURNING id`,
             [id, ...valores],
           )
@@ -349,10 +358,10 @@ export async function guardarFactura(
             `INSERT INTO contabilidad.factura_proveedor
                (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda, tasa,
                 subtotal, itbis, retencion_isr, retencion_itbis, tipo_retencion_isr, tipo_retencion_itbis,
-                concepto, categoria_id, fondo_id, proyecto_id, solicitante_id, programa_codigo,
-                estudiante_id, pilar_costo, creado_por)
+                concepto, cuenta_gasto_id, categoria_id, fondo_id, proyecto_id, solicitante_id,
+                programa_codigo, estudiante_id, pilar_costo, creado_por)
              VALUES (contabilidad.siguiente_numero('FP'), $1, $2, $3, $4, contabilidad.periodo_para($3),
-                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+                     $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
              RETURNING id`,
             [...valores, usuario.id],
           );

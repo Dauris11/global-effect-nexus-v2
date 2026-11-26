@@ -61,7 +61,7 @@ export async function programarCxp(
   const categoria = texto(datos, "categoria", 40);
   const fondo = texto(datos, "fondo", 40);
   const proyecto = texto(datos, "proyecto", 40);
-  if (!esUuid(id) || !esFechaIso(fecha) || !esUuid(cuenta) || !esUuid(categoria) || !esUuid(fondo)
+  if (!esUuid(id) || !esFechaIso(fecha) || !esUuid(cuenta) || (categoria && !esUuid(categoria)) || !esUuid(fondo)
       || (proyecto && !esUuid(proyecto))) {
     return { estado: "datos_invalidos" };
   }
@@ -70,11 +70,18 @@ export async function programarCxp(
     const ok = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       const { rowCount } = await cliente.query(
         `UPDATE contabilidad.cuenta_por_pagar x
-            SET fecha_programada = $2, cuenta_salida_id = $3, categoria_id = $4, fondo_id = $5,
+            SET fecha_programada = $2, cuenta_salida_id = $3,
+                categoria_id = CASE
+                  WHEN NULLIF($4, '') IS NOT NULL THEN $4::uuid
+                  WHEN x.origen = 'factura' THEN NULL
+                  ELSE x.categoria_id
+                END,
+                fondo_id = $5,
                 proyecto_id = NULLIF($6, '')::uuid,
                 estado = CASE WHEN estado = 'pendiente' THEN 'programada' ELSE estado END
           WHERE x.id = $1 AND x.estado IN ('pendiente', 'programada', 'pagada_parcial')
-            AND (SELECT moneda FROM contabilidad.cuenta_bancaria WHERE id = $3) = x.moneda`,
+            AND (SELECT moneda FROM contabilidad.cuenta_bancaria WHERE id = $3) = x.moneda
+            AND (NULLIF($4, '') IS NOT NULL OR x.origen = 'factura' OR x.categoria_id IS NOT NULL)`,
         [id, fecha, cuenta, categoria, fondo, proyecto],
       );
       return (rowCount ?? 0) > 0;

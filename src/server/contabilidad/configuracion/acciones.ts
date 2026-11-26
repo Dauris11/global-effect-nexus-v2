@@ -377,9 +377,9 @@ export async function crearSubcuenta(_previo: EstadoConfig, datos: FormData): Pr
     }
 
     await cliente.query(
-      `INSERT INTO contabilidad.cuenta_contable (codigo, nombre, tipo, padre_id, admite_movimiento)
-       VALUES ($1, $2, $3, $4, true)`,
-      [codigo, nombre, padre.tipo, padre.id],
+      `INSERT INTO contabilidad.cuenta_contable (codigo, nombre, tipo, padre_id, admite_movimiento, agregar_a_facturas)
+       VALUES ($1, $2, $3, $4, true, $5)`,
+      [codigo, nombre, padre.tipo, padre.id, texto(datos, "agregar_a_facturas", 1) === "1"],
     );
   });
 }
@@ -425,6 +425,7 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
   const codigoNuevo = texto(datos, "codigo", 40);
   const tipoNuevo = texto(datos, "tipo", 20);
   const movimientoNuevo = texto(datos, "movimiento", 1) === "1";
+  const agregarAFacturasNuevo = movimientoNuevo && texto(datos, "agregar_a_facturas", 1) === "1";
   if (!esUuid(id)) return { estado: "no_encontrado" };
   if (!nombre) return { estado: "datos_invalidos" };
 
@@ -499,8 +500,10 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
     }
 
     await cliente.query(
-      `UPDATE contabilidad.cuenta_contable SET nombre = $2, admite_movimiento = $3 WHERE id = $1`,
-      [id, nombre, movimientoNuevo],
+      `UPDATE contabilidad.cuenta_contable
+          SET nombre = $2, admite_movimiento = $3, agregar_a_facturas = $4
+        WHERE id = $1`,
+      [id, nombre, movimientoNuevo, agregarAFacturasNuevo],
     );
   });
 }

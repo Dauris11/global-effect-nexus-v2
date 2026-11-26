@@ -6,6 +6,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { requerirPermiso } from "@/lib/auth";
 import { consultar } from "@/lib/db";
 import { claveDia } from "@/lib/fechas";
+import { tiposGastoFactura } from "@/server/contabilidad/proveedores/consultas";
 import { opcionesRecibo } from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
@@ -29,19 +30,18 @@ export default async function PaginaNuevaFactura({
   const { proveedor } = await searchParams;
   await requerirPermiso("contabilidad.registrar");
 
-  const [t, tf, opciones, listaProveedores, solicitantes, estudiantes] = await Promise.all([
+  const [t, opciones, tiposGasto, listaProveedores, solicitantes, estudiantes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.facturaForm" }),
-    getTranslations({ locale, namespace: "contab.factura" }),
     opcionesRecibo(),
+    tiposGastoFactura(),
     consultar<{
       id: string;
       nombre: string;
       tipo: "fisica" | "juridica";
       identificacion: string;
       dias: number;
-      categoria_id: string | null;
     }>(
-      `SELECT id, nombre, tipo, identificacion, condiciones_pago_dias AS dias, categoria_id
+      `SELECT id, nombre, tipo, identificacion, condiciones_pago_dias AS dias
          FROM contabilidad.proveedor
         WHERE estado = 'activo'
         ORDER BY nombre`,
@@ -71,7 +71,7 @@ export default async function PaginaNuevaFactura({
         <FormularioFactura
           proveedores={listaProveedores}
           proveedorId={proveedor}
-          categorias={opciones.categorias}
+          tiposGasto={tiposGasto}
           fondos={opciones.fondos}
           proyectos={opciones.proyectos}
           solicitantes={solicitantes}

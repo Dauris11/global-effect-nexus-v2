@@ -66,7 +66,12 @@ export function DialogoCuenta({
   const segmentoInicial = modo === "editar" && cuenta ? cuenta.codigo.slice(prefijo.length) : "";
   const [segmento, setSegmento] = useState(segmentoInicial);
   const [tipo, setTipo] = useState<TipoCuenta>(cuenta?.tipo ?? "activo");
-  const [movimiento, setMovimiento] = useState(cuenta?.admiteMovimiento ?? false);
+  const [movimiento, setMovimiento] = useState(
+    modo === "subcuenta" ? true : (cuenta?.admiteMovimiento ?? false),
+  );
+  const [agregarAFacturas, setAgregarAFacturas] = useState(
+    modo === "editar" ? (cuenta?.agregarAFacturas ?? false) : false,
+  );
   const etiqueta = cuenta ? `${cuenta.codigo} · ${cuenta.nombre}` : "";
   const maxSegmento = prefijo ? 4 : 2;
   const pideNombre = modo === "subcuenta" || modo === "editar" || modo === "raiz";
@@ -150,7 +155,11 @@ export function DialogoCuenta({
               <input
                 type="checkbox"
                 checked={movimiento}
-                onChange={(e) => setMovimiento(e.target.checked)}
+                onChange={(e) => {
+                  const activo = e.target.checked;
+                  setMovimiento(activo);
+                  if (!activo) setAgregarAFacturas(false);
+                }}
                 className="mt-0.5 size-4 accent-marca-500"
               />
               <span>
@@ -158,6 +167,28 @@ export function DialogoCuenta({
                 <span className="texto-meta block">{t("recibeAsientosAyuda")}</span>
               </span>
             </label>
+          )}
+
+          {(modo === "subcuenta" || (modo === "editar" && movimiento)) && (
+            <div className="space-y-1.5">
+              <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
+                {t("agregarAFacturas")}
+              </Label>
+              <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
+              <Select
+                value={agregarAFacturas ? "1" : "0"}
+                onValueChange={(v) => setAgregarAFacturas(v === "1")}
+              >
+                <SelectTrigger id="cuenta-agregar-facturas" className="max-w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">{t("si")}</SelectItem>
+                  <SelectItem value="0">{t("no")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="texto-meta">{t("agregarAFacturasAyuda")}</p>
+            </div>
           )}
 
           {modo === "subcuenta" && cuenta?.admiteMovimiento && <p className="texto-meta">{t("subcuenta.aviso")}</p>}

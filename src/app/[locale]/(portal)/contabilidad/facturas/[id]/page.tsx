@@ -141,8 +141,8 @@ export default async function PaginaDetalleFactura({
           <Dato etiqueta="Moneda">
             {factura.moneda} {factura.tasa ? `(Tasa: RD$${factura.tasa})` : ""}
           </Dato>
-          <Dato etiqueta="Categoría contable">
-            {factura.categoria}
+          <Dato etiqueta={tc("facturaForm.tipoGasto")}>
+            {factura.tipo_gasto}
           </Dato>
           {factura.solicitante_nombre && (
             <Dato etiqueta="Solicitante / Custodio">

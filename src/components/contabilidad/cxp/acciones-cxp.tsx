@@ -123,9 +123,12 @@ export function AccionesCxp({
                     id="categoria"
                     name="categoria"
                     className={SELECT}
-                    required
-                    defaultValue={cxp.categoria_id}
+                    required={cxp.origen !== "factura"}
+                    defaultValue={cxp.categoria_id ?? ""}
                   >
+                    {cxp.origen === "factura" && (
+                      <option value="">{t("ninguno")}</option>
+                    )}
                     {categorias
                       .filter((c) => c.tipo !== "ingreso")
                       .map((c) => (

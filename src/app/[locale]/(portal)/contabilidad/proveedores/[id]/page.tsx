@@ -170,11 +170,6 @@ export default async function PaginaDetalleProveedor({
               </span>
             </Dato>
           )}
-          {proveedor.categoria && (
-            <Dato etiqueta="Categoría contable">
-              {proveedor.categoria}
-            </Dato>
-          )}
         </dl>
       </section>
 

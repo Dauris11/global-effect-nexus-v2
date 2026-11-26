@@ -179,8 +179,10 @@ export type DetalleFactura = FilaFactura & {
   retencion_itbis: string;
   tipo_retencion_isr: string | null;
   tipo_retencion_itbis: string | null;
-  categoria_id: string;
-  categoria: string;
+  cuenta_gasto_id: string | null;
+  tipo_gasto: string;
+  categoria_id: string | null;
+  categoria: string | null;
   fondo_id: string;
   proyecto_id: string | null;
   proyecto: string | null;
@@ -207,6 +209,7 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
             f.subtotal::text AS subtotal, f.itbis::text AS itbis,
             f.retencion_isr::text AS retencion_isr, f.retencion_itbis::text AS retencion_itbis,
             f.tipo_retencion_isr, f.tipo_retencion_itbis,
+            f.cuenta_gasto_id, coalesce(cg.nombre, c.nombre, '—') AS tipo_gasto,
             f.categoria_id, c.nombre AS categoria, f.fondo_id, f.proyecto_id, pr.nombre AS proyecto,
             f.solicitante_id, us.nombre AS solicitante_nombre, f.programa_codigo,
             f.estudiante_id, f.pilar_costo,
@@ -214,7 +217,8 @@ export async function facturaPorId(id: string): Promise<DetalleFactura | null> {
             f.motivo_anulacion, a.numero::text AS asiento_numero, f.asiento_id
        FROM contabilidad.factura_proveedor f
        JOIN contabilidad.proveedor p ON p.id = f.proveedor_id
-       JOIN contabilidad.categoria c ON c.id = f.categoria_id
+       LEFT JOIN contabilidad.cuenta_contable cg ON cg.id = f.cuenta_gasto_id
+       LEFT JOIN contabilidad.categoria c ON c.id = f.categoria_id
        JOIN usuario uc ON uc.id = f.creado_por
        LEFT JOIN usuario ua ON ua.id = f.aprobado_por
        LEFT JOIN usuario us ON us.id = f.solicitante_id
@@ -232,6 +236,18 @@ export type UsuarioSolicitante = {
   email: string;
   rol: string;
 };
+
+/** Cuentas de movimiento habilitadas con «Agregar a Facturas» (solo se muestra el nombre). */
+export async function tiposGastoFactura(): Promise<{ id: string; nombre: string }[]> {
+  return consultar<{ id: string; nombre: string }>(
+    `SELECT id, nombre
+       FROM contabilidad.cuenta_contable
+      WHERE activa = true
+        AND admite_movimiento = true
+        AND agregar_a_facturas = true
+      ORDER BY nombre ASC`,
+  );
+}
 
 export async function listarUsuariosSolicitantes(): Promise<UsuarioSolicitante[]> {
   return consultar<UsuarioSolicitante>(

@@ -193,6 +193,7 @@ export type CuentaCatalogo = {
   tipo: TipoCuenta;
   padreId: string | null;
   admiteMovimiento: boolean;
+  agregarAFacturas: boolean;
   activa: boolean;
   nivel: number;
   /** Líneas de asiento que la usan: con alguna, ya no puede tener hijas. */
@@ -221,7 +222,9 @@ export async function catalogo(): Promise<CuentaCatalogo[]> {
         GROUP BY l.cuenta_id
      )
      SELECT c.id, c.codigo, c.nombre, c.tipo, c.padre_id AS "padreId",
-            c.admite_movimiento AS "admiteMovimiento", c.activa, a.nivel,
+            c.admite_movimiento AS "admiteMovimiento",
+            c.agregar_a_facturas AS "agregarAFacturas",
+            c.activa, a.nivel,
             coalesce(u.n, 0) AS movimientos, coalesce(u.saldo, 0)::text AS saldo
        FROM arbol a
        JOIN contabilidad.cuenta_contable c ON c.id = a.id
