@@ -6,6 +6,7 @@ import { PestanasConfig } from "@/components/contabilidad/configuracion/pestanas
 import { SeccionCodigos } from "@/components/contabilidad/configuracion/seccion-codigos";
 import { SeccionCatalogo } from "@/components/contabilidad/configuracion/seccion-catalogo";
 import { SeccionEntidad } from "@/components/contabilidad/configuracion/seccion-entidad";
+import { SeccionFormatosBanco } from "@/components/contabilidad/configuracion/seccion-formatos-banco";
 import { SeccionParametros } from "@/components/contabilidad/configuracion/seccion-parametros";
 import { SeccionPeriodos } from "@/components/contabilidad/configuracion/seccion-periodos";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -17,6 +18,7 @@ import {
   catalogo,
   entidad,
   esPestanaConfig,
+  formatosEstadoBanco,
   parametros,
   periodos,
   type PestanaConfig,
@@ -90,6 +92,8 @@ async function Seccion({
       );
     case "codigos":
       return <SeccionCodigos codigos={await listarCodigos(locale)} puedeEditar={puedeConfigurar} />;
+    case "formatos-banco":
+      return <SeccionFormatosBanco formatos={await formatosEstadoBanco()} puedeEditar={puedeConfigurar} />;
     default: {
       const datos = await entidad();
       if (!datos) {

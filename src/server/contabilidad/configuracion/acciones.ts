@@ -565,3 +565,87 @@ export async function cambiarEstadoCuenta(_previo: EstadoConfig, datos: FormData
     );
   });
 }
+
+// ----------------------------------------------------------------
+// Formatos de estado de cuenta bancario (0126)
+// ----------------------------------------------------------------
+
+function parsearListaColumnas(crudo: string): string[] {
+  return crudo
+    .split(/[,\n]/)
+    .map((c) => c.trim())
+    .filter(Boolean);
+}
+
+export async function guardarFormatoEstadoBanco(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const nombre = texto(datos, "nombre", 120);
+  const filasTexto = texto(datos, "filas_omitir_inicio", 4);
+  const filasOmitirInicio = filasTexto === "" ? Number.NaN : Number(filasTexto);
+  const omitirUltimaFila = texto(datos, "omitir_ultima_fila", 1) === "1";
+  const columnas = parsearListaColumnas(texto(datos, "columnas", 1000));
+
+  if (id && !esUuid(id)) return { estado: "no_encontrado" };
+  if (
+    !nombre ||
+    !Number.isInteger(filasOmitirInicio) ||
+    filasOmitirInicio < 0 ||
+    filasOmitirInicio > 100 ||
+    columnas.length === 0
+  ) {
+    return { estado: "datos_invalidos" };
+  }
+
+  return ejecutar(usuario, async (cliente) => {
+    if (id) {
+      await fijarAccion(cliente, "editar");
+      const { rowCount } = await cliente.query(
+        `UPDATE contabilidad.formato_estado_banco
+            SET nombre = $2,
+                filas_omitir_inicio = $3,
+                omitir_ultima_fila = $4,
+                columnas = $5::jsonb,
+                actualizado_en = now()
+          WHERE id = $1`,
+        [id, nombre, filasOmitirInicio, omitirUltimaFila, JSON.stringify(columnas)],
+      );
+      if (!rowCount) throw new Rechazo("no_encontrado");
+    } else {
+      await cliente.query(
+        `INSERT INTO contabilidad.formato_estado_banco
+           (nombre, filas_omitir_inicio, omitir_ultima_fila, columnas, activo)
+         VALUES ($1, $2, $3, $4::jsonb, true)`,
+        [nombre, filasOmitirInicio, omitirUltimaFila, JSON.stringify(columnas)],
+      );
+    }
+  });
+}
+
+export async function cambiarEstadoFormatoEstadoBanco(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const activo = texto(datos, "activo", 1) === "1";
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+
+  return ejecutar(usuario, async (cliente) => {
+    await fijarAccion(cliente, "editar");
+    const { rowCount } = await cliente.query(
+      `UPDATE contabilidad.formato_estado_banco
+          SET activo = $2, actualizado_en = now()
+        WHERE id = $1`,
+      [id, activo],
+    );
+    if (!rowCount) throw new Rechazo("no_encontrado");
+  });
+}

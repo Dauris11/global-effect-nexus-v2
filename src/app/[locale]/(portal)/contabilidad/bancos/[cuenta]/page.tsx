@@ -21,7 +21,6 @@ import { fechaCorta } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
-  configuracionEstado,
   cuentaPorId,
   cuentasAuxiliaresDeActivo,
   leerFiltroLibro,
@@ -29,6 +28,7 @@ import {
   partidasConciliadas,
   porConciliar,
 } from "@/server/contabilidad/bancos/consultas";
+import { formatosEstadoBanco } from "@/server/contabilidad/configuracion/consultas";
 
 export async function generateMetadata({
   params,
@@ -69,11 +69,11 @@ export default async function PaginaCuentaBanco({
   const concilia = usuarioTienePermiso(usuario, "contabilidad.conciliar") && cuenta.estado === "activa";
   const configura = usuarioTienePermiso(usuario, "contabilidad.configurar");
 
-  const [t, tc, mensajes, config, auxiliares] = await Promise.all([
+  const [t, tc, mensajes, formatos, auxiliares] = await Promise.all([
     getTranslations({ locale, namespace: "contab.conciliacion" }),
     getTranslations({ locale, namespace: "contab" }),
     mensajesCliente(["contab"]),
-    concilia ? configuracionEstado(cuenta.id) : Promise.resolve(null),
+    concilia ? formatosEstadoBanco(true) : Promise.resolve([]),
     configura ? cuentasAuxiliaresDeActivo() : Promise.resolve([]),
   ]);
 
@@ -89,7 +89,7 @@ export default async function PaginaCuentaBanco({
           titulo={cuenta.nombre}
           acciones={
             <div className="flex flex-wrap items-center gap-2">
-              {concilia && config && <DialogoSubirEstado cuentaId={cuenta.id} config={config.config} />}
+              {concilia && <DialogoSubirEstado formatos={formatos} />}
               <Button asChild variant="outline" size="sm">
                 <a href={`/api/contabilidad/exportar/bancos?cuentaId=${cuenta.id}`} download>
                   <Download className="size-4" />

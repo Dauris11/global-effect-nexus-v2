@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { ArrowLeftRight, Link2, Loader2, Save, Upload } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Link2, Loader2, Save, Upload, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
@@ -19,8 +19,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  decodificarCsvBanco,
+  parsearVistaPreviaEstadoBanco,
+  type FormatoEstadoBanco,
+  type ResultadoVistaPreviaCsv,
+} from "@/lib/contabilidad/formato-estado-banco";
+import {
   registrarTasa,
-  subirEstadoBanco,
   transferirEntreCuentas,
   vincularCuentaContable,
   type EstadoBanco,
@@ -184,78 +189,227 @@ export function FormularioTasa({ hoy }: { hoy: string }) {
   );
 }
 
+const COLUMNAS_NUMERICAS = new Set(["retiros", "depositos", "balance", "debito", "credito", "monto", "saldo"]);
+
+function esColumnaNumerica(nombre: string): boolean {
+  const normalizada = nombre
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  return COLUMNAS_NUMERICAS.has(normalizada);
+}
+
 /**
- * Subir el estado de cuenta (.csv) desde la cuenta (Observaciones #1). Las
- * columnas vienen precargadas con la configuración del banco
- * (`banco.config_estado`): el contable solo las toca si el banco cambió el
- * formato de su exportación. Subir dos veces el mismo periodo no duplica:
- * el servidor salta lo que ya tenía y lo dice.
+ * Subir y previsualizar el estado de cuenta (.csv) según los formatos
+ * configurados en Configuración contable > Formatos bancarios (0126).
+ * Muestra las columnas y datos extraídos en la misma ventana para validar la
+ * lectura antes de definir su procesamiento posterior.
  */
-export function DialogoSubirEstado({ cuentaId, config }: { cuentaId: string; config: Record<string, string> }) {
+export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[] }) {
   const t = useTranslations("contab.conciliacion.importar");
   const [abierto, setAbierto] = useState(false);
-  const [estado, enviar, enviando] = useActionState(subirEstadoBanco, INICIAL);
-  const error = useError(estado);
+  const [formatoId, setFormatoId] = useState(formatos[0]?.id ?? "");
+  const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
+  const [leyendo, setLeyendo] = useState(false);
+  const [errorLectura, setErrorLectura] = useState<string | null>(null);
+  const [vistaPrevia, setVistaPrevia] = useState<{
+    archivoNombre: string;
+    formatoNombre: string;
+    resultado: ResultadoVistaPreviaCsv;
+  } | null>(null);
+  const inputArchivoRef = useRef<HTMLInputElement>(null);
 
-  const columnas: [string, string, string][] = [
-    ["col_fecha", "fecha", t("colFecha")],
-    ["col_descripcion", "descripcion", t("colDescripcion")],
-    ["col_referencia", "referencia", t("colReferencia")],
-    ["col_debito", "debito", t("colDebito")],
-    ["col_credito", "credito", t("colCredito")],
-    ["col_monto", "monto", t("colMonto")],
-    ["col_saldo", "saldo", t("colSaldo")],
-  ];
+  const formatoActual = formatos.find((f) => f.id === formatoId) ?? formatos[0] ?? null;
+
+  function reiniciar() {
+    setArchivoSeleccionado(null);
+    setErrorLectura(null);
+    setVistaPrevia(null);
+    if (inputArchivoRef.current) inputArchivoRef.current.value = "";
+  }
+
+  function manejarCambioAbierto(siguiente: boolean) {
+    setAbierto(siguiente);
+    if (!siguiente) reiniciar();
+  }
+
+  async function onProcesarVistaPrevia(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setErrorLectura(null);
+    if (!formatoActual) {
+      setErrorLectura(t("sinFormatos"));
+      return;
+    }
+    if (!archivoSeleccionado) {
+      setErrorLectura(t("archivoRequerido"));
+      return;
+    }
+
+    setLeyendo(true);
+    try {
+      const buffer = await archivoSeleccionado.arrayBuffer();
+      const texto = decodificarCsvBanco(buffer);
+      const resultado = parsearVistaPreviaEstadoBanco(texto, formatoActual);
+      setVistaPrevia({
+        archivoNombre: archivoSeleccionado.name,
+        formatoNombre: formatoActual.nombre,
+        resultado,
+      });
+    } catch {
+      setErrorLectura(t("errorLectura"));
+    } finally {
+      setLeyendo(false);
+    }
+  }
 
   return (
-    <Dialog open={abierto} onOpenChange={setAbierto}>
+    <Dialog open={abierto} onOpenChange={manejarCambioAbierto}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Upload className="size-4" />
           {t("boton")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+      <DialogContent className={vistaPrevia ? "max-h-[90dvh] overflow-y-auto md:max-w-5xl" : "max-h-[90dvh] overflow-y-auto md:max-w-xl"}>
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
         </DialogHeader>
-        <form action={enviar} className="space-y-5">
-          <input type="hidden" name="cuenta" value={cuentaId} />
-          <Campo id="archivo_ec" etiqueta={t("archivo")}>
-            <Input id="archivo_ec" name="archivo" type="file" accept=".csv,text/csv" required />
-          </Campo>
-          <details className="rounded-control border border-linea p-3">
-            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium text-tinta">
-              {t("columnas")}
-            </summary>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              {columnas.map(([nombre, clave, etiqueta]) => (
-                <Campo key={nombre} id={nombre} etiqueta={etiqueta}>
-                  <Input id={nombre} name={nombre} defaultValue={config[clave] ?? ""} maxLength={60} />
+
+        <form onSubmit={onProcesarVistaPrevia} className="space-y-4">
+          {formatos.length === 0 ? (
+            <AvisoError>{t("sinFormatos")}</AvisoError>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Campo id="formato_banco" etiqueta={t("formato")}>
+                  <select
+                    id="formato_banco"
+                    className={SELECT}
+                    value={formatoActual?.id ?? ""}
+                    onChange={(e) => {
+                      setFormatoId(e.target.value);
+                      setVistaPrevia(null);
+                      setErrorLectura(null);
+                    }}
+                  >
+                    {formatos.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.nombre}
+                      </option>
+                    ))}
+                  </select>
                 </Campo>
-              ))}
-              <Campo id="formato_fecha" etiqueta={t("formatoFecha")}>
-                <select id="formato_fecha" name="formato_fecha" className={SELECT} defaultValue={config.formatoFecha ?? "DD/MM/YYYY"}>
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                </select>
-              </Campo>
-              <Campo id="separador" etiqueta={t("separador")}>
-                <select id="separador" name="separador" className={SELECT} defaultValue={config.separadorDecimal ?? "."}>
-                  <option value=".">{t("punto")}</option>
-                  <option value=",">{t("coma")}</option>
-                </select>
-              </Campo>
-            </div>
-          </details>
-          {error && <AvisoError>{error}</AvisoError>}
-          {estado.estado === "ok" && (
-            <AvisoOk>{t("resultado", { nuevas: estado.nuevas ?? 0, repetidas: estado.repetidas ?? 0 })}</AvisoOk>
+
+                <Campo id="archivo_ec" etiqueta={t("archivo")}>
+                  <Input
+                    ref={inputArchivoRef}
+                    id="archivo_ec"
+                    type="file"
+                    accept=".csv,text/csv"
+                    required
+                    onChange={(e) => {
+                      setArchivoSeleccionado(e.target.files?.[0] ?? null);
+                      setErrorLectura(null);
+                    }}
+                  />
+                </Campo>
+              </div>
+
+              {formatoActual && (
+                <div className="rounded-control border border-linea bg-muted/30 p-3 text-xs text-tinta-2 space-y-1.5">
+                  <p className="font-medium text-tinta">
+                    {t("formatoEsperado", { nombre: formatoActual.nombre })}
+                  </p>
+                  <p>
+                    {t("columnasEsperadas")}:{" "}
+                    <span className="text-tinta">{formatoActual.columnas.join(" · ")}</span>
+                  </p>
+                </div>
+              )}
+            </>
           )}
+
+          {errorLectura && <AvisoError>{errorLectura}</AvisoError>}
+
+          {vistaPrevia && (
+            <div className="space-y-3 border-t border-linea pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="flex items-center gap-2 font-medium text-tinta">
+                  <CheckCircle2 className="size-4 shrink-0 text-marca-600" />
+                  <span>
+                    {t("resumenLectura", {
+                      archivo: vistaPrevia.archivoNombre,
+                      filas: vistaPrevia.resultado.filas.length,
+                      columnas: vistaPrevia.resultado.columnas.length - vistaPrevia.resultado.columnasFaltantes.length,
+                    })}
+                  </span>
+                </div>
+                <span className="texto-meta">{vistaPrevia.formatoNombre}</span>
+              </div>
+
+              {vistaPrevia.resultado.columnasFaltantes.length > 0 && (
+                <AvisoError>
+                  {t("columnasFaltantes", {
+                    lista: vistaPrevia.resultado.columnasFaltantes.join(", "),
+                  })}
+                </AvisoError>
+              )}
+
+              {vistaPrevia.resultado.filas.length === 0 ? (
+                <AvisoError>{t("sinFilas")}</AvisoError>
+              ) : (
+                <div className="max-h-96 overflow-auto rounded-control border border-linea bg-card">
+                  <table className="w-full text-left text-xs">
+                    <thead className="sticky top-0 border-b border-linea bg-muted/80 text-tinta-3 backdrop-blur-xs">
+                      <tr>
+                        {vistaPrevia.resultado.columnas.map((col) => (
+                          <th
+                            key={col}
+                            className={`whitespace-nowrap px-3 py-2.5 font-medium ${esColumnaNumerica(col) ? "text-right" : ""}`}
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vistaPrevia.resultado.filas.map((fila, idx) => (
+                        <tr key={idx} className="border-b border-linea last:border-b-0">
+                          {vistaPrevia.resultado.columnas.map((col) => (
+                            <td
+                              key={col}
+                              className={`px-3 py-2 text-tinta ${
+                                esColumnaNumerica(col)
+                                  ? "whitespace-nowrap text-right tabular-nums"
+                                  : col.toLowerCase().includes("fecha") || col.toLowerCase().includes("no.")
+                                    ? "whitespace-nowrap tabular-nums"
+                                    : "min-w-48"
+                              }`}
+                            >
+                              {fila[col] || <span className="text-tinta-3">—</span>}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
-            <Button type="submit" cargando={enviando}>
-              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => manejarCambioAbierto(false)}
+            >
+              <X className="size-4" />
+              {t("cerrar")}
+            </Button>
+            <Button type="submit" disabled={formatos.length === 0 || leyendo} cargando={leyendo}>
+              {leyendo ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
               {t("guardar")}
             </Button>
           </DialogFooter>

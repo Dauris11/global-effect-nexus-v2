@@ -1,4 +1,5 @@
 import type { TipoCuenta } from "@/lib/contabilidad/catalogo";
+import type { FormatoEstadoBanco } from "@/lib/contabilidad/formato-estado-banco";
 import { consultar, consultarUna } from "@/lib/db";
 
 /**
@@ -10,7 +11,14 @@ import { consultar, consultarUna } from "@/lib/db";
  * La conversión de fracción a porcentaje la hace la base con NUMERIC.
  */
 
-export const PESTANAS_CONFIG = ["entidad", "parametros", "periodos", "catalogo", "codigos"] as const;
+export const PESTANAS_CONFIG = [
+  "entidad",
+  "parametros",
+  "periodos",
+  "catalogo",
+  "codigos",
+  "formatos-banco",
+] as const;
 export type PestanaConfig = (typeof PESTANAS_CONFIG)[number];
 
 export function esPestanaConfig(valor: unknown): valor is PestanaConfig {
@@ -230,5 +238,24 @@ export async function catalogo(): Promise<CuentaCatalogo[]> {
        JOIN contabilidad.cuenta_contable c ON c.id = a.id
        LEFT JOIN uso u ON u.cuenta_id = c.id
       ORDER BY a.ruta`,
+  );
+}
+
+// ----------------------------------------------------------------
+// Formatos de estado de cuenta bancario (0126)
+// ----------------------------------------------------------------
+
+export async function formatosEstadoBanco(soloActivos = false): Promise<FormatoEstadoBanco[]> {
+  return consultar<FormatoEstadoBanco>(
+    `SELECT id,
+            nombre,
+            filas_omitir_inicio AS "filasOmitirInicio",
+            omitir_ultima_fila AS "omitirUltimaFila",
+            columnas,
+            activo
+       FROM contabilidad.formato_estado_banco
+      WHERE ($1::boolean = false OR activo = true)
+      ORDER BY activo DESC, nombre ASC`,
+    [soloActivos],
   );
 }

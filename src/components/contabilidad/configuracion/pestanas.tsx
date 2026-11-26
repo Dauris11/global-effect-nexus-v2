@@ -1,4 +1,4 @@
-import { BookOpen, Building2, CalendarRange, ListChecks, Scale } from "lucide-react";
+import { BookOpen, Building2, CalendarRange, Landmark, ListChecks, Scale } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
@@ -11,6 +11,7 @@ const ICONOS = {
   periodos: CalendarRange,
   catalogo: BookOpen,
   codigos: ListChecks,
+  "formatos-banco": Landmark,
 } as const;
 
 /**
