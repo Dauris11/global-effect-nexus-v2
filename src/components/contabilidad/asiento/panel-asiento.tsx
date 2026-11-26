@@ -38,7 +38,6 @@ export function PanelAsiento({ vista }: { vista: VistaAsiento }) {
           <thead className="texto-meta border-b border-linea text-left">
             <tr>
               <th scope="col" className="px-4 py-2.5 font-medium">{t("cuenta")}</th>
-              <th scope="col" className="px-4 py-2.5 font-medium">{t("codigo")}</th>
               <th scope="col" className="px-4 py-2.5 text-right font-medium">{t("debe")}</th>
               <th scope="col" className="px-4 py-2.5 text-right font-medium">{t("haber")}</th>
             </tr>
@@ -47,7 +46,6 @@ export function PanelAsiento({ vista }: { vista: VistaAsiento }) {
             {vista.lineas.map((l, i) => (
               <tr key={i} className="border-b border-linea align-top last:border-0">
                 <th scope="row" className="px-4 py-2 text-left font-normal"><Cuenta linea={l} /></th>
-                <td className="px-4 py-2"><Codigo linea={l} /></td>
                 <td className="px-4 py-2 text-right">{l.debe > 0 && <Monto valor={pesos(l.debe)} moneda={DOP} />}</td>
                 <td className="px-4 py-2 text-right">{l.haber > 0 && <Monto valor={pesos(l.haber)} moneda={DOP} />}</td>
               </tr>
@@ -55,7 +53,7 @@ export function PanelAsiento({ vista }: { vista: VistaAsiento }) {
           </tbody>
           <tfoot className="border-t border-linea font-semibold">
             <tr>
-              <th scope="row" colSpan={2} className="px-4 py-2.5 text-left">{t("totales")}</th>
+              <th scope="row" className="px-4 py-2.5 text-left">{t("totales")}</th>
               <td className="px-4 py-2.5 text-right"><Monto valor={pesos(vista.totalDebe)} moneda={DOP} /></td>
               <td className="px-4 py-2.5 text-right"><Monto valor={pesos(vista.totalHaber)} moneda={DOP} /></td>
             </tr>
@@ -67,7 +65,6 @@ export function PanelAsiento({ vista }: { vista: VistaAsiento }) {
         {vista.lineas.map((l, i) => (
           <li key={i} className={`${TARJETA.contenido} space-y-1.5 p-3 text-sm`}>
             <Cuenta linea={l} />
-            <Codigo linea={l} />
             <dl className="flex justify-between gap-4 tabular-nums">
               <div>
                 <dt className="texto-meta">{t("debe")}</dt>
@@ -141,16 +138,6 @@ function Cuenta({ linea }: { linea: LineaVista }) {
         <span className="text-tinta-2">{t("sinCuenta")}</span>
       )}
       {linea.descripcion && <span className="texto-meta block">{linea.descripcion}</span>}
-    </span>
-  );
-}
-
-function Codigo({ linea }: { linea: LineaVista }) {
-  if (!linea.codigoTransaccion) return <span className="texto-meta">—</span>;
-  return (
-    <span className="block">
-      <span className="text-tinta">{linea.nombreCodigo}</span>
-      <span className="texto-meta block font-mono text-xs">{linea.codigoTransaccion}</span>
     </span>
   );
 }

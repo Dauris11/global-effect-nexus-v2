@@ -42,6 +42,12 @@ const cont = armarVista([{ debe: 1, haber: 0 }, { debe: 0, haber: 1 }], [], {
 });
 prueba("copia los extras del encabezado", cont.estado === "contabilizado" && cont.numero === "7" && cont.asientoId === "a" && cont.fecha === "2026-11-25");
 
+const omitido = armarVista(
+  [{ debe: 100, haber: Number(undefined) }, { debe: Number(undefined), haber: 100 }],
+  [],
+);
+prueba("valores NaN no rompen el cuadre", omitido.cuadra && omitido.totalDebe === 100 && omitido.totalHaber === 100);
+
 if (fallos) {
   console.error(`\n${fallos} prueba(s) fallaron`);
   process.exit(1);

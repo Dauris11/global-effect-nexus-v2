@@ -5741,7 +5741,7 @@
     "asiento": {
       "boton": "Journal entry",
       "titulo": "Journal entry",
-      "descripcion": "Accounts, side and codes of the entry, to check imbalances or missing accounts.",
+      "descripcion": "Accounts, debit and credit of the entry, to check imbalances or missing accounts.",
       "cargando": "Calculating the entry",
       "error": "The entry could not be loaded.",
       "previo": "Entry preview",

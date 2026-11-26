@@ -22,7 +22,18 @@ import {
  * SEGURIDAD: no comprueba permisos; el llamador debe haber hecho `requerirPermiso`.
  */
 
-export type LineaSql = { cuenta_id: string | null; debe: number | string; haber: number | string; descripcion?: string | null };
+export type LineaSql = {
+  cuenta_id: string | null;
+  debe?: number | string | null;
+  haber?: number | string | null;
+  descripcion?: string | null;
+};
+
+/** Las funciones SQL (`lineas_aprobar_factura`, `lineas_recibo`…) omiten el lado en cero. */
+function montoSql(valor: number | string | null | undefined): number {
+  const n = Number(valor ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
 
 /** Traduce el error de `linea_por_codigo` (`clave:CODIGO`) a un problema de la vista. */
 export function problemaDeErrorSql(error: unknown): ProblemaAsiento {
@@ -56,7 +67,8 @@ export async function vistaDeLineasSql(
     : [];
 
   const vistas: LineaVista[] = lineas.map((l) => {
-    const debe = Number(l.debe);
+    const debe = montoSql(l.debe);
+    const haber = montoSql(l.haber);
     const lado: NaturalezaCodigo = debe > 0 ? "debito" : "credito";
     const cuenta = l.cuenta_id ? porId.get(l.cuenta_id) : undefined;
     const codigos = configurados.filter((c) => c.cuenta_id === l.cuenta_id && c.naturaleza === lado).map((c) => c.codigo);
@@ -69,7 +81,7 @@ export async function vistaDeLineasSql(
         ? codigos.map((c) => { const d = definicionDe(c); return d ? textoEn(d.nombre, idioma) : c; }).join(" · ")
         : undefined,
       debe,
-      haber: Number(l.haber),
+      haber,
       descripcion: l.descripcion ?? undefined,
     };
   });

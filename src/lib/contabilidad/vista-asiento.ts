@@ -52,7 +52,8 @@ export type VistaAsiento = {
 
 export type ExtrasVista = Pick<VistaAsiento, "estado" | "asientoId" | "numero" | "fecha" | "descripcion">;
 
-export const aCentavos = (pesos: number): number => Math.round(pesos * 100);
+export const aCentavos = (pesos: number): number =>
+  Number.isFinite(pesos) ? Math.round(pesos * 100) : 0;
 export const dePesos = (centavos: number): number => centavos / 100;
 
 /**
