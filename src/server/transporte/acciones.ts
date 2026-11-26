@@ -15,6 +15,7 @@ import {
   type ViaInscripcion,
 } from "@/lib/transporte";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
+import { avisarArranque, avisarProgreso } from "./avisos";
 import { obtenerPasajerosHorario } from "./consultas";
 
 const UUID =
@@ -338,6 +339,11 @@ export async function iniciarViaje(datos: {
       datos: { horarioId: datos.horarioId },
     });
 
+    // Avisar «ya arrancó» no debe tumbar el inicio del viaje si falla.
+    void avisarArranque(viaje.id).catch((error) =>
+      console.error("[transporte] no se pudo avisar el arranque:", error),
+    );
+
     refrescarTransporte();
     // El horario real del viaje: si ya había uno abierto se retoma ese, que
     // puede no ser el turno elegido en pantalla.
@@ -417,6 +423,23 @@ export async function actualizarPosicionViaje(datos: {
           datos.velocidadKmh ?? null,
         ],
       );
+    }
+
+    if (fila) {
+      // Si está en una parada, se marca como actual y se avisa a quien espera.
+      // Un fallo aquí no puede perder la posición, que ya quedó guardada.
+      try {
+        const paradaId = await avisarProgreso(datos.viajeId, datos.lat, datos.lng);
+
+        if (paradaId) {
+          await consultarUna(
+            `UPDATE transporte_viaje SET parada_actual_id = $2 WHERE id = $1 RETURNING id`,
+            [datos.viajeId, paradaId],
+          );
+        }
+      } catch (error) {
+        console.error("[transporte] no se pudieron enviar los avisos de progreso:", error);
+      }
     }
 
     return { ok: Boolean(fila) };
