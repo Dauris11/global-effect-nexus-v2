@@ -35,7 +35,7 @@ import {
   interpolarEstadoSimulacion,
   proyectarCoordenadaEnRuta,
 } from "./cinematica-timob";
-import { iconoGuagua3D } from "./marcador-guagua-3d";
+import { actualizarGuagua3D, iconoGuagua3D, moverGuaguaSuave } from "./marcador-guagua-3d";
 
 export interface PropsMapaTransporte {
   viajeInicial: (TransporteViaje & { paradas: TransporteParada[] }) | null;
@@ -568,12 +568,12 @@ export function MapaTransporteCliente({
     const estadoVisual =
       viaje?.estado === "averiado" ? "averiado" : "en_curso";
 
-    const icono = iconoGuagua3D({
+    const datosGuagua = {
       rumbo: telemetria.rumbo,
       estado: estadoVisual,
       velocidadKmh: telemetria.velocidadKmh,
       etiquetaParada: t("popup.stopped"),
-    });
+    } as const;
 
     const popupGuaguaHtml = `
       <div class="space-y-1 font-sans text-xs">
@@ -595,12 +595,14 @@ export function MapaTransporteCliente({
     `;
 
     if (marcadorGuaguaRef.current) {
-      marcadorGuaguaRef.current.setLatLng([telemetria.lat, telemetria.lng]);
-      marcadorGuaguaRef.current.setIcon(icono);
+      // El marcador se conserva y se actualiza: cambiar el icono reiniciaría
+      // las animaciones, y `setLatLng` directo haría saltar a la guagua.
+      moverGuaguaSuave(marcadorGuaguaRef.current, telemetria.lat, telemetria.lng);
+      actualizarGuagua3D(marcadorGuaguaRef.current, datosGuagua);
       marcadorGuaguaRef.current.setPopupContent(popupGuaguaHtml);
     } else {
       const marcador = L.marker([telemetria.lat, telemetria.lng], {
-        icon: icono,
+        icon: iconoGuagua3D(datosGuagua),
         zIndexOffset: 2500,
       }).addTo(mapa);
 
