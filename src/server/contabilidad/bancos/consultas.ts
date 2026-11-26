@@ -186,6 +186,88 @@ export async function libroDeBanco(cuentaId: string, filtro: FiltroLibro): Promi
   };
 }
 
+// ── Movimientos del estado de cuenta bancario (0129) ───────────────────
+
+export type FiltroExtracto = {
+  desde: string | null;
+  hasta: string | null;
+  tipo: "retiro" | "deposito" | null;
+  q: string | null;
+};
+
+export function leerFiltroExtracto(crudo: Record<string, string | string[] | undefined>): FiltroExtracto {
+  const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v ?? "").trim();
+  const desde = uno(crudo.desde);
+  const hasta = uno(crudo.hasta);
+  const tipo = uno(crudo.tipo);
+  const q = uno(crudo.q).slice(0, 120);
+  return {
+    desde: esFechaIso(desde) ? desde : null,
+    hasta: esFechaIso(hasta) ? hasta : null,
+    tipo: tipo === "retiro" || tipo === "deposito" ? tipo : null,
+    q: q || null,
+  };
+}
+
+export type FilaExtractoMovimiento = {
+  id: string;
+  fecha_posteo: string | null;
+  fecha: string;
+  no_cheque: string | null;
+  referencia: string | null;
+  descripcion: string;
+  retiros: string;
+  depositos: string;
+  monto: string;
+  saldo: string | null;
+  conciliada: boolean;
+};
+
+/** Transacciones subidas del estado de cuenta (.csv) con filtros funcionales. */
+export async function extractoDeBanco(
+  cuentaId: string,
+  filtro: FiltroExtracto,
+): Promise<FilaExtractoMovimiento[]> {
+  return consultar<FilaExtractoMovimiento>(
+    `SELECT e.id,
+            e.fecha_posteo::text AS fecha_posteo,
+            e.fecha::text AS fecha,
+            e.no_cheque,
+            e.referencia,
+            e.descripcion,
+            CASE WHEN e.retiros > 0 THEN e.retiros
+                 WHEN e.monto < 0 THEN -e.monto
+                 ELSE 0 END::numeric(14,2)::text AS retiros,
+            CASE WHEN e.depositos > 0 THEN e.depositos
+                 WHEN e.monto > 0 THEN e.monto
+                 ELSE 0 END::numeric(14,2)::text AS depositos,
+            e.monto::numeric(14,2)::text AS monto,
+            e.saldo::numeric(14,2)::text AS saldo,
+            EXISTS (
+              SELECT 1 FROM contabilidad.conciliacion_partida p
+               WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+            ) AS conciliada
+       FROM contabilidad.extracto_linea e
+      WHERE e.cuenta_id = $1
+        AND ($2::date IS NULL OR e.fecha >= $2)
+        AND ($3::date IS NULL OR e.fecha <= $3)
+        AND (
+          $4::text IS NULL
+          OR ($4 = 'retiro' AND (e.retiros > 0 OR e.monto < 0))
+          OR ($4 = 'deposito' AND (e.depositos > 0 OR e.monto > 0))
+        )
+        AND (
+          $5::text IS NULL
+          OR e.descripcion ILIKE '%' || $5 || '%'
+          OR coalesce(e.referencia, '') ILIKE '%' || $5 || '%'
+          OR coalesce(e.no_cheque, '') ILIKE '%' || $5 || '%'
+        )
+      ORDER BY e.fecha DESC, e.importado_en DESC, e.id DESC
+      LIMIT 500`,
+    [cuentaId, filtro.desde, filtro.hasta, filtro.tipo, filtro.q],
+  );
+}
+
 // ── Conciliación partida por partida (0081) ────────────────────────────
 
 /** Una transacción del estado de cuenta que todavía no tiene pareja. */
@@ -194,6 +276,8 @@ export type LineaExtracto = {
   fecha: string;
   descripcion: string;
   referencia: string | null;
+  retiros: string;
+  depositos: string;
   /** Con signo, como lo dice el banco: + entra, − sale. */
   monto: string;
 };
@@ -205,6 +289,10 @@ export type LineaAsientoBanco = {
   numero: string;
   fecha: string;
   concepto: string;
+  /** Referencia del pago/recibo/transferencia asociado al asiento, si existe. */
+  referencia: string | null;
+  debe: string;
+  haber: string;
   /** Débito − crédito: el mismo signo que el banco (un débito a Bancos es dinero que entra). */
   monto: string;
 };
@@ -233,7 +321,17 @@ export type PorConciliar = { banco: LineaExtracto[]; libros: LineaAsientoBanco[]
 export async function porConciliar(cuentaId: string): Promise<PorConciliar> {
   const [banco, libros] = await Promise.all([
     consultar<LineaExtracto>(
-      `SELECT e.id, e.fecha::text AS fecha, e.descripcion, e.referencia, e.monto::text AS monto
+      `SELECT e.id,
+              e.fecha::text AS fecha,
+              e.descripcion,
+              e.referencia,
+              CASE WHEN e.retiros > 0 THEN e.retiros
+                   WHEN e.monto < 0 THEN -e.monto
+                   ELSE 0 END::numeric(14,2)::text AS retiros,
+              CASE WHEN e.depositos > 0 THEN e.depositos
+                   WHEN e.monto > 0 THEN e.monto
+                   ELSE 0 END::numeric(14,2)::text AS depositos,
+              e.monto::numeric(14,2)::text AS monto
          FROM contabilidad.extracto_linea e
         WHERE e.cuenta_id = $1
           AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
@@ -243,11 +341,20 @@ export async function porConciliar(cuentaId: string): Promise<PorConciliar> {
       [cuentaId],
     ),
     consultar<LineaAsientoBanco>(
-      `SELECT l.id, a.id AS asiento_id, a.numero::text AS numero, a.fecha::text AS fecha,
-              coalesce(l.descripcion, a.concepto) AS concepto, (l.debe - l.haber)::text AS monto
+      `SELECT l.id,
+              a.id AS asiento_id,
+              a.numero::text AS numero,
+              a.fecha::text AS fecha,
+              coalesce(l.descripcion, a.concepto) AS concepto,
+              coalesce(nullif(trim(r.referencia), ''), nullif(trim(ti.referencia), '')) AS referencia,
+              l.debe::numeric(14,2)::text AS debe,
+              l.haber::numeric(14,2)::text AS haber,
+              (l.debe - l.haber)::numeric(14,2)::text AS monto
          FROM contabilidad.cuenta_bancaria cb
          JOIN contabilidad.asiento_linea l ON l.cuenta_id = cb.cuenta_contable_id
          JOIN contabilidad.asiento a ON a.id = l.asiento_id
+         LEFT JOIN contabilidad.recibo r ON r.asiento_id = a.id
+         LEFT JOIN contabilidad.transferencia_interna ti ON ti.asiento_id = a.id
         WHERE cb.id = $1 AND NOT a.anulado
           AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
                            WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL)

@@ -195,3 +195,145 @@ export function parsearVistaPreviaEstadoBanco(
     columnasFaltantes,
   };
 }
+
+export type TransaccionEstadoBanco = {
+  fechaPosteo: string | null;
+  fechaEfectiva: string;
+  noCheque: string | null;
+  referencia: string | null;
+  descripcion: string;
+  retiros: string;
+  depositos: string;
+  /** Neto con signo (+ depósito, - retiro) en centavos exactos. */
+  monto: string;
+  saldo: string | null;
+};
+
+/** Normaliza una referencia bancaria/pago para comparar conciliación automática. */
+export function normalizarReferenciaBanco(valor: string | null | undefined): string {
+  return String(valor ?? "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toUpperCase();
+}
+
+function parsearFechaBanco(texto: string): string | null {
+  const limpio = texto.trim();
+  if (!limpio) return null;
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(limpio);
+  if (iso) {
+    const [anio, mes, dia] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
+    const d = new Date(Date.UTC(anio, mes - 1, dia));
+    if (d.getUTCFullYear() === anio && d.getUTCMonth() === mes - 1 && d.getUTCDate() === dia) {
+      return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+    }
+    return null;
+  }
+  const dmy = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s.*)?$/.exec(limpio);
+  if (!dmy) return null;
+  const [dia, mes, anio] = [Number(dmy[1]), Number(dmy[2]), Number(dmy[3])];
+  const d = new Date(Date.UTC(anio, mes - 1, dia));
+  if (d.getUTCFullYear() !== anio || d.getUTCMonth() !== mes - 1 || d.getUTCDate() !== dia) {
+    return null;
+  }
+  return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+}
+
+function parsearCentavosBanco(texto: string): bigint | null {
+  let limpio = texto.trim().replace(/\s/g, "").replace(/^(RD|US)?\$/i, "");
+  if (!limpio) return null;
+  let negativo = false;
+  if (/^\(.*\)$/.test(limpio)) {
+    negativo = true;
+    limpio = limpio.slice(1, -1);
+  }
+  if (limpio.startsWith("-")) {
+    negativo = !negativo;
+    limpio = limpio.slice(1);
+  } else if (limpio.endsWith("-")) {
+    negativo = !negativo;
+    limpio = limpio.slice(0, -1);
+  }
+  // Si solo hay coma y exactamente 2 dígitos al final (p. ej. "1.234,56"), usar coma decimal.
+  if (limpio.includes(",") && !limpio.includes(".") && /,\d{1,2}$/.test(limpio)) {
+    limpio = limpio.replace(/\./g, "").replace(",", ".");
+  } else {
+    limpio = limpio.replace(/,/g, "");
+  }
+  const m = /^(\d+)(?:\.(\d{0,2}))?$/.exec(limpio);
+  if (!m) return null;
+  const centavos = BigInt(m[1]) * 100n + BigInt((m[2] ?? "").padEnd(2, "0"));
+  return negativo ? -centavos : centavos;
+}
+
+function centavosAStr(c: bigint): string {
+  const signo = c < 0n ? "-" : "";
+  const abs = c < 0n ? -c : c;
+  return `${signo}${abs / 100n}.${(abs % 100n).toString().padStart(2, "0")}`;
+}
+
+function buscarColumnaPorAlias(columnas: string[], aliases: string[]): string | null {
+  for (const alias of aliases) {
+    const encontrada = columnas.find((c) => normalizarNombreColumna(c) === alias);
+    if (encontrada) return encontrada;
+  }
+  for (const alias of aliases) {
+    const encontrada = columnas.find((c) => normalizarNombreColumna(c).includes(alias));
+    if (encontrada) return encontrada;
+  }
+  return null;
+}
+
+/**
+ * Convierte las filas previsualizadas de un CSV bancario en transacciones
+ * normalizadas listas para persistirse en `contabilidad.extracto_linea`.
+ */
+export function extraerTransaccionesBanco(
+  resultado: ResultadoVistaPreviaCsv,
+): TransaccionEstadoBanco[] {
+  const cols = resultado.columnas;
+  const colPosteo = buscarColumnaPorAlias(cols, ["fecha de posteo", "fecha posteo", "posteo"]);
+  const colEfectiva = buscarColumnaPorAlias(cols, ["fecha efectiva", "fecha valor", "fecha"]);
+  const colCheque = buscarColumnaPorAlias(cols, ["no. cheque", "no cheque", "cheque"]);
+  const colRef = buscarColumnaPorAlias(cols, ["no. referencia", "no referencia", "referencia"]);
+  const colDesc = buscarColumnaPorAlias(cols, ["descripcion", "concepto", "detalle"]);
+  const colRetiros = buscarColumnaPorAlias(cols, ["retiros", "retiro", "debito", "debitos", "cargo"]);
+  const colDepositos = buscarColumnaPorAlias(cols, ["depositos", "deposito", "credito", "creditos", "abono"]);
+  const colBalance = buscarColumnaPorAlias(cols, ["balance", "saldo"]);
+
+  const transacciones: TransaccionEstadoBanco[] = [];
+  for (let idx = 0; idx < resultado.filas.length; idx++) {
+    const f = resultado.filas[idx];
+    const fechaPosteo = colPosteo ? parsearFechaBanco(f[colPosteo] ?? "") : null;
+    const fechaEfectiva = (colEfectiva ? parsearFechaBanco(f[colEfectiva] ?? "") : null) ?? fechaPosteo;
+    if (!fechaEfectiva) {
+      throw new Error(`Fila ${idx + 1}: fecha efectiva inválida`);
+    }
+
+    const retRaw = colRetiros ? parsearCentavosBanco(f[colRetiros] ?? "") : 0n;
+    const depRaw = colDepositos ? parsearCentavosBanco(f[colDepositos] ?? "") : 0n;
+    const retC = retRaw === null ? 0n : retRaw < 0n ? -retRaw : retRaw;
+    const depC = depRaw === null ? 0n : depRaw < 0n ? -depRaw : depRaw;
+    const netoC = depC - retC;
+    const saldoRaw = colBalance && (f[colBalance] ?? "").trim() !== ""
+      ? parsearCentavosBanco(f[colBalance] ?? "")
+      : null;
+
+    const noCheque = colCheque ? (f[colCheque] ?? "").trim() || null : null;
+    const referencia = colRef ? (f[colRef] ?? "").trim() || null : null;
+    const descripcion = (colDesc ? (f[colDesc] ?? "").trim() : "") || "—";
+
+    transacciones.push({
+      fechaPosteo,
+      fechaEfectiva,
+      noCheque,
+      referencia,
+      descripcion,
+      retiros: centavosAStr(retC),
+      depositos: centavosAStr(depC),
+      monto: centavosAStr(netoC),
+      saldo: saldoRaw === null ? null : centavosAStr(saldoRaw),
+    });
+  }
+  return transacciones;
+}

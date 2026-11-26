@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { ArrowLeftRight, CheckCircle2, Link2, Loader2, Save, Upload, X } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, CloudUpload, FileSpreadsheet, Link2, Loader2, Save, Upload, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
+import { useRouter } from "@/i18n/navigation";
 import {
   decodificarCsvBanco,
   parsearVistaPreviaEstadoBanco,
@@ -26,6 +28,7 @@ import {
 } from "@/lib/contabilidad/formato-estado-banco";
 import {
   registrarTasa,
+  subirEstadoFormatoBanco,
   transferirEntreCuentas,
   vincularCuentaContable,
   type EstadoBanco,
@@ -201,17 +204,27 @@ function esColumnaNumerica(nombre: string): boolean {
 }
 
 /**
- * Subir y previsualizar el estado de cuenta (.csv) según los formatos
- * configurados en Configuración contable > Formatos bancarios (0126).
- * Muestra las columnas y datos extraídos en la misma ventana para validar la
- * lectura antes de definir su procesamiento posterior.
+ * Subir estado de cuenta (.csv) en dos pasos claros:
+ *   1. «Cargar»: lee y previsualiza en la misma ventana con las reglas del
+ *      formato configurado (p. ej. Santa Cruz).
+ *   2. «Subir»: guarda las transacciones nuevas (saltando duplicados),
+ *      concilia automáticamente las coincidencias exactas de referencia y
+ *      monto, y lleva a la pestaña Movimientos.
  */
-export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[] }) {
+export function DialogoSubirEstado({
+  cuentaId,
+  formatos,
+}: {
+  cuentaId: string;
+  formatos: FormatoEstadoBanco[];
+}) {
   const t = useTranslations("contab.conciliacion.importar");
+  const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [formatoId, setFormatoId] = useState(formatos[0]?.id ?? "");
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
   const [leyendo, setLeyendo] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
   const [errorLectura, setErrorLectura] = useState<string | null>(null);
   const [vistaPrevia, setVistaPrevia] = useState<{
     archivoNombre: string;
@@ -226,6 +239,8 @@ export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[
     setArchivoSeleccionado(null);
     setErrorLectura(null);
     setVistaPrevia(null);
+    setLeyendo(false);
+    setSubiendo(false);
     if (inputArchivoRef.current) inputArchivoRef.current.value = "";
   }
 
@@ -234,8 +249,7 @@ export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[
     if (!siguiente) reiniciar();
   }
 
-  async function onProcesarVistaPrevia(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function onCargarVistaPrevia() {
     setErrorLectura(null);
     if (!formatoActual) {
       setErrorLectura(t("sinFormatos"));
@@ -263,71 +277,118 @@ export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[
     }
   }
 
+  async function onSubirDefinitivo() {
+    setErrorLectura(null);
+    if (!formatoActual || !archivoSeleccionado) return;
+    setSubiendo(true);
+    try {
+      const fd = new FormData();
+      fd.append("cuenta", cuentaId);
+      fd.append("formato_id", formatoActual.id);
+      fd.append("archivo", archivoSeleccionado);
+      const resultado = await subirEstadoFormatoBanco(INICIAL, fd);
+      if (resultado.estado === "ok") {
+        setAbierto(false);
+        reiniciar();
+        router.push(`/contabilidad/bancos/${cuentaId}?vista=movimientos`);
+        router.refresh();
+      } else {
+        setErrorLectura(resultado.detalle ? `${t("errorLectura")} ${resultado.detalle}` : t("errorLectura"));
+      }
+    } catch {
+      setErrorLectura(t("errorLectura"));
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!vistaPrevia) {
+      await onCargarVistaPrevia();
+      return;
+    }
+    await onSubirDefinitivo();
+  }
+
+  const listoParaSubir =
+    vistaPrevia !== null &&
+    vistaPrevia.resultado.columnasFaltantes.length === 0 &&
+    vistaPrevia.resultado.filas.length > 0;
+
   return (
     <Dialog open={abierto} onOpenChange={manejarCambioAbierto}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Upload className="size-4" />
+        <Button size="sm" className="gap-2 rounded-full px-4 shadow-sm">
+          <CloudUpload className="size-4" />
           {t("boton")}
         </Button>
       </DialogTrigger>
       <DialogContent className={vistaPrevia ? "max-h-[90dvh] overflow-y-auto md:max-w-5xl" : "max-h-[90dvh] overflow-y-auto md:max-w-xl"}>
         <DialogHeader>
-          <DialogTitle>{t("titulo")}</DialogTitle>
+          <DialogTitle className="inline-flex items-center justify-center gap-1.5">
+            <span>{t("titulo")}</span>
+            <TooltipAyuda texto={t("tituloAyuda")} etiqueta={t("masInformacion")} />
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={onProcesarVistaPrevia} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           {formatos.length === 0 ? (
             <AvisoError>{t("sinFormatos")}</AvisoError>
           ) : (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Campo id="formato_banco" etiqueta={t("formato")}>
-                  <select
-                    id="formato_banco"
-                    className={SELECT}
-                    value={formatoActual?.id ?? ""}
-                    onChange={(e) => {
-                      setFormatoId(e.target.value);
-                      setVistaPrevia(null);
-                      setErrorLectura(null);
-                    }}
-                  >
-                    {formatos.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </Campo>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="formato_banco" className="text-sm font-medium">
+                    {t("formato")}
+                  </Label>
+                  <TooltipAyuda texto={t("formatoAyuda")} etiqueta={t("masInformacion")} />
+                </div>
+                <select
+                  id="formato_banco"
+                  className={SELECT}
+                  value={formatoActual?.id ?? ""}
+                  onChange={(e) => {
+                    setFormatoId(e.target.value);
+                    setVistaPrevia(null);
+                    setErrorLectura(null);
+                  }}
+                >
+                  {formatos.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <Campo id="archivo_ec" etiqueta={t("archivo")}>
-                  <Input
+              <div className="space-y-1.5">
+                <Label htmlFor="archivo_ec" className="text-sm font-medium">
+                  {t("archivo")}
+                </Label>
+                <label
+                  htmlFor="archivo_ec"
+                  className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-control border border-dashed border-marca-500/60 bg-marca-500/5 px-3 py-2 text-sm text-tinta transition-colors hover:bg-marca-500/10"
+                >
+                  <FileSpreadsheet className="size-4 shrink-0 text-marca-600" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {archivoSeleccionado ? archivoSeleccionado.name : t("elegirArchivo")}
+                  </span>
+                  <input
                     ref={inputArchivoRef}
                     id="archivo_ec"
                     type="file"
                     accept=".csv,text/csv"
-                    required
+                    className="sr-only"
                     onChange={(e) => {
                       setArchivoSeleccionado(e.target.files?.[0] ?? null);
+                      setVistaPrevia(null);
                       setErrorLectura(null);
                     }}
                   />
-                </Campo>
+                </label>
               </div>
-
-              {formatoActual && (
-                <div className="rounded-control border border-linea bg-muted/30 p-3 text-xs text-tinta-2 space-y-1.5">
-                  <p className="font-medium text-tinta">
-                    {t("formatoEsperado", { nombre: formatoActual.nombre })}
-                  </p>
-                  <p>
-                    {t("columnasEsperadas")}:{" "}
-                    <span className="text-tinta">{formatoActual.columnas.join(" · ")}</span>
-                  </p>
-                </div>
-              )}
-            </>
+            </div>
           )}
 
           {errorLectura && <AvisoError>{errorLectura}</AvisoError>}
@@ -408,10 +469,27 @@ export function DialogoSubirEstado({ formatos }: { formatos: FormatoEstadoBanco[
               <X className="size-4" />
               {t("cerrar")}
             </Button>
-            <Button type="submit" disabled={formatos.length === 0 || leyendo} cargando={leyendo}>
-              {leyendo ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-              {t("guardar")}
-            </Button>
+            {vistaPrevia ? (
+              <Button
+                type="submit"
+                disabled={!listoParaSubir || subiendo}
+                cargando={subiendo}
+                className="gap-2"
+              >
+                {subiendo ? <Loader2 className="size-4 animate-spin" /> : <CloudUpload className="size-4" />}
+                {t("guardar")}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={formatos.length === 0 || !archivoSeleccionado || leyendo}
+                cargando={leyendo}
+                className="gap-2"
+              >
+                {leyendo ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {t("cargar")}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

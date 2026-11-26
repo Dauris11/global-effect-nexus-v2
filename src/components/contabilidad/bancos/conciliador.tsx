@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { Link2, Loader2, Unlink } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
+import { AlertTriangle, Link2, Loader2, Unlink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, Monto } from "@/components/contabilidad/comun";
@@ -15,7 +15,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { numeroDocumento, type Moneda } from "@/lib/contabilidad/formato";
+import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
+import type { Moneda } from "@/lib/contabilidad/formato";
+import { normalizarReferenciaBanco } from "@/lib/contabilidad/formato-estado-banco";
 import { fechaCorta } from "@/lib/fechas";
 import { cn } from "@/lib/utils";
 import { anularPartida, conciliarPartida, type EstadoBanco } from "@/server/contabilidad/bancos/acciones";
@@ -30,14 +32,19 @@ function useError(estado: EstadoBanco): string | null {
 }
 
 /** Igualdad de montos para resaltar parejas; la que manda es la del servidor. */
-const mismoMonto = (a: string, b: string) => Number(a).toFixed(2) === Number(b).toFixed(2);
+const mismoMonto = (a: string, b: string) => Math.abs(Number(a) - Number(b)) < 0.005;
+const esCero = (v: string) => /^-?0+(\.0+)?$/.test(v);
 
 /**
- * Conciliar (Observaciones #1): a la izquierda lo que trae el banco sin
- * pareja, a la derecha los asientos de la cuenta auxiliar sin pareja.
- * Al elegir una transacción del banco, los asientos del mismo monto suben
- * arriba y se marcan; se elige uno y se concilia. Son radios de un
- * formulario: el servidor recibe los dos ids y vuelve a comprobar todo.
+ * Conciliar en dos tablas lado a lado:
+ *   · Izquierda: Libro diario (cuenta contable vinculada al banco) con
+ *     Fecha, Descripción, Referencia, Débito y Crédito.
+ *   · Derecha: Transacciones del banco con Fecha efectiva, No. Referencia,
+ *     Descripción, Retiros y Depósitos.
+ *
+ * Las parejas con el mismo número de referencia y distinto monto se resaltan
+ * en naranja (`pri-alta`) en ambos lados. En modo oscuro la selección usa un
+ * tinte translúcido (`bg-marca-500/15`) para mantener el contraste legible.
  */
 export function Conciliador({
   cuentaId,
@@ -65,101 +72,191 @@ export function Conciliador({
   const error = useError(estado);
 
   const toggleLinea = (id: string) => {
-    setLineas((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setLineas((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
-  const elegido = banco.find((b) => b.id === extracto) ?? null;
-  // Con una transacción elegida, primero los asientos del mismo monto.
-  const ordenados = elegido
-    ? [...libros].sort((a, b) => Number(mismoMonto(b.monto, elegido.monto)) - Number(mismoMonto(a.monto, elegido.monto)))
-    : libros;
+  const toggleBanco = (id: string) => {
+    setExtracto((prev) => (prev === id ? null : id));
+  };
 
+  // Referencias presentes en ambos lados cuyo monto NO coincide -> resaltar en naranja.
+  const refsConDiferencia = useMemo(() => {
+    const conjunto = new Set<string>();
+    for (const b of banco) {
+      const refB = normalizarReferenciaBanco(b.referencia);
+      if (!refB) continue;
+      const enLibro = libros.filter((l) => normalizarReferenciaBanco(l.referencia) === refB);
+      if (enLibro.length > 0 && enLibro.some((l) => !mismoMonto(l.monto, b.monto))) {
+        conjunto.add(refB);
+      }
+    }
+    return conjunto;
+  }, [banco, libros]);
+
+  const elegido = banco.find((b) => b.id === extracto) ?? null;
   const seleccionados = libros.filter((l) => lineas.includes(l.id));
   const sumaLibros = seleccionados.reduce((acc, l) => acc + Number(l.monto), 0);
   const diferencia = elegido ? Number(elegido.monto) - sumaLibros : 0;
   const listo = elegido !== null && seleccionados.length > 0 && Math.abs(diferencia) < 0.005;
 
-  const opcion = "flex min-h-11 cursor-pointer items-start gap-3 px-4 py-3 has-[:checked]:bg-marca-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring";
-
   return (
     <form action={enviar} className="space-y-4">
       <input type="hidden" name="cuenta" value={cuentaId} />
+      {extracto && <input type="hidden" name="extracto" value={extracto} />}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="space-y-3">
-          <h2 className="texto-titulo-seccion">{t("delBanco", { n: banco.length })}</h2>
-          {banco.length === 0 ? (
-            <p className="texto-meta">{t("bancoVacio")}</p>
-          ) : (
-            <ul className="divide-y divide-linea overflow-hidden rounded-card border border-linea bg-card shadow-card">
-              {banco.map((b) => (
-                <li key={b.id}>
-                  <label className={opcion}>
-                    <input
-                      type="radio"
-                      name="extracto"
-                      value={b.id}
-                      checked={extracto === b.id}
-                      onChange={() => {
-                        setExtracto(b.id);
-                        setLineas([]);
-                      }}
-                      className="mt-1 size-5 shrink-0 accent-marca-500"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-tinta">{b.descripcion}</span>
-                      <span className="texto-meta block">
-                        {fechaCorta(b.fecha, idioma)}
-                        {b.referencia && ` · ${b.referencia}`}
-                      </span>
-                    </span>
-                    <Monto valor={b.monto} moneda={moneda} conSigno className="font-medium" />
-                  </label>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+      {refsConDiferencia.size > 0 && (
+        <div className="flex items-center gap-2 rounded-control border border-pri-alta/40 bg-pri-alta/10 px-3.5 py-2.5 text-xs text-tinta">
+          <AlertTriangle className="size-4 shrink-0 text-pri-alta" />
+          <span>{t("avisoDiferenciaRef")}</span>
+        </div>
+      )}
 
-        <section className="space-y-3">
-          <h2 className="texto-titulo-seccion">{t("deLibros", { n: libros.length })}</h2>
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* Izquierda: Libro diario */}
+        <section className="min-w-0 space-y-3">
+          <div className="flex items-center gap-1.5">
+            <h2 className="texto-titulo-seccion">{t("libroDiario", { n: libros.length })}</h2>
+            <TooltipAyuda texto={t("libroDiarioAyuda")} etiqueta={t("masInformacion")} />
+          </div>
+
           {libros.length === 0 ? (
             <p className="texto-meta">{t("librosVacio")}</p>
           ) : (
-            <ul className="divide-y divide-linea overflow-hidden rounded-card border border-linea bg-card shadow-card">
-              {ordenados.map((l) => {
-                const coincide = elegido !== null && mismoMonto(l.monto, elegido.monto);
-                const seleccionada = lineas.includes(l.id);
-                return (
-                  <li key={l.id} className={cn(elegido && !coincide && !seleccionada && "opacity-60")}>
-                    <label className={opcion}>
-                      <input
-                        type="checkbox"
-                        name="linea"
-                        value={l.id}
-                        checked={seleccionada}
-                        onChange={() => toggleLinea(l.id)}
-                        className="mt-1 size-5 shrink-0 rounded accent-marca-500"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-tinta">{l.concepto}</span>
-                        <span className="texto-meta block">
-                          {numeroDocumento("AS", l.numero)} · {fechaCorta(l.fecha, idioma)}
-                        </span>
-                        {coincide && (
-                          <Badge variant="marca" className="mt-1">
-                            {t("mismoMonto")}
-                          </Badge>
+            <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-linea text-tinta-3">
+                  <tr>
+                    <th className="w-10 px-2.5 py-2.5" aria-label={t("seleccionar")} />
+                    <th className="whitespace-nowrap px-2.5 py-2.5 font-medium">{t("col.fecha")}</th>
+                    <th className="px-2.5 py-2.5 font-medium">{t("col.descripcion")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 font-medium">{t("col.referencia")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 text-right font-medium">{t("col.debito")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 text-right font-medium">{t("col.credito")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {libros.map((l) => {
+                    const seleccionada = lineas.includes(l.id);
+                    const refNorm = normalizarReferenciaBanco(l.referencia);
+                    const refDiferente = refNorm !== "" && refsConDiferencia.has(refNorm);
+                    return (
+                      <tr
+                        key={l.id}
+                        onClick={() => toggleLinea(l.id)}
+                        className={cn(
+                          "cursor-pointer border-b border-linea transition-colors last:border-b-0 hover:bg-muted/40",
+                          refDiferente && "border-l-2 border-l-pri-alta bg-pri-alta/15 hover:bg-pri-alta/20",
+                          seleccionada && "bg-marca-500/15 hover:bg-marca-500/20",
                         )}
-                      </span>
-                      <Monto valor={l.monto} moneda={moneda} conSigno className="font-medium" />
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
+                      >
+                        <td className="px-2.5 py-2.5" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            name="linea"
+                            value={l.id}
+                            checked={seleccionada}
+                            onChange={() => toggleLinea(l.id)}
+                            aria-label={l.concepto}
+                            className="size-4 rounded accent-marca-500"
+                          />
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 tabular-nums text-tinta-2">
+                          {fechaCorta(l.fecha, idioma)}
+                        </td>
+                        <td className="max-w-44 truncate px-2.5 py-2.5 text-tinta" title={l.concepto}>
+                          {l.concepto}
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 font-mono text-tinta-2">
+                          <span className="inline-flex items-center gap-1">
+                            {refDiferente && <AlertTriangle className="size-3.5 shrink-0 text-pri-alta" />}
+                            {l.referencia || "—"}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 text-right tabular-nums text-tinta">
+                          {esCero(l.debe) ? <span className="text-tinta-3">—</span> : <Monto valor={l.debe} moneda={moneda} />}
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 text-right tabular-nums text-tinta">
+                          {esCero(l.haber) ? <span className="text-tinta-3">—</span> : <Monto valor={l.haber} moneda={moneda} />}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* Derecha: Transacciones del banco */}
+        <section className="min-w-0 space-y-3">
+          <div className="flex items-center gap-1.5">
+            <h2 className="texto-titulo-seccion">{t("transaccionesBanco", { n: banco.length })}</h2>
+            <TooltipAyuda texto={t("transaccionesBancoAyuda")} etiqueta={t("masInformacion")} />
+          </div>
+
+          {banco.length === 0 ? (
+            <p className="texto-meta">{t("bancoVacio")}</p>
+          ) : (
+            <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-linea text-tinta-3">
+                  <tr>
+                    <th className="w-10 px-2.5 py-2.5" aria-label={t("seleccionar")} />
+                    <th className="whitespace-nowrap px-2.5 py-2.5 font-medium">{t("col.fechaEfectiva")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 font-medium">{t("col.noReferencia")}</th>
+                    <th className="px-2.5 py-2.5 font-medium">{t("col.descripcion")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 text-right font-medium">{t("col.retiros")}</th>
+                    <th className="whitespace-nowrap px-2.5 py-2.5 text-right font-medium">{t("col.depositos")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {banco.map((b) => {
+                    const seleccionada = extracto === b.id;
+                    const refNorm = normalizarReferenciaBanco(b.referencia);
+                    const refDiferente = refNorm !== "" && refsConDiferencia.has(refNorm);
+                    return (
+                      <tr
+                        key={b.id}
+                        onClick={() => toggleBanco(b.id)}
+                        className={cn(
+                          "cursor-pointer border-b border-linea transition-colors last:border-b-0 hover:bg-muted/40",
+                          refDiferente && "border-l-2 border-l-pri-alta bg-pri-alta/15 hover:bg-pri-alta/20",
+                          seleccionada && "bg-marca-500/15 hover:bg-marca-500/20",
+                        )}
+                      >
+                        <td className="px-2.5 py-2.5" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={seleccionada}
+                            onChange={() => toggleBanco(b.id)}
+                            aria-label={b.descripcion}
+                            className="size-4 rounded accent-marca-500"
+                          />
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 tabular-nums text-tinta-2">
+                          {fechaCorta(b.fecha, idioma)}
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 font-mono text-tinta-2">
+                          <span className="inline-flex items-center gap-1">
+                            {refDiferente && <AlertTriangle className="size-3.5 shrink-0 text-pri-alta" />}
+                            {b.referencia || "—"}
+                          </span>
+                        </td>
+                        <td className="max-w-44 truncate px-2.5 py-2.5 text-tinta" title={b.descripcion}>
+                          {b.descripcion}
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 text-right tabular-nums text-tinta">
+                          {esCero(b.retiros) ? <span className="text-tinta-3">—</span> : <Monto valor={b.retiros} moneda={moneda} />}
+                        </td>
+                        <td className="whitespace-nowrap px-2.5 py-2.5 text-right tabular-nums text-marca-600">
+                          {esCero(b.depositos) ? <span className="text-tinta-3">—</span> : <Monto valor={b.depositos} moneda={moneda} />}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       </div>
@@ -174,7 +271,7 @@ export function Conciliador({
             </span>
           </div>
           {elegido && !listo && (
-            <span className="text-sm font-semibold text-destructivo">
+            <span className="text-sm font-semibold text-pri-alta">
               {t("diferencia", { dif: Math.abs(diferencia).toFixed(2) })}
             </span>
           )}
@@ -195,7 +292,7 @@ export function Conciliador({
   );
 }
 
-/** Anular una conciliación, con confirmación para que no sea un clic al pasar. */
+/** Anular / reversar una conciliación desde Conciliadas con mensaje explícito de confirmación. */
 export function BotonAnularPartida({ id }: { id: string }) {
   const t = useTranslations("contab.conciliacion");
   const [abierto, setAbierto] = useState(false);
@@ -220,8 +317,12 @@ export function BotonAnularPartida({ id }: { id: string }) {
         </DialogHeader>
         <form action={enviar} className="space-y-4">
           <input type="hidden" name="id" value={id} />
+          <p className="text-sm text-tinta-2">{t("anularMensaje")}</p>
           {error && <AvisoError>{error}</AvisoError>}
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setAbierto(false)}>
+              {t("cancelar")}
+            </Button>
             <Button type="submit" variant="destructive" cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Unlink className="size-4" />}
               {t("anularConfirmar")}

@@ -13,6 +13,7 @@ import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
+import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
@@ -23,8 +24,8 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   cuentaPorId,
   cuentasAuxiliaresDeActivo,
-  leerFiltroLibro,
-  libroDeBanco,
+  extractoDeBanco,
+  leerFiltroExtracto,
   partidasConciliadas,
   porConciliar,
 } from "@/server/contabilidad/bancos/consultas";
@@ -78,7 +79,7 @@ export default async function PaginaCuentaBanco({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="mx-auto max-w-7xl space-y-6 animate-entrada">
       <Link href="/contabilidad/bancos" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline">
         <ChevronLeft className="size-4" />
         {tc("bancos.titulo")}
@@ -89,7 +90,7 @@ export default async function PaginaCuentaBanco({
           titulo={cuenta.nombre}
           acciones={
             <div className="flex flex-wrap items-center gap-2">
-              {concilia && <DialogoSubirEstado formatos={formatos} />}
+              {concilia && <DialogoSubirEstado cuentaId={cuenta.id} formatos={formatos} />}
               <Button asChild variant="outline" size="sm">
                 <a href={`/api/contabilidad/exportar/bancos?cuentaId=${cuenta.id}`} download>
                   <Download className="size-4" />
@@ -124,13 +125,15 @@ export default async function PaginaCuentaBanco({
       </FilaChips>
 
       {vista === "movimientos" && (
-        <LibroBanco
-          cuentaId={cuenta.id}
-          moneda={cuenta.moneda}
-          filtro={leerFiltroLibro(crudo)}
-          libro={await libroDeBanco(cuenta.id, leerFiltroLibro(crudo))}
-          idioma={idioma}
-        />
+        <NextIntlClientProvider messages={mensajes}>
+          <LibroBanco
+            cuentaId={cuenta.id}
+            moneda={cuenta.moneda}
+            filtro={leerFiltroExtracto(crudo)}
+            movimientos={await extractoDeBanco(cuenta.id, leerFiltroExtracto(crudo))}
+            idioma={idioma}
+          />
+        </NextIntlClientProvider>
       )}
 
       {vista === "conciliar" && (
@@ -180,32 +183,38 @@ async function VistaConciliadas({
   if (partidas.length === 0) return <EstadoVacio icono={ListChecks} titulo={t("ningunaConciliada")} />;
 
   return (
-    <ul className="space-y-3">
-      {partidas.map((p) => (
-        <li key={p.id} className={`${TARJETA.contenido} flex flex-col gap-3 p-4 sm:flex-row sm:items-center`}>
-          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 sm:gap-6">
-            <div className="min-w-0">
-              <p className="texto-meta">{t("delBancoCorto")}</p>
-              <p className="truncate text-tinta">{p.banco_descripcion}</p>
-              <p className="texto-meta">
-                {fechaCorta(p.banco_fecha, idioma)}
-                {p.banco_referencia && ` · ${p.banco_referencia}`}
-              </p>
+    <div className="space-y-4">
+      <div className="flex items-center gap-1.5">
+        <h2 className="texto-titulo-seccion">{t("conciliadasTitulo", { n: partidas.length })}</h2>
+        <TooltipAyuda texto={t("conciliadasAyuda")} etiqueta={t("masInformacion")} />
+      </div>
+      <ul className="space-y-3">
+        {partidas.map((p) => (
+          <li key={p.id} className={`${TARJETA.contenido} flex flex-col gap-3 p-4 sm:flex-row sm:items-center`}>
+            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 sm:gap-6">
+              <div className="min-w-0">
+                <p className="texto-meta">{t("delBancoCorto")}</p>
+                <p className="truncate text-tinta">{p.banco_descripcion}</p>
+                <p className="texto-meta">
+                  {fechaCorta(p.banco_fecha, idioma)}
+                  {p.banco_referencia && ` · ${p.banco_referencia}`}
+                </p>
+              </div>
+              <div className="min-w-0">
+                <p className="texto-meta">{t("deLibrosCorto")}</p>
+                <Link href={`/contabilidad/asientos/${p.asiento_id}`} className="block truncate text-marca-600 hover:underline">
+                  {numeroDocumento("AS", p.asiento_numero)} · {p.asiento_concepto}
+                </Link>
+                <p className="texto-meta">{t("conciliadaPor", { nombre: p.conciliado_por, fecha: fechaCorta(p.conciliado_en, idioma) })}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="texto-meta">{t("deLibrosCorto")}</p>
-              <Link href={`/contabilidad/asientos/${p.asiento_id}`} className="block truncate text-marca-600 hover:underline">
-                {numeroDocumento("AS", p.asiento_numero)} · {p.asiento_concepto}
-              </Link>
-              <p className="texto-meta">{t("conciliadaPor", { nombre: p.conciliado_por, fecha: fechaCorta(p.conciliado_en, idioma) })}</p>
+            <div className="flex items-center justify-between gap-3 sm:justify-end">
+              <Monto valor={p.monto} moneda={moneda} conSigno className="font-semibold" />
+              {concilia && <BotonAnularPartida id={p.id} />}
             </div>
-          </div>
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
-            <Monto valor={p.monto} moneda={moneda} conSigno className="font-semibold" />
-            {concilia && <BotonAnularPartida id={p.id} />}
-          </div>
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

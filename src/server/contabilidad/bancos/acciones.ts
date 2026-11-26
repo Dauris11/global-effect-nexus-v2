@@ -8,6 +8,13 @@ import { esFechaIso, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { obtenerAdaptador, type ColumnasEstado } from "@/server/contabilidad/bancos";
 import { claveDeTransaccion } from "@/lib/contabilidad/extracto";
+import {
+  decodificarCsvBanco,
+  extraerTransaccionesBanco,
+  normalizarReferenciaBanco,
+  parsearVistaPreviaEstadoBanco,
+  type FormatoEstadoBanco,
+} from "@/lib/contabilidad/formato-estado-banco";
 import { problemaDeErrorSql } from "@/server/contabilidad/asientos/vista-sql";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { contextoDe, estadoDeError, type EstadoErrorContable } from "@/server/contabilidad/sesion";
@@ -39,9 +46,10 @@ export type EstadoBanco = {
   /** Error de lectura del CSV ("Línea 12: fecha inválida…"). Es dato, no texto de interfaz. */
   detalle?: string;
   id?: string;
-  /** Subida del estado de cuenta: transacciones nuevas y las que ya estaban. */
+  /** Subida del estado de cuenta: transacciones nuevas, repetidas y conciliadas automáticamente. */
   nuevas?: number;
   repetidas?: number;
+  conciliadasAuto?: number;
 };
 
 function texto(datos: FormData, campo: string, maximo = 200): string {
@@ -206,6 +214,201 @@ export async function subirEstadoBanco(_previo: EstadoBanco, datos: FormData): P
     });
     refrescar();
     return { estado: "ok", nuevas, repetidas: movimientos.length - nuevas };
+  } catch (error) {
+    return { estado: estadoDeError(error) };
+  }
+}
+
+/**
+ * Sube un estado de cuenta (.csv) usando un formato configurado en
+ * `contabilidad.formato_estado_banco` (0126/0129):
+ *   1. Decodifica UTF-8/Windows-1252, omite filas iniciales y fila de totales.
+ *   2. Guarda cada transacción con sus columnas completas (`fecha_posteo`,
+ *      `fecha`, `no_cheque`, `referencia`, `descripcion`, `retiros`,
+ *      `depositos`, `monto`, `saldo`), saltando duplicados por `clave`.
+ *   3. Concilia automáticamente las transacciones cuya referencia y monto
+ *      coincidan exactamente con una línea sin conciliar del libro diario
+ *      de la cuenta contable vinculada al banco.
+ */
+export async function subirEstadoFormatoBanco(
+  _previo: EstadoBanco,
+  datos: FormData,
+): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
+
+  const cuenta = texto(datos, "cuenta", 40);
+  const formatoId = texto(datos, "formato_id", 40);
+  const archivo = datos.get("archivo");
+  if (!esUuid(cuenta) || !esUuid(formatoId)) return { estado: "datos_invalidos" };
+  if (!(archivo instanceof File) || archivo.size === 0 || archivo.size > 5 * 1024 * 1024) {
+    return { estado: "archivo_invalido" };
+  }
+
+  const [cuentaActiva, formato] = await Promise.all([
+    consultarUna<{ id: string }>(
+      `SELECT id FROM contabilidad.cuenta_bancaria WHERE id = $1 AND estado = 'activa'`,
+      [cuenta],
+    ),
+    consultarUna<FormatoEstadoBanco>(
+      `SELECT id, nombre, filas_omitir_inicio AS "filasOmitirInicio",
+              omitir_ultima_fila AS "omitirUltimaFila", columnas, activo
+         FROM contabilidad.formato_estado_banco
+        WHERE id = $1 AND activo = true`,
+      [formatoId],
+    ),
+  ]);
+  if (!cuentaActiva || !formato) return { estado: "datos_invalidos" };
+
+  let transacciones;
+  try {
+    const textoCsv = decodificarCsvBanco(await archivo.arrayBuffer());
+    const vista = parsearVistaPreviaEstadoBanco(textoCsv, formato);
+    if (vista.columnasFaltantes.length > 0) {
+      return {
+        estado: "archivo_invalido",
+        detalle: `Faltan columnas: ${vista.columnasFaltantes.join(", ")}`,
+      };
+    }
+    transacciones = extraerTransaccionesBanco(vista);
+  } catch (error) {
+    return { estado: "archivo_invalido", detalle: error instanceof Error ? error.message : undefined };
+  }
+
+  if (transacciones.length === 0) return { estado: "archivo_vacio" };
+
+  const vistas = new Set<string>();
+  const unicas = transacciones
+    .map((t) => ({
+      ...t,
+      clave: claveDeTransaccion({
+        fecha: t.fechaEfectiva,
+        monto: t.monto,
+        descripcion: t.descripcion,
+        referencia: t.referencia,
+      }),
+    }))
+    .filter((t) => (vistas.has(t.clave) ? false : (vistas.add(t.clave), true)));
+
+  try {
+    const { nuevas, conciliadasAuto } = await enTransaccionComo(
+      await contextoDe(usuario),
+      async (cliente) => {
+        const { rowCount } = await cliente.query(
+          `INSERT INTO contabilidad.extracto_linea
+             (cuenta_id, fecha_posteo, fecha, no_cheque, referencia, descripcion,
+              retiros, depositos, monto, saldo, clave, archivo_nombre, importado_por)
+           SELECT $1, t.fecha_posteo, t.fecha, t.no_cheque, t.referencia, t.descripcion,
+                  t.retiros, t.depositos, t.monto, t.saldo, t.clave, $12, $13
+             FROM unnest(
+                    $2::date[], $3::date[], $4::text[], $5::text[], $6::text[],
+                    $7::numeric[], $8::numeric[], $9::numeric[], $10::numeric[], $11::text[]
+                  ) AS t(fecha_posteo, fecha, no_cheque, referencia, descripcion,
+                         retiros, depositos, monto, saldo, clave)
+           ON CONFLICT (cuenta_id, clave) DO NOTHING`,
+          [
+            cuenta,
+            unicas.map((m) => m.fechaPosteo),
+            unicas.map((m) => m.fechaEfectiva),
+            unicas.map((m) => m.noCheque),
+            unicas.map((m) => m.referencia),
+            unicas.map((m) => m.descripcion.slice(0, 300)),
+            unicas.map((m) => m.retiros),
+            unicas.map((m) => m.depositos),
+            unicas.map((m) => m.monto),
+            unicas.map((m) => m.saldo),
+            unicas.map((m) => m.clave),
+            archivo.name.slice(0, 200),
+            usuario.id,
+          ],
+        );
+
+        // Conciliación automática: misma referencia normalizada y mismo monto exacto.
+        const { rows: pendientesBanco } = await cliente.query<{
+          id: string;
+          referencia: string;
+          monto: string;
+        }>(
+          `SELECT e.id, e.referencia, e.monto::text AS monto
+             FROM contabilidad.extracto_linea e
+            WHERE e.cuenta_id = $1
+              AND nullif(trim(e.referencia), '') IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1 FROM contabilidad.conciliacion_partida p
+                 WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+              )
+            ORDER BY e.fecha, e.id
+            FOR UPDATE`,
+          [cuenta],
+        );
+
+        const { rows: pendientesLibro } = await cliente.query<{
+          id: string;
+          referencia: string;
+          monto: string;
+        }>(
+          `SELECT l.id,
+                  coalesce(nullif(trim(r.referencia), ''), nullif(trim(ti.referencia), '')) AS referencia,
+                  (l.debe - l.haber)::text AS monto
+             FROM contabilidad.cuenta_bancaria cb
+             JOIN contabilidad.asiento_linea l ON l.cuenta_id = cb.cuenta_contable_id
+             JOIN contabilidad.asiento a ON a.id = l.asiento_id AND NOT a.anulado
+             LEFT JOIN contabilidad.recibo r ON r.asiento_id = a.id
+             LEFT JOIN contabilidad.transferencia_interna ti ON ti.asiento_id = a.id
+            WHERE cb.id = $1
+              AND coalesce(nullif(trim(r.referencia), ''), nullif(trim(ti.referencia), '')) IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1 FROM contabilidad.conciliacion_partida p
+                 WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL
+              )
+            ORDER BY a.fecha, a.numero, l.id
+            FOR UPDATE OF l`,
+          [cuenta],
+        );
+
+        const usadasLibro = new Set<string>();
+        let conciliadas = 0;
+
+        for (const ext of pendientesBanco) {
+          const refExt = normalizarReferenciaBanco(ext.referencia);
+          if (!refExt) continue;
+          const montoExt = Number(ext.monto);
+          const match = pendientesLibro.find(
+            (lib) =>
+              !usadasLibro.has(lib.id) &&
+              normalizarReferenciaBanco(lib.referencia) === refExt &&
+              Math.abs(Number(lib.monto) - montoExt) < 0.005,
+          );
+          if (!match) continue;
+          usadasLibro.add(match.id);
+          await fijarAccion(
+            cliente,
+            "conciliar",
+            "Conciliación automática por coincidencia de referencia y monto.",
+          );
+          const { rows: [grupo] } = await cliente.query<{ id: string }>(
+            `SELECT gen_random_uuid() AS id`,
+          );
+          await cliente.query(
+            `INSERT INTO contabilidad.conciliacion_partida
+               (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [cuenta, ext.id, match.id, grupo.id, usuario.id],
+          );
+          conciliadas++;
+        }
+
+        return { nuevas: rowCount ?? 0, conciliadasAuto: conciliadas };
+      },
+    );
+
+    refrescar();
+    return {
+      estado: "ok",
+      nuevas,
+      repetidas: transacciones.length - nuevas,
+      conciliadasAuto,
+    };
   } catch (error) {
     return { estado: estadoDeError(error) };
   }
