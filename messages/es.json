@@ -6989,6 +6989,10 @@
     "transport": {
       "title": "Transporte",
       "desc": "Iniciar ruta y mapa"
+    },
+    "notify": {
+      "title": "Enviar aviso",
+      "desc": "Al equipo o a un rol"
     }
   },
   "transport": {
@@ -7760,5 +7764,19 @@
         "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     }
+  },
+  "notify": {
+    "title": "Enviar aviso",
+    "audience": "Para",
+    "staff": "Todo el personal",
+    "subject": "Asunto",
+    "message": "Mensaje",
+    "send": "Enviar",
+    "close": "Cerrar",
+    "sent": "{count, plural, =1 {Aviso enviado a 1 persona} other {Aviso enviado a # personas}}",
+    "errPermission": "No tienes permiso para enviar avisos.",
+    "errEmpty": "Escribe el asunto y el mensaje.",
+    "errNobody": "No hay nadie activo en esa audiencia.",
+    "errGeneric": "No se pudo enviar el aviso. Inténtalo otra vez."
   }
 }

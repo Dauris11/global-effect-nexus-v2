@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import {
+  Bell,
   Bot,
   Bus,
   CalendarDays,
@@ -17,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { EVENTO_ENVIAR_AVISO } from "@/components/layout/dialogo-enviar-aviso";
 import { Link } from "@/i18n/navigation";
 import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { tienePermiso, type Permiso, type Rol } from "@/lib/rbac";
@@ -63,6 +65,11 @@ export function CajonAccionesRapidas({
   const abrirIA = () => {
     onCerrar();
     window.dispatchEvent(new CustomEvent("abrir-widget-ia"));
+  };
+
+  const enviarAviso = () => {
+    onCerrar();
+    window.dispatchEvent(new CustomEvent(EVENTO_ENVIAR_AVISO));
   };
 
   const ACCIONES: {
@@ -121,6 +128,12 @@ export function CajonAccionesRapidas({
       onClick: abrirIA,
       icono: Bot,
       permiso: "ia.usar",
+    },
+    {
+      clave: "notify",
+      onClick: enviarAviso,
+      icono: Bell,
+      permiso: "operaciones.escribir",
     },
     {
       clave: "transport",

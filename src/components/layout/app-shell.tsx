@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { DialogoEnviarAviso } from "@/components/layout/dialogo-enviar-aviso";
 import { BarraInferior } from "@/components/layout/barra-inferior";
 import type { AvisoVisible } from "@/components/layout/campana";
 import { Migas } from "@/components/layout/migas";
@@ -109,6 +110,7 @@ export function AppShell({
           </main>
         </div>
 
+        <DialogoEnviarAviso />
         <BarraInferior
           rol={rol}
           menuAbierto={abiertaEnMovil}

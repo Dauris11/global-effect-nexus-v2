@@ -6989,6 +6989,10 @@
     "transport": {
       "title": "Transport",
       "desc": "Start route and map"
+    },
+    "notify": {
+      "title": "Send notice",
+      "desc": "To the team or a role"
     }
   },
   "transport": {
@@ -7760,5 +7764,19 @@
         "error": "Could not save. Try again."
       }
     }
+  },
+  "notify": {
+    "title": "Send notice",
+    "audience": "To",
+    "staff": "All staff",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send",
+    "close": "Close",
+    "sent": "{count, plural, =1 {Notice sent to 1 person} other {Notice sent to # people}}",
+    "errPermission": "You are not allowed to send notices.",
+    "errEmpty": "Enter a subject and a message.",
+    "errNobody": "Nobody active in that audience.",
+    "errGeneric": "The notice could not be sent. Try again."
   }
 }
