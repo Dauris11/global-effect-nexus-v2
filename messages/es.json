@@ -4728,15 +4728,19 @@
         "cuenta_con_hijas": "La cuenta tiene subcuentas: no puede recibir asientos."
       },
       "codigos": {
-        "explicacion": "Cada código nombra un proceso contable. Aquí defines si el código va al débito o al crédito; la cuenta se le asigna en el Catálogo. Los códigos nuevos los añade el equipo técnico en el código del sistema.",
+        "explicacion": "Cada código nombra un proceso contable. Aquí defines si el código va al débito o al crédito y si aumenta o disminuye la cuenta; la cuenta se le asigna en el Catálogo. Los códigos nuevos los añade el equipo técnico en el código del sistema.",
         "vacioTitulo": "No hay códigos de transacción definidos",
         "nombre": "Código",
         "proceso": "Proceso",
         "lado": "Lado",
+        "efecto": "Efecto",
         "cuenta": "Cuenta asignada",
         "debito": "Débito",
         "credito": "Crédito",
+        "aumenta": "Aumenta",
+        "disminuye": "Disminuye",
         "ladoDe": "Lado de {codigo}",
+        "efectoDe": "Efecto de {codigo}",
         "sinCuenta": "Sin cuenta asignada",
         "cuentaInactiva": "Cuenta inactiva o agrupadora",
         "asignarEnCatalogo": "Asignar en el Catálogo",
@@ -4747,6 +4751,7 @@
           "no_permitido": "No tienes permiso para configurar los códigos de transacción.",
           "codigo_desconocido": "Ese código de transacción no existe.",
           "naturaleza_invalida": "El lado debe ser débito o crédito.",
+          "efecto_invalido": "El efecto debe ser aumenta o disminuye.",
           "cuenta_invalida": "La cuenta debe estar activa y admitir movimientos.",
           "datos_invalidos": "Los datos enviados no son válidos.",
           "error": "No se pudo guardar. Inténtalo de nuevo."

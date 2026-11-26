@@ -29,6 +29,29 @@ import { CODIGOS_OPERACIONES } from "@/lib/contabilidad/codigos/grupo-operacione
  */
 
 export type NaturalezaCodigo = "debito" | "credito";
+export type EfectoCodigo = "aumenta" | "disminuye";
+
+/**
+ * Efecto contable natural de un movimiento (débito o crédito) sobre una cuenta:
+ *   · Activos y gastos (naturaleza deudora): aumentan por débito, disminuyen por crédito.
+ *   · Pasivos, patrimonio e ingresos (naturaleza acreedora): disminuyen por débito, aumentan por crédito.
+ * Sin cuenta asignada (ni naturaleza explícita), parte en "aumenta".
+ */
+export function efectoNaturalCuenta(
+  lado: NaturalezaCodigo,
+  cuenta?: { tipo?: string | null; naturaleza?: string | null; esCompensatoria?: boolean | null } | null,
+): EfectoCodigo {
+  if (!cuenta) return "aumenta";
+  const esDeudora =
+    cuenta.esCompensatoria
+      ? cuenta.naturaleza === "deudora"
+      : cuenta.naturaleza === "deudora" || cuenta.naturaleza === "acreedora"
+        ? cuenta.naturaleza === "deudora"
+        : cuenta.tipo === "activo" || cuenta.tipo === "gasto";
+  return (esDeudora && lado === "debito") || (!esDeudora && lado === "credito")
+    ? "aumenta"
+    : "disminuye";
+}
 
 /** Módulos que tienen códigos. Para sumar uno, añade aquí y en ETIQUETA_MODULO. */
 export type ModuloCodigo =

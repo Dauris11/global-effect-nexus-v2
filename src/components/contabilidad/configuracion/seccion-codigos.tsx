@@ -9,15 +9,19 @@ import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "@/i18n/navigation";
 import { TARJETA } from "@/lib/paleta";
-import { guardarNaturalezaCodigo } from "@/server/contabilidad/codigos-transaccion/acciones";
+import {
+  guardarEfectoCodigo,
+  guardarNaturalezaCodigo,
+} from "@/server/contabilidad/codigos-transaccion/acciones";
 import type { CodigoConfigurado } from "@/server/contabilidad/codigos-transaccion/consultas";
 
 type Resultado = { tipo: "guardado" } | { tipo: "error"; estado: string };
 
 /**
- * Los códigos de transacción agrupados por módulo. Aquí solo se elige el lado
- * (débito o crédito); la cuenta se asigna desde el Catálogo, y los códigos
- * nuevos se añaden en el código del sistema, no en pantalla.
+ * Los códigos de transacción agrupados por módulo. Aquí se elige el lado
+ * (débito o crédito) y si ese movimiento aumenta o disminuye el saldo de la
+ * cuenta; la cuenta se asigna desde el Catálogo, y los códigos nuevos se
+ * añaden en el código del sistema, no en pantalla.
  */
 export function SeccionCodigos({
   codigos,
@@ -30,45 +34,92 @@ export function SeccionCodigos({
   const [pendiente, iniciar] = useTransition();
   const [enCurso, setEnCurso] = useState<string | null>(null);
   const [resultados, setResultados] = useState<Record<string, Resultado>>({});
-  // El valor mostrado cambia al instante; si el servidor rechaza, se revierte.
-  const [elegidos, setElegidos] = useState<Record<string, string>>({});
+  // Los valores mostrados cambian al instante; si el servidor rechaza, se revierten.
+  const [elegidosLado, setElegidosLado] = useState<Record<string, string>>({});
+  const [elegidosEfecto, setElegidosEfecto] = useState<Record<string, string>>({});
 
   if (codigos.length === 0) return <EstadoVacio icono={ListChecks} titulo={t("vacioTitulo")} />;
 
-  const cambiar = (c: CodigoConfigurado, valor: string) => {
-    setElegidos((p) => ({ ...p, [c.codigo]: valor }));
+  const cambiarLado = (c: CodigoConfigurado, valor: string) => {
+    setElegidosLado((p) => ({ ...p, [c.codigo]: valor }));
     setEnCurso(c.codigo);
     iniciar(async () => {
       const r = await guardarNaturalezaCodigo(c.codigo, valor);
-      setResultados((p) => ({ ...p, [c.codigo]: r.estado === "ok" ? { tipo: "guardado" } : { tipo: "error", estado: r.estado } }));
-      if (r.estado !== "ok") setElegidos((p) => ({ ...p, [c.codigo]: c.naturaleza }));
+      setResultados((p) => ({
+        ...p,
+        [c.codigo]: r.estado === "ok" ? { tipo: "guardado" } : { tipo: "error", estado: r.estado },
+      }));
+      if (r.estado !== "ok") setElegidosLado((p) => ({ ...p, [c.codigo]: c.naturaleza }));
       setEnCurso(null);
     });
   };
 
-  const selector = (c: CodigoConfigurado) => {
-    const valor = elegidos[c.codigo] ?? c.naturaleza;
+  const cambiarEfecto = (c: CodigoConfigurado, valor: string) => {
+    setElegidosEfecto((p) => ({ ...p, [c.codigo]: valor }));
+    setEnCurso(c.codigo);
+    iniciar(async () => {
+      const r = await guardarEfectoCodigo(c.codigo, valor);
+      setResultados((p) => ({
+        ...p,
+        [c.codigo]: r.estado === "ok" ? { tipo: "guardado" } : { tipo: "error", estado: r.estado },
+      }));
+      if (r.estado !== "ok") setElegidosEfecto((p) => ({ ...p, [c.codigo]: c.efecto }));
+      setEnCurso(null);
+    });
+  };
+
+  const selectorLado = (c: CodigoConfigurado) => {
+    const valor = elegidosLado[c.codigo] ?? c.naturaleza;
+    return (
+      <Select
+        value={valor}
+        onValueChange={(v) => cambiarLado(c, v)}
+        disabled={!puedeEditar || (pendiente && enCurso === c.codigo)}
+      >
+        <SelectTrigger className="w-28" aria-label={t("ladoDe", { codigo: c.nombre })}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="debito">{t("debito")}</SelectItem>
+          <SelectItem value="credito">{t("credito")}</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+  };
+
+  const estadoFila = (c: CodigoConfigurado) => {
     const r = resultados[c.codigo];
     return (
+      <span role="status" aria-live="polite" className="texto-meta inline-flex min-w-16 items-center gap-1">
+        {enCurso === c.codigo && pendiente ? (
+          <><Loader2 className="size-4 animate-spin" />{t("guardando")}</>
+        ) : r?.tipo === "guardado" ? (
+          <><Check className="size-4 text-marca-500" />{t("guardado")}</>
+        ) : r?.tipo === "error" ? (
+          <><CircleAlert className="size-4" />{t(`error.${r.estado}` as "error.error")}</>
+        ) : null}
+      </span>
+    );
+  };
+
+  const selectorEfecto = (c: CodigoConfigurado) => {
+    const valor = elegidosEfecto[c.codigo] ?? c.efecto;
+    return (
       <div className="flex items-center gap-2">
-        <Select value={valor} onValueChange={(v) => cambiar(c, v)} disabled={!puedeEditar || (pendiente && enCurso === c.codigo)}>
-          <SelectTrigger className="w-36" aria-label={t("ladoDe", { codigo: c.nombre })}>
+        <Select
+          value={valor}
+          onValueChange={(v) => cambiarEfecto(c, v)}
+          disabled={!puedeEditar || (pendiente && enCurso === c.codigo)}
+        >
+          <SelectTrigger className="w-32" aria-label={t("efectoDe", { codigo: c.nombre })}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="debito">{t("debito")}</SelectItem>
-            <SelectItem value="credito">{t("credito")}</SelectItem>
+            <SelectItem value="aumenta">{t("aumenta")}</SelectItem>
+            <SelectItem value="disminuye">{t("disminuye")}</SelectItem>
           </SelectContent>
         </Select>
-        <span role="status" aria-live="polite" className="texto-meta inline-flex min-w-20 items-center gap-1">
-          {enCurso === c.codigo && pendiente ? (
-            <><Loader2 className="size-4 animate-spin" />{t("guardando")}</>
-          ) : r?.tipo === "guardado" ? (
-            <><Check className="size-4 text-marca-500" />{t("guardado")}</>
-          ) : r?.tipo === "error" ? (
-            <><CircleAlert className="size-4" />{t(`error.${r.estado}` as "error.error")}</>
-          ) : null}
-        </span>
+        {estadoFila(c)}
       </div>
     );
   };
@@ -109,6 +160,7 @@ export function SeccionCodigos({
                     <th className="px-5 py-3 font-medium">{t("nombre")}</th>
                     <th className="px-5 py-3 font-medium">{t("proceso")}</th>
                     <th className="px-5 py-3 font-medium">{t("lado")}</th>
+                    <th className="px-5 py-3 font-medium">{t("efecto")}</th>
                     <th className="px-5 py-3 font-medium">{t("cuenta")}</th>
                   </tr>
                 </thead>
@@ -120,7 +172,8 @@ export function SeccionCodigos({
                         <p className="font-mono text-xs text-tinta-3">{c.codigo}</p>
                       </td>
                       <td className="px-5 py-2.5 font-mono text-xs text-tinta-2">{c.proceso}</td>
-                      <td className="px-5 py-2.5">{selector(c)}</td>
+                      <td className="px-5 py-2.5">{selectorLado(c)}</td>
+                      <td className="px-5 py-2.5">{selectorEfecto(c)}</td>
                       <td className="px-5 py-2.5">{cuenta(c)}</td>
                     </tr>
                   ))}
@@ -135,7 +188,10 @@ export function SeccionCodigos({
                     <p className="text-[15px] font-medium text-tinta">{c.nombre}</p>
                     <p className="font-mono text-xs text-tinta-3">{c.codigo} · {c.proceso}</p>
                   </div>
-                  {selector(c)}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selectorLado(c)}
+                    {selectorEfecto(c)}
+                  </div>
                   {cuenta(c)}
                 </li>
               ))}

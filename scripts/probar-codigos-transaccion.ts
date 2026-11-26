@@ -3,7 +3,7 @@
 // Uso: npx tsx scripts/probar-codigos-transaccion.ts
 export {};
 
-const { CODIGOS_TRANSACCION, ETIQUETA_MODULO, FORMATO_CODIGO, definicionDe, codigosDeModulo } =
+const { CODIGOS_TRANSACCION, ETIQUETA_MODULO, FORMATO_CODIGO, definicionDe, codigosDeModulo, efectoNaturalCuenta } =
   await import("../src/lib/contabilidad/codigos-transaccion");
 
 let fallos = 0;
@@ -29,6 +29,20 @@ prueba("módulo con etiqueta es/en", CODIGOS_TRANSACCION.every((d) => {
 }));
 prueba("definicionDe encuentra y rechaza", definicionDe(claves[0])?.codigo === claves[0] && definicionDe("NO_EXISTE") === undefined);
 prueba("codigosDeModulo(nomina) no vacío", codigosDeModulo("nomina").length > 0);
+prueba(
+  "efectoNaturalCuenta: activo/gasto aumentan por débito y disminuyen por crédito",
+  efectoNaturalCuenta("debito", { tipo: "activo", naturaleza: "deudora" }) === "aumenta" &&
+    efectoNaturalCuenta("credito", { tipo: "activo", naturaleza: "deudora" }) === "disminuye" &&
+    efectoNaturalCuenta("debito", { tipo: "gasto", naturaleza: "deudora" }) === "aumenta" &&
+    efectoNaturalCuenta("credito", { tipo: "gasto", naturaleza: "deudora" }) === "disminuye",
+);
+prueba(
+  "efectoNaturalCuenta: pasivo/patrimonio/ingreso disminuyen por débito y aumentan por crédito",
+  efectoNaturalCuenta("debito", { tipo: "pasivo", naturaleza: "acreedora" }) === "disminuye" &&
+    efectoNaturalCuenta("credito", { tipo: "pasivo", naturaleza: "acreedora" }) === "aumenta" &&
+    efectoNaturalCuenta("debito", { tipo: "patrimonio", naturaleza: "acreedora" }) === "disminuye" &&
+    efectoNaturalCuenta("credito", { tipo: "ingreso", naturaleza: "acreedora" }) === "aumenta",
+);
 
 if (fallos) {
   console.error(`\n${fallos} prueba(s) fallaron.`);

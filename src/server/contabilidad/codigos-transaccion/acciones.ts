@@ -22,6 +22,7 @@ export type EstadoCodigos = {
     | "no_permitido"
     | "codigo_desconocido"
     | "naturaleza_invalida"
+    | "efecto_invalido"
     | "cuenta_invalida"
     | "datos_invalidos"
     | EstadoErrorContable;
@@ -59,6 +60,22 @@ export async function guardarNaturalezaCodigo(codigo: string, naturaleza: string
        ON CONFLICT (codigo) DO UPDATE
          SET naturaleza = EXCLUDED.naturaleza, actualizado_por = EXCLUDED.actualizado_por, actualizado_en = now()`,
       [codigo, naturaleza, usuarioId],
+    );
+  });
+}
+
+/** Cambia si el movimiento de este código aumenta o disminuye la cuenta. Crea la fila si aún no existía. */
+export async function guardarEfectoCodigo(codigo: string, efecto: string): Promise<EstadoCodigos> {
+  if (efecto !== "aumenta" && efecto !== "disminuye") return { estado: "efecto_invalido" };
+  const def = definicionDe(codigo);
+  if (!def) return { estado: "codigo_desconocido" };
+  return ejecutar(async (cliente, usuarioId) => {
+    await cliente.query(
+      `INSERT INTO contabilidad.codigo_transaccion (codigo, naturaleza, efecto, actualizado_por)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (codigo) DO UPDATE
+         SET efecto = EXCLUDED.efecto, actualizado_por = EXCLUDED.actualizado_por, actualizado_en = now()`,
+      [codigo, def.naturaleza, efecto, usuarioId],
     );
   });
 }

@@ -4728,15 +4728,19 @@
         "cuenta_con_hijas": "The account has sub-accounts: it can't accept entries."
       },
       "codigos": {
-        "explicacion": "Each code names an accounting process. Here you set whether the code goes to debit or credit; its account is assigned in the Chart of accounts. New codes are added by the technical team in the system code.",
+        "explicacion": "Each code names an accounting process. Here you set whether the code goes to debit or credit and whether it increases or decreases the account; its account is assigned in the Chart of accounts. New codes are added by the technical team in the system code.",
         "vacioTitulo": "No transaction codes are defined",
         "nombre": "Code",
         "proceso": "Process",
         "lado": "Side",
+        "efecto": "Effect",
         "cuenta": "Assigned account",
         "debito": "Debit",
         "credito": "Credit",
+        "aumenta": "Increases",
+        "disminuye": "Decreases",
         "ladoDe": "Side of {codigo}",
+        "efectoDe": "Effect of {codigo}",
         "sinCuenta": "No account assigned",
         "cuentaInactiva": "Inactive or parent account",
         "asignarEnCatalogo": "Assign in the Chart of accounts",
@@ -4747,6 +4751,7 @@
           "no_permitido": "You do not have permission to configure transaction codes.",
           "codigo_desconocido": "That transaction code does not exist.",
           "naturaleza_invalida": "The side must be debit or credit.",
+          "efecto_invalido": "The effect must be increases or decreases.",
           "cuenta_invalida": "The account must be active and accept postings.",
           "datos_invalidos": "The submitted data is not valid.",
           "error": "Could not save. Try again."
