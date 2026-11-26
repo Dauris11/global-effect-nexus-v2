@@ -450,19 +450,34 @@ export type FilaBalanza = {
   codigo: string;
   nombre: string;
   tipo: string;
+  naturaleza: "deudora" | "acreedora";
   nivel: number;
-  /** false = cuenta de grupo: su fila es el subtotal de sus descendientes. */
+  /** false = cuenta de grupo: su fila consolida los saldos de sus descendientes. */
   admiteMovimiento: boolean;
+  /**
+   * Saldo neto respetando la naturaleza de la cuenta:
+   * - deudora (activos, gastos): Débitos - Créditos
+   * - acreedora (pasivos, patrimonio, ingresos): Créditos - Débitos
+   */
+  balanceAuxiliares: string;
+  /** Saldo neto deudor (>= 0); 0.00 si la cuenta cierra con saldo acreedor o liquidada. */
   debe: string;
+  /** Saldo neto acreedor (>= 0); 0.00 si la cuenta cierra con saldo deudor o liquidada. */
   haber: string;
 };
 
 /**
- * Una fila por cuenta, en orden de árbol, con el débito y el crédito del
- * rango. Sin saldo anterior ni final: el departamento los pidió fuera
- * (Observaciones #1). `cierre` es la clausura del árbol (cada cuenta con
- * ella misma y con todas sus descendientes): la fila de un grupo suma lo de
- * sus hojas sin que la app recorra nada.
+ * Balanza de comprobación de saldos en orden de árbol.
+ *
+ * Cada cuenta de movimiento calcula su neto (`debe - haber`) sobre los asientos
+ * procesados del rango; los nodos agrupadores consolidan la suma de los netos
+ * de sus descendientes vía clausura (`cierre`), lo que respeta tanto la
+ * naturaleza de cada grupo como posibles contracuentas sin duplicar montos.
+ *
+ * - `balanceAuxiliares`: saldo neto con signo según la naturaleza de la cuenta.
+ * - `debe` / `haber`: valores absolutos positivos en el lado del saldo neto
+ *   (una cuenta deudora sobregirada coloca su saldo positivo en `haber`; una
+ *   cuenta liquidada como CxP con 3,600 D / 3,600 C queda en 0.00).
  */
 export async function balanza(f: FiltroLibros): Promise<FilaBalanza[]> {
   return consultar<FilaBalanza>(
@@ -475,37 +490,80 @@ export async function balanza(f: FiltroLibros): Promise<FilaBalanza[]> {
          JOIN contabilidad.cuenta_contable h ON h.padre_id = ci.descendiente
      ),
      mov AS (
-       SELECT l.cuenta_id, sum(l.debe) AS debe, sum(l.haber) AS haber
+       SELECT l.cuenta_id,
+              coalesce(sum(l.debe), 0) AS debe,
+              coalesce(sum(l.haber), 0) AS haber
          FROM contabilidad.asiento_linea l
          JOIN contabilidad.asiento a ON a.id = l.asiento_id
         WHERE a.fecha BETWEEN $1::date AND $2::date AND a.procesado_en IS NOT NULL
         GROUP BY l.cuenta_id
      ),
+     neto_cuenta AS (
+       SELECT c.id,
+              coalesce(m.debe, 0) AS mov_debe,
+              coalesce(m.haber, 0) AS mov_haber,
+              coalesce(m.debe, 0) - coalesce(m.haber, 0) AS neto_deudor
+         FROM contabilidad.cuenta_contable c
+         LEFT JOIN mov m ON m.cuenta_id = c.id
+     ),
      suma AS (
        SELECT ci.ancestro AS id,
-              coalesce(sum(m.debe), 0) AS debe,
-              coalesce(sum(m.haber), 0) AS haber
+              coalesce(sum(n.mov_debe), 0) AS mov_debe,
+              coalesce(sum(n.mov_haber), 0) AS mov_haber,
+              coalesce(sum(n.neto_deudor), 0) AS neto_deudor
          FROM cierre ci
-         LEFT JOIN mov m ON m.cuenta_id = ci.descendiente
+         LEFT JOIN neto_cuenta n ON n.id = ci.descendiente
         GROUP BY ci.ancestro
      )
-     SELECT c.id, c.codigo, c.nombre, c.tipo, a.nivel,
+     SELECT c.id, c.codigo, c.nombre, c.tipo,
+            coalesce(c.naturaleza, CASE WHEN c.tipo IN ('activo', 'gasto') THEN 'deudora' ELSE 'acreedora' END) AS naturaleza,
+            a.nivel,
             c.admite_movimiento AS "admiteMovimiento",
-            s.debe::numeric(14,2)::text AS debe,
-            s.haber::numeric(14,2)::text AS haber
+            (CASE WHEN coalesce(c.naturaleza, CASE WHEN c.tipo IN ('activo', 'gasto') THEN 'deudora' ELSE 'acreedora' END) = 'deudora'
+                  THEN s.neto_deudor
+                  ELSE -s.neto_deudor END)::numeric(14,2)::text AS "balanceAuxiliares",
+            GREATEST(s.neto_deudor, 0)::numeric(14,2)::text AS debe,
+            GREATEST(-s.neto_deudor, 0)::numeric(14,2)::text AS haber
        FROM arbol a
        JOIN contabilidad.cuenta_contable c ON c.id = a.id
        JOIN suma s ON s.id = c.id
-      WHERE $3::boolean OR s.debe <> 0 OR s.haber <> 0
+      WHERE $3::boolean OR s.mov_debe <> 0 OR s.mov_haber <> 0
       ORDER BY a.ruta`,
     [f.desde, f.hasta, f.ceros],
   );
 }
 
 /**
- * Debe y haber del período sumados sobre las LÍNEAS, no sobre las filas de
- * la balanza: ahí cada movimiento aparece una vez por cada nivel del árbol.
+ * Total general de la balanza de comprobación: suma los saldos netos deudores
+ * y acreedores de cada cuenta con movimiento directo (nunca duplica nodos
+ * padre ni infla con cuentas liquidadas en 0.00). Por partida doble, la
+ * diferencia entre total débito y total crédito es 0.00.
  */
 export async function totalesBalanza(f: FiltroLibros): Promise<TotalesLibro> {
-  return totalesDiario(f);
+  const fila = await consultarUna<TotalesLibro>(
+    `WITH mov AS (
+       SELECT l.cuenta_id,
+              coalesce(sum(l.debe), 0) - coalesce(sum(l.haber), 0) AS neto
+         FROM contabilidad.asiento_linea l
+         JOIN contabilidad.asiento a ON a.id = l.asiento_id
+        WHERE a.fecha BETWEEN $1::date AND $2::date
+          AND a.procesado_en IS NOT NULL
+        GROUP BY l.cuenta_id
+     ),
+     conteo AS (
+       SELECT count(DISTINCT a.id)::int AS asientos
+         FROM contabilidad.asiento a
+        WHERE a.fecha BETWEEN $1::date AND $2::date
+          AND a.procesado_en IS NOT NULL
+     )
+     SELECT c.asientos,
+            coalesce(sum(GREATEST(m.neto, 0)), 0)::numeric(14,2)::text AS debe,
+            coalesce(sum(GREATEST(-m.neto, 0)), 0)::numeric(14,2)::text AS haber,
+            (coalesce(sum(GREATEST(m.neto, 0)), 0) - coalesce(sum(GREATEST(-m.neto, 0)), 0))::numeric(14,2)::text AS diferencia
+       FROM conteo c
+       LEFT JOIN mov m ON true
+      GROUP BY c.asientos`,
+    [f.desde, f.hasta],
+  );
+  return fila ?? { asientos: 0, debe: "0.00", haber: "0.00", diferencia: "0.00" };
 }

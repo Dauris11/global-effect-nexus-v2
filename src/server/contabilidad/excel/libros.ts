@@ -3,6 +3,7 @@ import {
   balanza,
   libroDiario,
   mayorGeneral,
+  totalesBalanza,
   totalesDiario,
   type FiltroLibros,
 } from "@/server/contabilidad/libros/consultas";
@@ -90,11 +91,12 @@ export async function exportarMayorExcel(f: FiltroLibros): Promise<Buffer> {
 }
 
 export async function exportarBalanzaExcel(f: FiltroLibros): Promise<Buffer> {
-  const [filasBalanza, totales] = await Promise.all([balanza(f), totalesDiario(f)]);
+  const [filasBalanza, totales] = await Promise.all([balanza(f), totalesBalanza(f)]);
 
   const columnas: ColumnaExcel[] = [
     { header: "Código", key: "codigo", width: 14, formato: "texto" },
     { header: "Cuenta", key: "nombre", width: 40, formato: "texto" },
+    { header: "Balance de Auxiliares", key: "balanceAuxiliares", width: 22, formato: "moneda" },
     { header: "Débito", key: "debe", width: 16, formato: "moneda" },
     { header: "Crédito", key: "haber", width: 16, formato: "moneda" },
   ];
@@ -104,6 +106,7 @@ export async function exportarBalanzaExcel(f: FiltroLibros): Promise<Buffer> {
   const filas = filasBalanza.map((b) => ({
     codigo: b.codigo,
     nombre: `${"   ".repeat(b.nivel)}${b.nombre}`,
+    balanceAuxiliares: cifra(b.balanceAuxiliares),
     debe: cifra(b.debe),
     haber: cifra(b.haber),
   }));

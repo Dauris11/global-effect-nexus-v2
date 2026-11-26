@@ -23,6 +23,7 @@ import {
   libroDiario,
   mayorGeneral,
   TOPE_DIARIO,
+  totalesBalanza,
   totalesDiario,
   VISTAS_LIBRO,
   type FiltroLibros,
@@ -130,7 +131,7 @@ async function VistaMayor({ filtro }: { filtro: FiltroLibros }) {
 }
 
 async function VistaBalanza({ filtro }: { filtro: FiltroLibros }) {
-  const [filas, totales] = await Promise.all([balanza(filtro), totalesDiario(filtro)]);
+  const [filas, totales] = await Promise.all([balanza(filtro), totalesBalanza(filtro)]);
 
   if (filas.length === 0) return <SinAsientos />;
 

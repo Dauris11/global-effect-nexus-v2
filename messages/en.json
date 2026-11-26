@@ -4478,7 +4478,8 @@
         "asiento": "Entry",
         "concepto": "Description",
         "saldo": "Balance",
-        "auxiliar": "Subsidiary"
+        "auxiliar": "Subsidiary",
+        "balanceAuxiliares": "Subsidiary balance"
       },
       "vacio": {
         "titulo": "No entries in this range",

@@ -4478,7 +4478,8 @@
         "asiento": "Asiento",
         "concepto": "Concepto",
         "saldo": "Saldo",
-        "auxiliar": "Auxiliar"
+        "auxiliar": "Auxiliar",
+        "balanceAuxiliares": "Balance de Auxiliares"
       },
       "vacio": {
         "titulo": "No hay asientos en este rango",
