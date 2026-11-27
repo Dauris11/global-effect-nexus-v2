@@ -54,6 +54,14 @@ export function identificacionValida(valor: string, tipo: "fisica" | "juridica")
   return tipo === "juridica" ? rncValido(valor) : cedulaValida(valor);
 }
 
+/**
+ * Acepta tanto un RNC válido (9 dígitos) como una cédula válida (11 dígitos),
+ * ya que en RD un contribuyente formal ante la DGII puede operar con su cédula.
+ */
+export function rncOCedulaValida(valor: string): boolean {
+  return rncValido(valor) || cedulaValida(valor);
+}
+
 /** "131123456" → "1-31-12345-6"; "00113918205" → "001-1391820-5". */
 export function formatearIdentificacion(valor: string): string {
   const v = limpiarIdentificacion(valor);

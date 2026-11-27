@@ -19,7 +19,7 @@ import {
   restarMontos,
   sumarMontos,
 } from "@/lib/contabilidad/formato";
-import { identificacionValida, limpiarIdentificacion } from "@/lib/contabilidad/identificacion";
+import { limpiarIdentificacion, rncOCedulaValida } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
 import {
   calcularItbis,
@@ -115,9 +115,8 @@ export function FormularioProveedor({
 
   const esJuridica = tipo === "juridica";
   const limpia = limpiarIdentificacion(identificacion);
-  const longitudEsperada = esJuridica ? 9 : 11;
-  const completa = limpia.length === longitudEsperada;
-  const malDigito = completa && !identificacionValida(limpia, tipo);
+  const completa = limpia.length === 9 || limpia.length === 11;
+  const malDigito = completa && !rncOCedulaValida(limpia);
   const puedeConsultarDgii = /^[0-9]{9}$|^[0-9]{11}$/.test(limpia);
   const etiquetaInfo = t("masInformacion");
 

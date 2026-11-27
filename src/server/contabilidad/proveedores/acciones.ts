@@ -16,9 +16,9 @@ import {
   TIPOS_ADJUNTO,
 } from "@/lib/contabilidad/formato";
 import {
-  identificacionValida,
   limpiarIdentificacion,
   ncfValido,
+  rncOCedulaValida,
 } from "@/lib/contabilidad/identificacion";
 import {
   calcularItbis,
@@ -193,7 +193,7 @@ export async function guardarProveedor(
   ) {
     return { estado: "datos_invalidos" };
   }
-  if (!identificacionValida(identificacion, tipo)) return { estado: "identificacion_invalida" };
+  if (!rncOCedulaValida(identificacion)) return { estado: "identificacion_invalida" };
 
   const valores = [
     tipo, identificacion, nombre, texto(datos, "nombre_comercial", 160) || null,
