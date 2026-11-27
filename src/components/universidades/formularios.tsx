@@ -125,7 +125,10 @@ function Desplegable({ etiqueta, icono, children }: { etiqueta: string; icono?: 
 
 export function FormUniversidad({
   universidad,
+  alCerrar,
 }: {
+  /** Si se pasa, el formulario se muestra abierto (dentro de un panel) y esto lo cierra al terminar. */
+  alCerrar?: () => void;
   universidad?: {
     id: string; siglas: string; nombre: string; regimen: string; activa: boolean;
     logo: string | null;
@@ -137,9 +140,7 @@ export function FormUniversidad({
   const t = useTranslations("catalog");
   const k = universidad?.id ?? "nueva";
 
-  return (
-    <Desplegable etiqueta={universidad ? t("edit") : t("university.new")} icono={!universidad}>
-      {(cerrar) => (
+  const formulario = (cerrar: () => void) => (
         <Cascaron accion={guardarUniversidad} etiquetaBoton={t("save")} alTerminar={cerrar}>
           <input type="hidden" name="id" value={universidad?.id ?? ""} />
           <div className="grid gap-3 sm:grid-cols-4">
@@ -222,7 +223,15 @@ export function FormUniversidad({
             </Campo>
           )}
         </Cascaron>
-      )}
+  );
+
+  // En un panel lateral (alta desde el encabezado de la lista) el formulario ya está
+  // abierto: no hace falta el botón que lo despliega.
+  if (alCerrar) return formulario(alCerrar);
+
+  return (
+    <Desplegable etiqueta={universidad ? t("edit") : t("university.new")} icono={!universidad}>
+      {formulario}
     </Desplegable>
   );
 }

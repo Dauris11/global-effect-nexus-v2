@@ -21,7 +21,31 @@ export type FilaProveedor = {
   facturas: number;
 };
 
-export async function proveedores(texto: string | null): Promise<FilaProveedor[]> {
+export type FiltroProveedores = {
+  texto?: string | null;
+  estado?: "activo" | "inactivo" | null;
+  /** Solo los que tienen saldo pendiente. */
+  conSaldo?: boolean;
+  tipo?: "fisica" | "juridica" | null;
+};
+
+/** Saldo pendiente = alguna cuenta por pagar abierta; es la misma regla que pinta «Se le debe». */
+const TIENE_SALDO = `EXISTS (SELECT 1 FROM contabilidad.cuenta_por_pagar x
+                              WHERE x.proveedor_id = p.id AND x.estado NOT IN ('pagada', 'anulada')
+                                AND x.saldo > 0.005)`;
+
+/**
+ * Condición de búsqueda por nombre, nombre comercial o RNC/cédula. La identificación solo
+ * cuenta si lo escrito trae dígitos: con texto puro, `LIKE '%%'` coincidiría con todo y la
+ * búsqueda por nombre no filtraría nada.
+ */
+const COINCIDE_TEXTO = `($1::text IS NULL
+         OR p.nombre ILIKE '%' || $1 || '%'
+         OR p.nombre_comercial ILIKE '%' || $1 || '%'
+         OR (regexp_replace($1, '[^0-9]', '', 'g') <> ''
+             AND p.identificacion LIKE '%' || regexp_replace($1, '[^0-9]', '', 'g') || '%'))`;
+
+export async function listarProveedores(filtro: FiltroProveedores): Promise<FilaProveedor[]> {
   return consultar<FilaProveedor>(
     `SELECT p.id, p.tipo, p.identificacion, p.nombre, p.nombre_comercial, p.estado,
             p.condiciones_pago_dias,
@@ -32,14 +56,36 @@ export async function proveedores(texto: string | null): Promise<FilaProveedor[]
                                GROUP BY x.moneda) s), '[]'::json) AS saldos,
             (SELECT count(*)::int FROM contabilidad.factura_proveedor f WHERE f.proveedor_id = p.id) AS facturas
        FROM contabilidad.proveedor p
-      WHERE $1::text IS NULL
-         OR p.nombre ILIKE '%' || $1 || '%'
-         OR p.nombre_comercial ILIKE '%' || $1 || '%'
-         OR p.identificacion LIKE '%' || regexp_replace($1, '[^0-9]', '', 'g') || '%'
+      WHERE ${COINCIDE_TEXTO}
+        AND ($2::text IS NULL OR p.estado = $2)
+        AND ($3::boolean IS NOT TRUE OR ${TIENE_SALDO})
+        AND ($4::text IS NULL OR p.tipo = $4)
       ORDER BY p.estado, p.nombre
       LIMIT 300`,
-    [texto],
+    [filtro.texto || null, filtro.estado ?? null, filtro.conSaldo ?? false, filtro.tipo ?? null],
   );
+}
+
+export async function proveedores(texto: string | null): Promise<FilaProveedor[]> {
+  return listarProveedores({ texto });
+}
+
+export type ConteosProveedores = { total: number; activo: number; inactivo: number; con_saldo: number };
+
+/** Números de los chips. Respetan la búsqueda y el tipo, pero no el chip activo: así cada chip dice cuántos darían. */
+export async function conteosProveedores(filtro: Pick<FiltroProveedores, "texto" | "tipo">): Promise<ConteosProveedores> {
+  const fila = await consultarUna<ConteosProveedores>(
+    `SELECT count(*)::int AS total,
+            (count(*) FILTER (WHERE p.estado = 'activo'))::int AS activo,
+            (count(*) FILTER (WHERE p.estado = 'inactivo'))::int AS inactivo,
+            (count(*) FILTER (WHERE ${TIENE_SALDO}))::int AS con_saldo
+       FROM contabilidad.proveedor p
+      WHERE ${COINCIDE_TEXTO}
+        AND ($2::text IS NULL OR p.tipo = $2)`,
+    [filtro.texto || null, filtro.tipo ?? null],
+  );
+
+  return fila ?? { total: 0, activo: 0, inactivo: 0, con_saldo: 0 };
 }
 
 export type DetalleProveedor = {

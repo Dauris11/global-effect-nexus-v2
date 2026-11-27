@@ -1,29 +1,27 @@
 import type { Metadata } from "next";
-import { Building2, Globe, HandCoins, Mail, Search, Users, X } from "lucide-react";
+import { Mail } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
-import { CifraAcademica } from "@/components/academico/cifra";
-import { GestionPatrocinadores } from "@/components/patrocinadores/gestion-patrocinadores";
-import { Button } from "@/components/ui/button";
-import { variantesBoton } from "@/components/ui/button-variantes";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
-import { Input } from "@/components/ui/input";
-import { Link } from "@/i18n/navigation";
+import { FilterBar, type ChipEstado } from "@/components/app/filter-bar";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
+import { PageHeader } from "@/components/app/page-header";
+import { ListaPatrocinadores } from "@/components/patrocinadores/lista-patrocinadores";
+import { BotonNuevoPatrocinador } from "@/components/patrocinadores/panel-patrocinador";
+import { TIPOS_PATROCINADOR } from "@/lib/patrocinadores";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
-import {
+  conteosPatrocinadoresPorEstado,
   directorioPatrocinadores,
   hayMasPatrocinadores,
+  paisesDePatrocinadores,
   recortarPatrocinadores,
-  resumenDePatrocinio,
 } from "@/server/patrocinadores/consultas";
 
-const TIPOS = ["persona", "empresa", "iglesia", "ong", "otro"] as const;
-const ESTADOS = ["activo", "inactivo"] as const;
+const ESTADOS = ["activo", "pausado", "inactivo"] as const;
 
 export async function generateMetadata({
   params,
@@ -37,183 +35,100 @@ export async function generateMetadata({
 }
 
 /**
- * Directorio de patrocinadores.
+ * Directorio de patrocinadores (patrón Lista: encabezado, barra de filtros con
+ * conteos y tabla densa).
  *
  * `patrocinadores.leer` para entrar, `patrocinadores.escribir` para tocar.
- * `contabilidad` tiene el primero y no el segundo: ve el directorio y los
- * aportes comprometidos —los necesita para cuadrar— pero no cambia con quién
- * tiene la Fundación un acuerdo.
+ * `contabilidad` tiene el primero y no el segundo: ve el directorio y los aportes
+ * comprometidos —los necesita para cuadrar— pero no cambia con quién tiene la
+ * Fundación un acuerdo.
  *
- * Los filtros van en la URL, como en el resto del sistema: el enlace se
- * comparte, se recarga sin perder lo que se miraba, y la lista se recorta en
- * SQL en vez de traerla entera para esconder la mayoría.
- *
- * Las cifras de cabecera salen de una consulta agregada aparte y no de contar
- * las filas visibles: la lista está topada en 200 y un "aporte mensual" sumado
- * sobre las 200 primeras por orden alfabético no sería el aporte de nadie.
+ * Los filtros viven en la URL y se recortan en SQL. Los conteos de los chips salen
+ * de una consulta agregada aparte (no de contar las filas visibles: la lista está
+ * topada en 200) y respetan búsqueda, tipo y país pero no el estado.
  */
 export default async function PaginaPatrocinadores({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; tipo?: string; estado?: string }>;
+  searchParams: Promise<{ q?: string; tipo?: string; estado?: string; pais?: string }>;
 }) {
   const { locale } = await params;
-  const { q, tipo, estado } = await searchParams;
+  const { q, tipo, estado, pais } = await searchParams;
 
   const usuario = await requerirPermiso("patrocinadores.leer");
+  const puedeEscribir = usuarioTienePermiso(usuario, "patrocinadores.escribir");
 
   const busqueda = (q ?? "").trim().slice(0, 80);
-  // Los desplegables se pueden manipular en la URL: lo que no esté en la lista
-  // se ignora en vez de llegar al SQL.
-  const tipoOk = TIPOS.includes(tipo as (typeof TIPOS)[number]) ? tipo! : null;
-  const estadoOk = ESTADOS.includes(estado as (typeof ESTADOS)[number])
-    ? estado!
-    : null;
+  // Los parámetros se pueden manipular en la URL: lo que no esté en la lista se
+  // ignora en vez de llegar al SQL.
+  const tipoOk = TIPOS_PATROCINADOR.includes(tipo as (typeof TIPOS_PATROCINADOR)[number]) ? tipo! : null;
+  const estadoOk = ESTADOS.includes(estado as (typeof ESTADOS)[number]) ? estado! : null;
+  const paisOk = (pais ?? "").trim().slice(0, 80) || null;
 
-  const filtros = { busqueda, tipo: tipoOk, estado: estadoOk };
-
-  const tCartas = await getTranslations({ locale, namespace: "sponsorMail" });
-
-  const [t, filas, resumen, mensajes] = await Promise.all([
+  const [t, tCartas, filas, conteos, paises, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "sponsors" }),
-    directorioPatrocinadores(filtros),
-    resumenDePatrocinio(filtros),
+    getTranslations({ locale, namespace: "sponsorMail" }),
+    directorioPatrocinadores({ busqueda, tipo: tipoOk, estado: estadoOk, pais: paisOk }),
+    conteosPatrocinadoresPorEstado({ busqueda, tipo: tipoOk, pais: paisOk }),
+    paisesDePatrocinadores(),
     mensajesCliente(["sponsors", "sponsorMail"]),
   ]);
+  const tl = await getTranslations({ locale, namespace: "listas" });
 
-  const hayFiltro = Boolean(busqueda || tipoOk || estadoOk);
+  const total = Object.values(conteos).reduce((n, c) => n + c, 0);
+  // «Pausado» solo aparece si hay alguno (o si es el filtro puesto): un chip en 0 es ruido.
+  const chips: ChipEstado[] = ESTADOS.filter((e) => (conteos[e] ?? 0) > 0 || e === estadoOk).map((e) => ({
+    value: e,
+    label: t(`state.${e}`),
+    count: conteos[e] ?? 0,
+  }));
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina
-        titulo={t("title")}
-        acciones={
-          usuarioTienePermiso(usuario, "patrocinadores.escribir") ? (
-            <Link
-              href="/patrocinadores/correos"
-              className={variantesBoton({ variant: "outline" })}
-            >
-              <Mail className="size-4" />
-              {tCartas("viewMail")}
-            </Link>
+    <div className="animate-entrada space-y-6">
+      <PageHeader
+        title={t("title")}
+        primaryAction={puedeEscribir ? (
+          <NextIntlClientProvider messages={mensajes}>
+            <BotonNuevoPatrocinador />
+          </NextIntlClientProvider>
+        ) : undefined}
+        secondaryActions={
+          puedeEscribir ? (
+            <MenuMasAcciones acciones={[{ etiqueta: tCartas("viewMail"), icono: <Mail />, href: "/patrocinadores/correos" }]} />
           ) : undefined
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <CifraAcademica
-          valor={resumen.total}
-          etiqueta={t("stats.total")}
-          icono={Building2}
+      <Suspense fallback={null}>
+        <FilterBar
+          chips={chips}
+          totalChips={total}
+          placeholder={t("searchPlaceholder")}
+          selectores={[
+            {
+              param: "tipo",
+              label: t("field.type"),
+              todos: t("allTypes"),
+              opciones: TIPOS_PATROCINADOR.map((v) => ({ value: v, label: t(`type.${v}`) })),
+            },
+            {
+              param: "pais",
+              label: t("field.country"),
+              todos: tl("patrocinadores.todosPaises"),
+              opciones: paises.map((p) => ({ value: p, label: p })),
+            },
+          ]}
         />
-        <CifraAcademica
-          valor={resumen.activos}
-          etiqueta={t("stats.active")}
-          icono={Users}
-        />
-        <CifraAcademica
-          valor={resumen.paises}
-          etiqueta={t("stats.countries")}
-          icono={Globe}
-        />
-        <CifraAcademica
-          valor={new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-          }).format(resumen.aporte)}
-          etiqueta={t("stats.monthly")}
-          icono={HandCoins}
-          acento
-        />
-      </div>
-
-      <form method="get" className="flex flex-wrap items-end gap-2">
-        <div className="min-w-48 flex-1 space-y-1.5">
-          <label
-            htmlFor="q"
-            className="text-muted-foreground text-xs font-medium"
-          >
-            {t("search")}
-          </label>
-          <Input
-            id="q"
-            name="q"
-            type="search"
-            defaultValue={busqueda}
-            placeholder={t("searchPlaceholder")}
-            maxLength={80}
-          />
-        </div>
-
-        <div className="min-w-36 space-y-1.5">
-          <label
-            htmlFor="tipo"
-            className="text-muted-foreground text-xs font-medium"
-          >
-            {t("field.type")}
-          </label>
-          <select
-            id="tipo"
-            name="tipo"
-            defaultValue={tipoOk ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-          >
-            <option value="">{t("allTypes")}</option>
-            {TIPOS.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`type.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="min-w-36 space-y-1.5">
-          <label
-            htmlFor="estado"
-            className="text-muted-foreground text-xs font-medium"
-          >
-            {t("field.state")}
-          </label>
-          <select
-            id="estado"
-            name="estado"
-            defaultValue={estadoOk ?? ""}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-          >
-            <option value="">{t("allStates")}</option>
-            {ESTADOS.map((valor) => (
-              <option key={valor} value={valor}>
-                {t(`state.${valor}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Button
-          type="submit"
-          className="transition-transform duration-150 active:scale-95"
-        >
-          <Search className="size-4" />
-          {t("apply")}
-        </Button>
-
-        {hayFiltro && (
-          <Link href="/patrocinadores" className={variantesBoton({ variant: "ghost" })}>
-            <X className="size-4" />
-            {t("clear")}
-          </Link>
-        )}
-      </form>
+      </Suspense>
 
       <NextIntlClientProvider messages={mensajes}>
-        <GestionPatrocinadores
+        <ListaPatrocinadores
           patrocinadores={recortarPatrocinadores(filas)}
-          puedeEscribir={usuarioTienePermiso(usuario, "patrocinadores.escribir")}
+          puedeEscribir={puedeEscribir}
           hayMas={hayMasPatrocinadores(filas)}
-          hayFiltro={hayFiltro}
+          hayFiltro={Boolean(busqueda || tipoOk || estadoOk || paisOk)}
         />
       </NextIntlClientProvider>
     </div>

@@ -1,34 +1,32 @@
 import type { Metadata } from "next";
-import { History, Inbox, Send, ShoppingCart, UserRound } from "lucide-react";
+import { Inbox } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
-import { FormularioCompra } from "@/components/solicitudes/formulario-compra";
-import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
-import { GraficasSolicitudes } from "@/components/solicitudes/graficas-solicitudes";
-import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { PageHeader } from "@/components/app/page-header";
+import { CrearSolicitud } from "@/components/solicitudes/crear-solicitud";
+import { ListaSolicitudes } from "@/components/solicitudes/lista-solicitudes";
+import { Button } from "@/components/ui/button";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { Link, redirigir } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   esEstadoSolicitud,
   ESTADOS_SOLICITUD,
   esTipoSolicitud,
   REGLAS,
   revisaAlgo,
+  TIPOS_SOLICITUD,
   tiposQuePuedeCrear,
 } from "@/lib/solicitudes";
-import { Link, redirigir } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
 import {
+  conteosSolicitudes,
   estudiantesParaSolicitud,
-  resueltasPor,
   solicitudesDe,
   solicitudesPorAtender,
   solicitudesRevisionPorEstado,
@@ -46,29 +44,36 @@ export async function generateMetadata({
   return { title: t("staffTitle") };
 }
 
+const POR_ATENDER = "por_atender";
+const MIAS = "mias";
+
+/** Sin tildes ni mayúsculas, para que «Rodriguez» encuentre «Rodríguez». */
+const normalizar = (texto: string) =>
+  texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
 /**
- * Bandeja de solicitudes del personal (migración 0031).
+ * Bandeja de solicitudes del personal (migración 0031), en patrón Lista.
  *
- * Tres bloques y cada uno responde a una pregunta distinta:
+ * Una sola lista y un solo parámetro de vista (`estado`):
  *
- *   · Por atender — lo que espera una decisión MÍA. Solo sale si el rol revisa
- *     algo; la lista ya viene filtrada por `accionesPermitidas`, así que nunca
- *     aparece lo que pedí yo (separación de funciones).
- *   · Pedir — el alta de una solicitud interna, con los tipos que mi rol puede
- *     pedir. Todo el personal puede pedir al menos un gasto.
- *   · Mis solicitudes y resueltas — cómo va lo mío y qué decidí ya.
+ *   · Quien revisa algo entra en «Por atender» —lo que espera una decisión MÍA; la
+ *     lista ya viene filtrada por `accionesPermitidas`, así que nunca aparece lo que
+ *     pedí yo (separación de funciones)—. Desde ahí puede pasar a «Mías» o a un estado
+ *     de su ámbito (lo que antes eran el historial y los tabs de estado).
+ *   · Quien no revisa ve solo lo que pidió, con chips por estado.
  *
- * Sin permiso de entrada porque todo el personal pide algo. El estudiante no
- * entra: sus trámites viven en su portal, con su ficha sacada de la sesión.
+ * Sin permiso de entrada porque todo el personal pide algo. El estudiante no entra:
+ * sus trámites viven en su portal. Los conteos de los chips salen del servidor
+ * (`conteosSolicitudes`) con el mismo criterio de visibilidad que las listas.
  */
 export default async function PaginaSolicitudes({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ tipo?: string; estado?: string }>;
+  searchParams: Promise<{ tipo?: string; estado?: string; q?: string; clase?: string }>;
 }) {
-  const [{ locale }, { tipo: tipoPedido, estado: estadoPedido }] = await Promise.all([
+  const [{ locale }, { tipo: tipoPedido, estado: estadoPedido, q, clase }] = await Promise.all([
     params,
     searchParams,
   ]);
@@ -79,228 +84,162 @@ export default async function PaginaSolicitudes({
   }
 
   const revisa = revisaAlgo(usuario);
-  const estadoFiltro = revisa && esEstadoSolicitud(estadoPedido) ? estadoPedido : null;
   const tipos = tiposQuePuedeCrear(usuario);
   const conEstudiante = tipos.some((tipo) => REGLAS[tipo].estudiante !== "no");
 
-  const [t, porAtender, filtradasPorEstado, mias, resueltas, estudiantes, mensajes] =
-    await Promise.all([
-      getTranslations({ locale, namespace: "requests" }),
-      revisa ? solicitudesPorAtender(usuario) : Promise.resolve([]),
-      estadoFiltro ? solicitudesRevisionPorEstado(usuario, estadoFiltro) : Promise.resolve([]),
-      solicitudesDe(usuario),
-      revisa && !estadoFiltro ? resueltasPor(usuario) : Promise.resolve([]),
-      conEstudiante
-        ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
-        : Promise.resolve([]),
-      mensajesCliente(["requests"]),
-    ]);
+  // Quien revisa arranca en «Por atender»; quien no, en todo lo suyo (sin filtro de estado).
+  const vista = revisa
+    ? estadoPedido === MIAS || esEstadoSolicitud(estadoPedido)
+      ? estadoPedido
+      : POR_ATENDER
+    : esEstadoSolicitud(estadoPedido)
+      ? estadoPedido
+      : null;
+  const claseFiltro = (TIPOS_SOLICITUD as readonly string[]).includes(clase ?? "") ? clase : null;
+  const busqueda = normalizar((q ?? "").trim());
 
-  const parametroTipo = esTipoSolicitud(tipoPedido) ? `tipo=${tipoPedido}` : "";
-  const urlFiltroEstado = (estado?: string) => {
-    const partes = [parametroTipo, estado ? `estado=${estado}` : ""].filter(Boolean);
-    return partes.length > 0
-      ? `/administrativo/solicitudes?${partes.join("&")}`
-      : "/administrativo/solicitudes";
-  };
+  const [t, tl, porAtender, conteos, filasVista, propias, estudiantes, mensajes] = await Promise.all([
+    getTranslations({ locale, namespace: "requests" }),
+    getTranslations({ locale, namespace: "listas" }),
+    revisa ? solicitudesPorAtender(usuario) : Promise.resolve([] as FilaSolicitud[]),
+    conteosSolicitudes(usuario),
+    revisa && esEstadoSolicitud(vista)
+      ? solicitudesRevisionPorEstado(usuario, vista)
+      : Promise.resolve(null),
+    // Lo propio solo se pide si la vista lo necesita; los conteos ya no dependen de esto.
+    vista === MIAS || !revisa ? solicitudesDe(usuario) : Promise.resolve([] as FilaSolicitud[]),
+    conEstudiante
+      ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
+      : Promise.resolve([]),
+    mensajesCliente(["requests"]),
+  ]);
 
-  const conteoPorTipo = new Map<string, number>();
-  const vistasIds = new Set<string>();
-  for (const s of [...porAtender, ...mias, ...resueltas]) {
-    if (vistasIds.has(s.id)) continue;
-    vistasIds.add(s.id);
-    conteoPorTipo.set(s.tipo, (conteoPorTipo.get(s.tipo) ?? 0) + 1);
-  }
-  const tiposGrafica = [...conteoPorTipo.entries()].map(([tipo, valor]) => ({
-    nombre: t(`type.${tipo}` as never),
-    valor,
-  }));
+  const base: readonly FilaSolicitud[] =
+    vista === POR_ATENDER
+      ? porAtender
+      : vista === MIAS || !revisa
+        ? propias.filter((f) => (vista && vista !== MIAS ? f.estado === vista : true))
+        : (filasVista ?? []);
+
+  const filas = base.filter((f) => {
+    if (claseFiltro && f.tipo !== claseFiltro) return false;
+    if (!busqueda) return true;
+
+    return normalizar(
+      [`#${f.folio}`, f.titulo, f.solicitante, f.estudiante, t(`type.${f.tipo}` as never)]
+        .filter(Boolean)
+        .join(" "),
+    ).includes(busqueda);
+  });
+
+  const totalPropias = Object.values(conteos.propias).reduce((n, c) => n + c, 0);
+  const chips = revisa
+    ? [
+        { value: POR_ATENDER, label: tl("solicitudes.porAtender"), count: porAtender.length },
+        { value: MIAS, label: tl("solicitudes.mias"), count: totalPropias },
+        ...ESTADOS_SOLICITUD.filter((e) => (conteos.revision[e] ?? 0) > 0 || vista === e).map((e) => ({
+          value: e,
+          label: t(`status.${e}`),
+          count: conteos.revision[e] ?? 0,
+        })),
+      ]
+    : ESTADOS_SOLICITUD.filter((e) => (conteos.propias[e] ?? 0) > 0 || vista === e).map((e) => ({
+        value: e,
+        label: t(`status.${e}`),
+        count: conteos.propias[e] ?? 0,
+      }));
+
+  const crearPersonal = tipos.length > 0;
+  const tipoInicial = esTipoSolicitud(tipoPedido) ? tipoPedido : undefined;
+  const abrirInicial = Boolean(tipoInicial && (tipos as readonly string[]).includes(tipoInicial));
+  // Solo la copia del encabezado abre el panel por el atajo `?tipo=`: dos copias abiertas a la vez serían dos paneles.
+  const botonSolicitud = (conAtajo: boolean) =>
+    crearPersonal ? (
+      <CrearSolicitud
+        modo="solicitud"
+        tipos={tipos}
+        estudiantes={estudiantes}
+        minimoFecha={claveDia()}
+        tipoInicial={tipoInicial}
+        abrirInicial={conAtajo && abrirInicial}
+      />
+    ) : null;
+  // Todo rol puede pedir una compra; si no hay otra alta, esa es la acción primaria.
+  const botonCompra = (variante: "default" | "outline") => <CrearSolicitud modo="compra" variante={variante} />;
+
+  const hayBusqueda = Boolean(busqueda || claseFiltro);
+  const mostrarSolicitante = revisa && vista !== MIAS;
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina titulo={t("staffTitle")} />
-
-      <GraficasSolicitudes
-        resumen={{
-          porAtender: porAtender.length,
-          mias: mias.length,
-          resueltas: resueltas.length,
-        }}
-        tipos={tiposGrafica}
-        etiquetas={{
-          tituloBandeja: t("chartTrayTitle"),
-          tituloTipos: t("chartTypesTitle"),
-          porAtender: t("pendingTitle"),
-          mias: t("mineTitle"),
-          resueltas: t("resolvedTitle"),
-          vacio: t("chartEmpty"),
-        }}
-      />
-
+    <div className="animate-entrada space-y-6">
       <NextIntlClientProvider messages={mensajes}>
-        {revisa && (
-          <div className="space-y-4">
-            <div
-              role="navigation"
-              aria-label={t("filterByStatus")}
-              className="flex flex-wrap items-center gap-1.5"
-            >
-              <Link
-                href={urlFiltroEstado()}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-control px-3 py-1.5 text-xs font-semibold transition-colors",
-                  !estadoFiltro
-                    ? "bg-marca-500 text-white"
-                    : "bg-muted text-tinta-2 hover:text-tinta",
-                )}
-              >
-                <span>{t("filterActionable")}</span>
-                {porAtender.length > 0 && (
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[10px]",
-                      !estadoFiltro
-                        ? "bg-white/20 text-white"
-                        : "bg-tinta text-background",
-                    )}
-                  >
-                    {porAtender.length}
-                  </span>
-                )}
-              </Link>
-              {ESTADOS_SOLICITUD.map((est) => {
-                const activo = estadoFiltro === est;
-                return (
-                  <Link
-                    key={est}
-                    href={urlFiltroEstado(est)}
-                    className={cn(
-                      "rounded-control px-3 py-1.5 text-xs font-semibold transition-colors",
-                      activo
-                        ? "bg-marca-500 text-white"
-                        : "bg-muted text-tinta-2 hover:text-tinta",
-                    )}
-                  >
-                    {t(`status.${est}`)}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {estadoFiltro ? (
-              <Bloque
-                icono={Inbox}
-                titulo={t("filteredTitle", { estado: t(`status.${estadoFiltro}`) })}
-                vacio={t("filteredEmpty")}
-                solicitudes={filtradasPorEstado}
-                mostrarSolicitante
-                contar
-              />
-            ) : (
-              <Bloque
-                icono={Inbox}
-                titulo={t("pendingTitle")}
-                vacio={t("pendingEmpty")}
-                solicitudes={porAtender}
-                mostrarSolicitante
-                contar
-              />
-            )}
-          </div>
-        )}
-
-        {/* Todo rol puede pedir una compra a contabilidad con su cotización. */}
-        <Card className="rounded-card border-linea shadow-card">
-          <CardContent className="space-y-4 pt-5">
-            <CardTitle>
-              <ShoppingCart className="size-4" />
-              {t("purchase.title")}
-            </CardTitle>
-            <FormularioCompra />
-          </CardContent>
-        </Card>
-
-        {tipos.length > 0 && (
-          <Card className="rounded-card border-linea shadow-card">
-            <CardContent className="space-y-4 pt-5">
-              <CardTitle>
-                <Send className="size-4" />
-                {t("newTitle")}
-              </CardTitle>
-              <FormularioSolicitud
-                origen="personal"
-                tipos={tipos}
-                estudiantes={estudiantes}
-                minimoFecha={claveDia()}
-                tipoInicial={esTipoSolicitud(tipoPedido) ? tipoPedido : undefined}
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        <Bloque
-          icono={UserRound}
-          titulo={t("mineTitle")}
-          vacio={t("mineEmpty")}
-          solicitudes={mias}
+        <PageHeader
+          title={t("staffTitle")}
+          primaryAction={crearPersonal ? botonSolicitud(true) : botonCompra("default")}
+          secondaryActions={crearPersonal ? botonCompra("outline") : undefined}
         />
 
-        {revisa && resueltas.length > 0 && (
-          <Bloque
-            icono={History}
-            titulo={t("resolvedTitle")}
-            vacio=""
-            solicitudes={resueltas}
-            mostrarSolicitante
+        <Suspense fallback={null}>
+          <FilterBar
+            chips={chips}
+            totalChips={revisa ? undefined : totalPropias}
+            porDefecto={revisa ? POR_ATENDER : undefined}
+            placeholder={tl("solicitudes.buscar")}
+            selectores={[
+              {
+                param: "clase",
+                label: tl("solicitudes.tipoFiltro"),
+                todos: tl("solicitudes.todosTipos"),
+                opciones: TIPOS_SOLICITUD.map((x) => ({ value: x, label: t(`type.${x}` as never) })),
+              },
+            ]}
           />
+        </Suspense>
+
+        {filas.length === 0 ? (
+          hayBusqueda ? (
+            <EmptyState
+              icon={Inbox}
+              title={tl("solicitudes.sinResultados")}
+              action={
+                <Button asChild variant="outline">
+                  <Link href={revisa && vista !== POR_ATENDER ? `/administrativo/solicitudes?estado=${vista}` : "/administrativo/solicitudes"}>
+                    {tl("solicitudes.quitarBusqueda")}
+                  </Link>
+                </Button>
+              }
+            />
+          ) : vista === POR_ATENDER ? (
+            <EmptyState
+              icon={Inbox}
+              title={t("pendingEmpty")}
+              action={
+                <Button asChild variant="outline">
+                  <Link href="/administrativo/solicitudes?estado=mias">{tl("solicitudes.verMias")}</Link>
+                </Button>
+              }
+            />
+          ) : revisa && vista !== MIAS ? (
+            <EmptyState
+              icon={Inbox}
+              title={t("filteredEmpty")}
+              action={
+                <Button asChild variant="outline">
+                  <Link href="/administrativo/solicitudes">{tl("solicitudes.volverPorAtender")}</Link>
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon={Inbox}
+              title={t("mineEmpty")}
+              action={crearPersonal ? botonSolicitud(false) : botonCompra("default")}
+            />
+          )
+        ) : (
+          <ListaSolicitudes filas={filas} mostrarSolicitante={mostrarSolicitante} />
         )}
       </NextIntlClientProvider>
     </div>
-  );
-}
-
-function Bloque({
-  icono: Icono,
-  titulo,
-  vacio,
-  solicitudes,
-  mostrarSolicitante = false,
-  contar = false,
-}: {
-  icono: React.ComponentType<{ className?: string }>;
-  titulo: string;
-  vacio: string;
-  solicitudes: readonly FilaSolicitud[];
-  mostrarSolicitante?: boolean;
-  contar?: boolean;
-}) {
-  return (
-    <section className="space-y-3">
-      <h2 className="flex items-center gap-2 text-sm font-bold">
-        <Icono className="size-4 text-marca-600" />
-        {titulo}
-        {contar && solicitudes.length > 0 && (
-          <Badge className="bg-tinta text-[10px] text-background">
-            {solicitudes.length}
-          </Badge>
-        )}
-      </h2>
-
-      {solicitudes.length === 0 ? (
-        <p className="text-muted-foreground rounded-card border border-dashed border-linea px-4 py-6 text-center text-sm">
-          {vacio}
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {solicitudes.map((solicitud) => (
-            <TarjetaSolicitud
-              key={solicitud.id}
-              solicitud={solicitud}
-              mostrarSolicitante={mostrarSolicitante}
-            />
-          ))}
-        </ul>
-      )}
-    </section>
   );
 }

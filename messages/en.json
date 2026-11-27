@@ -978,8 +978,16 @@
     "errGeneric": "Could not complete. Try again."
   },
   "recordLiceo": {
-    "remove": {"title": "Remove the high school record", "confirm": "The grades, the photos and both averages of this student will be deleted. This cannot be undone.", "yes": "Yes, remove the record", "no": "Cancel"},
-    "minimum": {"met": "Meets the minimum of {min}", "below": "Below the minimum of {min}"},
+    "remove": {
+      "title": "Remove the high school record",
+      "confirm": "The grades, the photos and both averages of this student will be deleted. This cannot be undone.",
+      "yes": "Yes, remove the record",
+      "no": "Cancel"
+    },
+    "minimum": {
+      "met": "Meets the minimum of {min}",
+      "below": "Below the minimum of {min}"
+    },
     "title": "High school record",
     "intro": "Final grades from 1st to 6th grade, with the school of each year. Scale is 0 to 100 and it is not the university index.",
     "empty": "There is no high school record yet. Take a photo of the record and the system reads it, or type it in.",
@@ -1184,6 +1192,180 @@
     "propuesta": "Proposed",
     "ejecutada": "Executed",
     "fallida": "Failed"
+  },
+  "listas": {
+    "asientos": {
+      "buscar": "Search by description or number",
+      "abrir": "View entry {numero}",
+      "acciones": "Actions",
+      "verDetalle": "View full detail",
+      "lineasCargando": "Loading lines…",
+      "lineasError": "The lines could not be loaded. Close the panel and open it again.",
+      "quitarFiltros": "Clear filters"
+    },
+    "recibos": {
+      "buscar": "Search by description or reference",
+      "abrir": "View receipt {numero}",
+      "acciones": "Actions",
+      "verDetalle": "View full detail",
+      "quitarFiltros": "Clear filters"
+    },
+    "inventario": {
+      "cuenta": "{count, plural, one {# asset} other {# assets}}",
+      "todasCategorias": "All categories",
+      "todasUbicaciones": "All locations",
+      "vacio": "No assets registered yet",
+      "vacioAyuda": "Register the first one to start tracking the foundation's assets.",
+      "vacioSoloLectura": "Ask administration to register the assets.",
+      "sinResultados": "No assets match the filters",
+      "quitarFiltros": "Clear filters",
+      "abrir": "View summary",
+      "resumen": "Asset summary",
+      "serie": "Serial number",
+      "marcaModelo": "Brand and model",
+      "notas": "Notes",
+      "verDetalle": "View full details",
+      "editar": "Edit",
+      "eliminando": "Deleting…"
+    },
+    "universidades": {
+      "cuenta": "{count, plural, one {# university} other {# universities}}",
+      "todosRegimenes": "All regimes",
+      "sinResultados": "No universities match the filters",
+      "quitarFiltros": "Clear filters",
+      "vacioAyuda": "Create the first one to set up its careers and study plans.",
+      "vacioSoloLectura": "Ask administration to create the universities.",
+      "abrir": "View summary",
+      "resumen": "University summary",
+      "estudiantes": "Students",
+      "verDetalle": "View full details",
+      "nuevaTitulo": "New university"
+    },
+    "patrocinadores": {
+      "todosPaises": "All countries",
+      "aporte": "Monthly contribution",
+      "acciones": "Actions",
+      "vistaRapida": "Quick view",
+      "verDetalle": "View sponsor",
+      "verDetalleCompleto": "View full detail",
+      "idiomaCartas": "Letters language"
+    },
+    "becas": {
+      "irExpedientes": "Go to records",
+      "becado": "Scholar",
+      "universidad": "University",
+      "monto": "Monthly amount",
+      "estado": "Status",
+      "acciones": "Actions",
+      "vistaRapida": "Quick view",
+      "verExpediente": "View record",
+      "programa": "Program",
+      "desde": "Since",
+      "historial": "History",
+      "todasUniversidades": "All universities",
+      "todosPaises": "All countries"
+    },
+    "proveedores": {
+      "activos": "Active",
+      "inactivos": "Inactive",
+      "conSaldo": "With balance",
+      "tipo": "Supplier type",
+      "todosTipos": "All types",
+      "vacioSoloLectura": "Ask Accounting to register the first one.",
+      "col": {
+        "proveedor": "Supplier",
+        "estado": "Status",
+        "credito": "Credit",
+        "facturas": "Invoices",
+        "acciones": "Actions"
+      },
+      "verFicha": "View profile",
+      "vistaRapida": "Quick view",
+      "verDetalle": "View full details",
+      "registrarFactura": "Register invoice",
+      "panel": {
+        "comercial": "Trade name",
+        "identificacion": "Tax ID or national ID",
+        "tipo": "Type",
+        "credito": "Credit",
+        "facturas": "Invoices"
+      }
+    },
+    "cxp": {
+      "registrarFactura": "Register invoice",
+      "buscar": "Supplier, description or request",
+      "proveedor": "Supplier",
+      "todosProveedores": "All suppliers",
+      "cualquierFecha": "Any date",
+      "vence": {
+        "semana": "Next 7 days",
+        "mes": "This month",
+        "mes_siguiente": "Next month"
+      },
+      "sinResultados": "No payable matches the filters",
+      "vacioSoloLectura": "Payables appear when Accounting approves an invoice or a request.",
+      "venceEn": "{n, plural, one {Due in # day} other {Due in # days}}",
+      "col": {
+        "acciones": "Actions"
+      },
+      "verCuenta": "View payable",
+      "vistaRapida": "Quick view",
+      "verDetalle": "View full details",
+      "panel": {
+        "origen": "Source",
+        "emision": "Issued",
+        "pagoPrevisto": "Planned payment"
+      }
+    },
+    "solicitudes": {
+      "crear": "Create request",
+      "pedirCompra": "Request a purchase",
+      "porAtender": "To handle",
+      "mias": "Mine",
+      "buscar": "Search by title, number or person",
+      "tipoFiltro": "Request type",
+      "todosTipos": "All types",
+      "column": {
+        "request": "Request",
+        "status": "Status",
+        "requester": "Requester",
+        "amount": "Amount",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "view": "View request",
+      "sinResultados": "No request matches the search.",
+      "quitarBusqueda": "Clear the search",
+      "verMias": "View my requests",
+      "volverPorAtender": "Back to «To handle»",
+      "confirm": {
+        "tomar": "Take the «{tipo}» request from {persona}?",
+        "aprobar": "Approve the «{tipo}» request from {persona}?",
+        "aprobar_direccion": "Give the direction sign-off to the «{tipo}» request from {persona}?",
+        "rechazar": "Reject the «{tipo}» request from {persona}?",
+        "completar": "Mark the «{tipo}» request from {persona} as completed?"
+      }
+    },
+    "rendiciones": {
+      "subir": "Upload receipt",
+      "crearSolicitudGasto": "Create expense request",
+      "buscar": "Search by vendor, code or NCF",
+      "programa": "Program",
+      "todosProgramas": "All programs",
+      "sinResultados": "No expense report matches the filters.",
+      "quitarFiltros": "Clear filters",
+      "column": {
+        "voucher": "Receipt",
+        "status": "Status",
+        "employee": "Employee",
+        "amount": "Amount",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "view": "View expense report",
+      "confirmReview": "Validate the receipt from {proveedor} submitted by {empleado} ({monto})?",
+      "confirmPost": "Post the receipt from {proveedor} by {empleado} for {monto}?"
+    }
   },
   "records": {
     "eyebrow": "Records",

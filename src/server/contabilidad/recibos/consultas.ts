@@ -178,6 +178,40 @@ export async function totalesRecibos(filtro: FiltroRecibos): Promise<TotalRecibo
   );
 }
 
+export type ConteoRecibos = {
+  total: number;
+  porEstado: Partial<Record<EstadoRecibo, number>>;
+  porTipo: Partial<Record<TipoRecibo, number>>;
+};
+
+/**
+ * Conteos de los chips (estado y tipo). Se agrupa por (estado, tipo) sobre el
+ * filtro SIN esos dos y se cruzan aquí, para que el número de cada chip
+ * respete al otro chip puesto. Mismo WHERE parametrizado que la lista.
+ */
+export async function conteosRecibos(filtro: FiltroRecibos): Promise<ConteoRecibos> {
+  const filas = await consultar<{ estado: EstadoRecibo; tipo: TipoRecibo; n: number }>(
+    `SELECT r.estado, r.tipo, count(*)::int AS n
+       ${DESDE}
+      WHERE ${CONDICION}
+      GROUP BY r.estado, r.tipo`,
+    parametros({ ...filtro, estado: null, tipo: null }),
+  );
+  const resultado: ConteoRecibos = { total: 0, porEstado: {}, porTipo: {} };
+  for (const f of filas) {
+    if (!filtro.tipo || filtro.tipo === f.tipo) {
+      resultado.porEstado[f.estado] = (resultado.porEstado[f.estado] ?? 0) + f.n;
+    }
+    if (!filtro.estado || filtro.estado === f.estado) {
+      resultado.porTipo[f.tipo] = (resultado.porTipo[f.tipo] ?? 0) + f.n;
+    }
+    if ((!filtro.tipo || filtro.tipo === f.tipo) && (!filtro.estado || filtro.estado === f.estado)) {
+      resultado.total += f.n;
+    }
+  }
+  return resultado;
+}
+
 export type DetalleRecibo = FilaRecibo & {
   serie: string;
   cuenta_id: string;

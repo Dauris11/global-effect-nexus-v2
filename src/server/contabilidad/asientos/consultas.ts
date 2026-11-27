@@ -81,6 +81,8 @@ export type FilaAsiento = {
   total_debe: string;
   estado: EstadoAsiento;
   procesado: boolean;
+  /** Para avisar en «Revertir» sin tener que abrir la ficha. */
+  periodo_cerrado: boolean;
 };
 
 /** Hasta 200 asientos del filtro, los más recientes; trae uno de más para saber si hay más. */
@@ -89,11 +91,12 @@ export async function asientos(filtro: FiltroAsientos): Promise<FilaAsiento[]> {
     `SELECT s.* FROM (
        SELECT a.id, a.numero::text AS numero, a.fecha::text AS fecha, a.concepto, a.tipo,
               a.origen_tabla, a.origen_id::text AS origen_id, t.total::text AS total_debe,
-              a.procesado_en IS NOT NULL AS procesado,
+              a.procesado_en IS NOT NULL AS procesado, p.estado = 'cerrado' AS periodo_cerrado,
               CASE WHEN o.id IS NOT NULL THEN 'reverso'
                    WHEN a.anulado OR r.id IS NOT NULL THEN 'anulado'
                    ELSE 'vigente' END AS estado
          FROM contabilidad.asiento a
+         JOIN contabilidad.periodo_contable p ON p.id = a.periodo_id
          CROSS JOIN LATERAL (
            SELECT coalesce(sum(l.debe), 0) AS total
              FROM contabilidad.asiento_linea l WHERE l.asiento_id = a.id
@@ -126,6 +129,67 @@ export async function asientos(filtro: FiltroAsientos): Promise<FilaAsiento[]> {
      LIMIT $5`,
     [filtro.periodo, filtro.tipo, filtro.texto, filtro.anulados, TOPE + 1, filtro.proceso],
   );
+}
+
+export type ConteoAsientos = {
+  total: number;
+  porTipo: Partial<Record<TipoAsiento, number>>;
+  porProceso: Record<FiltroProceso, number>;
+};
+
+/**
+ * Conteos de los chips del diario. Se agrupa por (tipo, procesado) sobre el
+ * filtro SIN tipo ni proceso y los dos chips se cruzan aquí: el número de un
+ * tipo respeta el chip de proceso puesto, y al revés, como pide la lista.
+ * Usa el mismo estado derivado que `asientos` (no hay conteo sin él: el
+ * selector «Revertidos» depende de los LATERAL).
+ */
+export async function conteosAsientos(filtro: FiltroAsientos): Promise<ConteoAsientos> {
+  const filas = await consultar<{ tipo: TipoAsiento; procesado: boolean; n: number }>(
+    `SELECT s.tipo, s.procesado, count(*)::int AS n FROM (
+       SELECT a.tipo, a.procesado_en IS NOT NULL AS procesado,
+              CASE WHEN o.id IS NOT NULL THEN 'reverso'
+                   WHEN a.anulado OR r.id IS NOT NULL THEN 'anulado'
+                   ELSE 'vigente' END AS estado
+         FROM contabilidad.asiento a
+         LEFT JOIN LATERAL (
+           SELECT x.id FROM contabilidad.asiento x
+            WHERE x.id <> a.id AND x.tipo = 'ajuste'
+              AND ((x.origen_tabla = 'contabilidad.asiento' AND x.origen_id = a.id)
+                OR (a.tipo = 'automatico' AND x.origen_tabla = a.origen_tabla
+                    AND x.origen_id = a.origen_id AND x.numero > a.numero))
+            ORDER BY x.numero LIMIT 1
+         ) r ON true
+         LEFT JOIN LATERAL (
+           SELECT x.id FROM contabilidad.asiento x
+            WHERE a.tipo = 'ajuste' AND x.id <> a.id
+              AND ((a.origen_tabla = 'contabilidad.asiento' AND x.id = a.origen_id)
+                OR (x.tipo = 'automatico' AND x.origen_tabla = a.origen_tabla
+                    AND x.origen_id = a.origen_id AND x.numero < a.numero))
+            ORDER BY x.numero DESC LIMIT 1
+         ) o ON true
+        WHERE ($1::text IS NULL OR to_char(a.fecha, 'YYYY-MM') = $1)
+          AND ($2::text IS NULL OR a.concepto ILIKE '%' || $2 || '%' OR a.numero::text = $2)
+     ) s
+     WHERE ($3::text IS NULL
+            OR ($3 = 'ocultar' AND s.estado = 'vigente')
+            OR ($3 = 'solo' AND s.estado <> 'vigente'))
+     GROUP BY s.tipo, s.procesado`,
+    [filtro.periodo, filtro.texto, filtro.anulados],
+  );
+
+  const resultado: ConteoAsientos = { total: 0, porTipo: {}, porProceso: { pendiente: 0, procesado: 0 } };
+  for (const f of filas) {
+    const clave: FiltroProceso = f.procesado ? "procesado" : "pendiente";
+    if (!filtro.proceso || filtro.proceso === clave) {
+      resultado.porTipo[f.tipo] = (resultado.porTipo[f.tipo] ?? 0) + f.n;
+    }
+    if (!filtro.tipo || filtro.tipo === f.tipo) resultado.porProceso[clave] += f.n;
+    if ((!filtro.proceso || filtro.proceso === clave) && (!filtro.tipo || filtro.tipo === f.tipo)) {
+      resultado.total += f.n;
+    }
+  }
+  return resultado;
 }
 
 export type DetalleAsiento = FilaAsiento & {

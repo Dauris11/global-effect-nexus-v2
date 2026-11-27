@@ -978,8 +978,16 @@
     "errGeneric": "No se pudo completar. Inténtalo otra vez."
   },
   "recordLiceo": {
-    "remove": {"title": "Quitar el récord de secundaria", "confirm": "Se borrarán las notas, las fotos y los dos promedios de este estudiante. No se puede deshacer.", "yes": "Sí, quitar el récord", "no": "Cancelar"},
-    "minimum": {"met": "Cumple el mínimo de {min}", "below": "Está por debajo del mínimo de {min}"},
+    "remove": {
+      "title": "Quitar el récord de secundaria",
+      "confirm": "Se borrarán las notas, las fotos y los dos promedios de este estudiante. No se puede deshacer.",
+      "yes": "Sí, quitar el récord",
+      "no": "Cancelar"
+    },
+    "minimum": {
+      "met": "Cumple el mínimo de {min}",
+      "below": "Está por debajo del mínimo de {min}"
+    },
     "title": "Récord de secundaria",
     "intro": "Notas finales de 1.º a 6.º grado, con el liceo de cada año. Va de 0 a 100 y no es el índice universitario.",
     "empty": "Todavía no hay récord de secundaria. Toma una foto del récord y el sistema lo lee, o escríbelo a mano.",
@@ -1184,6 +1192,180 @@
     "propuesta": "Propuesta",
     "ejecutada": "Ejecutada",
     "fallida": "Fallida"
+  },
+  "listas": {
+    "asientos": {
+      "buscar": "Buscar por concepto o número",
+      "abrir": "Ver asiento {numero}",
+      "acciones": "Acciones",
+      "verDetalle": "Ver detalle completo",
+      "lineasCargando": "Cargando líneas…",
+      "lineasError": "No se pudieron cargar las líneas. Cierra el panel y vuelve a abrirlo.",
+      "quitarFiltros": "Quitar filtros"
+    },
+    "recibos": {
+      "buscar": "Buscar por concepto o referencia",
+      "abrir": "Ver recibo {numero}",
+      "acciones": "Acciones",
+      "verDetalle": "Ver detalle completo",
+      "quitarFiltros": "Quitar filtros"
+    },
+    "inventario": {
+      "cuenta": "{count, plural, one {# activo} other {# activos}}",
+      "todasCategorias": "Todas las categorías",
+      "todasUbicaciones": "Todas las ubicaciones",
+      "vacio": "Todavía no hay activos registrados",
+      "vacioAyuda": "Registra el primero para empezar a llevar el control del patrimonio.",
+      "vacioSoloLectura": "Pide a administración que registre los activos.",
+      "sinResultados": "Ningún activo coincide con los filtros",
+      "quitarFiltros": "Quitar filtros",
+      "abrir": "Ver resumen",
+      "resumen": "Resumen del activo",
+      "serie": "N.º de serie",
+      "marcaModelo": "Marca y modelo",
+      "notas": "Notas",
+      "verDetalle": "Ver detalle completo",
+      "editar": "Editar",
+      "eliminando": "Eliminando…"
+    },
+    "universidades": {
+      "cuenta": "{count, plural, one {# universidad} other {# universidades}}",
+      "todosRegimenes": "Todos los regímenes",
+      "sinResultados": "Ninguna universidad coincide con los filtros",
+      "quitarFiltros": "Quitar filtros",
+      "vacioAyuda": "Crea la primera para armar sus carreras y planes de estudios.",
+      "vacioSoloLectura": "Pide a administración que cree las universidades.",
+      "abrir": "Ver resumen",
+      "resumen": "Resumen de la universidad",
+      "estudiantes": "Estudiantes",
+      "verDetalle": "Ver detalle completo",
+      "nuevaTitulo": "Nueva universidad"
+    },
+    "patrocinadores": {
+      "todosPaises": "Todos los países",
+      "aporte": "Aporte mensual",
+      "acciones": "Acciones",
+      "vistaRapida": "Vista rápida",
+      "verDetalle": "Ver patrocinador",
+      "verDetalleCompleto": "Ver detalle completo",
+      "idiomaCartas": "Idioma de las cartas"
+    },
+    "becas": {
+      "irExpedientes": "Ir a expedientes",
+      "becado": "Becado",
+      "universidad": "Universidad",
+      "monto": "Monto mensual",
+      "estado": "Estado",
+      "acciones": "Acciones",
+      "vistaRapida": "Vista rápida",
+      "verExpediente": "Ver expediente",
+      "programa": "Carrera",
+      "desde": "Desde",
+      "historial": "Historial",
+      "todasUniversidades": "Todas las universidades",
+      "todosPaises": "Todos los países"
+    },
+    "proveedores": {
+      "activos": "Activos",
+      "inactivos": "Inactivos",
+      "conSaldo": "Con saldo",
+      "tipo": "Tipo de proveedor",
+      "todosTipos": "Todos los tipos",
+      "vacioSoloLectura": "Pide a Contabilidad que registre el primero.",
+      "col": {
+        "proveedor": "Proveedor",
+        "estado": "Estado",
+        "credito": "Crédito",
+        "facturas": "Facturas",
+        "acciones": "Acciones"
+      },
+      "verFicha": "Ver ficha",
+      "vistaRapida": "Vista rápida",
+      "verDetalle": "Ver detalle completo",
+      "registrarFactura": "Registrar factura",
+      "panel": {
+        "comercial": "Nombre comercial",
+        "identificacion": "RNC o cédula",
+        "tipo": "Tipo",
+        "credito": "Crédito",
+        "facturas": "Facturas"
+      }
+    },
+    "cxp": {
+      "registrarFactura": "Registrar factura",
+      "buscar": "Proveedor, concepto o solicitud",
+      "proveedor": "Proveedor",
+      "todosProveedores": "Todos los proveedores",
+      "cualquierFecha": "Cualquier fecha",
+      "vence": {
+        "semana": "Próximos 7 días",
+        "mes": "Este mes",
+        "mes_siguiente": "Mes siguiente"
+      },
+      "sinResultados": "Ninguna cuenta coincide con los filtros",
+      "vacioSoloLectura": "Las cuentas aparecen cuando Contabilidad aprueba una factura o una solicitud.",
+      "venceEn": "{n, plural, one {Vence en # día} other {Vence en # días}}",
+      "col": {
+        "acciones": "Acciones"
+      },
+      "verCuenta": "Ver cuenta",
+      "vistaRapida": "Vista rápida",
+      "verDetalle": "Ver detalle completo",
+      "panel": {
+        "origen": "Origen",
+        "emision": "Emisión",
+        "pagoPrevisto": "Pago previsto"
+      }
+    },
+    "solicitudes": {
+      "crear": "Crear solicitud",
+      "pedirCompra": "Pedir compra",
+      "porAtender": "Por atender",
+      "mias": "Mías",
+      "buscar": "Buscar por título, folio o persona",
+      "tipoFiltro": "Tipo de solicitud",
+      "todosTipos": "Todos los tipos",
+      "column": {
+        "request": "Solicitud",
+        "status": "Estado",
+        "requester": "Solicitante",
+        "amount": "Monto",
+        "date": "Fecha",
+        "actions": "Acciones"
+      },
+      "view": "Ver solicitud",
+      "sinResultados": "Ninguna solicitud coincide con la búsqueda.",
+      "quitarBusqueda": "Quitar la búsqueda",
+      "verMias": "Ver mis solicitudes",
+      "volverPorAtender": "Volver a «Por atender»",
+      "confirm": {
+        "tomar": "¿Tomar la solicitud «{tipo}» de {persona}?",
+        "aprobar": "¿Aprobar la solicitud «{tipo}» de {persona}?",
+        "aprobar_direccion": "¿Dar el visto bueno de dirección a la solicitud «{tipo}» de {persona}?",
+        "rechazar": "¿Rechazar la solicitud «{tipo}» de {persona}?",
+        "completar": "¿Marcar como completada la solicitud «{tipo}» de {persona}?"
+      }
+    },
+    "rendiciones": {
+      "subir": "Subir comprobante",
+      "crearSolicitudGasto": "Crear solicitud de gasto",
+      "buscar": "Buscar por proveedor, código o NCF",
+      "programa": "Programa",
+      "todosProgramas": "Todos los programas",
+      "sinResultados": "Ninguna rendición coincide con los filtros.",
+      "quitarFiltros": "Quitar filtros",
+      "column": {
+        "voucher": "Comprobante",
+        "status": "Estado",
+        "employee": "Empleado",
+        "amount": "Monto",
+        "date": "Fecha",
+        "actions": "Acciones"
+      },
+      "view": "Ver rendición",
+      "confirmReview": "¿Validar el comprobante de {proveedor} presentado por {empleado} ({monto})?",
+      "confirmPost": "¿Contabilizar el comprobante de {proveedor} de {empleado} por {monto}?"
+    }
   },
   "records": {
     "eyebrow": "Expedientes",

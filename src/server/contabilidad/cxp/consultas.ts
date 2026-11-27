@@ -1,4 +1,5 @@
 import { consultar, consultarUna } from "@/lib/db";
+import { DIAS_POR_VENCER } from "@/lib/contabilidad/cxp";
 import { esUuid, type Moneda } from "@/lib/contabilidad/formato";
 
 /**
@@ -51,21 +52,98 @@ const SELECT_CXP = `
     LEFT JOIN contabilidad.cuenta_bancaria cb ON cb.id = x.cuenta_salida_id
     LEFT JOIN proyecto pr ON pr.id = x.proyecto_id`;
 
+export const VENCIMIENTOS_CXP = ["semana", "mes", "mes_siguiente"] as const;
+export type VencimientoCxp = (typeof VENCIMIENTOS_CXP)[number];
+
+/** Lo que la lista acepta en `estado`: los de la base más las señales calculadas contra la fecha de hoy. */
+export type FiltroEstadoCxp = EstadoCxp | "abiertas" | "vencida" | "por_vencer";
+export const FILTROS_ESTADO_CXP = ["abiertas", "vencida", "por_vencer", ...ESTADOS_CXP] as const;
+
+export type FiltroCxp = {
+  texto?: string | null;
+  proveedorId?: string | null;
+  vencimiento?: VencimientoCxp | null;
+};
+
+const HOY_RD = `(now() AT TIME ZONE 'America/Santo_Domingo')::date`;
+const ABIERTA = `x.estado NOT IN ('pagada', 'anulada')`;
+
 /**
- * `abiertas` = todo lo que todavía se debe. Por defecto la pantalla
- * enseña eso: lo pagado y lo anulado se consultan a propósito.
+ * Búsqueda, proveedor y rango de vencimiento. Los conteos de los chips los comparten (sin
+ * el chip de estado) para que cada número diga cuántas filas darían al pulsarlo.
+ * Parámetros: $1 texto, $2 proveedor, $3 vencimiento.
+ */
+const FILTROS_COMUNES = `
+  ($1::text IS NULL
+     OR coalesce(p.nombre, x.beneficiario, '') ILIKE '%' || $1 || '%'
+     OR x.concepto ILIKE '%' || $1 || '%'
+     OR s.folio::text ILIKE '%' || $1 || '%')
+  AND ($2::uuid IS NULL OR x.proveedor_id = $2::uuid)
+  AND ($3::text IS NULL
+     OR ($3 = 'semana' AND x.fecha_vencimiento BETWEEN ${HOY_RD} AND ${HOY_RD} + ${DIAS_POR_VENCER})
+     OR ($3 = 'mes' AND date_trunc('month', x.fecha_vencimiento::timestamp) = date_trunc('month', ${HOY_RD}::timestamp))
+     OR ($3 = 'mes_siguiente' AND date_trunc('month', x.fecha_vencimiento::timestamp)
+                                = date_trunc('month', ${HOY_RD}::timestamp) + interval '1 month'))`;
+
+const parametrosComunes = (f: FiltroCxp) => [f.texto || null, f.proveedorId || null, f.vencimiento ?? null];
+
+/**
+ * `abiertas` = todo lo que todavía se debe; `vencida` y `por_vencer` se calculan en la base
+ * con la fecha de la Fundación. Sin estado, todo (lo abierto primero).
  */
 export async function cuentasPorPagar(
-  estado: EstadoCxp | "abiertas" | null,
+  estado: FiltroEstadoCxp | null,
+  filtro: FiltroCxp = {},
 ): Promise<FilaCxp[]> {
   return consultar<FilaCxp>(
     `${SELECT_CXP}
-      WHERE ($1::text IS NULL
-             OR ($1 = 'abiertas' AND x.estado NOT IN ('pagada', 'anulada'))
-             OR x.estado = $1)
+      WHERE ($4::text IS NULL
+             OR ($4 = 'abiertas' AND ${ABIERTA})
+             OR ($4 = 'vencida' AND ${ABIERTA} AND x.fecha_vencimiento < ${HOY_RD})
+             OR ($4 = 'por_vencer' AND ${ABIERTA}
+                 AND x.fecha_vencimiento BETWEEN ${HOY_RD} AND ${HOY_RD} + ${DIAS_POR_VENCER})
+             OR x.estado = $4)
+        AND ${FILTROS_COMUNES}
       ORDER BY (x.estado IN ('pagada', 'anulada')), x.fecha_vencimiento, x.creado_en
       LIMIT 300`,
-    [estado],
+    [...parametrosComunes(filtro), estado],
+  );
+}
+
+export type ConteosCxp = Record<(typeof FILTROS_ESTADO_CXP)[number] | "total", number>;
+
+/** Números de los chips: cada uno cuenta lo que daría al pulsarlo, con la búsqueda y los demás filtros puestos. */
+export async function conteosCxp(filtro: FiltroCxp = {}): Promise<ConteosCxp> {
+  const fila = await consultarUna<ConteosCxp>(
+    `SELECT count(*)::int AS total,
+            (count(*) FILTER (WHERE ${ABIERTA}))::int AS abiertas,
+            (count(*) FILTER (WHERE ${ABIERTA} AND x.fecha_vencimiento < ${HOY_RD}))::int AS vencida,
+            (count(*) FILTER (WHERE ${ABIERTA}
+               AND x.fecha_vencimiento BETWEEN ${HOY_RD} AND ${HOY_RD} + ${DIAS_POR_VENCER}))::int AS por_vencer,
+            (count(*) FILTER (WHERE x.estado = 'pendiente'))::int AS pendiente,
+            (count(*) FILTER (WHERE x.estado = 'programada'))::int AS programada,
+            (count(*) FILTER (WHERE x.estado = 'pagada_parcial'))::int AS pagada_parcial,
+            (count(*) FILTER (WHERE x.estado = 'pagada'))::int AS pagada,
+            (count(*) FILTER (WHERE x.estado = 'anulada'))::int AS anulada
+       FROM contabilidad.cuenta_por_pagar x
+       LEFT JOIN contabilidad.proveedor p ON p.id = x.proveedor_id
+       LEFT JOIN solicitud s ON s.id = x.solicitud_id
+      WHERE ${FILTROS_COMUNES}`,
+    parametrosComunes(filtro),
+  );
+
+  return (
+    fila ?? { total: 0, abiertas: 0, vencida: 0, por_vencer: 0, pendiente: 0, programada: 0, pagada_parcial: 0, pagada: 0, anulada: 0 }
+  );
+}
+
+/** Proveedores que tienen alguna cuenta por pagar: las opciones del selector «Proveedor». */
+export async function proveedoresConCxp(): Promise<{ id: string; nombre: string }[]> {
+  return consultar<{ id: string; nombre: string }>(
+    `SELECT DISTINCT p.id, p.nombre
+       FROM contabilidad.cuenta_por_pagar x
+       JOIN contabilidad.proveedor p ON p.id = x.proveedor_id
+      ORDER BY p.nombre`,
   );
 }
 

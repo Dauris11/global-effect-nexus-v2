@@ -3,76 +3,108 @@
 import { useState, useTransition } from "react";
 import {
   AlertCircle,
-  Building2,
   Calendar,
-  CheckCircle2,
-  Clock,
+  Check,
   ExternalLink,
-  Eye,
   FileCheck,
-  FileText,
-  FileX,
   FolderOpen,
   GraduationCap,
-  Loader2,
   ScrollText,
-  Receipt,
   User,
+  X,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
-import { Badge } from "@/components/ui/badge";
+import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
+import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { formatearMonto } from "@/lib/contabilidad/formato";
-import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO } from "@/lib/paleta";
+import { fechaCorta } from "@/lib/fechas";
 import type { EstadoRendicion, RendicionGastoItem } from "@/lib/torre-control";
-import { cn } from "@/lib/utils";
 import { revisarRendicionGastoAction } from "@/server/colaborador/acciones";
 
 interface ListaRendicionesProps {
-  rendiciones: RendicionGastoItem[];
+  rendiciones: readonly RendicionGastoItem[];
   puedeRevisar: boolean;
 }
 
-export function ListaRendiciones({
-  rendiciones,
-  puedeRevisar,
-}: ListaRendicionesProps) {
-  const t = useTranslations("rendicion");
-  const router = useRouter();
+/** Qué diálogo está abierto sobre qué rendición: validar (aprobar o rechazar) o contabilizar. */
+type Revision = { id: string; modo: "revisar" | "contabilizar" };
 
-  const [filtro, setFiltro] = useState<string>("todas");
-  const [rendicionSeleccionada, setRendicionSeleccionada] =
-    useState<RendicionGastoItem | null>(null);
-  const [modalRevisarAbierto, setModalRevisarAbierto] = useState(false);
+const monto = (r: RendicionGastoItem) =>
+  formatearMonto(r.monto_total, r.moneda === "USD" ? "USD" : "DOP");
+
+/**
+ * Bandeja de rendiciones (patrón Lista, docs/ux-rules.md): tabla densa con el estado
+ * en una pastilla, clic en la fila para abrir el panel con el detalle, y las acciones
+ * de quien revisa en la propia fila. Los filtros y los conteos viven en la página (URL
+ * y servidor); aquí solo se pinta lo que llega.
+ *
+ * Hay UN panel y UN diálogo para toda la lista; el estado guarda ids y se busca en
+ * `rendiciones`, así que tras `router.refresh()` lo que se ve es el dato nuevo.
+ */
+export function ListaRendiciones({ rendiciones, puedeRevisar }: ListaRendicionesProps) {
+  const t = useTranslations("rendicion");
+  const tl = useTranslations("listas");
+  const tc = useTranslations("appUi");
+  const router = useRouter();
+  const locale = useLocale() as Locale;
+
+  const [abiertaId, setAbiertaId] = useState<string | null>(null);
+  const [revision, setRevision] = useState<Revision | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState("");
   const [isPending, startTransition] = useTransition();
-  // Antes el resultado se ignoraba: un rechazo sin motivo o un fallo dejaban
-  // el botón "sin hacer nada". Ahora el porqué se enseña.
+  // El resultado se enseña: un rechazo sin motivo o un fallo no pueden dejar el botón «sin hacer nada».
   const [errorRevision, setErrorRevision] = useState<string | null>(null);
 
-  const filtradas = rendiciones.filter((item) => {
-    if (filtro === "todas") return true;
-    return item.estado === filtro;
-  });
+  const l = (clave: string, valores?: Record<string, string | number>) =>
+    tl(`rendiciones.${clave}` as never, valores as never);
+  const etiquetaEstado = (estado: EstadoRendicion) => {
+    const clave = {
+      enviada: "stateEnviada",
+      en_revision: "stateEnRevision",
+      aprobada: "stateAprobada",
+      rechazada: "stateRechazada",
+      contabilizada: "stateContabilizada",
+    }[estado];
 
-  const ejecutarRevision = (
-    estado: EstadoRendicion,
-    rendicion: RendicionGastoItem | null = rendicionSeleccionada,
-  ) => {
-    if (!rendicion) return;
+    return t(clave as never);
+  };
+
+  const abierta = rendiciones.find((r) => r.id === abiertaId) ?? null;
+  const enRevision = revision ? (rendiciones.find((r) => r.id === revision.id) ?? null) : null;
+
+  const puedeValidar = (r: RendicionGastoItem) =>
+    puedeRevisar && (r.estado === "enviada" || r.estado === "en_revision");
+  const puedeContabilizar = (r: RendicionGastoItem) => puedeRevisar && r.estado === "aprobada";
+
+  const abrirRevision = (r: RendicionGastoItem, modo: Revision["modo"]) => {
+    setErrorRevision(null);
+    setMotivoRechazo("");
+    setAbiertaId(null);
+    setRevision({ id: r.id, modo });
+  };
+
+  const cerrarRevision = () => {
+    setRevision(null);
+    setMotivoRechazo("");
+    setErrorRevision(null);
+  };
+
+  const ejecutarRevision = (estado: EstadoRendicion, rendicion: RendicionGastoItem) => {
     setErrorRevision(null);
 
     if (estado === "rechazada" && !motivoRechazo.trim()) {
@@ -90,9 +122,7 @@ export function ListaRendiciones({
     startTransition(async () => {
       const res = await revisarRendicionGastoAction(datos);
       if (res.ok) {
-        setModalRevisarAbierto(false);
-        setRendicionSeleccionada(null);
-        setMotivoRechazo("");
+        cerrarRevision();
         router.refresh();
         return;
       }
@@ -107,348 +137,219 @@ export function ListaRendiciones({
     });
   };
 
-  const renderBadgeEstado = (estado: EstadoRendicion) => {
-    switch (estado) {
-      case "aprobada":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-[#1E9E6A]/10 px-2 py-0.5 text-xs font-semibold text-[#1E9E6A]">
-            <CheckCircle2 className="size-3" />
-            {t("stateAprobada")}
-          </span>
-        );
-      case "rechazada":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-[#B4342B]/10 px-2 py-0.5 text-xs font-semibold text-[#B4342B]">
-            <AlertCircle className="size-3" />
-            {t("stateRechazada")}
-          </span>
-        );
-      case "contabilizada":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-marca-100 px-2 py-0.5 text-xs font-semibold text-marca-700">
-            <FileCheck className="size-3" />
-            {t("stateContabilizada")}
-          </span>
-        );
-      case "en_revision":
-        return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-tinta/80">
-            <Clock className="size-3" />
-            {t("stateEnRevision")}
-          </span>
-        );
-      case "enviada":
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-marca-50 px-2 py-0.5 text-xs font-semibold text-marca-600">
-            <Clock className="size-3" />
-            {t("stateEnviada")}
-          </span>
-        );
-    }
-  };
-
-  const estadosGrafica: { clave: EstadoRendicion; label: string; color: string }[] = [
-    { clave: "enviada", label: t("stateEnviada"), color: AZUL },
-    { clave: "en_revision", label: t("stateEnviada"), color: AZUL_SUAVE },
-    { clave: "aprobada", label: t("stateAprobada"), color: AZUL_OSCURO },
-    { clave: "contabilizada", label: t("stateContabilizada"), color: AZUL_SUAVE },
-    { clave: "rechazada", label: t("stateRechazada"), color: NEUTRO },
-  ];
-
-  const serieConteo = [
-    {
-      nombre: t("stateEnviada"),
-      valor: rendiciones.filter((r) => r.estado === "enviada" || r.estado === "en_revision").length,
-      color: AZUL,
-    },
-    {
-      nombre: t("stateAprobada"),
-      valor: rendiciones.filter((r) => r.estado === "aprobada").length,
-      color: AZUL_OSCURO,
-    },
-    {
-      nombre: t("stateContabilizada"),
-      valor: rendiciones.filter((r) => r.estado === "contabilizada").length,
-      color: AZUL_SUAVE,
-    },
-    {
-      nombre: t("stateRechazada"),
-      valor: rendiciones.filter((r) => r.estado === "rechazada").length,
-      color: NEUTRO,
-    },
-  ];
-
-  const serieMontos = estadosGrafica
-    .filter((e) => e.clave !== "en_revision")
-    .map((e) => {
-      const suma = rendiciones
-        .filter((r) =>
-          e.clave === "enviada"
-            ? r.estado === "enviada" || r.estado === "en_revision"
-            : r.estado === e.clave,
-        )
-        .reduce((acc, r) => acc + Number(r.monto_total || 0), 0);
-      return {
-        nombre: e.label,
-        valor: Math.round(suma),
-        color: e.color,
-      };
-    })
-    .filter((s) => s.valor > 0);
+  const datosNombrados = (r: RendicionGastoItem) => ({
+    proveedor: r.proveedor_nombre,
+    empleado: r.empleado_nombre,
+    monto: monto(r),
+    codigo: r.codigo,
+  });
 
   return (
-    <div className="space-y-4">
-      {rendiciones.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("chartStatusTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid items-center gap-3 sm:grid-cols-2">
-                <GraficaAnillo
-                  datos={serieConteo}
-                  total={rendiciones.length}
-                  etiquetaTotal=""
-                  vacio={t("chartEmpty")}
-                />
-                <ul className="divide-y divide-linea">
-                  {serieConteo.map((fila) => (
-                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: fila.color }}
-                      />
-                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+    <>
+      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+        {/* ≥ md: tabla densa */}
+        <table className="hidden w-full text-sm md:table">
+          <thead className="text-meta border-b border-linea text-left">
+            <tr>
+              <th className="px-4 py-3 font-medium">{l("column.voucher")}</th>
+              <th className="px-4 py-3 font-medium">{l("column.status")}</th>
+              {puedeRevisar && <th className="px-4 py-3 font-medium">{l("column.employee")}</th>}
+              <th className="px-4 py-3 text-right font-medium">{l("column.amount")}</th>
+              <th className="px-4 py-3 font-medium">{l("column.date")}</th>
+              <th className="px-4 py-3">
+                <span className="sr-only">{l("column.actions")}</span>
+              </th>
+            </tr>
+          </thead>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("chartAmountTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GraficaBarras datos={serieMontos} vacio={t("chartEmpty")} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-      {errorRevision && !modalRevisarAbierto && (
-        <p
-          role="alert"
-          className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
-        >
-          <AlertCircle className="size-3.5 shrink-0" />
-          {errorRevision}
-        </p>
-      )}
-
-      {/* Filtros Táctiles */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        {(
-          [
-            { id: "todas", label: t("filterAll") },
-            { id: "enviada", label: t("stateEnviada") },
-            { id: "aprobada", label: t("stateAprobada") },
-            { id: "contabilizada", label: t("stateContabilizada") },
-            { id: "rechazada", label: t("stateRechazada") },
-          ] as const
-        ).map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setFiltro(item.id)}
-            className={cn(
-              "inline-flex min-h-[38px] items-center rounded-lg px-3 text-xs font-medium transition-all active:scale-95",
-              filtro === item.id
-                ? "bg-marca-500 text-white shadow-xs"
-                : "border border-linea-fuerte/40 bg-card text-tinta/70 hover:bg-muted hover:text-tinta",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Lista de Rendiciones */}
-      {filtradas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-linea-fuerte bg-card py-12 text-center shadow-xs">
-          <Receipt className="size-10 text-marca-500/60" />
-          <h3 className="mt-3 text-base font-semibold text-tinta">
-            {t("noVouchersTitle")}
-          </h3>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtradas.map((r) => (
-            <div
-              key={r.id}
-              className="flex flex-col justify-between gap-3 rounded-xl border border-linea-fuerte bg-card p-4 shadow-xs transition-all hover:border-marca-500/40 sm:flex-row sm:items-center"
-            >
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-marca-600">
-                    {r.codigo}
-                  </span>
-                  {renderBadgeEstado(r.estado)}
-                  {r.programa_nombre && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-tinta/70">
-                      <FolderOpen className="size-3" />
-                      {r.programa_nombre}
-                    </span>
-                  )}
-                  {r.ncf && (
-                    <span className="rounded-md border border-linea-fuerte px-1.5 py-0.5 font-mono text-[11px] text-tinta/80">
-                      NCF: {r.ncf}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                  <h4 className="text-base font-semibold text-tinta">
-                    {r.proveedor_nombre}
-                  </h4>
-                  <span className="text-sm font-bold text-tinta">
-                    {formatearMonto(r.monto_total, r.moneda === "USD" ? "USD" : "DOP")}
-                  </span>
-                </div>
-
-                <p className="text-xs text-tinta/70">{r.concepto}</p>
-
-                <div className="flex flex-wrap items-center gap-3 text-xs text-tinta/50 pt-1">
-                  <span className="flex items-center gap-1">
-                    <User className="size-3" />
-                    {r.empleado_nombre}
-                  </span>
-                  {r.solicitud_folio !== null && (
-                    <span className="flex items-center gap-1">
-                      <ScrollText className="size-3" />
-                      {t("requestRef", {
-                        folio: r.solicitud_folio,
-                        titulo: r.solicitud_titulo ?? "",
-                      })}
-                    </span>
-                  )}
-                  {r.estudiante_nombre && (
-                    <span className="flex items-center gap-1">
-                      <GraduationCap className="size-3" />
-                      {r.estudiante_nombre}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Calendar className="size-3" />
-                    {r.fecha_comprobante}
-                  </span>
-                  {r.motivo_rechazo && (
-                    <span className="font-medium text-tinta">
-                      {t("rejectReasonLabel", { motivo: r.motivo_rechazo })}
-                    </span>
-                  )}
-                  {r.comprobante_url && (
-                    <a
-                      href={`/api/rendiciones/${r.id}/comprobante`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 font-medium text-marca-600 hover:underline"
-                    >
-                      <ExternalLink className="size-3" />
-                      {t("viewReceipt")}
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {/* Acciones */}
-              <div className="flex items-center gap-2 pt-2 sm:pt-0">
-                {puedeRevisar && (r.estado === "enviada" || r.estado === "en_revision") && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="min-h-[42px] border-marca-500 text-marca-600 hover:bg-marca-50 active:scale-95"
-                    onClick={() => {
-                      setErrorRevision(null);
-                      setRendicionSeleccionada(r);
-                      setModalRevisarAbierto(true);
-                    }}
+          <tbody className="divide-y divide-linea">
+            {rendiciones.map((r) => (
+              <tr key={r.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
+                <td className="max-w-80 px-4 py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setAbiertaId(r.id)}
+                    aria-label={`${l("view")}: ${r.proveedor_nombre}`}
+                    className="flex min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <FileCheck className="mr-1.5 size-4" />
-                    {t("reviewVoucher")}
-                  </Button>
+                    <FotoEstudiante nombre={r.empleado_nombre} url={null} className="size-9 shrink-0 rounded-full" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold">{r.proveedor_nombre}</span>
+                      <span className="text-meta block truncate">
+                        {[r.codigo, r.programa_nombre].filter(Boolean).join(" · ")}
+                      </span>
+                    </span>
+                  </button>
+                </td>
+                <td className="px-4 py-1.5">
+                  <StatusBadge status={r.estado} label={etiquetaEstado(r.estado)} />
+                </td>
+                {puedeRevisar && (
+                  <td className="max-w-48 px-4 py-1.5">
+                    <span className="block truncate">{r.empleado_nombre}</span>
+                  </td>
                 )}
-
-                {puedeRevisar && r.estado === "aprobada" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="min-h-[42px] border-marca-700 text-marca-700 hover:bg-marca-50 active:scale-95"
-                    cargando={isPending}
-                    onClick={() => ejecutarRevision("contabilizada", r)}
-                  >
-                    <FileCheck className="mr-1.5 size-4" />
-                    {t("postToAccounting")}
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal de Revisión y Validación DGII */}
-      <Dialog open={modalRevisarAbierto} onOpenChange={setModalRevisarAbierto}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <FileCheck className="size-5 text-marca-500" />
-              {t("reviewVoucherModalTitle")}
-            </DialogTitle>
-          </DialogHeader>
-
-          {rendicionSeleccionada && (
-            <div className="space-y-4 pt-2">
-              <div className="rounded-xl border border-linea-fuerte bg-muted/30 p-3 space-y-1 text-xs">
-                <div className="flex justify-between font-semibold">
-                  <span>{rendicionSeleccionada.codigo}</span>
-                  <span>
-                    {formatearMonto(
-                      rendicionSeleccionada.monto_total,
-                      rendicionSeleccionada.moneda === "USD" ? "USD" : "DOP",
+                <td className="px-4 py-1.5 text-right font-semibold tabular-nums">{monto(r)}</td>
+                <td className="text-meta px-4 py-1.5 whitespace-nowrap">
+                  {fechaCorta(r.fecha_comprobante.slice(0, 10), locale)}
+                </td>
+                {/* Acciones al pasar el ratón o con el foco; por encima del botón que cubre la fila. */}
+                <td className="relative z-10 px-2 py-1.5 text-right">
+                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                    {puedeValidar(r) && (
+                      <Button type="button" size="sm" variant="outline" onClick={() => abrirRevision(r, "revisar")}>
+                        <FileCheck />
+                        {t("reviewVoucher")}
+                      </Button>
+                    )}
+                    {puedeContabilizar(r) && (
+                      <Button type="button" size="sm" variant="outline" onClick={() => abrirRevision(r, "contabilizar")}>
+                        <Check />
+                        {t("postToAccounting")}
+                      </Button>
                     )}
                   </span>
-                </div>
-                <p className="text-tinta/70">
-                  {t("providerName")}: {rendicionSeleccionada.proveedor_nombre}
-                </p>
-                {rendicionSeleccionada.proveedor_rnc && (
-                  <p className="text-tinta/70">
-                    RNC: {rendicionSeleccionada.proveedor_rnc}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* < md: filas; las acciones van en el panel */}
+        <ul className="divide-y divide-linea md:hidden">
+          {rendiciones.map((r) => (
+            <li key={r.id}>
+              <button
+                type="button"
+                onClick={() => setAbiertaId(r.id)}
+                className="flex w-full items-center gap-3 p-3.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <FotoEstudiante nombre={r.empleado_nombre} url={null} className="size-11 rounded-full" />
+                <span className="min-w-0 flex-1 space-y-1">
+                  <span className="block truncate font-semibold">{r.proveedor_nombre}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <StatusBadge status={r.estado} label={etiquetaEstado(r.estado)} />
+                    <span className="text-meta font-semibold tabular-nums">{monto(r)}</span>
+                  </span>
+                  <span className="text-meta block truncate">
+                    {[r.codigo, puedeRevisar ? r.empleado_nombre : null, fechaCorta(r.fecha_comprobante.slice(0, 10), locale)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Panel de detalle */}
+      <Sheet open={abierta !== null} onOpenChange={(a) => !a && setAbiertaId(null)}>
+        <SheetContent>
+          {abierta && (
+            <>
+              <div className="space-y-2 border-b border-linea px-6 py-5 pr-14">
+                <SheetTitle className="text-section">{abierta.proveedor_nombre}</SheetTitle>
+                <SheetDescription className="text-meta">
+                  {abierta.codigo} · {monto(abierta)}
+                </SheetDescription>
+                <StatusBadge status={abierta.estado} label={etiquetaEstado(abierta.estado)} />
+              </div>
+
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
+                <p className="text-sm whitespace-pre-line">{abierta.concepto}</p>
+
+                {abierta.motivo_rechazo && (
+                  <p className="flex items-start gap-2 rounded-control bg-tinta px-3 py-2 text-sm text-background">
+                    <AlertCircle aria-hidden className="mt-0.5 size-4 shrink-0" />
+                    {t("rejectReasonLabel", { motivo: abierta.motivo_rechazo })}
                   </p>
                 )}
-                {rendicionSeleccionada.ncf && (
-                  <p className="text-tinta/70">NCF: {rendicionSeleccionada.ncf}</p>
+
+                <dl className="space-y-2.5 text-sm">
+                  <FilaDetalle icono={<User />}>{abierta.empleado_nombre}</FilaDetalle>
+                  <FilaDetalle icono={<Calendar />}>
+                    {fechaCorta(abierta.fecha_comprobante.slice(0, 10), locale)}
+                  </FilaDetalle>
+                  {abierta.programa_nombre && (
+                    <FilaDetalle icono={<FolderOpen />}>{abierta.programa_nombre}</FilaDetalle>
+                  )}
+                  {abierta.solicitud_folio !== null && (
+                    <FilaDetalle icono={<ScrollText />}>
+                      {t("requestRef", { folio: abierta.solicitud_folio, titulo: abierta.solicitud_titulo ?? "" })}
+                    </FilaDetalle>
+                  )}
+                  {abierta.estudiante_nombre && (
+                    <FilaDetalle icono={<GraduationCap />}>{abierta.estudiante_nombre}</FilaDetalle>
+                  )}
+                  {abierta.proveedor_rnc && <FilaDetalle>RNC: {abierta.proveedor_rnc}</FilaDetalle>}
+                  {abierta.ncf && <FilaDetalle>NCF: {abierta.ncf}</FilaDetalle>}
+                  {abierta.comprobante_url && (
+                    <FilaDetalle icono={<ExternalLink />}>
+                      <a
+                        href={`/api/rendiciones/${abierta.id}/comprobante`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-marca-600 hover:underline"
+                      >
+                        {t("viewReceipt")}
+                      </a>
+                    </FilaDetalle>
+                  )}
+                </dl>
+
+                {(puedeValidar(abierta) || puedeContabilizar(abierta)) && (
+                  <div className="flex flex-wrap gap-2 border-t border-linea pt-4">
+                    {puedeValidar(abierta) && (
+                      <Button type="button" onClick={() => abrirRevision(abierta, "revisar")}>
+                        <FileCheck />
+                        {t("reviewVoucher")}
+                      </Button>
+                    )}
+                    {puedeContabilizar(abierta) && (
+                      <Button type="button" onClick={() => abrirRevision(abierta, "contabilizar")}>
+                        <Check />
+                        {t("postToAccounting")}
+                      </Button>
+                    )}
+                  </div>
                 )}
-                <p className="text-tinta/70">
-                  {t("conceptDescription")}: {rendicionSeleccionada.concepto}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Validación DGII (aprobar o rechazar) y confirmación de contabilizar, siempre nombrando la rendición. */}
+      <Dialog open={enRevision !== null} onOpenChange={(a) => !a && cerrarRevision()}>
+        <DialogContent className="md:max-w-md">
+          {enRevision && revision?.modo === "revisar" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-section">
+                  {l("confirmReview", datosNombrados(enRevision))}
+                </DialogTitle>
+                <DialogDescription className="text-meta">{t("reviewVoucherModalTitle")}</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-1 rounded-card border border-linea bg-muted/30 p-3 text-xs">
+                <p className="text-tinta-2">
+                  {t("providerName")}: {enRevision.proveedor_nombre}
                 </p>
-                {rendicionSeleccionada.solicitud_folio !== null && (
-                  <p className="text-tinta/70">
+                {enRevision.proveedor_rnc && <p className="text-tinta-2">RNC: {enRevision.proveedor_rnc}</p>}
+                {enRevision.ncf && <p className="text-tinta-2">NCF: {enRevision.ncf}</p>}
+                <p className="text-tinta-2">
+                  {t("conceptDescription")}: {enRevision.concepto}
+                </p>
+                {enRevision.solicitud_folio !== null && (
+                  <p className="text-tinta-2">
                     {t("authorizingRequest")}:{" "}
-                    {t("requestRef", {
-                      folio: rendicionSeleccionada.solicitud_folio,
-                      titulo: rendicionSeleccionada.solicitud_titulo ?? "",
-                    })}
+                    {t("requestRef", { folio: enRevision.solicitud_folio, titulo: enRevision.solicitud_titulo ?? "" })}
                   </p>
                 )}
-                {rendicionSeleccionada.estudiante_nombre && (
-                  <p className="text-tinta/70">
-                    {t("chargeToStudent")}: {rendicionSeleccionada.estudiante_nombre}
+                {enRevision.estudiante_nombre && (
+                  <p className="text-tinta-2">
+                    {t("chargeToStudent")}: {enRevision.estudiante_nombre}
                   </p>
                 )}
               </div>
@@ -464,46 +365,73 @@ export function ListaRendiciones({
                 />
               </div>
 
-              {errorRevision && (
-                <p
-                  role="alert"
-                  className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background"
-                >
-                  <AlertCircle className="size-3.5 shrink-0" />
-                  {errorRevision}
-                </p>
-              )}
+              <ErrorRevision texto={errorRevision} />
 
-              <div className="flex justify-end gap-2 pt-2">
+              <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
                   cargando={isPending}
-                  onClick={() => ejecutarRevision("rechazada")}
-                  className="border-[#B4342B] text-[#B4342B] hover:bg-[#B4342B]/10 active:scale-95"
+                  onClick={() => ejecutarRevision("rechazada", enRevision)}
                 >
-                  <FileX className="mr-1.5 size-4" />
+                  <X />
                   {t("rejectButton")}
                 </Button>
-
-                <Button
-                  type="button"
-                  cargando={isPending}
-                  onClick={() => ejecutarRevision("aprobada")}
-                  className="bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
-                >
-                  {isPending ? (
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="mr-1.5 size-4" />
-                  )}
+                <Button type="button" cargando={isPending} onClick={() => ejecutarRevision("aprobada", enRevision)}>
+                  <Check />
                   {t("approveButton")}
                 </Button>
-              </div>
-            </div>
+              </DialogFooter>
+            </>
+          )}
+
+          {enRevision && revision?.modo === "contabilizar" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-section">
+                  {l("confirmPost", datosNombrados(enRevision))}
+                </DialogTitle>
+                <DialogDescription className="sr-only">{enRevision.concepto}</DialogDescription>
+              </DialogHeader>
+
+              <ErrorRevision texto={errorRevision} />
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={cerrarRevision} disabled={isPending}>
+                  {tc("panel.cancel")}
+                </Button>
+                <Button type="button" cargando={isPending} onClick={() => ejecutarRevision("contabilizada", enRevision)}>
+                  <Check />
+                  {t("postToAccounting")}
+                </Button>
+              </DialogFooter>
+            </>
           )}
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+/** Un dato del panel: icono opcional y valor, en la misma línea. `icono` va como elemento. */
+function FilaDetalle({ icono, children }: { icono?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2.5 text-tinta-2">
+      <span aria-hidden className="mt-0.5 flex size-4 shrink-0 items-center justify-center text-tinta-3 [&_svg]:size-4">
+        {icono}
+      </span>
+      <span className="min-w-0 break-words">{children}</span>
     </div>
+  );
+}
+
+function ErrorRevision({ texto }: { texto: string | null }) {
+  if (!texto) return null;
+
+  return (
+    <p role="alert" className="flex items-center gap-2 rounded-control bg-tinta px-3 py-2 text-xs text-background">
+      <AlertCircle className="size-3.5 shrink-0" />
+      {texto}
+    </p>
   );
 }

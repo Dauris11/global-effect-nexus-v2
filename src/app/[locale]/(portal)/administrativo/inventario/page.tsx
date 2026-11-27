@@ -1,29 +1,58 @@
-import { CheckCircle2, Clock, DollarSign, Package, QrCode } from "lucide-react";
+import { Package, Plus, QrCode } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
-import { TablaActivos } from "@/components/inventario/tabla-activos";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { PageHeader } from "@/components/app/page-header";
+import { ListaActivos } from "@/components/inventario/lista-activos";
+import { Button } from "@/components/ui/button";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
+import { CATEGORIAS_ACTIVO, ESTADOS_ACTIVO } from "@/lib/inventario";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   listarActivos,
+  listarUbicacionesUnicas,
   obtenerMetricasInventario,
 } from "@/server/inventario/consultas";
 
+/** Un parámetro de la URL solo vale si está en la lista; lo demás se ignora en vez de llegar a la consulta. */
+function deLista<T extends string>(valor: string | undefined, validos: readonly T[]): T | undefined {
+  return validos.find((v) => v === valor);
+}
+
+/**
+ * Inventario de activos (patrón Lista): chips de estado con conteo, búsqueda y filtros
+ * en la URL, y la tabla justo debajo. Entra quien tenga `inventario.leer`; cada acción
+ * (crear, editar, eliminar, auditar) se vuelve a comprobar en su acción de servidor.
+ */
 export default async function PaginaInventario({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { locale } = await params;
+  const consulta = await searchParams;
   const usuario = await requerirPermiso("inventario.leer");
 
-  const [t, metricas, activos, mensajes] = await Promise.all([
+  const estado = deLista(consulta.estado, ESTADOS_ACTIVO);
+  const categoria = deLista(consulta.categoria, CATEGORIAS_ACTIVO);
+  const busqueda = consulta.q?.trim() || undefined;
+  const ubicacion = consulta.ubicacion?.trim() || undefined;
+  const hayFiltros = Boolean(estado || categoria || busqueda || ubicacion);
+
+  const [t, tl, te, metricas, activos, ubicaciones, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "admin.inventario" }),
+    getTranslations({ locale, namespace: "listas" }),
+    getTranslations({ locale, namespace: "estados" }),
     obtenerMetricasInventario(),
-    listarActivos(),
+    listarActivos({ busqueda, categoria, estado, ubicacion }),
+    listarUbicacionesUnicas(),
     mensajesCliente(["admin"]),
   ]);
 
@@ -31,95 +60,86 @@ export default async function PaginaInventario({
   const puedeAuditar = usuarioTienePermiso(usuario, "inventario.auditar");
   const puedeEliminar = usuarioTienePermiso(usuario, "inventario.eliminar");
 
-  const formatoMoneda = (val: number) => {
-    return new Intl.NumberFormat("es-DO", {
-      style: "currency",
-      currency: "DOP",
-      maximumFractionDigits: 0,
-    }).format(val);
+  // Una sola acción primaria: registrar. Quien solo audita tiene el escáner como primaria.
+  const escaner = puedeAuditar ? (
+    <Button asChild variant={puedeEscribir ? "outline" : "default"}>
+      <Link href="/administrativo/inventario/escanear">
+        <QrCode className="size-4" />
+        {t("escanearQr")}
+      </Link>
+    </Button>
+  ) : null;
+  const nuevo = puedeEscribir ? (
+    <Button asChild>
+      <Link href="/administrativo/inventario/nuevo">
+        <Plus className="size-4" />
+        {t("nuevoActivo")}
+      </Link>
+    </Button>
+  ) : null;
+
+  const conteos: Record<(typeof ESTADOS_ACTIVO)[number], number> = {
+    operativo: metricas.operativos,
+    mantenimiento: metricas.enMantenimiento,
+    prestado: metricas.enPrestamo,
+    baja: metricas.deBaja,
   };
+  const chips = ESTADOS_ACTIVO.filter((e) => conteos[e] > 0 || estado === e).map((e) => ({
+    value: e,
+    label: te(e),
+    count: conteos[e],
+  }));
 
   return (
-    <div className="animate-entrada flex flex-col gap-6">
-      {/* Cabecera de Página */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
-            {t("titulo")}
-          </h1>
-        </div>
+    <div className="animate-entrada space-y-6">
+      <PageHeader
+        title={t("titulo")}
+        primaryAction={nuevo ?? escaner}
+        secondaryActions={nuevo ? escaner : undefined}
+      />
 
-        {puedeAuditar && (
-          <Link
-            href="/administrativo/inventario/escanear"
-            className="flex items-center justify-center gap-2 rounded-control bg-marca-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-marca-700 sm:w-auto"
-          >
-            <QrCode className="size-4" />
-            <span>{t("escanerMovil")}</span>
-          </Link>
-        )}
-      </div>
-
-      {/* Tarjetas de Métricas / KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-tinta-2">{t("kpiTotal")}</span>
-            <div className="flex size-7 items-center justify-center rounded-lg bg-marca-50 text-marca-600">
-              <Package className="size-4" />
-            </div>
-          </div>
-          <p className="mt-2 font-mono text-2xl font-extrabold text-tinta">
-            {metricas.totalActivos}
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-tinta-2">{t("kpiOperativos")}</span>
-            <div className="flex size-7 items-center justify-center rounded-lg bg-marca-50 text-marca-600">
-              <CheckCircle2 className="size-4" />
-            </div>
-          </div>
-          <p className="mt-2 font-mono text-2xl font-extrabold text-tinta">
-            {metricas.operativos}
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-tinta-2">{t("kpiMantenimiento")}</span>
-            <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-tinta-2">
-              <Clock className="size-4" />
-            </div>
-          </div>
-          <p className="mt-2 font-mono text-2xl font-extrabold text-tinta">
-            {metricas.enMantenimiento}
-          </p>
-        </div>
-
-        <div className="flex flex-col justify-between rounded-card border border-linea bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-tinta-2">{t("kpiValor")}</span>
-            <div className="flex size-7 items-center justify-center rounded-lg bg-marca-50 text-marca-600">
-              <DollarSign className="size-4" />
-            </div>
-          </div>
-          <p className="mt-2 font-mono text-xl font-extrabold text-tinta">
-            {formatoMoneda(metricas.valorTotalEstimado)}
-          </p>
-        </div>
-      </div>
-
-      {/* Catálogo y Tabla de Activos */}
-      <NextIntlClientProvider messages={mensajes}>
-        <TablaActivos
-          activos={activos}
-          puedeEscribir={puedeEscribir}
-          puedeAuditar={puedeAuditar}
-          puedeEliminar={puedeEliminar}
+      <Suspense fallback={null}>
+        <FilterBar
+          chips={chips}
+          totalChips={metricas.totalActivos}
+          placeholder={t("buscarPlaceholder")}
+          selectores={[
+            {
+              param: "categoria",
+              label: t("colCategoria"),
+              todos: tl("inventario.todasCategorias"),
+              opciones: CATEGORIAS_ACTIVO.map((c) => ({ value: c, label: t(`categorias.${c}`) })),
+            },
+            {
+              param: "ubicacion",
+              label: t("colUbicacion"),
+              todos: tl("inventario.todasUbicaciones"),
+              opciones: ubicaciones.map((u) => ({ value: u, label: u })),
+            },
+          ]}
         />
-      </NextIntlClientProvider>
+      </Suspense>
+
+      {activos.length === 0 ? (
+        hayFiltros ? (
+          <EmptyState
+            icon={Package}
+            title={tl("inventario.sinResultados")}
+            action={<Button asChild variant="outline"><Link href="/administrativo/inventario">{tl("inventario.quitarFiltros")}</Link></Button>}
+          />
+        ) : nuevo ? (
+          <EmptyState icon={Package} title={tl("inventario.vacio")} description={tl("inventario.vacioAyuda")} action={nuevo} />
+        ) : (
+          <EmptyState readOnly icon={Package} title={tl("inventario.vacio")} description={tl("inventario.vacioSoloLectura")} />
+        )
+      ) : (
+        <>
+          <p className="texto-meta">{tl("inventario.cuenta", { count: activos.length })}</p>
+          <NextIntlClientProvider messages={mensajes}>
+            <ListaActivos activos={activos} puedeEscribir={puedeEscribir} puedeEliminar={puedeEliminar} />
+          </NextIntlClientProvider>
+        </>
+      )}
     </div>
   );
 }

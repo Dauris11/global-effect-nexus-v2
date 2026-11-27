@@ -285,6 +285,52 @@ export async function solicitudesRevisionPorEstado(
   return conPasos(filas, usuario);
 }
 
+/**
+ * Conteos para los chips de la bandeja, sin traer las filas.
+ *
+ * `revision` usa EXACTAMENTE el criterio de `solicitudesRevisionPorEstado` (tipos que
+ * el rol revisa, dirección, y nunca lo que pidió la propia persona), agrupado por
+ * estado: así el número del chip coincide con las filas que salen al pulsarlo y no
+ * se amplía lo que cada rol puede ver. `propias` cuenta lo pedido por la persona.
+ */
+export async function conteosSolicitudes(usuario: ConPermisos): Promise<{
+  revision: Partial<Record<EstadoSolicitud, number>>;
+  propias: Partial<Record<EstadoSolicitud, number>>;
+}> {
+  const tipos = TIPOS_SOLICITUD.filter((tipo) =>
+    usuarioTienePermiso(usuario, REGLAS[tipo].revisa),
+  );
+  const dirige = usuarioTienePermiso(usuario, "solicitudes.direccion");
+
+  const [revision, propias] = await Promise.all([
+    tipos.length === 0 && !dirige
+      ? Promise.resolve([])
+      : consultar<{ estado: EstadoSolicitud; n: number }>(
+          `SELECT s.estado, count(*)::int AS n
+             FROM solicitud s
+            WHERE s.solicitante_id IS DISTINCT FROM $3
+              AND (s.tipo = ANY($1::text[])
+                   OR ($2 AND (s.requiere_direccion OR s.estado = 'pendiente_direccion')))
+            GROUP BY s.estado`,
+          [tipos, dirige, usuario.id],
+        ),
+    consultar<{ estado: EstadoSolicitud; n: number }>(
+      `SELECT s.estado, count(*)::int AS n
+         FROM solicitud s
+        WHERE s.solicitante_id = $1
+        GROUP BY s.estado`,
+      [usuario.id],
+    ),
+  ]);
+
+  const aMapa = (filas: { estado: EstadoSolicitud; n: number }[]) =>
+    Object.fromEntries(filas.map((f) => [f.estado, f.n])) as Partial<
+      Record<EstadoSolicitud, number>
+    >;
+
+  return { revision: aMapa(revision), propias: aMapa(propias) };
+}
+
 /** Una sola, con lo justo para que la acción decida. */
 export async function solicitudParaFlujo(id: string) {
   return consultarUna<{

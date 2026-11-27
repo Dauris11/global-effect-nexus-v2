@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, Plus, Search, User } from "lucide-react";
+import { Building2, Eye, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { StatusBadge } from "@/components/app/status-badge";
 import { Monto } from "@/components/contabilidad/comun";
-import { Badge } from "@/components/ui/badge";
+import { PanelProveedor } from "@/components/contabilidad/proveedores/panel-proveedor";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import { formatearIdentificacion } from "@/lib/contabilidad/identificacion";
-import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
-import { cn } from "@/lib/utils";
 import type { FilaProveedor } from "@/server/contabilidad/proveedores/consultas";
 
+/**
+ * Tabla densa de proveedores (docs/ux-rules.md §3): en ≥ md una fila de 52 px con el
+ * nombre en negrita y lo demás en gris; en móvil, filas compactas. Un clic en la fila abre
+ * el panel lateral; el ojo (al pasar el ratón o con el foco) va directo a la ficha.
+ */
 export function ListaProveedores({
   proveedores,
   puedeRegistrar,
@@ -21,122 +23,110 @@ export function ListaProveedores({
   proveedores: FilaProveedor[];
   puedeRegistrar: boolean;
 }) {
-  const t = useTranslations("contab.proveedores");
-  const tc = useTranslations("contab");
-  const [busqueda, setBusqueda] = useState("");
+  const t = useTranslations("listas.proveedores");
+  const tp = useTranslations("contab.proveedores");
 
-  const filtrados = proveedores.filter((p) => {
-    if (!busqueda.trim()) return true;
-    const q = busqueda.toLowerCase().trim();
-    const idLimpia = p.identificacion.replace(/\D/g, "");
-    return (
-      p.nombre.toLowerCase().includes(q) ||
-      (p.nombre_comercial && p.nombre_comercial.toLowerCase().includes(q)) ||
-      idLimpia.includes(q.replace(/\D/g, ""))
-    );
-  });
+  const saldosAbiertos = (p: FilaProveedor) => p.saldos.filter((s) => Number(s.saldo) > 0.005);
+  const meta = (p: FilaProveedor) =>
+    [p.nombre_comercial, formatearIdentificacion(p.identificacion)].filter(Boolean).join(" · ");
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-2 pointer-events-none" />
-          <Input
-            type="search"
-            placeholder={t("buscar")}
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        {puedeRegistrar && (
-          <Button asChild>
-            <Link href="/contabilidad/proveedores/nuevo">
-              <Plus className="size-4" />
-              {t("nuevo")}
-            </Link>
-          </Button>
-        )}
-      </div>
+    <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <table className="hidden w-full text-sm md:table">
+        <thead className="border-b border-linea text-left texto-meta">
+          <tr>
+            <th className="px-4 py-3 font-medium">{t("col.proveedor")}</th>
+            <th className="px-4 py-3 font-medium">{t("col.estado")}</th>
+            <th className="px-4 py-3 font-medium">{t("col.credito")}</th>
+            <th className="px-4 py-3 text-right font-medium">{t("col.facturas")}</th>
+            <th className="px-4 py-3 text-right font-medium">{tp("debe")}</th>
+            <th className="px-4 py-3">
+              <span className="sr-only">{t("col.acciones")}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-linea">
+          {proveedores.map((p) => {
+            const Icono = p.tipo === "juridica" ? Building2 : User;
+            const saldos = saldosAbiertos(p);
 
-      {filtrados.length === 0 ? (
-        <div className="rounded-tarjeta border border-linea bg-background p-8 text-center text-tinta-2">
-          <p className="font-medium text-tinta">
-            {busqueda ? t("vacioFiltro") : t("vacio")}
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtrados.map((p) => {
-            const tieneSaldo = p.saldos.some(
-              (s) => Number(s.saldo) > 0.005,
-            );
             return (
-              <Link
-                key={p.id}
-                href={`/contabilidad/proveedores/${p.id}`}
-                className={cn(TARJETA.interactiva, "p-4 block")}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      {p.tipo === "juridica" ? (
-                        <Building2 className="size-4 shrink-0 text-tinta-2" />
-                      ) : (
-                        <User className="size-4 shrink-0 text-tinta-2" />
-                      )}
-                      <h3 className="truncate font-semibold text-tinta">
-                        {p.nombre}
-                      </h3>
-                    </div>
-                    {p.nombre_comercial && (
-                      <p className="truncate text-xs text-tinta-2">
-                        {p.nombre_comercial}
-                      </p>
-                    )}
-                    <p className="mt-1 font-mono text-xs text-tinta-2">
-                      {formatearIdentificacion(p.identificacion)}
-                    </p>
-                  </div>
-                  <Badge
-                    className={p.estado === "activo" ? undefined : INSIGNIA_SEMAFORO.alerta}
-                    variant={p.estado === "activo" ? "neutra" : undefined}
-                  >
-                    {tc(`estadoProveedor.${p.estado}` as never)}
-                  </Badge>
-                </div>
-
-                <div className="mt-4 border-t border-linea pt-3 text-xs text-tinta-2 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span>{t("condiciones", { dias: p.condiciones_pago_dias })}</span>
-                    <span>{t("facturas", { n: p.facturas })}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="font-medium text-tinta">{t("debe")}:</span>
-                    {tieneSaldo ? (
-                      <div className="flex flex-col items-end gap-0.5">
-                        {p.saldos
-                          .filter((s) => Number(s.saldo) > 0.005)
-                          .map((s) => (
-                            <Monto
-                              key={s.moneda}
-                              valor={s.saldo}
-                              moneda={s.moneda}
-                              className="font-semibold text-marca-700"
-                            />
-                          ))}
-                      </div>
-                    ) : (
-                      <span className="text-marca-700 font-medium">{t("alDia")}</span>
-                    )}
-                  </div>
-                </div>
-              </Link>
+              <tr key={p.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
+                <td className="max-w-80 px-4 py-1.5">
+                  <PanelProveedor
+                    proveedor={p}
+                    puedeRegistrar={puedeRegistrar}
+                    disparador={
+                      <button
+                        type="button"
+                        aria-label={`${t("vistaRapida")}: ${p.nombre}`}
+                        className="flex min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Icono aria-hidden className="size-4 shrink-0 text-tinta-3" />
+                        <span className="min-w-0">
+                          <span className="block truncate font-semibold">{p.nombre}</span>
+                          <span className="text-meta block truncate">{meta(p)}</span>
+                        </span>
+                      </button>
+                    }
+                  />
+                </td>
+                <td className="px-4 py-1.5">
+                  <StatusBadge status={p.estado} />
+                </td>
+                <td className="text-meta px-4 py-1.5 whitespace-nowrap">{tp("condiciones", { dias: p.condiciones_pago_dias })}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{p.facturas}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">
+                  {saldos.length === 0 ? (
+                    <span className="text-meta">{tp("alDia")}</span>
+                  ) : (
+                    saldos.map((s) => <Monto key={s.moneda} valor={s.saldo} moneda={s.moneda} className="block font-semibold" />)
+                  )}
+                </td>
+                {/* Por encima del botón que cubre la fila (z-10). */}
+                <td className="relative z-10 w-16 px-2 py-1.5 text-right">
+                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                    <Button asChild variant="ghost" size="icon" aria-label={t("verFicha")}>
+                      <Link href={`/contabilidad/proveedores/${p.id}`}><Eye /></Link>
+                    </Button>
+                  </span>
+                </td>
+              </tr>
             );
           })}
-        </div>
-      )}
+        </tbody>
+      </table>
+
+      <ul className="divide-y divide-linea md:hidden">
+        {proveedores.map((p) => {
+          const saldos = saldosAbiertos(p);
+
+          return (
+            <li key={p.id}>
+              <PanelProveedor
+                proveedor={p}
+                puedeRegistrar={puedeRegistrar}
+                disparador={
+                  <button type="button" className="flex w-full items-center gap-3 p-3.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <span className="min-w-0 flex-1 space-y-1">
+                      <span className="block truncate font-semibold">{p.nombre}</span>
+                      <span className="text-meta block truncate">{meta(p)}</span>
+                      <StatusBadge status={p.estado} />
+                    </span>
+                    <span className="shrink-0 text-right text-sm tabular-nums">
+                      {saldos.length === 0 ? (
+                        <span className="text-meta">{tp("alDia")}</span>
+                      ) : (
+                        saldos.map((s) => <Monto key={s.moneda} valor={s.saldo} moneda={s.moneda} className="block font-semibold" />)
+                      )}
+                    </span>
+                  </button>
+                }
+              />
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

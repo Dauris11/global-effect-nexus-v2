@@ -68,7 +68,7 @@ export async function listarActivos(filtros?: {
     valores.push(`%${filtros.busqueda.trim()}%`);
     const pos = valores.length;
     condiciones.push(
-      `(a.codigo ILIKE $${pos} OR a.nombre ILIKE $${pos} OR a.numero_serie ILIKE $${pos} OR a.marca_modelo ILIKE $${pos} OR a.ubicacion ILIKE $${pos})`
+      `(a.codigo ILIKE $${pos} OR a.nombre ILIKE $${pos} OR a.numero_serie ILIKE $${pos} OR a.marca_modelo ILIKE $${pos} OR a.ubicacion ILIKE $${pos} OR u.nombre ILIKE $${pos})`
     );
   }
 

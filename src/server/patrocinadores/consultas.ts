@@ -44,10 +44,12 @@ export async function directorioPatrocinadores({
   busqueda,
   tipo,
   estado,
+  pais,
 }: {
   busqueda?: string | null;
   tipo?: string | null;
   estado?: string | null;
+  pais?: string | null;
 } = {}): Promise<PatrocinadorFila[]> {
   return consultar<PatrocinadorFila>(
     `SELECT p.id,
@@ -68,9 +70,10 @@ export async function directorioPatrocinadores({
              OR p.pais   ILIKE '%' || $1 || '%')
         AND ($2::text IS NULL OR p.tipo::text = $2)
         AND ($3::text IS NULL OR p.estado = $3)
+        AND ($5::text IS NULL OR p.pais = $5)
       ORDER BY p.estado, p.nombre
       LIMIT $4`,
-    [busqueda?.trim() || null, tipo || null, estado || null, TOPE + 1],
+    [busqueda?.trim() || null, tipo || null, estado || null, TOPE + 1, pais || null],
   );
 }
 
@@ -112,6 +115,45 @@ export async function resumenDePatrocinio({
   );
 
   return fila ?? { total: 0, activos: 0, paises: 0, aporte: 0 };
+}
+
+/**
+ * Conteo por estado para los chips de la lista.
+ *
+ * Respeta búsqueda, tipo y país pero NO el estado: el chip «Pausados 2» tiene que
+ * decir cuántos habría al pulsarlo, no cuántos hay ya con el chip puesto.
+ */
+export async function conteosPatrocinadoresPorEstado({
+  busqueda,
+  tipo,
+  pais,
+}: {
+  busqueda?: string | null;
+  tipo?: string | null;
+  pais?: string | null;
+} = {}): Promise<Record<string, number>> {
+  const filas = await consultar<{ estado: string; n: number }>(
+    `SELECT p.estado, count(*)::int AS n
+       FROM patrocinador p
+      WHERE ($1::text IS NULL
+             OR p.nombre ILIKE '%' || $1 || '%'
+             OR p.pais   ILIKE '%' || $1 || '%')
+        AND ($2::text IS NULL OR p.tipo::text = $2)
+        AND ($3::text IS NULL OR p.pais = $3)
+      GROUP BY p.estado`,
+    [busqueda?.trim() || null, tipo || null, pais || null],
+  );
+
+  return Object.fromEntries(filas.map((f) => [f.estado, f.n]));
+}
+
+/** Países con patrocinadores, para el selector de «Más filtros». */
+export async function paisesDePatrocinadores(): Promise<string[]> {
+  const filas = await consultar<{ pais: string }>(
+    `SELECT DISTINCT pais FROM patrocinador WHERE pais IS NOT NULL AND pais <> '' ORDER BY pais`,
+  );
+
+  return filas.map((f) => f.pais);
 }
 
 /** Si el directorio llegó al tope. */

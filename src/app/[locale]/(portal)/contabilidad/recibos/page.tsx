@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
 import { Download, FileSpreadsheet, Plus, ReceiptText } from "lucide-react";
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
-import { Monto } from "@/components/contabilidad/comun";
-import { FiltrosRecibos } from "@/components/contabilidad/recibos/filtros-recibos";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
+import { PageHeader } from "@/components/app/page-header";
+import { CamposUrl } from "@/components/contabilidad/filtros-url";
 import { ListaRecibos } from "@/components/contabilidad/recibos/lista-recibos";
 import { Button } from "@/components/ui/button";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
-import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { getPathname, Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
+import { ESTADOS_RECIBO, MONEDAS, TIPOS_RECIBO } from "@/lib/contabilidad/formato";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
+  conteosRecibos,
   hayFiltroRecibos,
   leerFiltroRecibos,
   opcionesRecibo,
   recibos,
   TOPE_RECIBOS,
-  totalesRecibos,
 } from "@/server/contabilidad/recibos/consultas";
 
 export async function generateMetadata({
@@ -31,9 +34,10 @@ export async function generateMetadata({
 }
 
 /**
- * Consulta de recibos (§4.3). Los totales salen de la base sobre el filtro
- * ENTERO, no de las 200 filas pintadas, y separados por tipo y moneda:
- * sumar pesos con dólares no da ninguna cifra que exista.
+ * Consulta de recibos (§4.3) con el patrón Lista. Los conteos de los chips
+ * salen de la base sobre el filtro ENTERO, no de las 200 filas pintadas. Los
+ * totales por tipo y moneda ya no se pintan en tarjetas: sumar pesos con
+ * dólares no da ninguna cifra que exista, y el CSV los trae.
  *
  * El enlace de exportar lleva el mismo filtro de la URL; la exportación
  * queda en la bitácora (registrarLectura).
@@ -52,32 +56,55 @@ export default async function PaginaRecibos({
   const filtro = leerFiltroRecibos(crudo);
   const hayFiltro = hayFiltroRecibos(filtro);
 
-  const [t, tc, filas, totales, opciones] = await Promise.all([
+  const [t, tl, tc, filas, conteos, opciones] = await Promise.all([
     getTranslations({ locale, namespace: "contab.recibos" }),
+    getTranslations({ locale, namespace: "listas.recibos" }),
     getTranslations({ locale, namespace: "contab" }),
     recibos(filtro),
-    totalesRecibos(filtro),
+    conteosRecibos(filtro),
     opcionesRecibo(),
   ]);
+  const registra = usuarioTienePermiso(usuario, "contabilidad.registrar");
+  const puedeAprobar = usuarioTienePermiso(usuario, "contabilidad.aprobar");
 
   const consulta = new URLSearchParams(
     Object.entries(crudo).flatMap(([k, v]) => (typeof v === "string" && v ? [[k, v]] : [])),
   ).toString();
 
+  const nuevo = registra ? (
+    <Button asChild>
+      <Link href="/contabilidad/recibos/nuevo">
+        <Plus className="size-4" />
+        {t("nuevo")}
+      </Link>
+    </Button>
+  ) : null;
+
+  const chips = [
+    ...ESTADOS_RECIBO.map((estado) => ({
+      param: "estado",
+      value: estado,
+      label: tc(`estado.${estado}`),
+      count: conteos.porEstado[estado] ?? 0,
+    })),
+    ...TIPOS_RECIBO.map((tipo) => ({
+      param: "tipo",
+      value: tipo,
+      label: tc(`tipoCorto.${tipo}`),
+      count: conteos.porTipo[tipo] ?? 0,
+    })),
+  ];
+
+  const aOpciones = (lista: { id: string; nombre: string }[]) => lista.map((o) => ({ value: o.id, label: o.nombre }));
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
-      <EncabezadoPagina
-        titulo={t("titulo")}
-        acciones={
+    <div className="animate-entrada space-y-6">
+      <PageHeader
+        title={t("titulo")}
+        primaryAction={nuevo}
+        secondaryActions={
           <>
-            {/* El 607 se elige por mes en Impuestos: aquí solo se enlaza. */}
-            <Button asChild variant="secondary">
-              <Link href="/contabilidad/impuestos">
-                <FileSpreadsheet className="size-4" />
-                {tc("modulos.irImpuestos")}
-              </Link>
-            </Button>
-            <Button asChild variant="secondary">
+            <Button asChild variant="outline">
               {/* <a> y no <Link>: es una descarga, no una navegación. */}
               <a
                 href={`${getPathname({ href: "/contabilidad/recibos/exportar", locale })}${consulta ? `?${consulta}` : ""}`}
@@ -86,45 +113,62 @@ export default async function PaginaRecibos({
                 {t("exportar")}
               </a>
             </Button>
-            {usuarioTienePermiso(usuario, "contabilidad.registrar") && (
-              <Button asChild>
-                <Link href="/contabilidad/recibos/nuevo">
-                  <Plus className="size-4" />
-                  {t("nuevo")}
-                </Link>
-              </Button>
-            )}
+            {/* El 607 se elige por mes en Impuestos: aquí solo se enlaza. */}
+            <MenuMasAcciones
+              acciones={[{ etiqueta: tc("modulos.irImpuestos"), icono: <FileSpreadsheet />, href: "/contabilidad/impuestos" }]}
+            />
           </>
         }
       />
 
-      <FiltrosRecibos filtro={filtro} opciones={opciones} hayFiltro={hayFiltro} />
-
-      {totales.length > 0 && (
-        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {totales.map((total) => (
-            <div key={`${total.tipo}-${total.moneda}`} className="rounded-card border border-linea bg-card p-4 shadow-card">
-              <dt className="texto-meta">
-                {t("total", { tipo: tc(`tipoCorto.${total.tipo}`), moneda: total.moneda })}
-              </dt>
-              <dd className="mt-1 text-xl font-semibold text-tinta">
-                <Monto valor={total.total} moneda={total.moneda} />
-              </dd>
-              <dd className="texto-meta">{t("cantidad", { n: total.cantidad })}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      <Suspense fallback={null}>
+        <FilterBar
+          chips={chips}
+          totalChips={conteos.total}
+          placeholder={tl("buscar")}
+          selectores={[
+            { param: "cuenta", label: t("cuenta"), todos: t("todas"), opciones: aOpciones(opciones.cuentas) },
+            { param: "moneda", label: t("moneda"), todos: t("todas"), opciones: MONEDAS.map((m) => ({ value: m, label: m })) },
+            { param: "categoria", label: t("categoria"), todos: t("todas"), opciones: aOpciones(opciones.categorias) },
+            { param: "proyecto", label: t("proyecto"), todos: t("todos"), opciones: aOpciones(opciones.proyectos) },
+            { param: "creado", label: t("creadoPor"), todos: t("todos"), opciones: aOpciones(opciones.personas) },
+            { param: "aprobado", label: t("aprobadoPor"), todos: t("todos"), opciones: aOpciones(opciones.personas) },
+          ]}
+          moreFilters={
+            <CamposUrl
+              campos={[
+                { param: "desde", label: t("desde"), tipo: "date" },
+                { param: "hasta", label: t("hasta"), tipo: "date" },
+                { param: "numero", label: t("numero"), tipo: "number" },
+                { param: "tercero", label: t("tercero"), tipo: "text" },
+                { param: "min", label: t("montoMin"), tipo: "number" },
+                { param: "max", label: t("montoMax"), tipo: "number" },
+              ]}
+            />
+          }
+        />
+      </Suspense>
 
       {filas.length === 0 ? (
-        <EstadoVacio
-          icono={ReceiptText}
-          titulo={hayFiltro ? t("vacioFiltro") : t("vacio")}
-        />
+        hayFiltro ? (
+          <EmptyState
+            icon={ReceiptText}
+            title={t("vacioFiltro")}
+            action={
+              <Button asChild variant="outline">
+                <Link href="/contabilidad/recibos">{tl("quitarFiltros")}</Link>
+              </Button>
+            }
+          />
+        ) : nuevo ? (
+          <EmptyState icon={ReceiptText} title={t("vacio")} description={t("vacioTexto")} action={nuevo} />
+        ) : (
+          <EmptyState readOnly icon={ReceiptText} title={t("vacio")} description={t("vacioTexto")} />
+        )
       ) : (
         <>
-          <ListaRecibos filas={filas.slice(0, TOPE_RECIBOS)} idioma={idioma} />
-          {filas.length > TOPE_RECIBOS && <p className="texto-meta">{t("tope")}</p>}
+          <ListaRecibos filas={filas.slice(0, TOPE_RECIBOS)} idioma={idioma} puedeAprobar={puedeAprobar} />
+          {filas.length > TOPE_RECIBOS && <p className="text-meta">{t("tope")}</p>}
         </>
       )}
     </div>

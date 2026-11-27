@@ -51,6 +51,8 @@ const ESPACIOS_BASE = [
   // desde cualquier lista y la mayoría son clientes. Pocas claves.
   "appUi",
   "estados",
+  // Textos nuevos de las listas migradas al patrón de docs/ux-rules.md (`listas.<ruta>.*`).
+  "listas",
 ] as const;
 
 /**

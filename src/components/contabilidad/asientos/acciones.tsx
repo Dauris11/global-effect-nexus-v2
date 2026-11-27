@@ -42,10 +42,13 @@ export function DialogoRevertir({
   id,
   numero,
   periodoCerrado,
+  compacto = false,
 }: {
   id: string;
   numero: string;
   periodoCerrado: boolean;
+  /** Botón de icono para la fila de la lista; el nombre accesible sigue siendo «Revertir». */
+  compacto?: boolean;
 }) {
   const t = useTranslations("contab.asientos.revertir");
   const [abierto, setAbierto] = useState(false);
@@ -56,10 +59,16 @@ export function DialogoRevertir({
   return (
     <Dialog open={abierto && estado.estado !== "ok"} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Undo2 className="size-4" />
-          {t("boton")}
-        </Button>
+        {compacto ? (
+          <Button variant="ghost" size="icon" aria-label={`${t("boton")} ${numero}`} title={t("boton")}>
+            <Undo2 />
+          </Button>
+        ) : (
+          <Button variant="outline">
+            <Undo2 className="size-4" />
+            {t("boton")}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

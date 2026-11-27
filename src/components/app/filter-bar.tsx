@@ -39,6 +39,7 @@ export function FilterBar({
   placeholder,
   selectores,
   moreFilters,
+  porDefecto,
   className,
 }: {
   chips?: readonly ChipEstado[];
@@ -52,6 +53,11 @@ export function FilterBar({
   selectores?: readonly SelectorFiltro[];
   /** Contenido libre adicional del popover; debe escribir en la URL por su cuenta. */
   moreFilters?: React.ReactNode;
+  /**
+   * Valor del chip que rige cuando la URL no trae ninguno (p. ej. «Por atender» en una bandeja).
+   * Con él NO se pinta «Todos»: el estado sin parámetro ya es ese chip, y dos «por defecto» confundirían.
+   */
+  porDefecto?: string;
   className?: string;
 }) {
   const t = useTranslations("appUi");
@@ -174,8 +180,11 @@ export function FilterBar({
 
       {chips && chips.length > 0 && (
         <div role="group" className="sin-barra -mx-6 flex gap-2 overflow-x-auto px-6 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
-          {[{ value: "", label: t("filterBar.all"), count: totalChips, param: undefined }, ...chips].map((c) => {
-            const esteActivo = c.value === "" ? !hayChipActivo : parametros.get(paramDe(c)) === c.value;
+          {[...(porDefecto === undefined ? [{ value: "", label: t("filterBar.all"), count: totalChips, param: undefined as string | undefined }] : []), ...chips].map((c) => {
+            const esteActivo =
+              c.value === ""
+                ? !hayChipActivo
+                : parametros.get(paramDe(c)) === c.value || (c.value === porDefecto && !parametros.get(paramDe(c)));
 
             return (
               <button

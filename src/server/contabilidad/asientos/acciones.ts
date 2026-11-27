@@ -18,6 +18,7 @@ import { esFechaIso, esUuid, numeroDocumento } from "@/lib/contabilidad/formato"
 import { consultarUna, enTransaccionComo } from "@/lib/db";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { vistaDeLineasSql, type LineaSql } from "@/server/contabilidad/asientos/vista-sql";
+import { lineasDeAsiento, type LineaAsiento } from "@/server/contabilidad/asientos/consultas";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import {
   contextoDe,
@@ -403,4 +404,14 @@ export async function asientoDePlantilla(plantillaId: string): Promise<VistaAsie
     [plantillaId],
   );
   return vistaDeLineasSql(fila?.lineas ?? [], { descripcion: fila?.concepto });
+}
+
+/**
+ * Líneas de un asiento para el panel lateral de la lista. Se piden al abrir
+ * el panel y no con la lista: 200 asientos con sus líneas serían miles de
+ * filas que casi nadie va a mirar. Pide el mismo permiso que la pantalla.
+ */
+export async function lineasParaPanel(id: string): Promise<LineaAsiento[]> {
+  await requerirPermiso("contabilidad.leer");
+  return lineasDeAsiento(id);
 }

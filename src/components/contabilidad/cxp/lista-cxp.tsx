@@ -1,165 +1,143 @@
 "use client";
 
-import { AlertTriangle, Calendar, CheckCircle2, Clock, FileText, GanttChartSquare, HandCoins } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { StatusBadge } from "@/components/app/status-badge";
 import { Monto } from "@/components/contabilidad/comun";
-import { Badge } from "@/components/ui/badge";
+import { PanelCxp } from "@/components/contabilidad/cxp/panel-cxp";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
-import type { EstadoCxp, FilaCxp } from "@/server/contabilidad/cxp/consultas";
+import { senalVencimiento } from "@/lib/contabilidad/cxp";
+import type { FilaCxp } from "@/server/contabilidad/cxp/consultas";
 
-export function ListaCxp({
-  cuentas,
-  estadoActual,
-}: {
-  cuentas: FilaCxp[];
-  estadoActual: EstadoCxp | "abiertas";
-}) {
+/**
+ * Tabla densa de cuentas por pagar. La señal «vencida» / «por vencer» sale de
+ * `dias_vencida`, calculado en la base con la fecha de la Fundación (America/Santo_Domingo),
+ * y se muestra como `StatusBadge` junto a la fecha, con su icono. Clic en la fila: panel lateral.
+ */
+export function ListaCxp({ cuentas, puedeRegistrar }: { cuentas: FilaCxp[]; puedeRegistrar: boolean }) {
   const t = useTranslations("contab.cxp");
-  const tc = useTranslations("contab");
+  const tl = useTranslations("listas.cxp");
 
-  const pestañas: { valor: EstadoCxp | "abiertas"; etiqueta: string }[] = [
-    { valor: "abiertas", etiqueta: "Abiertas" },
-    { valor: "pendiente", etiqueta: tc("estadoCxp.pendiente") },
-    { valor: "programada", etiqueta: tc("estadoCxp.programada") },
-    { valor: "pagada_parcial", etiqueta: tc("estadoCxp.pagada_parcial") },
-    { valor: "pagada", etiqueta: tc("estadoCxp.pagada") },
-    { valor: "anulada", etiqueta: tc("estadoCxp.anulada") },
-  ];
+  const textoVencimiento = (c: FilaCxp) =>
+    c.dias_vencida > 0
+      ? t("vencida", { n: c.dias_vencida })
+      : c.dias_vencida === 0
+        ? t("venceHoy")
+        : tl("venceEn", { n: -c.dias_vencida });
+  const origen = (c: FilaCxp) =>
+    [c.origen === "factura" ? t("origenFactura") : t("origenSolicitud", { folio: c.solicitud_folio ?? "" }), c.proyecto]
+      .filter(Boolean)
+      .join(" · ");
 
   return (
-    <div className="space-y-4">
-      {/* Pestañas de estado y botón al Gantt */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1.5 border-b border-linea pb-2">
-          {pestañas.map((p) => {
-            const activa = estadoActual === p.valor;
+    <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <table className="hidden w-full text-sm md:table">
+        <thead className="border-b border-linea text-left texto-meta">
+          <tr>
+            <th className="px-4 py-3 font-medium">{t("col.tercero")}</th>
+            <th className="px-4 py-3 font-medium">{t("col.concepto")}</th>
+            <th className="px-4 py-3 font-medium">{t("col.vencimiento")}</th>
+            <th className="px-4 py-3 text-right font-medium">{t("col.saldo")}</th>
+            <th className="px-4 py-3 font-medium">{t("col.estado")}</th>
+            <th className="px-4 py-3">
+              <span className="sr-only">{tl("col.acciones")}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-linea">
+          {cuentas.map((c) => {
+            const senal = senalVencimiento(c.estado, c.dias_vencida);
+            const abierta = c.estado !== "pagada" && c.estado !== "anulada";
+
             return (
-              <Button
-                key={p.valor}
-                asChild
-                variant={activa ? "secondary" : "ghost"}
-                size="sm"
-                className={activa ? "font-semibold" : "text-tinta-2"}
-              >
-                <Link
-                  href={
-                    p.valor === "abiertas"
-                      ? "/contabilidad/cuentas-por-pagar"
-                      : `/contabilidad/cuentas-por-pagar?estado=${p.valor}`
-                  }
-                >
-                  {p.etiqueta}
-                </Link>
-              </Button>
+              <tr key={c.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
+                <td className="max-w-64 px-4 py-1.5">
+                  <PanelCxp
+                    cuenta={c}
+                    puedeRegistrar={puedeRegistrar}
+                    textoVencimiento={textoVencimiento(c)}
+                    disparador={
+                      <button
+                        type="button"
+                        aria-label={`${tl("vistaRapida")}: ${c.tercero}`}
+                        className="block min-w-0 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span className="block truncate font-semibold">{c.tercero}</span>
+                        <span className="text-meta block truncate">{origen(c)}</span>
+                      </button>
+                    }
+                  />
+                </td>
+                <td className="max-w-64 px-4 py-1.5">
+                  <span className="block truncate">{c.concepto}</span>
+                  {c.fecha_programada && (
+                    <span className="text-meta block truncate">{t("programada", { fecha: c.fecha_programada })}</span>
+                  )}
+                </td>
+                <td className="px-4 py-1.5 whitespace-nowrap">
+                  <span className="flex items-center gap-2">
+                    <span className="tabular-nums">{c.fecha_vencimiento}</span>
+                    {senal && <StatusBadge status={senal} />}
+                  </span>
+                  {abierta && <span className="text-meta block">{textoVencimiento(c)}</span>}
+                </td>
+                <td className="px-4 py-1.5 text-right whitespace-nowrap">
+                  <Monto valor={c.saldo} moneda={c.moneda} className="block font-semibold" />
+                  {Number(c.pagado) > 0 && (
+                    <span className="text-meta block">
+                      {t("pagado")}: <Monto valor={c.pagado} moneda={c.moneda} />
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-1.5">
+                  <StatusBadge status={c.estado} />
+                </td>
+                <td className="relative z-10 w-16 px-2 py-1.5 text-right">
+                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                    <Button asChild variant="ghost" size="icon" aria-label={tl("verCuenta")}>
+                      <Link href={`/contabilidad/cuentas-por-pagar/${c.id}`}><Eye /></Link>
+                    </Button>
+                  </span>
+                </td>
+              </tr>
             );
           })}
-        </div>
+        </tbody>
+      </table>
 
-        <Button asChild variant="outline" size="sm">
-          <Link href="/contabilidad/cuentas-por-pagar/gantt">
-            <GanttChartSquare className="size-4" />
-            {t("gantt")}
-          </Link>
-        </Button>
-      </div>
+      <ul className="divide-y divide-linea md:hidden">
+        {cuentas.map((c) => {
+          const senal = senalVencimiento(c.estado, c.dias_vencida);
 
-      {cuentas.length === 0 ? (
-        <div className="rounded-tarjeta border border-linea bg-background p-8 text-center text-tinta-2">
-          <p className="font-medium text-tinta">{t("vacio")}</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-tarjeta border border-linea bg-background">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-linea text-xs text-tinta-2 uppercase bg-superficie/40">
-              <tr>
-                <th className="py-3 px-4">{t("col.tercero")}</th>
-                <th className="py-3 px-4">{t("col.concepto")}</th>
-                <th className="py-3 px-4">{t("col.vencimiento")}</th>
-                <th className="py-3 px-4 text-right">{t("col.saldo")}</th>
-                <th className="py-3 px-4 text-center">{t("col.estado")}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-linea">
-              {cuentas.map((c) => {
-                const vencida = c.dias_vencida > 0 && c.estado !== "pagada" && c.estado !== "anulada";
-                return (
-                  <tr key={c.id} className="hover:bg-superficie/60 transition-colors">
-                    <td className="py-3 px-4">
-                      <Link
-                        href={`/contabilidad/cuentas-por-pagar/${c.id}`}
-                        className="font-medium text-marca-700 hover:underline block truncate max-w-xs"
-                      >
-                        {c.tercero}
-                      </Link>
-                      <span className="text-xs text-tinta-2 block">
-                        {c.origen === "factura"
-                          ? t("origenFactura")
-                          : t("origenSolicitud", { folio: c.solicitud_folio ?? "" })}
-                        {c.proyecto ? ` · ${c.proyecto}` : ""}
+          return (
+            <li key={c.id}>
+              <PanelCxp
+                cuenta={c}
+                puedeRegistrar={puedeRegistrar}
+                textoVencimiento={textoVencimiento(c)}
+                disparador={
+                  <button type="button" className="flex w-full items-center gap-3 p-3.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <span className="min-w-0 flex-1 space-y-1">
+                      <span className="block truncate font-semibold">{c.tercero}</span>
+                      <span className="text-meta block truncate">{c.concepto}</span>
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        <StatusBadge status={c.estado} />
+                        {senal && <StatusBadge status={senal} />}
                       </span>
-                    </td>
-                    <td className="py-3 px-4 text-tinta max-w-sm truncate">
-                      {c.concepto}
-                      {c.fecha_programada && (
-                        <span className="text-xs text-marca-700 block mt-0.5">
-                          {t("programada", { fecha: c.fecha_programada })}
-                          {c.cuenta_salida ? ` (${c.cuenta_salida})` : ""}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <span className="font-mono text-xs block text-tinta">{c.fecha_vencimiento}</span>
-                      {vencida ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-alerta font-medium">
-                          <AlertTriangle className="size-3" />
-                          {t("vencida", { n: c.dias_vencida })}
-                        </span>
-                      ) : c.dias_vencida === 0 ? (
-                        <span className="text-xs text-marca-700 font-medium">{t("venceHoy")}</span>
-                      ) : (
-                        <span className="text-xs text-tinta-2">
-                          {t("vence", { fecha: c.fecha_vencimiento })}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <Monto
-                        valor={c.saldo}
-                        moneda={c.moneda}
-                        className="font-bold text-tinta block"
-                      />
-                      {Number(c.pagado) > 0 && (
-                        <span className="text-xs text-tinta-2">
-                          {t("pagado")}: <Monto valor={c.pagado} moneda={c.moneda} />
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
-                      <Badge
-                        className={
-                          c.estado === "pagada"
-                            ? INSIGNIA_SEMAFORO.dentro
-                            : c.estado === "anulada"
-                            ? INSIGNIA_SEMAFORO.alerta
-                            : vencida
-                            ? "bg-alerta-fondo text-alerta border border-alerta-linea"
-                            : undefined
-                        }
-                        variant={c.estado === "pendiente" ? "neutra" : undefined}
-                      >
-                        {tc(`estadoCxp.${c.estado}` as never)}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <Monto valor={c.saldo} moneda={c.moneda} className="block font-semibold" />
+                      <span className="text-meta block tabular-nums">{c.fecha_vencimiento}</span>
+                    </span>
+                  </button>
+                }
+              />
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
