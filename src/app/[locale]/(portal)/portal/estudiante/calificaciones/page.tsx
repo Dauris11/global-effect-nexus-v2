@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
-import { StatCard } from "@/components/ui/stat-card";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
 import { aprobada, promedio } from "@/lib/notas";
@@ -97,33 +96,26 @@ export default async function PaginaCalificaciones({
   const notasVisibles = visibles.flatMap((periodo) => periodo.notas);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-8 md:space-y-10">
+    <div className="animate-entrada space-y-8 md:space-y-10">
       <Cabecera
         titulo={t("gradesPage.title")}
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <StatCard
-          variant="centrada"
-          valor={promedioGeneral === null ? "—" : promedioGeneral.toFixed(1)}
-          etiqueta={t("stats.average")}
-        />
-        <StatCard
-          variant="centrada"
-          valor={indice === null ? "—" : indice.toFixed(2)}
-          etiqueta={`${t("gradesPage.gpaShort")} ${t("gpaScale")}`}
-        />
-        <StatCard
-          variant="centrada"
-          valor={String(notas.length)}
-          etiqueta={t("gradesPage.stats.evaluations")}
-        />
-        <StatCard
-          variant="centrada"
-          valor={String(aprobadas)}
-          etiqueta={t("stats.passed")}
-        />
-      </div>
+      {/* El índice y los créditos viven AQUÍ (no en el inicio), como un resumen y no como tarjetas de cifra:
+          las tarjetas KPI son solo de Inicio (docs/ux-rules.md §2). */}
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-y border-linea py-3 md:grid-cols-4">
+        {[
+          [t("stats.average"), promedioGeneral === null ? "—" : promedioGeneral.toFixed(1)],
+          [`${t("gradesPage.gpaShort")} ${t("gpaScale")}`, indice === null ? "—" : indice.toFixed(2)],
+          [t("gradesPage.stats.evaluations"), String(notas.length)],
+          [t("stats.passed"), String(aprobadas)],
+        ].map(([etiqueta, valor]) => (
+          <div key={etiqueta}>
+            <dt className="text-meta">{etiqueta}</dt>
+            <dd className="text-section tabular-nums">{valor}</dd>
+          </div>
+        ))}
+      </dl>
 
       {notas.length === 0 && notas360.length === 0 ? (
         <EstadoVacio

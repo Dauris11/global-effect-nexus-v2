@@ -46,7 +46,7 @@ export function StatCard({
 }) {
   if (variant === "centrada") {
     return (
-      <Card className={cn("items-center justify-center p-5 text-center", className)}>
+      <Card data-kpi className={cn("items-center justify-center p-5 text-center", className)}>
         <Valor valor={valor} className={cn(STAT_CARD.valorNeutro, "animate-entrada [animation-delay:60ms]", color)} />
         <p className={STAT_CARD.label}>{etiqueta}</p>
       </Card>
@@ -56,7 +56,7 @@ export function StatCard({
   // Etiqueta arriba y cifra debajo: la cifra es lo que se mira y la etiqueta, lo que la nombra.
   // El icono pasa a la esquina en un cuadrado redondeado, como el resto de las superficies.
   return (
-    <Card className={cn("group/cifra gap-4 p-5", className)}>
+    <Card data-kpi className={cn("group/cifra gap-4 p-5", className)}>
       <div className="flex items-start justify-between gap-3">
         <p className={cn(STAT_CARD.label, "mt-0 line-clamp-2 break-words font-medium")}>{etiqueta}</p>
         {Icono && (

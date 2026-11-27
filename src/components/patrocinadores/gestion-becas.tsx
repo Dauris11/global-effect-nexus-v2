@@ -225,7 +225,7 @@ function Fila({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold break-words">
             {/* Del becado al expediente: ahí están su pénsum, sus notas y su patrocinio. */}
-            <Link href={`/expedientes/${fila.estudiante_id}`} className="hover:text-[#187a99] hover:underline">
+            <Link href={`/expedientes/${fila.estudiante_id}`} className="hover:text-marca-700 hover:underline">
               {fila.nombre}
             </Link>
           </p>
@@ -239,7 +239,7 @@ function Fila({
           {vinculado ? (
             <>
               <p className="text-sm font-medium break-words">
-                <Link href={`/patrocinadores/${fila.patrocinador_id}`} className="hover:text-[#187a99] hover:underline">
+                <Link href={`/patrocinadores/${fila.patrocinador_id}`} className="hover:text-marca-700 hover:underline">
                   {fila.patrocinador}
                 </Link>
               </p>
@@ -265,7 +265,7 @@ function Fila({
 
         {/* El monto en el azul de la marca: es lo que entra por esta beca. */}
         {vinculado && fila.monto !== null && (
-          <p className="shrink-0 text-sm font-bold text-[#2096BA]">
+          <p className="shrink-0 text-sm font-bold text-marca-700">
             {formatoUsd(fila.monto)}
           </p>
         )}
@@ -435,7 +435,7 @@ function BotonDesvincular({ id }: { id: string }) {
       </Button>
 
       {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <span role="alert" className="text-[11px] text-[#171A1D]">
+        <span role="alert" className="text-[11px] text-tinta">
           {t("grants.form.error")}
         </span>
       )}

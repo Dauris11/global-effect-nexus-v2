@@ -18,6 +18,7 @@ import {
   HandCoins,
   Gauge,
   Inbox,
+  ListTodo,
   LayoutDashboard,
   Landmark,
   Mail,
@@ -48,6 +49,7 @@ import {
   modulosDeGrupo,
   type ModuloContable,
 } from "@/lib/contabilidad/modulos";
+import { modulosVisibles, type AccesoDeHref } from "@/lib/nav-modulos";
 import type { Permiso, Rol } from "@/lib/rbac";
 import { tienePermiso } from "@/lib/rbac";
 
@@ -104,6 +106,12 @@ export type ItemNav = {
    * `ux-rules.md` limita el sidebar a 8 entradas y lo raro se busca.
    */
   soloBusqueda?: boolean;
+  /** Va abajo del sidebar, separado y en gris (Calendario, Reportes, Configuración). */
+  pie?: boolean;
+  /** Rutas que también encienden esta entrada: las pestañas del módulo y sus detalles. */
+  activoEn?: readonly string[];
+  /** Distintivo numérico a la derecha: vencidos de Inicio o solicitudes que me tocan. */
+  insignia?: "vencidos" | "solicitudes";
 };
 
 export type SeccionNav = {
@@ -123,9 +131,9 @@ export type AreaNav = {
 
 const MENU_ADMINISTRACION: AreaNav[] = [
   {
-    clave: "bandeja",
-    etiqueta: "pending",
-    icono: Inbox,
+    clave: "inicio",
+    etiqueta: "home",
+    icono: Home,
     secciones: [
       {
         // Una sola entrada de inicio: Pendientes junta lo que antes eran la
@@ -133,7 +141,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         // mismo trabajo). Cada pestaña se abre con `?tab=`.
         // Universal: la bandeja es el inicio del personal y cada pestaña
         // filtra por sus propios permisos dentro de la pantalla.
-        items: [{ etiqueta: "pending", href: "/bandeja", icono: Inbox, universal: true }],
+        items: [{ etiqueta: "home", href: "/inicio", icono: Home, universal: true }],
       },
     ],
   },
@@ -211,9 +219,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "habitudesHub",
-            href: "/habitudes",
-            icono: BookOpen,
+            etiqueta: "home",
+            href: "/inicio",
+            icono: Home,
             permiso: "habitudes.recursos.leer",
           },
         ],
@@ -250,6 +258,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Users,
             permiso: "expedientes.leer",
           },
+          // Acciones del buscador ⌘K: no son pantallas del menú, son «hacer X» (docs/ux-rules.md).
+          { etiqueta: "newFileAction", href: "/expedientes?accion=nuevo", icono: Users, permiso: "expedientes.escribir", soloBusqueda: true },
+          { etiqueta: "newRequestAction", href: "/administrativo/solicitudes?accion=nueva", icono: Inbox, universal: true, soloBusqueda: true },
           {
             etiqueta: "atRisk",
             href: "/expedientes/riesgo",
@@ -303,9 +314,9 @@ const MENU_ADMINISTRACION: AreaNav[] = [
           // los módulos que esta persona puede abrir. Universal, porque se
           // arma solo con lo que sus permisos habilitan.
           {
-            etiqueta: "adminHome",
-            href: "/administrativo",
-            icono: LayoutDashboard,
+            etiqueta: "home",
+            href: "/inicio",
+            icono: Home,
             universal: true,
           },
           // Primero: es lo que espera respuesta de alguien. Universal, porque
@@ -315,6 +326,12 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             etiqueta: "requests",
             href: "/administrativo/solicitudes",
             icono: Inbox,
+            universal: true,
+          },
+          {
+            etiqueta: "tasks",
+            href: "/administrativo/tareas",
+            icono: ListTodo,
             universal: true,
           },
           {
@@ -381,8 +398,8 @@ const MENU_ADMINISTRACION: AreaNav[] = [
         // salen del registro del departamento, igual que el menú de contabilidad.
         items: [
           {
-            etiqueta: "accountingHome",
-            href: "/portal/contabilidad",
+            etiqueta: "home",
+            href: "/inicio",
             icono: Home,
             permiso: "contabilidad.leer",
           },
@@ -485,15 +502,15 @@ const MENU_ADMINISTRACION: AreaNav[] = [
 const MENU_ESTUDIANTE: AreaNav[] = [
   {
     clave: "panel",
-    etiqueta: "studentPortal",
+    etiqueta: "home",
     icono: Home,
     secciones: [
       {
         items: [
           {
-            etiqueta: "studentPortal",
-            href: "/portal/estudiante",
-            icono: GraduationCap,
+            etiqueta: "home",
+            href: "/inicio",
+            icono: Home,
             universal: true,
           },
         ],
@@ -611,15 +628,15 @@ const MENU_ESTUDIANTE: AreaNav[] = [
 const MENU_DOCENTE: AreaNav[] = [
   {
     clave: "panel",
-    etiqueta: "teacherPortal",
+    etiqueta: "home",
     icono: Home,
     secciones: [
       {
         items: [
           {
-            etiqueta: "teacherPortal",
-            href: "/portal/profesor",
-            icono: BookOpen,
+            etiqueta: "home",
+            href: "/inicio",
+            icono: Home,
             permiso: "docencia.impartir",
           },
         ],
@@ -660,9 +677,9 @@ const MENU_DOCENTE: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "habitudesHub",
-            href: "/habitudes",
-            icono: BookOpen,
+            etiqueta: "home",
+            href: "/inicio",
+            icono: Home,
             permiso: "habitudes.recursos.leer",
           },
         ],
@@ -734,7 +751,7 @@ const MENU_DOCENTE: AreaNav[] = [
 const ENTRADAS_HABITUDES: ItemNav[] = [
   // El hub exige `habitudes.recursos.leer` (el guard de la pantalla es el mismo):
   // quien no lo tiene no ve la entrada, ni entra por la URL.
-  { etiqueta: "habitudesHome", href: "/habitudes", icono: Home, permiso: "habitudes.recursos.leer" },
+  { etiqueta: "home", href: "/inicio", icono: Home, permiso: "habitudes.recursos.leer" },
   { etiqueta: "resources", href: "/habitudes/recursos", icono: BookOpen, permiso: "habitudes.recursos.leer" },
   {
     etiqueta: "logVisit",
@@ -826,8 +843,8 @@ const MENU_CONTABILIDAD: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "accountingHome",
-            href: "/portal/contabilidad",
+            etiqueta: "home",
+            href: "/inicio",
             icono: Home,
             permiso: "contabilidad.leer",
           },
@@ -959,9 +976,9 @@ const AREA_DOCENCIA: AreaNav = {
     {
       items: [
         {
-          etiqueta: "teacherPortal",
-          href: "/portal/profesor",
-          icono: BookOpen,
+          etiqueta: "home",
+          href: "/inicio",
+          icono: Home,
           permiso: "docencia.impartir",
         },
         {
@@ -984,14 +1001,14 @@ const AREA_DOCENCIA: AreaNav = {
 // Solo `super_admin`: el tablero de Dirección/Junta va primero y la bandeja sigue debajo.
 const MENU_SUPER_ADMIN: AreaNav[] = [
   {
-    clave: "ejecutivo",
-    etiqueta: "executiveDashboard",
-    icono: Gauge,
+    clave: "inicio",
+    etiqueta: "home",
+    icono: Home,
     // Universal: `requerirRol(["super_admin"])`. Es acceso por ROL (Dirección/Junta),
     // no un permiso que se reparta; el menú ya es solo de ese rol.
     secciones: [
       {
-        items: [{ etiqueta: "executiveDashboard", href: "/ejecutivo", icono: Gauge, universal: true }],
+        items: [{ etiqueta: "home", href: "/inicio", icono: Home, universal: true }],
       },
     ],
   },
@@ -1037,7 +1054,19 @@ export function menuDe(
       area.secciones.flatMap((s) => s.items).some((i) => !hrefsBase.has(i.href)),
   ).map(({ area }) => area);
 
-  return [...base, ...habilitadas]
+  // `/inicio` es la única entrada de inicio de TODOS los roles: las áreas heredadas traen cada una
+  // su propia «Inicio», así que se queda la primera y las demás se descartan. Un rol sin ninguna
+  // (Habitudes, chofer) la recibe al principio.
+  let hayInicio = false;
+  const sinInicioRepetido = (item: ItemNav) => {
+    if (item.href !== "/inicio") return true;
+    if (hayInicio) return false;
+    hayInicio = true;
+
+    return true;
+  };
+
+  const areas = [...base, ...habilitadas]
     .map((area) => ({
       ...area,
       secciones: area.secciones
@@ -1048,24 +1077,70 @@ export function menuDe(
           items: seccion.items.filter(
             (item) =>
               (!item.permiso || puede(item.permiso)) &&
-              (!item.algunPermiso || item.algunPermiso.some(puede)),
+              (!item.algunPermiso || item.algunPermiso.some(puede)) &&
+              sinInicioRepetido(item),
           ),
         }))
         .filter((seccion) => seccion.items.length > 0),
     }))
     .filter((area) => area.secciones.length > 0);
+
+  return hayInicio ? areas : [AREA_INICIO, ...areas];
 }
 
-/** El menú tal como se dibuja: sin las entradas que solo viven en el buscador. */
+const AREA_INICIO: AreaNav = {
+  clave: "inicio",
+  etiqueta: "home",
+  icono: Home,
+  secciones: [{ items: [{ etiqueta: "home", href: "/inicio", icono: Home, universal: true }] }],
+};
+
+/** Lo que protege cada pantalla, buscado por `href` en el menú completo (el permiso no se repite en la config de módulos). */
+// Un objeto y no un `Map`: en este archivo `Map` es el icono de lucide.
+let accesos: Record<string, AccesoDeHref> | null = null;
+export function accesoDeHref(href: string): AccesoDeHref {
+  if (!accesos) {
+    const lectura: Record<string, AccesoDeHref> = {};
+    for (const r of Object.keys(MENU_POR_ROL) as Rol[]) {
+      for (const item of itemsDeTodoElMenu(r)) {
+        const actual = lectura[item.href];
+        // Si el mismo href aparece en varios menús, gana el más permisivo (universal) y, si no, el primero.
+        if (!actual || (item.universal && !actual.universal)) {
+          lectura[item.href] = { permiso: item.permiso, algunPermiso: item.algunPermiso, universal: item.universal };
+        }
+      }
+    }
+    accesos = lectura;
+  }
+
+  return accesos[href];
+}
+
+/**
+ * El sidebar tal como se dibuja: un enlace por MÓDULO (≤ 9, más Calendario/Reportes/Configuración abajo, en gris),
+ * con las antiguas entradas como pestañas dentro de cada uno. El menú completo (`menuDe`) sigue siendo el
+ * índice del buscador ⌘K: allí están TODAS las rutas.
+ */
 export function menuVisibleDe(rol: Rol, permisos?: ReadonlySet<Permiso>): AreaNav[] {
-  return menuDe(rol, permisos)
-    .map((area) => ({
-      ...area,
-      secciones: area.secciones
-        .map((seccion) => ({ ...seccion, items: seccion.items.filter((item) => !item.soloBusqueda) }))
-        .filter((seccion) => seccion.items.length > 0),
-    }))
-    .filter((area) => area.secciones.length > 0);
+  const puede = (permiso: Permiso) => (permisos ? permisos.has(permiso) : tienePermiso(rol, permiso));
+  const modulos = modulosVisibles(rol, { acceso: accesoDeHref, puede });
+  const aItem = (m: (typeof modulos)[number]): ItemNav => ({
+    etiqueta: `m.${m.etiqueta}`,
+    href: m.href,
+    icono: m.icono,
+    // La pantalla de cada pestaña ya exige su permiso; el módulo se muestra si alguna se puede abrir.
+    universal: true,
+    pie: m.pie,
+    insignia: m.insignia,
+    activoEn: m.pestanasVisibles.flatMap((t) => [t.href, ...(t.activoEn ?? [])]),
+  });
+  const area = (clave: string, items: ItemNav[]): AreaNav[] =>
+    items.length > 0 ? [{ clave, etiqueta: "", icono: Home, secciones: [{ items }] }] : [];
+
+  return [
+    ...area("principal", modulos.filter((m) => !m.pie).map(aItem)),
+    ...area("pie", modulos.filter((m) => m.pie).map(aItem)),
+  ];
 }
 
 /**
@@ -1192,15 +1267,11 @@ export type PestanaMovil =
  * orden de siempre. La entrada de cada portal va primero: es "Inicio".
  */
 const PRIORIDAD_MOVIL = [
-  "/ejecutivo",
-  "/bandeja",
-  "/habitudes",
+  "/inicio",
   "/habitudes/visitas/nueva",
   "/habitudes/recursos",
-  "/portal/profesor",
   "/portal/profesor/clases",
   "/portal/profesor/entregas",
-  "/portal/contabilidad",
   "/administrativo/solicitudes",
   "/calendario",
   "/expedientes",
@@ -1211,13 +1282,8 @@ const PRIORIDAD_MOVIL = [
 
 /** Etiqueta corta para la pestaña: en 11 px "Portal administrativo" no cabe. */
 const ETIQUETA_CORTA: Record<string, string> = {
-  "/ejecutivo": "home",
-  "/bandeja": "home",
-  "/portal/profesor": "home",
-  "/portal/contabilidad": "home",
-  "/portal/estudiante": "home",
+  "/inicio": "home",
   "/portal/estudiante/clases": "classesShort",
-  "/habitudes": "home",
   "/habitudes/visitas/nueva": "visitShort",
   "/portal/profesor/clases": "classesShort",
   "/portal/profesor/entregas": "toGradeShort",
@@ -1256,7 +1322,7 @@ export function pestanasMoviles(
 
   if (rol === "estudiante") {
     const deseadas = [
-      "/portal/estudiante",
+      "/inicio",
       "/portal/estudiante/clases",
       "/portal/estudiante/tareas",
     ];

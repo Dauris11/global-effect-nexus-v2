@@ -57,7 +57,7 @@ export default async function PaginaRetenciones({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <EncabezadoPagina
           titulo={t("titulo")}

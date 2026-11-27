@@ -68,6 +68,7 @@ const SELECTOR =
  * para veinte filas es peor experiencia y más código.
  */
 export function GestionClases360({
+  modo = "gestion",
   clases,
   inscritosPorClase,
   entregas,
@@ -102,6 +103,8 @@ export function GestionClases360({
   seccionInicial?: "asistencia" | "alumnos" | "tarea" | "publicaciones" | null;
   /** Nota mínima aprobatoria de Global Effect 360 (`becas.nota_minima_360`). */
   notaMinima360?: number;
+  /** `reporte`: solo las cifras y gráficas (viven en /reportes/academico); `gestion`: la pantalla de trabajo, sin ellas. */
+  modo?: "gestion" | "reporte";
 }) {
   const t = useTranslations("academic.classes360");
   const [abierto, setAbierto] = useState<string | null>(
@@ -138,8 +141,8 @@ export function GestionClases360({
   ];
   const totalEntregas = entregas.length + calificadasCount;
 
-  return (
-    <div className="space-y-6">
+  const resumen = (
+    <>
       {clases.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
@@ -181,6 +184,12 @@ export function GestionClases360({
           </Card>
         </div>
       )}
+    </>
+  );
+  if (modo === "reporte") return <div className="space-y-5">{resumen}</div>;
+
+  return (
+    <div className="space-y-6">
 
       {/* ── 1. La calificación vive en un solo sitio: el revisor ── */}
       <Link

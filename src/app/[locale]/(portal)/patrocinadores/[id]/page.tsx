@@ -79,7 +79,7 @@ export default async function PaginaPatrocinador({
   const puedeCartas = usuarioTienePermiso(usuario, "patrocinadores.escribir");
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6 pb-10">
+    <div className="animate-entrada space-y-6 pb-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {volver}
         {puedeCartas && (

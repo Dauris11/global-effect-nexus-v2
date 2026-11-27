@@ -293,10 +293,10 @@ function LectorFicha({
   return (
     <form
       action={leer}
-      className="space-y-2 rounded-xl border border-[#2096BA]/30 bg-[#2096BA]/10 p-3"
+      className="space-y-2 rounded-xl border border-marca-500/30 bg-marca-500/10 p-3"
     >
       <div className="flex flex-wrap items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#2096BA]/15 text-[#187a99]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-marca-500/15 text-marca-700">
           <ScanLine className="size-4" />
         </span>
 
@@ -323,7 +323,7 @@ function LectorFicha({
       </div>
 
       {lectura.estado === "ok" && (
-        <p className="text-xs text-[#0a6a8a]">
+        <p className="text-xs text-marca-800">
           {textos.extracted}: <b>{lectura.nombre}</b>
           {lectura.cedula ? ` · ${lectura.cedula}` : ""}
           {lectura.fechaNacimiento ? ` · ${lectura.fechaNacimiento}` : ""}
@@ -334,8 +334,8 @@ function LectorFicha({
 
       {fallo && (
         <p role="alert" className="flex items-start gap-1.5">
-          <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-[#171A1D]" />
-          <span className="text-xs text-[#171A1D]">{fallo}</span>
+          <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-tinta" />
+          <span className="text-xs text-tinta">{fallo}</span>
         </p>
       )}
 
@@ -687,7 +687,7 @@ export function CamposExpediente({
             <input type="hidden" name="longitud" value={longitud != null ? String(longitud) : ""} />
             <input type="hidden" name="municipio" value={municipio} />
 
-            <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-linea dark:border-slate-800">
+            <div className="col-span-1 md:col-span-2 space-y-2 pt-3 border-t border-linea dark:border-linea">
               <span className="flex items-center gap-1.5 text-sm font-medium text-tinta">
                 <MapPin className="size-4 text-marca-600" />
                 {tMapa("titulo")}

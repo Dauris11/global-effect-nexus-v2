@@ -188,7 +188,7 @@ export function RevisorEntregas({
                         <Icono
                           className={cn(
                             "size-4 shrink-0",
-                            calificada ? "text-[#1E9E6A]" : "text-tinta-3",
+                            calificada ? "text-status-success-fg" : "text-tinta-3",
                           )}
                           aria-hidden
                         />
@@ -374,7 +374,7 @@ function DetalleEntrega({
       </div>
 
       {error && (
-        <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-[#B4342B]">
+        <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-status-danger-fg">
           <AlertCircle className="size-4" aria-hidden />
           {tProf("gradeError")}
         </p>

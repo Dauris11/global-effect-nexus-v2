@@ -117,7 +117,7 @@ export default async function PaginaImpuestos({
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 md:space-y-10 animate-entrada">
+    <div className="space-y-8 md:space-y-10 animate-entrada">
       <EncabezadoPagina
         titulo={t("titulo")}
       />
@@ -134,7 +134,7 @@ export default async function PaginaImpuestos({
       </form>
 
       <Tabs defaultValue="formatos" className="w-full">
-        <TabsList className="grid grid-cols-3 max-w-md bg-muted p-1 dark:bg-slate-800 rounded-xl">
+        <TabsList className="grid grid-cols-3 max-w-md bg-muted p-1 dark:bg-muted rounded-xl">
           <TabsTrigger value="formatos" className="text-xs">
             {t("formatosDgii")}
           </TabsTrigger>
@@ -160,7 +160,7 @@ export default async function PaginaImpuestos({
                       <FileCode className="size-5" />
                     </span>
                     <div>
-                      <p className="font-semibold text-tinta dark:text-slate-100">
+                      <p className="font-semibold text-tinta dark:text-tinta">
                         {formato.nombre}
                       </p>
                       <p className="text-xs text-muted-foreground">{formato.descripcion}</p>
@@ -168,7 +168,7 @@ export default async function PaginaImpuestos({
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-linea pt-3 dark:border-slate-800">
+                <div className="space-y-2 border-t border-linea pt-3 dark:border-linea">
                   <div className="flex flex-wrap items-center gap-2">
                     <Button asChild size="sm">
                       <a href={formato.txtHref} download>
@@ -196,8 +196,8 @@ export default async function PaginaImpuestos({
           </div>
 
           {/* Sección Libros Contables Auxiliares */}
-          <div className="space-y-4 pt-6 border-t border-linea dark:border-slate-800">
-            <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
+          <div className="space-y-4 pt-6 border-t border-linea dark:border-linea">
+            <h3 className="text-base font-semibold text-tinta dark:text-tinta">
               {t("libros")}
             </h3>
             <ul className={TARJETA.contenido}>
@@ -240,9 +240,9 @@ export default async function PaginaImpuestos({
         <TabsContent value="liquidaciones" className="space-y-6 mt-6">
           <div className="grid gap-6 md:grid-cols-3">
             {/* Tarjeta IT-1 */}
-            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
+            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-tinta dark:text-slate-100">IT-1 (ITBIS)</span>
+                <span className="font-bold text-tinta dark:text-tinta">IT-1 (ITBIS)</span>
                 <Badge variant="outline">{elegido}</Badge>
               </div>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
@@ -264,9 +264,9 @@ export default async function PaginaImpuestos({
             </div>
 
             {/* Tarjeta IR-17 */}
-            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
+            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-tinta dark:text-slate-100">IR-17 (Retenciones)</span>
+                <span className="font-bold text-tinta dark:text-tinta">IR-17 (Retenciones)</span>
                 <Badge variant="outline">{elegido}</Badge>
               </div>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
@@ -290,9 +290,9 @@ export default async function PaginaImpuestos({
             </div>
 
             {/* Tarjeta ISFL-01 */}
-            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
+            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-tinta dark:text-slate-100">ISFL-01 (Anual)</span>
+                <span className="font-bold text-tinta dark:text-tinta">ISFL-01 (Anual)</span>
                 <Badge variant="outline">{anio}</Badge>
               </div>
               <div className="space-y-1.5 text-xs divide-y divide-slate-100 dark:divide-slate-800 font-mono">
@@ -317,9 +317,9 @@ export default async function PaginaImpuestos({
 
         {/* 3. CALENDARIO FISCAL */}
         <TabsContent value="calendario" className="space-y-4 mt-6">
-          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                 <tr>
                   <th className="px-4 py-3">{t("codigo")}</th>
                   <th className="px-4 py-3">{t("obligacion")}</th>
@@ -330,19 +330,19 @@ export default async function PaginaImpuestos({
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {calendario.map((ev) => (
-                  <tr key={ev.codigo} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                    <td className="px-4 py-3 font-mono font-bold text-tinta dark:text-slate-100">
+                  <tr key={ev.codigo} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                    <td className="px-4 py-3 font-mono font-bold text-tinta dark:text-tinta">
                       {ev.codigo}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-tinta dark:text-slate-100">{ev.nombre}</div>
+                      <div className="font-medium text-tinta dark:text-tinta">{ev.nombre}</div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-slate-400">
+                    <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-tinta-3">
                       {ev.fechaVencimiento} (Día {ev.diaLimite})
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">
                       {ev.diasRestantes > 0 ? (
-                        <span className="text-tinta-2 dark:text-slate-400">
+                        <span className="text-tinta-2 dark:text-tinta-3">
                           {ev.diasRestantes} {t("dias")}
                         </span>
                       ) : (

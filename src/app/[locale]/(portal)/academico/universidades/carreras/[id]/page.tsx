@@ -66,7 +66,7 @@ export default async function PaginaCarrera({
     : [[], []];
 
   return (
-    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina
         titulo={
           <span className="inline-flex items-center gap-3">

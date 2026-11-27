@@ -37,7 +37,7 @@ export default async function PaginaCajas({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
         titulo={t("titulo")}
         acciones={puedeCrear ? <FormularioCaja responsables={responsables} /> : undefined}

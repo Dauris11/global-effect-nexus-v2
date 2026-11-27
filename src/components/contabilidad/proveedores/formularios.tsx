@@ -77,7 +77,7 @@ function Campo({
         <Label htmlFor={id} className="text-sm font-medium">
           {etiqueta}
           {obligatorio && (
-            <span aria-hidden className="ml-0.5 text-[#B4342B]">
+            <span aria-hidden className="ml-0.5 text-status-danger-fg">
               *
             </span>
           )}

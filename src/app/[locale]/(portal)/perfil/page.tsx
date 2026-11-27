@@ -48,11 +48,11 @@ export default async function PaginaPerfil({
   const avatarUrl = urlDeAvatar(fila?.foto_url ?? null);
 
   return (
-    <div className="mx-auto max-w-4xl animate-entrada space-y-8 pb-10">
+    <div className="animate-entrada space-y-8 pb-10">
       {/* Banner / Header del Perfil */}
       <div className="relative overflow-hidden rounded-hoja bg-marca-600 p-6 sm:p-8 text-white shadow-card">
         <div className="absolute -right-10 -top-10 size-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute -left-10 -bottom-10 size-48 rounded-full bg-[#171A1D]/20 blur-xl pointer-events-none" />
+        <div className="absolute -left-10 -bottom-10 size-48 rounded-full bg-tinta/20 blur-xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <div className="relative size-20 sm:size-24 shrink-0 rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-lg bg-white/20 flex items-center justify-center text-3xl font-extrabold text-white backdrop-blur-xs">
@@ -84,7 +84,7 @@ export default async function PaginaPerfil({
               {usuario.nombre}
             </h1>
             
-            <p className="text-slate-100/90 text-xs sm:text-sm font-mono flex items-center gap-2">
+            <p className="text-tinta/90 text-xs sm:text-sm font-mono flex items-center gap-2">
               <Mail className="size-3.5 text-white/80 shrink-0" />
               {/* `truncate` como el nombre de arriba: un correo no tiene
                   espacios, así que sin esto un correo institucional largo se
@@ -99,10 +99,10 @@ export default async function PaginaPerfil({
       <div className="grid gap-6 md:grid-cols-3">
         {/* Formulario de Edición de Perfil (Ocupa 2 columnas en pantallas medianas+) */}
         <div className="md:col-span-2">
-          <Card className="border-linea/80 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden">
-            <CardHeader className="border-b border-linea dark:border-slate-800/60 bg-muted/50 dark:bg-slate-900/30 pb-4">
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-tinta dark:text-slate-100">
-                <User className="size-4 text-[#2096BA]" />
+          <Card className="border-linea/80 dark:border-linea shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-linea dark:border-linea/60 bg-muted/50 dark:bg-surface-2 pb-4">
+              <CardTitle className="text-base font-bold flex items-center gap-2 text-tinta dark:text-tinta">
+                <User className="size-4 text-marca-700" />
                 {t("title")}
               </CardTitle>
             </CardHeader>

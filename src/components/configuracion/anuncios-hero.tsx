@@ -60,7 +60,7 @@ export function AnunciosHero({
         <h2 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
           <Eye className="size-4" />
           {t("liveNow")}
-          <Badge className="bg-[#2096BA]/15 text-[10px] text-[#0a6a8a]">
+          <Badge className="bg-marca-500/15 text-[10px] text-marca-800">
             {activos.length}
           </Badge>
         </h2>
@@ -153,7 +153,7 @@ function Fila({
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-lg",
               anuncio.activo
-                ? "bg-[#2096BA]/10 text-[#187a99]"
+                ? "bg-marca-500/10 text-marca-700"
                 : "bg-muted text-muted-foreground",
             )}
           >
@@ -173,7 +173,7 @@ function Fila({
             className={cn(
               "text-[10px]",
               anuncio.activo
-                ? "bg-[#2096BA]/15 text-[#0a6a8a]"
+                ? "bg-marca-500/15 text-marca-800"
                 : "bg-muted text-tinta-2",
             )}
           >

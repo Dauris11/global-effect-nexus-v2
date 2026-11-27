@@ -9,7 +9,7 @@ import {
 /** Calificaciones: encabezado, cifras, chips de período y la lista de notas. */
 export default function Cargando() {
   return (
-    <EsqueletoPagina className="mx-auto max-w-5xl md:space-y-10">
+    <EsqueletoPagina className="md:space-y-10">
       <EsqueletoEncabezado />
       <EsqueletoCifras />
       <EsqueletoChips />

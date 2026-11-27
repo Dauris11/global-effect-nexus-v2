@@ -48,6 +48,8 @@ export type ComensalDelDia = {
   nombre: string;
   hora_inscripcion: string;
   confirmado: boolean;
+  /** La cocina ya le sirvió. */
+  servido: boolean;
   /** Si se apuntó dentro del horario de cocina. Lo decide la base. */
   a_tiempo: boolean;
 };
@@ -70,6 +72,7 @@ export async function comensalesDelDia(
             nombre,
             hora_inscripcion,
             confirmado,
+            servido,
             (hora_inscripcion::time < $2::time) AS a_tiempo
        FROM inscripcion_comida
       WHERE fecha = coalesce($1::date, ${SQL_HOY_RD})

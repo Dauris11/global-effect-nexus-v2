@@ -20,9 +20,11 @@ type Pestana = "students" | "tasks" | "material" | "attendance" | "finals";
  * arriba a la derecha de la lista (ux-rules §5); en Estudiantes y Notas finales
  * no hay ninguna porque ahí no se crea nada.
  */
-export function PestanasClase({ datos }: { datos: DatosDeClase }) {
+const PESTANAS: readonly Pestana[] = ["students", "tasks", "material", "attendance", "finals"];
+
+export function PestanasClase({ datos, inicial }: { datos: DatosDeClase; /** `?tab=` de la URL: «Pasar asistencia» desde el inicio abre ya esa pestaña. */ inicial?: string }) {
   const t = useTranslations("teacherClasses");
-  const [pestana, setPestana] = useState<Pestana>("students");
+  const [pestana, setPestana] = useState<Pestana>(PESTANAS.find((p) => p === inicial) ?? "students");
   const [panel, setPanel] = useState<"tarea" | "material" | "asistencia" | null>(null);
   const cerrar = (abierto: boolean) => !abierto && setPanel(null);
 

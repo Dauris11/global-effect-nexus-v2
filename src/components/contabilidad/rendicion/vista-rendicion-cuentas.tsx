@@ -40,7 +40,7 @@ export function VistaRendicionCuentas({
   return (
     <div className="space-y-6">
       {/* Selector de Donante */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 print:hidden">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card print:hidden">
         <div className="w-full sm:w-96 space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             {t("seleccionarDonante")}
@@ -68,17 +68,17 @@ export function VistaRendicionCuentas({
       </div>
 
       {!rendicion ? (
-        <div className="rounded-xl border border-dashed border-linea p-12 text-center text-sm text-muted-foreground dark:border-slate-800">
-          <User className="mx-auto size-10 text-slate-400 mb-3" />
+        <div className="rounded-xl border border-dashed border-linea p-12 text-center text-sm text-muted-foreground dark:border-linea">
+          <User className="mx-auto size-10 text-tinta-3 mb-3" />
           {t("sinDatos")}
         </div>
       ) : (
         <div className="space-y-6 print:space-y-4">
           {/* Ficha Resumen del Donante */}
-          <div className="rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-linea dark:border-slate-800 pb-4">
+          <div className="rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-linea dark:border-linea pb-4">
               <div>
-                <h2 className="text-xl font-bold text-tinta dark:text-slate-100">
+                <h2 className="text-xl font-bold text-tinta dark:text-tinta">
                   {rendicion.donante.nombre}
                 </h2>
                 <div className="font-mono text-xs text-muted-foreground mt-0.5">
@@ -90,21 +90,21 @@ export function VistaRendicionCuentas({
 
             {/* KPIs de Rendición */}
             <div className="grid gap-4 sm:grid-cols-3 pt-2">
-              <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50">
+              <div className="rounded-lg bg-muted p-4 dark:bg-surface-2">
                 <span className="text-xs text-muted-foreground">{t("totalDonado")}</span>
-                <div className="mt-1 font-mono text-xl font-bold text-tinta dark:text-slate-100">
+                <div className="mt-1 font-mono text-xl font-bold text-tinta dark:text-tinta">
                   RD$ {rendicion.totales.totalDonado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50">
+              <div className="rounded-lg bg-muted p-4 dark:bg-surface-2">
                 <span className="text-xs text-muted-foreground">{t("totalEjecutado")}</span>
                 <div className="mt-1 font-mono text-xl font-bold text-marca-600 dark:text-marca-400">
                   RD$ {rendicion.totales.totalEjecutadoLiberado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50">
+              <div className="rounded-lg bg-muted p-4 dark:bg-surface-2">
                 <span className="text-xs text-muted-foreground">{t("saldoPendiente")}</span>
-                <div className="mt-1 font-mono text-xl font-bold text-tinta dark:text-slate-100">
+                <div className="mt-1 font-mono text-xl font-bold text-tinta dark:text-tinta">
                   RD$ {rendicion.totales.saldoPendienteRestringido.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -112,8 +112,8 @@ export function VistaRendicionCuentas({
           </div>
 
           {/* 1. Donaciones Recibidas */}
-          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-slate-100">
+          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
+            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-tinta">
               <HandHeart className="mr-2 size-4 text-marca-600" />
               {t("donacionesRecibidas")}
             </h3>
@@ -122,7 +122,7 @@ export function VistaRendicionCuentas({
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b bg-muted text-muted-foreground dark:bg-slate-800/50">
+                  <thead className="border-b bg-muted text-muted-foreground dark:bg-surface-2">
                     <tr>
                       <th className="py-2 px-3">Núm</th>
                       <th className="py-2 px-3">Fecha</th>
@@ -150,8 +150,8 @@ export function VistaRendicionCuentas({
           </div>
 
           {/* 2. Fondos Vinculados */}
-          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-slate-100">
+          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
+            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-tinta">
               <Layers className="mr-2 size-4 text-marca-600" />
               {t("fondosAsociados")}
             </h3>
@@ -160,7 +160,7 @@ export function VistaRendicionCuentas({
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b bg-muted text-muted-foreground dark:bg-slate-800/50">
+                  <thead className="border-b bg-muted text-muted-foreground dark:bg-surface-2">
                     <tr>
                       <th className="py-2 px-3">Fondo</th>
                       <th className="py-2 px-3">Condición Donante</th>
@@ -192,8 +192,8 @@ export function VistaRendicionCuentas({
           </div>
 
           {/* 3. Gastos y Becas Ejecutadas */}
-          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-slate-100">
+          <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-3">
+            <h3 className="font-semibold text-sm flex items-center text-tinta dark:text-tinta">
               <FileText className="mr-2 size-4 text-marca-600" />
               {t("gastosEjecutados")}
             </h3>
@@ -202,7 +202,7 @@ export function VistaRendicionCuentas({
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b bg-muted text-muted-foreground dark:bg-slate-800/50">
+                  <thead className="border-b bg-muted text-muted-foreground dark:bg-surface-2">
                     <tr>
                       <th className="py-2 px-3">Fecha</th>
                       <th className="py-2 px-3">Programa / CC</th>

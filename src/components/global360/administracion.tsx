@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,69 +64,10 @@ export function Administracion360({
   const [editando, setEditando] = useState<string | null>(null);
   const [nuevaVentana, setNuevaVentana] = useState(false);
 
-  const activasCount = materias.filter((m) => m.activa).length;
-  const inactivasCount = materias.length - activasCount;
-  const serieEstado = [
-    { nombre: t("chartActive"), valor: activasCount, color: AZUL },
-    { nombre: t("chartInactive"), valor: inactivasCount, color: NEUTRO },
-  ];
-
-  const serieInscritos = [...materias]
-    .filter((m) => m.inscritos > 0)
-    .sort((a, b) => b.inscritos - a.inscritos)
-    .slice(0, 6)
-    .map((m, idx) => ({
-      nombre: m.nombre.length > 20 ? `${m.nombre.slice(0, 19)}…` : m.nombre,
-      valor: m.inscritos,
-      color: idx === 0 ? AZUL_OSCURO : AZUL,
-    }));
-
   return (
     <div className="space-y-6">
-      {materias.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("chartStatusTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid items-center gap-3 sm:grid-cols-2">
-                <GraficaAnillo
-                  datos={serieEstado}
-                  total={materias.length}
-                  etiquetaTotal=""
-                  vacio={t("chartEmpty")}
-                />
-                <ul className="divide-y divide-linea">
-                  {serieEstado.map((fila) => (
-                    <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: fila.color }}
-                      />
-                      <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                      <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t("chartEnrolledTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GraficaBarras datos={serieInscritos} vacio={t("chartEmpty")} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* ── Ventanas ─────────────────────────────────────────────── */}
-      <Card>
+      <Card id="ventanas">
         <CardContent className="pt-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <CardTitle>

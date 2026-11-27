@@ -112,7 +112,7 @@ export function TablaActivos({
     switch (estado) {
       case "operativo":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[#1E9E6A]/10 px-2 py-0.5 text-xs font-semibold text-[#1E9E6A]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-status-success/10 px-2 py-0.5 text-xs font-semibold text-status-success-fg">
             <CheckCircle2 className="size-3.5" />
             <span>{t("estados.operativo")}</span>
           </span>
@@ -133,7 +133,7 @@ export function TablaActivos({
         );
       case "baja":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-[#B4342B]/10 px-2 py-0.5 text-xs font-semibold text-[#B4342B]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-status-danger/10 px-2 py-0.5 text-xs font-semibold text-status-danger-fg">
             <XCircle className="size-3.5" />
             <span>{t("estados.baja")}</span>
           </span>

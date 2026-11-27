@@ -44,8 +44,8 @@ prueba("quitar contabilidad.leer oculta sus módulos", antes > 0 && despues === 
 const habilitada = new Set([...PERMISOS_POR_ROL.habitudes, "docencia.impartir" as const]);
 prueba(
   "docencia.impartir suma el portal de profesor a un rol que no lo trae",
-  !menuDe("habitudes").flatMap(itemsDeArea).some((i) => i.href === "/portal/profesor") &&
-    menuDe("habitudes", habilitada).flatMap(itemsDeArea).some((i) => i.href === "/portal/profesor"),
+  !menuDe("habitudes").flatMap(itemsDeArea).some((i) => i.href === "/portal/profesor/clases") &&
+    menuDe("habitudes", habilitada).flatMap(itemsDeArea).some((i) => i.href === "/portal/profesor/clases"),
 );
 
 // Las pestañas del móvil salen del mismo menú filtrado.

@@ -7,7 +7,7 @@ export default function CargandoCajas() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" className="mx-auto max-w-6xl space-y-6">
+    <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-48" />

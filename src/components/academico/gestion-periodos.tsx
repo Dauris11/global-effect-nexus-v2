@@ -64,11 +64,14 @@ import type { PeriodoGestionado } from "@/server/academico/consultas";
  * comprobar antes de escribir.
  */
 export function GestionPeriodos({
+  modo = "gestion",
   periodos,
   puedeEscribir,
 }: {
   periodos: readonly PeriodoGestionado[];
   puedeEscribir: boolean;
+  /** `reporte`: solo las cifras y gráficas (viven en /reportes/academico); `gestion`: la pantalla de trabajo, sin ellas. */
+  modo?: "gestion" | "reporte";
 }) {
   const t = useTranslations("academic");
   const [editando, setEditando] = useState<string | null>(null);
@@ -97,8 +100,8 @@ export function GestionPeriodos({
     filtroEstado === "todos" ? true : p.estado === filtroEstado,
   );
 
-  return (
-    <div className={cn("space-y-5", ANIMACION.entrada)}>
+  const resumen = (
+    <>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <CifraAcademica
           valor={periodos.length}
@@ -165,6 +168,12 @@ export function GestionPeriodos({
         </div>
       )}
 
+    </>
+  );
+  if (modo === "reporte") return <div className="space-y-5">{resumen}</div>;
+
+  return (
+    <div className={cn("space-y-5", ANIMACION.entrada)}>
       <Card>
         <CardContent className="pt-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -305,7 +314,7 @@ function FilaPeriodo({
           <p className="truncate text-sm font-medium">{periodo.nombre}</p>
 
           {periodo.en_curso && (
-            <Badge className="bg-[#0a6a8a] text-[10px] text-white">
+            <Badge className="bg-marca-700 text-[10px] text-white">
               {t("terms.inProgress")}
             </Badge>
           )}
@@ -348,9 +357,9 @@ function FilaPeriodo({
         className={cn(
           "shrink-0 text-[10px]",
           periodo.estado === "activo"
-            ? "bg-[#2096BA]/15 text-[#187a99]"
+            ? "bg-marca-500/15 text-marca-700"
             : periodo.estado === "completado"
-              ? "bg-slate-200 text-tinta-2"
+              ? "bg-linea text-tinta-2"
               : "bg-muted text-tinta-2",
         )}
       >

@@ -12,7 +12,14 @@ import { cn } from "@/lib/utils";
  * la página. Un proveedor en el layout raíz y `useToast()` donde se necesite. Se cierran
  * solos a los 6 s; el contenedor es `role="status"` para que un lector de pantalla los lea.
  */
-type Aviso = { id: number; titulo: string; accion?: { etiqueta: string; href: string } };
+type Aviso = {
+  id: number;
+  titulo: string;
+  /** Un enlace («Ver») o una acción en el sitio («Deshacer»). */
+  accion?: { etiqueta: string; href: string } | { etiqueta: string; alPulsar: () => void };
+  /** Cuánto dura en pantalla; por defecto 6 s. «Deshacer» usa 5 s. */
+  duracionMs?: number;
+};
 
 const Contexto = createContext<{ avisar: (a: Omit<Aviso, "id">) => void } | null>(null);
 
@@ -28,7 +35,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = Date.now() + Math.random();
 
       setAvisos((lista) => [...lista.slice(-2), { ...a, id }]);
-      setTimeout(() => quitar(id), DURACION_MS);
+      setTimeout(() => quitar(id), a.duracionMs ?? DURACION_MS);
     },
     [quitar],
   );
@@ -42,11 +49,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div key={a.id} className="animate-escala-entrada pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-card border border-linea bg-tinta px-4 py-3 text-background shadow-elevada">
             <CheckCircle2 aria-hidden className="size-5 shrink-0" />
             <p className="text-label min-w-0 flex-1">{a.titulo}</p>
-            {a.accion && (
-              <Link href={a.accion.href} onClick={() => quitar(a.id)} className="text-label shrink-0 underline underline-offset-4 hover:no-underline">
-                {a.accion.etiqueta}
-              </Link>
-            )}
+            {a.accion &&
+              ("href" in a.accion ? (
+                <Link href={a.accion.href} onClick={() => quitar(a.id)} className="text-label shrink-0 underline underline-offset-4 hover:no-underline">
+                  {a.accion.etiqueta}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    a.accion && "alPulsar" in a.accion && a.accion.alPulsar();
+                    quitar(a.id);
+                  }}
+                  className="text-label shrink-0 underline underline-offset-4 hover:no-underline"
+                >
+                  {a.accion.etiqueta}
+                </button>
+              ))}
             <button type="button" aria-label={t("panel.close")} onClick={() => quitar(a.id)} className={cn("shrink-0 rounded-full p-1 transition-colors hover:bg-background/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none")}>
               <X className="size-4" />
             </button>

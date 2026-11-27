@@ -43,13 +43,13 @@ export function CalculadoraLaboral() {
   };
 
   return (
-    <div className="rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-6 flex items-center gap-3 border-b border-linea pb-4 dark:border-slate-800">
+    <div className="rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card">
+      <div className="mb-6 flex items-center gap-3 border-b border-linea pb-4 dark:border-linea">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-marca-500/10 text-marca-500">
           <Calculator className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
+          <h3 className="text-base font-semibold text-tinta dark:text-tinta">
             {t("calculadoraTitulo")}
           </h3>
         </div>
@@ -130,25 +130,25 @@ export function CalculadoraLaboral() {
       </form>
 
       {resultado && (
-        <div className="mt-8 border-t border-linea pt-6 dark:border-slate-800">
+        <div className="mt-8 border-t border-linea pt-6 dark:border-linea">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
-            <div className="rounded-lg bg-muted p-3 dark:bg-slate-800/40">
+            <div className="rounded-lg bg-muted p-3 dark:bg-surface-2">
               <div className="text-xs text-muted-foreground">Antigüedad laboral</div>
-              <div className="text-sm font-semibold text-tinta dark:text-slate-100">
+              <div className="text-sm font-semibold text-tinta dark:text-tinta">
                 {resultado.antiguedadAnios} años, {resultado.antiguedadMeses} meses
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-3 dark:bg-slate-800/40">
+            <div className="rounded-lg bg-muted p-3 dark:bg-surface-2">
               <div className="text-xs text-muted-foreground">{t("salarioDiario")}</div>
-              <div className="text-sm font-semibold tabular-nums text-tinta dark:text-slate-100">
+              <div className="text-sm font-semibold tabular-nums text-tinta dark:text-tinta">
                 RD$ {resultado.salarioDiario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-3 dark:bg-slate-800/40">
+            <div className="rounded-lg bg-muted p-3 dark:bg-surface-2">
               <div className="text-xs text-muted-foreground">Días a liquidar</div>
-              <div className="text-sm font-semibold tabular-nums text-tinta dark:text-slate-100">
+              <div className="text-sm font-semibold tabular-nums text-tinta dark:text-tinta">
                 {resultado.diasPreaviso + resultado.diasCesantia + resultado.diasVacaciones} días
               </div>
             </div>
@@ -161,9 +161,9 @@ export function CalculadoraLaboral() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-linea text-xs dark:border-slate-800">
+          <div className="overflow-x-auto rounded-lg border border-linea text-xs dark:border-linea">
             <table className="w-full text-left">
-              <thead className="bg-muted text-muted-foreground uppercase tracking-wider dark:bg-slate-800/50">
+              <thead className="bg-muted text-muted-foreground uppercase tracking-wider dark:bg-surface-2">
                 <tr>
                   <th className="px-4 py-2.5">Concepto Laboral</th>
                   <th className="px-4 py-2.5">Base Legal</th>

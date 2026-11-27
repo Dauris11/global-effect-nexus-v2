@@ -28,11 +28,11 @@ const TRAMOS: readonly {
   gpa: number;
   color: string;
 }[] = [
-  { minimo: 90, letra: "A", gpa: 4, color: "text-white bg-[#0a6a8a] border-[#0a6a8a]" },
-  { minimo: 80, letra: "B", gpa: 3, color: "text-white bg-[#2096BA] border-[#2096BA]" },
-  { minimo: 70, letra: "C", gpa: 2, color: "text-[#187a99] bg-[#2096BA]/15 border-[#2096BA]/30" },
-  { minimo: 60, letra: "D", gpa: 1, color: "text-slate-600 bg-slate-100 border-slate-200" },
-  { minimo: 0, letra: "F", gpa: 0, color: "text-white bg-[#171A1D] border-[#171A1D]" },
+  { minimo: 90, letra: "A", gpa: 4, color: "text-white bg-marca-700 border-marca-700" },
+  { minimo: 80, letra: "B", gpa: 3, color: "text-white bg-marca-500 border-marca-500" },
+  { minimo: 70, letra: "C", gpa: 2, color: "text-marca-700 bg-marca-500/15 border-marca-500/30" },
+  { minimo: 60, letra: "D", gpa: 1, color: "text-tinta-2 bg-muted border-linea" },
+  { minimo: 0, letra: "F", gpa: 0, color: "text-white bg-tinta border-tinta" },
 ];
 
 function tramoDe(nota: number) {
@@ -181,14 +181,14 @@ export function bandaDe(nota: number): Banda {
  * Color de cada banda: el mismo peso del azul que ya usa su letra.
  *
  * `barra` es un fondo sólido porque en una barra de distribución un
- * `bg-[#2096BA]/15` de 4px de alto no se ve; `pildora` es la versión con
+ * `bg-marca-500/15` de 4px de alto no se ve; `pildora` es la versión con
  * contraste de texto para las insignias.
  */
 export const BANDA_VISUAL: Record<Banda, { barra: string; pildora: string }> = {
-  excelente: { barra: "bg-[#0a6a8a]", pildora: "bg-[#0a6a8a] text-white" },
-  buena: { barra: "bg-[#2096BA]", pildora: "bg-[#2096BA]/15 text-[#187a99]" },
-  riesgo: { barra: "bg-slate-300", pildora: "bg-slate-100 text-slate-600" },
-  critica: { barra: "bg-[#171A1D]", pildora: "bg-[#171A1D] text-white" },
+  excelente: { barra: "bg-marca-700", pildora: "bg-marca-700 text-white" },
+  buena: { barra: "bg-marca-500", pildora: "bg-marca-500/15 text-marca-700" },
+  riesgo: { barra: "bg-linea-fuerte", pildora: "bg-muted text-tinta-2" },
+  critica: { barra: "bg-tinta", pildora: "bg-tinta text-white" },
 };
 
 /**
@@ -205,9 +205,9 @@ export const COLOR_INDICE: Record<
   ReturnType<typeof consejoDeIndice>,
   string
 > = {
-  "nota-excelente": "text-white bg-[#0a6a8a] border-[#0a6a8a]",
-  "nota-buena": "text-white bg-[#2096BA] border-[#2096BA]",
-  "nota-riesgo": "text-slate-600 bg-slate-100 border-slate-200",
-  "nota-critica": "text-white bg-[#171A1D] border-[#171A1D]",
-  neutral: "text-slate-500 bg-slate-50 border-slate-200",
+  "nota-excelente": "text-white bg-marca-700 border-marca-700",
+  "nota-buena": "text-white bg-marca-500 border-marca-500",
+  "nota-riesgo": "text-tinta-2 bg-muted border-linea",
+  "nota-critica": "text-white bg-tinta border-tinta",
+  neutral: "text-tinta-3 bg-muted border-linea",
 };

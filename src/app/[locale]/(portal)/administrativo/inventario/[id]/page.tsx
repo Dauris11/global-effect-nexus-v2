@@ -76,7 +76,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
     switch (estado) {
       case "operativo":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-[#1E9E6A]/10 px-3 py-1 text-xs font-bold text-[#1E9E6A]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-status-success/10 px-3 py-1 text-xs font-bold text-status-success-fg">
             <CheckCircle2 className="size-4" />
             <span>{t("estados.operativo")}</span>
           </span>
@@ -97,7 +97,7 @@ export default async function PaginaDetalleActivo({ params }: PaginaDetalleActiv
         );
       case "baja":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-[#B4342B]/10 px-3 py-1 text-xs font-bold text-[#B4342B]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-status-danger/10 px-3 py-1 text-xs font-bold text-status-danger-fg">
             <XCircle className="size-4" />
             <span>{t("estados.baja")}</span>
           </span>

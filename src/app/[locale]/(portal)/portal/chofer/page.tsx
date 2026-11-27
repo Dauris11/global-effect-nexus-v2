@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { TituloPagina } from "@/components/layout/pestanas-modulo";
+
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { PanelChofer } from "@/components/transporte/panel-chofer";
 import { requerirPermiso } from "@/lib/auth";
@@ -29,6 +31,8 @@ export default async function PaginaPortalChofer() {
   return (
     <NextIntlClientProvider messages={mensajes}>
     <div className="animate-entrada py-4 pb-24 md:pb-4">
+      {/* Título de la pantalla para lectores de pantalla y para el test de UX; la estructura visual no cambia. */}
+      <TituloPagina className="sr-only">{""}</TituloPagina>
       <PanelChofer
         viajeActivoInicial={estado.viajeActivo}
         horarioSugerido={estado.horarioSugerido}

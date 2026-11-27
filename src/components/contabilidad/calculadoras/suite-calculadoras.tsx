@@ -171,8 +171,8 @@ export function SuiteCalculadoras() {
         {/* 1. FACTURA */}
         <TabsContent value="factura" className="mt-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-              <h3 className="font-semibold text-tinta dark:text-slate-100">{t("parametrosFactura")}</h3>
+            <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card space-y-4">
+              <h3 className="font-semibold text-tinta dark:text-tinta">{t("parametrosFactura")}</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t("cantidad")}</Label>
@@ -218,9 +218,9 @@ export function SuiteCalculadoras() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-linea bg-muted p-5 shadow-xs dark:border-slate-800 dark:bg-slate-950 space-y-4 flex flex-col justify-between">
+            <div className="rounded-xl border border-linea bg-muted p-5 shadow-xs dark:border-linea dark:bg-background space-y-4 flex flex-col justify-between">
               <div>
-                <h3 className="font-semibold text-tinta dark:text-slate-100">{t("liquidacionLiquidada")}</h3>
+                <h3 className="font-semibold text-tinta dark:text-tinta">{t("liquidacionLiquidada")}</h3>
                 <div className="mt-4 space-y-2 text-sm divide-y divide-slate-200 dark:divide-slate-800">
                   <div className="flex justify-between py-1.5">
                     <span className="text-muted-foreground">{t("subtotalNeto")}:</span>
@@ -238,7 +238,7 @@ export function SuiteCalculadoras() {
                     <span>{t("retencionItbis")}:</span>
                     <span className="font-mono font-medium">- RD$ {resFactura.retencionItbis.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between py-2 text-base font-bold text-tinta dark:text-slate-100">
+                  <div className="flex justify-between py-2 text-base font-bold text-tinta dark:text-tinta">
                     <span>{t("netoAPagar")}:</span>
                     <span className="font-mono text-marca-600 dark:text-marca-400">
                       RD$ {resFactura.netoAPagar.toFixed(2)}
@@ -268,8 +268,8 @@ export function SuiteCalculadoras() {
 
         {/* 2. ITBIS */}
         <TabsContent value="itbis" className="mt-6">
-          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="font-semibold text-tinta dark:text-slate-100">{t("calculadoraItbisDirectoInverso")}</h3>
+          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <h3 className="font-semibold text-tinta dark:text-tinta">{t("calculadoraItbisDirectoInverso")}</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{t("modoCalculo")}</Label>
@@ -306,7 +306,7 @@ export function SuiteCalculadoras() {
               />
             </div>
 
-            <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50 space-y-2 text-sm font-mono">
+            <div className="rounded-lg bg-muted p-4 dark:bg-surface-2 space-y-2 text-sm font-mono">
               <div className="flex justify-between">
                 <span className="text-muted-foreground font-sans">{t("baseImponible")}:</span>
                 <span className="font-bold">RD$ {resItbis.base.toFixed(2)}</span>
@@ -327,8 +327,8 @@ export function SuiteCalculadoras() {
 
         {/* 3. RETENCIONES */}
         <TabsContent value="retenciones" className="mt-6">
-          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="font-semibold text-tinta dark:text-slate-100">{t("retencionesDominicanasDgii")}</h3>
+          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <h3 className="font-semibold text-tinta dark:text-tinta">{t("retencionesDominicanasDgii")}</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{t("tipoProveedor")}</Label>
@@ -376,7 +376,7 @@ export function SuiteCalculadoras() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50 space-y-2 text-sm font-mono">
+            <div className="rounded-lg bg-muted p-4 dark:bg-surface-2 space-y-2 text-sm font-mono">
               <div className="flex justify-between">
                 <span className="text-muted-foreground font-sans">
                   {t("retencionIsr")} ({Math.round(resRetenciones.tasaIsr * 100)}%):
@@ -405,8 +405,8 @@ export function SuiteCalculadoras() {
 
         {/* 4. RECARGOS Y MORA */}
         <TabsContent value="mora" className="mt-6">
-          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="font-semibold text-tinta dark:text-slate-100">{t("calculadoraRecargosYMora")}</h3>
+          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <h3 className="font-semibold text-tinta dark:text-tinta">{t("calculadoraRecargosYMora")}</h3>
             <div className="space-y-1.5">
               <Label>{t("impuestoPendiente")}</Label>
               <Input
@@ -434,7 +434,7 @@ export function SuiteCalculadoras() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50 space-y-2 text-sm font-mono">
+            <div className="rounded-lg bg-muted p-4 dark:bg-surface-2 space-y-2 text-sm font-mono">
               <div className="flex justify-between">
                 <span className="text-muted-foreground font-sans">{t("mesesOFraccionesMora")}:</span>
                 <span className="font-bold">{resMora.mesesMora}</span>
@@ -457,8 +457,8 @@ export function SuiteCalculadoras() {
 
         {/* 5. PRÉSTAMO Y AMORTIZACIÓN */}
         <TabsContent value="prestamo" className="mt-6">
-          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="font-semibold text-tinta dark:text-slate-100">{t("amortizacionFrancesa")}</h3>
+          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <h3 className="font-semibold text-tinta dark:text-tinta">{t("amortizacionFrancesa")}</h3>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>{t("montoPrincipal")}</Label>
@@ -474,7 +474,7 @@ export function SuiteCalculadoras() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50 space-y-2 text-sm font-mono">
+            <div className="rounded-lg bg-muted p-4 dark:bg-surface-2 space-y-2 text-sm font-mono">
               <div className="flex justify-between text-base">
                 <span className="text-tinta-2 font-sans font-bold">{t("cuotaMensualNivelada")}:</span>
                 <span className="font-bold text-marca-600 dark:text-marca-400">
@@ -495,8 +495,8 @@ export function SuiteCalculadoras() {
 
         {/* 6. LABORAL / SALARIOS Y TSS */}
         <TabsContent value="laboral" className="mt-6">
-          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <h3 className="font-semibold text-tinta dark:text-slate-100">{t("calculadoraTssEIsr")}</h3>
+          <div className="max-w-xl mx-auto rounded-xl border border-linea bg-card p-6 shadow-xs dark:border-linea dark:bg-card space-y-4">
+            <h3 className="font-semibold text-tinta dark:text-tinta">{t("calculadoraTssEIsr")}</h3>
             <div className="space-y-1.5">
               <Label>{t("salarioBrutoMensual")}</Label>
               <Input
@@ -506,7 +506,7 @@ export function SuiteCalculadoras() {
               />
             </div>
 
-            <div className="rounded-lg bg-muted p-4 dark:bg-slate-800/50 space-y-2 text-sm font-mono">
+            <div className="rounded-lg bg-muted p-4 dark:bg-surface-2 space-y-2 text-sm font-mono">
               <div className="flex justify-between">
                 <span className="text-muted-foreground font-sans">{t("afpEmpleado")} (2.87%):</span>
                 <span className="font-bold text-tinta-2">- RD$ {resLaboral.afpEmpleado.toFixed(2)}</span>

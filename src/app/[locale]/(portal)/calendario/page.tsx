@@ -105,7 +105,7 @@ export default async function PaginaCalendario({
   }));
 
   return (
-    <div className="animate-entrada mx-auto max-w-7xl space-y-5">
+    <div className="animate-entrada space-y-5">
       <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>

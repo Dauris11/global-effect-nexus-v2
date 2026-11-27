@@ -207,7 +207,7 @@ function EstadoAsiento({ fila, t }: { fila: FilaAsiento; t: (clave: string) => s
       {fila.procesado ? (
         <StatusBadge status="contabilizado" label={t("estado.procesado")} />
       ) : (
-        <StatusBadge status="borrador" label={t("estado.pendiente")} />
+        <StatusBadge status="pendiente" label={t("estado.pendiente")} />
       )}
       {fila.estado === "reverso" && <StatusBadge status="reverso" label={t("estado.reverso")} />}
     </span>

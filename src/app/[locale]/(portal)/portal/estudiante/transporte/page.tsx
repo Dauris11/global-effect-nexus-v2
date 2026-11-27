@@ -56,7 +56,7 @@ export default async function PaginaTransporteEstudiante({
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <Cabecera
         titulo={t("studentTransportTitle")}
       />

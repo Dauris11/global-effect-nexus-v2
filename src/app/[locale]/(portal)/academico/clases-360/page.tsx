@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/app/page-container";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -142,7 +143,7 @@ export default async function PaginaClases360({
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <PageContainer className="space-y-6">
       <EncabezadoPagina
         antetitulo={t("eyebrow")}
         titulo={t("title")}
@@ -168,6 +169,6 @@ export default async function PaginaClases360({
           notaMinima360={notaMinima360}
         />
       </NextIntlClientProvider>
-    </div>
+    </PageContainer>
   );
 }

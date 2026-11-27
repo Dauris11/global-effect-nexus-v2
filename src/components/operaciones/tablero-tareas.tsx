@@ -51,8 +51,10 @@ import type {
 const SELECT =
   "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm";
 
-type Alcance = "hoy" | "semana" | "todas";
-const ALCANCES: readonly Alcance[] = ["hoy", "semana", "todas"];
+type Alcance = "abiertas" | "vencidas" | "hoy" | "semana" | "todas";
+const ALCANCES: readonly Alcance[] = ["abiertas", "vencidas", "hoy", "semana", "todas"];
+const CERRADA = ["completada", "cancelada"];
+const CLAVE_ALCANCE: Record<Alcance, string> = { abiertas: "Open", vencidas: "Overdue", hoy: "Today", semana: "Week", todas: "All" };
 
 /**
  * «Mis tareas»: Kanban de lo que tengo asignado, con el color del estado en la
@@ -84,29 +86,36 @@ export function TableroTareas({
   const t = useTranslations("admin");
   const [nueva, setNueva] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [alcance, setAlcance] = useState<Alcance>("hoy");
+  // «Abiertas» (vencidas + hoy + próximas) es lo que toca: arrancar en «Hoy» escondía lo vencido.
+  const [alcance, setAlcance] = useState<Alcance>("abiertas");
 
   const texto = busqueda.trim().toLowerCase();
-  const visibles = tareas.filter((tarea) => {
-    // Lo vencido y sin cerrar se queda en «Hoy»: es lo primero que toca.
-    if (alcance === "hoy" && !tarea.es_hoy && !tarea.vencida) return false;
-    if (alcance === "semana" && !tarea.esta_semana && !tarea.vencida) return false;
-    if (texto.length === 0) return true;
-    return (
-      tarea.titulo.toLowerCase().includes(texto) ||
-      (tarea.proyecto?.toLowerCase().includes(texto) ?? false) ||
-      (tarea.actividad?.toLowerCase().includes(texto) ?? false)
-    );
-  });
+  const cuadra = (tarea: TareaTablero, a: Alcance) => {
+    const abierta = !CERRADA.includes(tarea.estado);
 
-  const conteo = (a: Alcance) =>
-    tareas.filter((tarea) =>
-      a === "hoy"
-        ? tarea.es_hoy || tarea.vencida
-        : a === "semana"
-          ? tarea.esta_semana || tarea.vencida
-          : true,
-    ).length;
+    if (a === "abiertas") return abierta;
+    if (a === "vencidas") return tarea.vencida;
+    if (a === "hoy") return tarea.es_hoy || tarea.vencida;
+    if (a === "semana") return tarea.esta_semana || tarea.vencida;
+
+    return true;
+  };
+  const porVencimiento = (a: TareaTablero, b: TareaTablero) =>
+    (a.fecha_limite ?? "9999-12-31").localeCompare(b.fecha_limite ?? "9999-12-31");
+  const visibles = tareas
+    .filter((tarea) => {
+      if (!cuadra(tarea, alcance)) return false;
+      if (texto.length === 0) return true;
+      return (
+        tarea.titulo.toLowerCase().includes(texto) ||
+        (tarea.proyecto?.toLowerCase().includes(texto) ?? false) ||
+        (tarea.actividad?.toLowerCase().includes(texto) ?? false)
+      );
+    })
+    .sort(porVencimiento);
+
+  const conteo = (a: Alcance) => tareas.filter((tarea) => cuadra(tarea, a)).length;
+  const vencidas = conteo("vencidas");
 
   return (
     <div className={cn("space-y-4", ANIMACION.entrada)}>
@@ -124,7 +133,7 @@ export function TableroTareas({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            {ALCANCES.map((a) => (
+            {ALCANCES.filter((a) => a !== "vencidas" || vencidas > 0).map((a) => (
               <button
                 key={a}
                 type="button"
@@ -132,12 +141,14 @@ export function TableroTareas({
                 aria-pressed={alcance === a}
                 className={cn(
                   "inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors",
-                  alcance === a
-                    ? "border-marca-500 bg-marca-50 text-marca-700"
-                    : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
+                  a === "vencidas"
+                    ? cn(alcance === a ? "border-status-danger-border bg-status-danger text-white" : "border-status-danger-border/40 bg-status-danger/10 text-status-danger-fg")
+                    : alcance === a
+                      ? "border-marca-500 bg-marca-50 text-marca-700"
+                      : "border-linea bg-card text-tinta-2 hover:bg-muted/50",
                 )}
               >
-                {t(`board.scope${a === "hoy" ? "Today" : a === "semana" ? "Week" : "All"}`)}
+                {t(`board.scope${CLAVE_ALCANCE[a]}`)}
                 <span className="tabular-nums opacity-75">{conteo(a)}</span>
               </button>
             ))}
@@ -265,7 +276,7 @@ function Tarjeta({
           <span
             className={cn(
               "inline-flex items-center gap-1",
-              tarea.vencida && "font-semibold text-[#B4342B]",
+              tarea.vencida && "font-semibold text-status-danger-fg",
             )}
           >
             {tarea.vencida ? (

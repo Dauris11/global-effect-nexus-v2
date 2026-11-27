@@ -53,7 +53,7 @@ export default async function PaginaSolicitudesEstudiante({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-4xl space-y-10">
+    <div className="animate-entrada space-y-10">
       <Cabecera
         titulo={t("studentTitle")}
       />

@@ -81,8 +81,11 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
 14. **Gráficos, calendarios y Gantt:** solo a través de `ui/grafico/`,
     `ui/calendario-base.tsx` y `ui/gantt-base.tsx`. No importes `recharts`,
     `@fullcalendar/*` ni `@svar-ui/*` en otro sitio.
-15. **«Pendientes»** (`/bandeja`) reemplazó a Bandeja, Tareas y Torre de control:
-    no recrees la Torre de control ni vistas de tareas aparte.
+15. **Inicio único:** `/inicio` es la entrada de todos los roles (lista de lo que a cada persona le
+    toca, del motor `src/server/prioridades`). `/ejecutivo`, `/bandeja`, `/administrativo`,
+    `/contabilidad/mi-dia`, `/portal/contabilidad`, `/portal/profesor` y `/portal/estudiante`
+    redirigen (308) ahí. «Pendientes», Tareas y Torre de control como inicios ya no existen: no los
+    recrees. El tablero ejecutivo vive en `/reportes/resumen` (solo super_admin), sin entrada en el menú.
 16. **Transporte:** solo lo usan los estudiantes de Rincón, Jima, Ranchito, Saba
     Rey y Rancho Viejo. Comedor y transporte no se acoplan.
 17. **Permisos reales** viven en `rol_permiso` (base de datos); `rbac.ts` es el

@@ -21,6 +21,7 @@ import {
   GraficaBarras,
   GraficaFlujo,
 } from "@/components/dashboard/graficas";
+import { variantesBoton } from "@/components/ui/button-variantes";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +34,7 @@ import {
   NEUTRO,
   PILDORA_FILTRO,
   SERIE,
+  PELIGRO,
   TINTA,
 } from "@/lib/paleta";
 import {
@@ -83,7 +85,7 @@ const COLOR_BANDA = {
   excelente: AZUL_OSCURO,
   buena: AZUL,
   riesgo: NEUTRO,
-  critica: TINTA,
+  critica: PELIGRO,
 } as const;
 
 export async function generateMetadata({
@@ -151,7 +153,7 @@ export default async function PaginaReportes({
       <Card className="mx-auto max-w-xl">
         <CardContent className="pt-5">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#2096BA]/10 text-[#187a99]">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-marca-500/10 text-marca-700">
               <ShieldAlert className="size-5" />
             </span>
             <div>
@@ -170,8 +172,28 @@ export default async function PaginaReportes({
     permitidas[0].clave;
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina titulo={t("title")} />
+    <div className="animate-entrada space-y-6">
+      <EncabezadoPagina
+        titulo={t("title")}
+        acciones={
+          // El tablero ejecutivo dejó de ser la entrada de Dirección: vive aquí, sin entrada en el menú.
+          usuario.rol === "super_admin" ? (
+            <Link href="/reportes/resumen" className={variantesBoton({ variant: "secondary" })}>
+              {t("executiveSummary")}
+            </Link>
+          ) : undefined
+        }
+      />
+
+      {/* Reportes por módulo: lo que salió de las pantallas de trabajo (Personal, Servicios mensuales, Académico). */}
+      <nav aria-label={t("moduleReports")} className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <span className="text-meta">{t("moduleReports")}</span>
+        {(["personal", "servicios", "academico"] as const).map((m) => (
+          <Link key={m} href={`/reportes/${m}`} className="text-label text-marca-700 hover:underline">
+            {t(`moduleReport.${m}`)}
+          </Link>
+        ))}
+      </nav>
 
       {/* Las pestañas, como enlaces. Solo se dibujan las que el rol puede ver:
           una pestaña que al pulsarla dice "no tienes permiso" es una promesa

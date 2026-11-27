@@ -218,7 +218,7 @@ export function ChatIA({
               <div
                 className={cn(
                   "max-w-[80%] min-w-0 rounded-card px-4 py-2.5",
-                  mio ? "bg-tinta text-background" : "bg-muted text-tinta",
+                  mio ? "bg-marca-600 text-white" : "bg-muted text-tinta",
                 )}
               >
                 {/* `whitespace-pre-wrap` conserva los saltos de línea que

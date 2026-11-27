@@ -40,38 +40,38 @@ export function VistaInventario({
     <div className="space-y-6">
       {/* Resumen del almacén */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-linea dark:bg-card">
           <div className="text-xs text-muted-foreground">{t("kpiValorizacion")}</div>
           <div className="mt-1 text-xl font-bold tabular-nums text-marca-500">
             RD$ {totalValorInventario.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-linea dark:bg-card">
           <div className="text-xs text-muted-foreground">{t("kpiArticulosCatalogo")}</div>
-          <div className="mt-1 text-xl font-bold tabular-nums text-tinta dark:text-slate-100">
+          <div className="mt-1 text-xl font-bold tabular-nums text-tinta dark:text-tinta">
             {t("kpiArticulosConteo", { n: articulos.length })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-4 shadow-xs dark:border-linea dark:bg-card">
           <div className="text-xs text-muted-foreground">{t("kpiAlertasReabastecimiento")}</div>
           <div className="mt-1 flex items-center gap-2">
             <span
               className={`text-xl font-bold tabular-nums ${
-                articulosBajoStock.length > 0 ? "text-[#B4342B]" : "text-[#1E9E6A]"
+                articulosBajoStock.length > 0 ? "text-status-danger-fg" : "text-status-success-fg"
               }`}
             >
               {t("kpiArticulosConteo", { n: articulosBajoStock.length })}
             </span>
-            {articulosBajoStock.length > 0 && <AlertTriangle className="h-5 w-5 text-[#B4342B]" />}
+            {articulosBajoStock.length > 0 && <AlertTriangle className="h-5 w-5 text-status-danger-fg" />}
           </div>
         </div>
       </div>
 
       <Tabs value={tabActiva} onValueChange={setTabActiva} className="w-full">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-linea pb-3 dark:border-slate-800">
-          <TabsList className="bg-muted dark:bg-slate-800">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-linea pb-3 dark:border-linea">
+          <TabsList className="bg-muted dark:bg-muted">
             <TabsTrigger value="catalogo" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               {t("tabs.catalogo")}
@@ -105,13 +105,13 @@ export function VistaInventario({
         {/* 1. Catálogo de Consumibles */}
         <TabsContent value="catalogo" className="mt-4 space-y-4">
           {articulos.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
               {t("sinArticulos")}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                   <tr>
                     <th className="px-4 py-3">{t("codigo")}</th>
                     <th className="px-4 py-3">{t("nombre")}</th>
@@ -129,12 +129,12 @@ export function VistaInventario({
                   {articulos.map((a) => {
                     const bajoStock = a.stock_actual <= a.stock_minimo;
                     return (
-                      <tr key={a.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                        <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-slate-100">
+                      <tr key={a.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                        <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-tinta">
                           {a.codigo}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-tinta dark:text-slate-100">{a.nombre}</div>
+                          <div className="font-medium text-tinta dark:text-tinta">{a.nombre}</div>
                           {a.centro_costo_codigo && (
                             <div className="text-xs text-muted-foreground">{a.centro_costo_nombre}</div>
                           )}
@@ -151,7 +151,7 @@ export function VistaInventario({
                         <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
                           {a.stock_minimo} {a.unidad_medida}
                         </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-tinta-2 dark:text-slate-400">
+                        <td className="px-4 py-3 text-right tabular-nums text-tinta-2 dark:text-tinta-3">
                           RD$ {a.costo_promedio.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
@@ -159,12 +159,12 @@ export function VistaInventario({
                         </td>
                         <td className="px-4 py-3 text-center">
                           {bajoStock ? (
-                            <Badge variant="outline" className="border-linea bg-muted text-[#B4342B]">
+                            <Badge variant="outline" className="border-linea bg-muted text-status-danger-fg">
                               <AlertTriangle className="mr-1 h-3 w-3" />
                               {t("alertaStock")}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="border-linea bg-muted text-[#1E9E6A]">
+                            <Badge variant="outline" className="border-linea bg-muted text-status-success-fg">
                               {t("optimo")}
                             </Badge>
                           )}
@@ -181,13 +181,13 @@ export function VistaInventario({
         {/* 2. Kardex de Movimientos */}
         <TabsContent value="movimientos" className="mt-4 space-y-4">
           {movimientosRecientes.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
               {t("sinMovimientos")}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                   <tr>
                     <th className="px-4 py-3">{t("fecha")}</th>
                     <th className="px-4 py-3">{t("tipoMovimiento")}</th>
@@ -202,17 +202,17 @@ export function VistaInventario({
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {movimientosRecientes.map((m) => (
-                    <tr key={m.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                      <td className="px-4 py-3 text-tinta-2 dark:text-slate-400">{m.fecha}</td>
+                    <tr key={m.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                      <td className="px-4 py-3 text-tinta-2 dark:text-tinta-3">{m.fecha}</td>
                       <td className="px-4 py-3">
                         <Badge
                           variant="outline"
                           className={
                             m.tipo.startsWith("entrada")
-                              ? "border-linea bg-muted text-[#1E9E6A]"
+                              ? "border-linea bg-muted text-status-success-fg"
                               : m.tipo === "salida_consumo"
                               ? "border-marca-500/30 bg-marca-500/10 text-marca-500"
-                              : "border-linea bg-muted text-[#B4342B]"
+                              : "border-linea bg-muted text-status-danger-fg"
                           }
                         >
                           {m.tipo.replace("_", " ")}
@@ -227,7 +227,7 @@ export function VistaInventario({
                       <td className="px-4 py-3 text-right font-bold tabular-nums text-marca-500">
                         RD$ {m.costo_total.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-400">
+                      <td className="px-4 py-3 text-right tabular-nums text-tinta-3">
                         {m.stock_anterior}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums font-semibold">
@@ -254,13 +254,13 @@ export function VistaInventario({
         {/* 3. Tomas Físicas y Ajustes */}
         <TabsContent value="tomas" className="mt-4 space-y-4">
           {conteos.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+            <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
               {t("sinTomas")}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                   <tr>
                     <th className="px-4 py-3">{t("codigo")}</th>
                     <th className="px-4 py-3">{t("fecha")}</th>
@@ -274,12 +274,12 @@ export function VistaInventario({
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {conteos.map((c) => (
-                    <tr key={c.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                      <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-slate-100">
+                    <tr key={c.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                      <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-tinta">
                         {c.codigo}
                       </td>
-                      <td className="px-4 py-3 text-tinta-2 dark:text-slate-400">{c.fecha}</td>
-                      <td className="px-4 py-3 font-medium text-tinta dark:text-slate-100">
+                      <td className="px-4 py-3 text-tinta-2 dark:text-tinta-3">{c.fecha}</td>
+                      <td className="px-4 py-3 font-medium text-tinta dark:text-tinta">
                         {c.descripcion}
                       </td>
                       <td className="px-4 py-3 text-center tabular-nums">{c.articulos_conteo}</td>
@@ -294,8 +294,8 @@ export function VistaInventario({
                           variant="outline"
                           className={
                             c.estado === "aplicado"
-                              ? "border-linea bg-muted text-[#1E9E6A]"
-                              : "border-linea bg-muted text-tinta-2 dark:text-slate-300"
+                              ? "border-linea bg-muted text-status-success-fg"
+                              : "border-linea bg-muted text-tinta-2 dark:text-tinta-2"
                           }
                         >
                           {c.estado}

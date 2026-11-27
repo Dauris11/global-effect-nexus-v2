@@ -43,7 +43,7 @@ type ListaActiva = "impuestos_cargos" | "reglas_legales";
 
 function Asterisco() {
   return (
-    <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">
+    <span aria-hidden="true" className="ml-0.5 text-status-danger-fg">
       *
     </span>
   );

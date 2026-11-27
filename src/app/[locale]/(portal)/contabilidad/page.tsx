@@ -12,5 +12,5 @@ export default async function PaginaContabilidad({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirigir("/portal/contabilidad", locale);
+  redirigir("/inicio", locale);
 }

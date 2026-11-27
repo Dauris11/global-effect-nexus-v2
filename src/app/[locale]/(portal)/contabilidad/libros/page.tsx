@@ -67,7 +67,7 @@ export default async function PaginaLibros({
   const rango = t("rango", { desde: fechaCorta(filtro.desde, idioma), hasta: fechaCorta(filtro.hasta, idioma) });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
         titulo={t("titulo")}
         acciones={

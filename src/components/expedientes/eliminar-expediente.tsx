@@ -88,7 +88,7 @@ export function EliminarExpediente({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="size-5 shrink-0 text-[#171A1D] dark:text-white" />
+                <AlertTriangle className="size-5 shrink-0 text-tinta dark:text-white" />
                 {textos.inUseTitle}
               </DialogTitle>
             </DialogHeader>
@@ -118,13 +118,13 @@ export function EliminarExpediente({
 
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="size-5 shrink-0 text-[#171A1D] dark:text-white" />
+                <AlertTriangle className="size-5 shrink-0 text-tinta dark:text-white" />
                 {textos.confirmTitle}
               </DialogTitle>
             </DialogHeader>
 
             {conError && (
-              <p className="mt-2 rounded-lg bg-[#171A1D]/5 p-2.5 text-xs font-medium text-[#171A1D] dark:bg-white/5 dark:text-white">
+              <p className="mt-2 rounded-lg bg-tinta/5 p-2.5 text-xs font-medium text-tinta dark:bg-white/5 dark:text-white">
                 {textos.error}
               </p>
             )}

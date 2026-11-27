@@ -1,5 +1,6 @@
 "use client";
 
+import { PestanasModulo, TituloPagina } from "@/components/layout/pestanas-modulo";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -103,12 +104,7 @@ export function VistaReportes({
       {/* Cabecera */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("antetitulo")}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {t("titulo")}
-          </h1>
+          <TituloPagina className="text-page">{t("titulo")}</TituloPagina>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -133,6 +129,7 @@ export function VistaReportes({
           </Button>
         </div>
       </div>
+      <PestanasModulo />
 
       {/* Selector de pestañas */}
       <div className="flex flex-wrap gap-2 border-b border-linea pb-2">
@@ -140,7 +137,7 @@ export function VistaReportes({
           variant={tab === "balance" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("balance")}
-          className={tab === "balance" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "balance" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.balance")}
         </Button>
@@ -148,7 +145,7 @@ export function VistaReportes({
           variant={tab === "actividades" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("actividades")}
-          className={tab === "actividades" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "actividades" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.actividades")}
         </Button>
@@ -156,7 +153,7 @@ export function VistaReportes({
           variant={tab === "flujo" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("flujo")}
-          className={tab === "flujo" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "flujo" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.flujo")}
         </Button>
@@ -164,7 +161,7 @@ export function VistaReportes({
           variant={tab === "patrimonio" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("patrimonio")}
-          className={tab === "patrimonio" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "patrimonio" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.patrimonio")}
         </Button>
@@ -172,7 +169,7 @@ export function VistaReportes({
           variant={tab === "mayor" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("mayor")}
-          className={tab === "mayor" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "mayor" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.mayor")}
         </Button>
@@ -180,7 +177,7 @@ export function VistaReportes({
           variant={tab === "proyeccion" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("proyeccion")}
-          className={tab === "proyeccion" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "proyeccion" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.proyeccion")}
         </Button>
@@ -188,7 +185,7 @@ export function VistaReportes({
           variant={tab === "snapshots" ? "default" : "ghost"}
           size="sm"
           onClick={() => setTab("snapshots")}
-          className={tab === "snapshots" ? "bg-[#2096BA] hover:bg-[#187a99] text-white" : ""}
+          className={tab === "snapshots" ? "bg-marca-500 hover:bg-marca-600 text-white" : ""}
         >
           {t("tabs.snapshots")}
         </Button>
@@ -206,9 +203,9 @@ export function VistaReportes({
             }`}
           >
             {balanceInicial.cuadrado ? (
-              <CheckCircle2 className="h-5 w-5 text-[#1E9E6A]" />
+              <CheckCircle2 className="h-5 w-5 text-status-success-fg" />
             ) : (
-              <AlertTriangle className="h-5 w-5 text-[#B4342B]" />
+              <AlertTriangle className="h-5 w-5 text-status-danger-fg" />
             )}
             <div className="flex-1 text-sm">
               <span className="font-semibold">
@@ -233,7 +230,7 @@ export function VistaReportes({
                 <h2 className="text-lg font-bold uppercase tracking-wide text-foreground">
                   {t("balance.totalActivos")}
                 </h2>
-                <span className="text-lg font-bold text-[#2096BA] tabular-nums">
+                <span className="text-lg font-bold text-marca-700 tabular-nums">
                   {formatearMonto(balanceInicial.totalActivos)}
                 </span>
               </div>
@@ -347,8 +344,8 @@ export function VistaReportes({
                     <span
                       className={`tabular-nums ${
                         balanceInicial.superavitDeficitPeriodo >= 0
-                          ? "text-[#1E9E6A]"
-                          : "text-[#B4342B]"
+                          ? "text-status-success-fg"
+                          : "text-status-danger-fg"
                       }`}
                     >
                       {formatearMonto(balanceInicial.superavitDeficitPeriodo)}
@@ -358,7 +355,7 @@ export function VistaReportes({
 
                 <div className="flex items-center justify-between border-t-2 border-linea pt-3 mt-4 text-sm font-bold">
                   <span>{t("balance.totalPasivoPatrimonio")}</span>
-                  <span className="text-base text-[#2096BA] tabular-nums">
+                  <span className="text-base text-marca-700 tabular-nums">
                     {formatearMonto(balanceInicial.totalPasivos + balanceInicial.totalPatrimonio)}
                   </span>
                 </div>
@@ -388,8 +385,8 @@ export function VistaReportes({
                 <span
                   className={`text-2xl font-bold tabular-nums ${
                     actividadesInicial.superavitDeficitNeto >= 0
-                      ? "text-[#1E9E6A]"
-                      : "text-[#B4342B]"
+                      ? "text-status-success-fg"
+                      : "text-status-danger-fg"
                   }`}
                 >
                   {formatearMonto(actividadesInicial.superavitDeficitNeto)}
@@ -401,7 +398,7 @@ export function VistaReportes({
             <div className="space-y-3">
               <div className="flex justify-between items-center bg-muted/60 p-2.5 rounded font-bold text-sm">
                 <span>{t("actividades.ingresos")}</span>
-                <span className="text-[#2096BA] tabular-nums">
+                <span className="text-marca-700 tabular-nums">
                   {formatearMonto(actividadesInicial.ingresos.total)}
                 </span>
               </div>
@@ -529,7 +526,7 @@ export function VistaReportes({
             <div className="rounded-lg border border-linea p-4 bg-muted/30 space-y-2 pt-3 mt-4 text-sm font-semibold">
               <div className="flex justify-between">
                 <span>{t("flujo.aumentoNeto")}</span>
-                <span className="tabular-nums text-[#2096BA]">
+                <span className="tabular-nums text-marca-700">
                   {formatearMonto(flujoInicial.aumentoDisminucionNeta)}
                 </span>
               </div>
@@ -588,16 +585,16 @@ export function VistaReportes({
                 </tr>
                 <tr>
                   <td className="p-3 font-medium">{t("patrimonio.liberaciones")}</td>
-                  <td className="p-3 text-right tabular-nums text-[#1E9E6A]">{formatearMonto(patrimonioInicial.liberacionesFondos.noRestringido)}</td>
-                  <td className="p-3 text-right tabular-nums text-[#B4342B]">{formatearMonto(patrimonioInicial.liberacionesFondos.temporalmenteRestringido)}</td>
+                  <td className="p-3 text-right tabular-nums text-status-success-fg">{formatearMonto(patrimonioInicial.liberacionesFondos.noRestringido)}</td>
+                  <td className="p-3 text-right tabular-nums text-status-danger-fg">{formatearMonto(patrimonioInicial.liberacionesFondos.temporalmenteRestringido)}</td>
                   <td className="p-3 text-right tabular-nums">RD$ 0.00</td>
                   <td className="p-3 text-right tabular-nums font-semibold">RD$ 0.00</td>
                 </tr>
                 <tr className="bg-muted/40 font-bold text-sm">
                   <td className="p-3">{t("patrimonio.saldoFinal")}</td>
-                  <td className="p-3 text-right tabular-nums text-[#2096BA]">{formatearMonto(patrimonioInicial.saldoFinal.noRestringido)}</td>
-                  <td className="p-3 text-right tabular-nums text-[#2096BA]">{formatearMonto(patrimonioInicial.saldoFinal.temporalmenteRestringido)}</td>
-                  <td className="p-3 text-right tabular-nums text-[#2096BA]">{formatearMonto(patrimonioInicial.saldoFinal.resultadosAcumulados)}</td>
+                  <td className="p-3 text-right tabular-nums text-marca-700">{formatearMonto(patrimonioInicial.saldoFinal.noRestringido)}</td>
+                  <td className="p-3 text-right tabular-nums text-marca-700">{formatearMonto(patrimonioInicial.saldoFinal.temporalmenteRestringido)}</td>
+                  <td className="p-3 text-right tabular-nums text-marca-700">{formatearMonto(patrimonioInicial.saldoFinal.resultadosAcumulados)}</td>
                   <td className="p-3 text-right tabular-nums text-foreground">{formatearMonto(patrimonioInicial.saldoFinal.total)}</td>
                 </tr>
               </tbody>
@@ -631,7 +628,7 @@ export function VistaReportes({
                       <span>{t("mayor.saldoAnterior")}: {formatearMonto(cuenta.saldoAnterior)}</span>
                       <span>Debe: {formatearMonto(cuenta.totalDebe)}</span>
                       <span>Haber: {formatearMonto(cuenta.totalHaber)}</span>
-                      <span className="font-bold text-[#2096BA]">
+                      <span className="font-bold text-marca-700">
                         {t("mayor.saldo")}: {formatearMonto(cuenta.saldoFinal)}
                       </span>
                     </div>
@@ -694,7 +691,7 @@ export function VistaReportes({
               <span className="text-xs text-muted-foreground block">
                 {t("proyeccion.saldoDisponibleActual")}
               </span>
-              <span className="text-xl font-bold text-[#2096BA] tabular-nums">
+              <span className="text-xl font-bold text-marca-700 tabular-nums">
                 {formatearMonto(proyeccionInicial.saldoDisponibleActual)}
               </span>
             </div>
@@ -706,10 +703,10 @@ export function VistaReportes({
                 <tr>
                   <th className="p-3">{t("proyeccion.mes")}</th>
                   <th className="p-3 text-right">{t("proyeccion.saldoInicial")}</th>
-                  <th className="p-3 text-right text-[#1E9E6A]">{t("proyeccion.totalEntradas")}</th>
-                  <th className="p-3 text-right text-[#B4342B]">{t("proyeccion.totalSalidas")}</th>
+                  <th className="p-3 text-right text-status-success-fg">{t("proyeccion.totalEntradas")}</th>
+                  <th className="p-3 text-right text-status-danger-fg">{t("proyeccion.totalSalidas")}</th>
                   <th className="p-3 text-right">{t("proyeccion.flujoNeto")}</th>
-                  <th className="p-3 text-right font-bold text-[#2096BA]">{t("proyeccion.saldoFinal")}</th>
+                  <th className="p-3 text-right font-bold text-marca-700">{t("proyeccion.saldoFinal")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-linea">
@@ -717,15 +714,15 @@ export function VistaReportes({
                   <tr key={idx} className="hover:bg-muted/20">
                     <td className="p-3 font-semibold text-foreground">{m.mesNombre}</td>
                     <td className="p-3 text-right tabular-nums">{formatearMonto(m.saldoInicial)}</td>
-                    <td className="p-3 text-right tabular-nums font-medium text-[#1E9E6A]">
+                    <td className="p-3 text-right tabular-nums font-medium text-status-success-fg">
                       +{formatearMonto(m.totalEntradas)}
                     </td>
-                    <td className="p-3 text-right tabular-nums font-medium text-[#B4342B]">
+                    <td className="p-3 text-right tabular-nums font-medium text-status-danger-fg">
                       -{formatearMonto(m.totalSalidas)}
                     </td>
                     <td
                       className={`p-3 text-right tabular-nums font-semibold ${
-                        m.flujoNeto >= 0 ? "text-[#1E9E6A]" : "text-[#B4342B]"
+                        m.flujoNeto >= 0 ? "text-status-success-fg" : "text-status-danger-fg"
                       }`}
                     >
                       {formatearMonto(m.flujoNeto)}
@@ -814,7 +811,7 @@ export function VistaReportes({
             <Button
               onClick={handleGuardarSnapshot}
               disabled={isPending || !tituloSnapshot.trim()}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? t("snapshots.guardando") : t("snapshots.guardar")}
             </Button>

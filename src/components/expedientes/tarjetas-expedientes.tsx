@@ -91,7 +91,7 @@ export async function TarjetasExpedientes({
 
                   <Dato
                     icono={enRiesgo ? TriangleAlert : TrendingUp}
-                    className={cn(enRiesgo && "text-[#B4342B]")}
+                    className={cn(enRiesgo && "text-status-danger-fg")}
                   >
                     {fila.indice === null
                       ? t("noGpa")
@@ -101,7 +101,7 @@ export async function TarjetasExpedientes({
                   {fila.promedio_secundaria !== null && (
                     <Dato
                       icono={fila.promedio_secundaria < minimoSecundaria ? TriangleAlert : GraduationCap}
-                      className={cn(fila.promedio_secundaria < minimoSecundaria && "text-[#B4342B]")}
+                      className={cn(fila.promedio_secundaria < minimoSecundaria && "text-status-danger-fg")}
                     >
                       {t("lista.highSchool")} {fila.promedio_secundaria.toFixed(2)}
                     </Dato>

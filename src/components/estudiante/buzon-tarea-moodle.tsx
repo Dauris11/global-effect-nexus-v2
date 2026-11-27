@@ -152,7 +152,7 @@ export function BuzonTareaMoodle({
 
             <div className="flex flex-wrap items-center gap-2">
               {asignacion.vencida ? (
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#B4342B]/10 px-2.5 py-1 text-xs font-semibold text-[#B4342B]">
+                <span className="inline-flex items-center gap-1 rounded-md bg-status-danger/10 px-2.5 py-1 text-xs font-semibold text-status-danger-fg">
                   <AlertCircle className="size-3.5 shrink-0" />
                   {t("overdueNotice")}
                 </span>
@@ -241,12 +241,12 @@ export function BuzonTareaMoodle({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Award className="size-5 text-[#1E9E6A]" />
+                <Award className="size-5 text-status-success-fg" />
                 <CardTitle className="text-base font-bold text-tinta">
                   {t("gradeFeedbackTitle")}
                 </CardTitle>
               </div>
-              <span className="rounded-xl bg-[#1E9E6A]/10 px-3 py-1 text-base font-bold text-[#1E9E6A]">
+              <span className="rounded-xl bg-status-success/10 px-3 py-1 text-base font-bold text-status-success-fg">
                 {asignacion.calificacion} / {asignacion.puntaje_maximo}
               </span>
             </div>
@@ -291,11 +291,11 @@ export function BuzonTareaMoodle({
                 className={cn(
                   "text-xs font-semibold",
                   asignacion.entrega_estado === "calificado" &&
-                    "border-transparent bg-[#1E9E6A]/10 text-[#1E9E6A]",
+                    "border-transparent bg-status-success/10 text-status-success-fg",
                   asignacion.entrega_estado === "entregado" &&
                     "border-transparent bg-marca-50 text-marca-600",
                   asignacion.entrega_estado === "tarde" &&
-                    "border-transparent bg-[#B4342B]/10 text-[#B4342B]",
+                    "border-transparent bg-status-danger/10 text-status-danger-fg",
                   asignacion.entrega_estado === "pendiente" &&
                     "border-transparent bg-muted text-tinta/70",
                 )}
@@ -312,14 +312,14 @@ export function BuzonTareaMoodle({
         <CardContent>
           {errorValidacion && (
             <div className="mb-4 flex items-center gap-2 rounded-xl border border-linea-fuerte bg-muted p-3 text-xs text-tinta">
-              <AlertCircle className="size-4 shrink-0 text-[#B4342B]" />
+              <AlertCircle className="size-4 shrink-0 text-status-danger-fg" />
               <span>{errorValidacion}</span>
             </div>
           )}
 
           {mensajeExito && (
-            <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#1E9E6A]/10 p-3 text-xs font-medium text-[#1E9E6A]">
-              <CheckCircle2 className="size-4 shrink-0 text-[#1E9E6A]" />
+            <div className="mb-4 flex items-center gap-2 rounded-xl bg-status-success/10 p-3 text-xs font-medium text-status-success-fg">
+              <CheckCircle2 className="size-4 shrink-0 text-status-success-fg" />
               <span>{mensajeExito}</span>
             </div>
           )}

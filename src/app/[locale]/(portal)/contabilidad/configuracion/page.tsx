@@ -59,7 +59,7 @@ export default async function PaginaConfiguracionContable({
   const puedeCerrar = usuarioTienePermiso(usuario, "contabilidad.cerrar_periodo");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina titulo={t("titulo")} />
       <PestanasConfig activa={pestana} />
       <Seccion pestana={pestana} locale={locale} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />

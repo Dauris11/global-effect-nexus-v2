@@ -31,13 +31,15 @@
 /** Azul claro institucional. Es el color de la Fundación. */
 export const AZUL = "#2096BA";
 /** El mismo azul, un paso más oscuro: hover de botones y texto sobre claro. */
-export const AZUL_MEDIO = "#187a99";
+export const AZUL_MEDIO = "#177A99";
 /** El más oscuro de la marca: lo que más pesa sin llegar al negro. */
-export const AZUL_OSCURO = "#0a6a8a";
+export const AZUL_OSCURO = "#0E4A5E";
 /** Un paso más claro que la marca, para separar series en una gráfica. */
-export const AZUL_SUAVE = "#5FB8D4";
+export const AZUL_SUAVE = "#74C5DD";
 /** Negro institucional: el extremo de la escala. */
-export const TINTA = "#171A1D";
+export const TINTA = "#14191F";
+/** Rojo de estado (`--danger`): lo urgente, lo vencido y lo que sale, también en las gráficas. */
+export const PELIGRO = "#B91C1C";
 /** El lienzo. Lo usa `themeColor`, que no admite clases. */
 export const BLANCO = "#FFFFFF";
 /** Gris neutro, para lo que no tiene peso. */
@@ -107,9 +109,9 @@ export function esMovimiento(valor: string): valor is TipoMovimiento {
  */
 export const PRIORIDAD = {
   urgente: {
-    color: TINTA,
-    clases: "bg-tinta text-background",
-    punto: "bg-tinta",
+    color: PELIGRO,
+    clases: "border border-status-danger-border bg-status-danger-bg text-status-danger-fg",
+    punto: "bg-status-danger",
   },
   alta: {
     color: AZUL_OSCURO,
@@ -296,10 +298,11 @@ export const BOTON = {
 export const STAT_CARD = {
   card: "rounded-card border border-linea bg-card shadow-card",
   content: "p-5",
+  // Contenedor neutro (canvas + ink-3) para todos los iconos de cifra: ningún KPI "destaca" por color.
   iconoAcento:
-    "flex size-9 shrink-0 items-center justify-center rounded-control bg-marca-50 text-marca-600",
+    "flex size-9 shrink-0 items-center justify-center rounded-control bg-canvas text-tinta-3",
   iconoNeutro:
-    "flex size-9 shrink-0 items-center justify-center rounded-control bg-muted text-tinta-2",
+    "flex size-9 shrink-0 items-center justify-center rounded-control bg-canvas text-tinta-3",
   /** La cifra va en tinta siempre: el acento lo lleva el icono. */
   valorAcento: "text-[34px] font-semibold leading-none tracking-tight text-tinta tabular-nums",
   valorNeutro: "text-[34px] font-semibold leading-none tracking-tight text-tinta tabular-nums",
@@ -341,9 +344,9 @@ export const ANIMACION = {
  */
 export const ALERTA_RIESGO = {
   contenedor:
-    "flex items-start gap-2 rounded-control border border-linea-fuerte bg-muted p-3",
-  icono: "mt-0.5 size-4 shrink-0 text-tinta",
-  texto: "text-sm text-tinta leading-relaxed",
+    "flex items-start gap-2 rounded-control border border-status-warning-border bg-status-warning-bg p-3",
+  icono: "mt-0.5 size-4 shrink-0 text-status-warning",
+  texto: "text-sm text-status-warning-fg leading-relaxed",
   etiqueta: "font-semibold",
 } as const;
 

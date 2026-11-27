@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { AlertTriangle, MapPin, Navigation, Users } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { MapaTransporte } from "@/components/transporte/mapa-transporte";
 import { PanelAdminTransporte } from "@/components/transporte/panel-admin-transporte";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
-import { StatCard } from "@/components/ui/stat-card";
+import { PageContainer } from "@/components/app/page-container";
+import { PageHeader } from "@/components/app/page-header";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import {
@@ -48,51 +48,31 @@ export default async function PaginaAdminTransporte({
   ]);
 
   const paradasRuta = rutas[0]?.paradas ?? [];
-  const totalPasajerosHoy = resumen.turnos.reduce(
-    (suma, turno) => suma + turno.pasajeros_hoy,
-    0,
-  );
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-      <div className="animate-entrada mx-auto max-w-6xl space-y-6">
-        <EncabezadoPagina
-          antetitulo={t("eyebrow")}
-          titulo={tAdmin("title")}
-        />
+      <PageContainer className="space-y-6">
+        <PageHeader title={tAdmin("title")} />
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard
-            icono={Navigation}
-            valor={t(`status.${viajeEnVivo?.estado ?? "programado"}`)}
-            etiqueta={tAdmin("kpiActiveTrip")}
-            acento={viajeEnVivo?.estado === "en_curso"}
-          />
-          <StatCard
-            icono={Users}
-            valor={totalPasajerosHoy}
-            etiqueta={tAdmin("kpiPassengersToday")}
-          />
-          <StatCard
-            icono={MapPin}
-            valor={paradasRuta.length}
-            etiqueta={tAdmin("kpiStops")}
-          />
-          <StatCard
-            icono={AlertTriangle}
-            valor={resumen.incidenciasRecientes.length}
-            etiqueta={tAdmin("kpiIncidents")}
-          />
-        </div>
-
-        <MapaTransporte viajeInicial={viajeEnVivo} paradas={paradasRuta} />
-
+        {/* Primero el estado de los viajes de hoy (turno, chofer, estado, pasajeros) y sus incidencias; el mapa va
+            debajo, plegado: se abre cuando hace falta ver dónde va la guagua. Las cuatro tarjetas de antes son
+            ahora la línea de estado de cada viaje. */}
         <PanelAdminTransporte
           turnosIniciales={resumen.turnos}
           pasajerosPorHorario={resumen.pasajerosPorHorario}
           incidencias={resumen.incidenciasRecientes}
         />
-      </div>
+
+        <details className="group/mapa rounded-card border border-linea bg-card">
+          <summary className="text-section flex min-h-12 cursor-pointer list-none items-center gap-2 px-4">
+            <ChevronRight aria-hidden className="size-4 transition-transform group-open/mapa:rotate-90" />
+            {t(`status.${viajeEnVivo?.estado ?? "programado"}`)} · {tAdmin("mapTitle")}
+          </summary>
+          <div className="border-t border-linea p-2">
+            <MapaTransporte viajeInicial={viajeEnVivo} paradas={paradasRuta} />
+          </div>
+        </details>
+      </PageContainer>
     </NextIntlClientProvider>
   );
 }

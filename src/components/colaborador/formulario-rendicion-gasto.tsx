@@ -234,14 +234,14 @@ export function FormularioRendicionGasto({
             className={cn(
               "mb-4 flex items-center gap-2 rounded-xl p-3 text-sm",
               mensaje.tipo === "ok"
-                ? "bg-[#1E9E6A]/10 text-[#1E9E6A]"
+                ? "bg-status-success/10 text-status-success-fg"
                 : "border border-linea-fuerte bg-muted text-tinta",
             )}
           >
             {mensaje.tipo === "ok" ? (
-              <CheckCircle2 className="size-4 shrink-0 text-[#1E9E6A]" />
+              <CheckCircle2 className="size-4 shrink-0 text-status-success-fg" />
             ) : (
-              <AlertCircle className="size-4 shrink-0 text-[#B4342B]" />
+              <AlertCircle className="size-4 shrink-0 text-status-danger-fg" />
             )}
             <span>{mensaje.texto}</span>
           </div>
@@ -308,7 +308,7 @@ export function FormularioRendicionGasto({
             </label>
 
             {ocrCompletado && (
-              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#1E9E6A]/10 px-3 py-1 text-xs font-semibold text-[#1E9E6A]">
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-status-success/10 px-3 py-1 text-xs font-semibold text-status-success-fg">
                 <CheckCircle2 className="size-3.5" />
                 {t("ocrAutoExtracted")}
               </div>

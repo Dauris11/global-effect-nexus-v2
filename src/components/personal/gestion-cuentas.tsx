@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { Rol } from "@/lib/rbac";
 import {
@@ -118,7 +119,7 @@ export function GestionCuentas({
           ) : (
             <ul className="divide-y">
               {visibles.map((persona) => (
-                <Fila
+                <FilaCuenta
                   key={persona.id}
                   persona={persona}
                   roles={roles}
@@ -134,7 +135,7 @@ export function GestionCuentas({
 }
 
 /** Una persona: su rol en un desplegable y los botones de su estado. */
-function Fila({
+export function FilaCuenta({
   persona,
   roles,
   esYo,
@@ -153,7 +154,11 @@ function Fila({
   return (
     <li className="flex flex-wrap items-center gap-3 py-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{persona.nombre}</p>
+        <p className="truncate text-sm font-medium">
+          <Link href={`/administrativo/personal/${persona.id}`} className="hover:underline">
+            {persona.nombre}
+          </Link>
+        </p>
         <p className="text-muted-foreground truncate text-xs">
           {persona.email}
           {persona.tareas_abiertas > 0 && (
@@ -173,7 +178,7 @@ function Fila({
           className={cn(
             "text-[10px]",
             persona.activo
-              ? "bg-[#2096BA]/15 text-[#187a99]"
+              ? "bg-marca-500/15 text-marca-700"
               : "bg-muted text-muted-foreground",
           )}
         >
@@ -243,7 +248,7 @@ function Fila({
 }
 
 /** Alta: correo, nombre y rol. Devuelve la contraseña temporal una sola vez. */
-function FormularioAlta({
+export function FormularioAlta({
   roles,
   alCerrar,
 }: {
@@ -351,7 +356,7 @@ function Contrasena({
   const [copiada, setCopiada] = useState(false);
 
   return (
-    <div className="space-y-3 rounded-xl border border-[#2096BA]/30 bg-[#2096BA]/5 p-4">
+    <div className="space-y-3 rounded-xl border border-marca-500/30 bg-marca-500/5 p-4">
       <p className="text-sm font-semibold">{t("passwordTitle")}</p>
 
       <div className="flex flex-wrap items-center gap-2">

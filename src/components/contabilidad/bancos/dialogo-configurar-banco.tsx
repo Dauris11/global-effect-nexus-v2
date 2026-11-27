@@ -46,7 +46,7 @@ function useError(estado: EstadoBanco): string | null {
 
 function AsteriscoObligatorio() {
   return (
-    <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">
+    <span aria-hidden="true" className="ml-0.5 text-status-danger-fg">
       *
     </span>
   );

@@ -783,11 +783,14 @@ export async function obtenerMayorAnalitico(filtros: {
     nombre: string;
     tipo: string;
   }>(
-    `SELECT DISTINCT c.id, c.codigo, c.nombre, c.tipo
+    // Sin DISTINCT (no hay joins que dupliquen filas y Postgres exige que el ORDER BY esté en la lista) y con el
+    // parámetro del filtro renumerado: esta consulta recibe solo ese valor, no las fechas.
+    `SELECT c.id, c.codigo, c.nombre, c.tipo
      FROM contabilidad.cuenta_contable c
      WHERE c.admite_movimiento = true
-       ${filtroCuenta}
+       ${filtroCuenta.replace("$3", "$1")}
      ORDER BY contabilidad.clave_codigo(c.codigo) ASC`,
+    filtroCuenta ? [params[2]] : [],
   );
 
   const resultado: CuentaMayorAnalitico[] = [];

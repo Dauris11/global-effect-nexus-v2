@@ -71,6 +71,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
   return (
     <div
       role="status"
+      data-impersonation-bar
       className="bg-tinta text-background sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 py-2 text-sm"
     >
       <Eye className="size-4 shrink-0" aria-hidden />

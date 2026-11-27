@@ -79,12 +79,12 @@ export function ListaSolicitudes({
 
               return (
                 <tr key={fila.id} className={`group relative h-[52px] transition-colors hover:bg-muted/50 ${fila.id === resaltarId ? "animate-resaltar" : ""}`}>
-                  <td className="max-w-80 px-4 py-1.5">
+                  <td className="w-80 max-w-80 px-4 py-1.5">
                     <button
                       type="button"
                       onClick={() => setAbiertaId(fila.id)}
                       aria-label={`${l("view")}: ${fila.titulo}`}
-                      className="flex min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex w-full min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <FotoEstudiante nombre={persona(fila)} url={null} className="size-9 shrink-0 rounded-full" />
                       <span className="min-w-0">

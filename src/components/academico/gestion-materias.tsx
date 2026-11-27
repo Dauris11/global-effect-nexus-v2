@@ -80,6 +80,7 @@ const SELECT =
  * cuatrimestre.
  */
 export function GestionMaterias({
+  modo = "gestion",
   materias,
   periodos,
   docentes,
@@ -90,6 +91,8 @@ export function GestionMaterias({
   periodos: readonly PeriodoSimple[];
   docentes: readonly DocenteAsignable[];
   puedeEscribir: boolean;
+  /** `reporte`: solo las cifras y gráficas (viven en /reportes/academico); `gestion`: la pantalla de trabajo, sin ellas. */
+  modo?: "gestion" | "reporte";
   /** Si la consulta llegó al tope y hay materias sin mostrar. */
   hayMas: boolean;
   /** Si hay búsqueda o período puestos: cambia lo que dice el estado vacío. */
@@ -133,8 +136,8 @@ export function GestionMaterias({
     return true;
   });
 
-  return (
-    <div className={cn("space-y-5", ANIMACION.entrada)}>
+  const resumen = (
+    <>
       <div className="grid gap-3 sm:grid-cols-3">
         <CifraAcademica
           valor={materias.length}
@@ -196,6 +199,12 @@ export function GestionMaterias({
         </div>
       )}
 
+    </>
+  );
+  if (modo === "reporte") return <div className="space-y-5">{resumen}</div>;
+
+  return (
+    <div className={cn("space-y-5", ANIMACION.entrada)}>
       <Card>
         <CardContent className="pt-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

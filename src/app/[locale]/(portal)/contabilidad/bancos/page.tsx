@@ -61,7 +61,7 @@ export default async function PaginaBancos({
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-      <div className="mx-auto max-w-7xl space-y-6 animate-entrada">
+      <div className="space-y-6 animate-entrada">
         <EncabezadoPagina
           titulo={
             <span className="inline-flex items-center gap-2">
@@ -137,10 +137,10 @@ export default async function PaginaBancos({
                       <td className="whitespace-nowrap px-4 py-3.5">
                         <Badge variant="marca">{cuenta.moneda}</Badge>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-right font-medium tabular-nums text-[#1E9E6A]">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-right font-medium tabular-nums text-status-success-fg">
                         <Monto valor={cuenta.saldo_conciliado} moneda={cuenta.moneda} />
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-right font-medium tabular-nums text-[#B4342B]">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-right font-medium tabular-nums text-status-danger-fg">
                         <Monto valor={cuenta.saldo_sin_conciliar} moneda={cuenta.moneda} />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5 text-center tabular-nums text-tinta-2">
@@ -174,13 +174,13 @@ export default async function PaginaBancos({
                     <div className="grid grid-cols-2 gap-2 border-t border-linea pt-2.5 text-xs">
                       <div>
                         <p className="text-tinta-3">{t("columnas.saldoConciliado")}</p>
-                        <p className="font-medium tabular-nums text-[#1E9E6A]">
+                        <p className="font-medium tabular-nums text-status-success-fg">
                           <Monto valor={cuenta.saldo_conciliado} moneda={cuenta.moneda} />
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-tinta-3">{t("columnas.saldoSinConciliar")}</p>
-                        <p className="font-medium tabular-nums text-[#B4342B]">
+                        <p className="font-medium tabular-nums text-status-danger-fg">
                           <Monto valor={cuenta.saldo_sin_conciliar} moneda={cuenta.moneda} />
                         </p>
                       </div>

@@ -1,3 +1,4 @@
+import { MigasDeDetalle, PestanasModulo, TituloPagina } from "@/components/layout/pestanas-modulo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,31 +15,33 @@ import { cn } from "@/lib/utils";
  */
 export function EncabezadoPagina({
   titulo,
-  antetitulo,
   acciones,
   className,
 }: {
   titulo: React.ReactNode;
   subtitulo?: React.ReactNode;
-  /** Una palabra encima del título, cuando ayuda a situarse (el módulo). */
+  /** Ya no se pinta: sin eyebrows encima del título (docs/ux-rules.md §10). Se acepta para no tocar las pantallas que lo pasan. */
   antetitulo?: React.ReactNode;
   acciones?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <header
-      className={cn(
-        "flex flex-col gap-4 md:flex-row md:items-end md:justify-between",
-        className,
-      )}
-    >
-      <div className="min-w-0">
-        {antetitulo && <p className="texto-meta mb-1 font-medium">{antetitulo}</p>}
-        <h1 className="texto-titulo-pagina">{titulo}</h1>
-      </div>
-      {acciones && (
-        <div className="flex shrink-0 flex-wrap items-center gap-2">{acciones}</div>
-      )}
-    </header>
+    <div className="space-y-4">
+      <MigasDeDetalle />
+      <header
+        className={cn(
+          "flex flex-col gap-4 md:flex-row md:items-end md:justify-between",
+          className,
+        )}
+      >
+        <div className="min-w-0">
+          <TituloPagina className="texto-titulo-pagina">{titulo}</TituloPagina>
+        </div>
+        {acciones && (
+          <div className="flex shrink-0 flex-wrap items-center gap-2">{acciones}</div>
+        )}
+      </header>
+      <PestanasModulo />
+    </div>
   );
 }

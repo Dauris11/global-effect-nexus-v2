@@ -7,7 +7,7 @@ export default function CargandoLibros() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" className="mx-auto max-w-6xl space-y-6">
+    <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">

@@ -65,7 +65,7 @@ export default async function PaginaChatIA({
       <Card className="mx-auto max-w-xl">
         <CardContent className="pt-5">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#2096BA]/10 text-[#187a99]">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-marca-500/10 text-marca-700">
               <ShieldAlert className="size-5" />
             </span>
             <div>
@@ -83,7 +83,7 @@ export default async function PaginaChatIA({
     : [];
 
   return (
-    <div className="animate-entrada mx-auto max-w-3xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={t("title")} />
 
       <Card>

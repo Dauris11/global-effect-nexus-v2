@@ -14,6 +14,8 @@ import { cerrarSesion } from "@/server/auth/acciones";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { ventanaVigente } from "@/server/global360/consultas";
 import { misNotificaciones } from "@/server/notificaciones/consultas";
+import { prioridadesDe } from "@/server/prioridades/motor";
+import { cuantasPorAtender } from "@/server/solicitudes/consultas";
 
 /**
  * Puerta de todas las pantallas internas.
@@ -42,6 +44,13 @@ export default async function LayoutPortal({
   // `ia.usar` el servidor rechaza cada mensaje, y ofrecerlo sería ofrecer algo
   // que no funciona.
   const asistenteVisible = usuarioTienePermiso(usuario, "ia.usar");
+
+  // Distintivos del menú: lo vencido de mi lista (Inicio) y las solicitudes que me tocan. Una falla aquí no
+  // debe tumbar la página: sin número, el menú sale igual.
+  const [vencidas, porAtender] = await Promise.all([
+    prioridadesDe(usuario).then((l) => l.grupos.vencido.length).catch(() => 0),
+    cuantasPorAtender(usuario).catch(() => 0),
+  ]);
 
   // Mostrar aviso de prematrícula a todo rol estudiante (incluido «Ver como»).
   let aviso: { texto: string; href: string } | null = null;
@@ -105,6 +114,7 @@ export default async function LayoutPortal({
         }))}
         sinLeer={avisos[0]?.sin_leer ?? 0}
         permisos={usuario.permisos}
+        insignias={{ vencidos: vencidas, solicitudes: porAtender }}
         cerrarSesion={cerrarSesion}
       >
         {children}

@@ -45,7 +45,7 @@ export default async function PaginaPermisos({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-8">
+    <div className="animate-entrada space-y-8">
       <EncabezadoPagina titulo={t("title")} />
 
       <Tabs defaultValue="rol" className="space-y-8">

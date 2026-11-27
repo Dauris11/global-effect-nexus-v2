@@ -17,7 +17,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
         // Inválido: el rojo de SEMAFORO en el borde, que es el único sitio de
         // un formulario donde la norma lo admite (docs/09 §2.3). El mensaje
         // que lo explica lo pone quien usa el campo.
-        "aria-invalid:border-[#B4342B] aria-invalid:ring-1 aria-invalid:ring-[#B4342B]",
+        "aria-invalid:border-status-danger-border aria-invalid:ring-1 aria-invalid:ring-[#B4342B]",
         className,
       )}
       {...props}

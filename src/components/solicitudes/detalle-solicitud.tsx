@@ -76,7 +76,7 @@ export function DetalleSolicitud({ solicitud, className }: { solicitud: FilaSoli
   return (
     <div className={cn("space-y-4", className)}>
           {solicitud.detalle && (
-            <p className="text-sm whitespace-pre-line text-tinta-2 dark:text-slate-300">
+            <p className="text-sm whitespace-pre-line text-tinta-2 dark:text-tinta-2">
               {solicitud.detalle}
             </p>
           )}
@@ -154,14 +154,14 @@ export function DetalleSolicitud({ solicitud, className }: { solicitud: FilaSoli
           )}
 
           {/* Línea de tiempo: cada paso con quién, cuándo y por qué. */}
-          <ol className="relative space-y-3 border-l border-linea pl-4 dark:border-slate-800">
+          <ol className="relative space-y-3 border-l border-linea pl-4 dark:border-linea">
             {solicitud.pasos.map((paso) => {
               const visual = visualDeSolicitud(paso.estado_nuevo);
               const IconoPaso = visual.icono;
 
               return (
                 <li key={paso.id} className="relative">
-                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-card text-marca-600 dark:bg-slate-950">
+                  <span className="absolute top-0.5 -left-[25px] flex size-4 items-center justify-center rounded-full bg-card text-marca-600 dark:bg-background">
                     <IconoPaso className="size-3.5" />
                   </span>
                   <p className="text-xs font-semibold">
@@ -255,7 +255,7 @@ function BotonAccion({
       className={cn(
         "rounded-md active:scale-[0.99]",
         principal && "bg-marca-500 text-white hover:bg-marca-600",
-        negativa && "border-tinta/30 text-tinta dark:text-slate-200",
+        negativa && "border-tinta/30 text-tinta dark:text-tinta",
         !principal && !negativa && "border-marca-500/40 text-marca-600",
       )}
     >

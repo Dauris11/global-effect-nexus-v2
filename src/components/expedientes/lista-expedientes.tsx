@@ -152,7 +152,7 @@ function Indice({ indice, umbral }: { indice: number | null; umbral: number }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 font-semibold tabular-nums",
-        enRiesgo && "text-[#B4342B]",
+        enRiesgo && "text-status-danger-fg",
       )}
     >
       {enRiesgo && <TriangleAlert aria-hidden className="size-3.5" />}
@@ -192,7 +192,7 @@ function Secundaria({ valor, minimo, etiqueta }: { valor: number | null; minimo:
   const bajo = valor < minimo;
 
   return (
-    <span className={cn("texto-meta flex items-center justify-end gap-1 tabular-nums", bajo && "font-semibold text-[#B4342B]")}>
+    <span className={cn("texto-meta flex items-center justify-end gap-1 tabular-nums", bajo && "font-semibold text-status-danger-fg")}>
       {bajo && <TriangleAlert aria-hidden className="size-3" />}
       {etiqueta} {valor.toFixed(2)}
     </span>

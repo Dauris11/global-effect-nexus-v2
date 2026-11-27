@@ -223,7 +223,7 @@ export function DialogoTercero() {
                     type="checkbox"
                     checked={esDonante}
                     onChange={(e) => setEsDonante(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="rounded border-linea-fuerte"
                   />
                   {t("esDonante")}
                 </label>
@@ -232,7 +232,7 @@ export function DialogoTercero() {
                     type="checkbox"
                     checked={esProveedor}
                     onChange={(e) => setEsProveedor(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="rounded border-linea-fuerte"
                   />
                   {t("esProveedor")}
                 </label>

@@ -55,7 +55,7 @@ export function MensajeIA({
       <div
         className={cn(
           "max-w-[86%] min-w-0 rounded-card px-3.5 py-2.5",
-          mio ? "bg-tinta text-background" : "bg-muted text-tinta",
+          mio ? "bg-marca-600 text-white" : "bg-muted text-tinta",
         )}
       >
         {mensaje.contenido && (

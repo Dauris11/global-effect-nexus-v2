@@ -30,10 +30,12 @@ export async function generateMetadata({
  */
 export default async function PaginaClaseDocente({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; clave: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const { locale, clave } = await params;
+  const [{ locale, clave }, { tab }] = await Promise.all([params, searchParams]);
   const leida = leerClaveDeClase(clave);
 
   if (!leida) notFound();
@@ -58,7 +60,7 @@ export default async function PaginaClaseDocente({
         title={datos.nombre}
       />
       <NextIntlClientProvider messages={mensajes}>
-        <PestanasClase datos={datos} />
+        <PestanasClase datos={datos} inicial={tab} />
       </NextIntlClientProvider>
     </div>
   );

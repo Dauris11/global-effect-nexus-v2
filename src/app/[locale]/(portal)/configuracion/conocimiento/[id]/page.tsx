@@ -62,7 +62,7 @@ export default async function PaginaEditarDocumento({
   const agentes = visibles.map((clave) => ({ clave, nombre: t(`agentNames.${clave}`) }));
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6 pb-10">
+    <div className="animate-entrada space-y-6 pb-10">
       <EncabezadoPagina titulo={t("knowledge.editTitle")} />
 
       <Button asChild variant="outline" size="sm">

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, CheckCircle2, Clock, Loader2, Minus, XCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/app/status-badge";
 import type { EstadoCarta } from "@/lib/correos-patrocinador";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { cn } from "@/lib/utils";
@@ -170,12 +170,9 @@ export function PlanillaServicios({
 }
 
 /**
- * Una casilla.
- *
- * `input type="checkbox"` de verdad y no un `div` estilizado: el navegador ya
- * sabe enfocarlo con teclado, marcarlo con la barra espaciadora y anunciarlo a
- * un lector de pantalla. El `aria-label` lleva a quién y a qué corresponde,
- * porque en una tabla de cien filas "casilla marcada" a secas no dice nada.
+ * Una celda de requisito: un badge (cumplido / pendiente) que ES el botón. Un clic lo marca o lo desmarca y
+ * se guarda al instante. Es un `button` de verdad (foco y teclado), con `aria-pressed` y el nombre del
+ * estudiante y del requisito en su etiqueta.
  */
 function Casilla({
   marcada,
@@ -190,51 +187,44 @@ function Casilla({
   etiqueta: string;
   alPulsar: () => void;
 }) {
+  const t = useTranslations("monthlyServices");
+
   if (ocupada) {
-    return <Loader2 className="mx-auto size-4 animate-spin text-[#187a99]" />;
+    return <Loader2 aria-hidden className="mx-auto size-4 animate-spin text-tinta-2" />;
   }
 
   return (
-    <input
-      type="checkbox"
-      checked={marcada}
+    <button
+      type="button"
+      onClick={alPulsar}
       disabled={!activa}
-      onChange={alPulsar}
+      aria-pressed={marcada}
       aria-label={etiqueta}
-      className="size-4 accent-[#2096BA] disabled:opacity-50"
-    />
+      className="inline-flex min-h-8 items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default"
+    >
+      <StatusBadge status={marcada ? "cumplio" : "pendiente"} label={marcada ? t("yes") : t("no")} />
+    </button>
   );
 }
 
-const VISUAL_CARTA = {
-  cumplio: { icono: CheckCircle2, variante: "marca" },
-  en_revision: { icono: Clock, variante: "neutra" },
-  tardia: { icono: AlertCircle, variante: "solida" },
-  no_envio: { icono: XCircle, variante: "solida" },
-  no_aplica: { icono: Minus, variante: "neutra" },
-} as const satisfies Record<EstadoCarta, { icono: unknown; variante: string }>;
+const ESTADO_DE_CARTA: Record<EstadoCarta, string> = {
+  cumplio: "cumplio",
+  en_revision: "en_revision",
+  tardia: "pendiente",
+  no_envio: "vencida",
+  no_aplica: "inactivo",
+};
 
-/** Estado de la carta con icono y texto: no depende del color para entenderse. */
+/** Estado de la carta con su pastilla semántica (color + icono): no depende solo del color para entenderse. */
 function EstadoDeCarta({ estado }: { estado: EstadoCarta }) {
   const t = useTranslations("monthlyServices");
-  const { icono: Icono, variante } = VISUAL_CARTA[estado];
 
-  return (
-    <Badge variant={variante} className="gap-1">
-      <Icono className="size-3" />
-      {t(`letterStatus.${estado}`)}
-    </Badge>
-  );
+  return <StatusBadge status={ESTADO_DE_CARTA[estado]} label={t(`letterStatus.${estado}`)} />;
 }
 
 /** Cumplió el mes: servicio, reunión y carta (si tiene patrocinador). */
 function Cumplio({ cumplio }: { cumplio: boolean }) {
   const t = useTranslations("monthlyServices");
 
-  return (
-    <Badge variant={cumplio ? "marca" : "solida"} className="gap-1">
-      {cumplio ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
-      {cumplio ? t("yes") : t("no")}
-    </Badge>
-  );
+  return <StatusBadge status={cumplio ? "cumplio" : "vencida"} label={cumplio ? t("yes") : t("no")} />;
 }

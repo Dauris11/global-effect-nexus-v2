@@ -120,14 +120,15 @@ export type Permiso = (typeof PERMISOS)[number];
 
 /** Portal al que se envía a cada rol tras iniciar sesión. */
 export const PORTAL_POR_ROL: Record<Rol, string> = {
-  // Dirección/Junta aterriza en su tablero; `admin` sigue en la bandeja.
-  super_admin: "/ejecutivo",
-  admin: "/bandeja",
-  docente: "/portal/profesor",
-  estudiante: "/portal/estudiante",
-  contabilidad: "/portal/contabilidad",
-  habitudes: "/habitudes",
-  dir_habitudes: "/habitudes",
+  // `/inicio` es la entrada única: la lista de lo que a cada persona le toca (motor de prioridades).
+  super_admin: "/inicio",
+  admin: "/inicio",
+  docente: "/inicio",
+  estudiante: "/inicio",
+  contabilidad: "/inicio",
+  habitudes: "/inicio",
+  dir_habitudes: "/inicio",
+  // El chofer conserva su pantalla de trabajo (control del viaje) como entrada: sin cambios de estructura.
   chofer: "/portal/chofer",
 };
 

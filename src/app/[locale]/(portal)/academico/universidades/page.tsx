@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import { EmptyState } from "@/components/app/empty-state";
 import { FilterBar } from "@/components/app/filter-bar";
+import { PageContainer } from "@/components/app/page-container";
 import { PageHeader } from "@/components/app/page-header";
 import { ListaUniversidades } from "@/components/universidades/lista-universidades";
 import { NuevaUniversidad } from "@/components/universidades/nueva-universidad";
@@ -71,7 +72,7 @@ export default async function PaginaUniversidades({
   const nueva = puedeEscribir ? <NuevaUniversidad /> : null;
 
   return (
-    <div className="animate-entrada space-y-6">
+    <PageContainer className="space-y-6">
       <NextIntlClientProvider messages={mensajes}>
         <PageHeader
           title={t("title")}
@@ -129,6 +130,6 @@ export default async function PaginaUniversidades({
           </NextIntlClientProvider>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

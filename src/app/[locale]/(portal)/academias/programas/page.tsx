@@ -92,7 +92,7 @@ export default async function PaginaAcademiasProgramas({
   const hayFiltro = Boolean(busqueda || tipoOk || estadoOk);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={t("programs.title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

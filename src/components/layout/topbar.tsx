@@ -136,8 +136,9 @@ export function TopBar({
   return (
     <header
       className={cn(
-        "bg-background/95 sticky top-0 z-30 flex h-16 items-center gap-3 px-4 backdrop-blur-md transition-[border-color,box-shadow] md:px-6 lg:px-8",
-        desplazada ? "border-b border-linea shadow-card" : "border-b border-transparent",
+        "bg-surface sticky top-0 z-30 flex h-[60px] items-center gap-3 px-4 backdrop-blur-md transition-[border-color,box-shadow] md:px-6 lg:px-8",
+        "border-b border-linea",
+        desplazada && "shadow-card",
       )}
     >
       <div className="pointer-events-none shrink-0 select-none md:hidden">
@@ -149,7 +150,7 @@ export function TopBar({
         <button
           type="button"
           onClick={() => setBuscando(true)}
-          className="flex h-12 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-background pr-1.5 pl-5 text-left shadow-card transicion-control duration-(--duracion-media) hover:shadow-elevada active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex h-11 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-canvas pr-1.5 pl-5 text-left shadow-card transicion-control duration-(--duracion-media) hover:shadow-elevada active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <span className="flex-1 truncate text-[15px] text-tinta-2">{t("commandOpen")}</span>
           <kbd className="texto-meta hidden rounded-md border border-linea px-1.5 py-0.5 font-sans lg:inline">
@@ -202,7 +203,7 @@ export function TopBar({
             <Menu className="size-4 text-tinta" />
             <Avatar className="size-8">
               {foto && <AvatarImage src={foto} alt="" />}
-              <AvatarFallback className="bg-tinta text-background text-xs font-semibold">
+              <AvatarFallback className="bg-marca-100 text-marca-800 text-xs font-semibold">
                 {inicial(nombre)}
               </AvatarFallback>
             </Avatar>

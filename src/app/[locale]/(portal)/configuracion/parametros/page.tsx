@@ -70,7 +70,7 @@ export default async function PaginaParametros({
   })).filter((g) => g.campos.length > 0);
 
   return (
-    <div className="animate-entrada mx-auto max-w-3xl space-y-8 pb-10">
+    <div className="animate-entrada space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
           <ChevronLeft className="size-4" />

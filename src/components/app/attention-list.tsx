@@ -53,13 +53,13 @@ export function AttentionList({ items, max = 7, viewAllHref, className }: { item
       {visibles.length === 0 ? (
         <p className="text-meta rounded-card border border-linea bg-card p-4">{t("attention.empty")}</p>
       ) : (
-        <ul className="divide-y divide-linea rounded-card border border-linea bg-card">
+        <ul data-list className="divide-y divide-linea rounded-card border border-linea bg-card">
           {visibles.map((i) => {
             const token = tokenDeEstado(i.status);
             const Icono = ICONO_TOKEN[token];
 
             return (
-              <li key={i.id} className="flex items-center gap-3 p-3.5">
+              <li key={i.id} data-priority-item className="flex items-center gap-3 p-3.5">
                 <Icono aria-hidden className={cn("size-5 shrink-0", CLASES_TOKEN[token].icono)} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-tinta">{i.title}</p>

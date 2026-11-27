@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/app/page-container";
 import { Search, X } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -77,7 +78,7 @@ export default async function PaginaAcademicoMaterias({
   const hayFiltro = Boolean(busqueda) || Boolean(periodoId);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <PageContainer className="space-y-6">
       <EncabezadoPagina titulo={t("subjects.title")} />
 
       <form method="get" className="flex flex-wrap items-end gap-2">
@@ -148,6 +149,6 @@ export default async function PaginaAcademicoMaterias({
           hayFiltro={hayFiltro}
         />
       </NextIntlClientProvider>
-    </div>
+    </PageContainer>
   );
 }

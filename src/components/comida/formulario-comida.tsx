@@ -45,9 +45,9 @@ export function FormularioComida({
 
   if (estado.estado === "ok") {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-[#2096BA]/30 bg-[#2096BA]/10 p-4">
-        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#187a99]" />
-        <p className="text-sm font-semibold text-[#171A1D]">{textos.ok}</p>
+      <div className="flex items-start gap-3 rounded-xl border border-marca-500/30 bg-marca-500/10 p-4">
+        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-marca-700" />
+        <p className="text-sm font-semibold text-tinta">{textos.ok}</p>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export function FormularioComida({
           className={cn(
             "rounded-lg px-3 py-2 text-xs font-medium",
             estado.estado === "duplicado"
-              ? "bg-[#2096BA]/10 text-[#0a6a8a]"
+              ? "bg-marca-500/10 text-marca-800"
               : "bg-destructive/10 text-destructive",
           )}
         >

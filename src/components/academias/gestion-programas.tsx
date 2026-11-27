@@ -262,9 +262,9 @@ function Ficha({
           className={cn(
             "shrink-0 text-[10px]",
             activa
-              ? "bg-[#2096BA]/15 text-[#187a99]"
+              ? "bg-marca-500/15 text-marca-700"
               : fila.estado === "planificada"
-                ? "bg-[#2096BA]/10 text-[#2096BA]"
+                ? "bg-marca-500/10 text-marca-700"
                 : "bg-muted text-tinta-2",
           )}
         >

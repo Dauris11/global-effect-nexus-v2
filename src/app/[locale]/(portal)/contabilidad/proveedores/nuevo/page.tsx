@@ -26,7 +26,7 @@ export default async function PaginaNuevoProveedor({
   const t = await getTranslations({ locale, namespace: "contab.proveedorForm" });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
         titulo={t("tituloNuevo")}
       />

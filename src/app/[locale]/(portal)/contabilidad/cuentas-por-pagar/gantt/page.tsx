@@ -83,7 +83,7 @@ export default async function PaginaGanttCxp({
   const rango = tramoDe(secciones.flatMap((s) => s.barras), hoy);
 
   return (
-    <div className="animate-entrada mx-auto max-w-7xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina
         titulo={t("titulo")}
         acciones={

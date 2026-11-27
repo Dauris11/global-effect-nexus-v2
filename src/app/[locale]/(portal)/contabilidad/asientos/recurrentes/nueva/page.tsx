@@ -35,7 +35,7 @@ export default async function PaginaNuevaPlantilla({
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina titulo={t("titulo")} />
       <Card className="p-5 md:p-6">
         <NextIntlClientProvider messages={mensajes}>

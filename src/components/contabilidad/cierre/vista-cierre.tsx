@@ -1,5 +1,6 @@
 "use client";
 
+import { TituloPagina } from "@/components/layout/pestanas-modulo";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -120,13 +121,11 @@ export function VistaCierre({
     <div className="space-y-6">
       {/* Cabecera */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("titulo")}
-        </h1>
+        <TituloPagina className="text-page">{t("titulo")}</TituloPagina>
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground font-medium">{t("ejercicio")}:</span>
-          <span className="text-base font-bold text-[#2096BA] bg-muted/70 px-3 py-1 rounded border border-linea">
+          <span className="text-base font-bold text-marca-700 bg-muted/70 px-3 py-1 rounded border border-linea">
             {ejercicioSeleccionado}
           </span>
         </div>
@@ -140,12 +139,12 @@ export function VistaCierre({
           <div className="flex items-center gap-2 mt-2">
             {resumenPreCierreInicial.yaCerrado ? (
               <>
-                <Lock className="h-5 w-5 text-[#2096BA]" />
+                <Lock className="h-5 w-5 text-marca-700" />
                 <span className="text-lg font-bold text-foreground">{t("estadoCerrado")}</span>
               </>
             ) : (
               <>
-                <Unlock className="h-5 w-5 text-[#1E9E6A]" />
+                <Unlock className="h-5 w-5 text-status-success-fg" />
                 <span className="text-lg font-bold text-foreground">{t("estadoAbierto")}</span>
               </>
             )}
@@ -172,8 +171,8 @@ export function VistaCierre({
           <p
             className={`text-lg font-bold tabular-nums mt-2 ${
               resumenPreCierreInicial.superavitDeficitNeto >= 0
-                ? "text-[#1E9E6A]"
-                : "text-[#B4342B]"
+                ? "text-status-success-fg"
+                : "text-status-danger-fg"
             }`}
           >
             {formatearMonto(resumenPreCierreInicial.superavitDeficitNeto)}
@@ -219,12 +218,12 @@ export function VistaCierre({
                     <td className="p-3">
                       {p.estado === "cerrado" ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-linea bg-muted px-2.5 py-0.5 text-[11px] font-medium text-foreground">
-                          <Lock className="h-3 w-3 text-[#2096BA]" />
+                          <Lock className="h-3 w-3 text-marca-700" />
                           {t("estadoCerrado")}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-linea bg-muted px-2.5 py-0.5 text-[11px] font-medium text-[#1E9E6A]">
-                          <Unlock className="h-3 w-3 text-[#1E9E6A]" />
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-linea bg-muted px-2.5 py-0.5 text-[11px] font-medium text-status-success-fg">
+                          <Unlock className="h-3 w-3 text-status-success-fg" />
                           {t("estadoAbierto")}
                         </span>
                       )}
@@ -234,8 +233,8 @@ export function VistaCierre({
                     </td>
                     <td className="p-3 text-center tabular-nums">
                       {totalBorradores > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-[#B4342B]">
-                          <AlertTriangle className="h-3 w-3 text-[#B4342B]" />
+                        <span className="inline-flex items-center gap-1 rounded bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-status-danger-fg">
+                          <AlertTriangle className="h-3 w-3 text-status-danger-fg" />
                           {totalBorradores} pendientes
                         </span>
                       ) : (
@@ -269,7 +268,7 @@ export function VistaCierre({
                           onClick={() => handleCerrarMes(p.id)}
                           className="border-linea text-xs h-7"
                         >
-                          <Lock className="mr-1 h-3 w-3 text-[#2096BA]" />
+                          <Lock className="mr-1 h-3 w-3 text-marca-700" />
                           {t("cerrarMes")}
                         </Button>
                       ) : (
@@ -309,7 +308,7 @@ export function VistaCierre({
               <Button
                 disabled={isPending || !resumenPreCierreInicial.todosMesesCerrados}
                 onClick={() => setDialogoCierreAnualAbierto(true)}
-                className="bg-[#2096BA] hover:bg-[#187a99] text-white text-xs h-9"
+                className="bg-marca-500 hover:bg-marca-600 text-white text-xs h-9"
               >
                 <FileCheck2 className="mr-2 h-4 w-4" />
                 {t("ejecutarCierre")}
@@ -320,7 +319,7 @@ export function VistaCierre({
 
         {!resumenPreCierreInicial.todosMesesCerrados && !resumenPreCierreInicial.yaCerrado && (
           <div className="flex items-center gap-2 rounded-lg border border-linea bg-muted p-3 text-xs text-muted-foreground">
-            <AlertCircle className="h-4 w-4 text-[#2096BA]" />
+            <AlertCircle className="h-4 w-4 text-marca-700" />
             <span>{t("alertaMesesAbiertos")}</span>
           </div>
         )}
@@ -351,8 +350,8 @@ export function VistaCierre({
             <span
               className={`text-base font-bold tabular-nums mt-1 block ${
                 resumenPreCierreInicial.superavitDeficitNeto >= 0
-                  ? "text-[#1E9E6A]"
-                  : "text-[#B4342B]"
+                  ? "text-status-success-fg"
+                  : "text-status-danger-fg"
               }`}
             >
               {formatearMonto(resumenPreCierreInicial.superavitDeficitNeto)}
@@ -395,7 +394,7 @@ export function VistaCierre({
                   <tr key={c.id} className="hover:bg-muted/20">
                     <td className="p-3 font-bold text-foreground">{c.ejercicio}</td>
                     <td className="p-3 tabular-nums text-muted-foreground">{c.fechaCierre}</td>
-                    <td className="p-3 font-medium tabular-nums text-[#2096BA]">
+                    <td className="p-3 font-medium tabular-nums text-marca-700">
                       {c.asientoCierreNumero && c.asientoCierreId ? (
                         <span className="inline-flex flex-wrap items-center gap-2">
                           #{c.asientoCierreNumero}
@@ -409,7 +408,7 @@ export function VistaCierre({
                     <td className="p-3 text-right tabular-nums">{formatearMonto(c.totalGastos)}</td>
                     <td
                       className={`p-3 text-right tabular-nums font-semibold ${
-                        c.superavitDeficit >= 0 ? "text-[#1E9E6A]" : "text-[#B4342B]"
+                        c.superavitDeficit >= 0 ? "text-status-success-fg" : "text-status-danger-fg"
                       }`}
                     >
                       {formatearMonto(c.superavitDeficit)}
@@ -462,7 +461,7 @@ export function VistaCierre({
             <Button
               onClick={handleReabrirMes}
               disabled={isPending || motivoReapertura.trim().length < 10}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? "Reabriendo..." : t("confirmarReabrir")}
             </Button>
@@ -495,7 +494,7 @@ export function VistaCierre({
               </div>
               <div className="flex justify-between border-t border-linea pt-1.5 font-bold text-sm">
                 <span>{t("resultadoNeto")}:</span>
-                <span className="tabular-nums text-[#2096BA]">{formatearMonto(resumenPreCierreInicial.superavitDeficitNeto)}</span>
+                <span className="tabular-nums text-marca-700">{formatearMonto(resumenPreCierreInicial.superavitDeficitNeto)}</span>
               </div>
             </div>
 
@@ -521,7 +520,7 @@ export function VistaCierre({
             <Button
               onClick={handleEjecutarCierreAnual}
               cargando={isPending}
-              className="bg-[#2096BA] hover:bg-[#187a99] text-white"
+              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? t("ejecutando") : t("ejecutarCierre")}
             </Button>

@@ -97,7 +97,7 @@ export default async function PaginaRevisionCarga({ params }: { params: Promise<
   const notaCelda = (f: CargaFila) => `${f.letra ?? ""}${f.nota ? ` · ${Number(f.nota)}` : ""}`;
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={`${t("review.title")} · ${carga.universidad.siglas}`} />
 
       <p className="texto-meta">

@@ -22,7 +22,7 @@ export const ESTADO_360_VISUAL: Record<
 > = {
   cursando: { insignia: "bg-marca-50 text-marca-700", icono: BookOpen },
   prematriculada: { insignia: "bg-muted text-tinta-2", icono: Clock },
-  aprobada: { insignia: "bg-[#1E9E6A] text-white", icono: CheckCircle2 },
-  reprobada: { insignia: "bg-[#B4342B] text-white", icono: XCircle },
+  aprobada: { insignia: "bg-status-success text-white", icono: CheckCircle2 },
+  reprobada: { insignia: "bg-status-danger text-white", icono: XCircle },
   retirada: { insignia: "bg-muted text-tinta-3", icono: Ban },
 };

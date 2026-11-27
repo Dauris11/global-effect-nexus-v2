@@ -217,7 +217,7 @@ export function DialogoOrdenCompra({
 
                 <div className="space-y-2">
                   {lineas.map((l, idx) => (
-                    <div key={idx} className="space-y-2 rounded-lg border border-linea p-2 text-xs dark:border-slate-800">
+                    <div key={idx} className="space-y-2 rounded-lg border border-linea p-2 text-xs dark:border-linea">
                       <div className="flex items-center gap-2">
                       <Input
                         placeholder={t("descripcionArticulo")}

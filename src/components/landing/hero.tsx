@@ -155,7 +155,7 @@ export function Hero({
             invierte en modo oscuro y el velo se volvería blanco. */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-black/45"
+          className="absolute inset-0 -z-10 bg-ink/45"
         />
 
         <div className="flex flex-col gap-8 p-6 md:flex-row md:items-end md:justify-between md:p-12">
@@ -247,4 +247,4 @@ export function Hero({
 
 /** Flechas blancas y redondas, como las de una galería de fotos. */
 const CLASE_FLECHA =
-  "flex size-11 items-center justify-center rounded-full bg-white/90 text-black shadow-card transition hover:bg-white hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 focus-visible:outline-none active:scale-95";
+  "flex size-11 items-center justify-center rounded-full bg-white/90 text-tinta shadow-card transition hover:bg-white hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 focus-visible:outline-none active:scale-95";

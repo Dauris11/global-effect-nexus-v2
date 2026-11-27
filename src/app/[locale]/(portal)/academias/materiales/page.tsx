@@ -88,7 +88,7 @@ export default async function PaginaAcademiasMateriales({
   const hayFiltro = Boolean(busqueda || academiaOk || tipoOk);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={t("materials.title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

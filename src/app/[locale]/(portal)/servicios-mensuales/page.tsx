@@ -1,36 +1,25 @@
 import type { Metadata } from "next";
-import { CalendarCheck, HeartHandshake, Mail, Search, Users } from "lucide-react";
+import { Users } from "lucide-react";
+import { Suspense } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { CifraAcademica } from "@/components/academico/cifra";
-import { GraficasServicios } from "@/components/bienestar/graficas-servicios";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { PageContainer } from "@/components/app/page-container";
+import { PageHeader } from "@/components/app/page-header";
+import { SelectorMes } from "@/components/app/selector-mes";
 import { PlanillaServicios } from "@/components/bienestar/planilla-servicios";
 import { BotonImprimir } from "@/components/comida/boton-imprimir";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
-import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import { VACIO } from "@/lib/paleta";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
-import {
-  planillaDelMes,
-  resumenDelMes,
-  ultimosDoceMeses,
-} from "@/server/bienestar/consultas";
+import { usuarioTienePermiso } from "@/lib/rbac";
+import { planillaDelMes, ultimosDoceMeses } from "@/server/bienestar/consultas";
 
 /** `YYYY-MM`, el formato que guarda `registro_servicio.mes`. */
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "monthlyServices" });
 
@@ -38,203 +27,72 @@ export async function generateMetadata({
 }
 
 /**
- * Planilla mensual de servicio comunitario y asistencia a la reunión.
+ * Servicios mensuales: una tarea de cumplimiento, no un reporte. Selector de mes en el encabezado y la tabla
+ * de becados con tres requisitos (Servicio · Reunión · Carta al patrocinador), cada celda con su badge y,
+ * las dos primeras, un clic para marcarla. El chip «Incumplen N» deja solo a quienes les falta algo. Los
+ * indicadores y gráficos de antes viven en `/reportes/servicios`.
  *
- * DOS PERMISOS: `operaciones.leer` para verla y `operaciones.escribir` para
- * marcar. Quien solo lee ve las casillas puestas y desactivadas, no una
- * pantalla distinta: saber quién cumplió es información útil aunque no se pueda
- * cambiar.
- *
- * El mes va en la URL (`?mes=YYYY-MM`) como el resto de filtros del sistema, y
- * el valor por omisión sale de la BASE, no de `new Date()`: el día 1, un
- * servidor en otro huso abriría el mes equivocado.
- *
- * La hoja impresa se compone con clases `print:` sobre la misma pantalla, igual
- * que la lista del comedor: lo que sobra al imprimir se marca donde está, y no
- * hay una segunda versión que mantener.
+ * El mes va en la URL (`?mes=`) y su valor por omisión sale de la base, no de `new Date()`.
  */
 export default async function PaginaServiciosMensuales({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ mes?: string; faltan?: string }>;
+  searchParams: Promise<{ mes?: string; estado?: string; faltan?: string; q?: string }>;
 }) {
-  const { locale } = await params;
-  const { mes, faltan } = await searchParams;
+  const [{ locale }, { mes, estado, faltan, q }] = await Promise.all([params, searchParams]);
 
   const usuario = await requerirPermiso("operaciones.leer");
   const puedeEscribir = usuarioTienePermiso(usuario, "operaciones.escribir");
-
   const meses = await ultimosDoceMeses();
+  const elegido = MES.test(mes ?? "") && meses.includes(mes!) ? mes! : (meses[0] ?? "");
 
-  // Un mes con formato raro, o uno fuera de los doce que se ofrecen, cae al
-  // más reciente: llega de un enlace viejo o escrito a mano.
-  const elegido =
-    MES.test(mes ?? "") && meses.includes(mes!) ? mes! : (meses[0] ?? "");
-
-  const [t, filas, resumen, mensajes] = await Promise.all([
+  const [t, filas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "monthlyServices" }),
     planillaDelMes(elegido),
-    resumenDelMes(elegido),
-    mensajesCliente(["monthlyServices", "comida"]),
+    mensajesCliente(["monthlyServices", "comida", "estados"]),
   ]);
 
-  // «Los que no cumplieron»: falta el servicio, la reunión o la carta al
-  // patrocinador. Es la lista que se le da a administración cada mes.
-  const soloFaltan = faltan === "1";
-  const aplicanCarta = filas.filter((f) => f.correo !== "no_aplica").length;
-  const conCarta = filas.filter((f) => f.correo === "cumplio").length;
-  const conPendientes = filas.filter(
-    (f) =>
-      !f.hizo_servicio ||
-      !f.asistio_reunion ||
-      f.correo === "no_envio" ||
-      f.correo === "tardia" ||
-      f.correo === "en_revision",
-  ).length;
-  const alDia = Math.max(0, filas.length - conPendientes);
-  const visibles = soloFaltan
-    ? filas.filter(
-        (f) =>
-          !f.hizo_servicio ||
-          !f.asistio_reunion ||
-          f.correo === "no_envio" ||
-          f.correo === "tardia" ||
-          f.correo === "en_revision",
-      )
-    : filas;
+  // «Incumplen»: falta el servicio, la reunión o la carta al patrocinador.
+  const incumple = (f: (typeof filas)[number]) =>
+    !f.hizo_servicio || !f.asistio_reunion || f.correo === "no_envio" || f.correo === "tardia" || f.correo === "en_revision";
+  const soloFaltan = estado === "incumplen" || faltan === "1";
+  const texto = (q ?? "").trim().toLowerCase();
+  const visibles = (soloFaltan ? filas.filter(incumple) : filas).filter((f) => !texto || f.nombre.toLowerCase().includes(texto));
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
-      <EncabezadoPagina
-        titulo={t("title")}
-        acciones={
-          <NextIntlClientProvider messages={mensajes}>
-            <BotonImprimir />
-          </NextIntlClientProvider>
+    <PageContainer className="space-y-6">
+      <PageHeader
+        title={t("title")}
+        secondaryActions={
+          <>
+            <Suspense fallback={null}>
+              <SelectorMes meses={meses} valor={elegido} etiqueta={t("month")} />
+            </Suspense>
+            <NextIntlClientProvider messages={mensajes}>
+              <BotonImprimir />
+            </NextIntlClientProvider>
+          </>
         }
       />
       <p className="texto-meta hidden print:block">{elegido}</p>
 
-      <form method="get" className="flex flex-wrap items-end gap-2 print:hidden">
-        <div className="min-w-40 space-y-1.5">
-          <label
-            htmlFor="mes"
-            className="text-muted-foreground text-xs font-medium"
-          >
-            {t("month")}
-          </label>
-          <select
-            id="mes"
-            name="mes"
-            defaultValue={elegido}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-card px-2 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-          >
-            {meses.map((valor) => (
-              <option key={valor} value={valor}>
-                {valor}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Botón de verdad y no un `onChange`: esta pantalla es de servidor,
-            así que no hay dónde colgar el evento, y un `<noscript>` sería peor
-            —dejaría el control muerto justo para quien sí tiene JavaScript—.
-            Es además el mismo patrón que las demás barras de filtro. */}
-        <Button
-          type="submit"
-          className="transition-transform duration-150 active:scale-95"
-        >
-          <Search className="size-4" />
-          {t("month")}
-        </Button>
-      </form>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
-        <CifraAcademica
-          valor={resumen.total}
-          etiqueta={t("stats.called")}
-          icono={Users}
+      <Suspense fallback={null}>
+        <FilterBar
+          chips={[{ value: "incumplen", label: t("incumplen"), count: filas.filter(incumple).length }]}
+          totalChips={filas.length}
+          placeholder={t("student")}
         />
-        <CifraAcademica
-          valor={
-            resumen.total > 0
-              ? `${Math.round((resumen.con_servicio / resumen.total) * 100)}%`
-              : "—"
-          }
-          etiqueta={t("stats.service")}
-          icono={HeartHandshake}
-          acento
-        />
-        <CifraAcademica
-          valor={
-            resumen.total > 0
-              ? `${Math.round((resumen.con_reunion / resumen.total) * 100)}%`
-              : "—"
-          }
-          etiqueta={t("stats.meeting")}
-          icono={CalendarCheck}
-        />
-        <CifraAcademica
-          valor={aplicanCarta > 0 ? `${Math.round((conCarta / aplicanCarta) * 100)}%` : "—"}
-          etiqueta={t("stats.letter")}
-          icono={Mail}
-        />
-      </div>
+      </Suspense>
 
-      <GraficasServicios
-        alDia={alDia}
-        conPendientes={conPendientes}
-        porcentajes={{
-          servicio: resumen.total > 0 ? Math.round((resumen.con_servicio / resumen.total) * 100) : 0,
-          reunion: resumen.total > 0 ? Math.round((resumen.con_reunion / resumen.total) * 100) : 0,
-          carta: aplicanCarta > 0 ? Math.round((conCarta / aplicanCarta) * 100) : 0,
-        }}
-        etiquetas={{
-          tituloBalance: t("chartBalanceTitle"),
-          tituloRequisitos: t("chartBreakdownTitle"),
-          alDia: t("chartUpToDate"),
-          conPendientes: t("chartWithPending"),
-          servicio: t("stats.service"),
-          reunion: t("stats.meeting"),
-          carta: t("stats.letter"),
-          vacio: t("chartEmpty"),
-        }}
-      />
-
-      <div className="flex flex-wrap gap-2 print:hidden">
-        <Button asChild variant={soloFaltan ? "outline" : "default"} size="sm">
-          <Link href={{ pathname: "/servicios-mensuales", query: { mes: elegido } }}>{t("showAll")}</Link>
-        </Button>
-        <Button asChild variant={soloFaltan ? "default" : "outline"} size="sm">
-          <Link href={{ pathname: "/servicios-mensuales", query: { mes: elegido, faltan: "1" } }}>
-            {t("onlyPending")}
-          </Link>
-        </Button>
-      </div>
-
-      <Card className="print:border-0 print:shadow-none">
-        <CardContent className="pt-5">
-          {visibles.length === 0 ? (
-            <div className={VACIO.contenedor}>
-              <span className={`${VACIO.icono} print:hidden`}>
-                <Users className="size-6" />
-              </span>
-              <p className={VACIO.titulo}>{t("empty")}</p>
-            </div>
-          ) : (
-            <NextIntlClientProvider messages={mensajes}>
-              <PlanillaServicios
-                filas={visibles}
-                mes={elegido}
-                puedeEscribir={puedeEscribir}
-              />
-            </NextIntlClientProvider>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+      {visibles.length === 0 ? (
+        <EmptyState icon={Users} title={t("empty")} readOnly />
+      ) : (
+        <NextIntlClientProvider messages={mensajes}>
+          <PlanillaServicios filas={visibles} mes={elegido} puedeEscribir={puedeEscribir} />
+        </NextIntlClientProvider>
+      )}
+    </PageContainer>
   );
 }

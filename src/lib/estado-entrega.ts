@@ -30,7 +30,7 @@ export const ESTADO_ENTREGA: Record<string, { clases: string; icono: LucideIcon 
  * sin entregar es el estado de una entidad que requiere una decisión. Va con
  * su icono, escrito como hex arbitrario y nunca `red-*`.
  */
-export const ENTREGA_VENCIDA = { clases: "bg-[#B4342B] text-white", icono: TriangleAlert };
+export const ENTREGA_VENCIDA = { clases: "bg-status-danger text-white", icono: TriangleAlert };
 
 export function visualDeEntrega(estado: string | null, vencida: boolean) {
   if (vencida) return ENTREGA_VENCIDA;

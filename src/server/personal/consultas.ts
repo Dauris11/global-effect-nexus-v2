@@ -19,6 +19,8 @@ export type PersonaDelEquipo = {
   /** `false` cuando nadie ha enlazado la cuenta con una identidad de acceso. */
   puede_entrar: boolean;
   tareas_abiertas: number;
+  /** Cosas abiertas a su cargo: tareas por hacer + solicitudes que tiene tomadas. */
+  prioridades_abiertas: number;
   /** ISO, o `null` si nunca ha entrado. Viene de Supabase Auth. */
   ultimo_acceso: string | null;
 };
@@ -48,7 +50,15 @@ export async function equipo(): Promise<PersonaDelEquipo[]> {
                FROM tarea_asignado ta
                JOIN tarea t ON t.id = ta.tarea_id
               WHERE ta.usuario_id = u.id
-                AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision')) AS tareas_abiertas
+                AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision')) AS tareas_abiertas,
+            ((SELECT count(*)::int
+                FROM tarea_asignado ta
+                JOIN tarea t ON t.id = ta.tarea_id
+               WHERE ta.usuario_id = u.id
+                 AND t.estado IN ('por_hacer', 'en_progreso', 'en_revision'))
+             + (SELECT count(*)::int FROM solicitud s
+                 WHERE s.responsable_id = u.id
+                   AND s.estado IN ('enviada', 'en_revision', 'pendiente_direccion', 'aprobada'))) AS prioridades_abiertas
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE r.nombre <> 'estudiante'

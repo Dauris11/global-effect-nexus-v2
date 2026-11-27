@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 
+import { MigasDeDetalle, PestanasModulo, TituloPagina } from "@/components/layout/pestanas-modulo";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +30,9 @@ export function PageHeader({
   className?: string;
 }) {
   return (
+    <div className="space-y-4">
     <header className={cn("space-y-2", className)}>
+      {!breadcrumb?.length && <MigasDeDetalle />}
       {breadcrumb && breadcrumb.length > 0 && (
         <nav aria-label="breadcrumb" className="text-meta flex flex-wrap items-center gap-1">
           {breadcrumb.map((m, i) => (
@@ -48,7 +51,7 @@ export function PageHeader({
       )}
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
-          <h1 className="text-page">{title}</h1>
+          <TituloPagina className="text-page">{title}</TituloPagina>
           {subtitle && <p className="text-meta mt-1">{subtitle}</p>}
         </div>
         {(secondaryActions || primaryAction) && (
@@ -59,5 +62,7 @@ export function PageHeader({
         )}
       </div>
     </header>
+    <PestanasModulo />
+    </div>
   );
 }

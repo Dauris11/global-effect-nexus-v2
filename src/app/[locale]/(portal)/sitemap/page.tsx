@@ -82,7 +82,7 @@ export default async function PaginaSitemap({
   });
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6 pb-10">
+    <div className="animate-entrada space-y-6 pb-10">
       <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-3">

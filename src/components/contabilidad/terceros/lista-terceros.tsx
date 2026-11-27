@@ -12,16 +12,16 @@ export function ListaTerceros({ terceros }: { terceros: TerceroResumen[] }) {
 
   if (terceros.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
         {t("sinTerceros")}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
           <tr>
             <th className="px-4 py-3">{t("identificacion")}</th>
             <th className="px-4 py-3">{t("nombreRazonSocial")}</th>
@@ -33,15 +33,15 @@ export function ListaTerceros({ terceros }: { terceros: TerceroResumen[] }) {
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {terceros.map((ter) => (
-            <tr key={ter.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
+            <tr key={ter.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
               <td className="px-4 py-3 font-mono text-xs">
-                <span className="font-semibold text-tinta-2 dark:text-slate-300">
+                <span className="font-semibold text-tinta-2 dark:text-tinta-2">
                   {ter.tipoId.toUpperCase()}:
                 </span>{" "}
                 {ter.identificacion}
               </td>
               <td className="px-4 py-3">
-                <div className="font-medium text-tinta dark:text-slate-100">
+                <div className="font-medium text-tinta dark:text-tinta">
                   {ter.nombreRazonSocial}
                 </div>
                 {ter.nombreComercial && (
@@ -67,7 +67,7 @@ export function ListaTerceros({ terceros }: { terceros: TerceroResumen[] }) {
                   )}
                 </div>
               </td>
-              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">
+              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">
                 {ter.email && <div>{ter.email}</div>}
                 {ter.telefono && <div>{ter.telefono}</div>}
               </td>

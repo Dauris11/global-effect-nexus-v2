@@ -52,7 +52,7 @@ export default async function PaginaProyectos({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina
         titulo={t("projects.title")}
         acciones={

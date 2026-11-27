@@ -31,66 +31,112 @@
  * La escala `marca-*` sí es fija: el turquesa es el mismo de día y de noche.
  */
 :root {
-  --background: #ffffff;
-  --foreground: #171a1d;
+  /* ── Tokens de la referencia visual (docs/ui-reference.html) ─────────────────────────────────
+     Escala de marca derivada de #2096BA, lienzo, superficies, tinta y línea, y los siete colores de
+     estado con su fondo (-bg) y borde (-bd). Todo lo demás (--primary, --background…) se DERIVA de
+     estos: cambiar un valor aquí cambia el portal entero. */
+  --brand-50: #eef8fb;
+  --brand-100: #d5eef5;
+  --brand-200: #abddeb;
+  --brand-300: #74c5dd;
+  --brand-400: #3faacb;
+  --brand-500: #2096ba;
+  --brand-600: #177a99;
+  --brand-700: #156f8c;
+  --brand-800: #135f78;
+  --brand-900: #0e4a5e;
+  --brand-950: #0a2f3c;
 
-  --card: #ffffff;
-  --card-foreground: #171a1d;
+  --canvas: #f5f7f9;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --ink: #14191f;
+  --ink-2: #4b5563;
+  --ink-3: #647080;
+  --line: #e6eaee;
+  --line-strong: #d3d9df;
 
-  --popover: #ffffff;
-  --popover-foreground: #171a1d;
+  --success: #15803d;
+  --success-bg: #ecfdf3;
+  --success-bd: #bbf0cf;
+  --warning: #b45309;
+  --warning-bg: #fff8eb;
+  --warning-bd: #fcdfa6;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-bd: #fbcaca;
+  --info: #156f8c;
+  --info-bg: #eef8fb;
+  --info-bd: #c6e6f0;
+  --progress: #6d28d9;
+  --progress-bg: #f5f1ff;
+  --progress-bd: #ddd0fb;
+  --done: #0f766e;
+  --done-bg: #edfaf8;
+  --done-bd: #bfeae4;
+  --neutral: #475569;
+  --neutral-bg: #f1f4f7;
+  --neutral-bd: #dce2e8;
 
-  /* Turquesa institucional. Hover: #187a99. */
-  --primary: #2096ba;
+  /* ── Alias semánticos (shadcn y el resto del código) ───────────────────────────────────────── */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+
+  /* Botón primario: brand-600 (texto blanco encima llega a AA; con brand-500 era 3.4:1). */
+  --primary: var(--brand-600);
   --primary-foreground: #ffffff;
 
-  --secondary: #f6f7f9;
-  --secondary-foreground: #171a1d;
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
 
-  --muted: #f6f7f9;
-  --muted-foreground: #5b6470;
+  --muted: var(--neutral-bg);
+  --muted-foreground: var(--ink-2);
 
-  --accent: #f2f4f6;
-  --accent-foreground: #171a1d;
+  --accent: var(--neutral-bg);
+  --accent-foreground: var(--ink);
 
-  /* Lo destructivo no es rojo: es negro. La gravedad se dice con el tono más
-     pesado y con el icono, no con el matiz. */
-  --destructive: #171a1d;
+  /* Lo destructivo es el rojo de estado (danger), con su icono; nunca un botón relleno negro. */
+  --destructive: var(--danger);
   --destructive-foreground: #ffffff;
 
-  --border: #ebeef1;
-  --input: #d5dbe1;
-  /* El foco es tinta, como en Airbnb: el turquesa ya marca lo activo, y un
-     anillo turquesa sobre un botón turquesa no se ve. */
-  --ring: #171a1d;
+  --border: var(--line);
+  --input: var(--line-strong);
+  /* El foco es el turquesa de marca (halo de 3 px brand-100 en los campos). */
+  --ring: var(--brand-500);
 
-  /* Neutros con nombre propio (utilidades text-tinta-2, border-linea…). */
-  --tinta: #171a1d;
-  --tinta-2: #5b6470;
-  --tinta-3: #8a929c;
-  --linea: #ebeef1;
-  --linea-fuerte: #d5dbe1;
+  /* Neutros con nombre propio (utilidades text-tinta-2, border-linea…): apuntan a los tokens nuevos. */
+  --tinta: var(--ink);
+  --tinta-2: var(--ink-2);
+  --tinta-3: var(--ink-3);
+  --linea: var(--line);
+  --linea-fuerte: var(--line-strong);
 
-  /* Barra lateral CLARA: blanca, con borde fino y el activo en gris suave. */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #171a1d;
-  --sidebar-primary: #2096ba;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand-600);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f2f4f6;
-  --sidebar-accent-foreground: #171a1d;
-  --sidebar-border: #ebeef1;
-  --sidebar-ring: #171a1d;
+  --sidebar-accent: var(--brand-50);
+  --sidebar-accent-foreground: var(--brand-800);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand-500);
 
-  /* Series de gráficos: una rampa del mismo azul, de oscuro a claro, y el gris
-     neutro al final. */
-  --chart-1: #0a6a8a;
-  --chart-2: #2096ba;
-  --chart-3: #5fb8d4;
-  --chart-4: #94a3b8;
-  --chart-5: #171a1d;
+  --chart-1: #2096ba;
+  --chart-2: #0e4a5e;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #10b981;
+  --chart-6: #94a3b8;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.06);
-  --shadow-elevada: 0 6px 20px rgb(0 0 0 / 0.12);
+  --radius: 12px;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-elevada: 0 4px 14px rgb(16 24 40 / 0.08);
+  --shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.14);
 }
 
 .dark {
@@ -196,6 +242,26 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
   --color-tinta: var(--tinta);
   --color-tinta-2: var(--tinta-2);
   --color-tinta-3: var(--tinta-3);
@@ -216,9 +282,11 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
 
   --shadow-card: var(--shadow-card);
   --shadow-elevada: var(--shadow-elevada);
+  --shadow-overlay: var(--shadow-overlay);
 
   /* Plus Jakarta Sans (400-700) es la familia del sistema; Plex Mono solo para códigos y folios. */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
@@ -233,16 +301,17 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
  * Fija en los dos modos: el turquesa no cambia de noche.
  */
 @theme {
-  --color-marca-50: #eef8fb;
-  --color-marca-100: #d5eef6;
-  --color-marca-200: #addded;
-  --color-marca-300: #5fb8d4;
-  --color-marca-400: #3fa7c7;
-  --color-marca-500: #2096ba;
-  --color-marca-600: #187a99;
-  --color-marca-700: #0a6a8a;
-  --color-marca-800: #0b5770;
-  --color-marca-900: #0c4558;
+  --color-marca-50: var(--brand-50);
+  --color-marca-100: var(--brand-100);
+  --color-marca-200: var(--brand-200);
+  --color-marca-300: var(--brand-300);
+  --color-marca-400: var(--brand-400);
+  --color-marca-500: var(--brand-500);
+  --color-marca-600: var(--brand-600);
+  --color-marca-700: var(--brand-700);
+  --color-marca-800: var(--brand-800);
+  --color-marca-900: var(--brand-900);
+  --color-marca-950: var(--brand-950);
 
   /*
    * Colores de TRABAJO (estado y prioridad de proyectos, actividades y tareas).
@@ -267,40 +336,40 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
    * tinte), `bg` (tinte suave) y `border`. `info` usa la escala de la marca, así que sigue
    * al acento azul/negro de cada persona. Nunca en botones, banners ni gráficas.
    */
-  --color-status-success: #16a34a;
-  --color-status-success-fg: #15803d;
-  --color-status-success-bg: #ecfdf3;
-  --color-status-success-border: #bbf7d0;
-  --color-status-warning: #d97706;
-  --color-status-warning-fg: #b45309;
-  --color-status-warning-bg: #fffbeb;
-  --color-status-warning-border: #fde68a;
-  --color-status-danger: #dc2626;
-  --color-status-danger-fg: #b91c1c;
-  --color-status-danger-bg: #fef2f2;
-  --color-status-danger-border: #fecaca;
-  --color-status-info: var(--color-marca-500);
-  --color-status-info-fg: var(--color-marca-700);
-  --color-status-info-bg: var(--color-marca-50);
-  --color-status-info-border: var(--color-marca-200);
-  --color-status-progress: #7c3aed;
-  --color-status-progress-fg: #6d28d9;
-  --color-status-progress-bg: #f5f3ff;
-  --color-status-progress-border: #ddd6fe;
-  --color-status-done: #0f766e;
-  --color-status-done-fg: #0f766e;
-  --color-status-done-bg: #f0fdfa;
-  --color-status-done-border: #99f6e4;
-  --color-status-neutral: #64748b;
-  --color-status-neutral-fg: #475569;
-  --color-status-neutral-bg: #f1f5f9;
-  --color-status-neutral-border: #e2e8f0;
+  --color-status-success: var(--success);
+  --color-status-success-fg: var(--success);
+  --color-status-success-bg: var(--success-bg);
+  --color-status-success-border: var(--success-bd);
+  --color-status-warning: var(--warning);
+  --color-status-warning-fg: var(--warning);
+  --color-status-warning-bg: var(--warning-bg);
+  --color-status-warning-border: var(--warning-bd);
+  --color-status-danger: var(--danger);
+  --color-status-danger-fg: var(--danger);
+  --color-status-danger-bg: var(--danger-bg);
+  --color-status-danger-border: var(--danger-bd);
+  --color-status-info: var(--info);
+  --color-status-info-fg: var(--info);
+  --color-status-info-bg: var(--info-bg);
+  --color-status-info-border: var(--info-bd);
+  --color-status-progress: var(--progress);
+  --color-status-progress-fg: var(--progress);
+  --color-status-progress-bg: var(--progress-bg);
+  --color-status-progress-border: var(--progress-bd);
+  --color-status-done: var(--done);
+  --color-status-done-fg: var(--done);
+  --color-status-done-bg: var(--done-bg);
+  --color-status-done-border: var(--done-bd);
+  --color-status-neutral: var(--neutral);
+  --color-status-neutral-fg: var(--neutral);
+  --color-status-neutral-bg: var(--neutral-bg);
+  --color-status-neutral-border: var(--neutral-bd);
 
   /* Tres radios y la píldora. Nada más: control (botón, input), tarjeta y
      hoja (diálogo, hoja inferior, tarjeta de login). */
-  --radius-control: 12px;
-  --radius-card: 16px;
-  --radius-hoja: 24px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-hoja: 16px;
 
   /*
    * Movimiento. Tres curvas y nada más, para que todo el portal se mueva con
@@ -766,5 +835,25 @@ html:not(.dark)[data-acento="negro"] {
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;
+  }
+}
+
+/*
+ * Tablas (docs/ui-reference.html): encabezado en `surface-2` con 12/600 en ink-3, fila al pasar el ratón en
+ * `surface-2` y cifras tabulares. En `@layer base` para que cualquier utilidad de una tabla concreta la gane.
+ */
+@layer base {
+  main table thead {
+    background: var(--surface-2);
+  }
+
+  main table th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+
+  main table tbody tr:hover {
+    background: var(--surface-2);
   }
 }

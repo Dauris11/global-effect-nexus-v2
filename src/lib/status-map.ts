@@ -107,7 +107,7 @@ export const MAPA_ESTADOS = {
   anulado: "neutral",
   anulada: "neutral",
   vigente: "success",
-  reverso: "neutral",
+  reverso: "progress",
   emitido: "info",
   cobrado: "success",
   cobrada: "success",

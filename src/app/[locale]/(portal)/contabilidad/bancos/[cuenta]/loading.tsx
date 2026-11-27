@@ -7,7 +7,7 @@ export default function CargandoLibro() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" className="mx-auto max-w-6xl space-y-6">
+    <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
       <Skeleton className="h-5 w-24" />
       <div className="space-y-2">

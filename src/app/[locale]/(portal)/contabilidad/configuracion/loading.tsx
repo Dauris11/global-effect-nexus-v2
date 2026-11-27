@@ -7,7 +7,7 @@ export default function CargandoConfiguracion() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" className="mx-auto max-w-6xl space-y-6">
+    <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
       <div className="space-y-2">
         <Skeleton className="h-4 w-28" />

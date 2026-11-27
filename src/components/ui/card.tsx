@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Tarjeta (docs/09-sistema-visual.md §3): `rounded-card` (16 px), borde fino
+ * Tarjeta (docs/09-sistema-visual.md §3): `rounded-card` (12 px), borde fino
  * `linea` y `shadow-card`, sobre un lienzo blanco. La separación la dan el aire
  * y la línea, no un fondo gris alrededor.
  *
@@ -25,7 +25,7 @@ function Card({
       className={cn(
         "bg-card text-card-foreground flex flex-col rounded-card border border-linea shadow-card",
         interactiva &&
-          "cursor-pointer transition-[translate,scale,box-shadow] duration-(--duracion-media) ease-salida hover:-translate-y-0.5 hover:shadow-elevada active:scale-[0.99] active:duration-(--duracion-instante)",
+          "cursor-pointer transition-[translate,scale,box-shadow] duration-(--duracion-media) ease-salida hover:border-marca-300 hover:shadow-elevada active:scale-[0.99] active:duration-(--duracion-instante)",
         className,
       )}
       {...props}

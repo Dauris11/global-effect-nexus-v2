@@ -85,7 +85,7 @@ export default async function PaginaCuentaBanco({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <Link href="/contabilidad/bancos" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline">
         <ChevronLeft className="size-4" />
         {tc("bancos.titulo")}

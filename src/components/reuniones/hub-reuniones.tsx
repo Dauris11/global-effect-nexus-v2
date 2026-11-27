@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -395,80 +394,6 @@ export function HubReuniones({
         </Card>
       </div>
 
-      {reunionesIniciales.length > 0 && (() => {
-        const serieModalidad = [
-          {
-            nombre: t("modality.presencial"),
-            valor: reunionesIniciales.filter((r) => r.modalidad === "presencial").length,
-            color: AZUL,
-          },
-          {
-            nombre: t("modality.virtual"),
-            valor: reunionesIniciales.filter((r) => r.modalidad === "virtual").length,
-            color: AZUL_OSCURO,
-          },
-          {
-            nombre: t("modality.hibrida"),
-            valor: reunionesIniciales.filter((r) => r.modalidad === "hibrida").length,
-            color: AZUL_SUAVE,
-          },
-        ];
-
-        const porTipo = new Map<string, number>();
-        for (const r of reunionesIniciales) {
-          porTipo.set(r.tipo, (porTipo.get(r.tipo) ?? 0) + 1);
-        }
-        const serieTipos = [...porTipo.entries()]
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
-          .map(([tipoKey, valor], idx) => ({
-            nombre: t(`types.${tipoKey}` as never),
-            valor,
-            color: idx === 0 ? AZUL_OSCURO : AZUL,
-          }));
-
-        return (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-linea bg-card shadow-xs">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">{t("chartModalityTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid items-center gap-3 sm:grid-cols-2">
-                  <GraficaAnillo
-                    datos={serieModalidad}
-                    total={reunionesIniciales.length}
-                    etiquetaTotal=""
-                    vacio={t("chartEmpty")}
-                  />
-                  <ul className="divide-y divide-linea">
-                    {serieModalidad.map((fila) => (
-                      <li key={fila.nombre} className="flex items-center gap-2 py-1.5 text-xs">
-                        <span
-                          aria-hidden
-                          className="size-2.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: fila.color }}
-                        />
-                        <span className="flex-1 text-tinta-2">{fila.nombre}</span>
-                        <span className="font-semibold text-tinta tabular-nums">{fila.valor}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-linea bg-card shadow-xs">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">{t("chartTypesTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <GraficaBarras datos={serieTipos} vacio={t("chartEmpty")} />
-              </CardContent>
-            </Card>
-          </div>
-        );
-      })()}
 
       {/* Sala de videollamada embebida en vivo */}
       {salaActiva && (

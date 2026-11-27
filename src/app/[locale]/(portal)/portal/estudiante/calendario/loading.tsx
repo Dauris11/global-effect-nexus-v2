@@ -8,7 +8,7 @@ import {
 /** Calendario: encabezado, chips de mes y los días con sus entradas. */
 export default function Cargando() {
   return (
-    <EsqueletoPagina className="mx-auto max-w-4xl">
+    <EsqueletoPagina className="">
       <EsqueletoEncabezado />
       <EsqueletoChips />
       <EsqueletoLista filas={3} />

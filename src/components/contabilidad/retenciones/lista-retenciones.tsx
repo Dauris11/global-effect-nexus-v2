@@ -9,16 +9,16 @@ export function ListaRetenciones({ retenciones }: { retenciones: ComprobanteRete
 
   if (retenciones.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
         {t("sinComprobantes")}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
           <tr>
             <th className="px-4 py-3">{t("secuencia")}</th>
             <th className="px-4 py-3">{t("fecha")}</th>
@@ -35,34 +35,34 @@ export function ListaRetenciones({ retenciones }: { retenciones: ComprobanteRete
           {retenciones.map((r) => {
             const totalRet = r.itbisRetenido + r.isrRetenido;
             return (
-              <tr key={r.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-slate-100">
+              <tr key={r.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                <td className="px-4 py-3 font-mono font-medium text-tinta dark:text-tinta">
                   {r.secuenciaInterna}
                 </td>
-                <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">{r.fechaEmision}</td>
+                <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">{r.fechaEmision}</td>
                 <td className="px-4 py-3">
-                  <div className="font-medium text-tinta dark:text-slate-100">{r.proveedorNombre}</div>
+                  <div className="font-medium text-tinta dark:text-tinta">{r.proveedorNombre}</div>
                   <div className="font-mono text-xs text-muted-foreground">{r.proveedorRnc}</div>
                 </td>
-                <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">
+                <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">
                   <div>FP-{String(r.facturaNumero).padStart(5, "0")}</div>
-                  <div className="font-mono text-slate-400">{r.ncfFactura || "Sin NCF"}</div>
+                  <div className="font-mono text-tinta-3">{r.ncfFactura || "Sin NCF"}</div>
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-xs">
                   {r.montoFacturado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-tinta-2 dark:text-slate-300">
+                <td className="px-4 py-3 text-right font-mono text-xs text-tinta-2 dark:text-tinta-2">
                   {r.itbisRetenido.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                   {r.tasaItbisRetenido > 0 && (
-                    <span className="ml-1 text-[10px] text-slate-400">
+                    <span className="ml-1 text-[10px] text-tinta-3">
                       ({Math.round(r.tasaItbisRetenido * 100)}%)
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs text-tinta-2 dark:text-slate-300">
+                <td className="px-4 py-3 text-right font-mono text-xs text-tinta-2 dark:text-tinta-2">
                   {r.isrRetenido.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                   {r.tasaIsrRetenido > 0 && (
-                    <span className="ml-1 text-[10px] text-slate-400">
+                    <span className="ml-1 text-[10px] text-tinta-3">
                       ({Math.round(r.tasaIsrRetenido * 100)}%)
                     </span>
                   )}

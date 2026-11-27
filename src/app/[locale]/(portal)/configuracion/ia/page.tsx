@@ -76,7 +76,7 @@ export default async function PaginaIA({
     t.has(`agentNames.${clave}`) ? t(`agentNames.${clave}`) : clave;
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
+    <div className="animate-entrada space-y-8 pb-10">
       <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

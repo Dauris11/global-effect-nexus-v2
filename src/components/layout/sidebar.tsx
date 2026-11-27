@@ -50,6 +50,7 @@ export function Sidebar({
   abiertaEnMovil,
   onCerrarMovil,
   onCerrarSesion,
+  insignias,
 }: {
   rol: Rol;
   /** Nombre de quien mira, para el pie de la barra. */
@@ -61,6 +62,8 @@ export function Sidebar({
   abiertaEnMovil: boolean;
   onCerrarMovil: () => void;
   onCerrarSesion: () => void;
+  /** Números de los distintivos: vencidos (Inicio) y solicitudes que me tocan. */
+  insignias?: { vencidos?: number; solicitudes?: number };
 }) {
   const t = useTranslations("nav");
   const tComun = useTranslations("common");
@@ -73,12 +76,17 @@ export function Sidebar({
    * en `/portal/estudiante/solicitudes` se encendían a la vez "Mi Portal"
    * (`/portal/estudiante`) y "Mis solicitudes".
    */
+  // Cada entrada responde por su `href` y por las rutas de sus pestañas (`activoEn`): se enciende la que
+  // casa con el prefijo MÁS LARGO (`/calendario/gantt` es «Proyectos», no «Calendario»).
   const hrefActivo =
     areas
       .flatMap(itemsDeArea)
-      .map((item) => item.href)
-      .filter((href) => esRutaActiva(ruta, href))
-      .sort((a, b) => b.length - a.length)[0] ?? null;
+      .flatMap((item) =>
+        [item.href, ...(item.activoEn ?? [])]
+          .filter((prefijo) => esRutaActiva(ruta, prefijo))
+          .map((prefijo) => ({ href: item.href, largo: prefijo.length })),
+      )
+      .sort((a, b) => b.largo - a.largo)[0]?.href ?? null;
 
   const [busqueda, setBusqueda] = useState("");
   const termino = normalizar(busqueda);
@@ -120,7 +128,7 @@ export function Sidebar({
       {/* Velo del cajón móvil. */}
       {abiertaEnMovil && (
         <div
-          className="animate-velo fixed inset-0 z-40 bg-black/40 md:hidden"
+          className="animate-velo fixed inset-0 z-40 bg-ink/40 md:hidden"
           onClick={onCerrarMovil}
           aria-hidden
         />
@@ -273,9 +281,9 @@ export function Sidebar({
             grupos
               .filter((grupo) => grupo.items.length > 0)
               .map((grupo) => (
-                <div key={grupo.clave}>
+                <div key={grupo.clave} className={cn(grupo.clave === "pie" && "border-sidebar-border border-t pt-4 [&_a]:text-tinta-3 [&_svg]:text-tinta-3")}>
                   {grupo.etiqueta && (nombresVisibles) && (
-                    <p className="texto-meta px-3 pb-1.5 font-medium">
+                    <p className="px-3 pb-1.5 text-[11px] font-semibold tracking-wider text-tinta-3 uppercase">
                       {t(grupo.etiqueta)}
                     </p>
                   )}
@@ -293,6 +301,8 @@ export function Sidebar({
                         texto={t(item.etiqueta)}
                         activo={item.href === hrefActivo}
                         soloIcono={!nombresVisibles}
+                        insignia={item.insignia ? insignias?.[item.insignia] : undefined}
+                        insigniaRoja={item.insignia === "vencidos"}
                       />
                     ))}
                   </div>
@@ -363,6 +373,8 @@ function Enlace({
   activo,
   soloIcono,
   foto,
+  insignia,
+  insigniaRoja,
 }: {
   item: ItemNav;
   texto: string;
@@ -370,6 +382,10 @@ function Enlace({
   soloIcono: boolean;
   /** Solo la fila de perfil la usa: pinta la foto en lugar del icono. */
   foto?: string | null;
+  /** Número del distintivo; con 0 o sin él no se pinta. */
+  insignia?: number;
+  /** Rojo para lo vencido; el resto va en gris oscuro. */
+  insigniaRoja?: boolean;
 }) {
   const Icono = item.icono;
 
@@ -390,7 +406,7 @@ function Enlace({
          */
         "before:absolute before:top-1/2 before:left-0 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-marca-500 before:transition-transform before:duration-(--duracion-media) before:ease-salida",
         activo
-          ? "bg-sidebar-accent text-tinta font-semibold before:scale-y-100"
+          ? "bg-sidebar-accent text-marca-800 font-semibold before:scale-y-100"
           : "text-tinta-2 hover:bg-sidebar-accent hover:text-tinta before:scale-y-0",
       )}
     >
@@ -407,11 +423,24 @@ function Enlace({
         <Icono
           className={cn(
             "size-5 shrink-0 transition-colors duration-(--duracion-rapida) ease-salida",
-            activo ? "text-marca-500" : "text-tinta-2",
+            activo ? "text-marca-600" : "text-tinta-2",
           )}
         />
       )}
       {!soloIcono && <span className="truncate">{texto}</span>}
+      {insignia ? (
+        <span
+          aria-label={String(insignia)}
+          data-insignia
+          className={cn(
+            "text-meta ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 font-semibold tabular-nums",
+            soloIcono && "absolute -top-0.5 -right-0.5",
+            insigniaRoja ? "bg-status-danger text-white" : "border border-status-warning-border bg-status-warning-bg text-status-warning-fg",
+          )}
+        >
+          {insignia > 99 ? "99+" : insignia}
+        </span>
+      ) : null}
     </Link>
   );
 }

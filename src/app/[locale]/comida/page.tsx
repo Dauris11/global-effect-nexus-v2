@@ -43,7 +43,7 @@ export default async function PaginaComida({
   };
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-muted px-4 py-10">
       <div className="w-full max-w-md space-y-5">
         <Card>
           <CardContent className="space-y-5 pt-5">
@@ -63,7 +63,7 @@ export default async function PaginaComida({
                 className={
                   abierto
                     ? "ml-auto shrink-0 rounded-full bg-marca-500/15 px-2 py-0.5 text-[10px] font-medium text-marca-700"
-                    : "ml-auto shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                    : "ml-auto shrink-0 rounded-full bg-linea px-2 py-0.5 text-[10px] font-medium text-tinta-2"
                 }
               >
                 {abierto ? t("open") : t("closed")}
@@ -90,7 +90,7 @@ export default async function PaginaComida({
 
             {/* Solo el número: quién come lo gestiona el comedor, y esta
                 página la ve cualquiera. */}
-            <p className="border-t pt-4 text-center text-xs text-slate-500">
+            <p className="border-t pt-4 text-center text-xs text-tinta-3">
               {t("enrolledToday")}: <strong>{inscritos}</strong>
             </p>
           </CardContent>
@@ -99,7 +99,7 @@ export default async function PaginaComida({
         <p className="text-center">
           <Link
             href="/"
-            className="inline-block rounded-lg px-3 py-2 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="inline-block rounded-lg px-3 py-2 text-xs text-tinta-3 transition-colors hover:bg-muted hover:text-tinta-2"
           >
             ← {tAuth("backHome")}
           </Link>

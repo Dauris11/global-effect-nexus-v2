@@ -191,7 +191,7 @@ export function EscanearQrActivo() {
   return (
     <div className="flex flex-col gap-6">
       {/* Visor de la cámara / Escáner */}
-      <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-2xl border-2 border-linea bg-black shadow-lg">
+      <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-2xl border-2 border-linea bg-muted shadow-lg">
         {/* Contenedor del video HTML5 */}
         <div id="lector-qr-camara" className="aspect-square w-full" />
 
@@ -200,7 +200,7 @@ export function EscanearQrActivo() {
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="size-64 rounded-2xl border-2 border-dashed border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
               <div className="flex h-full items-center justify-center">
-                <span className="rounded bg-black/60 px-2 py-1 text-xs font-semibold text-white">
+                <span className="rounded bg-muted/60 px-2 py-1 text-xs font-semibold text-white">
                   {t("apuntaQr")}
                 </span>
               </div>
@@ -225,7 +225,7 @@ export function EscanearQrActivo() {
         )}
 
         {cargandoCamara && (
-          <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-black/70 text-white">
+          <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-muted/70 text-white">
             <Loader2 className="size-8 animate-spin text-marca-400" />
             <p className="text-sm font-medium">{t("iniciandoCamara")}</p>
           </div>
@@ -239,7 +239,7 @@ export function EscanearQrActivo() {
               variant="outline"
               size="sm"
               onClick={alternarCamara}
-              className="bg-black/60 text-white backdrop-blur hover:bg-black/80 hover:text-white"
+              className="bg-muted/60 text-white backdrop-blur hover:bg-muted/80 hover:text-white"
             >
               <FlipHorizontal className="size-4" />
               <span className="text-xs">{t("girarCamara")}</span>
@@ -250,7 +250,7 @@ export function EscanearQrActivo() {
               variant="outline"
               size="sm"
               onClick={detenerCamara}
-              className="bg-black/60 text-white backdrop-blur hover:bg-black/80 hover:text-white"
+              className="bg-muted/60 text-white backdrop-blur hover:bg-muted/80 hover:text-white"
             >
               <span className="text-xs">{t("detener")}</span>
             </Button>
@@ -348,7 +348,7 @@ export function EscanearQrActivo() {
                 <span>{t("registrarAuditoria")}</span>
               </Button>
             ) : (
-              <div className="flex items-center justify-center gap-2 rounded-xl border border-transparent bg-[#1E9E6A]/10 p-3 text-xs font-bold text-[#1E9E6A]">
+              <div className="flex items-center justify-center gap-2 rounded-xl border border-transparent bg-status-success/10 p-3 text-xs font-bold text-status-success-fg">
                 <CheckCircle2 className="size-4" />
                 <span>{t("auditoriaExito")}</span>
               </div>

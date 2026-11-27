@@ -191,6 +191,8 @@ export function FilterBar({
                 key={`${paramDe(c)}-${c.value || "todos"}`}
                 type="button"
                 aria-pressed={esteActivo}
+                data-chip
+                data-active={esteActivo ? "" : undefined}
                 // «Todos» quita todos los chips; un chip activo vuelve a apagarse al pulsarlo.
                 onClick={() => (c.value === "" ? escribir(paramsChips[0] ?? chipParam, "", paramsChips) : escribir(paramDe(c), esteActivo ? "" : c.value))}
                 className={cn(

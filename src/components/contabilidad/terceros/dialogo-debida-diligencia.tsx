@@ -97,13 +97,13 @@ export function DialogoDebidaDiligencia({
                 />
               </div>
 
-              <div className="space-y-2 rounded-lg border border-linea p-3 text-sm dark:border-slate-800">
+              <div className="space-y-2 rounded-lg border border-linea p-3 text-sm dark:border-linea">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={verificacionPep}
                     onChange={(e) => setVerificacionPep(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="rounded border-linea-fuerte"
                   />
                   <span>{t("personaExpuestaPoliticamente")}</span>
                 </label>
@@ -112,7 +112,7 @@ export function DialogoDebidaDiligencia({
                     type="checkbox"
                     checked={verificacionListas}
                     onChange={(e) => setVerificacionListas(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="rounded border-linea-fuerte"
                   />
                   <span>{t("verificacionListasInternacionales")}</span>
                 </label>

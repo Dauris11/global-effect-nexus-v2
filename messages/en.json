@@ -263,7 +263,99 @@
     "schools": "Schools",
     "team": "Team",
     "impactReports": "Impact reports",
-    "visitShort": "Visit"
+    "visitShort": "Visit",
+    "m": {
+      "home": "Home",
+      "students": "Students",
+      "academic": "Academics",
+      "sponsors": "Sponsors",
+      "requests": "Requests",
+      "projects": "Projects",
+      "operations": "Operations",
+      "habitudes": "Habitudes",
+      "accounting": "Accounting",
+      "calendar": "Calendar",
+      "reports": "Reports",
+      "settings": "Settings",
+      "myClasses": "My classes",
+      "toGrade": "To grade",
+      "grades": "Grades",
+      "myScholarship": "My scholarship",
+      "visits": "Visits",
+      "resources": "Resources",
+      "evidences": "Evidence",
+      "schools": "Schools",
+      "tripToday": "Today's trip",
+      "expenses": "Expenses",
+      "register": "Record",
+      "banksCash": "Banks and cash",
+      "payables": "Payables",
+      "budget": "Budget",
+      "closing": "Closing",
+      "accountingSettings": "Settings"
+    },
+    "tab": {
+      "home": "Home",
+      "files": "Student files",
+      "atRisk": "At risk",
+      "scholarships": "Scholarships",
+      "universities": "Universities",
+      "grades": "Grades",
+      "terms": "Terms",
+      "prematricula": "Pre-enrollment",
+      "subjects": "Subjects",
+      "g360": "Global Effect 360",
+      "list": "List",
+      "letters": "Letters",
+      "requests": "Requests",
+      "board": "Board",
+      "timeline": "Timeline",
+      "myTasks": "My tasks",
+      "inventory": "Inventory",
+      "monthlyServices": "Monthly services",
+      "meals": "Meals",
+      "transport": "Transport",
+      "programs": "Programs",
+      "materials": "Materials",
+      "hub": "Hub",
+      "receipts": "Receipts",
+      "journal": "Journal entries",
+      "banks": "Banks",
+      "cashboxes": "Cash boxes and counts",
+      "suppliers": "Suppliers",
+      "payables": "Payables",
+      "budget": "Budget",
+      "financialStatements": "Financial statements",
+      "ledgers": "Ledgers",
+      "closing": "Closing",
+      "calendar": "Calendar",
+      "meetings": "Meetings",
+      "reports": "Reports",
+      "studentCost": "Cost per student",
+      "general": "General",
+      "staff": "Staff",
+      "permissions": "Permissions",
+      "announcements": "Announcements",
+      "accountingSettings": "Accounting settings",
+      "expenseReports": "Expense reports",
+      "myClasses": "My classes",
+      "toGrade": "To grade",
+      "classes": "Classes",
+      "tasks": "Tasks",
+      "scholarshipTab": "My scholarship",
+      "logVisit": "Log a visit",
+      "resources": "Resources",
+      "evidences": "Evidence",
+      "schoolsTab": "Schools",
+      "team": "Team",
+      "impact": "Impact reports",
+      "tripToday": "Today's trip",
+      "expenses": "Expenses"
+    },
+    "newFileAction": "New student file",
+    "newRequestAction": "New request",
+    "newReceiptAction": "Record a receipt",
+    "newEntryAction": "New manual entry"
   },
   "landing": {
     "enter": "Sign in",
@@ -415,7 +507,13 @@
     "total": "Total",
     "nobody": "No one signed up for this date.",
     "prevDay": "Previous day",
-    "nextDay": "Next day"
+    "nextDay": "Next day",
+    "served": "Served",
+    "shareLink": "Share the sign-up link",
+    "linkCopied": "Link copied",
+    "today": "Today",
+    "onlyUnserved": "Not served",
+    "onlyServed": "Served"
   },
   "portal": {
     "openMenu": "Open menu",
@@ -551,7 +649,9 @@
       "chartEmpty": "No tasks to chart",
       "scopeToday": "Today",
       "scopeWeek": "This week",
-      "scopeAll": "All"
+      "scopeAll": "All",
+      "scopeOpen": "Open",
+      "scopeOverdue": "Overdue"
     },
     "task": {
       "title": "Title",
@@ -987,7 +1087,27 @@
     "errName": "The name cannot be empty.",
     "errRole": "That role cannot be assigned.",
     "errNotFound": "That account no longer exists.",
-    "errGeneric": "Could not complete. Try again."
+    "errGeneric": "Could not complete. Try again.",
+    "invite": "Invite a person",
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "never": "Never signed in",
+      "inactive": "Inactive"
+    },
+    "col": {
+      "priorities": "Open priorities"
+    },
+    "accountState": {
+      "active": "Active",
+      "never": "Never signed in",
+      "inactive": "Inactive"
+    },
+    "tabs": {
+      "account": "Account",
+      "handles": "What they handle"
+    },
+    "reportsLink": "See team reports"
   },
   "recordLiceo": {
     "remove": {
@@ -3057,7 +3177,19 @@
       "clase": "Teacher and schedule",
       "tanda": "Term and round",
       "fechas": "Dates and notice"
-    }
+    },
+    "openWindow": "Open window",
+    "noActiveWindow": "No pre-enrollment window is open.",
+    "studentCol": "Student",
+    "choiceCol": "Choice",
+    "chose": "Chose",
+    "notChosen": "Not chosen",
+    "remind": "Remind",
+    "reminderSent": "Reminded",
+    "reminded": "Reminder sent to {nombre}",
+    "noAccount": "This person has no sign-in account.",
+    "closeWindowBtn": "Close window",
+    "electionProgress": "{n} of {total} students have chosen"
   },
   "bandeja": {
     "title": "To-do",
@@ -3214,7 +3346,9 @@
     "readOnly": "Read only: «operaciones.escribir» is required to tick.",
     "saving": "Saving…",
     "error": "Couldn't save the tick. Try again.",
-    "hint": "Each tick saves straight away. There is no save button."
+    "hint": "Each tick saves straight away. There is no save button.",
+    "incumplen": "Incomplete",
+    "all": "All"
   },
   "sponsors": {
     "eyebrow": "Sponsorship",
@@ -3661,6 +3795,13 @@
       "incomeByCategory": "Income by category",
       "expenseByCategory": "Expenses by category",
       "categoryHint": "Only categories that have something. Blue is what comes in, black what goes out."
+    },
+    "executiveSummary": "Executive summary",
+    "moduleReports": "Reports by module",
+    "moduleReport": {
+      "personal": "Team",
+      "servicios": "Monthly services",
+      "academico": "Academics"
     }
   },
   "aiChat": {
@@ -7894,7 +8035,8 @@
       "incidentsTitle": "Incident log",
       "noIncidents": "No incidents reported recently.",
       "typeRecurring": "Recurring",
-      "typeDaily": "Single-day"
+      "typeDaily": "Single-day",
+      "mapTitle": "Live map"
     },
     "driverStatus": {
       "standby": "Waiting",
@@ -8806,6 +8948,225 @@
       "fail": "Fail",
       "saved": "{nombre}'s grade saved.",
       "error": "Couldn't save the grade."
+    }
+  },
+  "priorities": {
+    "title": "Home",
+    "heading": "What needs you today",
+    "empty": "Nothing pending. Nice work.",
+    "emptyAction": "See my tasks",
+    "groups": {
+      "vencido": "Overdue",
+      "hoy": "Today",
+      "semana": "This week",
+      "adelante": "Later",
+      "esperando": "Waiting on others"
+    },
+    "escalated": "Escalated",
+    "reject": {
+      "title": "Reject request",
+      "reason": "Reason for rejecting",
+      "confirm": "Reject",
+      "cancel": "Cancel",
+      "required": "Write the reason"
+    },
+    "postpone": {
+      "label": "Postpone",
+      "tomorrow": "Tomorrow",
+      "nextWeek": "Next week"
+    },
+    "done": "Done",
+    "undo": "Undo",
+    "doneToast": "Done: {titulo}",
+    "postponedToast": "Postponed: {titulo}",
+    "errors": {
+      "no_permitido": "You don't have permission.",
+      "ya_cambio": "Someone already handled it.",
+      "falta_motivo": "Write the reason.",
+      "invalido": "Couldn't apply that.",
+      "error": "Something went wrong. Try again."
+    },
+    "modules": {
+      "solicitudes": "Requests",
+      "tareas": "Tasks",
+      "proyectos": "Projects",
+      "expedientes": "Student files",
+      "patrocinadores": "Sponsors",
+      "academico": "Academics",
+      "servicios": "Services",
+      "inventario": "Inventory",
+      "contabilidad": "Accounting",
+      "docencia": "Teaching",
+      "estudiante": "Student",
+      "habitudes": "Habitudes",
+      "transporte": "Transport"
+    },
+    "types": {
+      "solicitud_por_decidir": "Approve letter, certificate and permit requests",
+      "solicitud_pendiente_direccion": "Give leadership sign-off on requests",
+      "mi_solicitud_respondida": "See the answer to my requests",
+      "tarea_vencida": "My overdue tasks",
+      "tarea_hoy": "My tasks due today",
+      "tarea_semana": "My tasks this week",
+      "proyecto_atrasado": "Late projects",
+      "alta_expediente_por_revisar": "Review new student file requests",
+      "expediente_incompleto": "Complete files missing university, major or account",
+      "estudiante_en_riesgo_nuevo": "Follow up students newly at risk",
+      "becado_sin_patrocinador": "Assign a sponsor to scholars without one",
+      "renovacion_beca": "Decide scholarship renewals",
+      "carta_mensual_pendiente": "Review the monthly sponsor letter",
+      "compromiso_por_vencer": "Renew sponsorship commitments about to expire",
+      "calificaciones_por_subir": "Ask for grades of the current term",
+      "prematricula_sin_elegir": "Remind pre-enrollment not chosen near the deadline",
+      "clase_sin_docente": "Assign a teacher to classes without one",
+      "servicio_mensual_incumplido": "Follow up missed monthly service",
+      "reunion_mensual_pendiente": "Follow up missed monthly meeting",
+      "activo_en_mantenimiento_vencido": "Recover assets overdue from maintenance",
+      "prestamo_vencido": "Collect overdue inventory loans",
+      "comprobante_por_validar": "Validate received receipts",
+      "asiento_sin_procesar": "Post unposted journal entries",
+      "cxp_vencida": "Pay overdue payables",
+      "cxp_por_vencer": "Schedule payables coming due",
+      "caja_chica_baja": "Refill low petty cash",
+      "conciliacion_pendiente": "Close pending reconciliations",
+      "cierre_mes_pendiente": "Do the month-end close",
+      "compra_aprobada_por_pagar": "Pay approved purchases",
+      "liquidez_negativa": "Handle negative liquidity",
+      "entrega_por_calificar": "Grade submissions in my classes",
+      "nota_final_pendiente": "Enter final grades",
+      "asistencia_hoy": "Take today's attendance",
+      "tarea_por_entregar": "Hand in my assignments",
+      "materia_por_elegir": "Choose pre-enrollment subjects",
+      "servicio_del_mes": "Do the month's service",
+      "reunion_del_mes": "Attend the month's meeting",
+      "visita_hoy": "Today's visits",
+      "visita_semana": "This week's visits",
+      "evidencia_faltante": "Upload missing evidence",
+      "viaje_del_turno": "Shift trip"
+    },
+    "whatTheyHandle": {
+      "title": "What they handle",
+      "help": "Tick the pending items that show up on this person's Home. Anything unticked won't appear.",
+      "save": "Save",
+      "reset": "Back to their role's default",
+      "saved": "Saved",
+      "usingDefault": "Using their role's default",
+      "custom": "Customised",
+      "backToStaff": "Staff"
+    },
+    "greeting": {
+      "morning": "Good morning, {nombre}",
+      "afternoon": "Good afternoon, {nombre}",
+      "evening": "Good evening, {nombre}"
+    },
+    "summary": {
+      "pending": "You have {partes}.",
+      "overdue": "{n, plural, one {1 overdue item} other {# overdue items}}",
+      "today": "{n, plural, one {1 for today} other {# for today}}",
+      "and": " and ",
+      "uptodate": "You're all caught up.",
+      "uptodateWeek": "You're all caught up. {n, plural, one {1 item this week} other {# items this week}}.",
+      "weekOnly": "You have {n, plural, one {1 item this week} other {# items this week}}."
+    },
+    "tabs": {
+      "label": "Priorities view",
+      "forMe": "For me",
+      "waiting": "Waiting on others",
+      "team": "Team"
+    },
+    "team": {
+      "overdue": "{n, plural, =0 {Up to date} one {1 overdue} other {# overdue}}",
+      "viewing": "Viewing {nombre}'s priorities",
+      "back": "Back to mine",
+      "empty": "There is nobody on the team."
+    },
+    "emptyWaiting": "You're not waiting on anyone.",
+    "upToDate": "You're all caught up",
+    "upToDateAction": "See the calendar",
+    "row": {
+      "open": "Open",
+      "more": "More actions",
+      "groupOf": "{n} · {tipo}"
+    },
+    "context": {
+      "prematricula": "Pre-enrollment closes {fecha} · {n, plural, =0 {everyone chose} one {1 student hasn't chosen} other {# students haven't chosen}}"
+    },
+    "side": {
+      "agenda": "Today's agenda",
+      "agendaEmpty": "No meetings or events today or tomorrow.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "quick": "Quick create",
+      "projects": "My projects",
+      "projectsEmpty": "You don't lead any project."
+    },
+    "figures": {
+      "bank": "Bank balance",
+      "payable": "Payable in 7 days",
+      "income": "Income this month"
+    },
+    "primary": {
+      "newRequest": "New request",
+      "register": "Record",
+      "publishTask": "Publish assignment"
+    },
+    "quick": {
+      "newFile": "New student file",
+      "uploadGrades": "Upload grades",
+      "sponsorLetter": "Sponsor letter",
+      "expenseReceipt": "Expense receipt",
+      "incomeReceipt": "Income receipt",
+      "manualEntry": "Manual entry",
+      "cashCount": "Cash count",
+      "newRequest": "New request",
+      "newProject": "New project",
+      "viewReports": "View reports",
+      "newTask": "New task",
+      "takeAttendance": "Take attendance",
+      "toGrade": "To grade",
+      "myClasses": "My classes",
+      "myTasks": "My tasks",
+      "myRequests": "My requests",
+      "logVisit": "Log a visit",
+      "resources": "Open resources",
+      "myTrip": "Go to my trip",
+      "createTask": "Create assignment",
+      "uploadMaterial": "Upload material",
+      "requestCertificate": "Request a certificate",
+      "nominate": "Nominate a candidate"
+    },
+    "teacher": {
+      "summary": "You have {n, plural, one {1 submission to grade} other {# submissions to grade}} in {m, plural, one {1 class} other {# classes}}.",
+      "upToDate": "You're all caught up: nothing to grade.",
+      "toGrade": "To grade",
+      "todayClasses": "My classes today",
+      "noClassesToday": "No classes today.",
+      "takeAttendance": "Take attendance",
+      "openClass": "Open class",
+      "emptyTitle": "You don't have any classes yet",
+      "emptyHint": "Academic coordination assigns them to you.",
+      "writeCoordination": "Write to coordination"
+    },
+    "student": {
+      "summaryTasks": "You have {n, plural, =0 {no assignments} one {1 assignment} other {# assignments}} this week.",
+      "summaryWindow": "Pre-enrollment closes on {dia}.",
+      "summaryClear": "You're all caught up on assignments.",
+      "todo": "What you need to do",
+      "myClasses": "My classes",
+      "myScholarship": "My scholarship",
+      "windowOpen": "Pre-enrollment open · closes {fecha}",
+      "indexLine": "Index {indice} of {minimo} minimum",
+      "indexNone": "No index yet",
+      "service": "Service this month",
+      "meeting": "Meeting this month",
+      "seeDetails": "See my scholarship",
+      "noClasses": "No classes yet. Choose your subjects in pre-enrollment."
+    },
+    "habitudes": {
+      "summary": "You have {v, plural, =0 {no visits} one {1 visit} other {# visits}} this week and {e, plural, =0 {no evidence} one {1 piece of evidence} other {# pieces of evidence}} to upload.",
+      "summaryClear": "You're all caught up on visits and evidence.",
+      "impact": "{n} students in {l} schools this year",
+      "todo": "Visits and evidence"
     }
   }
 }

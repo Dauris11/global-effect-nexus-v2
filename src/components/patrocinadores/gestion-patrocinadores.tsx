@@ -238,7 +238,7 @@ function Ficha({
               para saber de quién se habla. */}
           <p className="text-sm font-semibold break-words">
             {/* La ficha del patrocinador: sus estudiantes, su aporte y sus cartas. */}
-            <Link href={`/patrocinadores/${fila.id}`} className="hover:text-[#187a99] hover:underline">
+            <Link href={`/patrocinadores/${fila.id}`} className="hover:text-marca-700 hover:underline">
               {fila.nombre}
             </Link>
           </p>
@@ -252,7 +252,7 @@ function Ficha({
           className={cn(
             "shrink-0 text-[10px]",
             activo
-              ? "bg-[#2096BA]/15 text-[#187a99]"
+              ? "bg-marca-500/15 text-marca-700"
               : "bg-muted text-tinta-2",
           )}
         >
@@ -278,7 +278,7 @@ function Ficha({
         {fila.email && (
           <a
             href={`mailto:${fila.email}`}
-            className="inline-flex min-h-8 items-center gap-1 hover:text-[#187a99] hover:underline"
+            className="inline-flex min-h-8 items-center gap-1 hover:text-marca-700 hover:underline"
           >
             <Mail className="size-3 shrink-0" />
             {fila.email}
@@ -288,7 +288,7 @@ function Ficha({
         {fila.telefono && (
           <a
             href={`tel:${fila.telefono}`}
-            className="inline-flex min-h-8 items-center gap-1 hover:text-[#187a99] hover:underline"
+            className="inline-flex min-h-8 items-center gap-1 hover:text-marca-700 hover:underline"
           >
             <Phone className="size-3 shrink-0" />
             {fila.telefono}
@@ -299,13 +299,13 @@ function Ficha({
       <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-2">
         {/* El aporte en el azul de la marca: es lo que entra, y `MOVIMIENTO`
             ya fija que lo que entra va en azul y nunca en verde. */}
-        <p className="text-sm font-bold text-[#2096BA]">
+        <p className="text-sm font-bold text-marca-700">
           {t("perMonth", { monto: formatoUsd(fila.monto_mensual) })}
         </p>
 
         <Link
           href={`/patrocinadores/${fila.id}`}
-          className="text-muted-foreground inline-flex min-h-8 items-center gap-1 text-xs hover:text-[#187a99] hover:underline"
+          className="text-muted-foreground inline-flex min-h-8 items-center gap-1 text-xs hover:text-marca-700 hover:underline"
         >
           <Users className="size-3 shrink-0" />
           {t("scholars", { count: fila.becados })}

@@ -122,10 +122,10 @@ export function DialogoDetalleNomina({
                 variant="outline"
                 className={
                   nomina.estado === "pagada"
-                    ? "border-linea bg-muted text-[#1E9E6A]"
+                    ? "border-linea bg-muted text-status-success-fg"
                     : nomina.estado === "aprobada"
                     ? "border-marca-500/30 bg-marca-500/10 text-marca-500"
-                    : "border-linea bg-muted text-tinta-2 dark:text-slate-300"
+                    : "border-linea bg-muted text-tinta-2 dark:text-tinta-2"
                 }
               >
                 {nomina.estado.toUpperCase()}
@@ -148,24 +148,24 @@ export function DialogoDetalleNomina({
           <div className="space-y-6">
             {/* Resumen numérico */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-linea dark:bg-surface-2">
                 <div className="text-xs text-muted-foreground">{t("devengado")}</div>
-                <div className="text-base font-semibold tabular-nums text-tinta dark:text-slate-100">
+                <div className="text-base font-semibold tabular-nums text-tinta dark:text-tinta">
                   RD$ {nomina.total_devengado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-linea dark:bg-surface-2">
                 <div className="text-xs text-muted-foreground">TSS (AFP+SFS) Empleado</div>
-                <div className="text-base font-semibold tabular-nums text-tinta dark:text-slate-100">
+                <div className="text-base font-semibold tabular-nums text-tinta dark:text-tinta">
                   RD${" "}
                   {(nomina.total_afp_empleado + nomina.total_sfs_empleado).toLocaleString("es-DO", {
                     minimumFractionDigits: 2,
                   })}
                 </div>
               </div>
-              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="rounded-xl border border-linea bg-muted/50 p-3 dark:border-linea dark:bg-surface-2">
                 <div className="text-xs text-muted-foreground">{t("isr")}</div>
-                <div className="text-base font-semibold tabular-nums text-tinta dark:text-slate-100">
+                <div className="text-base font-semibold tabular-nums text-tinta dark:text-tinta">
                   RD$ {nomina.total_isr_empleado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -178,9 +178,9 @@ export function DialogoDetalleNomina({
             </div>
 
             {/* Tabla de líneas por empleado */}
-            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
               <table className="w-full text-left text-xs">
-                <thead className="border-b border-linea bg-muted font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+                <thead className="border-b border-linea bg-muted font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                   <tr>
                     <th className="px-3 py-2.5">Empleado</th>
                     <th className="px-3 py-2.5">Centro Costo</th>
@@ -189,21 +189,21 @@ export function DialogoDetalleNomina({
                     <th className="px-3 py-2.5 text-right">SFS (3.04%)</th>
                     <th className="px-3 py-2.5 text-right">ISR</th>
                     <th className="px-3 py-2.5 text-right font-bold">{t("neto")}</th>
-                    <th className="px-3 py-2.5 text-right text-slate-400">TSS Patronal</th>
+                    <th className="px-3 py-2.5 text-right text-tinta-3">TSS Patronal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {nomina.lineas.map((l) => (
-                    <tr key={l.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
+                    <tr key={l.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
                       <td className="px-3 py-2">
-                        <div className="font-medium text-tinta dark:text-slate-100">
+                        <div className="font-medium text-tinta dark:text-tinta">
                           {l.empleado_nombre}
                         </div>
                         <div className="text-[11px] text-muted-foreground">
                           {l.codigo_empleado} · {l.empleado_identificacion}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-tinta-2 dark:text-slate-400">
+                      <td className="px-3 py-2 text-tinta-2 dark:text-tinta-3">
                         {l.centro_costo_nombre}
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">
@@ -221,7 +221,7 @@ export function DialogoDetalleNomina({
                       <td className="px-3 py-2 text-right font-bold tabular-nums text-marca-500">
                         {l.neto_a_pagar.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-slate-400">
+                      <td className="px-3 py-2 text-right tabular-nums text-tinta-3">
                         {(
                           l.aporte_afp_patronal +
                           l.aporte_sfs_patronal +
@@ -247,7 +247,7 @@ export function DialogoDetalleNomina({
             {nomina.estado === "aprobada" && cuentasBanco.length > 0 && (
               <div className="flex flex-col gap-3 rounded-xl border border-linea bg-muted/60 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-tinta dark:text-slate-200">
+                  <div className="text-xs font-semibold text-tinta dark:text-tinta">
                     {t("bancoDesembolso")}
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export function DialogoDetalleNomina({
                   <select
                     value={cuentaBancoSeleccionada}
                     onChange={(e) => setCuentaBancoSeleccionada(e.target.value)}
-                    className="rounded-md border border-linea-fuerte bg-card px-3 py-1.5 text-xs text-tinta dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    className="rounded-md border border-linea-fuerte bg-card px-3 py-1.5 text-xs text-tinta dark:border-linea-fuerte dark:bg-card dark:text-tinta"
                   >
                     {cuentasBanco.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -284,7 +284,7 @@ export function DialogoDetalleNomina({
             variant="outline"
             size="sm"
             onClick={handleDescargarTss}
-            className="text-tinta-2 dark:text-slate-200"
+            className="text-tinta-2 dark:text-tinta"
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {t("descargarTss")}

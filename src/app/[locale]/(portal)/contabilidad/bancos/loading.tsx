@@ -7,7 +7,7 @@ export default function CargandoBancos() {
   const t = useTranslations("common");
 
   return (
-    <div role="status" className="mx-auto max-w-5xl space-y-8">
+    <div role="status" className="space-y-8">
       <span className="sr-only">{t("loading")}</span>
       <div className="space-y-2">
         <Skeleton className="h-4 w-28" />

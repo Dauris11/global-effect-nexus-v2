@@ -17,11 +17,11 @@ const variantesBadge = cva(
     variants: {
       variant: {
         neutra: "border-transparent bg-muted text-tinta-2",
-        marca: "border-transparent bg-marca-50 text-marca-700",
-        solida: "border-transparent bg-tinta text-background",
+        marca: "border-status-info-border bg-marca-50 text-marca-700",
+        solida: "border-status-neutral-border bg-status-neutral text-white",
         default: "border-transparent bg-marca-50 text-marca-700",
         secondary: "border-transparent bg-muted text-tinta-2",
-        destructive: "border-transparent bg-tinta text-background",
+        destructive: "border-status-danger-border bg-status-danger-bg text-status-danger-fg",
         outline: "border-linea-fuerte text-tinta-2",
       },
     },

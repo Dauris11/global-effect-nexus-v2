@@ -43,7 +43,7 @@ export async function SeccionRecordLiceo({ estudianteId, puedeEditar }: { estudi
 
             {datos.promedioGlobal !== null && (
               <p className="flex items-center gap-2 text-sm font-medium">
-                {datos.promedioGlobal >= minimo ? <CheckCircle2 className="size-4 text-marca-700" /> : <TriangleAlert className="size-4 text-[#B4342B]" />}
+                {datos.promedioGlobal >= minimo ? <CheckCircle2 className="size-4 text-marca-700" /> : <TriangleAlert className="size-4 text-status-danger-fg" />}
                 {datos.promedioGlobal >= minimo ? t("minimum.met", { min: minimo }) : t("minimum.below", { min: minimo })}
               </p>
             )}

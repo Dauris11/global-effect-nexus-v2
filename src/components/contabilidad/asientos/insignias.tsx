@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { StatusBadge } from "@/components/app/status-badge";
 import { Badge } from "@/components/ui/badge";
 import type { EstadoAsiento, TipoAsiento } from "@/lib/contabilidad/asientos";
 import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
@@ -65,16 +66,10 @@ export function InsigniaEstadoAsiento({
           {t("estado.procesado")}
         </Badge>
       ) : (
-        <Badge variant="neutra">
-          <CircleDashed />
-          {t("estado.pendiente")}
-        </Badge>
+        <StatusBadge status="pendiente" label={t("estado.pendiente")} />
       )}
       {estado === "reverso" && (
-        <Badge variant="neutra">
-          <Undo2 />
-          {t("estado.reverso")}
-        </Badge>
+        <StatusBadge status="reverso" label={t("estado.reverso")} />
       )}
     </span>
   );

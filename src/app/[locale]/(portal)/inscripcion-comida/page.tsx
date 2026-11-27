@@ -1,36 +1,30 @@
 import type { Metadata } from "next";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  UtensilsCrossed,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, UtensilsCrossed } from "lucide-react";
+import { Suspense } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { CifraAcademica } from "@/components/academico/cifra";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { PageContainer } from "@/components/app/page-container";
+import { PageHeader } from "@/components/app/page-header";
+import { StatusBadge } from "@/components/app/status-badge";
 import { BotonImprimir } from "@/components/comida/boton-imprimir";
-import { Badge } from "@/components/ui/badge";
+import { CompartirEnlace } from "@/components/comida/compartir-enlace";
+import { ListaComedor } from "@/components/comida/lista-comedor";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import { fechaLarga } from "@/lib/fechas";
-import { CUADRO, VACIO } from "@/lib/paleta";
-import { cn } from "@/lib/utils";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { comensalesDelDia, resumenDelComedor } from "@/server/comida/consultas";
 
 /** `YYYY-MM-DD`, que es lo que la URL puede traer y `date` acepta. */
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "comida" });
 
@@ -38,179 +32,101 @@ export async function generateMetadata({
 }
 
 /**
- * La lista con la que cocina el comedor.
- *
- * Es la otra cara de `/comida`: aquella es la puerta pública donde la gente se
- * apunta sin cuenta; esta es la vista interna, con `operaciones.leer`.
- *
- * NO ESCRIBE NADA, y por eso no hay más JavaScript que el botón de imprimir.
- * Quitar a alguien de la lista o añadirlo a mano sería otra decisión —¿quién
- * puede?, ¿queda rastro?— y no una casilla más en esta pantalla.
- *
- * LA HORA DE CORTE NO SE REPITE AQUÍ. Sale del mismo SQL que ya usan la página
- * pública y la acción de inscripción. Si el comedor pasa a cerrar a las 9:00,
- * el cambio es en un sitio.
- *
- * La hoja impresa se compone con clases `print:` en vez de un CSS aparte: lo
- * que sobra al imprimir —filtros, botones, cifras— se marca `print:hidden`
- * donde está, y así nadie tiene que acordarse de mantener dos versiones de la
- * misma pantalla.
+ * Lista de comida (patrón de tarea): la fecha con ‹ › y «Hoy», la lista de inscritos con un check de
+ * «servido» y «Imprimir» como acción secundaria. Los conteos van en chips (Sin servir · Servidos) y, sin
+ * nadie inscrito, el vacío ofrece compartir el enlace de inscripción. La hoja impresa se compone con clases
+ * `print:` sobre la misma pantalla.
  */
 export default async function PaginaListaComida({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ fecha?: string }>;
+  searchParams: Promise<{ fecha?: string; estado?: string; q?: string }>;
 }) {
-  const { locale } = await params;
-  const { fecha } = await searchParams;
+  const [{ locale }, { fecha, estado, q }] = await Promise.all([params, searchParams]);
   const idioma: Locale = locale === "en" ? "en" : "es";
+  const usuario = await requerirPermiso("operaciones.leer");
 
-  await requerirPermiso("operaciones.leer");
-
-  const t = await getTranslations({ locale, namespace: "comida" });
-
-  // Sin fecha válida en la URL se mira hoy. `resumenDelComedor` devuelve la
-  // fecha de hoy SEGÚN LA BASE, que es la que manda para la navegación.
   const pedida = FECHA.test(fecha ?? "") ? fecha! : null;
-
-  const [comensales, resumen, mensajes] = await Promise.all([
+  const [t, comensales, resumen, mensajes] = await Promise.all([
+    getTranslations({ locale, namespace: "comida" }),
     comensalesDelDia(pedida),
     resumenDelComedor(pedida),
     mensajesCliente(["comida"]),
   ]);
-
-  // El día que se está mirando: el pedido, o el de hoy que devolvió la base.
   const dia = pedida ?? resumen.hoy;
-
   const mover = (dias: number) => {
-    const base = new Date(`${dia}T00:00:00`);
-    base.setDate(base.getDate() + dias);
+    const base = new Date(`${dia}T12:00:00Z`);
+    base.setUTCDate(base.getUTCDate() + dias);
 
     return `/inscripcion-comida?fecha=${base.toISOString().slice(0, 10)}`;
   };
 
-  return (
-    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
-      <EncabezadoPagina
-        titulo={t("adminTitle")}
-        acciones={
-          <>
-            {/* El estado de la recepción solo tiene sentido mirando HOY: para un
-              día pasado, "cerrado" no informa de nada. */}
-            {dia === resumen.hoy && (
-              <Badge
-                className={cn(
-                  "text-[10px] print:hidden",
-                  resumen.abierto
-                    ? "bg-[#2096BA]/15 text-[#187a99]"
-                    : "bg-[#171A1D] text-white",
-                )}
-              >
-                <Clock className="size-3" />
-                {resumen.abierto ? t("open") : t("closed")}
-              </Badge>
-            )}
+  const sinServir = comensales.filter((c) => !c.servido).length;
+  const texto = (q ?? "").trim().toLowerCase();
+  const visibles = comensales.filter((c) => !texto || c.nombre.toLowerCase().includes(texto)).filter((c) => (estado === "sin_servir" ? !c.servido : estado === "servidos" ? c.servido : true));
 
+  return (
+    <PageContainer className="space-y-6">
+      <PageHeader
+        title={t("adminTitle")}
+        subtitle={fechaLarga(dia, idioma)}
+        secondaryActions={
+          <>
+            {dia === resumen.hoy && <StatusBadge status={resumen.abierto ? "activo" : "inactivo"} label={resumen.abierto ? t("open") : t("closed")} />}
             <NextIntlClientProvider messages={mensajes}>
               <BotonImprimir />
             </NextIntlClientProvider>
           </>
         }
       />
-      <p className="texto-meta">{fechaLarga(dia, idioma)}</p>
 
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" aria-label={t("prevDay")}>
           <Link href={mover(-1)}>
-            <ChevronLeft className="size-3.5" />
-            {t("prevDay")}
+            <ChevronLeft aria-hidden />
           </Link>
         </Button>
-
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" aria-label={t("nextDay")}>
           <Link href={mover(1)}>
-            {t("nextDay")}
-            <ChevronRight className="size-3.5" />
+            <ChevronRight aria-hidden />
           </Link>
         </Button>
-
         {dia !== resumen.hoy && (
           <Button asChild variant="ghost" size="sm">
-            <Link href="/inscripcion-comida">{t("enrolledToday")}</Link>
+            <Link href="/inscripcion-comida">{t("today")}</Link>
           </Button>
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3 print:hidden">
-        <CifraAcademica
-          valor={resumen.total}
-          etiqueta={t("total")}
-          icono={UtensilsCrossed}
-          acento
-        />
-        <CifraAcademica
-          valor={resumen.a_tiempo}
-          etiqueta={t("open")}
-          icono={Clock}
-        />
-        <CifraAcademica
-          valor={resumen.tarde}
-          etiqueta={t("closed")}
-          icono={Clock}
-        />
-      </div>
+      {comensales.length > 0 && (
+        <Suspense fallback={null}>
+          <FilterBar
+            chips={[
+              { value: "sin_servir", label: t("onlyUnserved"), count: sinServir },
+              { value: "servidos", label: t("onlyServed"), count: comensales.length - sinServir },
+            ]}
+            totalChips={comensales.length}
+          />
+        </Suspense>
+      )}
 
-      <Card className="print:border-0 print:shadow-none">
-        <CardContent className="pt-5">
-          {comensales.length === 0 ? (
-            <div className={VACIO.contenedor}>
-              <span className={cn(VACIO.icono, "print:hidden")}>
-                <UtensilsCrossed className="size-6" />
-              </span>
-              <p className={VACIO.titulo}>{t("nobody")}</p>
-            </div>
-          ) : (
-            <ol className="divide-y">
-              {comensales.map((comensal, indice) => (
-                <li
-                  key={comensal.id}
-                  className="flex items-center gap-3 py-2 text-sm"
-                >
-                  {/* El número de comensal: es como cuenta la cocina. */}
-                  <span
-                    className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold",
-                      CUADRO.neutro,
-                    )}
-                  >
-                    {indice + 1}
-                  </span>
-
-                  <span className="min-w-0 flex-1 truncate font-medium">
-                    {comensal.nombre}
-                  </span>
-
-                  {/* Quien llegó fuera de hora se marca en tinta, no en rojo, y
-                      se sigue sirviendo: la marca es información para la
-                      cocina, no una sanción. */}
-                  <span
-                    className={cn(
-                      "shrink-0 font-mono text-xs",
-                      comensal.a_tiempo
-                        ? "text-muted-foreground"
-                        : "font-semibold text-[#171A1D]",
-                    )}
-                  >
-                    {comensal.hora_inscripcion}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+      {comensales.length === 0 ? (
+        <EmptyState
+          icon={UtensilsCrossed}
+          title={t("nobody")}
+          action={
+            <NextIntlClientProvider messages={mensajes}>
+              <CompartirEnlace />
+            </NextIntlClientProvider>
+          }
+        />
+      ) : (
+        <NextIntlClientProvider messages={mensajes}>
+          <ListaComedor comensales={visibles} puedeMarcar={usuarioTienePermiso(usuario, "operaciones.escribir")} />
+        </NextIntlClientProvider>
+      )}
+    </PageContainer>
   );
 }

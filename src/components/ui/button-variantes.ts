@@ -18,14 +18,14 @@ export const variantesBoton = cva(
     variants: {
       variant: {
         default:
-          "bg-marca-500 text-white hover:bg-marca-600",
-        destructive: "bg-tinta text-background hover:bg-tinta/90",
+          "bg-marca-600 text-white hover:bg-marca-700",
+        destructive: "border border-status-danger-border bg-background text-status-danger-fg hover:bg-status-danger-bg",
         outline:
           "border border-linea-fuerte bg-background text-tinta hover:border-tinta hover:bg-muted",
         secondary:
           "border border-linea-fuerte bg-background text-tinta hover:bg-muted",
-        ghost: "text-tinta hover:bg-muted",
-        link: "text-tinta underline underline-offset-4 decoration-linea-fuerte hover:decoration-tinta active:scale-100",
+        ghost: "text-marca-700 hover:bg-marca-50",
+        link: "text-marca-700 underline underline-offset-4 decoration-marca-300 hover:decoration-marca-700 active:scale-100",
       },
       size: {
         default: "h-9 px-4 has-[>svg]:px-3.5 pointer-coarse:h-11",

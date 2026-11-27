@@ -514,14 +514,14 @@ export function VistaHoy({
                   tarea.estado === "completada"
                     ? "border-linea-fuerte/40 opacity-75"
                     : "border-linea-fuerte hover:border-marca-500/40",
-                  tarea.vencida && tarea.estado !== "completada" && "border-[#B4342B]/40 bg-[#B4342B]/5",
+                  tarea.vencida && tarea.estado !== "completada" && "border-status-danger-border/40 bg-status-danger/5",
                 )}
               >
                 <div className="flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Badge de Prioridad */}
                     {tarea.prioridad === "urgente" && (
-                      <span className="inline-flex items-center gap-1 rounded-md border-transparent bg-[#B4342B]/10 px-2 py-0.5 text-xs font-semibold text-[#B4342B]">
+                      <span className="inline-flex items-center gap-1 rounded-md border-transparent bg-status-danger/10 px-2 py-0.5 text-xs font-semibold text-status-danger-fg">
                         <AlertCircle className="size-3" />
                         {t("priorityUrgente")}
                       </span>
@@ -542,7 +542,7 @@ export function VistaHoy({
 
                     {/* Vencida / Fecha */}
                     {tarea.vencida && tarea.estado !== "completada" ? (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#B4342B]/10 px-2 py-0.5 text-xs font-semibold text-[#B4342B]">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-status-danger/10 px-2 py-0.5 text-xs font-semibold text-status-danger-fg">
                         <AlertCircle className="size-3" />
                         {t("overdue")} ({tarea.fecha_limite})
                       </span>

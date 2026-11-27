@@ -54,7 +54,7 @@ export default async function PaginaAnunciosLanding({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina
         titulo={t("title")}
         acciones={

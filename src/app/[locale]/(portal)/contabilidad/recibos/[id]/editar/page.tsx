@@ -43,7 +43,7 @@ export default async function PaginaEditarRecibo({
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
         antetitulo={numeroDocumento(recibo.serie, recibo.numero)}
         titulo={t("tituloEditar")}

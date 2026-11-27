@@ -33,7 +33,7 @@ export default async function PaginaEditarProveedor({
   if (!proveedor) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <EncabezadoPagina
         titulo={t("tituloEditar", { nombre: proveedor.nombre })}
       />

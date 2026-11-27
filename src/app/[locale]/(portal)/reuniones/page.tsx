@@ -53,7 +53,7 @@ export default async function PaginaReuniones({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-7xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>

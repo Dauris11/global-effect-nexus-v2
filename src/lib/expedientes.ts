@@ -150,48 +150,48 @@ export const ESTADO_VISUAL: Record<
   { insignia: string; franja: string; icono: LucideIcon }
 > = {
   reclutado: {
-    insignia: "bg-slate-100 text-slate-600",
-    franja: "bg-slate-300",
+    insignia: "bg-muted text-tinta-2",
+    franja: "bg-linea-fuerte",
     icono: UserPlus,
   },
   postulado: {
-    insignia: "bg-slate-200 text-slate-700",
+    insignia: "bg-linea text-tinta-2",
     franja: "bg-slate-400",
     icono: Send,
   },
   academia_liderazgo: {
-    insignia: "bg-[#2096BA]/15 text-[#187a99]",
+    insignia: "bg-marca-500/15 text-marca-700",
     franja: "bg-[#5FB8D4]",
     icono: Sparkles,
   },
   standby_tecnico: {
-    insignia: "bg-[#0a6a8a]/10 text-[#0a6a8a]",
-    franja: "bg-[#2096BA]",
+    insignia: "bg-marca-700/10 text-marca-800",
+    franja: "bg-marca-500",
     icono: PauseCircle,
   },
   activo: {
-    insignia: "bg-[#1E9E6A] text-white",
-    franja: "bg-[#1E9E6A]",
+    insignia: "bg-status-success text-white",
+    franja: "bg-status-success",
     icono: CheckCircle2,
   },
   inactivo: {
-    insignia: "bg-slate-100 text-slate-500",
-    franja: "bg-slate-200",
+    insignia: "bg-muted text-tinta-3",
+    franja: "bg-linea",
     icono: CircleSlash,
   },
   graduado: {
-    insignia: "bg-[#0a6a8a] text-white",
-    franja: "bg-[#0a6a8a]",
+    insignia: "bg-marca-700 text-white",
+    franja: "bg-marca-700",
     icono: GraduationCap,
   },
   retirado: {
-    insignia: "bg-slate-200 text-slate-600",
-    franja: "bg-slate-300",
+    insignia: "bg-linea text-tinta-2",
+    franja: "bg-linea-fuerte",
     icono: UserMinus,
   },
   suspendido: {
-    insignia: "bg-[#B4342B] text-white",
-    franja: "bg-[#B4342B]",
+    insignia: "bg-status-danger text-white",
+    franja: "bg-status-danger",
     icono: Ban,
   },
 };

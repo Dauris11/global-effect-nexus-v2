@@ -44,7 +44,7 @@ export default async function PaginaUniversidad({ params }: { params: Promise<{ 
   const puedeEscribir = usuarioTienePermiso(usuario, "catalogo.escribir");
 
   return (
-    <div className="animate-entrada mx-auto max-w-4xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina
         titulo={`${universidad.siglas} · ${universidad.nombre}`}
         acciones={

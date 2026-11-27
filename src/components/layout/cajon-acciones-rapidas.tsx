@@ -153,7 +153,7 @@ export function CajonAccionesRapidas({
     <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
       {/* Telón traslúcido */}
       <div
-        className="animate-velo fixed inset-0 bg-black/60 backdrop-blur-xs"
+        className="animate-velo fixed inset-0 bg-ink/60 backdrop-blur-xs"
         onClick={onCerrar}
       />
 

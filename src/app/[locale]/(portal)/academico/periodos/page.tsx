@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/app/page-container";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -57,7 +58,7 @@ export default async function PaginaAcademicoPeriodos({
   ]);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <PageContainer className="space-y-6">
       <EncabezadoPagina titulo={t("terms.title")} />
 
       <NextIntlClientProvider messages={mensajes}>
@@ -66,6 +67,6 @@ export default async function PaginaAcademicoPeriodos({
           puedeEscribir={usuarioTienePermiso(usuario, "academico.escribir")}
         />
       </NextIntlClientProvider>
-    </div>
+    </PageContainer>
   );
 }

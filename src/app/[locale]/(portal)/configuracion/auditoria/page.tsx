@@ -149,7 +149,7 @@ export default async function PaginaAuditoria({
   };
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <Button
         asChild
         variant="outline"

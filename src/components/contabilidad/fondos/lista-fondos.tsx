@@ -19,18 +19,18 @@ export function ListaFondos({
     <div className="space-y-8">
       {/* 1. Catálogo de Fondos */}
       <div className="space-y-4">
-        <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
+        <h3 className="text-base font-semibold text-tinta dark:text-tinta">
           {t("titulo")}
         </h3>
 
         {fondos.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+          <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
             {t("sinFondos")}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                 <tr>
                   <th className="px-4 py-3">{t("nombre")}</th>
                   <th className="px-4 py-3">{t("tipoRestriccion")}</th>
@@ -42,9 +42,9 @@ export function ListaFondos({
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {fondos.map((f) => (
-                  <tr key={f.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
+                  <tr key={f.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-tinta dark:text-slate-100">{f.nombre}</div>
+                      <div className="font-medium text-tinta dark:text-tinta">{f.nombre}</div>
                       {f.codigo && <div className="font-mono text-xs text-muted-foreground">{f.codigo}</div>}
                       {f.propositoRestringido && (
                         <div className="text-xs text-muted-foreground italic max-w-xs truncate">{f.propositoRestringido}</div>
@@ -62,20 +62,20 @@ export function ListaFondos({
                         {t(f.tipoRestriccion as keyof typeof t)}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">
+                    <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">
                       {f.donanteNombre || "—"}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-tinta-2">
                       {f.tipoRestriccion === "no_restringido"
                         ? "—"
                         : `RD$ ${f.montoRestringidoOriginal.toLocaleString("es-DO", { minimumFractionDigits: 2 })}`}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-tinta-2">
                       {f.tipoRestriccion === "no_restringido"
                         ? "—"
                         : `RD$ ${f.montoLiberadoAcumulado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}`}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-slate-100">
+                    <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-tinta">
                       {f.tipoRestriccion === "no_restringido"
                         ? "Ilimitado"
                         : `RD$ ${f.saldoRestringidoDisponible.toLocaleString("es-DO", { minimumFractionDigits: 2 })}`}
@@ -90,18 +90,18 @@ export function ListaFondos({
 
       {/* 2. Historial de Liberaciones */}
       <div className="space-y-4">
-        <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
+        <h3 className="text-base font-semibold text-tinta dark:text-tinta">
           {t("historialLiberaciones")}
         </h3>
 
         {liberaciones.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+          <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
             {t("sinLiberaciones")}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
                 <tr>
                   <th className="px-4 py-3">{t("fecha")}</th>
                   <th className="px-4 py-3">{t("nombre")}</th>
@@ -113,14 +113,14 @@ export function ListaFondos({
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {liberaciones.map((lib) => (
-                  <tr key={lib.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-                    <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-slate-400">
+                  <tr key={lib.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+                    <td className="px-4 py-3 font-mono text-xs text-tinta-2 dark:text-tinta-3">
                       {lib.fechaLiberacion}
                     </td>
-                    <td className="px-4 py-3 font-medium text-tinta dark:text-slate-100">
+                    <td className="px-4 py-3 font-medium text-tinta dark:text-tinta">
                       {lib.fondoNombre}
                     </td>
-                    <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-300 max-w-sm">
+                    <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-2 max-w-sm">
                       {lib.justificacion}
                     </td>
                     <td className="px-4 py-3 text-xs">
@@ -135,7 +135,7 @@ export function ListaFondos({
                         lib.documentoReferencia || "—"
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-slate-100">
+                    <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-tinta">
                       RD$ {lib.montoLiberado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground">

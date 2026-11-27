@@ -39,7 +39,7 @@ export function TarjetaSolicitud({
   const { insignia, icono: Icono } = visualDeSolicitud(solicitud.estado);
 
   return (
-    <li className="rounded-xl border border-linea/80 bg-card shadow-xs transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950">
+    <li className="rounded-xl border border-linea/80 bg-card shadow-xs transition-all duration-200 hover:shadow-md dark:border-linea dark:bg-background">
       <button
         type="button"
         onClick={() => setAbierta((valor) => !valor)}
@@ -108,7 +108,7 @@ export function TarjetaSolicitud({
       {abierta && (
         <DetalleSolicitud
           solicitud={solicitud}
-          className="border-t border-linea px-4 pt-3 pb-4 dark:border-slate-800"
+          className="border-t border-linea px-4 pt-3 pb-4 dark:border-linea"
         />
       )}
     </li>

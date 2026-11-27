@@ -36,16 +36,16 @@ export function ListaOrdenesCompra({
 
   if (ordenes.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
         {t("sinOrdenesCompra")}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
           <tr>
             <th className="px-4 py-3">#</th>
             <th className="px-4 py-3">{t("fecha")}</th>
@@ -60,18 +60,18 @@ export function ListaOrdenesCompra({
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {ordenes.map((oc) => (
-            <tr key={oc.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-              <td className="px-4 py-3 font-mono font-medium text-tinta-2 dark:text-slate-300">
+            <tr key={oc.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+              <td className="px-4 py-3 font-mono font-medium text-tinta-2 dark:text-tinta-2">
                 OC-{String(oc.numero).padStart(5, "0")}
               </td>
-              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">{oc.fecha}</td>
+              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">{oc.fecha}</td>
               <td className="px-4 py-3">
-                <div className="font-medium text-tinta dark:text-slate-100">{oc.proveedorNombre}</div>
+                <div className="font-medium text-tinta dark:text-tinta">{oc.proveedorNombre}</div>
                 <div className="font-mono text-xs text-muted-foreground">{oc.proveedorRnc}</div>
               </td>
-              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">
+              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">
                 <div>{oc.fondoNombre}</div>
-                <div className="text-slate-400">{oc.categoriaNombre}</div>
+                <div className="text-tinta-3">{oc.categoriaNombre}</div>
               </td>
               <td className="px-4 py-3 text-right font-mono text-xs">
                 {oc.subtotal.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
@@ -79,7 +79,7 @@ export function ListaOrdenesCompra({
               <td className="px-4 py-3 text-right font-mono text-xs">
                 {oc.itbis.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </td>
-              <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-slate-100">
+              <td className="px-4 py-3 text-right font-mono font-bold text-tinta dark:text-tinta">
                 {oc.moneda} {oc.total.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </td>
               <td className="px-4 py-3">

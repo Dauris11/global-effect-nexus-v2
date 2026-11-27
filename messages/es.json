@@ -263,7 +263,99 @@
     "schools": "Liceos",
     "team": "Equipo",
     "impactReports": "Reportes de impacto",
-    "visitShort": "Visita"
+    "visitShort": "Visita",
+    "m": {
+      "home": "Inicio",
+      "students": "Estudiantes",
+      "academic": "Académico",
+      "sponsors": "Patrocinadores",
+      "requests": "Solicitudes",
+      "projects": "Proyectos",
+      "operations": "Operaciones",
+      "habitudes": "Habitudes",
+      "accounting": "Contabilidad",
+      "calendar": "Calendario",
+      "reports": "Reportes",
+      "settings": "Configuración",
+      "myClasses": "Mis clases",
+      "toGrade": "Por calificar",
+      "grades": "Calificaciones",
+      "myScholarship": "Mi beca",
+      "visits": "Visitas",
+      "resources": "Recursos",
+      "evidences": "Evidencias",
+      "schools": "Liceos",
+      "tripToday": "Viaje de hoy",
+      "expenses": "Gastos",
+      "register": "Registrar",
+      "banksCash": "Bancos y cajas",
+      "payables": "Por pagar",
+      "budget": "Presupuesto",
+      "closing": "Cierre",
+      "accountingSettings": "Configuración"
+    },
+    "tab": {
+      "home": "Inicio",
+      "files": "Expedientes",
+      "atRisk": "En riesgo",
+      "scholarships": "Becas",
+      "universities": "Universidades",
+      "grades": "Calificaciones",
+      "terms": "Períodos",
+      "prematricula": "Prematrícula",
+      "subjects": "Materias",
+      "g360": "Global Effect 360",
+      "list": "Lista",
+      "letters": "Cartas",
+      "requests": "Solicitudes",
+      "board": "Tablero",
+      "timeline": "Línea de tiempo",
+      "myTasks": "Mis tareas",
+      "inventory": "Inventario",
+      "monthlyServices": "Servicios mensuales",
+      "meals": "Comida",
+      "transport": "Transporte",
+      "programs": "Programas",
+      "materials": "Materiales",
+      "hub": "Hub",
+      "receipts": "Recibos",
+      "journal": "Asientos",
+      "banks": "Bancos",
+      "cashboxes": "Cajas y arqueos",
+      "suppliers": "Proveedores",
+      "payables": "Cuentas por pagar",
+      "budget": "Presupuesto",
+      "financialStatements": "Estados financieros",
+      "ledgers": "Libros",
+      "closing": "Cierre",
+      "calendar": "Calendario",
+      "meetings": "Reuniones",
+      "reports": "Reportes",
+      "studentCost": "Costo por estudiante",
+      "general": "General",
+      "staff": "Personal",
+      "permissions": "Permisos",
+      "announcements": "Anuncios",
+      "accountingSettings": "Configuración contable",
+      "expenseReports": "Rendiciones",
+      "myClasses": "Mis clases",
+      "toGrade": "Por calificar",
+      "classes": "Clases",
+      "tasks": "Tareas",
+      "scholarshipTab": "Mi beca",
+      "logVisit": "Registrar visita",
+      "resources": "Recursos",
+      "evidences": "Evidencias",
+      "schoolsTab": "Liceos",
+      "team": "Equipo",
+      "impact": "Reportes de impacto",
+      "tripToday": "Viaje de hoy",
+      "expenses": "Gastos"
+    },
+    "newFileAction": "Nuevo expediente",
+    "newRequestAction": "Nueva solicitud",
+    "newReceiptAction": "Registrar recibo",
+    "newEntryAction": "Nuevo asiento manual"
   },
   "landing": {
     "enter": "Acceder",
@@ -415,7 +507,13 @@
     "total": "Total",
     "nobody": "Nadie inscrito para esta fecha.",
     "prevDay": "Día anterior",
-    "nextDay": "Día siguiente"
+    "nextDay": "Día siguiente",
+    "served": "Servido",
+    "shareLink": "Compartir enlace de inscripción",
+    "linkCopied": "Enlace copiado",
+    "today": "Hoy",
+    "onlyUnserved": "Sin servir",
+    "onlyServed": "Servidos"
   },
   "portal": {
     "openMenu": "Abrir menú",
@@ -551,7 +649,9 @@
       "chartEmpty": "Sin tareas para graficar",
       "scopeToday": "Hoy",
       "scopeWeek": "Esta semana",
-      "scopeAll": "Todas"
+      "scopeAll": "Todas",
+      "scopeOpen": "Abiertas",
+      "scopeOverdue": "Vencidas"
     },
     "task": {
       "title": "Título",
@@ -987,7 +1087,27 @@
     "errName": "El nombre no puede quedar vacío.",
     "errRole": "Ese rol no se puede asignar.",
     "errNotFound": "Esa cuenta ya no existe.",
-    "errGeneric": "No se pudo completar. Inténtalo otra vez."
+    "errGeneric": "No se pudo completar. Inténtalo otra vez.",
+    "invite": "Invitar persona",
+    "filters": {
+      "all": "Todos",
+      "active": "Activas",
+      "never": "Sin primer acceso",
+      "inactive": "Inactivas"
+    },
+    "col": {
+      "priorities": "Prioridades abiertas"
+    },
+    "accountState": {
+      "active": "Activa",
+      "never": "Sin primer acceso",
+      "inactive": "Inactiva"
+    },
+    "tabs": {
+      "account": "Cuenta",
+      "handles": "Qué atiende"
+    },
+    "reportsLink": "Ver reportes del equipo"
   },
   "recordLiceo": {
     "remove": {
@@ -3057,7 +3177,19 @@
       "clase": "Docente y horario",
       "tanda": "Período y tanda",
       "fechas": "Fechas y aviso"
-    }
+    },
+    "openWindow": "Abrir ventana",
+    "noActiveWindow": "No hay ninguna ventana de prematrícula abierta.",
+    "studentCol": "Estudiante",
+    "choiceCol": "Elección",
+    "chose": "Eligió",
+    "notChosen": "Sin elegir",
+    "remind": "Recordar",
+    "reminderSent": "Recordado",
+    "reminded": "Recordatorio enviado a {nombre}",
+    "noAccount": "Esta persona no tiene cuenta de acceso.",
+    "closeWindowBtn": "Cerrar ventana",
+    "electionProgress": "{n} de {total} estudiantes eligieron"
   },
   "bandeja": {
     "title": "Pendientes",
@@ -3214,7 +3346,9 @@
     "readOnly": "Solo lectura: hace falta «operaciones.escribir» para marcar.",
     "saving": "Guardando…",
     "error": "No se pudo guardar la marca. Vuelve a intentarlo.",
-    "hint": "Cada casilla se guarda al momento. No hay botón de guardar."
+    "hint": "Cada casilla se guarda al momento. No hay botón de guardar.",
+    "incumplen": "Incumplen",
+    "all": "Todos"
   },
   "sponsors": {
     "eyebrow": "Patrocinio",
@@ -3661,6 +3795,13 @@
       "incomeByCategory": "Ingresos por categoría",
       "expenseByCategory": "Egresos por categoría",
       "categoryHint": "Solo las categorías que tienen algo. Azul lo que entra, negro lo que sale."
+    },
+    "executiveSummary": "Resumen ejecutivo",
+    "moduleReports": "Reportes por módulo",
+    "moduleReport": {
+      "personal": "Equipo",
+      "servicios": "Servicios mensuales",
+      "academico": "Académico"
     }
   },
   "aiChat": {
@@ -7894,7 +8035,8 @@
       "incidentsTitle": "Bitácora de incidencias",
       "noIncidents": "No hay incidencias reportadas recientemente.",
       "typeRecurring": "Recurrente",
-      "typeDaily": "Puntual"
+      "typeDaily": "Puntual",
+      "mapTitle": "Mapa en vivo"
     },
     "driverStatus": {
       "standby": "En espera",
@@ -8806,6 +8948,225 @@
       "fail": "Reprobar",
       "saved": "Nota de {nombre} guardada.",
       "error": "No se pudo guardar la nota."
+    }
+  },
+  "priorities": {
+    "title": "Inicio",
+    "heading": "Lo que te toca hoy",
+    "empty": "No tienes nada pendiente. Buen trabajo.",
+    "emptyAction": "Ver mis tareas",
+    "groups": {
+      "vencido": "Vencido",
+      "hoy": "Hoy",
+      "semana": "Esta semana",
+      "adelante": "Más adelante",
+      "esperando": "Esperando a otros"
+    },
+    "escalated": "Escalado",
+    "reject": {
+      "title": "Rechazar solicitud",
+      "reason": "Motivo del rechazo",
+      "confirm": "Rechazar",
+      "cancel": "Cancelar",
+      "required": "Escribe el motivo"
+    },
+    "postpone": {
+      "label": "Posponer",
+      "tomorrow": "Mañana",
+      "nextWeek": "Próxima semana"
+    },
+    "done": "Hecho",
+    "undo": "Deshacer",
+    "doneToast": "Resuelto: {titulo}",
+    "postponedToast": "Pospuesto: {titulo}",
+    "errors": {
+      "no_permitido": "No tienes permiso para esto.",
+      "ya_cambio": "Alguien ya lo resolvió.",
+      "falta_motivo": "Escribe el motivo.",
+      "invalido": "No se pudo aplicar.",
+      "error": "Algo salió mal. Intenta de nuevo."
+    },
+    "modules": {
+      "solicitudes": "Solicitudes",
+      "tareas": "Tareas",
+      "proyectos": "Proyectos",
+      "expedientes": "Expedientes",
+      "patrocinadores": "Patrocinadores",
+      "academico": "Académico",
+      "servicios": "Servicios",
+      "inventario": "Inventario",
+      "contabilidad": "Contabilidad",
+      "docencia": "Docencia",
+      "estudiante": "Estudiante",
+      "habitudes": "Habitudes",
+      "transporte": "Transporte"
+    },
+    "types": {
+      "solicitud_por_decidir": "Aprobar solicitudes de cartas, constancias y permisos",
+      "solicitud_pendiente_direccion": "Dar el visto bueno de dirección a solicitudes",
+      "mi_solicitud_respondida": "Ver la respuesta a mis solicitudes",
+      "tarea_vencida": "Tareas mías vencidas",
+      "tarea_hoy": "Tareas mías para hoy",
+      "tarea_semana": "Tareas mías de esta semana",
+      "proyecto_atrasado": "Proyectos atrasados",
+      "alta_expediente_por_revisar": "Revisar altas de expediente",
+      "expediente_incompleto": "Completar expedientes sin universidad, carrera o cuenta",
+      "estudiante_en_riesgo_nuevo": "Atender estudiantes que entran en riesgo",
+      "becado_sin_patrocinador": "Asignar patrocinador a becados sin patrocinio",
+      "renovacion_beca": "Decidir renovaciones de beca",
+      "carta_mensual_pendiente": "Revisar la carta mensual a patrocinadores",
+      "compromiso_por_vencer": "Renovar compromisos de patrocinio por vencer",
+      "calificaciones_por_subir": "Pedir calificaciones del período en curso",
+      "prematricula_sin_elegir": "Avisar prematrícula sin elegir cerca del cierre",
+      "clase_sin_docente": "Asignar docente a clases sin docente",
+      "servicio_mensual_incumplido": "Dar seguimiento al servicio mensual incumplido",
+      "reunion_mensual_pendiente": "Dar seguimiento a la reunión mensual pendiente",
+      "activo_en_mantenimiento_vencido": "Recuperar activos en mantenimiento vencido",
+      "prestamo_vencido": "Cobrar préstamos de inventario vencidos",
+      "comprobante_por_validar": "Validar comprobantes recibidos",
+      "asiento_sin_procesar": "Contabilizar asientos sin procesar",
+      "cxp_vencida": "Pagar cuentas por pagar vencidas",
+      "cxp_por_vencer": "Programar cuentas por pagar por vencer",
+      "caja_chica_baja": "Reponer caja chica baja",
+      "conciliacion_pendiente": "Cerrar conciliaciones pendientes",
+      "cierre_mes_pendiente": "Hacer el cierre de mes",
+      "compra_aprobada_por_pagar": "Pagar compras aprobadas",
+      "liquidez_negativa": "Atender liquidez negativa",
+      "entrega_por_calificar": "Calificar entregas de mis clases",
+      "nota_final_pendiente": "Subir notas finales",
+      "asistencia_hoy": "Pasar asistencia de hoy",
+      "tarea_por_entregar": "Entregar mis tareas",
+      "materia_por_elegir": "Elegir materias de la prematrícula",
+      "servicio_del_mes": "Cumplir el servicio del mes",
+      "reunion_del_mes": "Asistir a la reunión del mes",
+      "visita_hoy": "Visitas de hoy",
+      "visita_semana": "Visitas de la semana",
+      "evidencia_faltante": "Subir evidencias faltantes",
+      "viaje_del_turno": "Viaje del turno"
+    },
+    "whatTheyHandle": {
+      "title": "Qué atiende",
+      "help": "Marca los pendientes que le llegan a esta persona en su Inicio. Lo que no marques, no lo verá.",
+      "save": "Guardar",
+      "reset": "Volver al reparto de su rol",
+      "saved": "Guardado",
+      "usingDefault": "Usa el reparto de su rol",
+      "custom": "Personalizado",
+      "backToStaff": "Personal"
+    },
+    "greeting": {
+      "morning": "Buenos días, {nombre}",
+      "afternoon": "Buenas tardes, {nombre}",
+      "evening": "Buenas noches, {nombre}"
+    },
+    "summary": {
+      "pending": "Tienes {partes}.",
+      "overdue": "{n, plural, one {1 cosa vencida} other {# cosas vencidas}}",
+      "today": "{n, plural, one {1 para hoy} other {# para hoy}}",
+      "and": " y ",
+      "uptodate": "Estás al día.",
+      "uptodateWeek": "Estás al día. {n, plural, one {1 cosa para esta semana} other {# cosas para esta semana}}.",
+      "weekOnly": "Tienes {n, plural, one {1 cosa para esta semana} other {# cosas para esta semana}}."
+    },
+    "tabs": {
+      "label": "Vista de prioridades",
+      "forMe": "Para mí",
+      "waiting": "Esperando a otros",
+      "team": "Equipo"
+    },
+    "team": {
+      "overdue": "{n, plural, =0 {Al día} one {1 vencida} other {# vencidas}}",
+      "viewing": "Viendo las prioridades de {nombre}",
+      "back": "Volver a las mías",
+      "empty": "No hay personas en el equipo."
+    },
+    "emptyWaiting": "No estás esperando respuesta de nadie.",
+    "upToDate": "Estás al día",
+    "upToDateAction": "Ver el calendario",
+    "row": {
+      "open": "Abrir",
+      "more": "Más acciones",
+      "groupOf": "{n} · {tipo}"
+    },
+    "context": {
+      "prematricula": "Prematrícula cierra el {fecha} · {n, plural, =0 {todos eligieron} one {1 estudiante sin elegir} other {# estudiantes sin elegir}}"
+    },
+    "side": {
+      "agenda": "Hoy en agenda",
+      "agendaEmpty": "Sin reuniones ni eventos hoy ni mañana.",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "quick": "Crear rápido",
+      "projects": "Mis proyectos",
+      "projectsEmpty": "No lideras ningún proyecto."
+    },
+    "figures": {
+      "bank": "Saldo en bancos",
+      "payable": "Por pagar 7 días",
+      "income": "Ingresos del mes"
+    },
+    "primary": {
+      "newRequest": "Nueva solicitud",
+      "register": "Registrar",
+      "publishTask": "Publicar tarea"
+    },
+    "quick": {
+      "newFile": "Nuevo expediente",
+      "uploadGrades": "Subir calificaciones",
+      "sponsorLetter": "Carta a patrocinador",
+      "expenseReceipt": "Recibo de egreso",
+      "incomeReceipt": "Recibo de ingreso",
+      "manualEntry": "Asiento manual",
+      "cashCount": "Arqueo de caja",
+      "newRequest": "Nueva solicitud",
+      "newProject": "Nuevo proyecto",
+      "viewReports": "Ver reportes",
+      "newTask": "Nueva tarea",
+      "takeAttendance": "Pasar asistencia",
+      "toGrade": "Por calificar",
+      "myClasses": "Mis clases",
+      "myTasks": "Mis tareas",
+      "myRequests": "Mis solicitudes",
+      "logVisit": "Registrar visita",
+      "resources": "Abrir recursos",
+      "myTrip": "Ir a mi viaje",
+      "createTask": "Crear tarea",
+      "uploadMaterial": "Subir material",
+      "requestCertificate": "Pedir constancia",
+      "nominate": "Postular candidato"
+    },
+    "teacher": {
+      "summary": "Tienes {n, plural, one {1 entrega por calificar} other {# entregas por calificar}} en {m, plural, one {1 clase} other {# clases}}.",
+      "upToDate": "Estás al día: no tienes entregas por calificar.",
+      "toGrade": "Por calificar",
+      "todayClasses": "Mis clases de hoy",
+      "noClassesToday": "Hoy no tienes clases.",
+      "takeAttendance": "Pasar asistencia",
+      "openClass": "Abrir clase",
+      "emptyTitle": "Aún no tienes clases asignadas",
+      "emptyHint": "La coordinación académica te las asigna.",
+      "writeCoordination": "Escribir a coordinación"
+    },
+    "student": {
+      "summaryTasks": "Tienes {n, plural, =0 {ninguna tarea} one {1 tarea} other {# tareas}} para esta semana.",
+      "summaryWindow": "La prematrícula cierra el {dia}.",
+      "summaryClear": "Estás al día con tus tareas.",
+      "todo": "Lo que tienes que hacer",
+      "myClasses": "Mis clases",
+      "myScholarship": "Mi beca",
+      "windowOpen": "Prematrícula abierta · cierra el {fecha}",
+      "indexLine": "Índice {indice} de {minimo} mínimo",
+      "indexNone": "Aún sin índice",
+      "service": "Servicio del mes",
+      "meeting": "Reunión del mes",
+      "seeDetails": "Ver mi beca",
+      "noClasses": "Aún no tienes clases. Elige tus materias en la prematrícula."
+    },
+    "habitudes": {
+      "summary": "Tienes {v, plural, =0 {ninguna visita} one {1 visita} other {# visitas}} esta semana y {e, plural, =0 {ninguna evidencia} one {1 evidencia} other {# evidencias}} por subir.",
+      "summaryClear": "Estás al día con tus visitas y evidencias.",
+      "impact": "{n} estudiantes en {l} liceos este año",
+      "todo": "Visitas y evidencias"
     }
   }
 }

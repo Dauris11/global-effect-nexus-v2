@@ -49,7 +49,7 @@ export default async function PaginaConfiguracion({
   const modulos = menuDe(usuario.rol, new Set(usuario.permisos)).flatMap(itemsDeArea).length;
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-6">
+    <div className="animate-entrada space-y-6">
       <EncabezadoPagina titulo={t("title")} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

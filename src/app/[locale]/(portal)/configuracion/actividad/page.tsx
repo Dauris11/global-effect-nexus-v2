@@ -134,7 +134,7 @@ export default async function PaginaActividad({
   const hayFiltro = Boolean(usuarioId || modulo || origen);
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
+    <div className="animate-entrada space-y-8 pb-10">
       <Button asChild variant="outline" size="sm">
         <Link href="/configuracion">
           <ChevronLeft className="size-4" />

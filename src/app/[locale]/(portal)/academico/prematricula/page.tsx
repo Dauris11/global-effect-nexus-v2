@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Sparkles } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { PageContainer } from "@/components/app/page-container";
+import { PageHeader } from "@/components/app/page-header";
 import { Administracion360 } from "@/components/global360/administracion";
+import { VentanaYElecciones } from "@/components/global360/ventana-y-elecciones";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import { docentesAsignables } from "@/server/academico/consultas";
 import {
   catalogo,
   periodosDisponibles,
+  ventanaVigente,
   ventanas,
 } from "@/server/global360/consultas";
+import { eleccionesDeLaVentana } from "@/server/global360/prematricula-admin";
 
 export async function generateMetadata({
   params,
@@ -46,28 +50,27 @@ export default async function PaginaPrematricula({
 
   await requerirPermiso("academico.escribir");
 
-  const [t, materias, lista, periodos, docentes, mensajes] = await Promise.all([
+  const [t, materias, lista, periodos, docentes, mensajes, vigente] = await Promise.all([
     getTranslations({ locale, namespace: "global360" }),
     catalogo(),
     ventanas(),
     periodosDisponibles(),
     docentesAsignables(),
-    mensajesCliente(["global360"]),
+    mensajesCliente(["global360", "estados"]),
+    ventanaVigente(),
   ]);
+  const elecciones = vigente ? await eleccionesDeLaVentana(vigente.periodo_id) : [];
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <p className="text-xs font-semibold tracking-widest text-marca-500 uppercase">
-          {t("eyebrow")}
-        </p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-          <Sparkles className="size-5 text-marca-500" />
-          {t("title")}
-        </h1>
-      </div>
+    <PageContainer className="space-y-6">
+      <PageHeader title={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
+        {/* Primero la ventana y quién ya eligió; el catálogo y el alta de ventanas, debajo. */}
+        <VentanaYElecciones
+          ventana={vigente ? { id: vigente.id, periodo: vigente.periodo, ronda: vigente.ronda, abre: vigente.abre, cierra: vigente.cierra, abierta: vigente.abierta } : null}
+          elecciones={elecciones}
+        />
         <Administracion360
           materias={materias}
           ventanas={lista}
@@ -75,6 +78,6 @@ export default async function PaginaPrematricula({
           docentes={docentes}
         />
       </NextIntlClientProvider>
-    </div>
+    </PageContainer>
   );
 }

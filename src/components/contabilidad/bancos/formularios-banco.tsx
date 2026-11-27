@@ -463,7 +463,7 @@ export function DialogoTasaBcrd({
           <div className="space-y-1.5">
             <Label htmlFor="fecha_tasa_bcrd" className="text-sm font-medium">
               {t("fecha")}
-              <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+              <span aria-hidden="true" className="ml-0.5 text-status-danger-fg">*</span>
             </Label>
             <Input
               id="fecha_tasa_bcrd"
@@ -479,7 +479,7 @@ export function DialogoTasaBcrd({
             <div className="space-y-1.5">
               <Label htmlFor="compra_bcrd" className="text-sm font-medium">
                 {t("compra")}
-                <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+                <span aria-hidden="true" className="ml-0.5 text-status-danger-fg">*</span>
               </Label>
               <Input
                 id="compra_bcrd"
@@ -494,7 +494,7 @@ export function DialogoTasaBcrd({
             <div className="space-y-1.5">
               <Label htmlFor="venta_bcrd" className="text-sm font-medium">
                 {t("venta")}
-                <span aria-hidden="true" className="ml-0.5 text-[#B4342B]">*</span>
+                <span aria-hidden="true" className="ml-0.5 text-status-danger-fg">*</span>
               </Label>
               <Input
                 id="venta_bcrd"

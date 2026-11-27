@@ -253,7 +253,7 @@ export function GaleriaEvidencias({
             </DialogTitle>
           </DialogHeader>
           {fotoModal && (
-            <div className="overflow-hidden rounded-lg bg-black/90">
+            <div className="overflow-hidden rounded-lg bg-ink/90">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={fotoModal.url}

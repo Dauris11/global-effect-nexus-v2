@@ -62,6 +62,8 @@ export function ChipFiltro({
       <Link
         href={href}
         aria-current={activo ? "page" : undefined}
+        data-chip
+        data-active={activo ? "" : undefined}
         className={clases(activo, className)}
       >
         {contenido}
@@ -73,6 +75,8 @@ export function ChipFiltro({
     <button
       type="button"
       aria-pressed={activo}
+      data-chip
+      data-active={activo ? "" : undefined}
       className={clases(activo, className)}
       {...boton}
     >

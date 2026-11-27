@@ -71,7 +71,7 @@ function FormularioAviso({ alTerminar }: { alTerminar: () => void }) {
   if (estado.estado === "ok") {
     return (
       <div className="space-y-4">
-        <p className="flex items-center gap-2 font-medium text-[#1E9E6A]">
+        <p className="flex items-center gap-2 font-medium text-status-success-fg">
           <CheckCircle2 className="size-5" aria-hidden />
           {t("sent", { count: estado.enviados })}
         </p>
@@ -114,7 +114,7 @@ function FormularioAviso({ alTerminar }: { alTerminar: () => void }) {
       </div>
 
       {estado.estado !== "inicial" && (
-        <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-[#B4342B]">
+        <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-status-danger-fg">
           <AlertCircle className="size-4" aria-hidden />
           {errores[estado.estado]}
         </p>

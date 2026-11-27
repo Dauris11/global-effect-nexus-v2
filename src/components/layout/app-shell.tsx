@@ -5,7 +5,6 @@ import { useState } from "react";
 import { DialogoEnviarAviso } from "@/components/layout/dialogo-enviar-aviso";
 import { BarraInferior } from "@/components/layout/barra-inferior";
 import type { AvisoVisible } from "@/components/layout/campana";
-import { Migas } from "@/components/layout/migas";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ProveedorPermisos } from "@/components/layout/proveedor-permisos";
 import { TopBar } from "@/components/layout/topbar";
@@ -36,6 +35,7 @@ export function AppShell({
   avisos,
   sinLeer,
   permisos,
+  insignias,
   cerrarSesion,
   children,
 }: {
@@ -52,6 +52,8 @@ export function AppShell({
   sinLeer: number;
   /** Permisos efectivos de la persona: el menú los usa para mostrar lo habilitado a título personal. */
   permisos: readonly Permiso[];
+  /** Números de los distintivos del menú (vencidos de Inicio, solicitudes que me tocan). */
+  insignias?: { vencidos?: number; solicitudes?: number };
   /** Server Action; cierra la sesión de Supabase y redirige al login. */
   cerrarSesion: () => Promise<void>;
   children: React.ReactNode;
@@ -72,7 +74,7 @@ export function AppShell({
   }
 
   return (
-    <ProveedorPermisos permisos={permisos}>
+    <ProveedorPermisos permisos={permisos} rol={rol}>
       {/* Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
         él una tabla ancha o un titular largo estiran la columna y empujan la
         barra fuera de la pantalla en vez de desbordar dentro de su propio hueco. */}
@@ -86,6 +88,7 @@ export function AppShell({
           abiertaEnMovil={abiertaEnMovil}
           onCerrarMovil={() => setAbiertaEnMovil(false)}
           onCerrarSesion={() => void cerrarSesion()}
+          insignias={insignias}
         />
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
@@ -104,8 +107,7 @@ export function AppShell({
           {/* Contenedor de 1280 px con 16 / 24 / 32 de margen (docs/09 §2.7).
             Abajo, en el móvil, el alto de la barra inferior más el área
             segura: sin él, la barra tapa el último botón de cada página. */}
-          <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
-            <Migas rol={rol} />
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
             {children}
           </main>
         </div>

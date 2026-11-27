@@ -64,6 +64,8 @@ function Button({
   return (
     <Componente
       data-slot="button"
+      // El test de UX (e2e/ux-guard) cuenta botones primarios: `default` es el CTA.
+      data-variant={variant == null || variant === "default" ? "primary" : variant}
       className={cn(variantesBoton({ variant, size }), enCurso && "[&_svg:not([data-cargando])]:hidden", className)}
       disabled={asChild ? undefined : disabled || enCurso}
       aria-busy={enCurso || undefined}

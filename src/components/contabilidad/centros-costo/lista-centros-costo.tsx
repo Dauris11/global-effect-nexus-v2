@@ -9,16 +9,16 @@ export function ListaCentrosCosto({ centros }: { centros: CentroCostoItem[] }) {
 
   if (centros.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
         {t("sinCentros")}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+        <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
           <tr>
             <th className="px-4 py-3">{t("codigo")}</th>
             <th className="px-4 py-3">{t("nombre")}</th>
@@ -30,12 +30,12 @@ export function ListaCentrosCosto({ centros }: { centros: CentroCostoItem[] }) {
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {centros.map((cc) => (
-            <tr key={cc.id} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
-              <td className="px-4 py-3 font-mono font-bold text-tinta dark:text-slate-100">
+            <tr key={cc.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
+              <td className="px-4 py-3 font-mono font-bold text-tinta dark:text-tinta">
                 {cc.codigo}
               </td>
               <td className="px-4 py-3">
-                <div className="font-medium text-tinta dark:text-slate-100">{cc.nombre}</div>
+                <div className="font-medium text-tinta dark:text-tinta">{cc.nombre}</div>
                 {cc.descripcion && (
                   <div className="text-xs text-muted-foreground truncate max-w-sm">{cc.descripcion}</div>
                 )}
@@ -45,10 +45,10 @@ export function ListaCentrosCosto({ centros }: { centros: CentroCostoItem[] }) {
                   {t(cc.programa as keyof typeof t)}
                 </Badge>
               </td>
-              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-slate-400">
+              <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">
                 {cc.responsableNombre || "—"}
               </td>
-              <td className="px-4 py-3 text-right font-mono font-medium text-tinta dark:text-slate-100">
+              <td className="px-4 py-3 text-right font-mono font-medium text-tinta dark:text-tinta">
                 RD$ {cc.totalGastos.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </td>
               <td className="px-4 py-3 text-right">

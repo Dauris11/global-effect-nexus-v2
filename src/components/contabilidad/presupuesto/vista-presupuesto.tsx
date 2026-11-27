@@ -44,7 +44,7 @@ export function VistaPresupuesto({
 
   if (presupuestos.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-slate-800">
+      <div className="rounded-xl border border-dashed border-linea p-8 text-center text-sm text-muted-foreground dark:border-linea">
         {t("sinPresupuestos")}
       </div>
     );
@@ -53,10 +53,10 @@ export function VistaPresupuesto({
   return (
     <div className="space-y-6">
       {/* Selector y Encabezado del Presupuesto */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-lg text-tinta dark:text-slate-100">
+            <span className="font-bold text-lg text-tinta dark:text-tinta">
               {presupuestoActual?.nombre}
             </span>
             <Badge
@@ -88,21 +88,21 @@ export function VistaPresupuesto({
 
       {/* Tarjetas KPI de Resumen */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card">
           <span className="text-xs font-medium text-muted-foreground">{t("presupuestado")}</span>
-          <div className="mt-2 text-2xl font-bold font-mono text-tinta dark:text-slate-100">
+          <div className="mt-2 text-2xl font-bold font-mono text-tinta dark:text-tinta">
             RD$ {totalPresupuestado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card">
           <span className="text-xs font-medium text-muted-foreground">{t("ejecutado")}</span>
-          <div className="mt-2 text-2xl font-bold font-mono text-tinta dark:text-slate-100">
+          <div className="mt-2 text-2xl font-bold font-mono text-tinta dark:text-tinta">
             RD$ {totalEjecutado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-linea bg-card p-5 shadow-xs dark:border-linea dark:bg-card">
           <span className="text-xs font-medium text-muted-foreground">{t("ejecucionPct")}</span>
           <div className="mt-2 text-2xl font-bold font-mono text-marca-600 dark:text-marca-400">
             {pctGlobal}%
@@ -112,13 +112,13 @@ export function VistaPresupuesto({
 
       {/* Matriz de Ejecución por Centro de Costo */}
       <div className="space-y-4">
-        <h3 className="text-base font-semibold text-tinta dark:text-slate-100">
+        <h3 className="text-base font-semibold text-tinta dark:text-tinta">
           {t("matrizTitulo")}
         </h3>
 
-        <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-x-auto rounded-xl border border-linea bg-card shadow-xs dark:border-linea dark:bg-card">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+            <thead className="border-b border-linea bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wider dark:border-linea dark:bg-surface-2 dark:text-tinta-3">
               <tr>
                 <th className="px-4 py-3">Centro de Costo</th>
                 <th className="px-4 py-3 text-right">{t("presupuestado")}</th>
@@ -132,18 +132,18 @@ export function VistaPresupuesto({
               {ejecucionInicial.map((e) => {
                 const pct = Math.min(100, Math.round(e.porcentajeEjecucion));
                 return (
-                  <tr key={e.centroCostoId} className="hover:bg-muted/50 dark:hover:bg-slate-800/30">
+                  <tr key={e.centroCostoId} className="hover:bg-muted/50 dark:hover:bg-surface-2">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-tinta dark:text-slate-100">{e.nombre}</div>
+                      <div className="font-medium text-tinta dark:text-tinta">{e.nombre}</div>
                       <div className="font-mono text-xs text-muted-foreground">{e.codigo}</div>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-tinta-2">
                       RD$ {e.presupuestado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-tinta-2">
                       RD$ {e.ejecutado.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-tinta-2 dark:text-tinta-2">
                       RD$ {e.desviacion.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3">

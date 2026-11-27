@@ -66,7 +66,7 @@ export default async function PaginaDetalleFactura({
   const numFormateado = `FP-${String(factura.numero).padStart(6, "0")}`;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
           <Link href={`/contabilidad/proveedores/${factura.proveedor_id}`}>

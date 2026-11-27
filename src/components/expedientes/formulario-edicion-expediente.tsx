@@ -113,7 +113,7 @@ export function FormularioEdicionExpediente({
       <input type="hidden" name="id" value={expediente.id} />
 
       {!puedeEditar && (
-        <div className="flex items-center gap-2 rounded-xl border border-[#171A1D]/20 bg-[#171A1D]/5 p-3 text-xs font-medium text-[#171A1D] dark:border-white/20 dark:bg-white/5 dark:text-white">
+        <div className="flex items-center gap-2 rounded-xl border border-tinta/20 bg-tinta/5 p-3 text-xs font-medium text-tinta dark:border-white/20 dark:bg-white/5 dark:text-white">
           <Eye className="size-4 shrink-0" />
           {textos.notOwner}
         </div>
@@ -121,7 +121,7 @@ export function FormularioEdicionExpediente({
 
       {/* Foto: mismo patrón que el perfil propio (formulario-perfil.tsx), con
           el bucket `avatares` y una vista previa antes de guardar. */}
-      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-linea/80 bg-muted/80 p-4 transition-colors dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-linea/80 bg-muted/80 p-4 transition-colors dark:border-linea dark:bg-surface-2">
         <label
           htmlFor="expediente-foto"
           className={cn(
@@ -141,13 +141,13 @@ export function FormularioEdicionExpediente({
               <span>{inicial}</span>
             )}
             {editando && (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#171A1D]/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="absolute inset-0 flex items-center justify-center bg-tinta/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
                 <Camera className="size-5" />
               </div>
             )}
           </div>
           {editando && (
-            <span className="absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-[#2096BA] p-1 text-white shadow-md transition-transform group-hover:scale-110 dark:border-slate-950">
+            <span className="absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-marca-500 p-1 text-white shadow-md transition-transform group-hover:scale-110 dark:border-slate-950">
               <ImagePlus className="size-3" />
             </span>
           )}
@@ -188,7 +188,7 @@ export function FormularioEdicionExpediente({
               name="foto"
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              className="cursor-pointer text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-[#2096BA]/10 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#187a99] file:transition-colors hover:file:bg-[#2096BA]/20"
+              className="cursor-pointer text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-marca-500/10 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-marca-700 file:transition-colors hover:file:bg-marca-500/20"
               onChange={(evento) => {
                 const archivo = evento.target.files?.[0];
                 setPrevia(archivo ? URL.createObjectURL(archivo) : null);
@@ -221,8 +221,8 @@ export function FormularioEdicionExpediente({
           className={cn(
             "animate-in fade-in slide-in-from-top-1 flex items-center gap-2.5 rounded-xl p-3.5 text-xs font-medium duration-200",
             estado.estado === "ok"
-              ? "border border-[#2096BA]/30 bg-[#2096BA]/15 text-[#187a99]"
-              : "border border-slate-700 bg-[#171A1D] text-white",
+              ? "border border-marca-500/30 bg-marca-500/15 text-marca-700"
+              : "border border-linea-fuerte bg-tinta text-white",
           )}
         >
           {estado.estado === "ok" ? (

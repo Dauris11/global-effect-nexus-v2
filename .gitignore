@@ -50,3 +50,9 @@ tsconfig.tsbuildinfo
 
 # PDF oficiales de los pensums (30 MB): fuente de db/datos/pensum-*.txt, se guardan fuera del repo
 docs/PENSUMS/
+
+# Playwright (e2e/ux-guard)
+e2e/.auth/
+e2e/.resultados/
+e2e/reporte-html/
+test-results/

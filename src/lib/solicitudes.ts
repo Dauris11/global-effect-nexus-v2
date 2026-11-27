@@ -408,20 +408,20 @@ export const ESTADO_SOLICITUD_VISUAL: Record<
   EstadoSolicitud,
   { insignia: string; icono: LucideIcon }
 > = {
-  enviada: { insignia: "bg-slate-100 text-slate-700", icono: Send },
-  en_revision: { insignia: "bg-[#2096BA]/15 text-[#187a99]", icono: Eye },
+  enviada: { insignia: "bg-muted text-tinta-2", icono: Send },
+  en_revision: { insignia: "bg-marca-500/15 text-marca-700", icono: Eye },
   pendiente_direccion: {
-    insignia: "bg-[#171A1D] text-white",
+    insignia: "bg-tinta text-white",
     icono: ShieldCheck,
   },
-  aprobada: { insignia: "bg-[#1E9E6A] text-white", icono: CheckCircle2 },
-  rechazada: { insignia: "bg-[#B4342B] text-white", icono: XCircle },
-  completada: { insignia: "bg-[#0a6a8a] text-white", icono: PackageCheck },
-  cancelada: { insignia: "bg-slate-100 text-slate-500", icono: Ban },
+  aprobada: { insignia: "bg-status-success text-white", icono: CheckCircle2 },
+  rechazada: { insignia: "bg-status-danger text-white", icono: XCircle },
+  completada: { insignia: "bg-marca-700 text-white", icono: PackageCheck },
+  cancelada: { insignia: "bg-muted text-tinta-3", icono: Ban },
 };
 
 export function visualDeSolicitud(estado: string) {
   return esEstadoSolicitud(estado)
     ? ESTADO_SOLICITUD_VISUAL[estado]
-    : { insignia: "bg-slate-100 text-slate-600", icono: CircleDot };
+    : { insignia: "bg-muted text-tinta-2", icono: CircleDot };
 }

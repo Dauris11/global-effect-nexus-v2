@@ -72,7 +72,7 @@ export default async function PaginaConocimiento({
   }));
 
   return (
-    <div className="animate-entrada mx-auto max-w-5xl space-y-8 pb-10">
+    <div className="animate-entrada space-y-8 pb-10">
       <EncabezadoPagina
         titulo={t("knowledge.title")}
       />

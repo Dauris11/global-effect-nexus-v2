@@ -54,7 +54,7 @@ export default async function PaginaRecurrentes({
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
+    <div className="space-y-6 animate-entrada">
       <Link
         href="/contabilidad/asientos"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-marca-600 hover:underline"

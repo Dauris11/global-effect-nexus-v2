@@ -17,7 +17,7 @@ import {
   TONO,
   acortar,
 } from "@/components/ui/grafico";
-import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO, TINTA } from "@/lib/paleta";
+import { AZUL, AZUL_OSCURO, AZUL_SUAVE, NEUTRO, PELIGRO, TINTA } from "@/lib/paleta";
 
 /** 1) Evolución de promedio por período en `/portal/estudiante/calificaciones`. */
 export function GraficoEvolucionCalificaciones({
@@ -85,7 +85,7 @@ export function GraficoEstadoAulaVirtual({
     { clave: "pending", nombre: t("classroomPending"), valor: pendientes, color: AZUL },
     { clave: "submitted", nombre: t("classroomSubmitted"), valor: entregadas, color: AZUL_SUAVE },
     { clave: "graded", nombre: t("classroomGraded"), valor: calificadas, color: AZUL_OSCURO },
-    { clave: "overdue", nombre: t("classroomOverdue"), valor: vencidas, color: TINTA },
+    { clave: "overdue", nombre: t("classroomOverdue"), valor: vencidas, color: PELIGRO },
   ].filter((d) => d.valor > 0);
 
   return (
