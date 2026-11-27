@@ -118,8 +118,7 @@ export async function consultarRncProveedorAction(rncCrudo: string): Promise<Res
     return { ok: false, error: "no_permitido" };
   }
 
-  const entrada = String(rncCrudo ?? "").trim();
-  if (entrada.includes("-")) return { ok: false, error: "sin_guiones" };
+  const entrada = limpiarIdentificacion(String(rncCrudo ?? "").trim());
   if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) return { ok: false, error: "formato_invalido" };
 
   try {

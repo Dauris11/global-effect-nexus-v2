@@ -114,22 +114,17 @@ export function FormularioProveedor({
   useIrA(estado, proveedor ? fichaProveedor : listaProveedores);
 
   const esJuridica = tipo === "juridica";
-  // La consulta DGII (formal/jurídico) solo admite dígitos sin guiones; en informal se ingresa la cédula sin consultar DGII.
-  const tieneGuiones = esJuridica && identificacion.includes("-");
   const limpia = limpiarIdentificacion(identificacion);
   const longitudEsperada = esJuridica ? 9 : 11;
-  const completa = !tieneGuiones && limpia.length === longitudEsperada;
+  const completa = limpia.length === longitudEsperada;
   const malDigito = completa && !identificacionValida(limpia, tipo);
+  const puedeConsultarDgii = /^[0-9]{9}$|^[0-9]{11}$/.test(limpia);
   const etiquetaInfo = t("masInformacion");
 
   async function onConsultarDgii() {
     setAvisoRnc(null);
-    const entrada = identificacion.trim();
-    if (entrada.includes("-")) {
-      setAvisoRnc({ tipo: "error", mensaje: t("rncError.sin_guiones") });
-      return;
-    }
-    if (!/^[0-9]{9}$/.test(entrada)) {
+    const entrada = limpiarIdentificacion(identificacion.trim());
+    if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) {
       setAvisoRnc({ tipo: "error", mensaje: t("rncError.formato_invalido") });
       return;
     }
@@ -185,13 +180,7 @@ export function FormularioProveedor({
               obligatorio
               tooltip={esJuridica ? t("identificacionAyudaJuridica") : t("identificacionAyudaFisica")}
               etiquetaTooltip={etiquetaInfo}
-              ayuda={
-                tieneGuiones
-                  ? t("rncError.sin_guiones")
-                  : malDigito
-                    ? tc("error.identificacion_invalida")
-                    : undefined
-              }
+              ayuda={malDigito ? tc("error.identificacion_invalida") : undefined}
             >
               <div className="flex gap-2">
                 <Input
@@ -204,20 +193,18 @@ export function FormularioProveedor({
                     setIdentificacion(e.target.value);
                     if (avisoRnc) setAvisoRnc(null);
                   }}
-                  aria-invalid={tieneGuiones || malDigito || undefined}
+                  aria-invalid={malDigito || undefined}
                 />
-                {esJuridica && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onConsultarDgii}
-                    disabled={consultandoRnc || tieneGuiones || !/^[0-9]{9}$/.test(identificacion.trim())}
-                    className="shrink-0"
-                  >
-                    {consultandoRnc ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-                    {consultandoRnc ? t("consultandoDgii") : t("consultarDgii")}
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onConsultarDgii}
+                  disabled={consultandoRnc || !puedeConsultarDgii}
+                  className="shrink-0"
+                >
+                  {consultandoRnc ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                  {consultandoRnc ? t("consultandoDgii") : t("consultarDgii")}
+                </Button>
               </div>
             </Campo>
             {avisoRnc && (
