@@ -261,7 +261,7 @@ export function Conciliador({
               aria-label={t("comisionesSelector")}
               value={cargoId}
               onChange={(e) => cambiarCargo(e.target.value)}
-              className={`${SELECT} h-9 w-auto min-w-48 text-xs`}
+              className={cn(SELECT, "h-9 w-64 shrink-0 text-xs")}
             >
               <option value="">{t("comisionesDefault")}</option>
               {cargos.map((c) => (

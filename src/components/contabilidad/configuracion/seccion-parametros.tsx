@@ -30,6 +30,7 @@ import {
   type TipoValorCargo,
 } from "@/lib/contabilidad/impuestos-cargos";
 import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
+import { cn } from "@/lib/utils";
 import {
   cambiarEstadoImpuestoCargo,
   cambiarEstadoReglaLegal,
@@ -83,10 +84,10 @@ export function SeccionParametros({
           {lista === "impuestos_cargos" ? t("listas.impuestosCargos") : t("listas.reglasLegales")}
         </h2>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <select
             aria-label={t("selectorLista")}
-            className={`${SELECT} w-auto min-w-52`}
+            className={cn(SELECT, "w-56 shrink-0")}
             value={lista}
             onChange={(e) => setLista(e.target.value as ListaActiva)}
           >
@@ -98,6 +99,7 @@ export function SeccionParametros({
             <Button
               type="button"
               size="sm"
+              className="shrink-0 whitespace-nowrap"
               onClick={() =>
                 lista === "impuestos_cargos"
                   ? setEditandoCargo("nuevo")
