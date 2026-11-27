@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { EncabezadoCarga } from "@/components/ui/encabezado-carga";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Encabezado y las dos tarjetas de formato, como la pantalla. */
@@ -9,11 +10,7 @@ export default function CargandoImpuestos() {
   return (
     <div role="status" className="space-y-8">
       <span className="sr-only">{t("loading")}</span>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-5 w-72 max-w-full" />
-      </div>
+      <EncabezadoCarga />
       <div className="grid gap-4 md:grid-cols-2">
         {[0, 1].map((i) => (
           <Skeleton key={i} className="h-48 rounded-card" />

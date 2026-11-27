@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { EncabezadoCarga } from "@/components/ui/encabezado-carga";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -30,15 +31,9 @@ export async function EsqueletoPagina({
   );
 }
 
-/** Antetítulo, título grande y subtítulo, como `EncabezadoPagina`. */
+/** Título real y pestañas del módulo (ver `EncabezadoCarga`): al navegar, la navegación aparece primero. */
 export function EsqueletoEncabezado() {
-  return (
-    <div className="space-y-3">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-8 w-64 max-w-full" />
-      <Skeleton className="h-4 w-80 max-w-full" />
-    </div>
-  );
+  return <EncabezadoCarga />;
 }
 
 /** Fila de `StatCard`: dos columnas en el móvil, cuatro en escritorio. */

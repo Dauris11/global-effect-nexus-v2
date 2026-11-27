@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { EncabezadoCarga } from "@/components/ui/encabezado-carga";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Carga con la forma de la pantalla: encabezado, pestañas y una tarjeta de formulario. */
@@ -9,11 +10,7 @@ export default function CargandoConfiguracion() {
   return (
     <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-9 w-64 max-w-full" />
-        <Skeleton className="h-5 w-96 max-w-full" />
-      </div>
+      <EncabezadoCarga />
       <div className="flex h-12 items-end gap-6 border-b border-linea">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} className="mb-3 h-5 w-24" />

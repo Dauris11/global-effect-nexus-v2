@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { EncabezadoCarga } from "@/components/ui/encabezado-carga";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Carga con la forma de los libros: encabezado, pestañas, filtros, totales y tabla. */
@@ -10,11 +11,7 @@ export default function CargandoLibros() {
     <div role="status" className="space-y-6">
       <span className="sr-only">{t("loading")}</span>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-9 w-56" />
-          <Skeleton className="h-5 w-80 max-w-full" />
-        </div>
+        <EncabezadoCarga />
         <Skeleton className="h-11 w-40 rounded-control" />
       </div>
       <div className="flex gap-7 border-b border-linea pb-2.5">
