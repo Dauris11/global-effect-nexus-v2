@@ -78,10 +78,11 @@ export async function vistaPreviaDePagoCxp(
   cuentaBancariaId: string,
   monto: string,
   tasa: string | null,
+  formaPago = "transferencia",
 ): Promise<VistaAsiento> {
   return vistaDePrevia(
-    `SELECT contabilidad.lineas_pago_cxp($1, $2, $3::numeric, $4::numeric, true) AS lineas`,
-    [cxpId, cuentaBancariaId, monto, tasa],
+    `SELECT contabilidad.lineas_pago_cxp($1, $2, $3::numeric, $4::numeric, true, $5) AS lineas`,
+    [cxpId, cuentaBancariaId, monto, tasa, formaPago],
     undefined,
   );
 }

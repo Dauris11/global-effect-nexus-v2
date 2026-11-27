@@ -1,5 +1,6 @@
 import type { TipoCuenta } from "@/lib/contabilidad/catalogo";
 import type { FormatoEstadoBanco } from "@/lib/contabilidad/formato-estado-banco";
+import type { ImpuestoCargo, ReglaLegal } from "@/lib/contabilidad/impuestos-cargos";
 import { consultar, consultarUna } from "@/lib/db";
 
 /**
@@ -257,5 +258,50 @@ export async function formatosEstadoBanco(soloActivos = false): Promise<FormatoE
       WHERE ($1::boolean = false OR activo = true)
       ORDER BY activo DESC, nombre ASC`,
     [soloActivos],
+  );
+}
+
+// ----------------------------------------------------------------
+// Parámetros legales: Impuestos y Cargos / Reglas legales (0134)
+// ----------------------------------------------------------------
+
+export async function impuestosCargos(soloActivos = false): Promise<ImpuestoCargo[]> {
+  return consultar<ImpuestoCargo>(
+    `SELECT ic.id,
+            ic.nombre,
+            ic.tipo_valor AS "tipoValor",
+            ic.formato_valor AS "formatoValor",
+            CASE WHEN ic.valor IS NULL THEN NULL ELSE trim_scale(ic.valor)::text END AS valor,
+            ic.proposito,
+            ic.cuenta_id AS "cuentaId",
+            cc.codigo AS "cuentaCodigo",
+            cc.nombre AS "cuentaNombre",
+            ic.activo
+       FROM contabilidad.impuesto_cargo ic
+       JOIN contabilidad.cuenta_contable cc ON cc.id = ic.cuenta_id
+      WHERE ($1::boolean = false OR ic.activo = true)
+      ORDER BY ic.activo DESC, ic.creado_en ASC, ic.nombre ASC`,
+    [soloActivos],
+  );
+}
+
+export async function reglasLegales(soloActivos = false): Promise<ReglaLegal[]> {
+  return consultar<ReglaLegal>(
+    `SELECT id, nombre, valor, descripcion, activo
+       FROM contabilidad.regla_legal
+      WHERE ($1::boolean = false OR activo = true)
+      ORDER BY activo DESC, nombre ASC`,
+    [soloActivos],
+  );
+}
+
+export type CuentaMovimientoOpcion = { id: string; codigo: string; nombre: string };
+
+export async function cuentasConMovimientoActivas(): Promise<CuentaMovimientoOpcion[]> {
+  return consultar<CuentaMovimientoOpcion>(
+    `SELECT id, codigo, nombre
+       FROM contabilidad.cuenta_contable
+      WHERE admite_movimiento = true AND activa = true
+      ORDER BY contabilidad.clave_codigo(codigo)`,
   );
 }

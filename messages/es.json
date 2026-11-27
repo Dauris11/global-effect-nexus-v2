@@ -4243,6 +4243,11 @@
       "libroDiarioAyuda": "Transacciones pendientes de conciliar registradas en asientos con la cuenta contable vinculada a este banco.",
       "transaccionesBanco": "Transacciones del banco ({n})",
       "transaccionesBancoAyuda": "Movimientos del estado CSV sin conciliar. Si la referencia y el monto coinciden se concilian automáticamente; si coincide la referencia pero difiere el monto se resaltan en naranja.",
+      "comisionesSelector": "Tipo de comisión o impuesto bancario",
+      "comisionesDefault": "Comisiones",
+      "avisoCargoFijo": "Modo «{nombre}»: selecciona la transacción del banco para contabilizarla automáticamente en {cuenta} y conciliarla sin asiento previo en libros.",
+      "avisoCargoVariable": "Modo «{nombre}» (variable): selecciona todas las transacciones del banco que desees para contabilizarlas en {cuenta} y conciliarlas.",
+      "seleccionBancoCargo": "{n, plural, one {# transacción del banco seleccionada} other {# transacciones del banco seleccionadas}}",
       "conciliadasTitulo": "Transacciones conciliadas ({n})",
       "conciliadasAyuda": "Parejas ya conciliadas entre el libro diario y el banco. Si alguna fue conciliada por error, usa «Anular» para reversarla y devolver ambas líneas a Conciliar.",
       "avisoDiferenciaRef": "Las filas resaltadas en naranja comparten el mismo número de referencia pero tienen montos distintos. Revísalas antes de conciliar.",
@@ -5025,6 +5030,55 @@
         }
       },
       "parametros": {
+        "selectorLista": "Tipo de lista de parámetros legales",
+        "listas": {
+          "impuestosCargos": "Impuestos y Cargos",
+          "reglasLegales": "Reglas legales"
+        },
+        "nuevoCargo": "Agregar impuesto/cargo",
+        "nuevaRegla": "Agregar regla legal",
+        "dialogoNuevoCargo": "Nuevo impuesto o cargo",
+        "dialogoEditarCargo": "Editar impuesto o cargo",
+        "dialogoNuevaRegla": "Nueva regla legal",
+        "dialogoEditarRegla": "Editar regla legal",
+        "seleccionarCuenta": "Seleccionar cuenta contable...",
+        "col": {
+          "impuestoCargo": "Impuesto/Cargo",
+          "tipoValor": "Tipo de valor",
+          "formatoValor": "Formato de valor",
+          "valor": "Valor",
+          "proposito": "Propósito",
+          "cuentaContable": "Cuenta contable",
+          "regla": "Regla legal",
+          "descripcion": "Descripción",
+          "estado": "Estado",
+          "acciones": "Acciones"
+        },
+        "tipo": {
+          "fijo": "Fijo",
+          "variable": "Variable"
+        },
+        "formato": {
+          "numero": "Número",
+          "porcentaje": "Porcentaje"
+        },
+        "proposito": {
+          "transferencia": "Transferencia",
+          "nomina": "Nómina"
+        },
+        "estado": {
+          "activo": "Activo",
+          "inactivo": "Inactivo"
+        },
+        "editar": "Editar",
+        "activar": "Activar",
+        "desactivar": "Desactivar",
+        "cancelar": "Cancelar",
+        "guardar": "Guardar",
+        "confirmarActivar": "¿Activar «{nombre}»?",
+        "confirmarDesactivar": "¿Desactivar «{nombre}»?",
+        "vacioCargos": "No hay impuestos ni cargos configurados",
+        "vacioReglas": "No hay reglas legales configuradas",
         "grupos": {
           "itbis": "ITBIS",
           "retencion": "Retenciones",

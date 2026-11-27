@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { AlertTriangle, Link2, Loader2, Unlink } from "lucide-react";
+import { AlertTriangle, Info, Link2, Loader2, Unlink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { AvisoError, AvisoOk, Monto } from "@/components/contabilidad/comun";
+import { AvisoError, AvisoOk, Monto, SELECT } from "@/components/contabilidad/comun";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,9 +18,15 @@ import {
 import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import type { Moneda } from "@/lib/contabilidad/formato";
 import { normalizarReferenciaBanco } from "@/lib/contabilidad/formato-estado-banco";
+import type { ImpuestoCargo } from "@/lib/contabilidad/impuestos-cargos";
 import { fechaCorta } from "@/lib/fechas";
 import { cn } from "@/lib/utils";
-import { anularPartida, conciliarPartida, type EstadoBanco } from "@/server/contabilidad/bancos/acciones";
+import {
+  anularPartida,
+  conciliarCargoBancario,
+  conciliarPartida,
+  type EstadoBanco,
+} from "@/server/contabilidad/bancos/acciones";
 import type { LineaAsientoBanco, LineaExtracto } from "@/server/contabilidad/bancos/consultas";
 
 const INICIAL: EstadoBanco = { estado: "inicial" };
@@ -37,46 +43,74 @@ const esCero = (v: string) => /^-?0+(\.0+)?$/.test(v);
 
 /**
  * Conciliar en dos tablas lado a lado:
- *   · Izquierda: Libro diario (cuenta contable vinculada al banco) con
- *     Fecha, Descripción, Referencia, Débito y Crédito.
- *   · Derecha: Transacciones del banco con Fecha efectiva, No. Referencia,
- *     Descripción, Retiros y Depósitos.
- *
- * Las parejas con el mismo número de referencia y distinto monto se resaltan
- * en naranja (`pri-alta`) en ambos lados. En modo oscuro la selección usa un
- * tinte translúcido (`bg-marca-500/15`) para mantener el contraste legible.
+ *   · Izquierda: Libro diario (cuenta contable vinculada al banco).
+ *   · Derecha: Transacciones del banco, con lista desplegable «Comisiones»
+ *     junto al título cargada desde Parámetros legales → Impuestos y Cargos:
+ *       - Sin cargo seleccionado: conciliación normal banco ↔ libro diario.
+ *       - Cargo fijo (p. ej. Impuesto por transferencia 0.20%): selecciona la
+ *         transacción del banco y la carga directamente a la cuenta configurada.
+ *       - Cargo variable (p. ej. Comisiones bancarias): permite seleccionar
+ *         múltiples transacciones del banco y conciliarlas todas contra la
+ *         cuenta contable configurada.
  */
 export function Conciliador({
   cuentaId,
   moneda,
   banco,
   libros,
+  cargos,
 }: {
   cuentaId: string;
   moneda: Moneda;
   banco: LineaExtracto[];
   libros: LineaAsientoBanco[];
+  cargos: ImpuestoCargo[];
 }) {
   const t = useTranslations("contab.conciliacion");
   const idioma = useLocale() === "en" ? "en" : "es";
-  const [extracto, setExtracto] = useState<string | null>(null);
+  const [cargoId, setCargoId] = useState<string>("");
+  const [extractos, setExtractos] = useState<string[]>([]);
   const [lineas, setLineas] = useState<string[]>([]);
+
+  const cargoActivo = useMemo(
+    () => cargos.find((c) => c.id === cargoId) ?? null,
+    [cargos, cargoId],
+  );
+  const permiteMultipleBanco = cargoActivo?.tipoValor === "variable";
+
   const [estado, enviar, enviando] = useActionState(async (previo: EstadoBanco, datos: FormData) => {
-    const resultado = await conciliarPartida(previo, datos);
+    const modoCargo = Boolean(String(datos.get("cargo_id") ?? "").trim());
+    const resultado = modoCargo
+      ? await conciliarCargoBancario(previo, datos)
+      : await conciliarPartida(previo, datos);
     if (resultado.estado === "ok") {
-      setExtracto(null);
+      setExtractos([]);
       setLineas([]);
     }
     return resultado;
   }, INICIAL);
   const error = useError(estado);
 
+  function cambiarCargo(nuevoId: string) {
+    setCargoId(nuevoId);
+    setLineas([]);
+    const nuevo = cargos.find((c) => c.id === nuevoId) ?? null;
+    if (nuevo?.tipoValor !== "variable") {
+      setExtractos((prev) => prev.slice(0, 1));
+    }
+  }
+
   const toggleLinea = (id: string) => {
+    if (cargoActivo) return;
     setLineas((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   const toggleBanco = (id: string) => {
-    setExtracto((prev) => (prev === id ? null : id));
+    if (permiteMultipleBanco) {
+      setExtractos((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+    } else {
+      setExtractos((prev) => (prev[0] === id ? [] : [id]));
+    }
   };
 
   // Referencias presentes en ambos lados cuyo monto NO coincide -> resaltar en naranja.
@@ -86,35 +120,61 @@ export function Conciliador({
       const refB = normalizarReferenciaBanco(b.referencia);
       if (!refB) continue;
       const enLibro = libros.filter((l) => normalizarReferenciaBanco(l.referencia) === refB);
-      if (enLibro.length > 0 && enLibro.some((l) => !mismoMonto(l.monto, b.monto))) {
+      if (enLibro.length > 0 && !enLibro.some((l) => mismoMonto(l.monto, b.monto))) {
         conjunto.add(refB);
       }
     }
     return conjunto;
   }, [banco, libros]);
 
-  const elegido = banco.find((b) => b.id === extracto) ?? null;
+  const bancoSeleccionados = banco.filter((b) => extractos.includes(b.id));
+  const elegido = bancoSeleccionados[0] ?? null;
+  const sumaBanco = bancoSeleccionados.reduce((acc, b) => acc + Math.abs(Number(b.monto)), 0);
+
   const seleccionados = libros.filter((l) => lineas.includes(l.id));
   const sumaLibros = seleccionados.reduce((acc, l) => acc + Number(l.monto), 0);
   const diferencia = elegido ? Number(elegido.monto) - sumaLibros : 0;
-  const listo = elegido !== null && seleccionados.length > 0 && Math.abs(diferencia) < 0.005;
+
+  const listo = cargoActivo
+    ? bancoSeleccionados.length > 0
+    : elegido !== null && seleccionados.length > 0 && Math.abs(diferencia) < 0.005;
 
   return (
     <form action={enviar} className="space-y-4">
       <input type="hidden" name="cuenta" value={cuentaId} />
-      {extracto && <input type="hidden" name="extracto" value={extracto} />}
+      {cargoId && <input type="hidden" name="cargo_id" value={cargoId} />}
+      {extractos.map((id) => (
+        <input key={id} type="hidden" name="extracto" value={id} />
+      ))}
 
-      {refsConDiferencia.size > 0 && (
+      {refsConDiferencia.size > 0 && !cargoActivo && (
         <div className="flex items-center gap-2 rounded-control border border-pri-alta/40 bg-pri-alta/10 px-3.5 py-2.5 text-xs text-tinta">
           <AlertTriangle className="size-4 shrink-0 text-pri-alta" />
           <span>{t("avisoDiferenciaRef")}</span>
         </div>
       )}
 
+      {cargoActivo && (
+        <div className="flex items-center gap-2 rounded-control border border-marca-500/40 bg-marca-500/10 px-3.5 py-2.5 text-xs text-tinta">
+          <Info className="size-4 shrink-0 text-marca-600" />
+          <span>
+            {cargoActivo.tipoValor === "variable"
+              ? t("avisoCargoVariable", {
+                  nombre: cargoActivo.nombre,
+                  cuenta: `${cargoActivo.cuentaCodigo} · ${cargoActivo.cuentaNombre}`,
+                })
+              : t("avisoCargoFijo", {
+                  nombre: cargoActivo.nombre,
+                  cuenta: `${cargoActivo.cuentaCodigo} · ${cargoActivo.cuentaNombre}`,
+                })}
+          </span>
+        </div>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-2">
         {/* Izquierda: Libro diario */}
-        <section className="min-w-0 space-y-3">
-          <div className="flex items-center gap-1.5">
+        <section className={cn("min-w-0 space-y-3", cargoActivo && "opacity-60")}>
+          <div className="flex min-h-10 items-center gap-1.5">
             <h2 className="texto-titulo-seccion">{t("libroDiario", { n: libros.length })}</h2>
             <TooltipAyuda texto={t("libroDiarioAyuda")} etiqueta={t("masInformacion")} />
           </div>
@@ -136,15 +196,16 @@ export function Conciliador({
                 </thead>
                 <tbody>
                   {libros.map((l) => {
-                    const seleccionada = lineas.includes(l.id);
+                    const seleccionada = !cargoActivo && lineas.includes(l.id);
                     const refNorm = normalizarReferenciaBanco(l.referencia);
-                    const refDiferente = refNorm !== "" && refsConDiferencia.has(refNorm);
+                    const refDiferente = !cargoActivo && refNorm !== "" && refsConDiferencia.has(refNorm);
                     return (
                       <tr
                         key={l.id}
                         onClick={() => toggleLinea(l.id)}
                         className={cn(
-                          "cursor-pointer border-b border-linea transition-colors last:border-b-0 hover:bg-muted/40",
+                          "border-b border-linea transition-colors last:border-b-0",
+                          !cargoActivo && "cursor-pointer hover:bg-muted/40",
                           refDiferente && "border-l-2 border-l-pri-alta bg-pri-alta/15 hover:bg-pri-alta/20",
                           seleccionada && "bg-marca-500/15 hover:bg-marca-500/20",
                         )}
@@ -152,8 +213,9 @@ export function Conciliador({
                         <td className="px-2.5 py-2.5" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
-                            name="linea"
+                            name={cargoActivo ? undefined : "linea"}
                             value={l.id}
+                            disabled={Boolean(cargoActivo)}
                             checked={seleccionada}
                             onChange={() => toggleLinea(l.id)}
                             aria-label={l.concepto}
@@ -187,11 +249,27 @@ export function Conciliador({
           )}
         </section>
 
-        {/* Derecha: Transacciones del banco */}
+        {/* Derecha: Transacciones del banco + desplegable Comisiones */}
         <section className="min-w-0 space-y-3">
-          <div className="flex items-center gap-1.5">
-            <h2 className="texto-titulo-seccion">{t("transaccionesBanco", { n: banco.length })}</h2>
-            <TooltipAyuda texto={t("transaccionesBancoAyuda")} etiqueta={t("masInformacion")} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <h2 className="texto-titulo-seccion">{t("transaccionesBanco", { n: banco.length })}</h2>
+              <TooltipAyuda texto={t("transaccionesBancoAyuda")} etiqueta={t("masInformacion")} />
+            </div>
+
+            <select
+              aria-label={t("comisionesSelector")}
+              value={cargoId}
+              onChange={(e) => cambiarCargo(e.target.value)}
+              className={`${SELECT} h-9 w-auto min-w-48 text-xs`}
+            >
+              <option value="">{t("comisionesDefault")}</option>
+              {cargos.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
           </div>
 
           {banco.length === 0 ? (
@@ -211,9 +289,9 @@ export function Conciliador({
                 </thead>
                 <tbody>
                   {banco.map((b) => {
-                    const seleccionada = extracto === b.id;
+                    const seleccionada = extractos.includes(b.id);
                     const refNorm = normalizarReferenciaBanco(b.referencia);
-                    const refDiferente = refNorm !== "" && refsConDiferencia.has(refNorm);
+                    const refDiferente = !cargoActivo && refNorm !== "" && refsConDiferencia.has(refNorm);
                     return (
                       <tr
                         key={b.id}
@@ -261,8 +339,8 @@ export function Conciliador({
         </section>
       </div>
 
-      {/* Barra de totales cuando hay líneas seleccionadas */}
-      {seleccionados.length > 1 && (
+      {/* Barra de totales cuando hay múltiples transacciones seleccionadas */}
+      {!cargoActivo && seleccionados.length > 1 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-linea bg-card p-3 shadow-card">
           <div className="flex items-center gap-2">
             <Badge variant="outline">{t("variosAsientos", { n: seleccionados.length })}</Badge>
@@ -278,9 +356,25 @@ export function Conciliador({
         </div>
       )}
 
+      {cargoActivo && bancoSeleccionados.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-linea bg-card p-3 shadow-card">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="marca">{cargoActivo.nombre}</Badge>
+            <span className="text-sm font-medium text-tinta">
+              {t("seleccionBancoCargo", { n: bancoSeleccionados.length })}
+            </span>
+          </div>
+          <span className="text-sm font-semibold tabular-nums text-tinta">
+            <Monto valor={sumaBanco.toFixed(2)} moneda={moneda} />
+          </span>
+        </div>
+      )}
+
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{t("conciliadaOk")}</AvisoOk>}
-      {elegido && seleccionados.length > 0 && !listo && <p className="texto-meta">{t("montosDistintos")}</p>}
+      {!cargoActivo && elegido && seleccionados.length > 0 && !listo && (
+        <p className="texto-meta">{t("montosDistintos")}</p>
+      )}
 
       <div className="flex justify-end">
         <Button type="submit" disabled={!listo || enviando}>

@@ -16,11 +16,13 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 import { listarCodigos } from "@/server/contabilidad/codigos-transaccion/consultas";
 import {
   catalogo,
+  cuentasConMovimientoActivas,
   entidad,
   esPestanaConfig,
   formatosEstadoBanco,
-  parametros,
+  impuestosCargos,
   periodos,
+  reglasLegales,
   type PestanaConfig,
 } from "@/server/contabilidad/configuracion/consultas";
 
@@ -78,8 +80,21 @@ async function Seccion({
   puedeCerrar: boolean;
 }) {
   switch (pestana) {
-    case "parametros":
-      return <SeccionParametros parametros={await parametros()} puedeEditar={puedeConfigurar} />;
+    case "parametros": {
+      const [listaCargos, listaReglas, cuentasMovimiento] = await Promise.all([
+        impuestosCargos(),
+        reglasLegales(),
+        puedeConfigurar ? cuentasConMovimientoActivas() : Promise.resolve([]),
+      ]);
+      return (
+        <SeccionParametros
+          impuestosCargos={listaCargos}
+          reglasLegales={listaReglas}
+          cuentas={cuentasMovimiento}
+          puedeEditar={puedeConfigurar}
+        />
+      );
+    }
     case "periodos":
       return <SeccionPeriodos periodos={await periodos()} puedeCerrar={puedeCerrar} />;
     case "catalogo":

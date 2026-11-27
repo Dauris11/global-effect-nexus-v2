@@ -306,7 +306,13 @@ export function AccionesCxp({
                   size="default"
                   className="w-full sm:w-auto"
                   cargar={() =>
-                    asientoDePagoPrevio(cxp.id, cuentaPago || (cuentasMismaMoneda[0]?.id ?? ""), montoPago, tasaPago)
+                    asientoDePagoPrevio(
+                      cxp.id,
+                      cuentaPago || (cuentasMismaMoneda[0]?.id ?? ""),
+                      montoPago,
+                      tasaPago,
+                      formaPago,
+                    )
                   }
                 />
                 <Button type="submit" disabled={pagando} className="w-full">

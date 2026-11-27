@@ -31,7 +31,10 @@ import {
   porConciliar,
   solicitudesCambioBanco,
 } from "@/server/contabilidad/bancos/consultas";
-import { formatosEstadoBanco } from "@/server/contabilidad/configuracion/consultas";
+import {
+  formatosEstadoBanco,
+  impuestosCargos,
+} from "@/server/contabilidad/configuracion/consultas";
 
 export async function generateMetadata({
   params,
@@ -163,12 +166,24 @@ async function VistaConciliar({
   moneda: "DOP" | "USD";
   concilia: boolean;
 }) {
-  const [t, pendientes] = await Promise.all([getTranslations("contab.conciliacion"), porConciliar(cuentaId)]);
+  const [t, pendientes, cargos] = await Promise.all([
+    getTranslations("contab.conciliacion"),
+    porConciliar(cuentaId),
+    impuestosCargos(true),
+  ]);
   if (!concilia) return <EstadoVacio icono={Scale} titulo={t("sinPermiso")} />;
   if (pendientes.banco.length === 0 && pendientes.libros.length === 0) {
     return <EstadoVacio icono={Scale} titulo={t("todoConciliado")} />;
   }
-  return <Conciliador cuentaId={cuentaId} moneda={moneda} banco={pendientes.banco} libros={pendientes.libros} />;
+  return (
+    <Conciliador
+      cuentaId={cuentaId}
+      moneda={moneda}
+      banco={pendientes.banco}
+      libros={pendientes.libros}
+      cargos={cargos}
+    />
+  );
 }
 
 async function VistaConciliadas({

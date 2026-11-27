@@ -513,6 +513,200 @@ export async function conciliarPartida(_previo: EstadoBanco, datos: FormData): P
   }
 }
 
+/**
+ * Concilia una o varias transacciones del estado de cuenta bancario usando
+ * un impuesto o cargo configurado en Parámetros legales (sin asiento previo
+ * en el libro diario):
+ *   · Fijo (p. ej. "Impuesto por transferencia 0.20%"): contabiliza la
+ *     transacción elegida en la cuenta configurada y la concilia.
+ *   · Variable (p. ej. "Comisiones bancarias"): contabiliza todas las
+ *     transacciones del banco seleccionadas contra la cuenta configurada y
+ *     las concilia en una sola operación.
+ */
+export async function conciliarCargoBancario(
+  _previo: EstadoBanco,
+  datos: FormData,
+): Promise<EstadoBanco> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.conciliar")) return { estado: "no_permitido" };
+
+  const cuenta = texto(datos, "cuenta", 40);
+  const cargoId = texto(datos, "cargo_id", 40);
+  const extractosEntrada = datos
+    .getAll("extracto")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  const extractos = Array.from(new Set(extractosEntrada));
+
+  if (
+    !esUuid(cuenta) ||
+    !esUuid(cargoId) ||
+    extractos.length === 0 ||
+    extractos.some((id) => !esUuid(id))
+  ) {
+    return { estado: "datos_invalidos" };
+  }
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "conciliar", "Conciliación directa con impuesto/cargo bancario.");
+
+      const { rows: [cargo] } = await cliente.query<{
+        id: string;
+        nombre: string;
+        tipo_valor: "fijo" | "variable";
+        cuenta_id: string;
+      }>(
+        `SELECT ic.id, ic.nombre, ic.tipo_valor, ic.cuenta_id
+           FROM contabilidad.impuesto_cargo ic
+           JOIN contabilidad.cuenta_contable cc ON cc.id = ic.cuenta_id
+          WHERE ic.id = $1 AND ic.activo = true AND cc.admite_movimiento = true AND cc.activa = true`,
+        [cargoId],
+      );
+      if (!cargo) throw new RechazoBanco("datos_invalidos");
+
+      if (cargo.tipo_valor === "fijo" && extractos.length > 1) {
+        throw new RechazoBanco("datos_invalidos");
+      }
+
+      const { rows: [cb] } = await cliente.query<{
+        id: string;
+        moneda: "DOP" | "USD";
+        cuenta_contable_id: string;
+      }>(
+        `SELECT id, moneda, cuenta_contable_id
+           FROM contabilidad.cuenta_bancaria
+          WHERE id = $1 AND estado = 'activa'`,
+        [cuenta],
+      );
+      if (!cb) throw new RechazoBanco("datos_invalidos");
+
+      const { rows: filasExtracto } = await cliente.query<{
+        id: string;
+        fecha: string;
+        descripcion: string;
+        referencia: string | null;
+        monto: string;
+      }>(
+        `SELECT e.id, e.fecha::text AS fecha, e.descripcion, e.referencia, e.monto::text AS monto
+           FROM contabilidad.extracto_linea e
+          WHERE e.id = ANY($1::uuid[])
+            AND e.cuenta_id = $2
+            AND NOT EXISTS (
+              SELECT 1 FROM contabilidad.conciliacion_partida p
+               WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+            )
+          ORDER BY e.fecha, e.id
+          FOR UPDATE`,
+        [extractos, cuenta],
+      );
+      if (filasExtracto.length !== extractos.length) {
+        throw new RechazoBanco("datos_invalidos");
+      }
+
+      for (const ext of filasExtracto) {
+        const montoNum = Number(ext.monto);
+        if (!Number.isFinite(montoNum) || Math.abs(montoNum) < 0.005) {
+          throw new RechazoBanco("monto_invalido");
+        }
+        const montoAbs = Math.abs(montoNum).toFixed(2);
+        const esSalida = montoNum < 0;
+
+        let tasa: string | null = null;
+        let montoDop = montoAbs;
+        if (cb.moneda === "USD") {
+          const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+            `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+            [ext.fecha],
+          );
+          if (!tasaRow?.tasa) throw new RechazoBanco("datos_invalidos");
+          tasa = tasaRow.tasa;
+          montoDop = (Math.abs(montoNum) * Number(tasa)).toFixed(2);
+        }
+
+        const concepto = `${cargo.nombre} · ${ext.descripcion}`.slice(0, 200);
+        const lineas = esSalida
+          ? [
+              { cuenta_id: cargo.cuenta_id, debe: Number(montoDop), descripcion: cargo.nombre },
+              { cuenta_id: cb.cuenta_contable_id, haber: Number(montoDop), descripcion: cargo.nombre },
+            ]
+          : [
+              { cuenta_id: cb.cuenta_contable_id, debe: Number(montoDop), descripcion: cargo.nombre },
+              { cuenta_id: cargo.cuenta_id, haber: Number(montoDop), descripcion: cargo.nombre },
+            ];
+
+        const { rows: [asientoRow] } = await cliente.query<{ id: string }>(
+          `SELECT contabilidad.crear_asiento(
+             $1::date, $2, 'automatico', 'conciliacion_cargo', $3::uuid, $4::jsonb
+           ) AS id`,
+          [ext.fecha, concepto, ext.id, JSON.stringify(lineas)],
+        );
+
+        const { rows: [lineaBanco] } = await cliente.query<{ id: string }>(
+          `SELECT id
+             FROM contabilidad.asiento_linea
+            WHERE asiento_id = $1 AND cuenta_id = $2
+            LIMIT 1`,
+          [asientoRow.id, cb.cuenta_contable_id],
+        );
+        if (!lineaBanco) throw new RechazoBanco("datos_invalidos");
+
+        await cliente.query(
+          `INSERT INTO contabilidad.movimiento_bancario
+             (numero, cuenta_id, periodo_id, fecha, tipo, monto, moneda, tasa, monto_dop,
+              concepto, referencia, origen_tabla, origen_id, creado_por)
+           VALUES (
+             contabilidad.siguiente_numero('MB'),
+             $1,
+             contabilidad.periodo_para($2::date),
+             $2::date,
+             $3,
+             $4::numeric,
+             $5,
+             $6::numeric,
+             $7::numeric,
+             $8,
+             $9,
+             'conciliacion_cargo',
+             $10::uuid,
+             $11::uuid
+           )`,
+          [
+            cb.id,
+            ext.fecha,
+            esSalida ? "debito" : "deposito",
+            montoAbs,
+            cb.moneda,
+            tasa,
+            montoDop,
+            concepto,
+            ext.referencia,
+            ext.id,
+            usuario.id,
+          ],
+        );
+
+        const { rows: [grupo] } = await cliente.query<{ id: string }>(
+          `SELECT gen_random_uuid() AS id`,
+        );
+
+        await cliente.query(
+          `INSERT INTO contabilidad.conciliacion_partida
+             (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [cb.id, ext.id, lineaBanco.id, grupo.id, usuario.id],
+        );
+      }
+    });
+
+    refrescar();
+    return { estado: "ok" };
+  } catch (error) {
+    if (error instanceof RechazoBanco) return { estado: error.estado };
+    return { estado: estadoDeError(error) };
+  }
+}
+
 /** Anula una conciliación: las dos líneas vuelven a quedar por conciliar. */
 export async function anularPartida(_previo: EstadoBanco, datos: FormData): Promise<EstadoBanco> {
   const usuario = await requerirUsuario();

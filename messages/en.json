@@ -4243,6 +4243,11 @@
       "libroDiarioAyuda": "Unreconciled transactions posted in journal entries for the ledger account linked to this bank.",
       "transaccionesBanco": "Bank transactions ({n})",
       "transaccionesBancoAyuda": "Unreconciled CSV bank statement rows. Matching reference and amount auto-reconcile; same reference with a different amount is highlighted in orange.",
+      "comisionesSelector": "Bank fee or tax type",
+      "comisionesDefault": "Commissions",
+      "avisoCargoFijo": "«{nombre}» mode: select the bank transaction to post it automatically to {cuenta} and reconcile it without an existing journal entry.",
+      "avisoCargoVariable": "«{nombre}» mode (variable): select as many bank transactions as needed to post them to {cuenta} and reconcile them.",
+      "seleccionBancoCargo": "{n, plural, one {# bank transaction selected} other {# bank transactions selected}}",
       "conciliadasTitulo": "Reconciled transactions ({n})",
       "conciliadasAyuda": "Pairs already reconciled between the journal and bank. If a match was incorrect, click Undo to reverse it and move both rows back to Reconcile.",
       "avisoDiferenciaRef": "Rows highlighted in orange share the same reference number but have different amounts. Review them before reconciling.",
@@ -5025,6 +5030,55 @@
         }
       },
       "parametros": {
+        "selectorLista": "Legal parameters list type",
+        "listas": {
+          "impuestosCargos": "Taxes & Charges",
+          "reglasLegales": "Legal rules"
+        },
+        "nuevoCargo": "Add tax/charge",
+        "nuevaRegla": "Add legal rule",
+        "dialogoNuevoCargo": "New tax or charge",
+        "dialogoEditarCargo": "Edit tax or charge",
+        "dialogoNuevaRegla": "New legal rule",
+        "dialogoEditarRegla": "Edit legal rule",
+        "seleccionarCuenta": "Select ledger account...",
+        "col": {
+          "impuestoCargo": "Tax/Charge",
+          "tipoValor": "Value type",
+          "formatoValor": "Value format",
+          "valor": "Value",
+          "proposito": "Purpose",
+          "cuentaContable": "Ledger account",
+          "regla": "Legal rule",
+          "descripcion": "Description",
+          "estado": "Status",
+          "acciones": "Actions"
+        },
+        "tipo": {
+          "fijo": "Fixed",
+          "variable": "Variable"
+        },
+        "formato": {
+          "numero": "Number",
+          "porcentaje": "Percentage"
+        },
+        "proposito": {
+          "transferencia": "Transfer",
+          "nomina": "Payroll"
+        },
+        "estado": {
+          "activo": "Active",
+          "inactivo": "Inactive"
+        },
+        "editar": "Edit",
+        "activar": "Activate",
+        "desactivar": "Deactivate",
+        "cancelar": "Cancel",
+        "guardar": "Save",
+        "confirmarActivar": "Activate «{nombre}»?",
+        "confirmarDesactivar": "Deactivate «{nombre}»?",
+        "vacioCargos": "No taxes or charges configured",
+        "vacioReglas": "No legal rules configured",
         "grupos": {
           "itbis": "ITBIS (VAT)",
           "retencion": "Withholdings",

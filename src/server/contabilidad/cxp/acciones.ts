@@ -143,11 +143,13 @@ export async function asientoDePagoPrevio(
   cuenta: string,
   monto: string,
   tasa: string,
+  formaPago = "transferencia",
 ): Promise<VistaAsiento> {
   await requerirPermiso("contabilidad.leer");
   const montoLimpio = montoValido(monto.trim());
   if (!esUuid(id) || !esUuid(cuenta) || !montoLimpio) throw new Error("Datos del pago no válidos.");
-  return vistaPreviaDePagoCxp(id, cuenta, montoLimpio, tasaValida(tasa.trim()));
+  const forma = esFormaPago(formaPago) ? formaPago : "transferencia";
+  return vistaPreviaDePagoCxp(id, cuenta, montoLimpio, tasaValida(tasa.trim()), forma);
 }
 
 /** Opción «Asiento» de un pago ya hecho: el asiento real de su recibo de egreso. */

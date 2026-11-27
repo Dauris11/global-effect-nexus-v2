@@ -7,6 +7,11 @@ import { requerirUsuario, type UsuarioSesion } from "@/lib/auth";
 import { enTransaccionComo } from "@/lib/db";
 import { esFechaIso, esUuid, montoValido } from "@/lib/contabilidad/formato";
 import { limpiarIdentificacion, rncValido } from "@/lib/contabilidad/identificacion";
+import {
+  esFormatoValorCargo,
+  esPropositoCargo,
+  esTipoValorCargo,
+} from "@/lib/contabilidad/impuestos-cargos";
 import { usuarioTienePermiso, type Permiso } from "@/lib/rbac";
 import { fijarAccion } from "@/server/contabilidad/bitacora";
 import { FORMA_PARAMETRO_SQL } from "@/server/contabilidad/configuracion/consultas";
@@ -642,6 +647,176 @@ export async function cambiarEstadoFormatoEstadoBanco(
     await fijarAccion(cliente, "editar");
     const { rowCount } = await cliente.query(
       `UPDATE contabilidad.formato_estado_banco
+          SET activo = $2, actualizado_en = now()
+        WHERE id = $1`,
+      [id, activo],
+    );
+    if (!rowCount) throw new Rechazo("no_encontrado");
+  });
+}
+
+// ----------------------------------------------------------------
+// Parámetros legales: Impuestos y Cargos / Reglas legales (0134)
+// ----------------------------------------------------------------
+
+function valorCargoValido(crudo: string, formato: "numero" | "porcentaje"): string | null {
+  const limpio = crudo.replace(/,/g, "").trim();
+  if (!/^\d+(?:\.\d{1,4})?$/.test(limpio)) return null;
+  const n = Number(limpio);
+  if (!Number.isFinite(n) || n < 0) return null;
+  if (formato === "porcentaje" && n > 100) return null;
+  if (formato === "numero" && n > 999_999_999_999.99) return null;
+  return limpio;
+}
+
+export async function guardarImpuestoCargo(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const nombre = texto(datos, "nombre", 160);
+  const tipoValor = texto(datos, "tipo_valor", 20);
+  const formatoCrudo = texto(datos, "formato_valor", 20);
+  const valorCrudo = texto(datos, "valor", 24);
+  const proposito = texto(datos, "proposito", 20);
+  const cuentaId = texto(datos, "cuenta_id", 40);
+
+  if (id && !esUuid(id)) return { estado: "no_encontrado" };
+  if (!nombre || !esTipoValorCargo(tipoValor) || !esPropositoCargo(proposito) || !esUuid(cuentaId)) {
+    return { estado: "datos_invalidos" };
+  }
+
+  let formatoValor: "numero" | "porcentaje" | null = null;
+  let valor: string | null = null;
+
+  if (tipoValor === "fijo") {
+    if (!esFormatoValorCargo(formatoCrudo)) return { estado: "datos_invalidos" };
+    const limpio = valorCargoValido(valorCrudo, formatoCrudo);
+    if (limpio === null) return { estado: "cifra_invalida" };
+    formatoValor = formatoCrudo;
+    valor = limpio;
+  }
+
+  const res = await ejecutar(usuario, async (cliente) => {
+    const cuentaOk = await cliente.query(
+      `SELECT 1 FROM contabilidad.cuenta_contable
+        WHERE id = $1 AND admite_movimiento = true AND activa = true`,
+      [cuentaId],
+    );
+    if (!cuentaOk.rowCount) throw new Rechazo("datos_invalidos");
+
+    if (id) {
+      await fijarAccion(cliente, "editar");
+      const { rowCount } = await cliente.query(
+        `UPDATE contabilidad.impuesto_cargo
+            SET nombre = $2,
+                tipo_valor = $3,
+                formato_valor = $4,
+                valor = $5::numeric,
+                proposito = $6,
+                cuenta_id = $7,
+                actualizado_en = now()
+          WHERE id = $1`,
+        [id, nombre, tipoValor, formatoValor, valor, proposito, cuentaId],
+      );
+      if (!rowCount) throw new Rechazo("no_encontrado");
+    } else {
+      await cliente.query(
+        `INSERT INTO contabilidad.impuesto_cargo
+           (nombre, tipo_valor, formato_valor, valor, proposito, cuenta_id, activo)
+         VALUES ($1, $2, $3, $4::numeric, $5, $6, true)`,
+        [nombre, tipoValor, formatoValor, valor, proposito, cuentaId],
+      );
+    }
+  });
+  if (res.estado === "ok") {
+    revalidatePath("/[locale]/contabilidad/bancos", "layout");
+    revalidatePath("/[locale]/contabilidad/cuentas-por-pagar", "layout");
+  }
+  return res;
+}
+
+export async function cambiarEstadoImpuestoCargo(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const activo = texto(datos, "activo", 1) === "1";
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+
+  const res = await ejecutar(usuario, async (cliente) => {
+    await fijarAccion(cliente, "editar");
+    const { rowCount } = await cliente.query(
+      `UPDATE contabilidad.impuesto_cargo
+          SET activo = $2, actualizado_en = now()
+        WHERE id = $1`,
+      [id, activo],
+    );
+    if (!rowCount) throw new Rechazo("no_encontrado");
+  });
+  if (res.estado === "ok") {
+    revalidatePath("/[locale]/contabilidad/bancos", "layout");
+    revalidatePath("/[locale]/contabilidad/cuentas-por-pagar", "layout");
+  }
+  return res;
+}
+
+export async function guardarReglaLegal(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const nombre = texto(datos, "nombre", 160);
+  const valor = texto(datos, "valor", 120) || null;
+  const descripcion = texto(datos, "descripcion", 400) || null;
+
+  if (id && !esUuid(id)) return { estado: "no_encontrado" };
+  if (!nombre) return { estado: "datos_invalidos" };
+
+  return ejecutar(usuario, async (cliente) => {
+    if (id) {
+      await fijarAccion(cliente, "editar");
+      const { rowCount } = await cliente.query(
+        `UPDATE contabilidad.regla_legal
+            SET nombre = $2, valor = $3, descripcion = $4, actualizado_en = now()
+          WHERE id = $1`,
+        [id, nombre, valor, descripcion],
+      );
+      if (!rowCount) throw new Rechazo("no_encontrado");
+    } else {
+      await cliente.query(
+        `INSERT INTO contabilidad.regla_legal (nombre, valor, descripcion, activo)
+         VALUES ($1, $2, $3, true)`,
+        [nombre, valor, descripcion],
+      );
+    }
+  });
+}
+
+export async function cambiarEstadoReglaLegal(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const activo = texto(datos, "activo", 1) === "1";
+  if (!esUuid(id)) return { estado: "no_encontrado" };
+
+  return ejecutar(usuario, async (cliente) => {
+    await fijarAccion(cliente, "editar");
+    const { rowCount } = await cliente.query(
+      `UPDATE contabilidad.regla_legal
           SET activo = $2, actualizado_en = now()
         WHERE id = $1`,
       [id, activo],
