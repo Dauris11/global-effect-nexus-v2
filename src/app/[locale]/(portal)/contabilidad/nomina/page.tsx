@@ -29,7 +29,7 @@ export default async function PaginaNomina() {
         WHERE admite_movimiento = true
           AND activa = true
           AND (
-            (codigo LIKE '1.1.1.%' AND codigo <> '1.1.1.1')
+            (codigo LIKE '1.1.1.%' AND codigo NOT IN ('1.1.1.1', '1.1.1.2'))
             OR id IN (
               SELECT cuenta_contable_id
                 FROM contabilidad.cuenta_bancaria
