@@ -5,9 +5,17 @@ import { revalidatePath } from "next/cache";
 import { requerirUsuario } from "@/lib/auth";
 import { consultar, consultarUna, enTransaccionComo } from "@/lib/db";
 import { esFechaIso, esMoneda, esUuid, montoValido, tasaValida } from "@/lib/contabilidad/formato";
+import {
+  CODIGO_BCRD_TASAREAL,
+  URL_BASE_TASAREAL,
+  esCodigoInstitucionTasareal,
+  estadoHorarioTasasRD,
+} from "@/lib/contabilidad/tasareal";
+import { claveDia } from "@/lib/fechas";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { notificarUsuario } from "@/server/compartidos/notificaciones";
 import { obtenerAdaptador, type ColumnasEstado } from "@/server/contabilidad/bancos";
+import { tasasActualizadasHoy } from "@/server/contabilidad/bancos/consultas";
 import { claveDeTransaccion } from "@/lib/contabilidad/extracto";
 import {
   decodificarCsvBanco,
@@ -606,11 +614,16 @@ export async function actualizarCuentaBancaria(
   const tasaCompra = moneda === "USD" ? tasaValida(texto(datos, "tasa_compra", 20)) : null;
   const tasaVenta = moneda === "USD" ? tasaValida(texto(datos, "tasa_venta", 20)) : null;
   const tarifa = moneda === "USD" ? tarifaValida(texto(datos, "tarifa", 24)) : null;
+  const codigoInstitucionCrudo = texto(datos, "codigo_institucion", 40);
+  const codigoInstitucion =
+    moneda === "USD" && esCodigoInstitucionTasareal(codigoInstitucionCrudo)
+      ? codigoInstitucionCrudo
+      : null;
 
   if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable)) {
     return { estado: "datos_invalidos" };
   }
-  if (moneda === "USD" && (!tasaCompra || !tasaVenta || tarifa === null)) {
+  if (moneda === "USD" && (!tasaCompra || !tasaVenta || tarifa === null || !codigoInstitucion)) {
     return { estado: "datos_invalidos" };
   }
   if (saldoActual === null) return { estado: "monto_invalido" };
@@ -631,7 +644,8 @@ export async function actualizarCuentaBancaria(
                 ), 0),
                 tasa_compra = $7,
                 tasa_venta = $8,
-                tarifa = $9
+                tarifa = $9,
+                codigo_institucion = $10
           WHERE cb.id = $1
             AND EXISTS (
               SELECT 1 FROM contabilidad.cuenta_contable c
@@ -644,7 +658,7 @@ export async function actualizarCuentaBancaria(
                  WHERE p.cuenta_id = cb.id AND p.anulado_en IS NULL
               )
             )`,
-        [cuenta, nombre, numero, moneda, contable, saldoActual, tasaCompra, tasaVenta, tarifa],
+        [cuenta, nombre, numero, moneda, contable, saldoActual, tasaCompra, tasaVenta, tarifa, codigoInstitucion],
       );
       if (!rowCount) throw new RechazoBanco("datos_invalidos");
     });
@@ -678,11 +692,16 @@ export async function solicitarCambioCuentaBancaria(
   const tasaCompra = moneda === "USD" ? tasaValida(texto(datos, "tasa_compra", 20)) : null;
   const tasaVenta = moneda === "USD" ? tasaValida(texto(datos, "tasa_venta", 20)) : null;
   const tarifa = moneda === "USD" ? tarifaValida(texto(datos, "tarifa", 24)) : null;
+  const codigoInstitucionCrudo = texto(datos, "codigo_institucion", 40);
+  const codigoInstitucion =
+    moneda === "USD" && esCodigoInstitucionTasareal(codigoInstitucionCrudo)
+      ? codigoInstitucionCrudo
+      : null;
 
   if (!esUuid(cuenta) || !nombre || !numero || !esMoneda(moneda) || !esUuid(contable) || !motivo) {
     return { estado: "datos_invalidos" };
   }
-  if (moneda === "USD" && (!tasaCompra || !tasaVenta || tarifa === null)) {
+  if (moneda === "USD" && (!tasaCompra || !tasaVenta || tarifa === null || !codigoInstitucion)) {
     return { estado: "datos_invalidos" };
   }
   if (saldoActual === null) return { estado: "monto_invalido" };
@@ -691,15 +710,15 @@ export async function solicitarCambioCuentaBancaria(
     const solicitudId = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.solicitud_cambio_cuenta_bancaria
-           (cuenta_id, solicitado_por, nombre, numero, moneda, cuenta_contable_id, saldo_actual, motivo, tasa_compra, tasa_venta, tarifa)
-         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+           (cuenta_id, solicitado_por, nombre, numero, moneda, cuenta_contable_id, saldo_actual, motivo, tasa_compra, tasa_venta, tarifa, codigo_institucion)
+         SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
           WHERE EXISTS (SELECT 1 FROM contabilidad.cuenta_bancaria WHERE id = $1)
             AND EXISTS (
               SELECT 1 FROM contabilidad.cuenta_contable c
                WHERE c.id = $6 AND c.tipo = 'activo' AND c.admite_movimiento AND c.activa
             )
          RETURNING id`,
-        [cuenta, usuario.id, nombre, numero, moneda, contable, saldoActual, motivo, tasaCompra, tasaVenta, tarifa],
+        [cuenta, usuario.id, nombre, numero, moneda, contable, saldoActual, motivo, tasaCompra, tasaVenta, tarifa, codigoInstitucion],
       );
       if (!rows[0]) throw new RechazoBanco("datos_invalidos");
       return rows[0].id;
@@ -761,12 +780,13 @@ export async function resolverSolicitudCambioBanco(
         tasa_compra: string | null;
         tasa_venta: string | null;
         tarifa: string | null;
+        codigo_institucion: string | null;
         cuenta_contable_id: string;
         saldo_actual: string;
       }>(
         `SELECT id, cuenta_id, solicitado_por, nombre, numero, moneda,
                 tasa_compra::text AS tasa_compra, tasa_venta::text AS tasa_venta,
-                tarifa::numeric(14,2)::text AS tarifa,
+                tarifa::numeric(14,2)::text AS tarifa, codigo_institucion,
                 cuenta_contable_id, saldo_actual::text AS saldo_actual
            FROM contabilidad.solicitud_cambio_cuenta_bancaria
           WHERE id = $1 AND estado = 'pendiente'
@@ -791,7 +811,8 @@ export async function resolverSolicitudCambioBanco(
                   ), 0),
                   tasa_compra = $7,
                   tasa_venta = $8,
-                  tarifa = $9
+                  tarifa = $9,
+                  codigo_institucion = $10
             WHERE cb.id = $1
               AND (
                 cb.cuenta_contable_id = $5
@@ -810,6 +831,7 @@ export async function resolverSolicitudCambioBanco(
             sol.moneda === "USD" ? sol.tasa_compra : null,
             sol.moneda === "USD" ? sol.tasa_venta : null,
             sol.moneda === "USD" ? sol.tarifa : null,
+            sol.moneda === "USD" ? sol.codigo_institucion : null,
           ],
         );
         if (!rowCount) throw new RechazoBanco("datos_invalidos");
@@ -846,6 +868,219 @@ export async function resolverSolicitudCambioBanco(
     if (error instanceof RechazoBanco) return { estado: error.estado };
     if ((error as { code?: string })?.code === "23505") return { estado: "datos_invalidos" };
     return { estado: estadoDeError(error) };
+  }
+}
+
+export type EstadoActualizarTasas = {
+  estado:
+    | "inicial"
+    | "ok"
+    | "no_permitido"
+    | "antes_de_hora"
+    | "ya_actualizado_hoy"
+    | "sin_token"
+    | "token_invalido"
+    | "limite_api"
+    | "error_api"
+    | "sin_datos";
+  bcrdActualizado?: boolean;
+  bcrdCompra?: string;
+  bcrdVenta?: string;
+  bancosActualizados?: number;
+  faltantes?: string[];
+  detalle?: string;
+};
+
+type TasaRealItem = {
+  institution?: string;
+  currency?: string;
+  buy?: number | string | null;
+  sell?: number | string | null;
+  date?: string | null;
+};
+
+type TasaRealRespuesta = {
+  date?: string;
+  rates?: TasaRealItem[];
+  missing_institutions?: string[];
+};
+
+function normalizarTasaApi(valor: number | string | null | undefined): string | null {
+  if (valor === null || valor === undefined) return null;
+  const n = typeof valor === "number" ? valor : Number(String(valor).replace(/,/g, "").trim());
+  if (!Number.isFinite(n) || n <= 0 || n >= 10000) return null;
+  return n.toFixed(4);
+}
+
+/**
+ * Consulta la API de TasaReal (`GET /api/v1/rates?currency=USD`) y actualiza:
+ *   1. La tasa oficial del BCRD (`contabilidad.tasa_cambio`) usando el código `bcrd`.
+ *   2. Las tasas de compra y venta de cada cuenta bancaria activa en USD según
+ *      su `codigo_institucion` configurado.
+ */
+export async function actualizarTasasDesdeApi(): Promise<EstadoActualizarTasas> {
+  const usuario = await requerirUsuario();
+  if (!usuarioTienePermiso(usuario, "contabilidad.registrar")) {
+    return { estado: "no_permitido" };
+  }
+
+  const yaActualizado = await tasasActualizadasHoy();
+  const horario = estadoHorarioTasasRD(yaActualizado);
+  if (!horario.permitido) {
+    return { estado: horario.motivo === "antes_de_hora" ? "antes_de_hora" : "ya_actualizado_hoy" };
+  }
+
+  const token = process.env.TASAREAL_API_KEY?.trim();
+  if (!token) {
+    return { estado: "sin_token" };
+  }
+
+  let payload: TasaRealRespuesta;
+  try {
+    const respuesta = await fetch(`${URL_BASE_TASAREAL}/rates?currency=USD`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (respuesta.status === 401 || respuesta.status === 403) {
+      return { estado: "token_invalido" };
+    }
+    if (respuesta.status === 429) {
+      return { estado: "limite_api" };
+    }
+    if (!respuesta.ok) {
+      return { estado: "error_api", detalle: `HTTP ${respuesta.status}` };
+    }
+
+    payload = (await respuesta.json()) as TasaRealRespuesta;
+  } catch (error) {
+    return {
+      estado: "error_api",
+      detalle: error instanceof Error ? error.message : undefined,
+    };
+  }
+
+  const lista = Array.isArray(payload.rates) ? payload.rates : [];
+  if (lista.length === 0) {
+    return { estado: "sin_datos" };
+  }
+
+  const mapa = new Map<string, TasaRealItem>();
+  for (const item of lista) {
+    const codigo = item.institution?.trim().toLowerCase();
+    if (!codigo) continue;
+    if (item.currency && item.currency.toUpperCase() !== "USD") continue;
+    mapa.set(codigo, item);
+  }
+
+  const fechaHoyRd = claveDia();
+
+  try {
+    const resumen = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await fijarAccion(cliente, "editar", "Actualización automática de tasas vía API TasaReal.");
+
+      let bcrdActualizado = false;
+      let bcrdCompra: string | undefined;
+      let bcrdVenta: string | undefined;
+      const faltantes: string[] = [];
+
+      // 1) BCRD siempre con código `bcrd`
+      const tasaBcrd = mapa.get(CODIGO_BCRD_TASAREAL);
+      const compraBcrd = normalizarTasaApi(tasaBcrd?.buy);
+      const ventaBcrd = normalizarTasaApi(tasaBcrd?.sell);
+      if (compraBcrd && ventaBcrd) {
+        const fechaBcrd =
+          tasaBcrd?.date && esFechaIso(tasaBcrd.date)
+            ? tasaBcrd.date
+            : payload.date && esFechaIso(payload.date)
+              ? payload.date
+              : fechaHoyRd;
+        await cliente.query(
+          `INSERT INTO contabilidad.tasa_cambio (fecha, compra, venta, fuente)
+           VALUES ($1, $2, $3, 'BCRD')
+           ON CONFLICT (fecha) DO UPDATE
+             SET compra = EXCLUDED.compra,
+                 venta = EXCLUDED.venta,
+                 fuente = EXCLUDED.fuente`,
+          [fechaBcrd, compraBcrd, ventaBcrd],
+        );
+        bcrdActualizado = true;
+        bcrdCompra = compraBcrd;
+        bcrdVenta = ventaBcrd;
+      } else {
+        faltantes.push(CODIGO_BCRD_TASAREAL);
+      }
+
+      // 2) Cuentas bancarias activas en USD con código de institución configurado
+      const { rows: cuentasUsd } = await cliente.query<{
+        id: string;
+        nombre: string;
+        codigo_institucion: string;
+      }>(
+        `SELECT id, nombre, codigo_institucion
+           FROM contabilidad.cuenta_bancaria
+          WHERE estado = 'activa'
+            AND moneda = 'USD'
+            AND nullif(trim(codigo_institucion), '') IS NOT NULL
+          FOR UPDATE`,
+      );
+
+      let bancosActualizados = 0;
+      const detalleBancos: Record<string, { compra: string | null; venta: string | null }> = {};
+
+      for (const cb of cuentasUsd) {
+        const codigo = cb.codigo_institucion.trim().toLowerCase();
+        const item = mapa.get(codigo);
+        const buy = normalizarTasaApi(item?.buy);
+        const sell = normalizarTasaApi(item?.sell);
+        if (!buy && !sell) {
+          faltantes.push(codigo);
+          continue;
+        }
+        await cliente.query(
+          `UPDATE contabilidad.cuenta_bancaria
+              SET tasa_compra = coalesce($2::numeric, tasa_compra),
+                  tasa_venta  = coalesce($3::numeric, tasa_venta)
+            WHERE id = $1`,
+          [cb.id, buy, sell],
+        );
+        bancosActualizados++;
+        detalleBancos[codigo] = { compra: buy, venta: sell };
+      }
+
+      await cliente.query(
+        `INSERT INTO contabilidad.tasareal_actualizacion
+           (fecha_rd, ejecutado_por, bcrd_actualizado, bancos_actualizados, detalle)
+         VALUES ($1, $2, $3, $4, $5::jsonb)`,
+        [
+          fechaHoyRd,
+          usuario.id,
+          bcrdActualizado,
+          bancosActualizados,
+          JSON.stringify({
+            fecha_api: payload.date ?? null,
+            bcrd: bcrdActualizado ? { compra: bcrdCompra, venta: bcrdVenta } : null,
+            bancos: detalleBancos,
+            faltantes,
+          }),
+        ],
+      );
+
+      return { bcrdActualizado, bcrdCompra, bcrdVenta, bancosActualizados, faltantes };
+    });
+
+    refrescar();
+    return { estado: "ok", ...resumen };
+  } catch (error) {
+    return {
+      estado: "error_api",
+      detalle: error instanceof Error ? error.message : undefined,
+    };
   }
 }
 

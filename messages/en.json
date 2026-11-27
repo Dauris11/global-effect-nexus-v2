@@ -3736,6 +3736,24 @@
           "detalle": "Details"
         }
       },
+      "actualizarTasas": {
+        "boton": "Update rates",
+        "actualizando": "Updating...",
+        "antesDeHora": "Available daily starting at 8:00 AM (DR time).",
+        "yaActualizadoHoy": "Rates were already updated today.",
+        "noDisponible": "no data today",
+        "okResumen": "Rates updated — BCRD: {bcrd} · USD banks updated: {bancos}.",
+        "error": {
+          "no_permitido": "You do not have permission to update exchange rates.",
+          "antes_de_hora": "Daily update becomes available at 8:00 AM.",
+          "ya_actualizado_hoy": "Rates were already updated once today.",
+          "sin_token": "TASAREAL_API_KEY is not configured on the server.",
+          "token_invalido": "The TasaReal API token is invalid or expired.",
+          "limite_api": "TasaReal daily API quota reached.",
+          "error_api": "Could not reach the TasaReal API.",
+          "sin_datos": "TasaReal returned no USD rates at this time."
+        }
+      },
       "tasaForm": {
         "botonConfig": "Configure BCRD exchange rate",
         "tituloBcrd": "BCRD exchange rate",
@@ -3761,6 +3779,8 @@
         "campoTitulo": "Title",
         "campoNumero": "Account number",
         "campoMoneda": "Currency",
+        "campoCodigoInstitucion": "Institution code (TasaReal)",
+        "seleccionarInstitucion": "Select code...",
         "campoTasaCompra": "Buy Rate",
         "campoTasaVenta": "Sell Rate",
         "campoTarifa": "Fee",

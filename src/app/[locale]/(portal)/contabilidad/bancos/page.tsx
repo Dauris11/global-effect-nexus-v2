@@ -3,7 +3,11 @@ import { Landmark } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import { DialogoTasaBcrd, DialogoTransferencia } from "@/components/contabilidad/bancos/formularios-banco";
+import {
+  BotonActualizarTasas,
+  DialogoTasaBcrd,
+  DialogoTransferencia,
+} from "@/components/contabilidad/bancos/formularios-banco";
 import { Monto } from "@/components/contabilidad/comun";
 import { Badge } from "@/components/ui/badge";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -14,7 +18,11 @@ import { requerirPermiso } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
 import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
-import { cuentasConSaldo, tasaVigente } from "@/server/contabilidad/bancos/consultas";
+import {
+  cuentasConSaldo,
+  tasaVigente,
+  tasasActualizadasHoy,
+} from "@/server/contabilidad/bancos/consultas";
 
 export async function generateMetadata({
   params,
@@ -39,15 +47,17 @@ export default async function PaginaBancos({
   const { locale } = await params;
   const usuario = await requerirPermiso("contabilidad.leer");
 
-  const [t, cuentas, tasa, mensajes] = await Promise.all([
+  const [t, cuentas, tasa, yaActualizadoHoy, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "contab.bancos" }),
     cuentasConSaldo(),
     tasaVigente(),
+    tasasActualizadasHoy(),
     mensajesCliente(["contab"]),
   ]);
   const activas = cuentas.filter((c) => c.estado === "activa");
   const hoy = claveDia();
   const puedeEditarTasa = usuarioTienePermiso(usuario, "contabilidad.registrar");
+  const puedeTransferir = usuarioTienePermiso(usuario, "contabilidad.aprobar") && activas.length > 1;
 
   return (
     <NextIntlClientProvider messages={mensajes}>
@@ -60,19 +70,24 @@ export default async function PaginaBancos({
             </span>
           }
           acciones={
-            usuarioTienePermiso(usuario, "contabilidad.aprobar") && activas.length > 1 ? (
-              <DialogoTransferencia
-                cuentas={activas.map((c) => ({
-                  id: c.id,
-                  nombre: c.nombre,
-                  moneda: c.moneda,
-                  tasa_compra: c.tasa_compra,
-                  tasa_venta: c.tasa_venta,
-                  tarifa: c.tarifa,
-                }))}
-                tasaBcrd={tasa}
-                hoy={hoy}
-              />
+            puedeEditarTasa || puedeTransferir ? (
+              <div className="flex flex-wrap items-start justify-end gap-2">
+                {puedeEditarTasa && <BotonActualizarTasas yaActualizadoHoy={yaActualizadoHoy} />}
+                {puedeTransferir && (
+                  <DialogoTransferencia
+                    cuentas={activas.map((c) => ({
+                      id: c.id,
+                      nombre: c.nombre,
+                      moneda: c.moneda,
+                      tasa_compra: c.tasa_compra,
+                      tasa_venta: c.tasa_venta,
+                      tarifa: c.tarifa,
+                    }))}
+                    tasaBcrd={tasa}
+                    hoy={hoy}
+                  />
+                )}
+              </div>
             ) : null
           }
         />

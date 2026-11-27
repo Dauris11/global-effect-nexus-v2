@@ -21,6 +21,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { MONEDAS, type Moneda } from "@/lib/contabilidad/formato";
 import {
+  INSTITUCIONES_TASAREAL,
+  etiquetaInstitucionTasareal,
+} from "@/lib/contabilidad/tasareal";
+import {
   actualizarCuentaBancaria,
   resolverSolicitudCambioBanco,
   solicitarCambioCuentaBancaria,
@@ -195,52 +199,75 @@ export function DialogoConfigurarCuentaBanco({
             </div>
 
             {moneda === "USD" && (
-              <div className="grid gap-4 sm:grid-cols-3">
+              <>
                 <div className="space-y-1.5">
-                  <Label htmlFor="cfg-tasa-compra" className="text-sm font-medium">
-                    {t("campoTasaCompra")}
+                  <Label htmlFor="cfg-institucion" className="text-sm font-medium">
+                    {t("campoCodigoInstitucion")}
                     <AsteriscoObligatorio />
                   </Label>
-                  <Input
-                    id="cfg-tasa-compra"
-                    name="tasa_compra"
-                    inputMode="decimal"
+                  <select
+                    id="cfg-institucion"
+                    name="codigo_institucion"
+                    className={SELECT}
                     required
-                    defaultValue={cuenta.tasa_compra ?? ""}
-                    className="tabular-nums"
-                  />
+                    defaultValue={cuenta.codigo_institucion ?? ""}
+                  >
+                    <option value="">{t("seleccionarInstitucion")}</option>
+                    {INSTITUCIONES_TASAREAL.map((inst) => (
+                      <option key={inst.codigo} value={inst.codigo}>
+                        {`${inst.codigo} · ${inst.nombre}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="cfg-tasa-venta" className="text-sm font-medium">
-                    {t("campoTasaVenta")}
-                    <AsteriscoObligatorio />
-                  </Label>
-                  <Input
-                    id="cfg-tasa-venta"
-                    name="tasa_venta"
-                    inputMode="decimal"
-                    required
-                    defaultValue={cuenta.tasa_venta ?? ""}
-                    className="tabular-nums"
-                  />
-                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cfg-tasa-compra" className="text-sm font-medium">
+                      {t("campoTasaCompra")}
+                      <AsteriscoObligatorio />
+                    </Label>
+                    <Input
+                      id="cfg-tasa-compra"
+                      name="tasa_compra"
+                      inputMode="decimal"
+                      required
+                      defaultValue={cuenta.tasa_compra ?? ""}
+                      className="tabular-nums"
+                    />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="cfg-tarifa" className="text-sm font-medium">
-                    {t("campoTarifa")}
-                    <AsteriscoObligatorio />
-                  </Label>
-                  <Input
-                    id="cfg-tarifa"
-                    name="tarifa"
-                    inputMode="decimal"
-                    required
-                    defaultValue={cuenta.tarifa ?? ""}
-                    className="tabular-nums"
-                  />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cfg-tasa-venta" className="text-sm font-medium">
+                      {t("campoTasaVenta")}
+                      <AsteriscoObligatorio />
+                    </Label>
+                    <Input
+                      id="cfg-tasa-venta"
+                      name="tasa_venta"
+                      inputMode="decimal"
+                      required
+                      defaultValue={cuenta.tasa_venta ?? ""}
+                      className="tabular-nums"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cfg-tarifa" className="text-sm font-medium">
+                      {t("campoTarifa")}
+                      <AsteriscoObligatorio />
+                    </Label>
+                    <Input
+                      id="cfg-tarifa"
+                      name="tarifa"
+                      inputMode="decimal"
+                      required
+                      defaultValue={cuenta.tarifa ?? ""}
+                      className="tabular-nums"
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <div className="space-y-1.5">
@@ -369,6 +396,12 @@ function TarjetaSolicitudPendiente({ solicitud }: { solicitud: SolicitudCambioBa
           <span className="font-medium text-tinta">{t("campoNumero")}:</span>{" "}
           <span className="font-mono">{solicitud.numero}</span> · {solicitud.moneda}
         </p>
+        {solicitud.moneda === "USD" && solicitud.codigo_institucion && (
+          <p>
+            <span className="font-medium text-tinta">{t("campoCodigoInstitucion")}:</span>{" "}
+            {etiquetaInstitucionTasareal(solicitud.codigo_institucion)}
+          </p>
+        )}
         {solicitud.moneda === "USD" && (solicitud.tasa_compra || solicitud.tasa_venta || solicitud.tarifa) && (
           <p>
             <span className="font-medium text-tinta">{t("campoTasaCompra")}:</span>{" "}

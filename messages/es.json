@@ -3736,6 +3736,24 @@
           "detalle": "Detalle"
         }
       },
+      "actualizarTasas": {
+        "boton": "Actualizar tasas",
+        "actualizando": "Actualizando...",
+        "antesDeHora": "Disponible todos los días a partir de las 8:00 AM (hora RD).",
+        "yaActualizadoHoy": "Las tasas ya fueron actualizadas hoy.",
+        "noDisponible": "sin dato hoy",
+        "okResumen": "Tasas actualizadas — BCRD: {bcrd} · Bancos USD actualizados: {bancos}.",
+        "error": {
+          "no_permitido": "No tienes permiso para actualizar tasas.",
+          "antes_de_hora": "La actualización diaria se habilita a partir de las 8:00 AM.",
+          "ya_actualizado_hoy": "Las tasas ya se actualizaron una vez hoy.",
+          "sin_token": "Falta configurar la variable TASAREAL_API_KEY en el servidor.",
+          "token_invalido": "El token de TasaReal no es válido o venció.",
+          "limite_api": "Se alcanzó el límite diario de consultas de TasaReal.",
+          "error_api": "No se pudo consultar la API de TasaReal.",
+          "sin_datos": "TasaReal no devolvió tasas para USD en este momento."
+        }
+      },
       "tasaForm": {
         "botonConfig": "Configurar tasa de cambio BCRD",
         "tituloBcrd": "Tasa de cambio BCRD",
@@ -3761,6 +3779,8 @@
         "campoTitulo": "Título",
         "campoNumero": "No. de cuenta",
         "campoMoneda": "Moneda",
+        "campoCodigoInstitucion": "Código de institución (TasaReal)",
+        "seleccionarInstitucion": "Seleccionar código...",
         "campoTasaCompra": "Tasa de Compra",
         "campoTasaVenta": "Tasa de Venta",
         "campoTarifa": "Tarifa",

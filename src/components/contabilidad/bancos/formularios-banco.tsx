@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
-import { ArrowLeftRight, CheckCircle2, CloudUpload, FileSpreadsheet, Link2, Loader2, Save, Settings, Upload, X } from "lucide-react";
+import { useActionState, useRef, useState, useTransition } from "react";
+import { ArrowLeftRight, CheckCircle2, CloudUpload, FileSpreadsheet, Link2, Loader2, RefreshCw, Save, Settings, Upload, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
-import { AvisoError, SELECT } from "@/components/contabilidad/comun";
+import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,11 +26,14 @@ import {
   type ResultadoVistaPreviaCsv,
 } from "@/lib/contabilidad/formato-estado-banco";
 import type { Moneda } from "@/lib/contabilidad/formato";
+import { estadoHorarioTasasRD } from "@/lib/contabilidad/tasareal";
 import {
+  actualizarTasasDesdeApi,
   registrarTasa,
   subirEstadoFormatoBanco,
   transferirEntreCuentas,
   vincularCuentaContable,
+  type EstadoActualizarTasas,
   type EstadoBanco,
 } from "@/server/contabilidad/bancos/acciones";
 import { asientoPreviaTransferencia } from "@/server/contabilidad/bancos/acciones-asiento";
@@ -338,6 +341,74 @@ export function DialogoTransferencia({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Botón «Actualizar tasas» junto a «Transferir entre cuentas».
+ * Consulta la API de TasaReal y actualiza el BCRD (`bcrd`) y todas las
+ * cuentas bancarias activas en USD según su `codigo_institucion`.
+ */
+export function BotonActualizarTasas({
+  yaActualizadoHoy,
+}: {
+  yaActualizadoHoy: boolean;
+}) {
+  const t = useTranslations("contab.bancos.actualizarTasas");
+  const router = useRouter();
+  const [pendiente, iniciar] = useTransition();
+  const [resultado, setResultado] = useState<EstadoActualizarTasas | null>(null);
+
+  const horario = estadoHorarioTasasRD(yaActualizadoHoy || resultado?.estado === "ok");
+  const deshabilitado = pendiente || !horario.permitido;
+
+  function ejecutar() {
+    iniciar(async () => {
+      const res = await actualizarTasasDesdeApi();
+      setResultado(res);
+      if (res.estado === "ok") {
+        router.refresh();
+      }
+    });
+  }
+
+  const tituloDeshabilitado =
+    !horario.permitido && horario.motivo === "antes_de_hora"
+      ? t("antesDeHora")
+      : !horario.permitido && horario.motivo === "ya_actualizado_hoy"
+        ? t("yaActualizadoHoy")
+        : undefined;
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        disabled={deshabilitado}
+        title={tituloDeshabilitado}
+        onClick={ejecutar}
+      >
+        <RefreshCw className={`size-4 ${pendiente ? "animate-spin" : ""}`} />
+        {pendiente ? t("actualizando") : t("boton")}
+      </Button>
+
+      {resultado && resultado.estado === "ok" && (
+        <AvisoOk>
+          {t("okResumen", {
+            bcrd: resultado.bcrdActualizado
+              ? `${resultado.bcrdCompra} / ${resultado.bcrdVenta}`
+              : t("noDisponible"),
+            bancos: resultado.bancosActualizados ?? 0,
+          })}
+        </AvisoOk>
+      )}
+      {resultado && resultado.estado !== "ok" && resultado.estado !== "inicial" && (
+        <AvisoError>
+          {t(`error.${resultado.estado}` as never)}
+          {resultado.detalle ? ` (${resultado.detalle})` : ""}
+        </AvisoError>
+      )}
+    </div>
   );
 }
 
