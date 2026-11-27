@@ -7,11 +7,11 @@
  */
 
 /**
- * Mientras estén activas las pruebas se permite pulsar «Actualizar tasas»
- * cuantas veces sea necesario. Al pasar esto a `false` se activa la restricción
- * de horario (>= 8:00 AM RD) y máximo una ejecución por día.
+ * Regla de horario activa: el botón «Actualizar tasas» se habilita a partir
+ * de las 8:00 AM (hora de República Dominicana) y solo puede ejecutarse una
+ * vez por día.
  */
-export const MODO_PRUEBAS_TASAREAL = true;
+export const MODO_PRUEBAS_TASAREAL = false;
 
 /** Hora mínima (formato 24h en America/Santo_Domingo) para habilitar el botón diario. */
 export const HORA_ACTIVACION_TASAS_RD = 8;
@@ -88,7 +88,7 @@ export function estadoHorarioTasasRD(
     new Intl.DateTimeFormat("en-US", {
       timeZone: "America/Santo_Domingo",
       hour: "numeric",
-      hour12: false,
+      hourCycle: "h23",
     }).format(ahora),
   );
 
