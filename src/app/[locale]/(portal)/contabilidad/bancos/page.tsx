@@ -68,6 +68,7 @@ export default async function PaginaBancos({
                   moneda: c.moneda,
                   tasa_compra: c.tasa_compra,
                   tasa_venta: c.tasa_venta,
+                  tarifa: c.tarifa,
                 }))}
                 tasaBcrd={tasa}
                 hoy={hoy}

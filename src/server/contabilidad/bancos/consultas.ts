@@ -26,6 +26,7 @@ export type CuentaConSaldo = {
   moneda: Moneda;
   tasa_compra: string | null;
   tasa_venta: string | null;
+  tarifa: string | null;
   saldo: string;
   /** Equivalente en pesos con la tasa de referencia de hoy; null si no hay tasa. */
   saldo_dop: string | null;
@@ -47,6 +48,7 @@ export async function cuentasConSaldo(): Promise<CuentaConSaldo[]> {
     `SELECT cb.id, cb.nombre, b.nombre AS banco, cb.numero, cb.tipo, cb.moneda, cb.estado,
             cb.tasa_compra::text AS tasa_compra,
             cb.tasa_venta::text AS tasa_venta,
+            cb.tarifa::numeric(14,2)::text AS tarifa,
             (cb.saldo_inicial + coalesce(s.suma, 0))::text AS saldo,
             CASE cb.moneda
               WHEN 'DOP' THEN (cb.saldo_inicial + coalesce(s.suma, 0))
@@ -444,6 +446,7 @@ export type SolicitudCambioBanco = {
   moneda: Moneda;
   tasa_compra: string | null;
   tasa_venta: string | null;
+  tarifa: string | null;
   cuenta_contable_id: string;
   cuenta_contable: string;
   saldo_actual: string;
@@ -470,6 +473,7 @@ export async function solicitudesCambioBanco(
             s.moneda,
             s.tasa_compra::text AS tasa_compra,
             s.tasa_venta::text AS tasa_venta,
+            s.tarifa::numeric(14,2)::text AS tarifa,
             s.cuenta_contable_id,
             cc.codigo || ' · ' || cc.nombre AS cuenta_contable,
             s.saldo_actual::numeric(14,2)::text AS saldo_actual,

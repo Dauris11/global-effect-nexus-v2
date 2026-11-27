@@ -40,6 +40,17 @@ export const CODIGOS_TESORERIA: readonly DefinicionCodigo[] = [
     },
     naturaleza: "debito",
   },
+  {
+    codigo: "BAN_TRANSFER_TARIFA",
+    modulo: "bancos",
+    proceso: "transferencia_tarifa",
+    nombre: { es: "Tarifa bancaria en transferencias", en: "Bank transfer fee" },
+    ayuda: {
+      es: "Comisión o tarifa fija cobrada por el banco al transferir hacia una cuenta en USD.",
+      en: "Fixed fee charged by the bank when transferring to a USD account.",
+    },
+    naturaleza: "debito",
+  },
   // ── Cajas y arqueos ──
   {
     codigo: "CAJ_CAJA_CHICA",

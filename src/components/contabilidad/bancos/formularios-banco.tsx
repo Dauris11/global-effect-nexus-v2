@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
-import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +71,7 @@ export type CuentaTransferencia = {
   moneda: Moneda;
   tasa_compra: string | null;
   tasa_venta: string | null;
+  tarifa: string | null;
 };
 
 function parsearDecimalPositivo(crudo: string): number | null {
@@ -82,15 +82,19 @@ function parsearDecimalPositivo(crudo: string): number | null {
 }
 
 /**
- * Transferencia entre cuentas propias:
+ * Transferencia entre cuentas propias (formulario directo sin modo guiado,
+ * con «Asiento» en la cabecera del formulario):
  *   · Cuenta origen (izq.) y Cuenta destino (der.).
  *   · Monto a transferir debajo de Cuenta origen; Monto a recibir debajo de
  *     Cuenta destino en modo lectura por defecto.
  *   · Caso DOP → USD: Monto a transferir pasa a lectura y se edita Monto a
- *     recibir (USD). Monto a transferir = monto a recibir × tasa compra BCRD.
- *     Debajo aparece Diferencia de cambio en lectura:
- *       (monto a recibir × tasa venta banco) − (monto a recibir × tasa compra BCRD),
- *     que se contabiliza como gasto por cambio de divisas.
+ *     recibir (USD). Debajo aparece el campo de Tarifa / Diferencia de cambio
+ *     junto al check «Tarifa» (marcado por defecto):
+ *       - Marcado: muestra la tarifa configurada del banco USD (cargada a
+ *         5.2.3.4.2) y Monto a transferir = Monto a recibir × tasa compra banco.
+ *       - Desmarcado: muestra Diferencia de cambio =
+ *         (Monto a recibir × tasa venta banco) − (Monto a recibir × compra BCRD)
+ *         y Monto a transferir = Monto a recibir × tasa compra BCRD.
  */
 export function DialogoTransferencia({
   cuentas,
@@ -116,6 +120,7 @@ export function DialogoTransferencia({
   const [destino, setDestino] = useState(cuentas[1]?.id ?? "");
   const [montoTransferirInput, setMontoTransferirInput] = useState("");
   const [montoRecibirInput, setMontoRecibirInput] = useState("");
+  const [usarTarifa, setUsarTarifa] = useState(true);
   const error = useError(estado);
   const formulario = useRef<HTMLFormElement>(null);
 
@@ -127,15 +132,22 @@ export function DialogoTransferencia({
   const esUsdADop = monedaOrigen === "USD" && monedaDestino === "DOP";
 
   const tasaCompraBcrd = tasaBcrd ? Number(tasaBcrd.compra) : null;
+  const tasaCompraBancoDestino = cuentaDestino?.tasa_compra ? Number(cuentaDestino.tasa_compra) : null;
   const tasaVentaBanco = cuentaDestino?.tasa_venta ? Number(cuentaDestino.tasa_venta) : null;
+  const tarifaBanco =
+    cuentaDestino?.tarifa !== null && cuentaDestino?.tarifa !== undefined && cuentaDestino.tarifa !== ""
+      ? Number(cuentaDestino.tarifa)
+      : null;
   const tasaCompraBancoOrigen = cuentaOrigen?.tasa_compra ? Number(cuentaOrigen.tasa_compra) : null;
 
   const numRecibir = parsearDecimalPositivo(montoRecibirInput);
   const numTransferir = parsearDecimalPositivo(montoTransferirInput);
 
+  const tasaParaTransferirDopAUsd = usarTarifa ? tasaCompraBancoDestino : tasaCompraBcrd;
+
   const valorMontoTransferir = esDopAUsd
-    ? numRecibir !== null && tasaCompraBcrd !== null
-      ? (numRecibir * tasaCompraBcrd).toFixed(2)
+    ? numRecibir !== null && tasaParaTransferirDopAUsd !== null
+      ? (numRecibir * tasaParaTransferirDopAUsd).toFixed(2)
       : ""
     : montoTransferirInput;
 
@@ -147,20 +159,29 @@ export function DialogoTransferencia({
         : ""
       : montoTransferirInput;
 
-  const diferenciaCambio =
-    esDopAUsd && numRecibir !== null && tasaCompraBcrd !== null && tasaVentaBanco !== null
-      ? (numRecibir * tasaVentaBanco - numRecibir * tasaCompraBcrd).toFixed(2)
-      : "";
+  const valorDiferenciaOTarifa = esDopAUsd
+    ? usarTarifa
+      ? tarifaBanco !== null
+        ? tarifaBanco.toFixed(2)
+        : ""
+      : numRecibir !== null && tasaCompraBcrd !== null && tasaVentaBanco !== null
+        ? (numRecibir * tasaVentaBanco - numRecibir * tasaCompraBcrd).toFixed(2)
+        : ""
+    : "";
 
-  const faltaTasaBcrd = esDopAUsd && tasaCompraBcrd === null;
-  const faltaTasaVentaBanco = esDopAUsd && tasaVentaBanco === null;
-  const bloqueadoPorTasas = faltaTasaBcrd || faltaTasaVentaBanco;
+  const faltaTasaCompraBanco = esDopAUsd && usarTarifa && tasaCompraBancoDestino === null;
+  const faltaTarifaBanco = esDopAUsd && usarTarifa && tarifaBanco === null;
+  const faltaTasaBcrd = esDopAUsd && !usarTarifa && tasaCompraBcrd === null;
+  const faltaTasaVentaBanco = esDopAUsd && !usarTarifa && tasaVentaBanco === null;
+  const bloqueadoPorTasas =
+    faltaTasaCompraBanco || faltaTarifaBanco || faltaTasaBcrd || faltaTasaVentaBanco;
 
   function manejarCambioAbierto(siguiente: boolean) {
     setAbierto(siguiente);
     if (!siguiente) {
       setMontoTransferirInput("");
       setMontoRecibirInput("");
+      setUsarTarifa(true);
     }
   }
 
@@ -176,119 +197,144 @@ export function DialogoTransferencia({
         <DialogHeader>
           <DialogTitle>{t("titulo")}</DialogTitle>
         </DialogHeader>
-        <form ref={formulario} action={enviar} className="space-y-4">
-          <FormularioGuiado>
-            <PasoFormulario titulo={t("pasos.cuentas")}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Campo id="origen" etiqueta={t("origen")}>
-                  <select
-                    id="origen"
-                    name="origen"
-                    className={SELECT}
-                    value={origen}
-                    onChange={(e) => setOrigen(e.target.value)}
-                  >
-                    {cuentas.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {`${c.nombre} (${c.moneda})`}
-                      </option>
-                    ))}
-                  </select>
-                </Campo>
+        <form ref={formulario} action={enviar} className="space-y-5">
+          <input type="hidden" name="usar_tarifa" value={esDopAUsd && usarTarifa ? "true" : "false"} />
 
-                <Campo id="destino" etiqueta={t("destino")}>
-                  <select
-                    id="destino"
-                    name="destino"
-                    className={SELECT}
-                    value={destino}
-                    onChange={(e) => setDestino(e.target.value)}
-                  >
-                    {cuentas.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {`${c.nombre} (${c.moneda})`}
-                      </option>
-                    ))}
-                  </select>
-                </Campo>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <BotonAsiento
+              cargar={() => asientoPreviaTransferencia(new FormData(formulario.current ?? undefined))}
+            />
+          </div>
 
-                <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
-                  <Input
-                    id="monto_origen"
-                    name="monto_origen"
-                    inputMode="decimal"
-                    required
-                    readOnly={esDopAUsd}
-                    value={valorMontoTransferir}
-                    onChange={(e) => {
-                      if (!esDopAUsd) setMontoTransferirInput(e.target.value);
-                    }}
-                    className={esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
-                  />
-                </Campo>
+          <section className="space-y-4">
+            <h3 className="text-sm font-semibold text-tinta">{t("pasos.cuentas")}</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo id="origen" etiqueta={t("origen")}>
+                <select
+                  id="origen"
+                  name="origen"
+                  className={SELECT}
+                  value={origen}
+                  onChange={(e) => setOrigen(e.target.value)}
+                >
+                  {cuentas.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.nombre} (${c.moneda})`}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
 
-                <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino ?? ""})`}>
-                  <Input
-                    id="monto_destino"
-                    name="monto_destino"
-                    inputMode="decimal"
-                    required
-                    readOnly={!esDopAUsd}
-                    value={valorMontoRecibir}
-                    onChange={(e) => {
-                      if (esDopAUsd) setMontoRecibirInput(e.target.value);
-                    }}
-                    className={!esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
-                  />
-                </Campo>
+              <Campo id="destino" etiqueta={t("destino")}>
+                <select
+                  id="destino"
+                  name="destino"
+                  className={SELECT}
+                  value={destino}
+                  onChange={(e) => setDestino(e.target.value)}
+                >
+                  {cuentas.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {`${c.nombre} (${c.moneda})`}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
 
-                {esDopAUsd && (
+              <Campo id="monto_origen" etiqueta={`${t("montoOrigen")} (${monedaOrigen ?? ""})`}>
+                <Input
+                  id="monto_origen"
+                  name="monto_origen"
+                  inputMode="decimal"
+                  required
+                  readOnly={esDopAUsd}
+                  value={valorMontoTransferir}
+                  onChange={(e) => {
+                    if (!esDopAUsd) setMontoTransferirInput(e.target.value);
+                  }}
+                  className={esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+                />
+              </Campo>
+
+              <Campo id="monto_destino" etiqueta={`${t("montoDestino")} (${monedaDestino ?? ""})`}>
+                <Input
+                  id="monto_destino"
+                  name="monto_destino"
+                  inputMode="decimal"
+                  required
+                  readOnly={!esDopAUsd}
+                  value={valorMontoRecibir}
+                  onChange={(e) => {
+                    if (esDopAUsd) setMontoRecibirInput(e.target.value);
+                  }}
+                  className={!esDopAUsd ? "bg-muted/50 tabular-nums" : "tabular-nums"}
+                />
+              </Campo>
+
+              {esDopAUsd && (
+                <div className="space-y-2">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="diferencia_cambio" className="text-sm font-medium">
-                        {t("diferenciaCambio")} (DOP)
+                        {usarTarifa ? `${t("tarifa")} (DOP)` : `${t("diferenciaCambio")} (DOP)`}
                       </Label>
                       <TooltipAyuda
-                        texto={t("diferenciaCambioAyuda")}
+                        texto={usarTarifa ? t("tarifaAyuda") : t("diferenciaCambioAyuda")}
                         etiqueta={t("masInformacion")}
                       />
                     </div>
                     <Input
                       id="diferencia_cambio"
                       readOnly
-                      value={diferenciaCambio}
+                      value={valorDiferenciaOTarifa}
                       className="bg-muted/50 tabular-nums"
                     />
                   </div>
-                )}
+                  <label
+                    htmlFor="usar_tarifa_check"
+                    className="inline-flex cursor-pointer items-center gap-2 text-sm text-tinta"
+                  >
+                    <input
+                      id="usar_tarifa_check"
+                      type="checkbox"
+                      checked={usarTarifa}
+                      onChange={(e) => setUsarTarifa(e.target.checked)}
+                      className="size-4 rounded border-linea accent-marca-500"
+                    />
+                    <span>{t("tarifa")}</span>
+                  </label>
+                </div>
+              )}
 
-                <Campo id="fecha_tr" etiqueta={t("fecha")}>
-                  <Input id="fecha_tr" name="fecha" type="date" defaultValue={hoy} required />
-                </Campo>
-              </div>
+              <Campo id="fecha_tr" etiqueta={t("fecha")}>
+                <Input id="fecha_tr" name="fecha" type="date" defaultValue={hoy} required />
+              </Campo>
+            </div>
 
-              {faltaTasaBcrd && <AvisoError>{t("faltaTasaBcrd")}</AvisoError>}
-              {faltaTasaVentaBanco && <AvisoError>{t("faltaTasaVentaBanco")}</AvisoError>}
-            </PasoFormulario>
-            <PasoFormulario titulo={t("pasos.detalle")}>
-              <Campo id="concepto_tr" etiqueta={t("concepto")}>
-                <Input id="concepto_tr" name="concepto" required maxLength={200} />
-              </Campo>
-              <Campo id="referencia_tr" etiqueta={t("referencia")}>
-                <Input id="referencia_tr" name="referencia" maxLength={120} />
-              </Campo>
-            </PasoFormulario>
-            {error && <AvisoError>{error}</AvisoError>}
-            <AccionesFormulario>
-              <BotonAsiento
-                cargar={() => asientoPreviaTransferencia(new FormData(formulario.current ?? undefined))}
-              />
-              <Button type="submit" disabled={bloqueadoPorTasas} cargando={enviando}>
-                {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {t("guardar")}
-              </Button>
-            </AccionesFormulario>
-          </FormularioGuiado>
+            {faltaTasaCompraBanco && <AvisoError>{t("faltaTasaCompraBanco")}</AvisoError>}
+            {faltaTarifaBanco && <AvisoError>{t("faltaTarifaBanco")}</AvisoError>}
+            {faltaTasaBcrd && <AvisoError>{t("faltaTasaBcrd")}</AvisoError>}
+            {faltaTasaVentaBanco && <AvisoError>{t("faltaTasaVentaBanco")}</AvisoError>}
+          </section>
+
+          <section className="space-y-4 border-t border-linea pt-4">
+            <h3 className="text-sm font-semibold text-tinta">{t("pasos.detalle")}</h3>
+            <Campo id="concepto_tr" etiqueta={t("concepto")}>
+              <Input id="concepto_tr" name="concepto" required maxLength={200} />
+            </Campo>
+            <Campo id="referencia_tr" etiqueta={t("referencia")}>
+              <Input id="referencia_tr" name="referencia" maxLength={120} />
+            </Campo>
+          </section>
+
+          {error && <AvisoError>{error}</AvisoError>}
+
+          <DialogFooter>
+            <Button type="submit" disabled={bloqueadoPorTasas} cargando={enviando}>
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {t("guardar")}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

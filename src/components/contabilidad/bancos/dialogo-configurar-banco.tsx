@@ -195,7 +195,7 @@ export function DialogoConfigurarCuentaBanco({
             </div>
 
             {moneda === "USD" && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="cfg-tasa-compra" className="text-sm font-medium">
                     {t("campoTasaCompra")}
@@ -222,6 +222,21 @@ export function DialogoConfigurarCuentaBanco({
                     inputMode="decimal"
                     required
                     defaultValue={cuenta.tasa_venta ?? ""}
+                    className="tabular-nums"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="cfg-tarifa" className="text-sm font-medium">
+                    {t("campoTarifa")}
+                    <AsteriscoObligatorio />
+                  </Label>
+                  <Input
+                    id="cfg-tarifa"
+                    name="tarifa"
+                    inputMode="decimal"
+                    required
+                    defaultValue={cuenta.tarifa ?? ""}
                     className="tabular-nums"
                   />
                 </div>
@@ -314,7 +329,7 @@ export function DialogoConfigurarCuentaBanco({
                     <p className="texto-meta">
                       {sol.numero} · {sol.moneda}
                       {sol.moneda === "USD" && sol.tasa_compra && sol.tasa_venta
-                        ? ` (${t("campoTasaCompra")}: ${sol.tasa_compra} / ${t("campoTasaVenta")}: ${sol.tasa_venta})`
+                        ? ` (${t("campoTasaCompra")}: ${sol.tasa_compra} / ${t("campoTasaVenta")}: ${sol.tasa_venta}${sol.tarifa ? ` / ${t("campoTarifa")}: ${sol.tarifa}` : ""})`
                         : ""}{" "}
                       · {sol.cuenta_contable} ·{" "}
                       <Monto valor={sol.saldo_actual} moneda={sol.moneda} />
@@ -354,12 +369,14 @@ function TarjetaSolicitudPendiente({ solicitud }: { solicitud: SolicitudCambioBa
           <span className="font-medium text-tinta">{t("campoNumero")}:</span>{" "}
           <span className="font-mono">{solicitud.numero}</span> · {solicitud.moneda}
         </p>
-        {solicitud.moneda === "USD" && (solicitud.tasa_compra || solicitud.tasa_venta) && (
+        {solicitud.moneda === "USD" && (solicitud.tasa_compra || solicitud.tasa_venta || solicitud.tarifa) && (
           <p>
             <span className="font-medium text-tinta">{t("campoTasaCompra")}:</span>{" "}
             {solicitud.tasa_compra ?? "—"} ·{" "}
             <span className="font-medium text-tinta">{t("campoTasaVenta")}:</span>{" "}
-            {solicitud.tasa_venta ?? "—"}
+            {solicitud.tasa_venta ?? "—"} ·{" "}
+            <span className="font-medium text-tinta">{t("campoTarifa")}:</span>{" "}
+            {solicitud.tarifa ?? "—"}
           </p>
         )}
         <p>

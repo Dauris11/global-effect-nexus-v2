@@ -30,6 +30,7 @@ export async function asientoPreviaTransferencia(datos: FormData): Promise<Vista
   const destinoTexto = texto(datos, "monto_destino", 20);
   // Vacío = lo mismo que salió (cuentas de la misma moneda), igual que al transferir.
   const montoDestino = destinoTexto ? montoValido(destinoTexto) : montoOrigen;
+  const usarTarifa = datos.get("usar_tarifa") === "true" || datos.get("usar_tarifa") === "on";
 
   // Sin los datos mínimos no hay nada que calcular: la vista vacía lo muestra.
   if (!esUuid(origen) || !esUuid(destino) || origen === destino || !esFechaIso(fecha) || !montoOrigen || !montoDestino) {
@@ -37,7 +38,7 @@ export async function asientoPreviaTransferencia(datos: FormData): Promise<Vista
   }
   return vistaDeFuncionSql(
     "contabilidad.lineas_transferencia",
-    [origen, destino, fecha, montoOrigen, montoDestino],
+    [origen, destino, fecha, montoOrigen, montoDestino, usarTarifa],
     { fecha, descripcion: texto(datos, "concepto") || undefined },
   );
 }
