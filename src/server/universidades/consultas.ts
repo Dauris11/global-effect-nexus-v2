@@ -396,12 +396,16 @@ export type ArchivoAcademico = {
   subido_por_nombre: string | null;
 };
 
-/** Los PDF de un estudiante o de un pénsum, del más reciente al más antiguo. */
+/**
+ * Los PDF de un estudiante o de un pénsum, del más reciente al más antiguo. Las fotos
+ * del récord de secundaria llevan su propio panel (`record_liceo_id`), por eso no salen aquí.
+ */
 export async function archivosAcademicos(destino: "estudiante" | "pensum", id: string): Promise<ArchivoAcademico[]> {
   return consultar<ArchivoAcademico>(
     `SELECT a.id, a.tipo, a.nombre, a.tamano, a.created_at::text AS created_at, u.nombre AS subido_por_nombre
        FROM archivo_academico a LEFT JOIN usuario u ON u.id = a.subido_por
       WHERE ${destino === "pensum" ? "a.pensum_id" : "a.estudiante_id"} = $1
+        AND a.record_liceo_id IS NULL
       ORDER BY a.created_at DESC`,
     [id],
   );

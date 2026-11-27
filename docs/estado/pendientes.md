@@ -5,13 +5,24 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Récord de secundaria con foto y lectura por IA (26 nov 2026, migración `0133`)
+
+- [x] **Foto o captura a mano → tabla para corroborar → confirmar → promedios.** En la pestaña «Académico» del expediente («Récord de secundaria»): se suben 1–4 fotos o PDF (se reducen a ≤ 2000 px en el navegador), la IA transcribe grado, año, centro y notas, el borrador queda guardado (`record_liceo.borrador`), una persona lo revisa y edita en una tabla (notas sin leer bloquean la confirmación; las de poca certeza se marcan) y al confirmar el servidor valida de nuevo, recalcula y guarda en una transacción. Código: `src/lib/record-liceo.ts` (cálculo puro), `src/server/record-liceo/`, `src/components/expedientes/record-liceo/`.
+- [x] **Dos promedios, ambos visibles:** general (suma de todas las notas ÷ cantidad de notas; es el que manda) y por año (promedio de los promedios de cada grado). Redondeo mitad hacia arriba a 2 decimales. Quedan en `estudiante.promedio_secundaria` y `promedio_secundaria_anual` (escala 0–100).
+- [x] **Varios liceos y años:** cada grado guarda su año escolar y su centro de procedencia; la clave es grado + año + centro. Se pueden agregar grados después (el 6.º) editando y volviendo a confirmar.
+- [x] **Fotos originales** en `archivo_academico` (`tipo = record_notas`, con `mime`, `record_liceo_id` y `pendiente` hasta confirmar; descartar borra las pendientes). Se ven en la misma sección.
+- [x] **Probado:** `node --test scripts/probar-record-liceo.mjs` (cálculo, validación, fusión) y `npx tsx scripts/probar-ocr-record-liceo.ts <fotos>` (lectura REAL de las dos fotos del récord de ejemplo: 51 notas, sumas 805/769/771/1101/1108, global 89,29, por año 88,93; transcripción sin datos personales en `scripts/fixtures/`).
+- [ ] **No probado todavía en el navegador:** el flujo completo de la pantalla (subir fotos, editar, confirmar) no se recorrió con un expediente real; solo se compiló (`build`, `lint`, `i18n:check`, `audit:ui`) y se probó la lectura y el cálculo.
+- [ ] Falta una acción para **quitar** un récord ya confirmado (y poner los promedios en vacío) y mostrar el promedio de secundaria en la lista de expedientes y en el candidato de Habitudes.
+- Es **aparte del índice universitario**: no escribe en `historial_calificacion` ni `resultado_materia`, no toca `indice_estudiante()` ni la beca. La parte universitaria de «explicar cómo se calcula el índice» sigue abierta.
+
 ## Resumen de lo abierto (cierre del 25 nov 2026)
 
 Detalle de cada punto más abajo. Esto es lo que queda al terminar la sesión.
 
 **Necesita información o una decisión de Dirección**
 - [ ] **Explicar cómo se calcula el índice en cada universidad.** Hasta entonces el semáforo de beca usa el mínimo global y el «índice promedio» del tablero ejecutivo es solo orientativo.
-- [ ] **Récord del liceo:** cuáles son las **cuatro materias principales** y qué años cuentan; qué otros factores pesan para recomendar carrera. El mínimo (89) ya es configurable. Falta el campo del promedio en el candidato y la validación. Ver [`por-entregar.md`](por-entregar.md).
+- [ ] **Récord del liceo:** cuáles son las **cuatro materias principales** y qué otros factores pesan para recomendar carrera. El mínimo (89) ya es configurable. **Ya resuelto (26 nov 2026):** el promedio general (todas las notas) y el por año se calculan y se guardan en el expediente, con las fotos (ver el bloque de abajo). Falta el campo del promedio en el candidato y la validación contra el mínimo. Ver [`por-entregar.md`](por-entregar.md).
 - [ ] **Embudo de talento de Habitudes** (candidato → evaluado → visto bueno del director → aprobación de beca → expediente activo): sin decidir.
 - [ ] **Prorrateo del transporte** por estudiante (¿por días de asistencia o cuota fija por cuatrimestre?) solo entre quienes usan la guagua (Rincón, Jima, Ranchito, Saba Rey y Rancho Viejo).
 - [ ] **Qué cuentas agregar al catálogo contable** para no perder: depreciación, donaciones en especie, sobrante de arqueo y pérdida cambiaria. (Con `0121` y `0123` ya quedaron cubiertos proveedores `2.1.1`, retenciones de nómina `2.3.1`–`2.3.5`, retenciones a terceros `2.3.6` ITBIS / `2.3.7` ISR e inventario `1.1.2.1`–`1.1.2.2`.)

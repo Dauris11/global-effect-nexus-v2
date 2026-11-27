@@ -13,6 +13,7 @@ import { textoAntiguedad } from "@/components/expedientes/detalle/antiguedad-tex
 import { alertasAcademicas, indiceDelEstudiante, umbralesDeUniversidad } from "@/server/academico/indice";
 import { archivosAcademicos, arbolCatalogo, catalogoDelEstudiante, recordNativoDelEstudiante } from "@/server/universidades/consultas";
 import { Tab360, TabPensum, TabRecord, TabUniversidad } from "@/components/expedientes/detalle/tab-academica";
+import { SeccionRecordLiceo } from "@/components/expedientes/record-liceo/seccion-record-liceo";
 import { TabCostos } from "@/components/expedientes/detalle/tab-costos";
 import { TabPatrocinio, TabSeguimiento } from "@/components/expedientes/detalle/tab-seguimiento";
 import { EliminarExpediente } from "@/components/expedientes/eliminar-expediente";
@@ -141,7 +142,7 @@ export default async function PaginaExpediente({
 
   // Todo se pide UNA vez: las pestañas son del cliente y no recargan la ficha.
   // Son las filas de UNA persona (unas decenas), no un agregado sobre la tabla.
-  const mensajes = await mensajesCliente(["records", "catalog"]);
+  const mensajes = await mensajesCliente(["records", "catalog", "recordLiceo"]);
   const [notas, historial360, inscripciones, asignaciones, cuenta, cuentasLibres, seguimiento, catalogo, arbol, archivos, record, indice, umbrales, cambios] = await Promise.all([
     notasDelEstudiante(expediente.id),
     historial360DelEstudiante(expediente.id),
@@ -276,6 +277,7 @@ export default async function PaginaExpediente({
             <>
               <TabUniversidad e={expediente} inscripciones={inscripciones} asignaciones={asignaciones} catalogo={catalogo} puedeEditar={puedeEditar} puedeAdministrar={usuarioTienePermiso(usuario, "catalogo.leer")} cambios={cambios} />
               <TabRecord notas={notas} record={record} indice={indice} umbral={umbrales.acumulado} puedeEditar={puedeEditar} />
+              <SeccionRecordLiceo estudianteId={expediente.id} puedeEditar={puedeEditar} />
               <TabPensum e={expediente} inscripciones={inscripciones} seg={seguimiento} tiempo={tiempo} catalogo={catalogo} archivos={archivos} puedeEditar={puedeEditar} />
               <Tab360 datos={historial360} />
             </>

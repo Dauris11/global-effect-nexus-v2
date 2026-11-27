@@ -29,6 +29,7 @@ marca cuando se entrega. Lo que ya se decidió está al final, para que no se pi
 ## Decisiones que faltan
 
 - [ ] **Filtros por los que pasa un postulado** antes de la Academia de Liderazgo, y qué se exige al terminar la academia para pasar a activo (para dejarlos como pasos en el sistema).
+- [ ] **Promedio de secundaria — truncar o redondear:** el sistema redondea (mitad hacia arriba, 2 decimales), así que el récord de ejemplo da 89,29 general y 88,93 por año. El lápiz del papel trunca (85,666 → 85.66) y por año daría 88,92. Confirmar cuál pide la fundación o la universidad destino; es un cambio de una constante en `src/lib/record-liceo.ts`.
 - [ ] **Confirmar las reglas del índice de UCATECI** con su reglamento (hoy están como «por confirmar»).
 - [ ] **Mariela Vargas y Yaritza Polanco** figuran con «PUCMM» (no es parte del programa): ¿a qué universidad pasan?
 - [ ] **Invitación por correo — hay que configurarlo para que funcione:**

@@ -1,0 +1,25 @@
+{
+  "descripcion": "Transcripción SIN datos personales del récord de ejemplo (1.º a 5.º, Bachillerato Técnico en Soporte de Redes). Es la verdad que debe reproducir la lectura con IA de las dos fotos.",
+  "esperado": { "totalNotas": 51, "sumaTotal": 4554, "global": 89.29, "anual": 88.93, "sumasPorGrado": [805, 769, 771, 1101, 1108] },
+  "grados": [
+    { "grado": 1, "anioInicio": 2016, "centro": "Liceo Pomier", "notas": [
+      ["Lengua Española", 80], ["Lenguas Extranjeras Inglés", 95], ["Lenguas Extranjeras Francés", 90], ["Matemática", 83],
+      ["Ciencias Sociales", 95], ["Ciencias de la Naturaleza", 91], ["Formación Integral Humana y Religiosa", 87], ["Educación Física", 91], ["Educación Artística", 93] ] },
+    { "grado": 2, "anioInicio": 2017, "centro": "Liceo Pomier", "notas": [
+      ["Lengua Española", 82], ["Lenguas Extranjeras Inglés", 80], ["Lenguas Extranjeras Francés", 80], ["Matemática", 92],
+      ["Ciencias Sociales", 87], ["Ciencias de la Naturaleza", 87], ["Formación Integral Humana y Religiosa", 86], ["Educación Física", 90], ["Educación Artística", 85] ] },
+    { "grado": 3, "anioInicio": 2018, "centro": "Liceo Pomier", "notas": [
+      ["Lengua Española", 84], ["Lenguas Extranjeras Inglés", 81], ["Lenguas Extranjeras Francés", 88], ["Matemática", 84],
+      ["Ciencias Sociales", 87], ["Ciencias de la Naturaleza", 77], ["Formación Integral Humana y Religiosa", 86], ["Educación Física", 94], ["Educación Artística", 90] ] },
+    { "grado": 4, "anioInicio": 2019, "centro": "Politécnico Ana Silvia Jiménez de Castro Jima Abajo, La Vega", "notas": [
+      ["Lengua Española", 95], ["Lenguas Extranjeras Inglés", 85], ["Matemática", 87], ["Ciencias Sociales", 93],
+      ["Ciencias de la Naturaleza", 96], ["Formación Integral Humana y Religiosa", 99], ["Educación Física", 88], ["Educación Artística", 92],
+      ["MF_002_3 Ofimática", 97], ["MF_062_3 Instalación de Equipos Informáticos", 90], ["MF_063_3 Configuración de equipos informáticos", 90],
+      ["MF_063_3 Resolución de incidentes y requerimientos informáticos", 89] ] },
+    { "grado": 5, "anioInicio": 2020, "centro": "Politécnico Ana Silvia Jiménez de Castro Jima Abajo, La Vega", "notas": [
+      ["Lengua Española", 89], ["Lenguas Extranjeras Inglés", 93], ["Matemática", 87], ["Ciencias Sociales", 90],
+      ["Ciencias de la Naturaleza", 93], ["Formación Integral Humana y Religiosa", 100], ["Educación Física", 100], ["Educación Artística", 93],
+      ["MF_006_3 Formación y Orientación Laboral", 95], ["MF_065_3 Aplicaciones de mantenimientos a equipos informáticos", 90],
+      ["MF_069_3 Centrales Telefónicas", 89], ["MF_066_3 Redes de datos", 89] ] }
+  ]
+}
