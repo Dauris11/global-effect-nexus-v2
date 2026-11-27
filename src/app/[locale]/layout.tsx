@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { ToastProvider } from "@/components/app/toaster";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { routing } from "@/i18n/routing";
 import { BLANCO } from "@/lib/paleta";
@@ -88,7 +89,7 @@ export default async function LayoutRaiz({
     <html lang={locale} className={`${jakarta.variable} ${plexMono.variable}`} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </NextIntlClientProvider>
       </body>
     </html>

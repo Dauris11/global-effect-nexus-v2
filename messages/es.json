@@ -1365,6 +1365,60 @@
       "view": "Ver rendición",
       "confirmReview": "¿Validar el comprobante de {proveedor} presentado por {empleado} ({monto})?",
       "confirmPost": "¿Contabilizar el comprobante de {proveedor} de {empleado} por {monto}?"
+    },
+    "expedientes": {
+      "nuevo": "Nuevo expediente",
+      "titulo": "Nuevo expediente",
+      "guardar": "Guardar expediente",
+      "llenarDesdeDocumento": "Llenar desde documento",
+      "leyendo": "Leyendo el documento…",
+      "revisaLeido": "Revisa lo que se leyó antes de guardar.",
+      "nombre": "Nombre completo",
+      "ejNombre": "Ej. María Pérez",
+      "cedula": "Cédula",
+      "correo": "Correo",
+      "telefono": "Teléfono",
+      "universidad": "Universidad",
+      "sinUniversidad": "Sin universidad todavía",
+      "estadoInicial": "Estado inicial",
+      "creado": "Expediente creado",
+      "ver": "Ver",
+      "validacion": {
+        "nombre": "Escribe el nombre completo.",
+        "cedula": "La cédula tiene 11 dígitos.",
+        "correo": "Revisa el correo (ej. nombre@correo.com)."
+      },
+      "lectura": {
+        "no_permitido": "No tienes permiso para leer documentos.",
+        "sin_archivo": "Elige un archivo.",
+        "tipo_no_admitido": "Usa una foto JPG, PNG o WebP, o un PDF.",
+        "demasiado_grande": "El archivo pesa demasiado (máximo 5 MB).",
+        "sin_clave": "La lectura con IA no está configurada: escribe los datos.",
+        "ilegible": "No se pudo leer el documento. Prueba con otra foto o escribe los datos.",
+        "no_encontrado": "No se encontraron datos en el documento.",
+        "error": "No se pudo leer el documento."
+      },
+      "errores": {
+        "inicial": "No se pudo guardar.",
+        "no_permitido": "No tienes permiso para crear expedientes.",
+        "no_encontrado": "No se encontró lo que se pedía.",
+        "invalido": "Escribe al menos el nombre completo.",
+        "foto_invalida": "La foto no es válida.",
+        "foto_grande": "La foto pesa demasiado.",
+        "catalogo_invalido": "La universidad elegida no es válida.",
+        "faltan_datos_universidad": "Un expediente activo necesita universidad y matrícula: elige «Postulado» o completa esos datos en la ficha.",
+        "error": "No se pudo guardar el expediente. Inténtalo otra vez."
+      }
+    },
+    "nuevaSolicitud": {
+      "eligeTipo": "¿Qué necesitas pedir?",
+      "cambiarTipo": "Cambiar tipo",
+      "masDetalles": "Más detalles",
+      "creada": "Solicitud creada",
+      "ver": "Ver",
+      "validacion": {
+        "asunto": "Escribe el asunto de la solicitud."
+      }
     }
   },
   "records": {

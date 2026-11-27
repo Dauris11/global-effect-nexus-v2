@@ -71,9 +71,9 @@ export default async function PaginaSolicitudes({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ tipo?: string; estado?: string; q?: string; clase?: string }>;
+  searchParams: Promise<{ tipo?: string; estado?: string; q?: string; clase?: string; nuevo?: string }>;
 }) {
-  const [{ locale }, { tipo: tipoPedido, estado: estadoPedido, q, clase }] = await Promise.all([
+  const [{ locale }, { tipo: tipoPedido, estado: estadoPedido, q, clase, nuevo }] = await Promise.all([
     params,
     searchParams,
   ]);
@@ -237,7 +237,7 @@ export default async function PaginaSolicitudes({
             />
           )
         ) : (
-          <ListaSolicitudes filas={filas} mostrarSolicitante={mostrarSolicitante} />
+          <ListaSolicitudes resaltarId={/^[0-9a-f-]{36}$/i.test(nuevo ?? "") ? nuevo : undefined} filas={filas} mostrarSolicitante={mostrarSolicitante} />
         )}
       </NextIntlClientProvider>
     </div>

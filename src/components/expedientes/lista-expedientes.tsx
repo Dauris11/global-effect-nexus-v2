@@ -27,6 +27,7 @@ export async function ListaExpedientes({
   puedeEscribir,
   umbral,
   minimoSecundaria,
+  resaltarId,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
@@ -35,6 +36,8 @@ export async function ListaExpedientes({
   umbral: number;
   /** Promedio de secundaria mínimo para aceptar a un candidato (parámetro becas.promedio_liceo_minimo). */
   minimoSecundaria: number;
+  /** Fila recién creada: entra resaltada unos segundos. */
+  resaltarId?: string;
 }) {
   const t = await getTranslations("records");
 
@@ -57,7 +60,7 @@ export async function ListaExpedientes({
 
         <tbody className="divide-y divide-linea">
           {filas.map((fila) => (
-            <tr key={fila.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
+            <tr key={fila.id} className={cn("group relative h-[52px] transition-colors hover:bg-muted/50", fila.id === resaltarId && "animate-resaltar")}>
               <td className="px-4 py-1.5">
                 <PrevisualizarExpediente
                   fila={fila}

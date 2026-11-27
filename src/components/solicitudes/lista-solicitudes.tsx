@@ -34,10 +34,13 @@ import { DetalleSolicitud } from "./detalle-solicitud";
 export function ListaSolicitudes({
   filas,
   mostrarSolicitante,
+  resaltarId,
 }: {
   filas: readonly FilaSolicitud[];
   /** En la bandeja de quien revisa importa quién lo pidió; en «lo mío» no. */
   mostrarSolicitante: boolean;
+  /** Solicitud recién creada: entra resaltada unos segundos. */
+  resaltarId?: string;
 }) {
   const t = useTranslations("requests");
   const tl = useTranslations("listas");
@@ -75,7 +78,7 @@ export function ListaSolicitudes({
               const { positiva, puedeRechazar } = accionesEnFila(fila.acciones);
 
               return (
-                <tr key={fila.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
+                <tr key={fila.id} className={`group relative h-[52px] transition-colors hover:bg-muted/50 ${fila.id === resaltarId ? "animate-resaltar" : ""}`}>
                   <td className="max-w-80 px-4 py-1.5">
                     <button
                       type="button"

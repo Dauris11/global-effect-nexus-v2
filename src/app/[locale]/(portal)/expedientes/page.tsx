@@ -8,11 +8,10 @@ import { EmptyState } from "@/components/app/empty-state";
 import { FilterBar } from "@/components/app/filter-bar";
 import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { PageHeader } from "@/components/app/page-header";
-import { textosCatalogo } from "@/components/expedientes/textos-edicion";
 import { umbralDeIndice } from "@/server/academico/indice";
 import { parametros } from "@/server/parametros/consultas";
 import { arbolCatalogo } from "@/server/universidades/consultas";
-import { FormularioExpediente } from "@/components/expedientes/formulario-expediente";
+import { NuevoExpediente } from "@/components/expedientes/nuevo-expediente";
 import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
 import { TarjetasExpedientes } from "@/components/expedientes/tarjetas-expedientes";
 import { MenuExportar } from "@/components/compartido/menu-exportar";
@@ -20,15 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { requerirPermiso } from "@/lib/auth";
-import {
-  ASISTIO_REUNION,
-  BANO,
-  CASA_PROPIA,
-  ENVIO_CORREO,
-  ESTADOS_ESTUDIANTE,
-  GENEROS,
-  PARENTESCOS,
-} from "@/lib/expedientes";
+import { ESTADOS_ESTUDIANTE } from "@/lib/expedientes";
 import {
   ORDENES_EXPEDIENTE,
   SITUACIONES_EXPEDIENTE,
@@ -46,16 +37,6 @@ import {
 
 /** Filas por página. */
 const POR_PAGINA = 20;
-
-/** Las seis secciones del formulario, en el orden en que se recorren. */
-const SECCIONES = [
-  "identity",
-  "academic",
-  "family",
-  "housing",
-  "health",
-  "social",
-] as const;
 
 export async function generateMetadata({
   params,
@@ -87,7 +68,10 @@ export default async function PaginaExpedientes({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { locale } = await params;
-  const consulta = leerConsultaExpedientes(await searchParams);
+  const crudo = await searchParams;
+  const consulta = leerConsultaExpedientes(crudo);
+  // El expediente recién creado (`?nuevo=<id>`) se resalta un momento en la lista.
+  const resaltarId = /^[0-9a-f-]{36}$/i.test(crudo.nuevo ?? "") ? crudo.nuevo : undefined;
   const idioma: Locale = locale === "en" ? "en" : "es";
 
   const usuario = await requerirPermiso("expedientes.leer");
@@ -124,119 +108,7 @@ export default async function PaginaExpedientes({
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
 
   // El alta es la ÚNICA acción primaria de la página; se arma una vez y también sirve en el vacío.
-  const nuevo = puedeEscribir ? (
-              <FormularioExpediente
-                catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
-                textos={{
-                  nuevo: t("new"),
-                  titulo: t("form.title"),
-                  guardar: t("form.save"),
-                  guardando: t("form.saving"),
-                  error: t("form.error"),
-                  faltaNombre: t("form.faltaNombreSeccion"),
-                  modoAlta: {
-                    titulo: t("quickCreate.title"),
-                    rapido: t("quickCreate.quick"),
-                    completo: t("quickCreate.full"),
-                  },
-                  cancelar: t("form.cancel"),
-                  opcional: t("field.optional"),
-                  pestanas: Object.fromEntries(
-                    SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),
-                  ),
-                  campos: {
-                    name: t("field.name"),
-                    idCard: t("field.idCard"),
-                    email: t("field.email"),
-                    phone: t("field.phone"),
-                    birthDate: t("field.birthDate"),
-                    birthPlace: t("field.birthPlace"),
-                    nationality: t("field.nationality"),
-                    gender: t("field.gender"),
-                    sexDocument: t("field.sexDocument"),
-                    religion: t("field.religion"),
-                    status: t("field.status"),
-                    program: t("field.program"),
-                    whereStudies: t("field.whereStudies"),
-                    university: t("field.university"),
-                    entryDate: t("field.entryDate"),
-              group: t("field.group"),
-                    school: t("field.school"),
-                    schoolDirector: t("field.schoolDirector"),
-                    facilitator: t("field.facilitator"),
-                    habitudesStory: t("field.habitudesStory"),
-                    livesWith: t("field.livesWith"),
-                    whyLivesWith: t("field.whyLivesWith"),
-                    siblings: t("field.siblings"),
-                    ownHouse: t("field.ownHouse"),
-                    houseType: t("field.houseType"),
-                    bathroom: t("field.bathroom"),
-                    rooms: t("field.rooms"),
-                    beds: t("field.beds"),
-                    whoSleeps: t("field.whoSleeps"),
-                    address: t("field.address"),
-                    community: t("field.community"),
-                    city: t("field.city"),
-                    illnesses: t("field.illnesses"),
-                    allergies: t("field.allergies"),
-                    emergencyName: t("field.emergencyName"),
-                    emergencyPhone: t("field.emergencyPhone"),
-                    lifeStory: t("field.lifeStory"),
-                    familySituation: t("field.familySituation"),
-                    economicSituation: t("field.economicSituation"),
-                    scholarshipReason: t("field.scholarshipReason"),
-                    academicGoals: t("field.academicGoals"),
-                    sponsorEmail: t("field.sponsorEmail"),
-                    monthlyMeeting: t("field.monthlyMeeting"),
-                    warnings: t("field.warnings"),
-                    pendingRequests: t("field.pendingRequests"),
-                    notes: t("field.notes"),
-                  },
-                  familia: {
-                    name: t("family.name"),
-                    age: t("family.age"),
-                    phone: t("family.phone"),
-                    occupation: t("family.occupation"),
-                  },
-                  parentescos: Object.fromEntries(
-                    PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
-                  ),
-                  estados: Object.fromEntries(
-                    ESTADOS_ESTUDIANTE.map((clave) => [
-                      clave,
-                      t(`status.${clave}`),
-                    ]),
-                  ),
-                  generos: Object.fromEntries(
-                    GENEROS.map((clave) => [clave, t(`gender.${clave}`)]),
-                  ),
-                  casa: Object.fromEntries(
-                    CASA_PROPIA.map((clave) => [clave, t(`house.${clave}`)]),
-                  ),
-                  bano: Object.fromEntries(
-                    BANO.map((clave) => [clave, t(`bathroom.${clave}`)]),
-                  ),
-                  seguimiento: Object.fromEntries(
-                    [...new Set([...ENVIO_CORREO, ...ASISTIO_REUNION])].map(
-                      (clave) => [clave, t(`followUp.${clave}`)],
-                    ),
-                  ),
-                  ocr: {
-                    title: t("ocr.title"),
-                    upload: t("ocr.upload"),
-                    processing: t("ocr.processing"),
-                    extracted: t("ocr.extracted"),
-                    confidence: t("ocr.confidence"),
-                    notFound: t("ocr.notFound"),
-                    unsupported: t("ocr.unsupported"),
-                    fileTooLarge: t("ocr.fileTooLarge"),
-                    noKey: t("ocr.noKey"),
-                    error: t("ocr.error"),
-                  },
-                }}
-              />
-
-  ) : null;
+  const nuevo = puedeEscribir ? <NuevoExpediente universidades={arbol?.universidades ?? []} /> : null;
 
   // Los chips reemplazan a las tarjetas de cifras: el conteo vive dentro del filtro.
   const chips = [
@@ -332,9 +204,9 @@ export default async function PaginaExpedientes({
           </div>
 
           {consulta.vista === "tarjetas" ? (
-            <TarjetasExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
+            <TarjetasExpedientes resaltarId={resaltarId} filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
           ) : (
-            <ListaExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
+            <ListaExpedientes resaltarId={resaltarId} filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
           )}
         </>
       )}

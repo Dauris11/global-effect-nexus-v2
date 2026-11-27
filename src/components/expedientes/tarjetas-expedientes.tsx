@@ -29,6 +29,7 @@ export async function TarjetasExpedientes({
   puedeEscribir,
   umbral,
   minimoSecundaria,
+  resaltarId,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
@@ -37,6 +38,8 @@ export async function TarjetasExpedientes({
   umbral: number;
   /** Promedio de secundaria mínimo para aceptar a un candidato (parámetro becas.promedio_liceo_minimo). */
   minimoSecundaria: number;
+  /** Fila recién creada: entra resaltada unos segundos. */
+  resaltarId?: string;
 }) {
   const t = await getTranslations("records");
 
@@ -48,7 +51,7 @@ export async function TarjetasExpedientes({
         return (
           <li
             key={fila.id}
-            className="flex flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-shadow duration-200 hover:shadow-elevada"
+            className={cn("flex flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-shadow duration-200 hover:shadow-elevada", fila.id === resaltarId && "animate-resaltar")}
           >
             <Link
               href={`/expedientes/${fila.id}`}

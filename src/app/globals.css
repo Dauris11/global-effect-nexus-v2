@@ -316,6 +316,7 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --ease-movimiento: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Animaciones con nombre: `animate-entrada`, `animate-escala-entrada`… */
+  --animate-resaltar: resaltar 3.5s var(--ease-salida) both;
   --animate-entrada: entrada var(--duracion-lenta) var(--ease-salida) backwards;
   --animate-escala-entrada: escalaEntrada var(--duracion-media) var(--ease-salida) backwards;
   --animate-hoja: subeHoja 280ms var(--ease-cajon) backwards;
@@ -500,6 +501,13 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
  * `transform` puesto, que convertiría el contenedor en el bloque de referencia
  * de cualquier `position: fixed` de dentro y lo descolocaría.
  */
+/* La fila recién creada se resalta un momento y se apaga sola (docs/ux-rules.md). */
+@keyframes resaltar {
+  from {
+    background-color: var(--color-marca-100);
+  }
+}
+
 @keyframes entrada {
   from {
     opacity: 0;

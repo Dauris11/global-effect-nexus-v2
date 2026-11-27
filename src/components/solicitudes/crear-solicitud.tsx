@@ -67,6 +67,8 @@ export function CrearSolicitud({
                 estudiantes={estudiantes}
                 minimoFecha={minimoFecha ?? ""}
                 tipoInicial={tipoInicial}
+                hrefLista="/administrativo/solicitudes"
+                alCrear={() => setAbierto(false)}
               />
             )}
           </div>

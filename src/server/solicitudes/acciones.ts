@@ -56,6 +56,8 @@ export type EstadoFormularioSolicitud = {
     | "formato_no_admitido"
     | "muy_grande"
     | "error";
+  /** Solo con `ok`: la solicitud recién creada, para el aviso «Ver» y el resaltado en la lista. */
+  id?: string;
 };
 
 export type EstadoPasoSolicitud = {
@@ -94,6 +96,7 @@ export async function crearTramite(
     return { estado: campos };
   }
 
+  let nuevaId: string | undefined;
   try {
     const resultado = await enTransaccion(async (cliente) => {
       const abierta = await cliente.query(
@@ -106,7 +109,7 @@ export async function crearTramite(
 
       if (abierta.rowCount) return "duplicada" as const;
 
-      await insertarSolicitud(cliente, {
+      nuevaId = await insertarSolicitud(cliente, {
         tipo,
         ...campos,
         solicitanteId: usuario.id,
@@ -132,7 +135,7 @@ export async function crearTramite(
   });
 
   refrescar();
-  return { estado: "ok" };
+  return { estado: "ok", id: nuevaId };
 }
 
 /**
@@ -181,6 +184,7 @@ export async function crearSolicitudInterna(
   // misma lista que `estudiantesParaSolicitud` le enseña.
   const soloEmbudo = !usuarioTienePermiso(usuario, "expedientes.leer");
 
+  let nuevaId: string | undefined;
   try {
     const resultado = await enTransaccion(async (cliente) => {
       let estudianteId: string | null =
@@ -213,7 +217,7 @@ export async function crearSolicitudInterna(
         );
       }
 
-      await insertarSolicitud(cliente, {
+      nuevaId = await insertarSolicitud(cliente, {
         tipo: tipoValido,
         ...campos,
         solicitanteId: usuario.id,
@@ -239,7 +243,7 @@ export async function crearSolicitudInterna(
   });
 
   refrescar();
-  return { estado: "ok" };
+  return { estado: "ok", id: nuevaId };
 }
 
 /**

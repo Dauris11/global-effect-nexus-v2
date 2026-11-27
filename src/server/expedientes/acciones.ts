@@ -56,6 +56,8 @@ export type EstadoExpediente = {
     | "catalogo_invalido"
     | "faltan_datos_universidad"
     | "error";
+  /** Solo con `sin_redirigir`: el expediente recién creado, para avisar y resaltarlo en la lista. */
+  id?: string;
 };
 
 const TIPOS_FOTO = ["image/jpeg", "image/png", "image/webp"];
@@ -673,6 +675,10 @@ export async function crearExpediente(
 
   revalidatePath("/[locale]/expedientes", "page");
   revalidatePath("/[locale]/dashboard", "page");
+
+  // El alta rápida desde la lista se queda en la lista: avisa con un toast y resalta la fila,
+  // en vez de llevar a la ficha (docs/ux-rules.md: nunca recargar la página entera).
+  if (datos.get("sin_redirigir") === "1") return { estado: "ok", id: creado.id };
 
   // A la ficha recién creada. `redirigir` lanza, así que nada de lo de abajo
   // se ejecuta —y no hay nada.

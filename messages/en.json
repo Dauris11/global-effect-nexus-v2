@@ -1365,6 +1365,60 @@
       "view": "View expense report",
       "confirmReview": "Validate the receipt from {proveedor} submitted by {empleado} ({monto})?",
       "confirmPost": "Post the receipt from {proveedor} by {empleado} for {monto}?"
+    },
+    "expedientes": {
+      "nuevo": "New record",
+      "titulo": "New record",
+      "guardar": "Save record",
+      "llenarDesdeDocumento": "Fill from document",
+      "leyendo": "Reading the document…",
+      "revisaLeido": "Check what was read before saving.",
+      "nombre": "Full name",
+      "ejNombre": "E.g. María Pérez",
+      "cedula": "ID number",
+      "correo": "Email",
+      "telefono": "Phone",
+      "universidad": "University",
+      "sinUniversidad": "No university yet",
+      "estadoInicial": "Initial status",
+      "creado": "Record created",
+      "ver": "View",
+      "validacion": {
+        "nombre": "Enter the full name.",
+        "cedula": "The ID number has 11 digits.",
+        "correo": "Check the email (e.g. name@mail.com)."
+      },
+      "lectura": {
+        "no_permitido": "You do not have permission to read documents.",
+        "sin_archivo": "Choose a file.",
+        "tipo_no_admitido": "Use a JPG, PNG or WebP photo, or a PDF.",
+        "demasiado_grande": "The file is too large (5 MB maximum).",
+        "sin_clave": "AI reading is not set up: type the data in.",
+        "ilegible": "The document could not be read. Try another photo or type the data in.",
+        "no_encontrado": "No data was found in the document.",
+        "error": "The document could not be read."
+      },
+      "errores": {
+        "inicial": "It could not be saved.",
+        "no_permitido": "You do not have permission to create records.",
+        "no_encontrado": "What was requested was not found.",
+        "invalido": "Enter at least the full name.",
+        "foto_invalida": "The photo is not valid.",
+        "foto_grande": "The photo is too large.",
+        "catalogo_invalido": "The chosen university is not valid.",
+        "faltan_datos_universidad": "An active record needs a university and student ID: choose «Applied» or complete that data in the file.",
+        "error": "The record could not be saved. Please try again."
+      }
+    },
+    "nuevaSolicitud": {
+      "eligeTipo": "What do you need to request?",
+      "cambiarTipo": "Change type",
+      "masDetalles": "More details",
+      "creada": "Request created",
+      "ver": "View",
+      "validacion": {
+        "asunto": "Enter the subject of the request."
+      }
     }
   },
   "records": {
