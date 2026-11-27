@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, HeartHandshake, Users } from "lucide-react";
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
-import {
-  FiltrosExpedientes,
-  SelectorVista,
-} from "@/components/expedientes/filtros-expedientes";
+import { SelectorVista } from "@/components/expedientes/filtros-expedientes";
+import { EmptyState } from "@/components/app/empty-state";
+import { FilterBar } from "@/components/app/filter-bar";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
+import { PageHeader } from "@/components/app/page-header";
 import { textosCatalogo } from "@/components/expedientes/textos-edicion";
 import { umbralDeIndice } from "@/server/academico/indice";
 import { parametros } from "@/server/parametros/consultas";
@@ -15,9 +17,6 @@ import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
 import { TarjetasExpedientes } from "@/components/expedientes/tarjetas-expedientes";
 import { MenuExportar } from "@/components/compartido/menu-exportar";
 import { Button } from "@/components/ui/button";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
-import { EstadoVacio } from "@/components/ui/estado-vacio";
-import { StatCard } from "@/components/ui/stat-card";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { requerirPermiso } from "@/lib/auth";
@@ -31,13 +30,15 @@ import {
   PARENTESCOS,
 } from "@/lib/expedientes";
 import {
+  ORDENES_EXPEDIENTE,
+  SITUACIONES_EXPEDIENTE,
   enlaceExpedientes,
   hayFiltros,
   leerConsultaExpedientes,
 } from "@/lib/filtros-expedientes";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
-  cifrasExpedientes,
+  conteosPorEstado,
   contarExpedientes,
   listaExpedientes,
   universidadesDeExpedientes,
@@ -102,8 +103,9 @@ export default async function PaginaExpedientes({
     situacion: consulta.situacion,
   };
 
-  const [cifras, filas, total, universidades, arbol, tc, umbral, valoresParametros] = await Promise.all([
-    cifrasExpedientes(),
+  const [conteos, enRiesgo, filas, total, universidades, arbol, tc, umbral, valoresParametros] = await Promise.all([
+    conteosPorEstado(),
+    contarExpedientes({ situacion: "en_riesgo" }),
     listaExpedientes({
       ...filtros,
       orden: consulta.orden,
@@ -121,11 +123,139 @@ export default async function PaginaExpedientes({
 
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
 
+  // El alta es la ÚNICA acción primaria de la página; se arma una vez y también sirve en el vacío.
+  const nuevo = puedeEscribir ? (
+              <FormularioExpediente
+                catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
+                textos={{
+                  nuevo: t("new"),
+                  titulo: t("form.title"),
+                  guardar: t("form.save"),
+                  guardando: t("form.saving"),
+                  error: t("form.error"),
+                  faltaNombre: t("form.faltaNombreSeccion"),
+                  modoAlta: {
+                    titulo: t("quickCreate.title"),
+                    rapido: t("quickCreate.quick"),
+                    completo: t("quickCreate.full"),
+                  },
+                  cancelar: t("form.cancel"),
+                  opcional: t("field.optional"),
+                  pestanas: Object.fromEntries(
+                    SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),
+                  ),
+                  campos: {
+                    name: t("field.name"),
+                    idCard: t("field.idCard"),
+                    email: t("field.email"),
+                    phone: t("field.phone"),
+                    birthDate: t("field.birthDate"),
+                    birthPlace: t("field.birthPlace"),
+                    nationality: t("field.nationality"),
+                    gender: t("field.gender"),
+                    sexDocument: t("field.sexDocument"),
+                    religion: t("field.religion"),
+                    status: t("field.status"),
+                    program: t("field.program"),
+                    whereStudies: t("field.whereStudies"),
+                    university: t("field.university"),
+                    entryDate: t("field.entryDate"),
+              group: t("field.group"),
+                    school: t("field.school"),
+                    schoolDirector: t("field.schoolDirector"),
+                    facilitator: t("field.facilitator"),
+                    habitudesStory: t("field.habitudesStory"),
+                    livesWith: t("field.livesWith"),
+                    whyLivesWith: t("field.whyLivesWith"),
+                    siblings: t("field.siblings"),
+                    ownHouse: t("field.ownHouse"),
+                    houseType: t("field.houseType"),
+                    bathroom: t("field.bathroom"),
+                    rooms: t("field.rooms"),
+                    beds: t("field.beds"),
+                    whoSleeps: t("field.whoSleeps"),
+                    address: t("field.address"),
+                    community: t("field.community"),
+                    city: t("field.city"),
+                    illnesses: t("field.illnesses"),
+                    allergies: t("field.allergies"),
+                    emergencyName: t("field.emergencyName"),
+                    emergencyPhone: t("field.emergencyPhone"),
+                    lifeStory: t("field.lifeStory"),
+                    familySituation: t("field.familySituation"),
+                    economicSituation: t("field.economicSituation"),
+                    scholarshipReason: t("field.scholarshipReason"),
+                    academicGoals: t("field.academicGoals"),
+                    sponsorEmail: t("field.sponsorEmail"),
+                    monthlyMeeting: t("field.monthlyMeeting"),
+                    warnings: t("field.warnings"),
+                    pendingRequests: t("field.pendingRequests"),
+                    notes: t("field.notes"),
+                  },
+                  familia: {
+                    name: t("family.name"),
+                    age: t("family.age"),
+                    phone: t("family.phone"),
+                    occupation: t("family.occupation"),
+                  },
+                  parentescos: Object.fromEntries(
+                    PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
+                  ),
+                  estados: Object.fromEntries(
+                    ESTADOS_ESTUDIANTE.map((clave) => [
+                      clave,
+                      t(`status.${clave}`),
+                    ]),
+                  ),
+                  generos: Object.fromEntries(
+                    GENEROS.map((clave) => [clave, t(`gender.${clave}`)]),
+                  ),
+                  casa: Object.fromEntries(
+                    CASA_PROPIA.map((clave) => [clave, t(`house.${clave}`)]),
+                  ),
+                  bano: Object.fromEntries(
+                    BANO.map((clave) => [clave, t(`bathroom.${clave}`)]),
+                  ),
+                  seguimiento: Object.fromEntries(
+                    [...new Set([...ENVIO_CORREO, ...ASISTIO_REUNION])].map(
+                      (clave) => [clave, t(`followUp.${clave}`)],
+                    ),
+                  ),
+                  ocr: {
+                    title: t("ocr.title"),
+                    upload: t("ocr.upload"),
+                    processing: t("ocr.processing"),
+                    extracted: t("ocr.extracted"),
+                    confidence: t("ocr.confidence"),
+                    notFound: t("ocr.notFound"),
+                    unsupported: t("ocr.unsupported"),
+                    fileTooLarge: t("ocr.fileTooLarge"),
+                    noKey: t("ocr.noKey"),
+                    error: t("ocr.error"),
+                  },
+                }}
+              />
+
+  ) : null;
+
+  // Los chips reemplazan a las tarjetas de cifras: el conteo vive dentro del filtro.
+  const chips = [
+    ...ESTADOS_ESTUDIANTE.filter((e) => (conteos[e] ?? 0) > 0 || consulta.estado === e).map((e) => ({
+      param: "estado",
+      value: e,
+      label: t(`status.${e}`),
+      count: conteos[e] ?? 0,
+    })),
+    { param: "situacion", value: "en_riesgo", label: t("filters.situations.en_riesgo"), count: enRiesgo },
+  ];
+  const totalExpedientes = Object.values(conteos).reduce((n, c) => n + c, 0);
+
   return (
     <div className="animate-entrada space-y-6">
-      <EncabezadoPagina
-        titulo={t("title")}
-        acciones={
+      <PageHeader
+        title={t("title")}
+        primaryAction={nuevo}
+        secondaryActions={
           <>
             <MenuExportar
               documentos={[
@@ -133,146 +263,41 @@ export default async function PaginaExpedientes({
                 { tipo: "riesgo", etiqueta: te("docs.riesgo") },
               ]}
             />
-            <Button asChild variant="outline" size="sm">
-              <Link href="/expedientes/riesgo">
-                <HeartHandshake className="size-4" />
-                {tr("title")}
-              </Link>
-            </Button>
-          {puedeEscribir && (
-            <FormularioExpediente
-              catalogo={arbol ? { arbol, textos: textosCatalogo((k, v) => tc(k as never, v as never)) } : undefined}
-              textos={{
-                nuevo: t("new"),
-                titulo: t("form.title"),
-                guardar: t("form.save"),
-                guardando: t("form.saving"),
-                error: t("form.error"),
-                faltaNombre: t("form.faltaNombreSeccion"),
-                modoAlta: {
-                  titulo: t("quickCreate.title"),
-                  rapido: t("quickCreate.quick"),
-                  completo: t("quickCreate.full"),
-                },
-                cancelar: t("form.cancel"),
-                opcional: t("field.optional"),
-                pestanas: Object.fromEntries(
-                  SECCIONES.map((clave) => [clave, t(`tab.${clave}`)]),
-                ),
-                campos: {
-                  name: t("field.name"),
-                  idCard: t("field.idCard"),
-                  email: t("field.email"),
-                  phone: t("field.phone"),
-                  birthDate: t("field.birthDate"),
-                  birthPlace: t("field.birthPlace"),
-                  nationality: t("field.nationality"),
-                  gender: t("field.gender"),
-                  sexDocument: t("field.sexDocument"),
-                  religion: t("field.religion"),
-                  status: t("field.status"),
-                  program: t("field.program"),
-                  whereStudies: t("field.whereStudies"),
-                  university: t("field.university"),
-                  entryDate: t("field.entryDate"),
-            group: t("field.group"),
-                  school: t("field.school"),
-                  schoolDirector: t("field.schoolDirector"),
-                  facilitator: t("field.facilitator"),
-                  habitudesStory: t("field.habitudesStory"),
-                  livesWith: t("field.livesWith"),
-                  whyLivesWith: t("field.whyLivesWith"),
-                  siblings: t("field.siblings"),
-                  ownHouse: t("field.ownHouse"),
-                  houseType: t("field.houseType"),
-                  bathroom: t("field.bathroom"),
-                  rooms: t("field.rooms"),
-                  beds: t("field.beds"),
-                  whoSleeps: t("field.whoSleeps"),
-                  address: t("field.address"),
-                  community: t("field.community"),
-                  city: t("field.city"),
-                  illnesses: t("field.illnesses"),
-                  allergies: t("field.allergies"),
-                  emergencyName: t("field.emergencyName"),
-                  emergencyPhone: t("field.emergencyPhone"),
-                  lifeStory: t("field.lifeStory"),
-                  familySituation: t("field.familySituation"),
-                  economicSituation: t("field.economicSituation"),
-                  scholarshipReason: t("field.scholarshipReason"),
-                  academicGoals: t("field.academicGoals"),
-                  sponsorEmail: t("field.sponsorEmail"),
-                  monthlyMeeting: t("field.monthlyMeeting"),
-                  warnings: t("field.warnings"),
-                  pendingRequests: t("field.pendingRequests"),
-                  notes: t("field.notes"),
-                },
-                familia: {
-                  name: t("family.name"),
-                  age: t("family.age"),
-                  phone: t("family.phone"),
-                  occupation: t("family.occupation"),
-                },
-                parentescos: Object.fromEntries(
-                  PARENTESCOS.map((clave) => [clave, t(`relation.${clave}`)]),
-                ),
-                estados: Object.fromEntries(
-                  ESTADOS_ESTUDIANTE.map((clave) => [
-                    clave,
-                    t(`status.${clave}`),
-                  ]),
-                ),
-                generos: Object.fromEntries(
-                  GENEROS.map((clave) => [clave, t(`gender.${clave}`)]),
-                ),
-                casa: Object.fromEntries(
-                  CASA_PROPIA.map((clave) => [clave, t(`house.${clave}`)]),
-                ),
-                bano: Object.fromEntries(
-                  BANO.map((clave) => [clave, t(`bathroom.${clave}`)]),
-                ),
-                seguimiento: Object.fromEntries(
-                  [...new Set([...ENVIO_CORREO, ...ASISTIO_REUNION])].map(
-                    (clave) => [clave, t(`followUp.${clave}`)],
-                  ),
-                ),
-                ocr: {
-                  title: t("ocr.title"),
-                  upload: t("ocr.upload"),
-                  processing: t("ocr.processing"),
-                  extracted: t("ocr.extracted"),
-                  confidence: t("ocr.confidence"),
-                  notFound: t("ocr.notFound"),
-                  unsupported: t("ocr.unsupported"),
-                  fileTooLarge: t("ocr.fileTooLarge"),
-                  noKey: t("ocr.noKey"),
-                  error: t("ocr.error"),
-                },
-              }}
-            />
-          )}
+            <MenuMasAcciones acciones={[{ etiqueta: tr("title"), icono: <HeartHandshake />, href: "/expedientes/riesgo" }]} />
           </>
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard variant="centrada" valor={cifras.total} etiqueta={t("stats.total")} />
-        <StatCard variant="centrada" valor={cifras.activos} etiqueta={t("stats.active")} acento />
-        <StatCard variant="centrada" valor={cifras.en_proceso} etiqueta={t("stats.inProcess")} />
-        <StatCard variant="centrada" valor={cifras.graduados} etiqueta={t("stats.graduated")} />
-      </div>
-
-      <FiltrosExpedientes
-        consulta={consulta}
-        universidades={universidades}
-        rutaBusqueda={idioma === "en" ? "/en/expedientes" : "/expedientes"}
-      />
+      <Suspense fallback={null}>
+        <FilterBar
+          chips={chips}
+          totalChips={totalExpedientes}
+          placeholder={t("filters.searchPlaceholder")}
+          selectores={[
+            { param: "universidad", label: t("filters.university"), todos: t("filters.allUniversities"), opciones: universidades.map((u) => ({ value: u, label: u })) },
+            {
+              param: "situacion",
+              label: t("filters.situation"),
+              todos: t("filters.anySituation"),
+              opciones: SITUACIONES_EXPEDIENTE.filter((x) => x !== "en_riesgo").map((x) => ({ value: x, label: t(`filters.situations.${x}`) })),
+            },
+            { param: "orden", label: t("filters.order"), todos: t(`filters.orders.nombre`), opciones: ORDENES_EXPEDIENTE.filter((o) => o !== "nombre").map((o) => ({ value: o, label: t(`filters.orders.${o}`) })) },
+          ]}
+        />
+      </Suspense>
 
       {filas.length === 0 ? (
-        <EstadoVacio
-          icono={Users}
-          titulo={hayFiltros(consulta) ? t("noMatches") : t("empty")}
-        />
+        hayFiltros(consulta) ? (
+          <EmptyState
+            icon={Users}
+            title={t("noMatches")}
+            action={<Button asChild variant="outline"><Link href="/expedientes">{t("filters.clear")}</Link></Button>}
+          />
+        ) : nuevo ? (
+          <EmptyState icon={Users} title={t("empty")} description={t("emptyHint")} action={nuevo} />
+        ) : (
+          <EmptyState readOnly icon={Users} title={t("empty")} description={t("emptyHint")} />
+        )
       ) : (
         <>
           {/* Vista y paginación van arriba, no al final: es lo primero que se

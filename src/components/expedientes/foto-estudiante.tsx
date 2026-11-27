@@ -1,24 +1,32 @@
-import { CameraOff, UserRound } from "lucide-react";
+import { CameraOff } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 /**
- * La foto de un estudiante o, si no tiene, una silueta con el aviso "Sin foto".
+ * La foto de un estudiante o, si no tiene, un avatar con sus iniciales.
  *
- * Silueta y no la inicial: la inicial se confundía con una foto que no carga,
- * y lo que hay que decir es que falta, para que alguien la suba. El aviso usa
- * el estilo de aviso de la marca (`marca-50`/`marca-700` con icono), no el
- * rojo: no es un error del estudiante sino un dato pendiente del expediente.
+ * Iniciales y no una silueta gris (docs/ux-rules.md): la silueta gigante ocupaba la
+ * tarjeta para decir «no hay nada». El aviso «Sin foto» sigue ahí, con el estilo de
+ * aviso de la marca (`marca-50`/`marca-700` con icono, no el rojo: es un dato pendiente
+ * del expediente, no un error), para que alguien la suba.
  *
- * Con `Avatar` y no un `<img>` suelto: si la ruta del bucket ya no existe, cae
- * a la silueta en vez de pintar un icono de imagen rota.
+ * Con `Avatar` y no un `<img>` suelto: si la ruta del bucket ya no existe, cae a las
+ * iniciales en vez de pintar un icono de imagen rota.
  *
  * `aviso`:
  *   · `"pildora"`: la etiqueta con texto sobre la foto (tarjetas, portada).
- *   · `"punto"`: solo el icono en la esquina (avatares pequeños de la lista),
- *     con el texto para lectores de pantalla y en el `title`.
+ *   · `"punto"`: solo el icono en la esquina (avatares pequeños de la lista), con el
+ *     texto para lectores de pantalla y en el `title`.
  */
+const iniciales = (nombre: string) =>
+  nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+
 export function FotoEstudiante({
   nombre,
   url,
@@ -30,7 +38,7 @@ export function FotoEstudiante({
   nombre: string;
   url: string | null;
   className?: string;
-  /** Tamaño de la silueta, que va con el tamaño de la foto. */
+  /** Tamaño del texto de las iniciales (`text-xl`…), que va con el tamaño de la foto. */
   claseIcono?: string;
   aviso?: "pildora" | "punto";
   /** Texto del aviso; sin él no se pinta aviso. */
@@ -46,10 +54,10 @@ export function FotoEstudiante({
       <Avatar className="absolute inset-0 size-full rounded-[inherit]">
         {url && <AvatarImage src={url} alt={nombre} />}
         <AvatarFallback
-          className="rounded-[inherit] bg-muted text-tinta-3"
+          className={cn("rounded-[inherit] bg-marca-50 text-sm font-semibold text-marca-700", claseIcono)}
           aria-label={textoSinFoto ?? nombre}
         >
-          <UserRound aria-hidden className={cn("size-1/2", claseIcono)} strokeWidth={1.5} />
+          {iniciales(nombre)}
         </AvatarFallback>
       </Avatar>
 

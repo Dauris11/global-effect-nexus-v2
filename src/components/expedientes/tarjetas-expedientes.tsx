@@ -4,11 +4,11 @@ import { getTranslations } from "next-intl/server";
 
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { PrevisualizarExpediente } from "@/components/expedientes/previsualizar-expediente";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/app/status-badge";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { llevaCuenta, visualDeEstado } from "@/lib/expedientes";
+import { llevaCuenta } from "@/lib/expedientes";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { cn } from "@/lib/utils";
 import type { FilaExpediente } from "@/server/expedientes/consultas";
@@ -43,7 +43,6 @@ export async function TarjetasExpedientes({
   return (
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       {filas.map((fila) => {
-        const visual = visualDeEstado(fila.estado);
         const enRiesgo = fila.indice !== null && fila.indice < umbral;
 
         return (
@@ -60,17 +59,12 @@ export async function TarjetasExpedientes({
                   nombre={fila.nombre}
                   url={urlDeAvatar(fila.foto_url)}
                   className="flex aspect-square w-full"
-                  claseIcono="size-2/5"
+                  claseIcono="text-6xl"
                   aviso="pildora"
                   textoSinFoto={t("sinFoto")}
                 />
 
-                <Badge
-                  className={cn("absolute top-2.5 left-2.5 gap-1 shadow-card", visual.insignia)}
-                >
-                  <visual.icono className="size-3.5 shrink-0" />
-                  {t(`status.${fila.estado}`)}
-                </Badge>
+                <StatusBadge status={fila.estado} className="absolute top-2.5 left-2.5 shadow-card" />
               </div>
 
               <div className="space-y-2 p-3.5">

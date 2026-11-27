@@ -48,14 +48,14 @@ export function DemoCliente() {
 
       <section className="space-y-3">
         <h2 className="text-section">FilterBar</h2>
-        <FilterBar chips={DEMO.chips} moreFilters={<Label className="text-label">{DEMO.masFiltros}</Label>} />
+        <FilterBar chips={DEMO.chips} totalChips={9} selectores={[{ param: "universidad", label: DEMO.masFiltros, todos: "Todas", opciones: [{ value: "UCATECI", label: "UCATECI" }] }]} />
       </section>
 
       <section className="space-y-3">
         <h2 className="text-section">SidePanelForm + MenuMasAcciones</h2>
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={() => setAbierto(true)}>{DEMO.abrir}</Button>
-          <MenuMasAcciones acciones={[{ etiqueta: DEMO.abrir, icono: Inbox, onClick: () => setAbierto(true) }]} />
+          <MenuMasAcciones acciones={[{ etiqueta: DEMO.abrir, icono: <Inbox />, onClick: () => setAbierto(true) }]} />
         </div>
         <SidePanelForm
           open={abierto}

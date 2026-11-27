@@ -235,6 +235,13 @@ export async function cifrasExpedientes(): Promise<CifrasExpedientes> {
   return fila ?? { total: 0, activos: 0, en_proceso: 0, graduados: 0 };
 }
 
+/** Cuántos expedientes hay en cada estado, para los chips de la lista (conteos sin filtros). */
+export async function conteosPorEstado(): Promise<Record<string, number>> {
+  const filas = await consultar<{ estado: string; n: number }>(`SELECT estado::text AS estado, count(*)::int AS n FROM estudiante GROUP BY estado`);
+
+  return Object.fromEntries(filas.map((f) => [f.estado, f.n]));
+}
+
 /** Un bloque fijo de familia, con sus cuatro campos. */
 export type FamiliarFijo = {
   nombre: string | null;

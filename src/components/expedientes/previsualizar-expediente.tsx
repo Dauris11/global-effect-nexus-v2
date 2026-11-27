@@ -10,18 +10,10 @@ import {
 } from "lucide-react";
 
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
-import { visualDeEstado } from "@/lib/expedientes";
 import { fechaCorta } from "@/lib/fechas";
 import { cn } from "@/lib/utils";
 import type { FilaExpediente } from "@/server/expedientes/consultas";
@@ -53,9 +45,12 @@ export function PrevisualizarExpediente({
    * lista. `"tarjeta"`: todo centrado en columna — para la tarjeta cuadrada.
    * `"boton"`: un botón discreto "Vista rápida", para las tarjetas y la tabla
    * donde la foto y el nombre ya llevan a la ficha completa.
+   * `"celda"`: la celda de nombre de la tabla densa. Su botón se estira sobre
+   * toda la fila (la `<tr>` es `relative`), así que un clic en cualquier parte
+   * de la fila abre el panel; las acciones de la fila van por encima (`z-10`).
    * Ninguna cambia el contenido del diálogo, solo cómo se ve el disparador.
    */
-  variante?: "fila" | "tarjeta" | "boton";
+  variante?: "fila" | "tarjeta" | "boton" | "celda";
   textos: {
     preview: string;
     idCard: string;
@@ -77,44 +72,36 @@ export function PrevisualizarExpediente({
   const fechaIngreso = fila.fecha_ingreso ? fechaCorta(fila.fecha_ingreso, idioma) : null;
   const [abierto, setAbierto] = useState(false);
 
-  /*
-   * El aspecto del estado se resuelve aquí, no llega por props.
-   *
-   * El icono es un componente de `lucide-react`, y un componente no cruza la
-   * frontera de servidor a cliente: React solo sabe serializar objetos planos,
-   * así que pasarlo reventaba en el navegador ("Only plain objects can be
-   * passed to Client Components"). `fila.estado` ya viaja en la fila, que es
-   * una cadena, y de ella sale todo lo demás sin cruzar nada.
-   */
-  const visual = visualDeEstado(fila.estado);
-  const IconoEstado = visual.icono;
-  const colorEstado = visual.insignia;
-
   const meta =
     [fila.cedula, fila.programa, fila.universidad]
       .filter(Boolean)
       .join(" · ") || textos.optional;
 
-  const badges = (
-    <>
-      {/* Mismo tamaño en las dos vistas. En la tarjeta iban a `text-[9px]` con
-          `py-0`, y a ese cuerpo la insignia deja de leerse: encoger la única
-          señal de color del cuadrado para ganar dos píxeles era el peor sitio
-          donde recortar. */}
-      {/* El icono va dentro de la insignia del estado, no al lado: es la señal
-          que separa `reclutado` de `inactivo` —los dos grises— y la única que
-          queda si alguien no distingue el verde del rojo. */}
-      <Badge className={cn("gap-1 px-2 py-0.5 text-[10px]", colorEstado)}>
-        <IconoEstado className="size-3 shrink-0" />
-        {textos.status}
-      </Badge>
-    </>
-  );
+  const badges = <StatusBadge status={fila.estado} />;
 
   return (
-    <Dialog open={abierto} onOpenChange={setAbierto}>
-      <DialogTrigger asChild>
-        {variante === "boton" ? (
+    <Sheet open={abierto} onOpenChange={setAbierto}>
+      <SheetTrigger asChild>
+        {variante === "celda" ? (
+          <button
+            type="button"
+            title={textos.preview}
+            aria-label={`${textos.preview}: ${fila.nombre}`}
+            className="group flex min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <FotoEstudiante
+              nombre={fila.nombre}
+              url={fotoUrl}
+              className="size-9 shrink-0 rounded-full"
+              aviso="punto"
+              textoSinFoto={textos.sinFoto}
+            />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold">{fila.nombre}</span>
+              <span className="text-meta block truncate">{meta}</span>
+            </span>
+          </button>
+        ) : variante === "boton" ? (
           <Button
             type="button"
             variant="ghost"
@@ -202,20 +189,16 @@ export function PrevisualizarExpediente({
             </span>
           </button>
         )}
-      </DialogTrigger>
+      </SheetTrigger>
 
-      {/* Ancho por defecto del diálogo (`max-w-lg`) y no `max-w-md`: con dos
-          columnas de datos, 448px dejaba el correo y el programa partidos a
-          media palabra. */}
-      <DialogContent>
-        {/* La cabecera lleva su propio `pr-8`: el aspa de cerrar del diálogo se
-            posa en esa esquina y sin el hueco pisaba los nombres largos. */}
-        <DialogHeader className="pr-8">
+      <SheetContent>
+        <header className="border-b border-linea px-6 pt-6 pr-16 pb-4">
           <div className="flex items-center gap-4">
             <FotoEstudiante
               nombre={fila.nombre}
               url={fotoUrl}
               className="size-16 shrink-0 rounded-full"
+              claseIcono="text-xl"
               aviso="punto"
               textoSinFoto={textos.sinFoto}
             />
@@ -223,50 +206,29 @@ export function PrevisualizarExpediente({
             <div className="min-w-0 space-y-2">
               {/* Sin `truncate`: un expediente es de una persona y su nombre se
                   lee entero, aunque ocupe dos líneas. */}
-              <DialogTitle className="text-base leading-snug">
-                {fila.nombre}
-              </DialogTitle>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge className={cn("gap-1 text-[10px]", colorEstado)}>
-                  <IconoEstado className="size-3 shrink-0" />
-                  {textos.status}
-                </Badge>
-              </div>
+              <SheetTitle className="text-section">{fila.nombre}</SheetTitle>
+              <SheetDescription className="sr-only">{textos.preview}</SheetDescription>
+              <StatusBadge status={fila.estado} />
             </div>
           </div>
-        </DialogHeader>
+        </header>
 
-        {/* Los datos, en su propio panel. Antes flotaban sueltos entre la
-            cabecera y los botones, y sin nada que los agrupara el diálogo se
-            leía como una lista de tres cosas distintas en vez de como una
-            ficha. `gap-y` mayor que `gap-x` porque las filas se confunden
-            antes que las columnas. */}
-        <dl className="bg-muted/40 grid grid-cols-1 gap-x-4 gap-y-4 rounded-xl border p-4 text-sm sm:grid-cols-2">
-          <Campo etiqueta={textos.idCard} valor={fila.cedula} />
-          <Campo etiqueta={textos.phone} valor={fila.telefono} icono={Phone} />
-          <Campo
-            etiqueta={textos.email}
-            valor={fila.email}
-            icono={Mail}
-            ancho
-          />
-          <Campo etiqueta={textos.program} valor={fila.programa} icono={BookOpen} ancho />
-          <Campo etiqueta={textos.university} valor={fila.universidad} ancho />
-          <Campo etiqueta={textos.since} valor={fechaIngreso} />
-          <Campo
-            etiqueta={textos.gpa}
-            valor={
-              fila.indice === null
-                ? textos.noGpa
-                : `${fila.indice.toFixed(2)} ${textos.gpaScale}`
-            }
-          />
-        </dl>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <dl className="grid grid-cols-1 gap-x-4 gap-y-4 text-sm sm:grid-cols-2">
+            <Campo etiqueta={textos.idCard} valor={fila.cedula} />
+            <Campo etiqueta={textos.phone} valor={fila.telefono} icono={Phone} />
+            <Campo etiqueta={textos.email} valor={fila.email} icono={Mail} ancho />
+            <Campo etiqueta={textos.program} valor={fila.programa} icono={BookOpen} ancho />
+            <Campo etiqueta={textos.university} valor={fila.universidad} ancho />
+            <Campo etiqueta={textos.since} valor={fechaIngreso} />
+            <Campo
+              etiqueta={textos.gpa}
+              valor={fila.indice === null ? textos.noGpa : `${fila.indice.toFixed(2)} ${textos.gpaScale}`}
+            />
+          </dl>
+        </div>
 
-        {/* Dos botones y no tres: el diálogo ya trae su aspa de cerrar arriba a
-            la derecha, así que un "Cerrar" aquí repetía la salida y dejaba las
-            dos acciones que sí importan apretadas contra el borde. */}
-        <DialogFooter>
+        <footer className="flex justify-end gap-2 border-t border-linea px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <Button asChild variant="outline">
             <Link href={`/expedientes/${fila.id}`}>
               <Eye className="size-4" />
@@ -282,9 +244,9 @@ export function PrevisualizarExpediente({
               </Link>
             </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </footer>
+      </SheetContent>
+    </Sheet>
   );
 }
 

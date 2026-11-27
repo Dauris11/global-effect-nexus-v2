@@ -1513,6 +1513,8 @@
     },
     "lista": {
       "cuenta": "Cuenta del portal",
+      "verFicha": "Ver ficha",
+      "editar": "Editar expediente",
       "highSchool": "Secundaria",
       "conCuenta": "Vinculada",
       "sinCuenta": "Sin cuenta",

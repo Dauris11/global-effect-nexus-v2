@@ -9,7 +9,17 @@ import { Input } from "@/components/ui/input";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-export type ChipEstado = { value: string; label: string; count?: number };
+/** Un chip filtra por UN parámetro de la URL; chips de parámetros distintos se pueden combinar. */
+export type ChipEstado = { value: string; label: string; count?: number; param?: string };
+
+/** Un selector de «Más filtros» (universidad, período, orden…). Escribe en la URL al cambiar. */
+export type SelectorFiltro = {
+  param: string;
+  label: string;
+  /** Texto de «sin filtro» (p. ej. «Todas las universidades»). */
+  todos: string;
+  opciones: readonly { value: string; label: string }[];
+};
 
 const RETARDO_BUSQUEDA_MS = 250;
 
@@ -23,21 +33,25 @@ const RETARDO_BUSQUEDA_MS = 250;
  */
 export function FilterBar({
   chips,
+  totalChips,
   chipParam = "estado",
   searchParam = "q",
   placeholder,
+  selectores,
   moreFilters,
-  moreActive = 0,
   className,
 }: {
   chips?: readonly ChipEstado[];
+  /** Número que lleva el chip «Todos» (el total sin filtrar). */
+  totalChips?: number;
+  /** Parámetro de los chips que no traen el suyo. */
   chipParam?: string;
   searchParam?: string;
   placeholder?: string;
-  /** Contenido del popover «Más filtros» (selects, rangos…); debe escribir en la URL por su cuenta. */
+  /** Selectores del popover «Más filtros»; el número del botón sale de cuántos están puestos. */
+  selectores?: readonly SelectorFiltro[];
+  /** Contenido libre adicional del popover; debe escribir en la URL por su cuenta. */
   moreFilters?: React.ReactNode;
-  /** Cuántos filtros del popover están puestos, para el número en el botón. */
-  moreActive?: number;
   className?: string;
 }) {
   const t = useTranslations("appUi");
@@ -47,11 +61,15 @@ export function FilterBar({
   const [texto, setTexto] = useState(parametros.get(searchParam) ?? "");
   const [abierto, setAbierto] = useState(false);
   const contenedor = useRef<HTMLDivElement>(null);
-  const activo = parametros.get(chipParam) ?? "";
+  const paramDe = (c: ChipEstado) => c.param ?? chipParam;
+  const paramsChips = [...new Set((chips ?? []).map(paramDe))];
+  const hayChipActivo = paramsChips.some((p) => parametros.get(p));
+  const moreActive = (selectores ?? []).filter((x) => parametros.get(x.param)).length;
 
-  const escribir = (clave: string, valor: string) => {
+  const escribir = (clave: string, valor: string, quitar: readonly string[] = []) => {
     const nuevos = new URLSearchParams(parametros.toString());
 
+    for (const q of quitar) nuevos.delete(q);
     if (valor) nuevos.set(clave, valor);
     else nuevos.delete(clave);
     // Cambiar un filtro vuelve a la primera página.
@@ -87,7 +105,7 @@ export function FilterBar({
     };
   }, [abierto]);
 
-  const hayFiltros = Boolean(texto || activo || moreActive > 0);
+  const hayFiltros = Boolean(texto || hayChipActivo || moreActive > 0);
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -104,7 +122,7 @@ export function FilterBar({
           />
         </div>
 
-        {moreFilters && (
+        {(selectores?.length || moreFilters) && (
           <div ref={contenedor} className="relative">
             <button
               type="button"
@@ -116,7 +134,26 @@ export function FilterBar({
               {t("filterBar.moreFilters")}
               {moreActive > 0 && <span className="rounded-full bg-tinta px-1.5 text-xs text-background tabular-nums">{moreActive}</span>}
             </button>
-            {abierto && <div className="absolute top-11 left-0 z-40 w-72 space-y-3 rounded-card border border-linea bg-popover p-4 shadow-elevada">{moreFilters}</div>}
+            {abierto && (
+              <div className="absolute top-11 left-0 z-40 w-72 space-y-3 rounded-card border border-linea bg-popover p-4 shadow-elevada">
+                {selectores?.map((x) => (
+                  <label key={x.param} className="text-label block space-y-1.5">
+                    {x.label}
+                    <select
+                      value={parametros.get(x.param) ?? ""}
+                      onChange={(e) => escribir(x.param, e.target.value)}
+                      className="text-body h-9 w-full rounded-control border border-linea-fuerte bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">{x.todos}</option>
+                      {x.opciones.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+                {moreFilters}
+              </div>
+            )}
           </div>
         )}
 
@@ -136,16 +173,17 @@ export function FilterBar({
       </div>
 
       {chips && chips.length > 0 && (
-        <div role="group" className="sin-barra -mx-6 flex gap-2 overflow-x-auto px-6 lg:-mx-8 lg:px-8">
-          {[{ value: "", label: t("filterBar.all"), count: undefined }, ...chips].map((c) => {
-            const esteActivo = c.value === activo;
+        <div role="group" className="sin-barra -mx-6 flex gap-2 overflow-x-auto px-6 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
+          {[{ value: "", label: t("filterBar.all"), count: totalChips, param: undefined }, ...chips].map((c) => {
+            const esteActivo = c.value === "" ? !hayChipActivo : parametros.get(paramDe(c)) === c.value;
 
             return (
               <button
-                key={c.value || "todos"}
+                key={`${paramDe(c)}-${c.value || "todos"}`}
                 type="button"
                 aria-pressed={esteActivo}
-                onClick={() => escribir(chipParam, c.value)}
+                // «Todos» quita todos los chips; un chip activo vuelve a apagarse al pulsarlo.
+                onClick={() => (c.value === "" ? escribir(paramsChips[0] ?? chipParam, "", paramsChips) : escribir(paramDe(c), esteActivo ? "" : c.value))}
                 className={cn(
                   "text-label inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   esteActivo ? "border-tinta bg-tinta text-background" : "border-linea-fuerte bg-background text-tinta-2 hover:border-tinta hover:text-tinta",

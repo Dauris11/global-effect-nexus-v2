@@ -1513,6 +1513,8 @@
     },
     "lista": {
       "cuenta": "Portal account",
+      "verFicha": "View file",
+      "editar": "Edit record",
       "highSchool": "High school",
       "conCuenta": "Linked",
       "sinCuenta": "No account",

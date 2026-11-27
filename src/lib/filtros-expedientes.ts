@@ -24,7 +24,8 @@ export const ORDENES_EXPEDIENTE = [
 
 export type OrdenExpediente = (typeof ORDENES_EXPEDIENTE)[number];
 
-export const VISTAS_EXPEDIENTE = ["tarjetas", "lista"] as const;
+/** La tabla densa es la vista por defecto (docs/ux-rules.md); las tarjetas con foto son opcionales. */
+export const VISTAS_EXPEDIENTE = ["lista", "tarjetas"] as const;
 
 export type VistaExpediente = (typeof VISTAS_EXPEDIENTE)[number];
 
@@ -56,7 +57,7 @@ export function leerConsultaExpedientes(
     universidad: crudo.universidad?.trim() || null,
     situacion: es(SITUACIONES_EXPEDIENTE, crudo.situacion) ? crudo.situacion : null,
     orden: es(ORDENES_EXPEDIENTE, crudo.orden) ? crudo.orden : "nombre",
-    vista: crudo.vista === "lista" ? "lista" : "tarjetas",
+    vista: crudo.vista === "tarjetas" ? "tarjetas" : "lista",
     pagina: Number.isInteger(pagina) && pagina > 0 ? pagina : 1,
   };
 }
@@ -79,7 +80,7 @@ export function enlaceExpedientes(
   if (final.universidad) parametros.set("universidad", final.universidad);
   if (final.situacion) parametros.set("situacion", final.situacion);
   if (final.orden !== "nombre") parametros.set("orden", final.orden);
-  if (final.vista !== "tarjetas") parametros.set("vista", final.vista);
+  if (final.vista !== "lista") parametros.set("vista", final.vista);
   if (final.pagina > 1) parametros.set("pagina", String(final.pagina));
 
   const cadena = parametros.toString();
