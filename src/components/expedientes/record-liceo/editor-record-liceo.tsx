@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { AlertCircle, Camera, CheckCircle2, Loader2, PencilLine, Plus, Save, X } from "lucide-react";
+import { AlertCircle, Camera, CheckCircle2, Loader2, PencilLine, Plus, Save, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { reducirImagen } from "@/components/expedientes/record-liceo/reducir-imagen";
@@ -9,7 +9,7 @@ import { TablaGradoLiceo } from "@/components/expedientes/record-liceo/tabla-gra
 import { Button } from "@/components/ui/button";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { MAXIMO_GRADOS, pendientesDeRevisar, promediosDelRecord, type GradoLiceo } from "@/lib/record-liceo";
-import { confirmarRecordLiceo, descartarBorradorRecordLiceo, leerRecordLiceo, type EstadoRecordLiceo } from "@/server/record-liceo/acciones";
+import { confirmarRecordLiceo, descartarBorradorRecordLiceo, leerRecordLiceo, quitarRecordLiceo, type EstadoRecordLiceo } from "@/server/record-liceo/acciones";
 
 const INICIAL: EstadoRecordLiceo = { estado: "inicial" };
 const GRADO_VACIO = (g: number): GradoLiceo => ({ grado: g, anioInicio: new Date().getFullYear() - 1, centro: "", notas: [{ materia: "", esModulo: false, nota: null }] });
@@ -36,6 +36,7 @@ export function EditorRecordLiceo({
   const [grados, setGrados] = useState<GradoLiceo[] | null>(borrador);
   const [estado, setEstado] = useState<EstadoRecordLiceo>(INICIAL);
   const [fase, setFase] = useState<"preparando" | "leyendo" | null>(null);
+  const [pidiendoQuitar, setPidiendoQuitar] = useState(false);
   const [ocupado, empezar] = useTransition();
 
   const editando = grados !== null;
@@ -81,6 +82,20 @@ export function EditorRecordLiceo({
     });
   }
 
+  function quitar() {
+    empezar(async () => {
+      const datos = new FormData();
+
+      datos.set("estudiante", estudianteId);
+
+      const r = await quitarRecordLiceo(INICIAL, datos);
+
+      setEstado(r);
+      setPidiendoQuitar(false);
+      if (r.estado === "ok") setGrados(null);
+    });
+  }
+
   function descartar() {
     empezar(async () => {
       const datos = new FormData();
@@ -101,15 +116,39 @@ export function EditorRecordLiceo({
       {!editando && (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={() => entrada.current?.click()} cargando={ocupado}>
-              <Camera className="size-4" />
+            {/* Una acción principal grande, como la cabina del chofer: lo primero que se ve es qué hacer. */}
+            <Button type="button" size="lg" onClick={() => entrada.current?.click()} cargando={ocupado}>
+              <Camera className="size-5" />
               {t("actions.photo")}
             </Button>
             <Button type="button" variant="outline" onClick={() => setGrados(confirmados.length > 0 ? structuredClone(confirmados) : [GRADO_VACIO(1)])}>
               <PencilLine className="size-4" />
               {confirmados.length > 0 ? t("actions.edit") : t("actions.manual")}
             </Button>
+            {confirmados.length > 0 && !pidiendoQuitar && (
+              <Button type="button" variant="ghost" onClick={() => setPidiendoQuitar(true)}>
+                <Trash2 className="size-4" />
+                {t("actions.remove")}
+              </Button>
+            )}
           </div>
+          {pidiendoQuitar && (
+            <div role="alertdialog" aria-label={t("remove.title")} className={ALERTA_RIESGO.contenedor}>
+              <AlertCircle className={ALERTA_RIESGO.icono} />
+              <div className="space-y-2">
+                <p className={ALERTA_RIESGO.texto}>{t("remove.confirm")}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" onClick={quitar} cargando={ocupado}>
+                    <Trash2 className="size-4" />
+                    {t("remove.yes")}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setPidiendoQuitar(false)}>
+                    {t("remove.no")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           <p className="texto-meta">{t("photoHint")}</p>
         </div>
       )}

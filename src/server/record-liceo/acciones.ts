@@ -293,3 +293,56 @@ export async function descartarBorradorRecordLiceo(_p: EstadoRecordLiceo, d: For
 
   return { estado: "ok" };
 }
+
+/**
+ * Quita el récord confirmado: las notas, las fotos (también del bucket) y los dos
+ * promedios del estudiante. Es lo único que se borra aquí, y solo a pedido de una
+ * persona con permiso, con confirmación en pantalla; queda en la bitácora con lo
+ * que valían los promedios. No toca nada del índice universitario.
+ */
+export async function quitarRecordLiceo(_p: EstadoRecordLiceo, d: FormData): Promise<EstadoRecordLiceo> {
+  const usuario = await usuarioConPermiso();
+
+  if (!usuario) return { estado: "no_permitido" };
+
+  const estudianteId = String(d.get("estudiante") ?? "");
+
+  if (!UUID.test(estudianteId)) return { estado: "no_encontrado" };
+
+  const antes = await consultarUna<{ id: string; global: number | null; anual: number | null }>(
+    `SELECT r.id, e.promedio_secundaria::float8 AS global, e.promedio_secundaria_anual::float8 AS anual
+       FROM record_liceo r JOIN estudiante e ON e.id = r.estudiante_id WHERE r.estudiante_id = $1`,
+    [estudianteId],
+  );
+
+  if (!antes) return { estado: "ok" };
+
+  const fotos = await consultar<{ ruta: string }>(`SELECT ruta FROM archivo_academico WHERE record_liceo_id = $1`, [antes.id]);
+
+  try {
+    await enTransaccion(async (c) => {
+      // El récord arrastra sus grados, notas y filas de archivo (ON DELETE CASCADE).
+      await c.query(`DELETE FROM record_liceo WHERE id = $1`, [antes.id]);
+      await c.query(`UPDATE estudiante SET promedio_secundaria = NULL, promedio_secundaria_anual = NULL WHERE id = $1`, [estudianteId]);
+    });
+  } catch (error) {
+    console.error("[record-liceo] no se pudo quitar", error);
+
+    return { estado: "error" };
+  }
+
+  // Con la fila ya borrada, un fallo del bucket deja un archivo suelto pero nunca un récord a medias.
+  await Promise.all(fotos.map((f) => borrarDocumento(f.ruta)));
+  await registrar({
+    usuarioId: usuario.id,
+    accion: "record_liceo.quitado",
+    entidad: "estudiante",
+    entidadId: estudianteId,
+    datos: { fotos: fotos.length, global: antes.global, anual: antes.anual },
+  });
+
+  revalidatePath(RUTA_PAGINA, "page");
+  revalidatePath("/[locale]/expedientes", "page");
+
+  return { estado: "ok" };
+}

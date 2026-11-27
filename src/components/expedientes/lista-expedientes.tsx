@@ -25,12 +25,15 @@ export async function ListaExpedientes({
   idioma,
   puedeEscribir,
   umbral,
+  minimoSecundaria,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
   puedeEscribir: boolean;
   /** Índice por debajo del cual se marca en riesgo (parámetro becas.indice_minimo). */
   umbral: number;
+  /** Promedio de secundaria mínimo para aceptar a un candidato (parámetro becas.promedio_liceo_minimo). */
+  minimoSecundaria: number;
 }) {
   const t = await getTranslations("records");
 
@@ -88,6 +91,7 @@ export async function ListaExpedientes({
               </td>
               <td className="px-4 py-2.5 text-right">
                 <Indice indice={fila.indice} umbral={umbral} />
+                <Secundaria valor={fila.promedio_secundaria} minimo={minimoSecundaria} etiqueta={t("lista.highSchool")} />
               </td>
               <td className="px-4 py-2.5">
                 <Cuenta fila={fila} textos={{ con: t("lista.conCuenta"), sin: t("lista.sinCuenta") }} />
@@ -127,6 +131,7 @@ export async function ListaExpedientes({
                 <span className="flex flex-wrap items-center gap-2">
                   <Estado estado={fila.estado} texto={t(`status.${fila.estado}`)} />
                   <Indice indice={fila.indice} umbral={umbral} />
+                  <Secundaria valor={fila.promedio_secundaria} minimo={minimoSecundaria} etiqueta={t("lista.highSchool")} />
                 </span>
                 {fila.universidad && (
                   <span className="texto-meta flex items-center gap-1.5 truncate">
@@ -189,6 +194,24 @@ function Cuenta({
     <span className={cn("inline-flex items-center gap-1.5", !fila.con_cuenta && "text-tinta-2")}>
       <Icono aria-hidden className="size-4 text-tinta-3" />
       {fila.con_cuenta ? textos.con : textos.sin}
+    </span>
+  );
+}
+
+/**
+ * Promedio del récord de secundaria (0–100), aparte del índice universitario y con
+ * su propio mínimo. Bajo el mínimo lleva el mismo triángulo que el índice en riesgo,
+ * para que se lea también en grises.
+ */
+function Secundaria({ valor, minimo, etiqueta }: { valor: number | null; minimo: number; etiqueta: string }) {
+  if (valor === null) return null;
+
+  const bajo = valor < minimo;
+
+  return (
+    <span className={cn("texto-meta flex items-center justify-end gap-1 tabular-nums", bajo && "font-semibold text-[#B4342B]")}>
+      {bajo && <TriangleAlert aria-hidden className="size-3" />}
+      {etiqueta} {valor.toFixed(2)}
     </span>
   );
 }

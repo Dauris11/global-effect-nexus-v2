@@ -28,12 +28,15 @@ export async function TarjetasExpedientes({
   idioma,
   puedeEscribir,
   umbral,
+  minimoSecundaria,
 }: {
   filas: FilaExpediente[];
   idioma: Locale;
   puedeEscribir: boolean;
   /** Índice por debajo del cual se marca en riesgo (parámetro becas.indice_minimo). */
   umbral: number;
+  /** Promedio de secundaria mínimo para aceptar a un candidato (parámetro becas.promedio_liceo_minimo). */
+  minimoSecundaria: number;
 }) {
   const t = await getTranslations("records");
 
@@ -97,6 +100,15 @@ export async function TarjetasExpedientes({
                       ? t("noGpa")
                       : `${t("column.gpa")} ${fila.indice.toFixed(2)}`}
                   </Dato>
+
+                  {fila.promedio_secundaria !== null && (
+                    <Dato
+                      icono={fila.promedio_secundaria < minimoSecundaria ? TriangleAlert : GraduationCap}
+                      className={cn(fila.promedio_secundaria < minimoSecundaria && "text-[#B4342B]")}
+                    >
+                      {t("lista.highSchool")} {fila.promedio_secundaria.toFixed(2)}
+                    </Dato>
+                  )}
 
                   {llevaCuenta(fila.estado) && !fila.con_cuenta && (
                     <Dato icono={UserX}>{t("lista.sinCuenta")}</Dato>

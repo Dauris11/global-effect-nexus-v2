@@ -978,6 +978,8 @@
     "errGeneric": "No se pudo completar. Inténtalo otra vez."
   },
   "recordLiceo": {
+    "remove": {"title": "Quitar el récord de secundaria", "confirm": "Se borrarán las notas, las fotos y los dos promedios de este estudiante. No se puede deshacer.", "yes": "Sí, quitar el récord", "no": "Cancelar"},
+    "minimum": {"met": "Cumple el mínimo de {min}", "below": "Está por debajo del mínimo de {min}"},
     "title": "Récord de secundaria",
     "intro": "Notas finales de 1.º a 6.º grado, con el liceo de cada año. Va de 0 a 100 y no es el índice universitario.",
     "empty": "Todavía no hay récord de secundaria. Toma una foto del récord y el sistema lo lee, o escríbelo a mano.",
@@ -1004,6 +1006,7 @@
       "discard": "Descartar",
       "addGrade": "Agregar grado",
       "addSubject": "Agregar materia",
+      "remove": "Quitar récord",
       "removeGrade": "Quitar grado",
       "removeSubject": "Quitar materia"
     },
@@ -1380,6 +1383,7 @@
     },
     "lista": {
       "cuenta": "Cuenta del portal",
+      "highSchool": "Secundaria",
       "conCuenta": "Vinculada",
       "sinCuenta": "Sin cuenta",
       "acciones": "Acciones"

@@ -41,6 +41,8 @@ export type FilaExpediente = {
   indice: number | null;
   /** Número de evaluaciones en el historial, para saber si el índice es fiable. */
   evaluaciones: number;
+  /** Promedio general del récord de secundaria (0–100), aparte del índice universitario; `null` si no hay récord confirmado. */
+  promedio_secundaria: number | null;
 };
 
 /**
@@ -155,7 +157,8 @@ export async function listaExpedientes({
             e.foto_url,
             e.usuario_id IS NOT NULL AS con_cuenta,
             coalesce(indice_estudiante(e.id), h.indice) AS indice,
-            coalesce(h.evaluaciones, 0) AS evaluaciones
+            coalesce(h.evaluaciones, 0) AS evaluaciones,
+            e.promedio_secundaria::float8 AS promedio_secundaria
        ${DESDE_EXPEDIENTES}
        ${DONDE_EXPEDIENTES}
       ORDER BY ${ORDEN_SQL[orden]}

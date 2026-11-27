@@ -1,10 +1,11 @@
-import { FileImage } from "lucide-react";
+import { CheckCircle2, FileImage, TriangleAlert } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { EditorRecordLiceo } from "@/components/expedientes/record-liceo/editor-record-liceo";
 import { Seccion } from "@/components/expedientes/detalle/ficha";
 import { anioEscolar, promediosDelRecord } from "@/lib/record-liceo";
 import { fechaCorta } from "@/lib/fechas";
+import { parametros } from "@/server/parametros/consultas";
 import { recordLiceoDe } from "@/server/record-liceo/consultas";
 
 /**
@@ -16,7 +17,8 @@ import { recordLiceoDe } from "@/server/record-liceo/consultas";
  * no alimenta la beca ni las alertas académicas.
  */
 export async function SeccionRecordLiceo({ estudianteId, puedeEditar }: { estudianteId: string; puedeEditar: boolean }) {
-  const [t, datos, idioma] = await Promise.all([getTranslations("recordLiceo"), recordLiceoDe(estudianteId), getLocale()]);
+  const [t, datos, idioma, valores] = await Promise.all([getTranslations("recordLiceo"), recordLiceoDe(estudianteId), getLocale(), parametros()]);
+  const minimo = Number(valores["becas.promedio_liceo_minimo"]) || 89;
   const lang = idioma === "en" ? "en" : "es";
   const resumen = promediosDelRecord(datos.grados);
   const hayConfirmado = datos.confirmadoAt !== null && datos.grados.length > 0;
@@ -38,6 +40,13 @@ export async function SeccionRecordLiceo({ estudianteId, puedeEditar }: { estudi
                 <p className="texto-meta mt-1.5">{t("byYear")}</p>
               </div>
             </div>
+
+            {datos.promedioGlobal !== null && (
+              <p className="flex items-center gap-2 text-sm font-medium">
+                {datos.promedioGlobal >= minimo ? <CheckCircle2 className="size-4 text-marca-700" /> : <TriangleAlert className="size-4 text-[#B4342B]" />}
+                {datos.promedioGlobal >= minimo ? t("minimum.met", { min: minimo }) : t("minimum.below", { min: minimo })}
+              </p>
+            )}
 
             <div className="space-y-2">
               {datos.grados.map((g, i) => (

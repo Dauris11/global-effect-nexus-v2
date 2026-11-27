@@ -8,6 +8,7 @@ import {
 } from "@/components/expedientes/filtros-expedientes";
 import { textosCatalogo } from "@/components/expedientes/textos-edicion";
 import { umbralDeIndice } from "@/server/academico/indice";
+import { parametros } from "@/server/parametros/consultas";
 import { arbolCatalogo } from "@/server/universidades/consultas";
 import { FormularioExpediente } from "@/components/expedientes/formulario-expediente";
 import { ListaExpedientes } from "@/components/expedientes/lista-expedientes";
@@ -101,7 +102,7 @@ export default async function PaginaExpedientes({
     situacion: consulta.situacion,
   };
 
-  const [cifras, filas, total, universidades, arbol, tc, umbral] = await Promise.all([
+  const [cifras, filas, total, universidades, arbol, tc, umbral, valoresParametros] = await Promise.all([
     cifrasExpedientes(),
     listaExpedientes({
       ...filtros,
@@ -114,7 +115,9 @@ export default async function PaginaExpedientes({
     puedeEscribir ? arbolCatalogo() : Promise.resolve(null),
     getTranslations({ locale, namespace: "catalog" }),
     umbralDeIndice(),
+    parametros(),
   ]);
+  const minimoSecundaria = Number(valoresParametros["becas.promedio_liceo_minimo"]) || 89;
 
   const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
 
@@ -304,9 +307,9 @@ export default async function PaginaExpedientes({
           </div>
 
           {consulta.vista === "tarjetas" ? (
-            <TarjetasExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} />
+            <TarjetasExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
           ) : (
-            <ListaExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} />
+            <ListaExpedientes filas={filas} idioma={idioma} puedeEscribir={puedeEscribir} umbral={umbral} minimoSecundaria={minimoSecundaria} />
           )}
         </>
       )}

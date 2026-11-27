@@ -978,6 +978,8 @@
     "errGeneric": "Could not complete. Try again."
   },
   "recordLiceo": {
+    "remove": {"title": "Remove the high school record", "confirm": "The grades, the photos and both averages of this student will be deleted. This cannot be undone.", "yes": "Yes, remove the record", "no": "Cancel"},
+    "minimum": {"met": "Meets the minimum of {min}", "below": "Below the minimum of {min}"},
     "title": "High school record",
     "intro": "Final grades from 1st to 6th grade, with the school of each year. Scale is 0 to 100 and it is not the university index.",
     "empty": "There is no high school record yet. Take a photo of the record and the system reads it, or type it in.",
@@ -1004,6 +1006,7 @@
       "discard": "Discard",
       "addGrade": "Add grade",
       "addSubject": "Add subject",
+      "remove": "Remove record",
       "removeGrade": "Remove grade",
       "removeSubject": "Remove subject"
     },
@@ -1380,6 +1383,7 @@
     },
     "lista": {
       "cuenta": "Portal account",
+      "highSchool": "High school",
       "conCuenta": "Linked",
       "sinCuenta": "No account",
       "acciones": "Actions"
