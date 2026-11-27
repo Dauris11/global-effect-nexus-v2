@@ -7,7 +7,7 @@ import { usePermisos, useRol } from "@/components/layout/proveedor-permisos";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, usePathname } from "@/i18n/navigation";
 import { accesoDeHref } from "@/lib/nav";
-import { pestanaActiva } from "@/lib/nav-modulos";
+import { ICONO_DE_PESTANA, ICONO_PESTANA_POR_DEFECTO, pestanaActiva } from "@/lib/nav-modulos";
 import { tienePermiso, type Permiso } from "@/lib/rbac";
 
 /** La pestaña (y su módulo) de la ruta actual, con los permisos de quien mira. */
@@ -37,11 +37,18 @@ export function PestanasModulo() {
   return (
     <Tabs value={activa.pestana.href} className="gap-0">
       <TabsList aria-label={t(`m.${activa.modulo.etiqueta}`)}>
-        {activa.modulo.pestanasVisibles.map((pest) => (
-          <TabsTrigger key={pest.href} value={pest.href} asChild>
-            <Link href={pest.href}>{t(`tab.${pest.etiqueta}`)}</Link>
-          </TabsTrigger>
-        ))}
+        {activa.modulo.pestanasVisibles.map((pest) => {
+          const Icono = ICONO_DE_PESTANA[pest.etiqueta] ?? ICONO_PESTANA_POR_DEFECTO;
+
+          return (
+            <TabsTrigger key={pest.href} value={pest.href} asChild>
+              <Link href={pest.href}>
+                <Icono aria-hidden />
+                {t(`tab.${pest.etiqueta}`)}
+              </Link>
+            </TabsTrigger>
+          );
+        })}
       </TabsList>
     </Tabs>
   );
