@@ -226,8 +226,8 @@ export async function confirmarRecordLiceo(_p: EstadoRecordLiceo, d: FormData): 
 
       for (const g of v.grados) {
         const rg = await c.query<{ id: string }>(
-          `INSERT INTO record_liceo_grado (record_id, grado, anio_inicio, anio_fin, centro) VALUES ($1, $2, $3, $3 + 1, $4) RETURNING id`,
-          [id, g.grado, g.anioInicio, g.centro],
+          `INSERT INTO record_liceo_grado (record_id, grado, anio_inicio, anio_fin, centro) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+          [id, g.grado, g.anioInicio, g.anioInicio + 1, g.centro],
         );
 
         for (const [i, n] of g.notas.entries()) {
