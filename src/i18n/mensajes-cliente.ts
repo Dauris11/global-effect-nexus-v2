@@ -47,6 +47,10 @@ const ESPACIOS_BASE = [
   // Línea de tiempo compartida: la usan el panorama, el proyecto y los
   // vencimientos, y son pocas claves.
   "lineaTiempo",
+  // Componentes base de `components/app/` (StatusBadge, FilterBar, SidePanelForm…): se usan
+  // desde cualquier lista y la mayoría son clientes. Pocas claves.
+  "appUi",
+  "estados",
 ] as const;
 
 /**

@@ -28,10 +28,10 @@ export const variantesBoton = cva(
         link: "text-tinta underline underline-offset-4 decoration-linea-fuerte hover:decoration-tinta active:scale-100",
       },
       size: {
-        default: "h-11 px-5 has-[>svg]:px-4",
-        sm: "h-9 gap-1.5 px-3.5 has-[>svg]:px-3",
-        lg: "h-12 px-6 text-base has-[>svg]:px-5",
-        icon: "size-11",
+        default: "h-9 px-4 has-[>svg]:px-3.5 pointer-coarse:h-11",
+        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 pointer-coarse:h-10",
+        lg: "h-11 px-6 has-[>svg]:px-5",
+        icon: "size-9 pointer-coarse:size-11",
       },
     },
     defaultVariants: {

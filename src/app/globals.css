@@ -220,9 +220,10 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --shadow-card: var(--shadow-card);
   --shadow-elevada: var(--shadow-elevada);
 
-  /* Inter es la única familia del sistema (pesos 300-900). */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Plus Jakarta Sans (400-700) es la familia del sistema; Plex Mono solo para códigos y folios. */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /*
@@ -259,6 +260,41 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
   --color-pri-alta: #d9641a;
   --color-pri-media: #b88a00;
   --color-pri-baja: #64748b;
+
+  /*
+   * Colores de ESTADO (docs/ux-rules.md §4), para `<StatusBadge>` y `src/lib/status-map.ts`.
+   * Cada uno trae base (icono y acento), `fg` (texto, más oscuro para llegar a AA sobre su
+   * tinte), `bg` (tinte suave) y `border`. `info` usa la escala de la marca, así que sigue
+   * al acento azul/negro de cada persona. Nunca en botones, banners ni gráficas.
+   */
+  --color-status-success: #16a34a;
+  --color-status-success-fg: #15803d;
+  --color-status-success-bg: #ecfdf3;
+  --color-status-success-border: #bbf7d0;
+  --color-status-warning: #d97706;
+  --color-status-warning-fg: #b45309;
+  --color-status-warning-bg: #fffbeb;
+  --color-status-warning-border: #fde68a;
+  --color-status-danger: #dc2626;
+  --color-status-danger-fg: #b91c1c;
+  --color-status-danger-bg: #fef2f2;
+  --color-status-danger-border: #fecaca;
+  --color-status-info: var(--color-marca-500);
+  --color-status-info-fg: var(--color-marca-700);
+  --color-status-info-bg: var(--color-marca-50);
+  --color-status-info-border: var(--color-marca-200);
+  --color-status-progress: #7c3aed;
+  --color-status-progress-fg: #6d28d9;
+  --color-status-progress-bg: #f5f3ff;
+  --color-status-progress-border: #ddd6fe;
+  --color-status-done: #0f766e;
+  --color-status-done-fg: #0f766e;
+  --color-status-done-bg: #f0fdfa;
+  --color-status-done-border: #99f6e4;
+  --color-status-neutral: #64748b;
+  --color-status-neutral-fg: #475569;
+  --color-status-neutral-bg: #f1f5f9;
+  --color-status-neutral-border: #e2e8f0;
 
   /* Tres radios y la píldora. Nada más: control (botón, input), tarjeta y
      hoja (diálogo, hoja inferior, tarjeta de login). */
@@ -305,6 +341,52 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
  * Escala tipográfica semántica. Una página dice "esto es un título de
  * sección", no "22px semibold": si mañana cambia el tamaño, cambia aquí.
  */
+/*
+ * Escala de docs/ux-rules.md §3 (la usan los componentes de `components/app/`).
+ * Las `texto-*` de arriba siguen vigentes para las pantallas que aún no migraron.
+ */
+@utility text-page {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+}
+
+@utility text-section {
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+@utility text-body {
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+
+@utility text-label {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+@utility text-meta {
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--tinta-3);
+}
+
+@utility text-kpi {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta);
+}
+
 @utility texto-titulo-pagina {
   font-size: 28px;
   line-height: 1.15;
@@ -356,8 +438,14 @@ html[data-barra="negra"] [data-barra-lateral] .logo-barra,
      una página para leer. La landing sube a 16 en su propio contenedor. */
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-size: 15px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* Cifras alineadas en columna: tablas, montos y KPIs. */
+  table,
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 

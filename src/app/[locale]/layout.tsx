@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -11,13 +11,21 @@ import { BLANCO } from "@/lib/paleta";
 import "../globals.css";
 
 /**
- * Inter es la única familia tipográfica del sistema (`docs/09-sistema-visual.md`), con los
- * pesos 300-900 que usan los títulos hero y los valores de KPI. Se expone como
- * `--font-inter`, que es lo que lee `--font-sans` en `globals.css`.
+ * Plus Jakarta Sans es la familia del sistema (`docs/ux-rules.md`), en 400/500/600/700.
+ * Se expone como `--font-jakarta`, que es lo que lee `--font-sans` en `globals.css`.
+ * IBM Plex Mono queda SOLO para códigos y folios (AS-000063, CE-000023, cédulas).
  */
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -77,7 +85,7 @@ export default async function LayoutRaiz({
   const messages = await mensajesCliente();
 
   return (
-    <html lang={locale} className={inter.variable} suppressHydrationWarning>
+    <html lang={locale} className={`${jakarta.variable} ${plexMono.variable}`} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider messages={messages}>
           {children}

@@ -40,6 +40,13 @@ de app en el móvil (pestañas abajo, hojas que suben desde abajo).
   `src/lib/solicitudes.ts`), para que la diferencia sobreviva en grises.
 - Escrito como `bg-[#1E9E6A]`, nunca `green-*` / `red-*`.
 
+### Colores de estado `status-*` (26 nov 2026, `docs/ux-rules.md`)
+
+`success`, `warning`, `danger`, `info`, `progress`, `done` y `neutral`, vía `<StatusBadge>` y
+`src/lib/status-map.ts` (todo estado del sistema se traduce ahí). Siempre con icono; nunca en
+botones, banners ni gráficas. Conviven con los `est-*`/`pri-*` de abajo, que quedan para el
+estado y la prioridad de las tareas de trabajo.
+
 ### La segunda excepción: colores de estado, prioridad y módulo (nov 2026)
 
 **Los colores de la marca no se ven afectados.** Turquesa, hover, oscuro, suave,
@@ -77,10 +84,11 @@ de `globals.css`.
 
 ## 4. Tipografía
 
-Inter. Cuerpo 15 px (landing 16). `texto-titulo-pagina` (28→32 px),
-`texto-titulo-seccion` (22), `texto-titulo-tarjeta` (16), `texto-meta` (13,
-`tinta-3`). Títulos en `font-semibold`. Etiquetas de formulario
-`text-sm font-medium`.
+**Plus Jakarta Sans** (400–700; sustituyó a Inter el 26 nov 2026) y **IBM Plex Mono** solo para
+códigos y folios. Cuerpo 14 px. Escala nueva: `text-page` (26), `text-section` (17), `text-body`
+(14), `text-label` (13), `text-meta` (12,5), `text-kpi` (28), definidas en
+[`docs/ux-rules.md`](../../docs/ux-rules.md); las `texto-titulo-*` siguen vigentes para lo que no
+migró. Botones 14/600, altura 36 (sm 32, lg 44).
 
 ## 5. Componentes
 
@@ -90,10 +98,12 @@ Inter. Cuerpo 15 px (landing 16). `texto-titulo-pagina` (28→32 px),
 - `ui/` solo tiene primitivos. Lo de un dominio va en `components/<dominio>/`.
 - Iconos: solo `lucide-react`, nunca emoji. `size-4`, `size-5`, `size-6`.
 - Botón de guardar con el icono `Save`.
-- Formulario de captura con ≥ 5 campos en 2+ grupos: `FormularioGuiado` /
-  `PasoFormulario` / `AccionesFormulario` (`ui/formulario-guiado.tsx`), para
-  que cada persona elija llenarlo normal o guiado. No en filtros ni
-  confirmaciones.
+- Formularios: por `docs/ux-rules.md` §6–7, en panel lateral (`SidePanelForm`) con lo
+  obligatorio a la vista y lo demás en «Más detalles»; **sin** modo normal/guiado. El
+  `FormularioGuiado` actual se retira pantalla por pantalla durante la migración.
+- Componentes nuevos de página en `src/components/app/` (`PageHeader`, `StatusBadge`,
+  `EmptyState`, `FilterBar`, `ActionTile`, `AttentionList`, `SidePanelForm`, `PageContainer`):
+  reemplazan a `EncabezadoPagina`, `EstadoVacio`, `Badge`+`visualDeEstado` y a los filtros con «Aplicar».
 - Objetivos táctiles ≥ 44 px, foco visible, `aria-current="page"` en la
   navegación.
 

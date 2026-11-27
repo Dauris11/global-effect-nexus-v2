@@ -96,6 +96,15 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     (`src/lib/contabilidad/codigos-transaccion.ts`), no con códigos de cuenta
     literales. Ver `docs/referencia/codigos-de-transaccion.md`.
 
+## UX (26 nov 2026)
+
+`docs/ux-rules.md` es ley para el rediseño: encabezado `PageHeader`, estados con
+`StatusBadge` (`src/lib/status-map.ts`, tokens `status-*`, siempre con icono), vacíos con
+acción, filtros en vivo, formularios en panel lateral y sin modo guiado. Tipografía: Plus
+Jakarta Sans + IBM Plex Mono (Inter ya no existe). Componentes en `src/components/app/`;
+muestra en `/ui-kit` (solo desarrollo). Donde choque con las reglas 1 y de formularios de
+`design-system.md`, manda `ux-rules.md`.
+
 ## Qué leer según la tarea
 
 | Tarea | Documentos |

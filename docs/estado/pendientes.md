@@ -5,6 +5,12 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Rediseño UX — base (26 nov 2026)
+
+- [x] **Base creada:** `docs/ux-rules.md`, Plus Jakarta Sans + Plex Mono, escala `text-*`, botones 36/32/44, tokens `status-*`, `src/lib/status-map.ts` (105 estados) y `src/components/app/*`. Muestra en `/ui-kit` (solo desarrollo).
+- [ ] **Falta migrar pantallas** al nuevo marco (sidebar por rol, `PageHeader`, `/inicio`, «Ver como» rápido): ver los encargos 2 y 3 del rediseño. Hasta entonces conviven los componentes viejos (`EncabezadoPagina`, `EstadoVacio`, `Badge`).
+- [ ] Estados del código sin clasificar o dudosos: `repetido` (solo en TS, falta en el CHECK de la migración 0092), `reverso` (asiento), `prueba_academica` y estados de `periodos`/`cursos` sin CHECK. No hay «estado de beca» ni de comida.
+
 ## Récord de secundaria con foto y lectura por IA (26 nov 2026, migración `0133`)
 
 - [x] **Foto o captura a mano → tabla para corroborar → confirmar → promedios.** En la pestaña «Académico» del expediente («Récord de secundaria»): se suben 1–4 fotos o PDF (se reducen a ≤ 2000 px en el navegador), la IA transcribe grado, año, centro y notas, el borrador queda guardado (`record_liceo.borrador`), una persona lo revisa y edita en una tabla (notas sin leer bloquean la confirmación; las de poca certeza se marcan) y al confirmar el servidor valida de nuevo, recalcula y guarda en una transacción. Código: `src/lib/record-liceo.ts` (cálculo puro), `src/server/record-liceo/`, `src/components/expedientes/record-liceo/`.
