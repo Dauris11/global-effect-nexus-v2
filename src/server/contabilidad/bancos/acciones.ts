@@ -371,6 +371,12 @@ export async function subirEstadoFormatoBanco(
                 SELECT 1 FROM contabilidad.conciliacion_partida p
                  WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL
               )
+              AND NOT EXISTS (
+                SELECT 1 FROM contabilidad.impuesto_cargo ic
+                 WHERE ic.tipo_valor = 'fijo'
+                   AND ic.proposito = 'transferencia'
+                   AND l.descripcion = ic.nombre
+              )
             ORDER BY a.fecha, a.numero, l.id
             FOR UPDATE OF l`,
           [cuenta],
@@ -555,9 +561,10 @@ export async function conciliarCargoBancario(
         id: string;
         nombre: string;
         tipo_valor: "fijo" | "variable";
+        proposito: "transferencia" | "nomina";
         cuenta_id: string;
       }>(
-        `SELECT ic.id, ic.nombre, ic.tipo_valor, ic.cuenta_id
+        `SELECT ic.id, ic.nombre, ic.tipo_valor, ic.proposito, ic.cuenta_id
            FROM contabilidad.impuesto_cargo ic
            JOIN contabilidad.cuenta_contable cc ON cc.id = ic.cuenta_id
           WHERE ic.id = $1 AND ic.activo = true AND cc.admite_movimiento = true AND cc.activa = true`,
@@ -609,82 +616,122 @@ export async function conciliarCargoBancario(
         if (!Number.isFinite(montoNum) || Math.abs(montoNum) < 0.005) {
           throw new RechazoBanco("monto_invalido");
         }
-        const montoAbs = Math.abs(montoNum).toFixed(2);
-        const esSalida = montoNum < 0;
 
-        let tasa: string | null = null;
-        let montoDop = montoAbs;
-        if (cb.moneda === "USD") {
-          const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
-            `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
-            [ext.fecha],
+        // Si es un impuesto fijo de transferencia que ya fue generado al pagar una
+        // factura por Transferencia, se enlaza con esa línea existente sin duplicar
+        // el asiento ni el gasto. Si no existe (p. ej. pago en efectivo), se crea.
+        let lineaBancoId: string | null = null;
+        if (cargo.tipo_valor === "fijo" && cargo.proposito === "transferencia") {
+          const { rows: existentes } = await cliente.query<{
+            id: string;
+            referencia: string | null;
+          }>(
+            `SELECT l.id,
+                    coalesce(nullif(trim(r.referencia), ''), nullif(trim(ti.referencia), '')) AS referencia
+               FROM contabilidad.asiento_linea l
+               JOIN contabilidad.asiento a ON a.id = l.asiento_id AND NOT a.anulado
+               LEFT JOIN contabilidad.recibo r ON r.asiento_id = a.id
+               LEFT JOIN contabilidad.transferencia_interna ti ON ti.asiento_id = a.id
+              WHERE l.cuenta_id = $1
+                AND l.descripcion = $2
+                AND abs((l.debe - l.haber) - $3::numeric) < 0.005
+                AND NOT EXISTS (
+                  SELECT 1 FROM contabilidad.conciliacion_partida p
+                   WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL
+                )
+              ORDER BY a.fecha, a.numero, l.id
+              FOR UPDATE OF l`,
+            [cb.cuenta_contable_id, cargo.nombre, montoNum.toFixed(2)],
           );
-          if (!tasaRow?.tasa) throw new RechazoBanco("datos_invalidos");
-          tasa = tasaRow.tasa;
-          montoDop = (Math.abs(montoNum) * Number(tasa)).toFixed(2);
+
+          if (existentes.length > 0) {
+            const refExt = normalizarReferenciaBanco(ext.referencia);
+            const exacta = refExt
+              ? existentes.find((row) => normalizarReferenciaBanco(row.referencia) === refExt)
+              : undefined;
+            lineaBancoId = (exacta ?? existentes[0]).id;
+          }
         }
 
-        const concepto = `${cargo.nombre} · ${ext.descripcion}`.slice(0, 200);
-        const lineas = esSalida
-          ? [
-              { cuenta_id: cargo.cuenta_id, debe: Number(montoDop), descripcion: cargo.nombre },
-              { cuenta_id: cb.cuenta_contable_id, haber: Number(montoDop), descripcion: cargo.nombre },
-            ]
-          : [
-              { cuenta_id: cb.cuenta_contable_id, debe: Number(montoDop), descripcion: cargo.nombre },
-              { cuenta_id: cargo.cuenta_id, haber: Number(montoDop), descripcion: cargo.nombre },
-            ];
+        if (!lineaBancoId) {
+          const montoAbs = Math.abs(montoNum).toFixed(2);
+          const esSalida = montoNum < 0;
 
-        const { rows: [asientoRow] } = await cliente.query<{ id: string }>(
-          `SELECT contabilidad.crear_asiento(
-             $1::date, $2, 'automatico', 'conciliacion_cargo', $3::uuid, $4::jsonb
-           ) AS id`,
-          [ext.fecha, concepto, ext.id, JSON.stringify(lineas)],
-        );
+          let tasa: string | null = null;
+          let montoDop = montoAbs;
+          if (cb.moneda === "USD") {
+            const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+              `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+              [ext.fecha],
+            );
+            if (!tasaRow?.tasa) throw new RechazoBanco("datos_invalidos");
+            tasa = tasaRow.tasa;
+            montoDop = (Math.abs(montoNum) * Number(tasa)).toFixed(2);
+          }
 
-        const { rows: [lineaBanco] } = await cliente.query<{ id: string }>(
-          `SELECT id
-             FROM contabilidad.asiento_linea
-            WHERE asiento_id = $1 AND cuenta_id = $2
-            LIMIT 1`,
-          [asientoRow.id, cb.cuenta_contable_id],
-        );
-        if (!lineaBanco) throw new RechazoBanco("datos_invalidos");
+          const concepto = `${cargo.nombre} · ${ext.descripcion}`.slice(0, 200);
+          const lineas = esSalida
+            ? [
+                { cuenta_id: cargo.cuenta_id, debe: Number(montoDop), descripcion: cargo.nombre },
+                { cuenta_id: cb.cuenta_contable_id, haber: Number(montoDop), descripcion: cargo.nombre },
+              ]
+            : [
+                { cuenta_id: cb.cuenta_contable_id, debe: Number(montoDop), descripcion: cargo.nombre },
+                { cuenta_id: cargo.cuenta_id, haber: Number(montoDop), descripcion: cargo.nombre },
+              ];
 
-        await cliente.query(
-          `INSERT INTO contabilidad.movimiento_bancario
-             (numero, cuenta_id, periodo_id, fecha, tipo, monto, moneda, tasa, monto_dop,
-              concepto, referencia, origen_tabla, origen_id, creado_por)
-           VALUES (
-             contabilidad.siguiente_numero('MB'),
-             $1,
-             contabilidad.periodo_para($2::date),
-             $2::date,
-             $3,
-             $4::numeric,
-             $5,
-             $6::numeric,
-             $7::numeric,
-             $8,
-             $9,
-             'conciliacion_cargo',
-             $10::uuid,
-             $11::uuid
-           )`,
-          [
-            cb.id,
-            ext.fecha,
-            esSalida ? "debito" : "deposito",
-            montoAbs,
-            cb.moneda,
-            tasa,
-            montoDop,
-            concepto,
-            ext.referencia,
-            ext.id,
-            usuario.id,
-          ],
-        );
+          const { rows: [asientoRow] } = await cliente.query<{ id: string }>(
+            `SELECT contabilidad.crear_asiento(
+               $1::date, $2, 'automatico', 'conciliacion_cargo', $3::uuid, $4::jsonb
+             ) AS id`,
+            [ext.fecha, concepto, ext.id, JSON.stringify(lineas)],
+          );
+
+          const { rows: [lineaBanco] } = await cliente.query<{ id: string }>(
+            `SELECT id
+               FROM contabilidad.asiento_linea
+              WHERE asiento_id = $1 AND cuenta_id = $2
+              LIMIT 1`,
+            [asientoRow.id, cb.cuenta_contable_id],
+          );
+          if (!lineaBanco) throw new RechazoBanco("datos_invalidos");
+          lineaBancoId = lineaBanco.id;
+
+          await cliente.query(
+            `INSERT INTO contabilidad.movimiento_bancario
+               (numero, cuenta_id, periodo_id, fecha, tipo, monto, moneda, tasa, monto_dop,
+                concepto, referencia, origen_tabla, origen_id, creado_por)
+             VALUES (
+               contabilidad.siguiente_numero('MB'),
+               $1,
+               contabilidad.periodo_para($2::date),
+               $2::date,
+               $3,
+               $4::numeric,
+               $5,
+               $6::numeric,
+               $7::numeric,
+               $8,
+               $9,
+               'conciliacion_cargo',
+               $10::uuid,
+               $11::uuid
+             )`,
+            [
+              cb.id,
+              ext.fecha,
+              esSalida ? "debito" : "deposito",
+              montoAbs,
+              cb.moneda,
+              tasa,
+              montoDop,
+              concepto,
+              ext.referencia,
+              ext.id,
+              usuario.id,
+            ],
+          );
+        }
 
         const { rows: [grupo] } = await cliente.query<{ id: string }>(
           `SELECT gen_random_uuid() AS id`,
@@ -694,7 +741,7 @@ export async function conciliarCargoBancario(
           `INSERT INTO contabilidad.conciliacion_partida
              (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
            VALUES ($1, $2, $3, $4, $5)`,
-          [cb.id, ext.id, lineaBanco.id, grupo.id, usuario.id],
+          [cb.id, ext.id, lineaBancoId, grupo.id, usuario.id],
         );
       }
     });

@@ -398,6 +398,10 @@ export async function porConciliar(cuentaId: string): Promise<PorConciliar> {
         WHERE cb.id = $1 AND NOT a.anulado
           AND NOT EXISTS (SELECT 1 FROM contabilidad.conciliacion_partida p
                            WHERE p.asiento_linea_id = l.id AND p.anulado_en IS NULL)
+          AND NOT EXISTS (SELECT 1 FROM contabilidad.impuesto_cargo ic
+                           WHERE ic.tipo_valor = 'fijo'
+                             AND ic.proposito = 'transferencia'
+                             AND l.descripcion = ic.nombre)
         ORDER BY a.fecha, a.numero
         LIMIT 500`,
       [cuentaId],

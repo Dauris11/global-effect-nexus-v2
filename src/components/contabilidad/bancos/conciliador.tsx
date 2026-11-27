@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { AlertTriangle, Info, Link2, Loader2, Unlink } from "lucide-react";
+import { AlertTriangle, Link2, Loader2, Unlink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, Monto, SELECT } from "@/components/contabilidad/comun";
@@ -154,28 +154,11 @@ export function Conciliador({
         </div>
       )}
 
-      {cargoActivo && (
-        <div className="flex items-center gap-2 rounded-control border border-marca-500/40 bg-marca-500/10 px-3.5 py-2.5 text-xs text-tinta">
-          <Info className="size-4 shrink-0 text-marca-600" />
-          <span>
-            {cargoActivo.tipoValor === "variable"
-              ? t("avisoCargoVariable", {
-                  nombre: cargoActivo.nombre,
-                  cuenta: `${cargoActivo.cuentaCodigo} · ${cargoActivo.cuentaNombre}`,
-                })
-              : t("avisoCargoFijo", {
-                  nombre: cargoActivo.nombre,
-                  cuenta: `${cargoActivo.cuentaCodigo} · ${cargoActivo.cuentaNombre}`,
-                })}
-          </span>
-        </div>
-      )}
-
       <div className="grid gap-6 xl:grid-cols-2">
         {/* Izquierda: Libro diario */}
         <section className={cn("min-w-0 space-y-3", cargoActivo && "opacity-60")}>
-          <div className="flex min-h-10 items-center gap-1.5">
-            <h2 className="texto-titulo-seccion">{t("libroDiario", { n: libros.length })}</h2>
+          <div className="flex min-h-9 items-center gap-1.5">
+            <h2 className="text-sm font-semibold text-tinta">{t("libroDiario", { n: libros.length })}</h2>
             <TooltipAyuda texto={t("libroDiarioAyuda")} etiqueta={t("masInformacion")} />
           </div>
 
@@ -251,9 +234,9 @@ export function Conciliador({
 
         {/* Derecha: Transacciones del banco + desplegable Comisiones */}
         <section className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-h-9 flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <h2 className="texto-titulo-seccion">{t("transaccionesBanco", { n: banco.length })}</h2>
+              <h2 className="text-sm font-semibold text-tinta">{t("transaccionesBanco", { n: banco.length })}</h2>
               <TooltipAyuda texto={t("transaccionesBancoAyuda")} etiqueta={t("masInformacion")} />
             </div>
 
@@ -261,7 +244,7 @@ export function Conciliador({
               aria-label={t("comisionesSelector")}
               value={cargoId}
               onChange={(e) => cambiarCargo(e.target.value)}
-              className={cn(SELECT, "h-9 w-64 shrink-0 text-xs")}
+              className={cn(SELECT, "h-8 w-56 shrink-0 text-xs")}
             >
               <option value="">{t("comisionesDefault")}</option>
               {cargos.map((c) => (

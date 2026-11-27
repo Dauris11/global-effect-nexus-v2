@@ -4,12 +4,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-  Calendar,
-  DollarSign,
   Download,
-  FileCheck,
   FileText,
-  User,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -115,51 +111,53 @@ export default async function PaginaDetalleFactura({
       <section className="rounded-tarjeta border border-linea bg-background p-6 space-y-6">
         <h2 className="texto-titulo-seccion">{t("datos")}</h2>
 
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Dato etiqueta="Proveedor">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Dato etiqueta={tc("facturaForm.proveedor")}>
             <Link
               href={`/contabilidad/proveedores/${factura.proveedor_id}`}
-              className="font-medium text-marca-700 hover:underline flex items-center gap-1.5"
+              className="inline-flex items-center gap-1.5 font-medium text-marca-700 hover:underline"
             >
               <Building2 className="size-4 shrink-0 text-tinta-2" />
               {factura.proveedor}
             </Link>
           </Dato>
-          <Dato etiqueta="NCF / e-CF">
-            <span className="font-mono">{factura.ncf ?? "Sin comprobante"}</span>
+          <Dato etiqueta={tc("facturaForm.ncf")}>
+            <span className="font-mono font-medium">{factura.ncf ?? t("sinComprobante")}</span>
           </Dato>
-          <Dato etiqueta="Concepto">
-            {factura.concepto}
+          <Dato etiqueta={tc("facturaForm.concepto")}>
+            <span className="font-medium">{factura.concepto}</span>
           </Dato>
-          <Dato etiqueta="Fecha de emisión">
-            {factura.fecha_emision}
+          <Dato etiqueta={tc("facturaForm.emision")}>
+            <span className="font-mono font-medium tabular-nums">{factura.fecha_emision}</span>
           </Dato>
-          <Dato etiqueta="Fecha de vencimiento">
-            {factura.fecha_vencimiento}
+          <Dato etiqueta={tc("facturaForm.vencimiento")}>
+            <span className="font-mono font-medium tabular-nums">{factura.fecha_vencimiento}</span>
           </Dato>
-          <Dato etiqueta="Moneda">
-            {factura.moneda} {factura.tasa ? `(Tasa: RD$${factura.tasa})` : ""}
+          <Dato etiqueta={tc("facturaForm.moneda")}>
+            <span className="font-medium">
+              {factura.moneda} {factura.tasa ? `(${t("tasaValor", { tasa: factura.tasa })})` : ""}
+            </span>
           </Dato>
           <Dato etiqueta={tc("facturaForm.tipoGasto")}>
-            {factura.tipo_gasto}
+            <span className="font-medium">{factura.tipo_gasto}</span>
           </Dato>
           {factura.solicitante_nombre && (
-            <Dato etiqueta="Solicitante / Custodio">
+            <Dato etiqueta={tc("facturaForm.solicitante")}>
               <span className="font-medium text-tinta">{factura.solicitante_nombre}</span>
             </Dato>
           )}
           {factura.programa_codigo && (
-            <Dato etiqueta="Programa institucional">
+            <Dato etiqueta={tc("facturaForm.programa")}>
               <span className="font-medium text-marca-700">{nombrePrograma(factura.programa_codigo)}</span>
             </Dato>
           )}
           {factura.proyecto && (
-            <Dato etiqueta="Proyecto">
-              {factura.proyecto}
+            <Dato etiqueta={tc("facturaForm.proyecto")}>
+              <span className="font-medium">{factura.proyecto}</span>
             </Dato>
           )}
           {factura.asiento_numero && (
-            <Dato etiqueta="Asiento contable">
+            <Dato etiqueta={t("asientoContable")}>
               <span className="font-mono font-medium text-tinta">
                 AS-{String(factura.asiento_numero).padStart(6, "0")}
               </span>
@@ -170,20 +168,18 @@ export default async function PaginaDetalleFactura({
         {/* Desglose de montos */}
         <div className="border-t border-linea pt-5">
           <h3 className="text-xs uppercase font-semibold text-tinta-2 mb-3">{tc("facturaForm.pasos.montos")}</h3>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-superficie/60 p-4 rounded-control text-sm">
-            <div>
+          <div className="grid grid-cols-1 gap-4 rounded-control border border-linea bg-superficie/60 p-4 text-sm sm:grid-cols-2 lg:grid-cols-5">
+            <div className="space-y-1">
               <span className="texto-meta block">{tc("facturaForm.monto")}</span>
-              <Monto valor={factura.subtotal} moneda={factura.moneda} className="text-base font-medium" />
+              <Monto valor={factura.subtotal} moneda={factura.moneda} className="block text-base font-semibold leading-tight text-tinta" />
             </div>
-            {Number(factura.itbis) > 0 && (
-              <div>
-                <span className="texto-meta block">{tc("facturaForm.itbis")}</span>
-                <Monto valor={factura.itbis} moneda={factura.moneda} className="text-base font-medium" />
-              </div>
-            )}
-            <div>
+            <div className="space-y-1">
+              <span className="texto-meta block">{tc("facturaForm.itbis")}</span>
+              <Monto valor={factura.itbis} moneda={factura.moneda} className="block text-base font-semibold leading-tight text-tinta" />
+            </div>
+            <div className="space-y-1">
               <span className="texto-meta block">{tc("facturaForm.retencionIsr")}</span>
-              <span className="text-base font-medium text-tinta">
+              <span className="block text-base font-semibold leading-tight text-tinta">
                 −<Monto valor={factura.retencion_isr} moneda={factura.moneda} />
               </span>
               {retencionPorCodigo(factura.tipo_retencion_isr) && (
@@ -195,9 +191,9 @@ export default async function PaginaDetalleFactura({
                 </span>
               )}
             </div>
-            <div>
+            <div className="space-y-1">
               <span className="texto-meta block">{tc("facturaForm.retencionItbis")}</span>
-              <span className="text-base font-medium text-tinta">
+              <span className="block text-base font-semibold leading-tight text-tinta">
                 −<Monto valor={factura.retencion_itbis} moneda={factura.moneda} />
               </span>
               {retencionPorCodigo(factura.tipo_retencion_itbis) && (
@@ -209,9 +205,9 @@ export default async function PaginaDetalleFactura({
                 </span>
               )}
             </div>
-            <div>
+            <div className="space-y-1">
               <span className="texto-meta block">{tc("facturaForm.neto")}</span>
-              <Monto valor={factura.neto} moneda={factura.moneda} className="text-lg font-bold text-marca-700" />
+              <Monto valor={factura.neto} moneda={factura.moneda} className="block text-base font-bold leading-tight text-marca-700" />
             </div>
           </div>
         </div>

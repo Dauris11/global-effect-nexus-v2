@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Calendar, DollarSign, FileText, ReceiptText } from "lucide-react";
+import { ChevronLeft, DollarSign, FileText, ReceiptText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
@@ -93,30 +93,32 @@ export default async function PaginaDetalleCxp({
 
       {/* Tarjeta de datos de la deuda */}
       <section className="rounded-tarjeta border border-linea bg-background p-6 space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 bg-superficie/60 p-4 rounded-control text-sm">
-          <div>
+        <div className="grid grid-cols-1 gap-4 rounded-control border border-linea bg-superficie/60 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1">
             <span className="texto-meta block">{t("monto")}</span>
-            <Monto valor={cxp.monto} moneda={cxp.moneda} className="text-lg font-semibold" />
+            <Monto valor={cxp.monto} moneda={cxp.moneda} className="block text-lg font-semibold leading-tight text-tinta" />
           </div>
-          <div>
+          <div className="space-y-1">
             <span className="texto-meta block">{t("pagado")}</span>
-            <Monto valor={cxp.pagado} moneda={cxp.moneda} className="text-lg font-semibold text-marca-700" />
+            <Monto valor={cxp.pagado} moneda={cxp.moneda} className="block text-lg font-semibold leading-tight text-marca-700" />
           </div>
-          <div>
+          <div className="space-y-1">
             <span className="texto-meta block">{t("saldo")}</span>
             <Monto
               valor={cxp.saldo}
               moneda={cxp.moneda}
-              className={`text-xl font-bold ${Number(cxp.saldo) > 0 ? "text-tinta" : "text-marca-700"}`}
+              className={`block text-lg font-semibold leading-tight ${Number(cxp.saldo) > 0 ? "text-tinta" : "text-marca-700"}`}
             />
           </div>
-          <div>
+          <div className="space-y-1">
             <span className="texto-meta block">{t("col.vencimiento")}</span>
-            <span className="text-base font-medium font-mono text-tinta block">{cxp.fecha_vencimiento}</span>
+            <span className="block font-mono text-lg font-semibold leading-tight tabular-nums text-tinta">
+              {cxp.fecha_vencimiento}
+            </span>
           </div>
         </div>
 
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-linea pt-5 sm:grid-cols-2 lg:grid-cols-3">
           <Dato etiqueta={t("col.tercero")}>
             {cxp.proveedor_id ? (
               <Link
@@ -126,37 +128,43 @@ export default async function PaginaDetalleCxp({
                 {cxp.tercero}
               </Link>
             ) : (
-              cxp.tercero
+              <span className="font-medium text-tinta">{cxp.tercero}</span>
             )}
           </Dato>
-          <Dato etiqueta={t("col.concepto")}>{cxp.concepto}</Dato>
-          <Dato etiqueta="Origen">
+          <Dato etiqueta={t("col.concepto")}>
+            <span className="font-medium text-tinta">{cxp.concepto}</span>
+          </Dato>
+          <Dato etiqueta={t("origen")}>
             {cxp.factura_id ? (
               <Link
                 href={`/contabilidad/facturas/${cxp.factura_id}`}
-                className="font-medium text-marca-700 hover:underline flex items-center gap-1.5"
+                className="inline-flex items-center gap-1.5 font-medium text-marca-700 hover:underline"
               >
-                <FileText className="size-4" />
+                <FileText className="size-4 shrink-0" />
                 {t("origenFactura")}
               </Link>
             ) : (
-              t("origenSolicitud", { folio: cxp.solicitud_folio ?? "" })
+              <span className="font-medium text-tinta">
+                {t("origenSolicitud", { folio: cxp.solicitud_folio ?? "" })}
+              </span>
             )}
           </Dato>
-          <Dato etiqueta="Emisión">
-            <span className="font-mono text-xs">{cxp.fecha_emision}</span>
+          <Dato etiqueta={t("emision")}>
+            <span className="font-mono font-medium tabular-nums text-tinta">{cxp.fecha_emision}</span>
           </Dato>
           {cxp.fecha_programada && (
             <Dato etiqueta={t("fechaProgramada")}>
-              <span className="font-mono text-xs text-marca-700 font-semibold">
+              <span className="font-mono font-medium tabular-nums text-marca-700">
                 {cxp.fecha_programada}
               </span>
-              {cxp.cuenta_salida && ` (${cxp.cuenta_salida})`}
+              {cxp.cuenta_salida && (
+                <span className="text-sm text-tinta-2"> · {cxp.cuenta_salida}</span>
+              )}
             </Dato>
           )}
           {cxp.proyecto && (
             <Dato etiqueta={t("proyecto")}>
-              {cxp.proyecto}
+              <span className="font-medium text-tinta">{cxp.proyecto}</span>
             </Dato>
           )}
         </dl>

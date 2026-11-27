@@ -1,0 +1,36 @@
+/**
+ * Principales entidades bancarias y asociaciones de ahorros y préstamos
+ * de la República Dominicana.
+ */
+export const BANCOS_RD: readonly string[] = [
+  "Banco de Reservas (Banreservas)",
+  "Banco Popular Dominicano",
+  "Banco BHD",
+  "Banco Santa Cruz",
+  "Scotiabank",
+  "Banco Caribe",
+  "Banco Promerica",
+  "Banesco",
+  "Banco López de Haro",
+  "Banco Ademi",
+  "Banco Adopem",
+  "Banco BDI",
+  "Banco Vimenca",
+  "Banco LAFISE",
+  "Qik Banco Digital Dominicano",
+  "Asociación Popular de Ahorros y Préstamos (APAP)",
+  "Asociación Cibao de Ahorros y Préstamos (ACAP)",
+  "Asociación La Nacional de Ahorros y Préstamos (ALNAP)",
+  "Asociación Duarte de Ahorros y Préstamos",
+  "Asociación Mocana de Ahorros y Préstamos",
+  "Asociación Maguana de Ahorros y Préstamos",
+  "Asociación Romana de Ahorros y Préstamos",
+  "Asociación Peravia de Ahorros y Préstamos",
+  "Banco Agrícola de la República Dominicana",
+  "Motor Crédito Banco de Ahorro y Crédito",
+  "Bonanza Banco",
+  "Banco Unión",
+  "Banco Confisa",
+  "Banco Fihogar",
+  "Banco Atlántico",
+] as const;

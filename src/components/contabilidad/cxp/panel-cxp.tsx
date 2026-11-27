@@ -46,39 +46,55 @@ export function PanelCxp({
         </header>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
-            <dt className="text-meta">{t("col.concepto")}</dt>
-            <dd>{c.concepto}</dd>
-            <dt className="text-meta">{tl("panel.origen")}</dt>
-            <dd>{c.origen === "factura" ? t("origenFactura") : t("origenSolicitud", { folio: c.solicitud_folio ?? "" })}</dd>
+          <dl className="divide-y divide-linea text-sm">
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5 first:pt-0">
+              <dt className="text-meta">{t("col.concepto")}</dt>
+              <dd className="min-w-0 break-words font-medium text-tinta">{c.concepto}</dd>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
+              <dt className="text-meta">{tl("panel.origen")}</dt>
+              <dd className="min-w-0 font-medium text-tinta">
+                {c.origen === "factura" ? t("origenFactura") : t("origenSolicitud", { folio: c.solicitud_folio ?? "" })}
+              </dd>
+            </div>
             {c.proyecto && (
-              <>
+              <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
                 <dt className="text-meta">{t("proyecto")}</dt>
-                <dd>{c.proyecto}</dd>
-              </>
+                <dd className="min-w-0 font-medium text-tinta">{c.proyecto}</dd>
+              </div>
             )}
-            <dt className="text-meta">{tl("panel.emision")}</dt>
-            <dd className="tabular-nums">{c.fecha_emision}</dd>
-            <dt className="text-meta">{t("col.vencimiento")}</dt>
-            <dd>
-              <span className="tabular-nums">{c.fecha_vencimiento}</span>
-              {abierta && <span className="text-meta block">{textoVencimiento}</span>}
-            </dd>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
+              <dt className="text-meta">{tl("panel.emision")}</dt>
+              <dd className="font-mono tabular-nums text-tinta">{c.fecha_emision}</dd>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
+              <dt className="text-meta">{t("col.vencimiento")}</dt>
+              <dd className="min-w-0">
+                <span className="font-mono tabular-nums text-tinta">{c.fecha_vencimiento}</span>
+                {abierta && <span className="text-meta block">{textoVencimiento}</span>}
+              </dd>
+            </div>
             {c.fecha_programada && (
-              <>
+              <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
                 <dt className="text-meta">{tl("panel.pagoPrevisto")}</dt>
-                <dd>
-                  <span className="tabular-nums">{c.fecha_programada}</span>
+                <dd className="min-w-0">
+                  <span className="font-mono tabular-nums text-tinta">{c.fecha_programada}</span>
                   {c.cuenta_salida && <span className="text-meta block">{c.cuenta_salida}</span>}
                 </dd>
-              </>
+              </div>
             )}
-            <dt className="text-meta">{t("monto")}</dt>
-            <dd><Monto valor={c.monto} moneda={c.moneda} /></dd>
-            <dt className="text-meta">{t("pagado")}</dt>
-            <dd><Monto valor={c.pagado} moneda={c.moneda} /></dd>
-            <dt className="text-meta">{t("saldo")}</dt>
-            <dd><Monto valor={c.saldo} moneda={c.moneda} className="font-semibold" /></dd>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
+              <dt className="text-meta">{t("monto")}</dt>
+              <dd className="tabular-nums text-tinta"><Monto valor={c.monto} moneda={c.moneda} /></dd>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5">
+              <dt className="text-meta">{t("pagado")}</dt>
+              <dd className="tabular-nums text-tinta"><Monto valor={c.pagado} moneda={c.moneda} /></dd>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] items-baseline gap-4 py-2.5 last:pb-0">
+              <dt className="text-meta">{t("saldo")}</dt>
+              <dd className="tabular-nums text-tinta"><Monto valor={c.saldo} moneda={c.moneda} className="font-semibold" /></dd>
+            </div>
           </dl>
         </div>
 

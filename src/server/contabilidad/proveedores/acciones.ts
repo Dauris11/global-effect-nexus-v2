@@ -250,16 +250,20 @@ export async function agregarCuentaProveedor(
   const tipo = texto(datos, "tipo", 10);
   const moneda = texto(datos, "moneda", 3);
   const numero = texto(datos, "numero", 40).replace(/\s/g, "");
+  const identificacion = limpiarIdentificacion(texto(datos, "identificacion", 20));
 
   if (!proveedor || !banco || (tipo !== "corriente" && tipo !== "ahorro") || !esMoneda(moneda)
       || !/^[0-9-]{4,40}$/.test(numero)) {
     return { estado: "datos_invalidos" };
   }
+  if (!identificacion || !rncOCedulaValida(identificacion)) {
+    return { estado: "identificacion_invalida" };
+  }
 
   try {
     await enTransaccionComo(await contextoDe(usuario), (cliente) =>
-      cliente.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, $2, $3, $4, $5)`, [
-        proveedor, banco, tipo, moneda, numero,
+      cliente.query(`SELECT contabilidad.cambiar_cuenta_proveedor($1, $2, $3, $4, $5, $6)`, [
+        proveedor, banco, tipo, moneda, numero, identificacion,
       ]),
     );
     refrescar();
@@ -326,8 +330,23 @@ export async function guardarFactura(
   );
   if (!cuentaGastoValida?.ok) return { estado: "datos_invalidos" };
 
-  // Si la factura está marcada como exenta de ITBIS, el ITBIS es 0; si no, se calcula el 18%.
-  const itbis = exentoItbis ? "0" : calcularItbis(subtotal);
+  // Si la factura está marcada como exenta de ITBIS, el ITBIS es 0.
+  // Si no está exenta, se respeta el monto de ITBIS editado por el usuario (o 18% por defecto).
+  const itbisCrudo = texto(datos, "itbis", 20).replace(/,/g, "").trim();
+  let itbis = "0";
+  if (!exentoItbis) {
+    if (itbisCrudo === "") {
+      itbis = calcularItbis(subtotal);
+    } else if (/^\d+(?:\.\d{1,2})?$/.test(itbisCrudo)) {
+      const n = Number(itbisCrudo);
+      if (!Number.isFinite(n) || n < 0 || n > 999_999_999_999.99) {
+        return { estado: "monto_invalido" };
+      }
+      itbis = n.toFixed(2);
+    } else {
+      return { estado: "monto_invalido" };
+    }
+  }
   // Las retenciones se calculan en el servidor a partir del monto base y del tipo elegido.
   const isr = tipoRetencionIsr ? calcularMontoRetencion(subtotal, tipoRetencionIsr) : "0";
   const retItbis = tipoRetencionItbis ? calcularMontoRetencion(subtotal, tipoRetencionItbis) : "0";

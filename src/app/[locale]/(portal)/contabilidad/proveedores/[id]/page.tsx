@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   ChevronLeft,
-  Building2,
-  Calendar,
   CreditCard,
   FilePlus,
   FileText,
@@ -165,56 +163,6 @@ export default async function PaginaDetalleProveedor({
         </dl>
       </section>
 
-      {/* Cuentas bancarias */}
-      <section className="rounded-tarjeta border border-linea bg-background p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="texto-titulo-seccion flex items-center gap-2">
-            <CreditCard className="size-5 text-tinta-2" />
-            {t("cuentas")}
-          </h2>
-        </div>
-
-        {cuentas.length === 0 ? (
-          <p className="text-sm text-tinta-2">{t("cuentasVacio")}</p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {cuentas.map((c) => (
-              <div
-                key={c.id}
-                className={`rounded-control border p-4 text-sm ${
-                  c.activa ? "border-marca-300 bg-marca-50/40" : "border-linea bg-superficie opacity-75"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-tinta">{c.banco}</p>
-                    <p className="font-mono text-xs text-tinta-2 mt-0.5">
-                      {tc(`tipoCuenta.${c.tipo}` as never)} · {c.moneda} · {c.numero}
-                    </p>
-                  </div>
-                  <Badge
-                    className={c.activa ? undefined : INSIGNIA_SEMAFORO.alerta}
-                    variant={c.activa ? "neutra" : undefined}
-                  >
-                    {c.activa ? t("cuentaActiva") : t("cuentaReemplazada", { fecha: c.reemplazada_en ?? "" })}
-                  </Badge>
-                </div>
-                <p className="mt-3 text-xs text-tinta-2">
-                  {t("cuentaAlta", { nombre: c.creado_por, fecha: c.creado_en })}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {puedeConfigurar && (
-          <div className="mt-4 border-t border-linea pt-4">
-            <h3 className="text-sm font-semibold text-tinta mb-3">{t("nuevaCuenta")}</h3>
-            <FormularioCuentaProveedor proveedorId={id} />
-          </div>
-        )}
-      </section>
-
       {/* Facturas */}
       <section className="rounded-tarjeta border border-linea bg-background p-6 space-y-4">
         <div className="flex items-center justify-between">
@@ -239,18 +187,19 @@ export default async function PaginaDetalleProveedor({
             <table className="w-full text-left text-sm">
               <thead className="border-b border-linea text-xs text-tinta-2 uppercase">
                 <tr>
-                  <th className="pb-2">Número / NCF</th>
-                  <th className="pb-2">Emisión</th>
-                  <th className="pb-2">Vencimiento</th>
-                  <th className="pb-2 text-right">Neto</th>
-                  <th className="pb-2 text-right">Saldo</th>
-                  <th className="pb-2 text-center">Estado</th>
+                  <th className="pb-2 pr-3">{t("colNumeroNcf")}</th>
+                  <th className="pb-2 pr-3">{t("concepto")}</th>
+                  <th className="pb-2 pr-3">{t("colEmision")}</th>
+                  <th className="pb-2 pr-3">{t("colVencimiento")}</th>
+                  <th className="pb-2 pr-3 text-right">{t("colNeto")}</th>
+                  <th className="pb-2 pr-3 text-right">{t("saldo")}</th>
+                  <th className="pb-2 text-center">{t("colEstado")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-linea">
                 {facturas.map((f) => (
                   <tr key={f.id} className="hover:bg-superficie/60 transition-colors">
-                    <td className="py-2.5">
+                    <td className="py-2.5 pr-3 whitespace-nowrap">
                       <Link
                         href={`/contabilidad/facturas/${f.id}`}
                         className="font-medium text-marca-700 hover:underline block"
@@ -259,12 +208,15 @@ export default async function PaginaDetalleProveedor({
                       </Link>
                       {f.ncf && <span className="font-mono text-xs text-tinta-2">{f.ncf}</span>}
                     </td>
-                    <td className="py-2.5 text-tinta-2">{f.fecha_emision}</td>
-                    <td className="py-2.5 text-tinta-2">{f.fecha_vencimiento}</td>
-                    <td className="py-2.5 text-right font-medium">
+                    <td className="py-2.5 pr-3 max-w-64 truncate text-tinta" title={f.concepto}>
+                      {f.concepto}
+                    </td>
+                    <td className="py-2.5 pr-3 whitespace-nowrap text-tinta-2">{f.fecha_emision}</td>
+                    <td className="py-2.5 pr-3 whitespace-nowrap text-tinta-2">{f.fecha_vencimiento}</td>
+                    <td className="py-2.5 pr-3 whitespace-nowrap text-right font-medium">
                       <Monto valor={f.neto} moneda={f.moneda} />
                     </td>
-                    <td className="py-2.5 text-right font-semibold">
+                    <td className="py-2.5 pr-3 whitespace-nowrap text-right font-semibold">
                       {f.saldo !== null ? (
                         <Monto
                           valor={f.saldo}
@@ -293,6 +245,60 @@ export default async function PaginaDetalleProveedor({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </section>
+
+      {/* Cuentas bancarias (debajo de Facturas) */}
+      <section className="rounded-tarjeta border border-linea bg-background p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="texto-titulo-seccion flex items-center gap-2">
+            <CreditCard className="size-5 text-tinta-2" />
+            {t("cuentas")}
+          </h2>
+        </div>
+
+        {cuentas.length === 0 ? (
+          <p className="text-sm text-tinta-2">{t("cuentasVacio")}</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {cuentas.map((c) => (
+              <div
+                key={c.id}
+                className={`rounded-control border p-4 text-sm ${
+                  c.activa ? "border-marca-300 bg-marca-50/40" : "border-linea bg-superficie opacity-75"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-tinta">{c.banco}</p>
+                    <p className="font-mono text-xs text-tinta-2 mt-0.5">
+                      {tc(`tipoCuenta.${c.tipo}` as never)} · {c.moneda} · {c.numero}
+                      {c.identificacion ? ` · ${formatearIdentificacion(c.identificacion)}` : ""}
+                    </p>
+                  </div>
+                  <Badge
+                    className={c.activa ? undefined : INSIGNIA_SEMAFORO.alerta}
+                    variant={c.activa ? "neutra" : undefined}
+                  >
+                    {c.activa ? t("cuentaActiva") : t("cuentaReemplazada", { fecha: c.reemplazada_en ?? "" })}
+                  </Badge>
+                </div>
+                <p className="mt-3 text-xs text-tinta-2">
+                  {t("cuentaAlta", { nombre: c.creado_por, fecha: c.creado_en })}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {puedeConfigurar && (
+          <div className="mt-4 border-t border-linea pt-4">
+            <h3 className="text-sm font-semibold text-tinta mb-3">{t("nuevaCuenta")}</h3>
+            <FormularioCuentaProveedor
+              proveedorId={id}
+              identificacionProveedor={proveedor.identificacion}
+            />
           </div>
         )}
       </section>

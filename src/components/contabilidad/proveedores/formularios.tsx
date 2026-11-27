@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Save, Search, Sparkles, Upload } from "lucide-react";
+import { Loader2, Save, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { AccionesFormulario, FormularioGuiado, PasoFormulario } from "@/components/ui/formulario-guiado";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SelectBuscable } from "@/components/ui/select-buscable";
 import { Textarea } from "@/components/ui/textarea";
 import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
 import { Link, useRouter } from "@/i18n/navigation";
+import { BANCOS_RD } from "@/lib/contabilidad/bancos-rd";
 import {
   formatearMonto,
   MONEDAS,
@@ -27,12 +29,12 @@ import {
   retencionesParaProveedor,
 } from "@/lib/contabilidad/retenciones-dgii";
 import { PILARES_COSTO } from "@/lib/costos";
+import { cn } from "@/lib/utils";
 import {
   agregarCuentaProveedor,
   consultarRncProveedorAction,
   guardarFactura,
   guardarProveedor,
-  procesarFacturaOcrAction,
   type EstadoProveedor,
 } from "@/server/contabilidad/proveedores/acciones";
 import type { DetalleFactura, DetalleProveedor, UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
@@ -109,7 +111,7 @@ export function FormularioProveedor({
   const [actividadEconomica, setActividadEconomica] = useState(proveedor?.actividad_economica ?? "");
   const [administracionLocal, setAdministracionLocal] = useState(proveedor?.administracion_local ?? "");
   const [consultandoRnc, setConsultandoRnc] = useState(false);
-  const [avisoRnc, setAvisoRnc] = useState<{ tipo: "ok" | "error"; mensaje: string } | null>(null);
+  const [errorRnc, setErrorRnc] = useState<string | null>(null);
   const error = useError(estado);
   useIrA(estado, proveedor ? fichaProveedor : listaProveedores);
 
@@ -121,10 +123,10 @@ export function FormularioProveedor({
   const etiquetaInfo = t("masInformacion");
 
   async function onConsultarDgii() {
-    setAvisoRnc(null);
+    setErrorRnc(null);
     const entrada = limpiarIdentificacion(identificacion.trim());
     if (!/^[0-9]{9}$|^[0-9]{11}$/.test(entrada)) {
-      setAvisoRnc({ tipo: "error", mensaje: t("rncError.formato_invalido") });
+      setErrorRnc(t("rncError.formato_invalido"));
       return;
     }
 
@@ -136,12 +138,11 @@ export function FormularioProveedor({
         setNombreComercial(res.datos.nombreComercial);
         setActividadEconomica(res.datos.actividadEconomica);
         setAdministracionLocal(res.datos.administracionLocal);
-        setAvisoRnc({ tipo: "ok", mensaje: t("rncOk") });
       } else {
-        setAvisoRnc({ tipo: "error", mensaje: t(`rncError.${res.error}` as never) });
+        setErrorRnc(t(`rncError.${res.error}` as never));
       }
     } catch {
-      setAvisoRnc({ tipo: "error", mensaje: t("rncError.servicio_no_disponible") });
+      setErrorRnc(t("rncError.servicio_no_disponible"));
     } finally {
       setConsultandoRnc(false);
     }
@@ -166,7 +167,7 @@ export function FormularioProveedor({
                 value={tipo}
                 onChange={(e) => {
                   setTipo(e.target.value as "fisica" | "juridica");
-                  if (avisoRnc) setAvisoRnc(null);
+                  if (errorRnc) setErrorRnc(null);
                 }}
               >
                 <option value="juridica">{tc("tipoProveedor.juridica")}</option>
@@ -190,7 +191,7 @@ export function FormularioProveedor({
                   value={identificacion}
                   onChange={(e) => {
                     setIdentificacion(e.target.value);
-                    if (avisoRnc) setAvisoRnc(null);
+                    if (errorRnc) setErrorRnc(null);
                   }}
                   aria-invalid={malDigito || undefined}
                 />
@@ -206,13 +207,9 @@ export function FormularioProveedor({
                 </Button>
               </div>
             </Campo>
-            {avisoRnc && (
+            {errorRnc && (
               <div className="md:col-span-2">
-                {avisoRnc.tipo === "ok" ? (
-                  <AvisoOk>{avisoRnc.mensaje}</AvisoOk>
-                ) : (
-                  <AvisoError>{avisoRnc.mensaje}</AvisoError>
-                )}
+                <AvisoError>{errorRnc}</AvisoError>
               </div>
             )}
             <Campo
@@ -341,29 +338,65 @@ export function FormularioProveedor({
   );
 }
 
-export function FormularioCuentaProveedor({ proveedorId }: { proveedorId: string }) {
+const OPCIONES_BANCOS_RD = BANCOS_RD.map((b) => ({ value: b, label: b }));
+
+export function FormularioCuentaProveedor({
+  proveedorId,
+  identificacionProveedor,
+}: {
+  proveedorId: string;
+  identificacionProveedor?: string;
+}) {
   const t = useTranslations("contab.proveedor");
   const tc = useTranslations("contab");
   const [estado, enviar, enviando] = useActionState(agregarCuentaProveedor, INICIAL);
+  const [banco, setBanco] = useState("");
   const error = useError(estado);
 
+  const selectAlineado = cn(SELECT, "h-[38px] pointer-coarse:h-11 text-sm");
+
   return (
-    <form action={enviar} className="space-y-3">
+    <form action={enviar} className="space-y-4">
       <input type="hidden" name="proveedor" value={proveedorId} />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Campo id="banco" etiqueta={t("banco")}><Input id="banco" name="banco" required maxLength={120} /></Campo>
-        <Campo id="tipo_cuenta" etiqueta={t("tipoCuenta")}>
-          <select id="tipo_cuenta" name="tipo" className={SELECT}>
-            <option value="corriente">{tc("tipoCuenta.corriente")}</option>
+      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Campo id="banco" etiqueta={t("banco")} obligatorio>
+          <SelectBuscable
+            id="banco"
+            name="banco"
+            required
+            opciones={OPCIONES_BANCOS_RD}
+            value={banco}
+            onChange={setBanco}
+            placeholder={t("seleccionarBanco")}
+            placeholderBuscar={t("buscarBanco")}
+            sinResultados={t("sinBancos")}
+          />
+        </Campo>
+        <Campo id="tipo_cuenta" etiqueta={t("tipoCuenta")} obligatorio>
+          <select id="tipo_cuenta" name="tipo" className={selectAlineado} defaultValue="ahorro">
             <option value="ahorro">{tc("tipoCuenta.ahorro")}</option>
+            <option value="corriente">{tc("tipoCuenta.corriente")}</option>
           </select>
         </Campo>
-        <Campo id="moneda_cuenta" etiqueta={t("moneda")}>
-          <select id="moneda_cuenta" name="moneda" className={SELECT}>
+        <Campo id="moneda_cuenta" etiqueta={t("moneda")} obligatorio>
+          <select id="moneda_cuenta" name="moneda" className={selectAlineado}>
             {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </Campo>
-        <Campo id="numero" etiqueta={t("numero")}><Input id="numero" name="numero" required inputMode="numeric" maxLength={40} /></Campo>
+        <Campo id="numero" etiqueta={t("numero")} obligatorio>
+          <Input id="numero" name="numero" required inputMode="numeric" maxLength={40} className="font-mono text-sm" />
+        </Campo>
+        <Campo id="identificacion_cuenta" etiqueta={t("rncCedula")} obligatorio>
+          <Input
+            id="identificacion_cuenta"
+            name="identificacion"
+            required
+            inputMode="numeric"
+            maxLength={20}
+            defaultValue={identificacionProveedor ?? ""}
+            className="font-mono text-sm"
+          />
+        </Campo>
       </div>
       {error && <AvisoError>{error}</AvisoError>}
       {estado.estado === "ok" && <AvisoOk>{tc("cxp.ok")}</AvisoOk>}
@@ -419,6 +452,9 @@ export function FormularioFactura({
   const [exentoItbis, setExentoItbis] = useState(
     factura ? Number(factura.itbis) === 0 : true,
   );
+  const [itbis, setItbis] = useState(
+    factura ? Number(factura.itbis).toFixed(2) : "0.00",
+  );
   const [tipoRetencionIsr, setTipoRetencionIsr] = useState(factura?.tipo_retencion_isr ?? "");
   const [tipoRetencionItbis, setTipoRetencionItbis] = useState(factura?.tipo_retencion_itbis ?? "");
   const [ncf, setNcf] = useState(factura?.ncf ?? "");
@@ -446,58 +482,27 @@ export function FormularioFactura({
     }
   }, [estado, proveedor, router]);
 
-  // Estado del motor OCR
-  const [escaneandoOcr, setEscaneandoOcr] = useState(false);
-  const [ocrResultado, setOcrResultado] = useState<{ exito: boolean; confianza?: number; mensaje?: string } | null>(null);
+  function manejarCambioMonto(nuevoMonto: string) {
+    setMonto(nuevoMonto);
+    if (!exentoItbis) {
+      setItbis(calcularItbis(montoValido(nuevoMonto) ?? "0"));
+    }
+  }
 
-  async function onSeleccionarArchivoOcr(e: React.ChangeEvent<HTMLInputElement>) {
-    const archivo = e.target.files?.[0];
-    if (!archivo) return;
+  function manejarCambioExento(marcado: boolean) {
+    setExentoItbis(marcado);
+    if (marcado) {
+      setItbis("0.00");
+    } else {
+      setItbis(calcularItbis(montoValido(monto) ?? "0"));
+    }
+  }
 
-    setEscaneandoOcr(true);
-    setOcrResultado(null);
-
-    const fd = new FormData();
-    fd.append("archivo", archivo);
-
-    try {
-      const res = await procesarFacturaOcrAction(fd);
-      if (res.exito) {
-        const d = res.datos;
-        if (d.ncf) setNcf(d.ncf);
-        if (d.fechaEmision) setEmision(d.fechaEmision);
-        if (d.moneda) setMoneda(d.moneda);
-        if (d.concepto) setConcepto(d.concepto);
-        if (d.subtotal !== null) setMonto(String(d.subtotal));
-
-        if (d.rnc) {
-          const coincidente = proveedores.find(
-            (p) => p.identificacion && p.identificacion.replace(/\D/g, "") === d.rnc,
-          );
-          if (coincidente) {
-            setProveedor(coincidente.id);
-          }
-        }
-
-        setOcrResultado({
-          exito: true,
-          confianza: d.confianza,
-          mensaje: t("ocrExito", { confianza: d.confianza }),
-        });
-      } else {
-        setOcrResultado({
-          exito: false,
-          mensaje: t("ocrError", { error: res.error }),
-        });
-      }
-    } catch (err: unknown) {
-      setOcrResultado({
-        exito: false,
-        mensaje: (err as Error).message || "Error al procesar escaneo",
-      });
-    } finally {
-      setEscaneandoOcr(false);
-      e.target.value = "";
+  function manejarCambioItbis(nuevoItbis: string) {
+    setItbis(nuevoItbis);
+    const limpio = nuevoItbis.replace(/,/g, "").trim();
+    if (exentoItbis && /^\d+(?:\.\d{1,2})?$/.test(limpio) && Number(limpio) > 0) {
+      setExentoItbis(false);
     }
   }
 
@@ -511,10 +516,16 @@ export function FormularioFactura({
 
   const opcionesIsr = retencionesParaProveedor("isr", datosProveedor?.tipo);
   const opcionesItbis = retencionesParaProveedor("itbis", datosProveedor?.tipo);
+  const opcionesGasto = tiposGasto.map((g) => ({ value: g.id, label: g.nombre }));
 
   const base = montoValido(monto) ?? "0";
-  const itbisCalculado = exentoItbis ? "0.00" : calcularItbis(base);
-  const totalFactura = sumarMontos([base, itbisCalculado]);
+  const itbisLimpio = itbis.replace(/,/g, "").trim();
+  const itbisAplicado = exentoItbis
+    ? "0.00"
+    : /^\d+(?:\.\d{1,2})?$/.test(itbisLimpio)
+      ? Number(itbisLimpio).toFixed(2)
+      : "0.00";
+  const totalFactura = sumarMontos([base, itbisAplicado]);
   const retencionIsr = calcularMontoRetencion(base, tipoRetencionIsr);
   const retencionItbis = calcularMontoRetencion(base, tipoRetencionItbis);
   const totalRetenciones = sumarMontos([retencionIsr, retencionItbis]);
@@ -523,53 +534,6 @@ export function FormularioFactura({
 
   return (
     <div className="space-y-6">
-      {/* Zona de escaneo OCR inteligente */}
-      <div className="rounded-tarjeta border border-marca-200 bg-marca-50/50 p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-marca-600" />
-              <h3 className="text-sm font-semibold text-tinta">{t("ocrTitulo")}</h3>
-            </div>
-          </div>
-          <div>
-            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control bg-marca px-3.5 py-2 text-xs font-medium text-white shadow-sm hover:bg-marca-hover transition-colors">
-              {escaneandoOcr ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" />
-                  <span>{t("ocrProcesando")}</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="size-3.5" />
-                  <span>{t("ocrBoton")}</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="application/pdf,image/jpeg,image/png,image/webp"
-                disabled={escaneandoOcr}
-                onChange={onSeleccionarArchivoOcr}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
-        {ocrResultado && (
-          <div
-            className={`mt-3 flex items-center gap-2 rounded-control p-2.5 text-xs ${
-              ocrResultado.exito
-                ? "bg-marca-100 text-marca-800"
-                : "bg-semaforo-alerta/15 text-semaforo-alerta"
-            }`}
-          >
-            {ocrResultado.exito && <CheckCircle2 className="size-4 shrink-0 text-marca-600" />}
-            <span>{ocrResultado.mensaje}</span>
-          </div>
-        )}
-      </div>
-
       <form action={enviar} className="space-y-5">
         {factura && <input type="hidden" name="id" value={factura.id} />}
         <input type="hidden" name="exento_itbis" value={exentoItbis ? "1" : "0"} />
@@ -622,7 +586,7 @@ export function FormularioFactura({
             </div>
           </div>
 
-          {/* Fila 2: Tipo de gasto (debajo de Proveedor) | Fecha de emisión (al lado) */}
+          {/* Fila 2: Tipo de gasto con buscador | Fecha de emisión */}
           <div className="grid gap-4 md:grid-cols-2">
             <Campo
               id="cuenta_gasto_id"
@@ -630,21 +594,17 @@ export function FormularioFactura({
               obligatorio
               ayuda={tiposGasto.length === 0 ? t("sinTiposGasto") : undefined}
             >
-              <select
+              <SelectBuscable
                 id="cuenta_gasto_id"
                 name="cuenta_gasto_id"
-                className={SELECT}
                 required
+                opciones={opcionesGasto}
                 value={cuentaGastoId}
-                onChange={(e) => setCuentaGastoId(e.target.value)}
-              >
-                <option value="">{t("seleccionarTipoGasto")}</option>
-                {tiposGasto.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.nombre}
-                  </option>
-                ))}
-              </select>
+                onChange={setCuentaGastoId}
+                placeholder={t("seleccionarTipoGasto")}
+                placeholderBuscar={t("buscarTipoGasto")}
+                sinResultados={t("sinTiposGastoBusqueda")}
+              />
             </Campo>
             <Campo id="fecha_emision" etiqueta={t("emision")} obligatorio>
               <Input
@@ -682,8 +642,8 @@ export function FormularioFactura({
             </Campo>
           </div>
 
-          {/* Fila 4: Monto (debajo de Concepto) | Moneda (al lado de Monto) */}
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Fila 4: Monto | ITBIS editable | Moneda */}
+          <div className="grid items-end gap-4 md:grid-cols-3">
             <Campo id="subtotal" etiqueta={t("monto")} obligatorio>
               <Input
                 id="subtotal"
@@ -691,14 +651,25 @@ export function FormularioFactura({
                 inputMode="decimal"
                 required
                 value={monto}
-                onChange={(e) => setMonto(e.target.value)}
+                onChange={(e) => manejarCambioMonto(e.target.value)}
+                className="tabular-nums"
+              />
+            </Campo>
+            <Campo id="itbis" etiqueta={t("itbis")}>
+              <Input
+                id="itbis"
+                name="itbis"
+                inputMode="decimal"
+                value={itbis}
+                onChange={(e) => manejarCambioItbis(e.target.value)}
+                className="tabular-nums"
               />
             </Campo>
             <Campo id="moneda" etiqueta={t("moneda")} obligatorio>
               <select
                 id="moneda"
                 name="moneda"
-                className={SELECT}
+                className={cn(SELECT, "h-[38px] pointer-coarse:h-11 text-sm")}
                 required
                 value={moneda}
                 onChange={(e) => setMoneda(e.target.value)}
@@ -766,7 +737,7 @@ export function FormularioFactura({
               <input
                 type="checkbox"
                 checked={exentoItbis}
-                onChange={(e) => setExentoItbis(e.target.checked)}
+                onChange={(e) => manejarCambioExento(e.target.checked)}
                 className="size-4 accent-marca-500"
               />
               <span>{t("exentoItbis")}</span>
@@ -780,8 +751,8 @@ export function FormularioFactura({
               <dd className="font-medium text-tinta">{formatearMonto(base, monedaVista)}</dd>
             </div>
             <div>
-              <dt className="texto-meta">{t("itbis18")}</dt>
-              <dd className="font-medium text-tinta">{formatearMonto(itbisCalculado, monedaVista)}</dd>
+              <dt className="texto-meta">{t("itbis")}</dt>
+              <dd className="font-medium text-tinta">{formatearMonto(itbisAplicado, monedaVista)}</dd>
             </div>
             <div>
               <dt className="texto-meta">{t("total")}</dt>

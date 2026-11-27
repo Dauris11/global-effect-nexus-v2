@@ -128,6 +128,7 @@ export type CuentaProveedor = {
   tipo: "corriente" | "ahorro";
   moneda: Moneda;
   numero: string;
+  identificacion: string | null;
   activa: boolean;
   creado_por: string;
   creado_en: string;
@@ -137,7 +138,7 @@ export type CuentaProveedor = {
 /** Todas, también las reemplazadas: el historial es lo que se audita. */
 export async function cuentasDeProveedor(id: string): Promise<CuentaProveedor[]> {
   return consultar<CuentaProveedor>(
-    `SELECT c.id, c.banco, c.tipo, c.moneda, c.numero, c.activa, u.nombre AS creado_por,
+    `SELECT c.id, c.banco, c.tipo, c.moneda, c.numero, c.identificacion, c.activa, u.nombre AS creado_por,
             to_char(c.creado_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD') AS creado_en,
             to_char(c.reemplazada_en AT TIME ZONE 'America/Santo_Domingo', 'YYYY-MM-DD') AS reemplazada_en
        FROM contabilidad.proveedor_cuenta_bancaria c
