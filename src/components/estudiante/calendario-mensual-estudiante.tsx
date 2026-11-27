@@ -21,8 +21,8 @@ type OrigenFiltro = "todos" | EntradaAgenda["origen"];
 
 /** A dónde lleva cada origen al tocarlo: la entrada no tiene página propia. */
 const DESTINO: Record<EntradaAgenda["origen"], string> = {
-  clase: "/portal/estudiante/prematricula",
-  asignacion: "/portal/estudiante/aula-virtual",
+  clase: "/portal/estudiante/clases",
+  asignacion: "/portal/estudiante/tareas",
   reunion: "/reuniones",
   evento: "/portal/estudiante",
   solicitud: "/portal/estudiante/solicitudes",

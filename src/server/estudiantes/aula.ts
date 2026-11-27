@@ -34,6 +34,8 @@ export type AsignacionDelEstudiante = {
   materia_codigo: string | null;
   /** Clase de Global Effect 360 o materia de la carrera: son programas distintos. */
   origen: "g360" | "universidad";
+  /** Id de la materia (de la carrera o de 360): con `origen` identifica la clase. */
+  clase_id: string;
   docente_nombre?: string | null;
   /** `null` cuando el docente aún no ha abierto una fila de entrega. */
   estado_entrega: "pendiente" | "entregado" | "calificado" | "tarde" | null;
@@ -81,6 +83,7 @@ export async function asignacionesDelEstudiante(
             coalesce(m.nombre, m360.nombre, 'Asignatura') AS materia,
             coalesce(m.codigo, m360.codigo) AS materia_codigo,
             CASE WHEN a.materia_360_id IS NOT NULL THEN 'g360' ELSE 'universidad' END AS origen,
+            coalesce(a.materia_id, a.materia_360_id) AS clase_id,
             doc.nombre AS docente_nombre,
             coalesce(e.estado::text, 'pendiente') AS estado_entrega,
             e.fecha_entrega,

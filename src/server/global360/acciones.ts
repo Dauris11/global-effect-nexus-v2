@@ -590,7 +590,7 @@ function refrescarAdmin() {
  * administración cuenta inscritos: las dos cambian con cada matrícula.
  */
 function refrescarEstudiante() {
-  revalidatePath("/[locale]/portal/estudiante/global-360", "page");
+  revalidatePath("/[locale]/portal/estudiante/clases", "page");
   revalidatePath("/[locale]/portal/estudiante/prematricula", "page");
   revalidatePath("/[locale]/academico/prematricula", "page");
 }

@@ -15,8 +15,6 @@ import type { Rol } from "@/lib/rbac";
  */
 const AREAS_CON_MIGAS = new Set(["operaciones", "global360"]);
 const RUTAS_360 = [
-  "/portal/estudiante/global-360",
-  "/portal/estudiante/aula-virtual",
   "/portal/estudiante/prematricula",
   "/portal/profesor",
 ];

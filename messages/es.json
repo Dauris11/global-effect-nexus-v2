@@ -251,7 +251,10 @@
     "studentCost": "Costo por estudiante",
     "adminHome": "Resumen",
     "breadcrumbDetail": "Detalle",
-    "breadcrumbLabel": "Ruta de navegación"
+    "breadcrumbLabel": "Ruta de navegación",
+    "myClasses": "Mis clases",
+    "myScholarship": "Mi beca",
+    "classesShort": "Clases"
   },
   "landing": {
     "enter": "Acceder",
@@ -8425,5 +8428,181 @@
     "errEmpty": "Escribe el asunto y el mensaje.",
     "errNobody": "No hay nadie activo en esa audiencia.",
     "errGeneric": "No se pudo enviar el aviso. Inténtalo otra vez."
+  },
+  "studentClasses": {
+    "classes": {
+      "title": "Mis clases",
+      "chooseSubjects": "Elegir mis materias",
+      "emptyTitle": "Todavía no tienes clases",
+      "emptyOpen": "La prematrícula está abierta: elige tus materias del período.",
+      "emptyClosed": "Aún no estás matriculado en ninguna clase y la prematrícula no está abierta. Escribe a administración si crees que es un error.",
+      "askAdmin": "Escribir a administración",
+      "progress": "Avance de la clase",
+      "tasksDone": "{hechas} de {total} tareas entregadas",
+      "noTasks": "Sin tareas todavía",
+      "upcoming": "Próxima",
+      "nextDue": "{titulo} · vence {fecha}",
+      "allDelivered": "Todo entregado"
+    },
+    "program": {
+      "title": "Global Effect 360",
+      "progress": "Avance en Global Effect 360",
+      "summary": "{dadas} de {total} materias del programa"
+    },
+    "state": {
+      "pending": "Por entregar",
+      "overdue": "Vencida"
+    },
+    "tasks": {
+      "title": "Tareas",
+      "due": "vence {fecha}",
+      "emptyTitle": "No tienes tareas por ahora",
+      "emptyHint": "Cuando tus docentes publiquen una tarea aparecerá aquí, ordenada por fecha de entrega.",
+      "seeClasses": "Ver mis clases",
+      "groups": {
+        "vencidas": "Vencidas",
+        "semana": "Esta semana",
+        "proximas": "Próximas",
+        "entregadas": "Entregadas"
+      }
+    },
+    "detail": {
+      "week": "Semana del {rango}",
+      "emptyTitle": "Esta clase aún no tiene contenido",
+      "emptyHint": "Tu docente todavía no ha publicado materiales, anuncios ni tareas.",
+      "tabs": {
+        "content": "Contenido",
+        "tasks": "Tareas",
+        "grades": "Calificaciones",
+        "attendance": "Asistencia"
+      }
+    },
+    "grades": {
+      "emptyTitle": "Aún no hay calificaciones",
+      "emptyHint": "Cuando tu docente califique una tarea verás aquí la nota y su comentario.",
+      "total": "{obtenido} de {posible} puntos · {porcentaje}%",
+      "progress": "Puntos obtenidos"
+    },
+    "attendance": {
+      "emptyTitle": "Sin sesiones registradas",
+      "emptyHint": "La asistencia aparece cuando se programan las sesiones de la clase.",
+      "noneMarked": "Todavía no se ha marcado ninguna sesión.",
+      "summary": "Presente en {presentes} de {marcadas} sesiones · {porcentaje}%",
+      "progress": "Asistencia",
+      "present": "Presente",
+      "absent": "Ausente",
+      "unmarked": "Sin marcar"
+    },
+    "panel": {
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "submit": "Entregar tarea",
+      "resubmit": "Reemplazar entrega",
+      "dueOn": "vence {fecha}",
+      "noDue": "sin fecha de vencimiento",
+      "openFile": "Abrir archivo del docente",
+      "feedback": "Comentario del docente",
+      "noFeedback": "El docente no dejó comentario.",
+      "yourSubmission": "Tu entrega",
+      "openSubmission": "Ver mi archivo",
+      "textOnly": "Entregaste una respuesta escrita.",
+      "closedLate": "El plazo venció y esta tarea no acepta entregas tardías.",
+      "dropHere": "Arrastra tu archivo aquí",
+      "chooseFile": "Elegir archivo",
+      "removeFile": "Quitar archivo",
+      "limits": "Hasta {max} MB · {formats}",
+      "written": "Respuesta escrita (opcional)",
+      "note": "Nota para el docente (opcional)",
+      "errSize": "El archivo pesa {actual} MB y el máximo es {max} MB.",
+      "errFormat": "Formato no permitido. Usa: {allowed}."
+    },
+    "enroll": {
+      "title": "Prematrícula",
+      "subtitle": "Elige tu tanda y tus materias de {periodo}.",
+      "deadline": "Cierra el {fecha}, {hora}",
+      "opensOn": "Abre el {fecha}, {hora}",
+      "stepsLabel": "Pasos de la prematrícula",
+      "steps": {
+        "tanda": "Elegir tanda",
+        "materia": "Elegir materia",
+        "confirmar": "Confirmar"
+      },
+      "tanda": {
+        "1": "Tanda 1",
+        "2": "Tanda 2",
+        "label": "Materia de la tanda {n}"
+      },
+      "tandaTitle": "Tandas de {periodo}",
+      "openNow": "Abierta ahora",
+      "notOpenYet": "Aún no abre",
+      "opensLater": "Se abre más adelante",
+      "notOpenHint": "La prematrícula todavía no está abierta. Vuelve cuando abra para elegir tus materias.",
+      "chooseFor360": "Materia de Global Effect 360 para la tanda {n}",
+      "locked360": "Esta materia ya está en curso: solo coordinación puede cambiarla.",
+      "noSchedule": "Horario por confirmar",
+      "full": "Sin cupo",
+      "seats": "{libres} cupos",
+      "chooseCareer": "Materias de tu carrera",
+      "credits": "{n} cr.",
+      "creditsTotal": "{actual} de {tope} créditos",
+      "overCap": "supera el máximo del período",
+      "reviewTitle": "Revisa antes de confirmar",
+      "willAdd": "Se agrega",
+      "willRemove": "Se quita",
+      "noChanges": "No hay cambios que guardar.",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "confirm": "Confirmar prematrícula",
+      "done": "Prematrícula guardada.",
+      "seeClasses": "Ver mis clases",
+      "closedTitle": "No hay prematrícula abierta",
+      "closedHint": "Coordinación anunciará la próxima ventana. Mientras tanto, tus clases actuales están en «Mis clases».",
+      "err": {
+        "cerrada": "la prematrícula ya cerró.",
+        "sin_ficha": "tu cuenta no está enlazada a una ficha de estudiante.",
+        "repetida": "ya estaba elegida.",
+        "ya_aprobada": "ya la aprobaste.",
+        "ya_tiene_materia_en_tanda": "ya tienes otra materia en esta tanda.",
+        "sin_cupo": "no quedan cupos.",
+        "minimo_clases": "no puedes bajar del mínimo de clases del cuatrimestre.",
+        "tope_creditos": "supera el máximo de créditos del período.",
+        "bloqueada": "esta materia no se puede cambiar desde aquí.",
+        "invalida": "no se pudo procesar la materia.",
+        "error": "no se pudo guardar. Intenta de nuevo."
+      }
+    },
+    "scholarship": {
+      "title": "Mi beca",
+      "status": "Estado de la beca",
+      "indexNone": "Aún no tienes índice académico.",
+      "indexLine": "Índice {indice} · mínimo {minimo}",
+      "seeGrades": "Ver calificaciones",
+      "states": {
+        "activa": "En regla",
+        "prueba_academica": "Bajo el mínimo",
+        "pendiente": "Pendiente",
+        "cumplio": "Cumplido",
+        "programada": "Programada"
+      },
+      "service": "Servicio del mes",
+      "serviceHint": "Lo registra administración al verificar tu servicio.",
+      "askAdmin": "Consultar a administración",
+      "meeting": "Reunión del mes",
+      "meetingOn": "Programada para el {fecha}",
+      "meetingNone": "Aún no tienes reunión este mes.",
+      "seeCalendar": "Ver calendario",
+      "meal": "Comida de hoy",
+      "mealHint": "El almuerzo se anota antes de que cierre el comedor.",
+      "mealIn": "Inscrito hoy",
+      "mealOut": "Sin inscribir",
+      "mealClosed": "Comedor cerrado",
+      "mealAction": "Inscribirme",
+      "transport": "Transporte",
+      "transportHint": "Guagua de tu zona, por días y horarios.",
+      "transportIn": "{n} viajes semanales",
+      "transportOut": "Sin inscribir",
+      "transportAction": "Inscribirme",
+      "transportManage": "Ver mis viajes"
+    }
   }
 }

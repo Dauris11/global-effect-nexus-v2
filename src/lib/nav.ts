@@ -1,4 +1,5 @@
 import {
+  ClipboardCheck,
   BarChart3,
   Bot,
   BookOpen,
@@ -464,10 +465,14 @@ const MENU_ADMINISTRACION: AreaNav[] = [
   },
 ];
 
-// Las pantallas del estudiante (`/portal/estudiante/*`, `/comida`) se abren por
-// ROL (`requerirRol(["estudiante"])`), no por un permiso: por eso sus entradas
-// son `universal`. Solo `reuniones` y el chat de IA piden permiso, porque su
-// pantalla lo comprueba.
+// Las pantallas del estudiante (`/portal/estudiante/*`) se abren por ROL
+// (`requerirRol(["estudiante"])`), no por un permiso: por eso sus entradas son
+// `universal`. Solo el chat de IA pide permiso, porque su pantalla lo comprueba.
+//
+// Ocho entradas como máximo (docs/ux-rules.md §13). Lo que se fundió: Aula
+// virtual y Global Effect 360 son «Mis clases» y «Tareas»; Prematrícula se abre
+// desde «Mis clases»; Comida, Transporte y Reuniones se abren desde «Mi beca» y
+// el calendario. Siguen existiendo sus rutas.
 const MENU_ESTUDIANTE: AreaNav[] = [
   {
     clave: "panel",
@@ -494,30 +499,17 @@ const MENU_ESTUDIANTE: AreaNav[] = [
       {
         items: [
           {
-            etiqueta: "mySubjects",
-            href: "/portal/estudiante/prematricula",
-            icono: Library,
+            etiqueta: "myClasses",
+            href: "/portal/estudiante/clases",
+            icono: BookOpen,
             universal: true,
           },
-          // Las asignaciones cuelgan de la misma matrícula, así que van con
-          // ella.
           {
-            etiqueta: "virtualClassroom",
-            href: "/portal/estudiante/aula-virtual",
-            icono: MonitorPlay,
+            etiqueta: "tasks",
+            href: "/portal/estudiante/tareas",
+            icono: ClipboardCheck,
             universal: true,
           },
-          // Global Effect 360: las materias de la Fundación. Desde la 0047 son
-          // para todos, todas obligatorias, una por tanda.
-          {
-            etiqueta: "global360",
-            href: "/portal/estudiante/global-360",
-            icono: Sparkles,
-            universal: true,
-          },
-          // Inscribirse al almuerzo de hoy: el estudiante lo hacía en una página
-          // pública, fuera de su portal, y no sabía que la tenía.
-          { etiqueta: "meals", href: "/comida", icono: Utensils, universal: true },
           // Ahí está el índice académico, que es lo que decide la beca, y las
           // notas finales de 360.
           {
@@ -543,16 +535,12 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             icono: CalendarDays,
             universal: true,
           },
+          // Índice, servicio, reunión, comida y transporte: todo lo que decide
+          // si conserva la beca y lo que usa a diario.
           {
-            etiqueta: "meetings",
-            href: "/reuniones",
-            icono: Users,
-            permiso: "reuniones.leer",
-          },
-          {
-            etiqueta: "transport",
-            href: "/portal/estudiante/transporte",
-            icono: Bus,
+            etiqueta: "myScholarship",
+            href: "/portal/estudiante/beca",
+            icono: HeartHandshake,
             universal: true,
           },
           // Trámites con administración: constancias, cartas, citas y
@@ -1162,7 +1150,7 @@ const ETIQUETA_CORTA: Record<string, string> = {
   "/portal/profesor": "home",
   "/portal/contabilidad": "home",
   "/portal/estudiante": "home",
-  "/portal/estudiante/aula-virtual": "classroom",
+  "/portal/estudiante/clases": "classesShort",
   "/portal/estudiante/solicitudes": "requests",
   "/administrativo/solicitudes": "requests",
   "/administrativo/inventario": "inventory",
@@ -1170,11 +1158,11 @@ const ETIQUETA_CORTA: Record<string, string> = {
 };
 
 /**
- * Estudiante: Inicio, Aula, Calendario, Solicitudes y Más.
+ * Estudiante: Inicio · Clases · Tareas · Más (cuatro, sin botón central: el
+ * estudiante viene a ver qué entregar, entregarlo y ver sus notas).
  *
- * El plan pedía "Perfil" como quinta, y se cambió por "Más" a conciencia: sin
- * ella, Calificaciones, Global Effect 360 y el chat no tendrían entrada en el
- * teléfono. El perfil sigue a un toque, en el menú del avatar de la barra de
+ * «Más» abre el menú completo, donde están Calificaciones, Mi beca, Calendario,
+ * Solicitudes y el chat. El perfil sigue en el menú del avatar de la barra de
  * arriba.
  */
 export function pestanasMoviles(
@@ -1199,9 +1187,8 @@ export function pestanasMoviles(
   if (rol === "estudiante") {
     const deseadas = [
       "/portal/estudiante",
-      "/portal/estudiante/aula-virtual",
-      "/portal/estudiante/calendario",
-      "/portal/estudiante/solicitudes",
+      "/portal/estudiante/clases",
+      "/portal/estudiante/tareas",
     ];
 
     return [

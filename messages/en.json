@@ -251,7 +251,10 @@
     "studentCost": "Cost per student",
     "adminHome": "Overview",
     "breadcrumbDetail": "Detail",
-    "breadcrumbLabel": "Breadcrumb"
+    "breadcrumbLabel": "Breadcrumb",
+    "myClasses": "My classes",
+    "myScholarship": "My scholarship",
+    "classesShort": "Classes"
   },
   "landing": {
     "enter": "Sign in",
@@ -8425,5 +8428,181 @@
     "errEmpty": "Enter a subject and a message.",
     "errNobody": "Nobody active in that audience.",
     "errGeneric": "The notice could not be sent. Try again."
+  },
+  "studentClasses": {
+    "classes": {
+      "title": "My classes",
+      "chooseSubjects": "Choose my subjects",
+      "emptyTitle": "You don't have any classes yet",
+      "emptyOpen": "Pre-enrollment is open: choose your subjects for the term.",
+      "emptyClosed": "You aren't enrolled in any class yet and pre-enrollment isn't open. Write to administration if you think this is a mistake.",
+      "askAdmin": "Write to administration",
+      "progress": "Class progress",
+      "tasksDone": "{hechas} of {total} assignments submitted",
+      "noTasks": "No assignments yet",
+      "upcoming": "Next up",
+      "nextDue": "{titulo} · due {fecha}",
+      "allDelivered": "All submitted"
+    },
+    "program": {
+      "title": "Global Effect 360",
+      "progress": "Progress in Global Effect 360",
+      "summary": "{dadas} of {total} program subjects"
+    },
+    "state": {
+      "pending": "To submit",
+      "overdue": "Overdue"
+    },
+    "tasks": {
+      "title": "Assignments",
+      "due": "due {fecha}",
+      "emptyTitle": "You have no assignments right now",
+      "emptyHint": "When your teachers post an assignment it will appear here, sorted by due date.",
+      "seeClasses": "See my classes",
+      "groups": {
+        "vencidas": "Overdue",
+        "semana": "This week",
+        "proximas": "Upcoming",
+        "entregadas": "Submitted"
+      }
+    },
+    "detail": {
+      "week": "Week of {rango}",
+      "emptyTitle": "This class has no content yet",
+      "emptyHint": "Your teacher hasn't posted materials, announcements or assignments yet.",
+      "tabs": {
+        "content": "Content",
+        "tasks": "Assignments",
+        "grades": "Grades",
+        "attendance": "Attendance"
+      }
+    },
+    "grades": {
+      "emptyTitle": "No grades yet",
+      "emptyHint": "When your teacher grades an assignment you'll see the score and comment here.",
+      "total": "{obtenido} of {posible} points · {porcentaje}%",
+      "progress": "Points earned"
+    },
+    "attendance": {
+      "emptyTitle": "No sessions recorded",
+      "emptyHint": "Attendance shows up once the class sessions are scheduled.",
+      "noneMarked": "No session has been marked yet.",
+      "summary": "Present in {presentes} of {marcadas} sessions · {porcentaje}%",
+      "progress": "Attendance",
+      "present": "Present",
+      "absent": "Absent",
+      "unmarked": "Not marked"
+    },
+    "panel": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "submit": "Submit assignment",
+      "resubmit": "Replace submission",
+      "dueOn": "due {fecha}",
+      "noDue": "no due date",
+      "openFile": "Open teacher's file",
+      "feedback": "Teacher's comment",
+      "noFeedback": "The teacher left no comment.",
+      "yourSubmission": "Your submission",
+      "openSubmission": "View my file",
+      "textOnly": "You submitted a written answer.",
+      "closedLate": "The deadline passed and this assignment doesn't accept late submissions.",
+      "dropHere": "Drag your file here",
+      "chooseFile": "Choose file",
+      "removeFile": "Remove file",
+      "limits": "Up to {max} MB · {formats}",
+      "written": "Written answer (optional)",
+      "note": "Note for the teacher (optional)",
+      "errSize": "The file is {actual} MB and the limit is {max} MB.",
+      "errFormat": "Format not allowed. Use: {allowed}."
+    },
+    "enroll": {
+      "title": "Pre-enrollment",
+      "subtitle": "Choose your block and your subjects for {periodo}.",
+      "deadline": "Closes {fecha}, {hora}",
+      "opensOn": "Opens {fecha}, {hora}",
+      "stepsLabel": "Pre-enrollment steps",
+      "steps": {
+        "tanda": "Choose block",
+        "materia": "Choose subject",
+        "confirmar": "Confirm"
+      },
+      "tanda": {
+        "1": "Block 1",
+        "2": "Block 2",
+        "label": "Block {n} subject"
+      },
+      "tandaTitle": "Blocks of {periodo}",
+      "openNow": "Open now",
+      "notOpenYet": "Not open yet",
+      "opensLater": "Opens later",
+      "notOpenHint": "Pre-enrollment isn't open yet. Come back when it opens to choose your subjects.",
+      "chooseFor360": "Global Effect 360 subject for block {n}",
+      "locked360": "This subject is already in progress: only coordination can change it.",
+      "noSchedule": "Schedule to be confirmed",
+      "full": "Full",
+      "seats": "{libres} seats",
+      "chooseCareer": "Your degree subjects",
+      "credits": "{n} cr.",
+      "creditsTotal": "{actual} of {tope} credits",
+      "overCap": "over the term maximum",
+      "reviewTitle": "Review before confirming",
+      "willAdd": "Will be added",
+      "willRemove": "Will be removed",
+      "noChanges": "There are no changes to save.",
+      "back": "Back",
+      "next": "Next",
+      "confirm": "Confirm pre-enrollment",
+      "done": "Pre-enrollment saved.",
+      "seeClasses": "See my classes",
+      "closedTitle": "No pre-enrollment is open",
+      "closedHint": "Coordination will announce the next window. Meanwhile, your current classes are in “My classes”.",
+      "err": {
+        "cerrada": "pre-enrollment has closed.",
+        "sin_ficha": "your account isn't linked to a student record.",
+        "repetida": "it was already chosen.",
+        "ya_aprobada": "you already passed it.",
+        "ya_tiene_materia_en_tanda": "you already have another subject in this block.",
+        "sin_cupo": "no seats left.",
+        "minimo_clases": "you can't go below the term's minimum number of classes.",
+        "tope_creditos": "it exceeds the term's credit maximum.",
+        "bloqueada": "this subject can't be changed from here.",
+        "invalida": "the subject couldn't be processed.",
+        "error": "couldn't save. Try again."
+      }
+    },
+    "scholarship": {
+      "title": "My scholarship",
+      "status": "Scholarship status",
+      "indexNone": "You don't have an academic index yet.",
+      "indexLine": "Index {indice} · minimum {minimo}",
+      "seeGrades": "See grades",
+      "states": {
+        "activa": "In good standing",
+        "prueba_academica": "Below minimum",
+        "pendiente": "Pending",
+        "cumplio": "Done",
+        "programada": "Scheduled"
+      },
+      "service": "Service this month",
+      "serviceHint": "Administration records it when your service is verified.",
+      "askAdmin": "Ask administration",
+      "meeting": "Meeting this month",
+      "meetingOn": "Scheduled for {fecha}",
+      "meetingNone": "You have no meeting this month yet.",
+      "seeCalendar": "See calendar",
+      "meal": "Today's meal",
+      "mealHint": "Sign up for lunch before the dining hall closes.",
+      "mealIn": "Signed up today",
+      "mealOut": "Not signed up",
+      "mealClosed": "Dining hall closed",
+      "mealAction": "Sign me up",
+      "transport": "Transport",
+      "transportHint": "Bus for your area, by day and time.",
+      "transportIn": "{n} weekly trips",
+      "transportOut": "Not signed up",
+      "transportAction": "Sign me up",
+      "transportManage": "See my trips"
+    }
   }
 }

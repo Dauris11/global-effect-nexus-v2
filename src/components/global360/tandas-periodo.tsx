@@ -48,7 +48,7 @@ export function TandasPeriodo360({
             </p>
             {enlazar && (
               <Link
-                href="/portal/estudiante/global-360"
+                href="/portal/estudiante/prematricula"
                 className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4"
               >
                 {t("tandaChooseNow")}

@@ -130,7 +130,7 @@ export async function publicarTarea(
     // que tengan cuenta activa vinculada.
     await consultar(
       `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-       SELECT DISTINCT u.id, $3, $4, 'tarea', '/portal/estudiante/aula-virtual'
+       SELECT DISTINCT u.id, $3, $4, 'tarea', '/portal/estudiante/tareas'
          FROM inscripcion_360 i
          JOIN estudiante e ON e.id = i.estudiante_id
          JOIN usuario u ON u.id = e.usuario_id
@@ -265,7 +265,7 @@ export async function revisarEntrega(
       const mensajeAviso = [resumenNota, comentario].filter(Boolean).join(" — ");
       await consultar(
         `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/tareas'
            FROM usuario u
           WHERE u.id = $1 AND u.activo`,
         [
@@ -472,8 +472,8 @@ function refrescar() {
   revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
   revalidatePath("/[locale]/portal/profesor/materias", "page");
-  revalidatePath("/[locale]/portal/estudiante/global-360", "page");
-  revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+  revalidatePath("/[locale]/portal/estudiante/clases", "page");
+  revalidatePath("/[locale]/portal/estudiante/tareas", "page");
   revalidatePath("/[locale]/portal/estudiante/calificaciones", "page");
   revalidatePath("/[locale]/portal/estudiante", "page");
 }
@@ -565,7 +565,7 @@ export async function publicarTareaMateria(
 
     await consultar(
       `INSERT INTO notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-       SELECT DISTINCT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+       SELECT DISTINCT u.id, $2, $3, 'tarea', '/portal/estudiante/tareas'
          FROM inscripcion i
          JOIN estudiante e ON e.id = i.estudiante_id
          JOIN usuario u ON u.id = e.usuario_id

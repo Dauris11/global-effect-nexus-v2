@@ -260,7 +260,7 @@ export function DashboardGraficoEstudiante({
           titulo: ta.titulo,
           dia: ta.fechaIso,
           hora: ta.hora,
-          href: "/portal/estudiante/aula-virtual",
+          href: "/portal/estudiante/tareas",
         });
       } else if (ta.tipo === "tarea" || ta.tipo === "examen") {
         lista.push({
@@ -269,7 +269,7 @@ export function DashboardGraficoEstudiante({
           titulo: ta.titulo,
           dia: ta.fechaIso,
           hora: ta.hora,
-          href: "/portal/estudiante/aula-virtual",
+          href: "/portal/estudiante/tareas",
         });
       }
     }
@@ -301,7 +301,7 @@ export function DashboardGraficoEstudiante({
               </CardTitle>
             </div>
             <Link
-              href="/portal/estudiante/aula-virtual"
+              href="/portal/estudiante/tareas"
               className="text-xs font-semibold text-marca-600 hover:text-marca-700 hover:underline"
             >
               {t("openClassroom")}

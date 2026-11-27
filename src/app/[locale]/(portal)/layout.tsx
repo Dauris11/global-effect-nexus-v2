@@ -62,7 +62,7 @@ export default async function LayoutPortal({
             cierra: corta(ventana.cierra),
           },
         )}`,
-        href: "/portal/estudiante/global-360",
+        href: "/portal/estudiante/prematricula",
       };
     }
   }

@@ -57,7 +57,7 @@ export async function TarjetaProximo({
         <ul className="divide-y divide-linea">
           {entrega && (
             <Fila
-              href="/portal/estudiante/aula-virtual"
+              href="/portal/estudiante/tareas"
               icono={ClipboardCheck}
               titulo={entrega.titulo}
               // La fecha primero: si la fila se corta en el móvil, lo que

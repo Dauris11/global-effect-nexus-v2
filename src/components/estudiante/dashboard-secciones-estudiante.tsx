@@ -105,7 +105,7 @@ export function MateriasEnCursoInteractivo({
                   onMouseLeave={() => setActiva(null)}
                 >
                   <Link
-                    href={`/portal/estudiante/aula-virtual?materia=${encodeURIComponent(materia.nombre)}`}
+                    href={`/portal/estudiante/clases/u-${materia.id}`}
                     className={cn(
                       "flex items-center justify-between gap-3 rounded-control border border-linea bg-card p-2.5 transition-all duration-150 hover:-translate-y-0.5 hover:border-marca-500/40 hover:shadow-xs",
                       activa === materia.id && "border-marca-500 bg-marca-50/40",

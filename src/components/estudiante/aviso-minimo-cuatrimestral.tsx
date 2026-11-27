@@ -88,7 +88,7 @@ export function AvisoMinimoCuatrimestral({
         {enlazar && (
           <div className="flex flex-wrap gap-4 pt-0.5">
             <Link
-              href="/portal/estudiante/global-360"
+              href="/portal/estudiante/prematricula"
               className="inline-flex min-h-9 items-center font-semibold underline underline-offset-4"
             >
               {t("go360")}

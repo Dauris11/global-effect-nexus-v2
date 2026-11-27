@@ -234,7 +234,7 @@ export async function entregarTareaMoodleAction(
 
     // Con el segmento `[locale]`: "/portal/..." a secas no coincide con
     // ninguna ruta y no refrescaba nada. La bandeja del docente es clases-360.
-    revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+    revalidatePath("/[locale]/portal/estudiante/tareas", "page");
     revalidatePath("/[locale]/portal/profesor", "page");
     revalidatePath("/[locale]/portal/profesor/materias", "page");
     revalidatePath("/[locale]/portal/profesor/entregas", "page");
@@ -358,7 +358,7 @@ export async function calificarEntregaMoodleAction(
         .join(" — ");
       await consultar(
         `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
-         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/aula-virtual'
+         SELECT u.id, $2, $3, 'tarea', '/portal/estudiante/tareas'
            FROM public.usuario u
           WHERE u.id = $1 AND u.activo`,
         [
@@ -379,7 +379,7 @@ export async function calificarEntregaMoodleAction(
 
     revalidatePath("/[locale]/portal/profesor", "page");
     revalidatePath("/[locale]/portal/profesor/materias", "page");
-    revalidatePath("/[locale]/portal/estudiante/aula-virtual", "page");
+    revalidatePath("/[locale]/portal/estudiante/tareas", "page");
     revalidatePath("/[locale]/academico/clases-360", "page");
 
     return { ok: true, mensaje: "calificada" };

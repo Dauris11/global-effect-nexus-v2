@@ -243,7 +243,7 @@ function refrescar() {
   revalidatePath("/[locale]/academico/clases-360", "page");
   revalidatePath("/[locale]/portal/profesor", "page");
   revalidatePath("/[locale]/portal/profesor/materias", "page");
-  revalidatePath("/[locale]/portal/estudiante/global-360", "page");
+  revalidatePath("/[locale]/portal/estudiante/clases", "page");
 }
 
 /** Programa o edita una sesión de clase en una materia asignada al docente. */

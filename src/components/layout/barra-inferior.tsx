@@ -45,6 +45,9 @@ export function BarraInferior({
   const p0 = pestanas[0];
   const p1 = pestanas[1];
   const p2 = pestanas[2];
+  // El estudiante tiene cuatro pestañas fijas y ningún botón central de acciones
+  // rápidas: Inicio · Clases · Tareas · Más.
+  const cuatro = rol === "estudiante";
   const pMas = pestanas.find((p) => p.tipo === "mas") ?? pestanas[pestanas.length - 1];
 
   const renderItem = (pestana: PestanaMovil | undefined, clave: string) => {
@@ -100,7 +103,7 @@ export function BarraInferior({
         aria-label={t("mainNav")}
         className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t border-linea pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
-        <ul className="grid h-16 grid-cols-5 items-center">
+        <ul className={cn("grid h-16 items-center", cuatro ? "grid-cols-4" : "grid-cols-5")}>
           {/* Ranura 1: Inicio */}
           {renderItem(p0, "slot-0")}
 
@@ -108,6 +111,7 @@ export function BarraInferior({
           {renderItem(p1, "slot-1")}
 
           {/* Ranura 3 (Central): Botón de Acción Rápida Elevado */}
+          {!cuatro && (
           <li className="relative flex h-full items-center justify-center">
             <button
               type="button"
@@ -118,6 +122,7 @@ export function BarraInferior({
               <Zap className="size-6 transition-transform duration-(--duracion-rapida) ease-salida group-active:rotate-12" />
             </button>
           </li>
+          )}
 
           {/* Ranura 4: Módulo 2 */}
           {renderItem(p2, "slot-2")}
