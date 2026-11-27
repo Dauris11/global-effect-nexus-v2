@@ -79,28 +79,28 @@ export function KpisAnimadosDocente({
       valor: clasesAnim,
       progreso: Math.min(100, totalClases * 15),
       icono: Sparkles,
-      href: "/academico/clases-360",
+      href: "/portal/profesor/clases",
     },
     {
       etiqueta: t("stats.students"),
       valor: estAnim,
       progreso: Math.min(100, estudiantes * 4),
       icono: Users,
-      href: "/portal/profesor/materias",
+      href: "/portal/profesor/clases",
     },
     {
       etiqueta: t("stats.grades"),
       valor: notasAnim,
       progreso: estudiantes > 0 ? Math.min(100, (notas / Math.max(1, estudiantes)) * 100) : 0,
       icono: Award,
-      href: "/academico/clases-360",
+      href: "/portal/profesor/clases",
     },
     {
       etiqueta: t("stats.toReview"),
       valor: revAnim,
       progreso: Math.min(100, porRevisar * 10),
       icono: ClipboardList,
-      href: "/portal/profesor/materias",
+      href: "/portal/profesor/entregas",
     },
   ];
 

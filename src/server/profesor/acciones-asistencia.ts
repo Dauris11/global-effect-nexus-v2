@@ -215,6 +215,8 @@ export async function marcarAsistencia360(datos: {
           AND ($5::uuid IS NULL OR m.docente_id = $5)
        ON CONFLICT (sesion_id, inscripcion_id)
        DO UPDATE SET presente = EXCLUDED.presente,
+                     -- «Tarde» (0135) implica presente: una marca nueva de presente/ausente la borra.
+                     tarde = false,
                      marcado_por = EXCLUDED.marcado_por,
                      marcado_en = now()
        RETURNING inscripcion_id`,
@@ -402,6 +404,8 @@ export async function marcarAsistenciaMateria(datos: {
           AND ($5::uuid IS NULL OR m.profesor_usuario_id = $5)
        ON CONFLICT (sesion_id, inscripcion_id)
        DO UPDATE SET presente = EXCLUDED.presente,
+                     -- «Tarde» (0135) implica presente: una marca nueva de presente/ausente la borra.
+                     tarde = false,
                      marcado_por = EXCLUDED.marcado_por,
                      marcado_en = now()
        RETURNING inscripcion_id`,

@@ -191,3 +191,6 @@ export function textoDeFechaLocal(
     hora: new Intl.DateTimeFormat(idioma, { timeZone: "UTC", hour: "numeric", minute: "2-digit" }).format(instante),
   };
 }
+
+/** Lo que el docente marca por estudiante al pasar asistencia. */
+export type MarcaDeAsistencia = "presente" | "ausente" | "tarde";

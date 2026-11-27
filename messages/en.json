@@ -244,7 +244,7 @@
     "atRisk": "Students at risk",
     "uploadGrades": "Upload grades",
     "leadershipAcademy": "Leadership Academy",
-    "submissionsToGrade": "Submissions to grade",
+    "submissionsToGrade": "To grade",
     "habitudesSupervision": "Habitudes supervision",
     "pending": "To-do",
     "executiveDashboard": "Executive dashboard",
@@ -254,7 +254,8 @@
     "breadcrumbLabel": "Breadcrumb",
     "myClasses": "My classes",
     "myScholarship": "My scholarship",
-    "classesShort": "Classes"
+    "classesShort": "Classes",
+    "toGradeShort": "Grade"
   },
   "landing": {
     "enter": "Sign in",
@@ -2750,7 +2751,7 @@
       "viewFullCalendar": "View full calendar"
     },
     "submissions": {
-      "title": "Submissions to grade",
+      "title": "To grade",
       "empty": "You have no submissions waiting for a grade.",
       "count": "{count, plural, =1 {1 submission waiting for a grade} other {# submissions waiting for a grade}}",
       "late": "Late",
@@ -2762,7 +2763,8 @@
       "filter": {
         "pendientes": "To grade",
         "calificadas": "Graded",
-        "todas": "All"
+        "todas": "All",
+        "done": "Done"
       },
       "download": "Download",
       "previewOf": "{nombre}'s submission",
@@ -8603,6 +8605,117 @@
       "transportOut": "Not signed up",
       "transportAction": "Sign me up",
       "transportManage": "See my trips"
+    }
+  },
+  "teacherClasses": {
+    "title": "My classes",
+    "emptyTitle": "You don't have any classes assigned yet",
+    "emptyHint": "Academic coordination assigns them to you.",
+    "writeCoordination": "Write to coordination",
+    "toGrade": "To grade ({n})",
+    "goGrade": "Grade",
+    "cards": {
+      "program360": "Global Effect 360",
+      "degree": "Degree",
+      "students": "{n} students",
+      "nextSession": "Next session: {fecha}",
+      "noSession": "No session scheduled",
+      "toGrade": "{n} to grade",
+      "upToDate": "Up to date"
+    },
+    "tabs": {
+      "students": "Students",
+      "tasks": "Assignments",
+      "material": "Material",
+      "attendance": "Attendance",
+      "finals": "Final grades"
+    },
+    "common": {
+      "cancel": "Cancel"
+    },
+    "students": {
+      "emptyTitle": "This class has no students",
+      "emptyHint": "They will appear once they enroll.",
+      "delivered": "{n} of {total} submitted",
+      "attendance": "Attendance {n}%"
+    },
+    "tasks": {
+      "new": "New assignment",
+      "create": "Create assignment",
+      "created": "Assignment published.",
+      "name": "Title",
+      "due": "Due date",
+      "dueOn": "due {fecha}",
+      "noDue": "no due date",
+      "deliveries": "{n} submissions",
+      "toGrade": "{n} to grade",
+      "grade": "Grade",
+      "description": "Description",
+      "type": "Type",
+      "types": {
+        "tarea": "Assignment",
+        "examen": "Exam"
+      },
+      "points": "Maximum points",
+      "emptyTitle": "There are no assignments in this class yet",
+      "err": {
+        "no_permitido": "You don't have permission to publish here.",
+        "no_encontrado": "That class isn't yours or has no students in the term yet.",
+        "nombre_vacio": "Write a title.",
+        "invalido": "Check the assignment details.",
+        "error": "Couldn't publish. Try again."
+      }
+    },
+    "material": {
+      "new": "Upload material",
+      "upload": "Upload material",
+      "create": "Publish",
+      "created": "Material published.",
+      "file": "File",
+      "fileHint": "PDF, Word, PowerPoint or image. Up to 20 MB.",
+      "open": "Open file",
+      "emptyTitle": "There is no material in this class yet",
+      "err": {
+        "no_permitido": "You don't have permission to publish here.",
+        "no_encontrado": "That class isn't yours or has no students in the term yet.",
+        "invalido": "Write a title.",
+        "archivo_no_admitido": "That file type isn't supported.",
+        "archivo_grande": "The file is over 20 MB.",
+        "fuera_de_periodo": "Outside the term.",
+        "error": "Couldn't upload. Try again."
+      }
+    },
+    "attendance": {
+      "title": "Take attendance",
+      "take": "Take attendance",
+      "fix": "Fix today's attendance",
+      "save": "Save attendance",
+      "saved": "Attendance saved.",
+      "allPresent": "All present",
+      "noRoster": "No students are enrolled in the current term.",
+      "emptyTitle": "Attendance hasn't been taken yet",
+      "summary": "{presentes} present · {tardes} late · {ausentes} absent of {total}",
+      "marks": {
+        "presente": "Present",
+        "ausente": "Absent",
+        "tarde": "Late"
+      },
+      "err": {
+        "no_permitido": "You don't have permission.",
+        "no_encontrado": "That class isn't yours.",
+        "invalido": "Couldn't read the list.",
+        "fuera_de_periodo": "Today is outside the class term.",
+        "error": "Couldn't save. Try again."
+      }
+    },
+    "finals": {
+      "suggested": "Assignment average: {n}",
+      "noSuggestion": "No graded assignments",
+      "grade": "Final grade for {nombre}",
+      "approve": "Pass",
+      "fail": "Fail",
+      "saved": "{nombre}'s grade saved.",
+      "error": "Couldn't save the grade."
     }
   }
 }

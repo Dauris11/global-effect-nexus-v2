@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { RevisorEntregas } from "@/components/profesor/revisor-entregas";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { PageHeader } from "@/components/app/page-header";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirDocencia } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
@@ -45,8 +45,8 @@ export default async function PaginaEntregasDocente({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 animate-entrada">
-      <EncabezadoPagina titulo={t("title")} />
+    <div className="animate-entrada space-y-6">
+      <PageHeader title={t("title")} />
       <NextIntlClientProvider messages={mensajes}>
         <RevisorEntregas
           tareas={tareas}

@@ -854,8 +854,8 @@ export async function agendaDocente(
       hora: t.hora,
       href:
         t.origen === "g360"
-          ? `/academico/clases-360?clase=${t.unidad_id}&accion=publicaciones`
-          : `/portal/profesor/materias?materia=${t.unidad_id}&accion=publicaciones`,
+          ? `/portal/profesor/clases/g-${t.unidad_id}`
+          : `/portal/profesor/clases/u-${t.unidad_id}`,
     });
   }
 

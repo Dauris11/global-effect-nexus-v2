@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { StatusBadge } from "@/components/app/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
@@ -95,32 +96,25 @@ export function RevisorEntregas({
     setGuardadas((previas) => ({ ...previas, [id]: { calificacion, comentario } }));
     // Salta a la siguiente por calificar; si no queda ninguna, se queda en la actual.
     const siguiente = pendientes.find((entrega) => entrega.id !== id);
-    if (siguiente) setElegidaId(siguiente.id);
+    if (siguiente) {
+      setElegidaId(siguiente.id);
+
+      return;
+    }
+    // Se acabó la tarea: pasa a la siguiente que aún tenga algo por calificar.
+    const otra = tareas.find(
+      (candidata) =>
+        candidata.id !== tareaId &&
+        candidata.entregas.some((entrega) => entrega.estado !== "calificado" && !guardadas[entrega.id]),
+    );
+    if (otra) {
+      setTareaId(otra.id);
+      setElegidaId(null);
+    }
   }
 
   return (
     <div className="space-y-4">
-      <div className="max-w-xl">
-        <label htmlFor="revisor-tarea" className="mb-1.5 block text-sm font-medium">
-          {t("task")}
-        </label>
-        <select
-          id="revisor-tarea"
-          value={tareaId}
-          onChange={(e) => {
-            setTareaId(e.target.value);
-            setElegidaId(null);
-          }}
-          className="border-input focus-visible:border-ring focus-visible:ring-ring/50 rounded-control h-11 w-full border bg-card px-3 text-base shadow-xs outline-none focus-visible:ring-[3px] sm:text-sm"
-        >
-          {tareas.map((candidata) => (
-            <option key={candidata.id} value={candidata.id}>
-              {candidata.titulo} · {candidata.unidad} ({totalPendientes(candidata)})
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-3">
           <div className="flex flex-wrap gap-1.5">
@@ -142,54 +136,87 @@ export function RevisorEntregas({
             ))}
           </div>
 
-          {visibles.length === 0 ? (
-            <p className="py-8 text-center text-sm text-tinta-3">{tSub("empty")}</p>
-          ) : (
-            <ul className="space-y-1.5">
-              {visibles.map((entrega) => {
-                const activa = elegida?.id === entrega.id;
-                const calificada = entrega.estado === "calificado";
-                const Icono = calificada ? CheckCircle2 : entrega.estado === "tarde" ? Clock : Circle;
+          <ul className="space-y-2">
+            {tareas.map((candidata) => {
+              const activa = candidata.id === tareaId;
+              const pendientesDeEsta = totalPendientes(candidata);
 
-                return (
-                  <li key={entrega.id}>
-                    <button
-                      type="button"
-                      onClick={() => setElegidaId(entrega.id)}
-                      aria-current={activa ? "true" : undefined}
-                      className={cn(
-                        "flex min-h-11 w-full items-center gap-2.5 rounded-control border px-3 py-2 text-left transition-colors",
-                        activa
-                          ? "border-marca-500 bg-marca-50"
-                          : "border-linea bg-card hover:bg-muted/50",
-                      )}
-                    >
-                      <Icono
+              return (
+                <li key={candidata.id} className="rounded-card border border-linea bg-card">
+                  <button
+                    type="button"
+                    aria-expanded={activa}
+                    onClick={() => {
+                      setTareaId(candidata.id);
+                      setElegidaId(null);
+                    }}
+                    className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-left"
+                  >
+                    <span className="min-w-0">
+                      <span className="text-body block truncate font-medium">{candidata.titulo}</span>
+                      <span className="text-meta block truncate">{candidata.unidad}</span>
+                    </span>
+                    {pendientesDeEsta > 0 ? (
+                      <StatusBadge status="pendiente" label={String(pendientesDeEsta)} />
+                    ) : (
+                      <StatusBadge status="completado" label={t("filter.done")} />
+                    )}
+                  </button>
+                  {activa && <div className="space-y-2 border-t border-linea p-2">
+          {visibles.length === 0 ? (
+              <p className="py-8 text-center text-sm text-tinta-3">{tSub("empty")}</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {visibles.map((entrega) => {
+                  const activa = elegida?.id === entrega.id;
+                  const calificada = entrega.estado === "calificado";
+                  const Icono = calificada ? CheckCircle2 : entrega.estado === "tarde" ? Clock : Circle;
+  
+                  return (
+                    <li key={entrega.id}>
+                      <button
+                        type="button"
+                        onClick={() => setElegidaId(entrega.id)}
+                        aria-current={activa ? "true" : undefined}
                         className={cn(
-                          "size-4 shrink-0",
-                          calificada ? "text-[#1E9E6A]" : "text-tinta-3",
+                          "flex min-h-11 w-full items-center gap-2.5 rounded-control border px-3 py-2 text-left transition-colors",
+                          activa
+                            ? "border-marca-500 bg-marca-50"
+                            : "border-linea bg-card hover:bg-muted/50",
                         )}
-                        aria-hidden
-                      />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-tinta">
-                        {entrega.estudiante}
-                      </span>
-                      {calificada && entrega.calificacion !== null && (
-                        <span className="text-xs font-semibold text-tinta-2 tabular-nums">
-                          {entrega.calificacion}/{tarea?.puntajeMaximo}
+                      >
+                        <Icono
+                          className={cn(
+                            "size-4 shrink-0",
+                            calificada ? "text-[#1E9E6A]" : "text-tinta-3",
+                          )}
+                          aria-hidden
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-tinta">
+                          {entrega.estudiante}
                         </span>
-                      )}
-                      {entrega.estado === "tarde" && (
-                        <Badge variant="outline" className="text-[10px]">
-                          {tSub("late")}
-                        </Badge>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+                        {calificada && entrega.calificacion !== null && (
+                          <span className="text-xs font-semibold text-tinta-2 tabular-nums">
+                            {entrega.calificacion}/{tarea?.puntajeMaximo}
+                          </span>
+                        )}
+                        {entrega.estado === "tarde" && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {tSub("late")}
+                          </Badge>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+  
+                  </div>}
+                </li>
+              );
+            })}
+          </ul>
         </aside>
 
         <section aria-live="polite" className="min-w-0">
@@ -247,6 +274,14 @@ function DetalleEntrega({
       else setError(true);
     });
   }
+
+  // Enter guarda y salta a la siguiente: calificar diez entregas sin tocar el ratón.
+  const alEnter = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && nota.trim() !== "" && !guardando) {
+      e.preventDefault();
+      guardar();
+    }
+  };
 
   return (
     <div className="space-y-4 rounded-card border border-linea bg-card p-4 shadow-card md:p-5">
@@ -319,7 +354,9 @@ function DetalleEntrega({
             max={puntajeMaximo}
             step="0.5"
             value={nota}
+            autoFocus
             onChange={(e) => setNota(e.target.value)}
+            onKeyDown={alEnter}
             placeholder={`/ ${puntajeMaximo}`}
           />
         </div>
@@ -331,6 +368,7 @@ function DetalleEntrega({
             id={`comentario-${entrega.id}`}
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
+            onKeyDown={alEnter}
           />
         </div>
       </div>

@@ -93,6 +93,7 @@ export default async function PortalProfesor({
   const [
     t,
     tAcad,
+    tClases,
     mensajes,
     cifras,
     materias,
@@ -104,6 +105,7 @@ export default async function PortalProfesor({
   ] = await Promise.all([
     getTranslations({ locale, namespace: "teacherPortal" }),
     getTranslations({ locale, namespace: "academic" }),
+    getTranslations({ locale, namespace: "teacherClasses" }),
     mensajesCliente(["teacherPortal", "calendar"]),
     cifrasDocente(docenteId),
     materiasDelDocente(docenteId),
@@ -139,12 +141,11 @@ export default async function PortalProfesor({
   const activas = clases.filter((clase) => clase.activa);
   const vacio = materias.length === 0 && clases.length === 0;
 
+  // Una entrega se califica en el revisor (split pane), ya con su tarea abierta.
   const enlaceRevision = (entrega: (typeof entregas)[number]) =>
-    entrega.materia_id
-      ? `/portal/profesor/materias?materia=${entrega.materia_id}&accion=publicaciones#materia-${entrega.materia_id}`
-      : entrega.materia_360_id
-        ? `/academico/clases-360?clase=${entrega.materia_360_id}&accion=publicaciones#clase-${entrega.materia_360_id}`
-        : "/academico/clases-360";
+    entrega.asignacion_id
+      ? `/portal/profesor/entregas?tarea=${entrega.asignacion_id}`
+      : "/portal/profesor/entregas";
 
   return (
     <div className="animate-entrada space-y-6">
@@ -153,19 +154,13 @@ export default async function PortalProfesor({
           titulo={t("greeting", { name: usuario.nombre })}
           acciones={
             <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href="/academico/clases-360"
-                className={variantesBoton({ size: "sm" })}
-              >
-                <Sparkles className="size-4" />
-                {t("assignTask")} (360)
+              <Link href="/portal/profesor/entregas" className={variantesBoton({ size: "sm" })}>
+                <ClipboardList className="size-4" />
+                {tClases("toGrade", { n: cifras.por_revisar })}
               </Link>
-              <Link
-                href="/portal/profesor/materias"
-                className={variantesBoton({ variant: "outline", size: "sm" })}
-              >
+              <Link href="/portal/profesor/clases" className={variantesBoton({ variant: "outline", size: "sm" })}>
                 <Library className="size-4" />
-                {t("shortcuts.assignedSubjects.label")}
+                {tClases("title")}
               </Link>
             </div>
           }
@@ -211,10 +206,10 @@ export default async function PortalProfesor({
               </CardTitle>
 
               <Link
-                href="/academico/clases-360"
+                href="/portal/profesor/entregas"
                 className={variantesBoton({ size: "sm" })}
               >
-                {t("shortcuts.classes360.label")}
+                {tClases("goGrade")}
               </Link>
             </div>
 
@@ -319,14 +314,14 @@ export default async function PortalProfesor({
 
                         <div className="flex shrink-0 flex-wrap items-center gap-1.5 self-center">
                           <Link
-                            href={`/academico/clases-360?clase=${clase.id}&accion=asistencia#clase-${clase.id}`}
+                            href={`/portal/profesor/clases/g-${clase.id}`}
                             className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                           >
                             <CalendarCheck className="size-3.5" />
                             {t("takeAttendance")}
                           </Link>
                           <Link
-                            href={`/academico/clases-360?clase=${clase.id}&accion=tarea#clase-${clase.id}`}
+                            href={`/portal/profesor/clases/g-${clase.id}`}
                             className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                           >
                             <ClipboardList className="size-3.5" />
@@ -334,7 +329,7 @@ export default async function PortalProfesor({
                           </Link>
                           {clase.tareas > 0 && (
                             <Link
-                              href={`/academico/clases-360?clase=${clase.id}&accion=publicaciones#clase-${clase.id}`}
+                              href={`/portal/profesor/entregas`}
                               className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                             >
                               <ClipboardList className="size-3.5" />
@@ -342,7 +337,7 @@ export default async function PortalProfesor({
                             </Link>
                           )}
                           <Link
-                            href={`/academico/clases-360?clase=${clase.id}&accion=alumnos#clase-${clase.id}`}
+                            href={`/portal/profesor/clases/g-${clase.id}`}
                             className={variantesBoton({
                               size: "sm",
                               variant: "ghost",
@@ -410,14 +405,14 @@ export default async function PortalProfesor({
 
                         <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                           <Link
-                            href={`/portal/profesor/materias?materia=${materia.id}&accion=asistencia#materia-${materia.id}`}
+                            href={`/portal/profesor/clases/u-${materia.id}`}
                             className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                           >
                             <CalendarCheck className="size-3.5" />
                             {t("takeAttendance")}
                           </Link>
                           <Link
-                            href={`/portal/profesor/materias?materia=${materia.id}&accion=tarea#materia-${materia.id}`}
+                            href={`/portal/profesor/clases/u-${materia.id}`}
                             className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                           >
                             <ClipboardList className="size-3.5" />
@@ -425,7 +420,7 @@ export default async function PortalProfesor({
                           </Link>
                           {materia.tareas > 0 && (
                             <Link
-                              href={`/portal/profesor/materias?materia=${materia.id}&accion=publicaciones#materia-${materia.id}`}
+                              href={`/portal/profesor/entregas`}
                               className={variantesBoton({ size: "sm", variant: "outline", className: "h-8 text-xs" })}
                             >
                               <ClipboardList className="size-3.5" />
@@ -433,7 +428,7 @@ export default async function PortalProfesor({
                             </Link>
                           )}
                           <Link
-                            href={`/portal/profesor/materias?materia=${materia.id}&accion=alumnos#materia-${materia.id}`}
+                            href={`/portal/profesor/clases/u-${materia.id}`}
                             className={variantesBoton({
                               size: "sm",
                               variant: "ghost",

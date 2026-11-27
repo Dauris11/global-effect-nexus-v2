@@ -244,7 +244,7 @@
     "atRisk": "Estudiantes en riesgo",
     "uploadGrades": "Subir calificaciones",
     "leadershipAcademy": "Academia de liderazgo",
-    "submissionsToGrade": "Entregas por calificar",
+    "submissionsToGrade": "Por calificar",
     "habitudesSupervision": "Supervisión de Habitudes",
     "pending": "Pendientes",
     "executiveDashboard": "Tablero ejecutivo",
@@ -254,7 +254,8 @@
     "breadcrumbLabel": "Ruta de navegación",
     "myClasses": "Mis clases",
     "myScholarship": "Mi beca",
-    "classesShort": "Clases"
+    "classesShort": "Clases",
+    "toGradeShort": "Calificar"
   },
   "landing": {
     "enter": "Acceder",
@@ -2750,7 +2751,7 @@
       "viewFullCalendar": "Ver calendario completo"
     },
     "submissions": {
-      "title": "Entregas por calificar",
+      "title": "Por calificar",
       "empty": "No tienes entregas pendientes de calificar.",
       "count": "{count, plural, =1 {1 entrega esperando nota} other {# entregas esperando nota}}",
       "late": "Tarde",
@@ -2762,7 +2763,8 @@
       "filter": {
         "pendientes": "Por calificar",
         "calificadas": "Calificadas",
-        "todas": "Todas"
+        "todas": "Todas",
+        "done": "Al día"
       },
       "download": "Descargar",
       "previewOf": "Entrega de {nombre}",
@@ -8603,6 +8605,117 @@
       "transportOut": "Sin inscribir",
       "transportAction": "Inscribirme",
       "transportManage": "Ver mis viajes"
+    }
+  },
+  "teacherClasses": {
+    "title": "Mis clases",
+    "emptyTitle": "Aún no tienes clases asignadas",
+    "emptyHint": "La coordinación académica te las asigna.",
+    "writeCoordination": "Escribir a coordinación",
+    "toGrade": "Por calificar ({n})",
+    "goGrade": "Calificar",
+    "cards": {
+      "program360": "Global Effect 360",
+      "degree": "Carrera",
+      "students": "{n} estudiantes",
+      "nextSession": "Próxima sesión: {fecha}",
+      "noSession": "Sin sesión programada",
+      "toGrade": "{n} por calificar",
+      "upToDate": "Al día"
+    },
+    "tabs": {
+      "students": "Estudiantes",
+      "tasks": "Tareas",
+      "material": "Material",
+      "attendance": "Asistencia",
+      "finals": "Notas finales"
+    },
+    "common": {
+      "cancel": "Cancelar"
+    },
+    "students": {
+      "emptyTitle": "Esta clase no tiene estudiantes",
+      "emptyHint": "Aparecerán cuando se matriculen.",
+      "delivered": "{n} de {total} entregas",
+      "attendance": "Asistencia {n}%"
+    },
+    "tasks": {
+      "new": "Nueva tarea",
+      "create": "Crear tarea",
+      "created": "Tarea publicada.",
+      "name": "Título",
+      "due": "Fecha de entrega",
+      "dueOn": "vence {fecha}",
+      "noDue": "sin fecha",
+      "deliveries": "{n} entregas",
+      "toGrade": "{n} por calificar",
+      "grade": "Calificar",
+      "description": "Descripción",
+      "type": "Tipo",
+      "types": {
+        "tarea": "Tarea",
+        "examen": "Examen"
+      },
+      "points": "Puntaje máximo",
+      "emptyTitle": "Todavía no hay tareas en esta clase",
+      "err": {
+        "no_permitido": "No tienes permiso para publicar aquí.",
+        "no_encontrado": "Esa clase no es tuya o aún no tiene estudiantes en el período.",
+        "nombre_vacio": "Escribe un título.",
+        "invalido": "Revisa los datos de la tarea.",
+        "error": "No se pudo publicar. Intenta de nuevo."
+      }
+    },
+    "material": {
+      "new": "Subir material",
+      "upload": "Subir material",
+      "create": "Publicar",
+      "created": "Material publicado.",
+      "file": "Archivo",
+      "fileHint": "PDF, Word, PowerPoint o imagen. Hasta 20 MB.",
+      "open": "Abrir archivo",
+      "emptyTitle": "Todavía no hay material en esta clase",
+      "err": {
+        "no_permitido": "No tienes permiso para publicar aquí.",
+        "no_encontrado": "Esa clase no es tuya o aún no tiene estudiantes en el período.",
+        "invalido": "Escribe un título.",
+        "archivo_no_admitido": "Ese tipo de archivo no se admite.",
+        "archivo_grande": "El archivo supera los 20 MB.",
+        "fuera_de_periodo": "Fuera del período.",
+        "error": "No se pudo subir. Intenta de nuevo."
+      }
+    },
+    "attendance": {
+      "title": "Pasar asistencia",
+      "take": "Pasar asistencia",
+      "fix": "Corregir asistencia de hoy",
+      "save": "Guardar asistencia",
+      "saved": "Asistencia guardada.",
+      "allPresent": "Todos presentes",
+      "noRoster": "No hay estudiantes inscritos en el período actual.",
+      "emptyTitle": "Aún no se ha pasado asistencia",
+      "summary": "{presentes} presentes · {tardes} tarde · {ausentes} ausentes de {total}",
+      "marks": {
+        "presente": "Presente",
+        "ausente": "Ausente",
+        "tarde": "Tarde"
+      },
+      "err": {
+        "no_permitido": "No tienes permiso.",
+        "no_encontrado": "Esa clase no es tuya.",
+        "invalido": "No se pudo leer la lista.",
+        "fuera_de_periodo": "Hoy está fuera del período de la clase.",
+        "error": "No se pudo guardar. Intenta de nuevo."
+      }
+    },
+    "finals": {
+      "suggested": "Promedio de tareas: {n}",
+      "noSuggestion": "Sin tareas calificadas",
+      "grade": "Nota final de {nombre}",
+      "approve": "Aprobar",
+      "fail": "Reprobar",
+      "saved": "Nota de {nombre} guardada.",
+      "error": "No se pudo guardar la nota."
     }
   }
 }

@@ -95,6 +95,12 @@ export type ItemNav = {
    * que ninguna entrada quede sin `permiso`, `algunPermiso` ni `universal`.
    */
   universal?: boolean;
+  /**
+   * Fuera de la barra lateral y del menú «Más», pero dentro del buscador ⌘K (que
+   * sigue filtrando por permiso). Es para lo que el rol usa poco: la regla 13 de
+   * `ux-rules.md` limita el sidebar a 8 entradas y lo raro se busca.
+   */
+  soloBusqueda?: boolean;
 };
 
 export type SeccionNav = {
@@ -157,38 +163,26 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     ],
   },
   {
-    clave: "global360",
-    etiqueta: "global360",
+    clave: "academico",
+    etiqueta: "academicModule",
     icono: Sparkles,
     secciones: [
       {
         items: [
-          // La pantalla admite a quien gestiona (`academico.escribir`) o a quien
-          // imparte (`docencia.impartir`); en el menú de administración manda
-          // la primera, que es la que de verdad trae este rol.
+          // Une «Clases de 360» y «Asignación de materias»: el docente piensa en
+          // sus clases, no en de qué programa vienen.
           {
-            etiqueta: "classes360",
-            href: "/academico/clases-360",
-            icono: Sparkles,
-            permiso: "academico.escribir",
-          },
-          {
-            etiqueta: "academic",
-            href: "/academico/materias",
+            etiqueta: "myClasses",
+            href: "/portal/profesor/clases",
             icono: Library,
-            permiso: "academico.leer",
+            permiso: "docencia.impartir",
           },
+          // La cola de todo lo que espera nota, sin entrar clase por clase.
           {
-            etiqueta: "preenrollment",
-            href: "/academico/prematricula",
-            icono: ClipboardList,
-            permiso: "academico.escribir",
-          },
-          {
-            etiqueta: "periods",
-            href: "/academico/periodos",
-            icono: CalendarDays,
-            permiso: "academico.leer",
+            etiqueta: "submissionsToGrade",
+            href: "/portal/profesor/entregas",
+            icono: FileCheck2,
+            permiso: "docencia.impartir",
           },
         ],
       },
@@ -552,6 +546,30 @@ const MENU_ESTUDIANTE: AreaNav[] = [
             icono: Inbox,
             universal: true,
           },
+          // Fuera del sidebar (máximo 8) pero buscables con ⌘K: se llega por Mi
+          // beca y el calendario, y no deben quedar inalcanzables.
+          {
+            etiqueta: "meetings",
+            href: "/reuniones",
+            icono: Users,
+            permiso: "reuniones.leer",
+            soloBusqueda: true,
+          },
+          { etiqueta: "meals", href: "/comida", icono: Utensils, universal: true, soloBusqueda: true },
+          {
+            etiqueta: "transport",
+            href: "/portal/estudiante/transporte",
+            icono: Bus,
+            universal: true,
+            soloBusqueda: true,
+          },
+          {
+            etiqueta: "preenrollment",
+            href: "/portal/estudiante/prematricula",
+            icono: Library,
+            universal: true,
+            soloBusqueda: true,
+          },
         ],
       },
     ],
@@ -665,6 +683,7 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/calendario/gantt",
             icono: GanttChartSquare,
             permiso: "operaciones.leer",
+            soloBusqueda: true,
           },
           // El docente pide material o gastos de su curso por aquí. Universal:
           // cualquiera con sesión puede pedir algo.
@@ -682,6 +701,7 @@ const MENU_DOCENTE: AreaNav[] = [
             href: "/administrativo/rendiciones",
             icono: Receipt,
             permiso: "rendicion.enviar",
+            soloBusqueda: true,
           },
         ],
       },
@@ -916,15 +936,15 @@ const AREA_DOCENCIA: AreaNav = {
           permiso: "docencia.impartir",
         },
         {
-          etiqueta: "classes360",
-          href: "/academico/clases-360",
-          icono: Sparkles,
+          etiqueta: "myClasses",
+          href: "/portal/profesor/clases",
+          icono: Library,
           permiso: "docencia.impartir",
         },
         {
-          etiqueta: "assignedSubjects",
-          href: "/portal/profesor/materias",
-          icono: Library,
+          etiqueta: "submissionsToGrade",
+          href: "/portal/profesor/entregas",
+          icono: FileCheck2,
           permiso: "docencia.impartir",
         },
       ],
@@ -1002,6 +1022,18 @@ export function menuDe(
               (!item.algunPermiso || item.algunPermiso.some(puede)),
           ),
         }))
+        .filter((seccion) => seccion.items.length > 0),
+    }))
+    .filter((area) => area.secciones.length > 0);
+}
+
+/** El menú tal como se dibuja: sin las entradas que solo viven en el buscador. */
+export function menuVisibleDe(rol: Rol, permisos?: ReadonlySet<Permiso>): AreaNav[] {
+  return menuDe(rol, permisos)
+    .map((area) => ({
+      ...area,
+      secciones: area.secciones
+        .map((seccion) => ({ ...seccion, items: seccion.items.filter((item) => !item.soloBusqueda) }))
         .filter((seccion) => seccion.items.length > 0),
     }))
     .filter((area) => area.secciones.length > 0);
@@ -1134,6 +1166,8 @@ const PRIORIDAD_MOVIL = [
   "/ejecutivo",
   "/bandeja",
   "/portal/profesor",
+  "/portal/profesor/clases",
+  "/portal/profesor/entregas",
   "/portal/contabilidad",
   "/administrativo/solicitudes",
   "/calendario",
@@ -1151,6 +1185,8 @@ const ETIQUETA_CORTA: Record<string, string> = {
   "/portal/contabilidad": "home",
   "/portal/estudiante": "home",
   "/portal/estudiante/clases": "classesShort",
+  "/portal/profesor/clases": "classesShort",
+  "/portal/profesor/entregas": "toGradeShort",
   "/portal/estudiante/solicitudes": "requests",
   "/administrativo/solicitudes": "requests",
   "/administrativo/inventario": "inventory",
