@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
 import { FormularioPuntual } from "@/components/transporte/formulario-puntual";
+import { EmptyState } from "@/components/app/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,7 +179,19 @@ export function PasajerosChofer({
           </div>
         )}
 
-        {visibles.length === 0 ? (
+        {pasajeros.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title={t("noPassengersEnrolled")}
+            className="mt-3 border-0 py-8"
+            action={
+              <Button type="button" variant="secondary" size="lg" onClick={() => alCambiarDialogo(true)}>
+                <UserPlus aria-hidden />
+                {t("addPassenger")}
+              </Button>
+            }
+          />
+        ) : visibles.length === 0 ? (
           <p className="py-6 text-center text-xs text-tinta-3">
             {t("noPassengersEnrolled")}
           </p>

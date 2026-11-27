@@ -255,7 +255,15 @@
     "myClasses": "My classes",
     "myScholarship": "My scholarship",
     "classesShort": "Classes",
-    "toGradeShort": "Grade"
+    "toGradeShort": "Grade",
+    "habitudesHome": "Home",
+    "resources": "Resources",
+    "logVisit": "Log visit",
+    "evidences": "Evidence",
+    "schools": "Schools",
+    "team": "Team",
+    "impactReports": "Impact reports",
+    "visitShort": "Visit"
   },
   "landing": {
     "enter": "Sign in",
@@ -7326,7 +7334,81 @@
     "cat_guia_facilitador": "Facilitator guide",
     "cat_infografia_didactica": "Infographic",
     "cat_dinamica_taller": "Workshop",
-    "cat_evaluacion": "Assessment"
+    "cat_evaluacion": "Assessment",
+    "home": {
+      "quickActions": "Quick actions",
+      "logVisit": "Log a visit",
+      "logVisitHint": "School, date, students and photos",
+      "nominateHint": "Propose a student for a scholarship",
+      "openResources": "Resource library",
+      "openResourcesHint": "Slides, guides and activities",
+      "audit": "Review evidence",
+      "auditHint": "Visits waiting for audit",
+      "review": "Review",
+      "studentsCount": "{n} students"
+    },
+    "visitForm": {
+      "school": "School",
+      "detect": "Detect the nearest",
+      "date": "Date",
+      "students": "Number of students",
+      "photos": "Photos",
+      "takePhoto": "Take photo",
+      "fromGallery": "Choose from gallery",
+      "photoN": "Photo {n}",
+      "removePhoto": "Remove photo {n}",
+      "moreDetails": "More details",
+      "topic": "Topic taught",
+      "shift": "Shift",
+      "shifts": {
+        "matutina": "Morning",
+        "vespertina": "Afternoon",
+        "jornada_extendida": "Extended day",
+        "nocturna": "Night"
+      },
+      "notes": "Notes",
+      "save": "Save visit",
+      "saved": "Visit logged.",
+      "seeEvidences": "See evidence",
+      "errSchool": "Choose the school you visited.",
+      "errStudents": "Enter how many students attended.",
+      "errPhotos": "The photos are too large: remove some.",
+      "errGeneric": "The visit couldn't be saved."
+    },
+    "schools": {
+      "school": "School",
+      "lastVisit": "Last visit",
+      "status": "Status",
+      "states": {
+        "activa": "Up to date",
+        "por_vencer": "A month or more ago",
+        "pendiente": "No visits"
+      }
+    },
+    "team": {
+      "teacher": "Teacher",
+      "schools": "Schools",
+      "monthVisits": "Visits this month",
+      "lastVisit": "Last visit",
+      "visitsCount": "{n} visits"
+    },
+    "reports": {
+      "visits": "Visits",
+      "students": "Students",
+      "chartLabel": "Visits and students reached per month",
+      "empty": "No visits logged yet.",
+      "byMonth": "Impact by month",
+      "bySchool": "Impact by school",
+      "school": "School"
+    },
+    "type_pptx": "PPTX",
+    "type_pdf": "PDF",
+    "type_guia": "Guide",
+    "type_dinamica": "Activity",
+    "type_archivo": "File",
+    "openButton": "Open",
+    "downloadButton": "Download",
+    "downloadsCount": "{n} downloads"
   },
   "reuniones": {
     "eyebrow": "Operations & Support",
@@ -7813,6 +7895,14 @@
       "noIncidents": "No incidents reported recently.",
       "typeRecurring": "Recurring",
       "typeDaily": "Single-day"
+    },
+    "driverStatus": {
+      "standby": "Waiting",
+      "programado": "Waiting",
+      "en_curso": "On route",
+      "completado": "Finished",
+      "averiado": "Breakdown / Delay",
+      "cancelado": "Suspended"
     }
   },
   "permisosAdmin": {

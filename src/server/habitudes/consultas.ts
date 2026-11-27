@@ -1,6 +1,8 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { enlaceDeDocumento } from "@/lib/supabase/almacen";
 import type {
+  ImpactoMensual,
+  ImpactoPorLiceo,
   HabitudesLiceo,
   HabitudesRecurso,
   HabitudesVisitaEvidencia,
@@ -171,6 +173,7 @@ export async function monitoreoProfesoresHabitudes(): Promise<ProfesorMonitoreoI
     rol: string;
     total_evidencias: number;
     estudiantes_impactados: number;
+    visitas_mes: number;
     ultima_visita: string | null;
   }>(
     `SELECT u.id,
@@ -179,6 +182,9 @@ export async function monitoreoProfesoresHabitudes(): Promise<ProfesorMonitoreoI
             r.nombre AS rol,
             (SELECT count(*)::int FROM public.habitudes_visita_evidencia v WHERE v.facilitador_id = u.id AND v.estado <> 'borrador') AS total_evidencias,
             (SELECT coalesce(sum(estudiantes_impactados), 0)::int FROM public.habitudes_visita_evidencia v WHERE v.facilitador_id = u.id AND v.estado <> 'borrador') AS estudiantes_impactados,
+            (SELECT count(*)::int FROM public.habitudes_visita_evidencia v
+              WHERE v.facilitador_id = u.id AND v.estado <> 'borrador'
+                AND date_trunc('month', v.fecha_visita) = date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date)) AS visitas_mes,
             (SELECT max(v.fecha_visita)::text FROM public.habitudes_visita_evidencia v WHERE v.facilitador_id = u.id) AS ultima_visita
        FROM public.usuario u
        JOIN public.rol r ON r.id = u.rol_id
@@ -225,6 +231,7 @@ export async function monitoreoProfesoresHabitudes(): Promise<ProfesorMonitoreoI
     liceosAsignados: mapaLiceos.get(p.id) ?? [],
     totalEvidencias: p.total_evidencias,
     estudiantesImpactados: p.estudiantes_impactados,
+    visitasMes: p.visitas_mes,
     ultimaVisita: p.ultima_visita,
   }));
 }
@@ -359,4 +366,42 @@ export async function listarDocentesYEstudiantesParaAsignacion(): Promise<{
   );
 
   return { docentes, estudiantes };
+}
+
+/**
+ * Impacto del programa: visitas y estudiantes alcanzados por mes (últimos 6, con
+ * los meses sin visitas en cero) y por liceo. Las borradoras no cuentan. El mes
+ * se corta en hora de La Vega, igual que «hoy» en el resto del sistema.
+ */
+export async function reporteImpactoHabitudes(): Promise<{
+  porMes: ImpactoMensual[];
+  porLiceo: ImpactoPorLiceo[];
+}> {
+  const [porMes, porLiceo] = await Promise.all([
+    consultar<ImpactoMensual>(
+      `SELECT to_char(m.mes, 'YYYY-MM') AS mes,
+              count(v.id)::int AS visitas,
+              coalesce(sum(v.estudiantes_impactados), 0)::int AS estudiantes
+         FROM generate_series(
+                date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date) - interval '5 months',
+                date_trunc('month', (now() AT TIME ZONE 'America/Santo_Domingo')::date),
+                interval '1 month') AS m(mes)
+         LEFT JOIN public.habitudes_visita_evidencia v
+                ON date_trunc('month', v.fecha_visita) = m.mes AND v.estado <> 'borrador'
+        GROUP BY m.mes
+        ORDER BY m.mes`,
+    ),
+    consultar<ImpactoPorLiceo>(
+      `SELECT l.nombre AS liceo,
+              count(v.id)::int AS visitas,
+              coalesce(sum(v.estudiantes_impactados), 0)::int AS estudiantes
+         FROM public.habitudes_liceo l
+         JOIN public.habitudes_visita_evidencia v ON v.liceo_id = l.id AND v.estado <> 'borrador'
+        GROUP BY l.id, l.nombre
+        ORDER BY visitas DESC, estudiantes DESC
+        LIMIT 10`,
+    ),
+  ]);
+
+  return { porMes, porLiceo };
 }

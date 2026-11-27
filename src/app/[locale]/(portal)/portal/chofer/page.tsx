@@ -28,7 +28,7 @@ export default async function PaginaPortalChofer() {
 
   return (
     <NextIntlClientProvider messages={mensajes}>
-    <div className="animate-entrada py-4">
+    <div className="animate-entrada py-4 pb-24 md:pb-4">
       <PanelChofer
         viajeActivoInicial={estado.viajeActivo}
         horarioSugerido={estado.horarioSugerido}

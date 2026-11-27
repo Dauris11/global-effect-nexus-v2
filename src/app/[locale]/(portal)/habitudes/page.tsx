@@ -1,37 +1,14 @@
 import type { Metadata } from "next";
-import {
-  BookOpen,
-  Building2,
-  Camera,
-  FolderGit2,
-  GraduationCap,
-  Sparkles,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { BookOpen, Building2, Camera, ClipboardCheck, UserPlus, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { GaleriaEvidencias } from "@/components/habitudes/galeria-evidencias";
-import { HubRecursos } from "@/components/habitudes/hub-recursos";
-import { PanelDirectorHabitudes } from "@/components/habitudes/panel-director-habitudes";
-import { RegistroVisitaLiceo } from "@/components/habitudes/registro-visita-liceo";
-import { Button } from "@/components/ui/button";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
+import { ActionTile } from "@/components/app/action-tile";
+import { AttentionList, type ItemAtencion } from "@/components/app/attention-list";
+import { PageHeader } from "@/components/app/page-header";
 import { StatCard } from "@/components/ui/stat-card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import {
-  usuarioTienePermiso,
-} from "@/lib/rbac";
-import {
-  listarDocentesYEstudiantesParaAsignacion,
-  listarLiceosHabitudes,
-  listarRecursosHabitudes,
-  listarVisitasEvidenciasHabitudes,
-  metricasHabitudes,
-  monitoreoProfesoresHabitudes,
-} from "@/server/habitudes/consultas";
+import { usuarioTienePermiso } from "@/lib/rbac";
+import { listarVisitasEvidenciasHabitudes, metricasHabitudes } from "@/server/habitudes/consultas";
 
 export async function generateMetadata({
   params,
@@ -44,147 +21,78 @@ export async function generateMetadata({
   return { title: t("pageTitle") };
 }
 
-export default async function PaginaHabitudesHub({
+/**
+ * Inicio de Habitudes. Las pestañas del Hub (Recursos, Registrar visita,
+ * Evidencias) son ahora secciones del menú; aquí quedan las cuatro cifras del
+ * programa, las acciones rápidas y, para quien supervisa, lo que espera
+ * auditoría. «Postular candidato a beca» es una acción rápida más, no el botón
+ * primario: lo que se hace cada semana es registrar visitas.
+ */
+export default async function PaginaInicioHabitudes({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  // Por permiso y no por lista de roles: es el mismo que declara su entrada del
-  // menú en `nav.ts`, así el menú y el acceso dicen lo mismo y la pantalla de
-  // permisos puede apagar o encender el módulo por persona.
+  // El mismo permiso que declara la entrada del menú en `nav.ts`.
   const usuario = await requerirPermiso("habitudes.recursos.leer");
 
-  const [t, metricas, liceos, recursos, visitas] = await Promise.all([
+  const puedeRegistrar = usuarioTienePermiso(usuario, "habitudes.evidencias.subir");
+  const puedePostular = usuarioTienePermiso(usuario, "expedientes.postular");
+  const puedeSupervisar = usuarioTienePermiso(usuario, "habitudes.supervisar");
+
+  const [t, metricas, visitas] = await Promise.all([
     getTranslations({ locale, namespace: "habitudes" }),
     metricasHabitudes(),
-    listarLiceosHabitudes(),
-    listarRecursosHabitudes(),
-    listarVisitasEvidenciasHabitudes(),
+    puedeSupervisar ? listarVisitasEvidenciasHabitudes() : Promise.resolve([]),
   ]);
 
-  const puedeSubirRecursos = usuarioTienePermiso(usuario, "habitudes.recursos.subir");
-  const puedeRegistrarVisitas = usuarioTienePermiso(usuario,
-    "habitudes.evidencias.subir",
-  );
-  const puedeSupervisar = usuarioTienePermiso(usuario,
-    "habitudes.supervisar",
-  );
-  const puedePostular = usuarioTienePermiso(usuario, "expedientes.postular");
-
-  const [profesoresMonitoreo, datosAsignacion] = puedeSupervisar
-    ? await Promise.all([
-        monitoreoProfesoresHabitudes(),
-        listarDocentesYEstudiantesParaAsignacion(),
-      ])
-    : [[], { docentes: [], estudiantes: [] }];
+  // Lo que espera auditoría: visitas completadas que nadie ha dado por revisadas.
+  const porAuditar: ItemAtencion[] = visitas
+    .filter((v) => v.estado === "completada")
+    .slice(0, 7)
+    .map((v) => ({
+      id: v.id,
+      status: "en_revision",
+      title: v.liceo_nombre,
+      context: `${v.facilitador_nombre} · ${t("home.studentsCount", { n: v.estudiantes_impactados })}`,
+      date: v.fecha_visita,
+      action: { label: t("home.review"), href: "/habitudes/evidencias" },
+    }));
 
   return (
     <div className="animate-entrada space-y-6">
-      <EncabezadoPagina
-        titulo={t("pageTitle")}
-        acciones={
-          puedePostular ? (
-            <Button asChild size="sm" className="gap-1.5 active:scale-95">
-              <Link href="/administrativo/solicitudes?tipo=alta_expediente">
-                <UserPlus className="size-4" />
-                <span>{t("nominateCandidate")}</span>
-              </Link>
-            </Button>
-          ) : undefined
-        }
-      />
+      <PageHeader title={t("pageTitle")} />
 
-      {/* Tarjetas de Impacto */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          icono={Users}
-          valor={metricas.estudiantes_impactados.toLocaleString()}
-          etiqueta={t("statStudentsImpacted")}
-          acento
-        />
-        <StatCard
-          icono={Building2}
-          valor={String(metricas.liceos_alcanzados)}
-          etiqueta={t("statHighSchools")}
-        />
-        <StatCard
-          icono={Camera}
-          valor={String(metricas.total_visitas)}
-          etiqueta={t("statVisitsCompleted")}
-        />
-        <StatCard
-          icono={BookOpen}
-          valor={String(metricas.recursos_disponibles)}
-          etiqueta={t("statTeachingResources")}
-        />
+        <StatCard icono={Users} valor={metricas.estudiantes_impactados.toLocaleString()} etiqueta={t("statStudentsImpacted")} acento />
+        <StatCard icono={Building2} valor={String(metricas.liceos_alcanzados)} etiqueta={t("statHighSchools")} />
+        <StatCard icono={Camera} valor={String(metricas.total_visitas)} etiqueta={t("statVisitsCompleted")} />
+        <StatCard icono={BookOpen} valor={String(metricas.recursos_disponibles)} etiqueta={t("statTeachingResources")} />
       </div>
 
-      {/* Pestañas Operativas del Hub */}
-      <Tabs defaultValue={puedeSupervisar ? "supervision" : "recursos"} className="space-y-6">
-        <TabsList className={`grid w-full ${puedeSupervisar ? "grid-cols-2 sm:grid-cols-4 max-w-2xl" : "grid-cols-3 max-w-xl"}`}>
-          {puedeSupervisar && (
-            <TabsTrigger value="supervision" className="gap-2">
-              <Sparkles className="size-4 text-marca-500" />
-              <span className="hidden sm:inline">{t("tabSupervision")}</span>
-              <span className="sm:hidden">{t("tabSupervisionShort")}</span>
-            </TabsTrigger>
+      <section className="space-y-3">
+        <h2 className="text-section">{t("home.quickActions")}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {puedeRegistrar && (
+            <ActionTile icon={Camera} title={t("home.logVisit")} hint={t("home.logVisitHint")} href="/habitudes/visitas/nueva" />
           )}
-          <TabsTrigger value="recursos" className="gap-2">
-            <BookOpen className="size-4" />
-            <span className="hidden sm:inline">{t("tabResources")}</span>
-            <span className="sm:hidden">{t("tabResourcesShort")}</span>
-          </TabsTrigger>
-          {puedeRegistrarVisitas && (
-            <TabsTrigger value="registrar" className="gap-2">
-              <Camera className="size-4" />
-              <span className="hidden sm:inline">{t("tabLogVisit")}</span>
-              <span className="sm:hidden">{t("tabLogVisitShort")}</span>
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="evidencias" className="gap-2">
-            <Users className="size-4" />
-            <span className="hidden sm:inline">{t("tabEvidences")}</span>
-            <span className="sm:hidden">{t("tabEvidencesShort")}</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Tab 0 (Supervisión DH & Mapa La Vega) */}
-        {puedeSupervisar && (
-          <TabsContent value="supervision" className="space-y-4">
-            <PanelDirectorHabitudes
-              liceos={liceos}
-              profesores={profesoresMonitoreo}
-              docentesDisponibles={datosAsignacion.docentes}
-              estudiantesDisponibles={datosAsignacion.estudiantes}
+          {puedePostular && (
+            <ActionTile
+              icon={UserPlus}
+              title={t("nominateCandidate")}
+              hint={t("home.nominateHint")}
+              href="/administrativo/solicitudes?tipo=alta_expediente"
             />
-          </TabsContent>
-        )}
+          )}
+          <ActionTile icon={BookOpen} title={t("home.openResources")} hint={t("home.openResourcesHint")} href="/habitudes/recursos" />
+          {puedeSupervisar && (
+            <ActionTile icon={ClipboardCheck} title={t("home.audit")} hint={t("home.auditHint")} href="/habitudes/evidencias" />
+          )}
+        </div>
+      </section>
 
-        {/* Tab 1: Repositorio de Recursos */}
-        <TabsContent value="recursos" className="space-y-4">
-          <HubRecursos
-            recursosIniciales={recursos}
-            puedeSubir={puedeSubirRecursos}
-          />
-        </TabsContent>
-
-        {/* Tab 2: Registro de Visita y Cámara */}
-        {puedeRegistrarVisitas && (
-          <TabsContent value="registrar" className="max-w-2xl mx-auto space-y-4">
-            <RegistroVisitaLiceo liceos={liceos} />
-          </TabsContent>
-        )}
-
-        {/* Tab 3: Galería y Auditoría de Evidencias */}
-        <TabsContent value="evidencias" className="space-y-4">
-          <GaleriaEvidencias
-            visitasIniciales={visitas}
-            liceos={liceos}
-            puedeAuditar={usuarioTienePermiso(usuario, "habitudes.evidencias.auditar")}
-          />
-        </TabsContent>
-      </Tabs>
+      {puedeSupervisar && porAuditar.length > 0 && <AttentionList items={porAuditar} viewAllHref="/habitudes/evidencias" />}
     </div>
   );
 }

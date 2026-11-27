@@ -157,7 +157,10 @@ export async function registrarVisitaLiceoAction(
   // "Hoy" en La Vega: con la fecha UTC, una visita de la tanda nocturna caía
   // en el día siguiente.
   const fechaVisita = String(datos.get("fecha_visita") ?? "").trim() || fechaHoyRD();
-  const temaImpartido = String(datos.get("tema_impartido") ?? "").trim().slice(0, 180);
+  // El tema es opcional en el formulario de 4 campos del celular: sin él queda el
+  // nombre del programa, que es lo que `tema_impartido NOT NULL` necesita.
+  const temaImpartido =
+    String(datos.get("tema_impartido") ?? "").trim().slice(0, 180) || "Habitudes";
   const tanda = String(datos.get("tanda") ?? "matutina");
   const estudiantes = parseInt(String(datos.get("estudiantes_impactados") ?? "0"), 10) || 0;
   const observaciones = String(datos.get("observaciones") ?? "").trim().slice(0, 1200);
@@ -168,7 +171,6 @@ export async function registrarVisitaLiceoAction(
   const longitud = longitudRaw ? parseFloat(String(longitudRaw)) : null;
 
   if (!liceoId) return { ok: false, mensaje: "Debes seleccionar el centro educativo visitado." };
-  if (!temaImpartido) return { ok: false, mensaje: "Indica el tema o módulo de Habitudes impartido." };
   if (estudiantes <= 0) return { ok: false, mensaje: "Indica la cantidad estimada de estudiantes asistentes." };
 
   const fotosUrls = fotosRaw

@@ -20,6 +20,8 @@ import {
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
+import { tipoDeRecurso, seAbreEnNavegador, VISUAL_TIPO } from "@/lib/recurso-tipo";
+import { CLASES_TOKEN } from "@/lib/status-map";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -41,6 +43,25 @@ import {
 interface HubRecursosProps {
   recursosIniciales: HabitudesRecurso[];
   puedeSubir: boolean;
+}
+
+/** El tipo del recurso (PPTX, PDF, Guía, Dinámica) con su icono y su color de estado. */
+function TipoBadge({ recurso }: { recurso: HabitudesRecurso }) {
+  const t = useTranslations("habitudes");
+  const tipo = tipoDeRecurso(recurso);
+  const { token, icono: Icono } = VISUAL_TIPO[tipo];
+
+  return (
+    <span
+      className={cn(
+        "inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap",
+        CLASES_TOKEN[token].pastilla,
+      )}
+    >
+      <Icono aria-hidden className={cn("size-3", CLASES_TOKEN[token].icono)} />
+      {t(`type_${tipo}`)}
+    </span>
+  );
 }
 
 const ICONO_CATEGORIA = {
@@ -215,12 +236,10 @@ export function HubRecursos({
 
                 <div className="p-5 pb-0">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-marca-50 text-marca-700">
-                      <Icono className="size-5" />
-                    </span>
-                    <Badge variant="neutra" className="uppercase font-mono text-[10px]">
+                    <TipoBadge recurso={rec} />
+                    <span className="text-meta font-mono uppercase">
                       .{rec.formato} · {rec.tamano_mb} MB
-                    </Badge>
+                    </span>
                   </div>
 
                   <h3 className="mt-3 font-semibold text-sm leading-snug text-tinta line-clamp-2">
@@ -236,7 +255,7 @@ export function HubRecursos({
 
                 <div className="m-5 mt-4 flex items-center justify-between border-t border-linea pt-3 text-xs text-tinta/60">
                   <span className="truncate">
-                    {rec.subido_por_nombre ?? t("anonymousAuthor")}
+                    {rec.subido_por_nombre ?? t("anonymousAuthor")} · {t("downloadsCount", { n: rec.descargas_conteo })}
                   </span>
 
                   <a
@@ -244,10 +263,10 @@ export function HubRecursos({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => manejarDescarga(rec)}
-                    className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-linea-fuerte bg-muted/30 px-3 font-semibold text-marca-700 hover:bg-marca-50 active:scale-95"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-linea-fuerte bg-background px-4 text-sm font-semibold text-tinta hover:bg-muted active:scale-95"
                   >
-                    <Download className="size-3.5" />
-                    <span>{rec.descargas_conteo}</span>
+                    <Download className="size-4" aria-hidden />
+                    <span>{seAbreEnNavegador(rec.formato) ? t("openButton") : t("downloadButton")}</span>
                   </a>
                 </div>
               </Card>

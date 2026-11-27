@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -74,17 +74,11 @@ export function CabeceraChofer({
           </div>
         </div>
 
-        <Badge
-          variant={
-            viajeActivo?.estado === "en_curso"
-              ? "marca"
-              : viajeActivo?.estado === "averiado"
-                ? "destructive"
-                : "neutra"
-          }
-        >
-          {viajeActivo ? t(`status.${viajeActivo.estado}`) : t("standby")}
-        </Badge>
+        {/* En espera → neutral, En ruta → progress, Finalizado → success (ux-rules §9). */}
+        <StatusBadge
+          status={viajeActivo ? viajeActivo.estado : "inactivo"}
+          label={t(`driverStatus.${viajeActivo ? viajeActivo.estado : "standby"}` as never)}
+        />
       </div>
 
       <div className="mt-4 space-y-3">
@@ -156,15 +150,19 @@ export function CabeceraChofer({
 
       <div className="mt-6 space-y-3">
         {!viajeActivo ? (
-          <Button
-            size="lg"
-            onClick={alIniciarViaje}
-            disabled={cargando || !horarioSeleccionadoId}
-            className="h-16 w-full text-base font-semibold"
-          >
-            <Play className="mr-2 size-5 fill-current" />
-            {t("startTrip")}
-          </Button>
+          // En el teléfono «Iniciar viaje» queda fijo sobre la barra de pestañas (h-16),
+          // a 56 px de alto: es lo primero que se toca al subir a la guagua.
+          <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-linea bg-background/95 p-3 backdrop-blur-md md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+            <Button
+              size="lg"
+              onClick={alIniciarViaje}
+              disabled={cargando || !horarioSeleccionadoId}
+              className="h-14 w-full text-base font-semibold"
+            >
+              <Play className="mr-2 size-5 fill-current" />
+              {t("startTrip")}
+            </Button>
+          </div>
         ) : (
           <>
             <Button

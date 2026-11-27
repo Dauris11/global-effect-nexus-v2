@@ -1,4 +1,7 @@
 import {
+  UsersRound,
+  Building2,
+  Images,
   ClipboardCheck,
   BarChart3,
   Bot,
@@ -163,26 +166,38 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     ],
   },
   {
-    clave: "academico",
-    etiqueta: "academicModule",
+    clave: "global360",
+    etiqueta: "global360",
     icono: Sparkles,
     secciones: [
       {
         items: [
-          // Une «Clases de 360» y «Asignación de materias»: el docente piensa en
-          // sus clases, no en de qué programa vienen.
+          // La pantalla admite a quien gestiona (`academico.escribir`) o a quien
+          // imparte (`docencia.impartir`); en el menú de administración manda
+          // la primera, que es la que de verdad trae este rol.
           {
-            etiqueta: "myClasses",
-            href: "/portal/profesor/clases",
-            icono: Library,
-            permiso: "docencia.impartir",
+            etiqueta: "classes360",
+            href: "/academico/clases-360",
+            icono: Sparkles,
+            permiso: "academico.escribir",
           },
-          // La cola de todo lo que espera nota, sin entrar clase por clase.
           {
-            etiqueta: "submissionsToGrade",
-            href: "/portal/profesor/entregas",
-            icono: FileCheck2,
-            permiso: "docencia.impartir",
+            etiqueta: "academic",
+            href: "/academico/materias",
+            icono: Library,
+            permiso: "academico.leer",
+          },
+          {
+            etiqueta: "preenrollment",
+            href: "/academico/prematricula",
+            icono: ClipboardList,
+            permiso: "academico.escribir",
+          },
+          {
+            etiqueta: "periods",
+            href: "/academico/periodos",
+            icono: CalendarDays,
+            permiso: "academico.leer",
           },
         ],
       },
@@ -612,16 +627,18 @@ const MENU_DOCENTE: AreaNav[] = [
     ],
   },
   {
-    clave: "global360",
-    etiqueta: "global360",
+    clave: "academico",
+    etiqueta: "academicModule",
     icono: Sparkles,
     secciones: [
       {
         items: [
+          // Une «Clases de 360» y «Asignación de materias»: el docente piensa en
+          // sus clases, no en de qué programa vienen.
           {
-            etiqueta: "classes360",
-            href: "/academico/clases-360",
-            icono: Sparkles,
+            etiqueta: "myClasses",
+            href: "/portal/profesor/clases",
+            icono: Library,
             permiso: "docencia.impartir",
           },
           // La cola de todo lo que espera nota, sin entrar clase por clase.
@@ -629,14 +646,6 @@ const MENU_DOCENTE: AreaNav[] = [
             etiqueta: "submissionsToGrade",
             href: "/portal/profesor/entregas",
             icono: FileCheck2,
-            permiso: "docencia.impartir",
-          },
-          // Sus materias con alumnos, notas y asistencia: `/academico/materias` es el
-          // catálogo administrativo y desde ahí el docente no puede calificar.
-          {
-            etiqueta: "academic",
-            href: "/portal/profesor/materias",
-            icono: Library,
             permiso: "docencia.impartir",
           },
         ],
@@ -718,7 +727,63 @@ const MENU_DOCENTE: AreaNav[] = [
  * su torre, el calendario y las reuniones, porque ahí le llega lo que otros
  * roles le asignan o le convocan.
  */
+// El Hub dejó de ser una página con pestañas: cada pestaña es una entrada del
+// sidebar (Recursos, Registrar visita, Evidencias). El director agrega Liceos,
+// Equipo y Reportes de impacto. Máximo 8 entradas visibles (ux-rules §13): lo
+// que el rol usa poco queda `soloBusqueda`.
+const ENTRADAS_HABITUDES: ItemNav[] = [
+  // El hub exige `habitudes.recursos.leer` (el guard de la pantalla es el mismo):
+  // quien no lo tiene no ve la entrada, ni entra por la URL.
+  { etiqueta: "habitudesHome", href: "/habitudes", icono: Home, permiso: "habitudes.recursos.leer" },
+  { etiqueta: "resources", href: "/habitudes/recursos", icono: BookOpen, permiso: "habitudes.recursos.leer" },
+  {
+    etiqueta: "logVisit",
+    href: "/habitudes/visitas/nueva",
+    icono: Camera,
+    permiso: "habitudes.evidencias.subir",
+  },
+  { etiqueta: "evidences", href: "/habitudes/evidencias", icono: Images, permiso: "habitudes.recursos.leer" },
+];
+
+const ENTRADAS_AGENDA_HABITUDES = (soloBusquedaAgenda: boolean): ItemNav[] => [
+  // Postular a un candidato ES una solicitud (`alta_expediente`) que aprueba
+  // administración: no hay lista de expedientes que ver.
+  {
+    etiqueta: "requests",
+    href: "/administrativo/solicitudes",
+    icono: Inbox,
+    universal: true,
+    soloBusqueda: soloBusquedaAgenda,
+  },
+  // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la alcanzaba
+  // Contabilidad: quien gasta por la Fundación no tenía por dónde rendir la factura.
+  {
+    etiqueta: "expenseReports",
+    href: "/administrativo/rendiciones",
+    icono: Receipt,
+    permiso: "rendicion.enviar",
+    soloBusqueda: soloBusquedaAgenda,
+  },
+  { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true, soloBusqueda: soloBusquedaAgenda },
+  // Una reunión a la que los convocan se encuentra aquí y no escribiendo la dirección.
+  { etiqueta: "meetings", href: "/reuniones", icono: Users, permiso: "reuniones.leer" },
+];
+
 const MENU_HABITUDES: AreaNav[] = [
+  {
+    clave: "habitudes",
+    etiqueta: "habitudes",
+    icono: Sparkles,
+    secciones: [{ items: [...ENTRADAS_HABITUDES, ...ENTRADAS_AGENDA_HABITUDES(false)] }],
+  },
+];
+
+/**
+ * El director supervisa a los facilitadores: lo mismo que el profesor más Liceos
+ * (última visita y estado), Equipo (visitas del mes) y Reportes de impacto. Para
+ * no pasar de 8 entradas, Solicitudes, Rendiciones y Calendario pasan a ⌘K.
+ */
+const MENU_DIR_HABITUDES: AreaNav[] = [
   {
     clave: "habitudes",
     etiqueta: "habitudes",
@@ -726,42 +791,16 @@ const MENU_HABITUDES: AreaNav[] = [
     secciones: [
       {
         items: [
-          // El hub exige `habitudes.recursos.leer` (el guard de la pantalla es el
-          // mismo): quien no lo tiene no ve la entrada, ni entra por la URL.
+          ...ENTRADAS_HABITUDES,
+          { etiqueta: "schools", href: "/habitudes/liceos", icono: Building2, permiso: "habitudes.supervisar" },
+          { etiqueta: "team", href: "/habitudes/equipo", icono: UsersRound, permiso: "habitudes.supervisar" },
           {
-            etiqueta: "habitudesHub",
-            href: "/habitudes",
-            icono: BookOpen,
-            permiso: "habitudes.recursos.leer",
+            etiqueta: "impactReports",
+            href: "/habitudes/reportes",
+            icono: BarChart3,
+            permiso: "habitudes.supervisar",
           },
-          // Postular a un candidato ES una solicitud (`alta_expediente`) que
-          // aprueba administración: no hay lista de expedientes que ver, y una
-          // entrada a `/expedientes` los devolvía a su portal sin explicación.
-          {
-            etiqueta: "requests",
-            href: "/administrativo/solicitudes",
-            icono: Inbox,
-            universal: true,
-          },
-          // Tienen `rendicion.enviar` y la pantalla ya existía, pero solo la
-          // alcanzaba Contabilidad: quien gasta por la Fundación no tenía por
-          // dónde rendir la factura.
-          {
-            etiqueta: "expenseReports",
-            href: "/administrativo/rendiciones",
-            icono: Receipt,
-            permiso: "rendicion.enviar",
-          },
-          // Tienen `reuniones.agendar`/`leer` (y el director, `gestionar`),
-          // pero sin estas entradas una reunión a la que los convocaban solo
-          // se encontraba escribiendo la dirección a mano.
-          { etiqueta: "calendar", href: "/calendario", icono: CalendarDays, universal: true },
-          {
-            etiqueta: "meetings",
-            href: "/reuniones",
-            icono: Users,
-            permiso: "reuniones.leer",
-          },
+          ...ENTRADAS_AGENDA_HABITUDES(true),
         ],
       },
     ],
@@ -778,16 +817,6 @@ const MENU_HABITUDES: AreaNav[] = [
  * la pestaña de supervisión (mapa de liceos, visitas, evidencias por auditar),
  * no en los recursos, y así se llama en su menú.
  */
-const MENU_DIR_HABITUDES: AreaNav[] = MENU_HABITUDES.map((area) => ({
-  ...area,
-  secciones: area.secciones.map((seccion) => ({
-    ...seccion,
-    items: seccion.items.map((item) =>
-      item.href === "/habitudes" ? { ...item, etiqueta: "habitudesSupervision" } : item,
-    ),
-  })),
-}));
-
 const MENU_CONTABILIDAD: AreaNav[] = [
   {
     clave: "contab_general",
@@ -1165,6 +1194,9 @@ export type PestanaMovil =
 const PRIORIDAD_MOVIL = [
   "/ejecutivo",
   "/bandeja",
+  "/habitudes",
+  "/habitudes/visitas/nueva",
+  "/habitudes/recursos",
   "/portal/profesor",
   "/portal/profesor/clases",
   "/portal/profesor/entregas",
@@ -1185,6 +1217,8 @@ const ETIQUETA_CORTA: Record<string, string> = {
   "/portal/contabilidad": "home",
   "/portal/estudiante": "home",
   "/portal/estudiante/clases": "classesShort",
+  "/habitudes": "home",
+  "/habitudes/visitas/nueva": "visitShort",
   "/portal/profesor/clases": "classesShort",
   "/portal/profesor/entregas": "toGradeShort",
   "/portal/estudiante/solicitudes": "requests",

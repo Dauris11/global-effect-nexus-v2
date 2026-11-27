@@ -80,6 +80,8 @@ export interface ProfesorMonitoreoItem {
   }>;
   totalEvidencias: number;
   estudiantesImpactados: number;
+  /** Visitas registradas en el mes en curso (hora de La Vega). */
+  visitasMes: number;
   ultimaVisita?: string | null;
 }
 
@@ -136,4 +138,17 @@ export interface MetricasHabitudes {
   estudiantes_impactados: number;
   liceos_alcanzados: number;
   recursos_disponibles: number;
+}
+
+/** Una fila del reporte de impacto: visitas y estudiantes por mes. */
+export interface ImpactoMensual {
+  mes: string;
+  visitas: number;
+  estudiantes: number;
+}
+
+export interface ImpactoPorLiceo {
+  liceo: string;
+  visitas: number;
+  estudiantes: number;
 }
