@@ -8,7 +8,7 @@ módulo) — esto es solo la cola de pendientes concretos.
 ## Acceso y correo (28 nov 2026)
 
 - [ ] **Acceso:** Google y correo/contraseña para todos, **solo si ya están registrados** (sin autoregistro). Documentado en [`correo-y-acceso-resend.md`](../referencia/correo-y-acceso-resend.md) §7.4. Falta: desactivar «Allow new users to sign up» en Supabase, probar con un Gmail no registrado, «¿Olvidaste tu contraseña?» y alta con invitación real.
-- [ ] **Mailgun:** cambiar el envío de `cola.ts` (hoy Resend), el SMTP de Supabase y escribir el adaptador de la Route entrante hacia `/api/correo/entrante` (§9b–9c de la guía). La carta mensual estudiante → patrocinador ya está construida.
+- [x] **Correo entrante por Resend (28 nov 2026), SIN PROBAR con correo real:** `/api/correo/resend` (webhook `email.received` con firma Svix → pide el correo a la API de recepción → `recibirCorreo`). Se queda Resend; Mailgun descartado. Falta: dominio de recepción con su MX, webhook y `RESEND_WEBHOOK_SECRET` en producción, y comprobar que la respuesta de Resend trae `Authentication-Results` (si no, toda carta queda retenida por «desconocida»).
 
 ## Rediseño UX — base (26 nov 2026)
 

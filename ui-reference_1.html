@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global Effect · Referencia visual UI v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Marca (se conserva #2096BA como color insignia) */
+  --brand-50:#EEF8FB; --brand-100:#D5EEF5; --brand-200:#ABDDEB; --brand-300:#74C5DD;
+  --brand-400:#3FAACB; --brand-500:#2096BA; --brand-600:#177A99; --brand-700:#156F8C;
+  --brand-800:#135F78; --brand-900:#0E4A5E; --brand-950:#0A2F3C;
+  /* Neutros fríos */
+  --canvas:#F5F7F9; --surface:#FFFFFF; --surface-2:#FAFBFC;
+  --ink:#14191F; --ink-2:#4B5563; --ink-3:#647080;
+  --line:#E6EAEE; --line-strong:#D3D9DF;
+  /* Estados */
+  --success:#15803D; --success-bg:#ECFDF3; --success-bd:#BBF0CF;
+  --warning:#B45309; --warning-bg:#FFF8EB; --warning-bd:#FCDFA6;
+  --danger:#B91C1C;  --danger-bg:#FEF2F2;  --danger-bd:#FBCACA;
+  --info:#156F8C;    --info-bg:#EEF8FB;    --info-bd:#C6E6F0;
+  --progress:#6D28D9;--progress-bg:#F5F1FF;--progress-bd:#DDD0FB;
+  --done:#0F766E;    --done-bg:#EDFAF8;    --done-bd:#BFEAE4;
+  --neutral:#475569; --neutral-bg:#F1F4F7; --neutral-bd:#DCE2E8;
+  /* Gráficos categóricos */
+  --chart-1:#2096BA; --chart-2:#0E4A5E; --chart-3:#F59E0B; --chart-4:#8B5CF6; --chart-5:#10B981; --chart-6:#94A3B8;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --sh-1:0 1px 2px rgba(16,24,40,.05);
+  --sh-2:0 1px 3px rgba(16,24,40,.06),0 4px 12px rgba(16,24,40,.06);
+  --sh-3:0 12px 32px rgba(16,24,40,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);background:var(--canvas);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:48px 32px 96px}
+h1.doc{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.lead{color:var(--ink-2);margin-top:6px;max-width:720px}
+h2.sec{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:56px 0 16px}
+.grid{display:grid;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:20px}
+.swatches{display:grid;grid-template-columns:repeat(11,1fr);border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line)}
+.sw{height:64px;padding:8px;font-size:11px;font-weight:600;display:flex;flex-direction:column;justify-content:flex-end}
+.sw small{font-weight:500;opacity:.8}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.label-s{font-size:12.5px;color:var(--ink-3);margin-bottom:10px;font-weight:500}
+/* Botones */
+.btn{white-space:nowrap;flex:none;font:inherit;font-size:14px;font-weight:600;height:36px;padding:0 14px;border-radius:var(--r-md);border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:background .16s, border-color .16s, box-shadow .16s}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--brand-600);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.15) inset, var(--sh-1)}
+.btn-primary:hover{background:var(--brand-700)}
+.btn-secondary{background:var(--surface);color:var(--ink);border-color:var(--line-strong);box-shadow:var(--sh-1)}
+.btn-secondary:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn-ghost{background:transparent;color:var(--brand-700)}
+.btn-ghost:hover{background:var(--brand-50)}
+.btn-danger{background:var(--surface);color:var(--danger);border-color:var(--danger-bd)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--brand-200)}
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-success{color:var(--success);background:var(--success-bg);border-color:var(--success-bd)}
+.b-warning{color:var(--warning);background:var(--warning-bg);border-color:var(--warning-bd)}
+.b-danger{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-bd)}
+.b-info{color:var(--info);background:var(--info-bg);border-color:var(--info-bd)}
+.b-progress{color:var(--progress);background:var(--progress-bg);border-color:var(--progress-bd)}
+.b-done{color:var(--done);background:var(--done-bg);border-color:var(--done-bd)}
+.b-neutral{color:var(--neutral);background:var(--neutral-bg);border-color:var(--neutral-bd)}
+/* Inputs */
+.field{display:flex;flex-direction:column;gap:6px;min-width:240px}
+.field label{font-size:13px;font-weight:500}
+.input{font:inherit;height:38px;border:1px solid var(--line-strong);border-radius:var(--r-md);padding:0 12px;background:var(--surface);color:var(--ink)}
+.input:focus{outline:none;border-color:var(--brand-500);box-shadow:0 0 0 3px var(--brand-100)}
+.input.err{border-color:var(--danger)}
+.hint{font-size:12.5px;color:var(--ink-3)} .hint.err{color:var(--danger)}
+/* Type scale */
+.ts div{display:flex;align-items:baseline;gap:24px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ts div:last-child{border:0}
+.ts span.k{width:130px;flex:none;font-size:12px;color:var(--ink-3)}
+/* ======= App mock ======= */
+.app{display:grid;grid-template-columns:248px 1fr;border:1px solid var(--line);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-3);background:var(--canvas);min-height:760px}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.logo{display:flex;align-items:center;gap:10px;padding:6px 10px 18px;font-weight:700;letter-spacing:.04em;color:var(--brand-950);font-size:15px}
+.logo i{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand-400),var(--brand-800));display:block}
+.grp{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);padding:16px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:var(--r-md);color:var(--ink-2);font-weight:500;position:relative;text-decoration:none}
+.nav svg{width:18px;height:18px;flex:none;color:var(--ink-3)}
+.nav:hover{background:var(--canvas);color:var(--ink)}
+.nav.on{background:var(--brand-50);color:var(--brand-800);font-weight:600}
+.nav.on svg{color:var(--brand-600)}
+.nav.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--brand-500)}
+.nav .count{margin-left:auto;font-size:11.5px;font-weight:700;background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning-bd);border-radius:999px;padding:0 7px;height:20px;display:inline-flex;align-items:center}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:60px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 28px;gap:16px}
+.search{flex:1;max-width:460px;height:38px;border:1px solid var(--line);background:var(--canvas);border-radius:var(--r-md);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-3)}
+.search kbd{margin-left:auto;font:inherit;font-size:11px;border:1px solid var(--line-strong);border-radius:4px;padding:0 5px;background:var(--surface)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--brand-100);color:var(--brand-800);display:grid;place-items:center;font-weight:700;font-size:12.5px}
+.content{padding:28px 32px 40px;max-width:1100px;width:100%;margin:0 auto}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
+.ph h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.ph p{color:var(--ink-2);margin-top:4px}
+.ctx{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;font-weight:500;color:var(--brand-800);background:var(--brand-50);border:1px solid var(--info-bd);padding:4px 10px;border-radius:999px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh-1);cursor:pointer;transition:border-color .16s, box-shadow .16s, transform .16s}
+.tile:hover{border-color:var(--brand-300);box-shadow:var(--sh-2);transform:translateY(-1px)}
+.tile .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center}
+.tile .ic svg{width:18px;height:18px}
+.tile b{font-size:14.5px;font-weight:600}
+.tile span{font-size:12.5px;color:var(--ink-3);margin-top:-8px}
+.cols{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
+.card-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+.card-h h3{font-size:16px;font-weight:600}
+.card-h a{font-size:13px;font-weight:600;color:var(--brand-700);text-decoration:none}
+.att{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.att:last-child{border:0}
+.att:hover{background:var(--surface-2)}
+.att .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.att .t{flex:1;min-width:0}
+.att .t b{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att .t small{color:var(--ink-3);font-size:12.5px}
+.att .when{font-size:12.5px;font-weight:600;white-space:nowrap}
+.btn-sm{height:30px;padding:0 10px;font-size:13px}
+.agenda li{list-style:none;display:flex;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.agenda li:last-child{border:0}
+.date{width:44px;flex:none;text-align:center;border-radius:var(--r-md);background:var(--canvas);padding:4px 0;line-height:1.15}
+.date b{display:block;font-size:17px}
+.date small{font-size:10.5px;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px}
+.kpi small{color:var(--ink-3);font-size:12.5px;font-weight:500}
+.kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+.kpi .trend{font-size:12px;font-weight:600}
+/* Lista */
+.filters{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.chip{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);font:inherit;font-size:13px;font-weight:500;color:var(--ink-2);display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.chip em{font-style:normal;font-size:12px;font-weight:700;color:var(--ink-3)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--canvas)}
+.chip.on em{color:#B8C2CC}
+.table{width:100%;border-collapse:separate;border-spacing:0}
+.table th{white-space:nowrap;font-size:12px;font-weight:600;color:var(--ink-3);text-align:left;padding:10px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.table td{white-space:nowrap;padding:0 16px;height:56px;border-bottom:1px solid var(--line);vertical-align:middle}
+.table tr:last-child td{border:0}
+.table tr:hover td{background:var(--surface-2)}
+.table .r{text-align:right}
+.table td:first-child{white-space:normal}
+.who{display:flex;align-items:center;gap:10px}
+.who .av{width:30px;height:30px;font-size:11.5px}
+.who b{font-weight:600;display:block;line-height:1.3}
+.who small{color:var(--ink-3);font-size:12px}
+.rowact{opacity:0;transition:opacity .16s;display:flex;gap:6px;justify-content:flex-end}
+tr:hover .rowact{opacity:1}
+.alert{display:flex;gap:12px;align-items:center;padding:12px 16px;border-radius:var(--r-lg);border:1px solid var(--warning-bd);background:var(--warning-bg);color:#7C3A06;margin-bottom:20px;font-weight:500}
+.alert .btn{margin-left:auto}
+.empty{text-align:center;padding:40px 20px}
+.empty .ic{width:48px;height:48px;border-radius:14px;background:var(--brand-50);color:var(--brand-600);display:grid;place-items:center;margin:0 auto 14px}
+.empty b{font-size:15px;display:block}
+.empty p{color:var(--ink-2);margin:4px 0 16px}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--brand-500)}
+.note{font-size:13px;color:var(--ink-2);margin-top:10px}
+.do,.dont{padding:14px 16px;border-radius:var(--r-md);font-size:13.5px}
+.do{background:var(--success-bg);border:1px solid var(--success-bd)}
+.dont{background:var(--danger-bg);border:1px solid var(--danger-bd)}
+.do b,.dont b{display:block;margin-bottom:6px}
+.do ul,.dont ul{padding-left:18px}
+
+html.dark{
+  --canvas:#0D0C0C; --surface:#181717; --surface-2:#242323; --elevated:#242323;
+  --ink:#F3F2F2; --ink-2:#C6C3C3; --ink-3:#999494; --line:#3C3939; --line-strong:#535050;
+  --brand-50:rgba(32,150,186,.14); --brand-100:rgba(32,150,186,.22); --brand-200:rgba(63,170,203,.45);
+  --brand-300:#74C5DD; --brand-600:#2096BA; --brand-700:#74C5DD; --brand-800:#74C5DD; --brand-950:#F3F2F2;
+  --success:#4ADE80; --success-bg:rgba(74,222,128,.12); --success-bd:rgba(74,222,128,.28);
+  --warning:#FBBF24; --warning-bg:rgba(251,191,36,.12); --warning-bd:rgba(251,191,36,.28);
+  --danger:#F87171;  --danger-bg:rgba(248,113,113,.12);  --danger-bd:rgba(248,113,113,.30);
+  --info:#74C5DD;    --info-bg:rgba(116,197,221,.12);    --info-bd:rgba(116,197,221,.28);
+  --progress:#A78BFA;--progress-bg:rgba(167,139,250,.12);--progress-bd:rgba(167,139,250,.30);
+  --done:#2DD4BF;    --done-bg:rgba(45,212,191,.12);    --done-bd:rgba(45,212,191,.28);
+  --neutral:#AFACAC; --neutral-bg:rgba(175,172,172,.10); --neutral-bd:#3C3939;
+  --sh-1:none; --sh-2:0 0 0 1px #535050; --sh-3:0 16px 40px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+html.dark .btn-primary{background:#2096BA;color:#0D0C0C;box-shadow:none}
+html.dark .btn-primary:hover{background:#3FAACB}
+html.dark .alert{color:#FDE68A}
+html.dark .do{color:var(--ink)} html.dark .dont{color:var(--ink)}
+.toggle{position:fixed;top:16px;right:16px;z-index:9;background:var(--ink);color:var(--canvas);border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+.grays{display:grid;grid-template-columns:repeat(11,1fr);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Claro / Oscuro</button>
+<div class="wrap">
+
+<h1 class="doc">Global Effect · Referencia visual UI v3 (claro + oscuro)</h1>
+<p class="lead">Es el sistema visual del portal, conservando el azul insignia <b>#2096BA</b>. Claude Code debe igualar esta página: colores, tipografía, radios, sombras, componentes y los dos ejemplos de pantalla del final.</p>
+
+<!-- ===== MARCA ===== -->
+<h2 class="sec">1 · Escala de marca (se deriva de #2096BA)</h2>
+<div class="swatches">
+  <div class="sw" style="background:#EEF8FB;color:#14191F">50<small>#EEF8FB</small></div>
+  <div class="sw" style="background:#D5EEF5;color:#14191F">100<small>#D5EEF5</small></div>
+  <div class="sw" style="background:#ABDDEB;color:#14191F">200<small>#ABDDEB</small></div>
+  <div class="sw" style="background:#74C5DD;color:#14191F">300<small>#74C5DD</small></div>
+  <div class="sw" style="background:#3FAACB;color:#fff">400<small>#3FAACB</small></div>
+  <div class="sw" style="background:#2096BA;color:#fff;outline:3px solid #14191F;outline-offset:-3px">500 ★<small>#2096BA</small></div>
+  <div class="sw" style="background:#177A99;color:#fff">600<small>#177A99</small></div>
+  <div class="sw" style="background:#156F8C;color:#fff">700<small>#156F8C</small></div>
+  <div class="sw" style="background:#135F78;color:#fff">800<small>#135F78</small></div>
+  <div class="sw" style="background:#0E4A5E;color:#fff">900<small>#0E4A5E</small></div>
+  <div class="sw" style="background:#0A2F3C;color:#fff">950<small>#0A2F3C</small></div>
+</div>
+<p class="note"><b>Regla de contraste:</b> el 500 (★) da 3.4:1 sobre blanco, así que no sirve para texto ni para el fondo de botones con texto. Se usa en iconos, barras activas, gráficos, focus y en la marca. <b>Botones primarios = 600</b> (4.9:1 AA). <b>Enlaces y texto de marca = 700</b> (5.7:1).</p>
+
+<div class="grid" style="grid-template-columns:repeat(2,1fr);margin-top:16px">
+  <div class="panel">
+    <div class="label-s">Neutros fríos (sustituyen el blanco plano)</div>
+    <div class="row">
+      <div class="badge b-neutral" style="background:#F5F7F9">canvas #F5F7F9 · fondo de la app</div>
+      <div class="badge b-neutral" style="background:var(--surface)">surface #FFFFFF · cards</div>
+      <div class="badge b-neutral">line #E6EAEE</div>
+      <div class="badge b-neutral">ink #14191F</div>
+      <div class="badge b-neutral">ink-2 #4B5563</div>
+      <div class="badge b-neutral">ink-3 #647080</div>
+    </div>
+    <p class="note">El fondo gris muy claro + cards blancas crea capas sin necesidad de sombras pesadas (patrón Asana).</p>
+  </div>
+  <div class="panel">
+    <div class="label-s">Paleta de gráficos (categorías distinguibles)</div>
+    <div class="row" style="gap:6px">
+      <span style="width:44px;height:28px;border-radius:6px;background:#2096BA"></span>
+      <span style="width:44px;height:28px;border-radius:6px;background:#0E4A5E"></span>
+      <span style="width:44px;height:28px;border-radius:6px;background:#F59E0B"></span>
+      <span style="width:44px;height:28px;border-radius:6px;background:#8B5CF6"></span>
+      <span style="width:44px;height:28px;border-radius:6px;background:#10B981"></span>
+      <span style="width:44px;height:28px;border-radius:6px;background:#94A3B8"></span>
+    </div>
+    <p class="note">Hoy los gráficos usan tres tonos de azul casi iguales. Con esta paleta cada serie se distingue y la primera sigue siendo la de la marca.</p>
+  </div>
+</div>
+
+
+<h2 class="sec">1B · Escala de grises del modo oscuro (definida por el cliente)</h2>
+<div class="grays">
+<div class="sw" style="background:#F3F2F2;color:#0D0C0C">50<small>#F3F2F2</small></div><div class="sw" style="background:#DCDBDB;color:#0D0C0C">100<small>#DCDBDB</small></div><div class="sw" style="background:#C6C3C3;color:#0D0C0C">200<small>#C6C3C3</small></div><div class="sw" style="background:#AFACAC;color:#0D0C0C">300<small>#AFACAC</small></div><div class="sw" style="background:#999494;color:#0D0C0C">400<small>#999494</small></div><div class="sw" style="background:#827D7D;color:#F3F2F2">500<small>#827D7D</small></div><div class="sw" style="background:#615E5E;color:#F3F2F2">600<small>#615E5E</small></div><div class="sw" style="background:#535050;color:#F3F2F2">700<small>#535050</small></div><div class="sw" style="background:#3C3939;color:#F3F2F2">800<small>#3C3939</small></div><div class="sw" style="background:#242323;color:#F3F2F2">900<small>#242323</small></div><div class="sw" style="background:#0D0C0C;color:#F3F2F2">950<small>#0D0C0C</small></div>
+</div>
+<p class="note"><b>Mapa en oscuro:</b> fondo 950 · tarjetas/sidebar/topbar #181717 (paso intermedio 925) · hover, cabecera de tabla y popovers 900 · bordes 800 · bordes fuertes/inputs 700 · texto 50 · texto secundario 200 · texto terciario 400. El botón primario es #2096BA con texto 950 (5.7:1).</p>
+
+<!-- ===== ESTADOS ===== -->
+<h2 class="sec">2 · Colores de estado</h2>
+<div class="panel">
+  <div class="row">
+    <span class="badge b-success">Activo</span><span class="badge b-success">Aprobada</span><span class="badge b-success">Contabilizado</span>
+    <span class="badge b-warning">Pendiente</span><span class="badge b-warning">Pausado</span><span class="badge b-warning">Por vencer</span>
+    <span class="badge b-danger">Rechazada</span><span class="badge b-danger">Vencida</span><span class="badge b-danger">En riesgo</span>
+    <span class="badge b-info">Postulado</span><span class="badge b-info">Enviada</span>
+    <span class="badge b-progress">En curso</span><span class="badge b-progress">En revisión</span>
+    <span class="badge b-done">Graduado</span><span class="badge b-done">Cerrado</span>
+    <span class="badge b-neutral">Inactivo</span><span class="badge b-neutral">Borrador</span>
+  </div>
+</div>
+
+<!-- ===== TIPOGRAFÍA ===== -->
+<h2 class="sec">3 · Tipografía · Plus Jakarta Sans + IBM Plex Mono</h2>
+<div class="panel ts">
+  <div><span class="k">page · 26/700</span><span style="font-size:26px;font-weight:700;letter-spacing:-.02em">Solicitudes por atender</span></div>
+  <div><span class="k">section · 16/600</span><span style="font-size:16px;font-weight:600">Lo que necesita tu atención</span></div>
+  <div><span class="k">body · 14/400</span><span>Carta de recomendación para pasantía solicitada por Yeimy Rodríguez.</span></div>
+  <div><span class="k">label · 13/500</span><span style="font-size:13px;font-weight:500">Nombre completo</span></div>
+  <div><span class="k">meta · 12.5/400</span><span style="font-size:12.5px;color:var(--ink-3)">Hace 2 horas · UCATECI</span></div>
+  <div><span class="k">kpi · 24/700 tabular</span><span class="num" style="font-size:24px;font-weight:700;letter-spacing:-.02em">RD$35,500.00</span></div>
+  <div><span class="k">mono · 12.5/500</span><span class="mono">AS-000063 · CE-000023</span></div>
+</div>
+
+<!-- ===== COMPONENTES ===== -->
+<h2 class="sec">4 · Botones, campos y forma</h2>
+<div class="grid" style="grid-template-columns:1fr 1fr">
+  <div class="panel">
+    <div class="label-s">Botones · 36px · radio 8px · 14/600</div>
+    <div class="row">
+      <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo expediente</button>
+      <button class="btn btn-secondary">Exportar</button>
+      <button class="btn btn-ghost">Ver todo</button>
+      <button class="btn btn-danger">Rechazar</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="label-s">Campos · 38px · label siempre visible</div>
+    <div class="row" style="align-items:flex-start">
+      <div class="field"><label>Cédula</label><input class="input" placeholder="000-0000000-0"><span class="hint">Formato con guiones</span></div>
+      <div class="field"><label>Correo</label><input class="input err" value="yeimy@"><span class="hint err">Falta el dominio, por ejemplo @gmail.com</span></div>
+    </div>
+  </div>
+</div>
+<div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:16px">
+  <div class="panel"><div class="label-s">Radios</div><p>Inputs/botones 8 · Cards 12 · Paneles/modales 16 · Badges 999</p></div>
+  <div class="panel"><div class="label-s">Sombras</div><p>Por defecto borde + sh-1. sh-2 solo en hover. sh-3 en overlays.</p></div>
+  <div class="panel"><div class="label-s">Iconos</div><p>Lucide 18px, trazo 1.75. Contenedor de color de 36px solo en acciones rápidas.</p></div>
+  <div class="panel"><div class="label-s">Movimiento</div><p>160 ms ease-out en hover/focus. Nada de rebotes ni animar el layout.</p></div>
+</div>
+
+<!-- ===== MOCK INICIO ===== -->
+<h2 class="sec">5 · Pantalla de ejemplo · Inicio (Administrativo)</h2>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><i></i>GLOBAL EFFECT</div>
+    <a class="nav on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Inicio</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-4-6"/></svg>Estudiantes</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>Académico</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/></svg>Becas y patrocinadores</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5 5h14l3 7v7H2v-7z"/></svg>Solicitudes<span class="count">6</span></a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></svg>Proyectos</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>Operaciones</a>
+    <div class="grp">General</div>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendario</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Reportes</a>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Buscar estudiantes, solicitudes, módulos…<kbd>⌘K</kbd></div>
+      <div style="margin-left:auto" class="row"><button class="btn btn-secondary btn-sm">Ver como</button><div class="av">MP</div></div>
+    </div>
+    <div class="content">
+      <div class="ph">
+        <div>
+          <h1>Buenos días, Marisol</h1>
+          <div class="ctx">● Prematrícula 2027-I abierta · cierra el 27 nov</div>
+        </div>
+      </div>
+
+      <div class="tiles">
+        <div class="tile"><div class="ic" style="background:var(--brand-50);color:var(--brand-600)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7M19 14v6M16 17h6"/></svg></div><b>Nuevo expediente</b><span>Registrar un becado</span></div>
+        <div class="tile"><div class="ic" style="background:var(--progress-bg);color:var(--progress)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 8l5-5 5 5M4 21h16"/></svg></div><b>Subir calificaciones</b><span>Desde el reporte de la universidad</span></div>
+        <div class="tile"><div class="ic" style="background:var(--warning-bg);color:var(--warning)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5l-1 4z"/></svg></div><b>Carta a patrocinador</b><span>Avance mensual de becados</span></div>
+        <div class="tile"><div class="ic" style="background:var(--success-bg);color:var(--success)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><b>Agendar reunión</b><span>Con estudiante o equipo</span></div>
+      </div>
+
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>Lo que necesita tu atención</h3><a href="#">Ver las 28</a></div>
+          <div class="att"><span class="dot" style="background:var(--danger)"></span><div class="t"><b>Revisar presupuesto de Remodelación del aula 3</b><small>Proyecto · asignada por Dirección</small></div><span class="when" style="color:var(--danger)">Vencida · 2 días</span><button class="btn btn-secondary btn-sm">Abrir</button></div>
+          <div class="att"><span class="dot" style="background:var(--warning)"></span><div class="t"><b>Carta de recomendación para pasantía</b><small>Solicitud #4 · Yeimy Rodríguez</small></div><span class="when" style="color:var(--warning)">Hoy</span><button class="btn btn-primary btn-sm">Aprobar</button></div>
+          <div class="att"><span class="dot" style="background:var(--warning)"></span><div class="t"><b>Permiso por cita médica</b><small>Solicitud #7 · Luis Martínez</small></div><span class="when" style="color:var(--warning)">Hoy</span><button class="btn btn-primary btn-sm">Aprobar</button></div>
+          <div class="att"><span class="dot" style="background:var(--brand-500)"></span><div class="t"><b>6 entregas esperando nota en Liderazgo I</b><small>Global Effect 360 · Prof. Héctor Almonte</small></div><span class="when" style="color:var(--ink-3)">Jueves</span><button class="btn btn-secondary btn-sm">Recordar</button></div>
+          <div class="att"><span class="dot" style="background:var(--brand-500)"></span><div class="t"><b>2 becados sin patrocinador</b><small>Expedientes · UCATECI, UTESA</small></div><span class="when" style="color:var(--ink-3)">Esta semana</span><button class="btn btn-secondary btn-sm">Asignar</button></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>Esta semana</h3><a href="#">Calendario</a></div>
+          <ul class="agenda">
+            <li><div class="date"><small>Jue</small><b>27</b></div><div><b>Cierre de prematrícula</b><br><small style="color:var(--ink-3)">6:00 p. m.</small></div></li>
+            <li><div class="date"><small>Vie</small><b>28</b></div><div><b>Reunión de becados UCATECI</b><br><small style="color:var(--ink-3)">10:00 a. m. · Sala 2</small></div></li>
+            <li><div class="date"><small>Lun</small><b>01</b></div><div><b>Visita Liceo Don Pepe Álvarez</b><br><small style="color:var(--ink-3)">Habitudes · 9:00 a. m.</small></div></li>
+            <li><div class="date"><small>Mié</small><b>04</b></div><div><b>Convivio de fin de año</b><br><small style="color:var(--ink-3)">Patio de la Fundación</small></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><small>Becados activos</small><b class="num">6</b><span class="trend" style="color:var(--success)">▲ 1 este mes</span></div>
+        <div class="kpi"><small>Índice promedio</small><b class="num">3.56</b><span class="trend" style="color:var(--ink-3)">de 4.00</span></div>
+        <div class="kpi"><small>En riesgo</small><b class="num">0</b><span class="trend" style="color:var(--success)">Todo en orden</span></div>
+        <div class="kpi"><small>Aporte mensual</small><b class="num">$35,500</b><span class="trend" style="color:var(--ink-3)">4 patrocinadores</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOCK LISTA ===== -->
+<h2 class="sec">6 · Pantalla de ejemplo · Lista (Patrocinadores)</h2>
+<div class="app" style="min-height:0">
+  <aside class="side">
+    <div class="logo"><i></i>GLOBAL EFFECT</div>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Inicio</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/></svg>Estudiantes</a>
+    <a class="nav on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21s-8-5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 11-8 11z"/></svg>Becas y patrocinadores</a>
+    <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5 5h14l3 7v7H2v-7z"/></svg>Solicitudes<span class="count">6</span></a>
+  </aside>
+  <div class="main">
+    <div class="top"><div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Buscar…<kbd>⌘K</kbd></div><div class="av" style="margin-left:auto">MP</div></div>
+    <div class="content">
+      <div class="ph">
+        <div><h1>Patrocinadores</h1><p>Quién financia cada beca y con cuánto.</p></div>
+        <div class="row"><button class="btn btn-secondary">Cartas</button><button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo patrocinador</button></div>
+      </div>
+      <div class="filters">
+        <div class="search" style="max-width:280px;background:var(--surface);border-color:var(--line-strong)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Nombre o país</div>
+        <button class="chip on">Todos <em>6</em></button>
+        <button class="chip">Activos <em>4</em></button>
+        <button class="chip">Pausados <em>1</em></button>
+        <button class="chip">Inactivos <em>1</em></button>
+        <button class="chip" style="margin-left:auto">Más filtros</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="table">
+          <thead><tr><th>Patrocinador</th><th>Tipo</th><th>Estado</th><th class="r">Aporte mensual</th><th>Becados</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div class="who"><div class="av">GR</div><div><b>Grupo Ramos Industrial</b><small>contacto@gruporamosindustrial.org</small></div></div></td><td>Empresa · DO</td><td><span class="badge b-success">Activo</span></td><td class="r num"><b>$13,000.00</b></td><td><div style="width:110px"><div class="bar"><i style="width:66%"></i></div><small style="color:var(--ink-3)">2 becados</small></div></td><td><div class="rowact"><button class="btn btn-ghost btn-sm">Carta</button><button class="btn btn-secondary btn-sm">Editar</button></div></td></tr>
+            <tr><td><div class="who"><div class="av">CA</div><div><b>Carlos Almánzar</b><small>contacto@carlosalmanzar.org</small></div></div></td><td>Persona · DO</td><td><span class="badge b-success">Activo</span></td><td class="r num"><b>$10,000.00</b></td><td><div style="width:110px"><div class="bar"><i style="width:66%"></i></div><small style="color:var(--ink-3)">2 becados</small></div></td><td><div class="rowact"><button class="btn btn-ghost btn-sm">Carta</button><button class="btn btn-secondary btn-sm">Editar</button></div></td></tr>
+            <tr><td><div class="who"><div class="av">HF</div><div><b>Hope Foundation US</b><small>contact@hopefoundation.org</small></div></div></td><td>ONG · Estados Unidos</td><td><span class="badge b-success">Activo</span></td><td class="r num"><b>$7,000.00</b></td><td><div style="width:110px"><div class="bar"><i style="width:33%"></i></div><small style="color:var(--ink-3)">1 becado</small></div></td><td><div class="rowact"><button class="btn btn-ghost btn-sm">Carta</button><button class="btn btn-secondary btn-sm">Editar</button></div></td></tr>
+            <tr><td><div class="who"><div class="av">FE</div><div><b>Fundación Esperanza Dominicana</b><small>contacto@fundacionesperanzadominicana.org</small></div></div></td><td>ONG · DO</td><td><span class="badge b-warning">Pausado</span></td><td class="r num" style="color:var(--ink-3)">$0.00</td><td><small style="color:var(--ink-3)">Sin becados</small></td><td><div class="rowact"><button class="btn btn-secondary btn-sm">Reactivar</button></div></td></tr>
+            <tr><td><div class="who"><div class="av" style="background:var(--neutral-bg);color:var(--neutral)">CR</div><div><b style="color:var(--ink-2)">Club Rotario de La Vega</b><small>contacto@clubrotariodelavega.org</small></div></div></td><td>Otro · DO</td><td><span class="badge b-neutral">Inactivo</span></td><td class="r num" style="color:var(--ink-3)">$0.00</td><td><small style="color:var(--ink-3)">Sin becados</small></td><td><div class="rowact"><button class="btn btn-secondary btn-sm">Reactivar</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
+        <div class="card"><div class="empty"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M10 19V9M16 19v-6M22 19H2"/></svg></div><b>Aún no hay compromisos con donantes</b><p>Registra lo que cada patrocinador se compromete a aportar para darle seguimiento.</p><button class="btn btn-primary">Registrar compromiso</button></div></div>
+        <div><div class="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Liquidez justa: el saldo en bancos es −RD$1,200.00<button class="btn btn-secondary btn-sm">Solicitar fondos</button></div>
+        <div class="do"><b>Sí</b><ul><li>La lista se ve sin hacer scroll</li><li>Los conteos van dentro de los chips</li><li>Las acciones de fila aparecen en hover</li><li>Cada estado tiene su color</li></ul></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="sec">7 · Qué evitar</h2>
+<div class="grid" style="grid-template-columns:1fr 1fr">
+  <div class="dont"><b>No</b><ul><li>Fondos negros o degradados en alertas (la tarjeta negra de liquidez)</li><li>Texto blanco sobre #2096BA</li><li>Cards de 16px de radio para todo</li><li>Siluetas grises gigantes como avatar</li><li>Tres azules parecidos en un mismo gráfico</li><li>Rojo, verde o ámbar como decoración (son solo para estados)</li></ul></div>
+  <div class="do"><b>Sí</b><ul><li>Canvas gris claro y cards blancas con borde de 1px</li><li>Marca 500 para acentos y 600/700 para texto y botones</li><li>Avatar con iniciales sobre brand-100</li><li>Un primario por pantalla</li><li>Números tabulares alineados a la derecha</li><li>Una barra de 3px que marca el ítem activo del menú</li></ul></div>
+</div>
+
+</div>
+</body>
+</html>

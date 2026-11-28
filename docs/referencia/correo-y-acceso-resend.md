@@ -1,4 +1,4 @@
-# Correo y acceso: Google, correo y contraseña, y el correo del sistema
+# Correo y acceso con Resend: Google, correo y contraseña, y la carta mensual
 
 Guía para dejar funcionando **todos los correos del Portal GlobalEffect**
 (bienvenida, recuperar contraseña, notificaciones y la carta mensual de los
@@ -340,20 +340,10 @@ Estas piezas **no están hechas** y conviene pedirlas como tarea aparte:
 - [ ] **Alta de usuarios desde el portal con invitación real** (§8).
 - [ ] **`vercel.json` con el cron** (§6).
 
-## 9b. Proveedor de correo: Mailgun (decisión) y lo que hay hoy
+## 9b. Proveedor de correo: Resend (decisión del 28 nov 2026)
 
-La Fundación usará **Mailgun** para el correo saliente y el entrante. El código
-actual está hecho con **Resend** (`src/server/correos/cola.ts`), así que el
-cambio de proveedor es **trabajo de código pendiente**; hasta entonces todo lo
-de las secciones 1–6 aplica tal cual a Resend. Lo que cambia con Mailgun:
-
-- **Saliente:** reemplazar la llamada a Resend de `cola.ts` por la API de
-  Mailgun (dominio verificado con SPF y DKIM, mismo subdominio
-  `mail.globaleffect.org`). La cola, los reintentos y el cron no cambian.
-- **Auth de Supabase:** el SMTP de §3 pasa a `smtp.mailgun.org`, con usuario y
-  contraseña SMTP del dominio.
-- **Entrante:** una **Route** de Mailgun reenvía cada correo recibido a nuestra
-  puerta. Ver §9c.
+Se queda **Resend** para todo: el saliente (cola, §1–6 y SMTP de Supabase, §3) y
+el entrante de las cartas. No se usa Mailgun.
 
 ## 9c. La carta mensual del estudiante a su patrocinador
 
@@ -385,14 +375,35 @@ Estados de una carta: `sin_identificar`, `sin_patrocinador`, `retenido`,
 `duplicado`, `reenviado`. Ante cualquier duda se retiene: nunca se envía por
 defecto.
 
-**Para conectar Mailgun (pendiente):** la puerta espera un JSON con
-`Authorization: Bearer <CORREO_ENTRANTE_SECRET>`, y la Route de Mailgun envía
-un formulario firmado. Hace falta un adaptador (una ruta nueva o un flujo de
-n8n) que (a) verifique la firma de Mailgun, (b) convierta los campos
-(`sender`, `subject`, `body-plain`, `body-html`, `Message-Id`; verifica los
-nombres en la documentación de Mailgun) al JSON de la puerta y (c) traduzca los
-resultados SPF/DKIM de Mailgun a `authentication: "pass" | "fail"`. Sin eso, la
-autenticación llega como `desconocida` y toda carta se retiene.
+### Conectar el correo entrante de Resend
+
+La puerta es `POST /api/correo/resend` (`src/app/api/correo/resend/route.ts`).
+Resend avisa con el evento `email.received`; el aviso trae solo metadatos, así
+que la ruta pide el correo completo a la API de recepción
+(`GET /emails/receiving/{id}`), valida la firma del webhook y entrega la carta
+al recorrido de arriba.
+
+1. **Dirección de recepción.** En Resend → *Domains → Receiving* activa la
+   recepción en un subdominio **distinto del de envío y del correo de las
+   personas** (por ejemplo `cartas.globaleffect.org`) y crea el registro **MX**
+   que Resend indique. No pongas el MX en el dominio raíz: pisaría el correo de
+   Google Workspace.
+2. **Webhook.** *Webhooks → Add*: URL `https://<dominio-del-portal>/api/correo/resend`,
+   evento `email.received`. Copia el *Signing secret* (`whsec_…`).
+3. **Variable de entorno** (local y producción): `RESEND_WEBHOOK_SECRET`.
+   Junto con `RESEND_API_KEY` (§2); esa clave debe poder leer correos
+   recibidos.
+4. **Los estudiantes escriben a** `cartas@cartas.globaleffect.org` (o la que
+   se elija). Hay que darles esa dirección y que escriban **desde el correo
+   registrado en su expediente**.
+5. **Prueba:** un estudiante de prueba con patrocinador escribe una carta; en
+   `/patrocinadores/correos` debe aparecer como `reenviado` (o `retenido`, con
+   su motivo). Si queda siempre retenida por «autenticación desconocida»,
+   revisa que la respuesta de Resend traiga la cabecera `Authentication-Results`
+   (ver pendiente).
+
+> `/api/correo/entrante` (JSON con secreto) sigue existiendo como puerta
+> genérica por si algún día se conecta otro buzón (n8n, reenvío de Workspace).
 
 ## 10. Lista de comprobación
 
