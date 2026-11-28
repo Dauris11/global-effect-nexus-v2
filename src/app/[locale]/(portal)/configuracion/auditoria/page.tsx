@@ -55,7 +55,7 @@ export async function generateMetadata({
  * puede consultar no disuade a nadie y no sirve para rendir cuentas: solo
  * ocupa disco.
  *
- * SOLO `super_admin`. No es una pantalla de coordinación: enseña lo que ha
+ * SOLO `owner`. No es una pantalla de coordinación: enseña lo que ha
  * hecho cada cuenta, y eso incluye a quien coordina.
  *
  * Y una cosa que esta pantalla NO hace, escrita aquí para que no se pierda: **el
@@ -88,7 +88,7 @@ export default async function PaginaAuditoria({
     await searchParams;
   const idioma: Locale = locale === "en" ? "en" : "es";
 
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
 
   const t = await getTranslations({ locale, namespace: "audit" });
 

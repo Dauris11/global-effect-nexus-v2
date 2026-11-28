@@ -19,7 +19,7 @@ import {
  * **no toca el catálogo**.
  *
  * EL CATÁLOGO. Una sola puerta: `academico.escribir`, que hoy tienen `admin` y
- * `super_admin`. Aquí no hay dueño: un período es de la institución, y una materia
+ * `owner`. Aquí no hay dueño: un período es de la institución, y una materia
  * de la carrera la abre coordinación. El docente tiene `academico.leer` y ve el
  * catálogo; no lo toca.
  *

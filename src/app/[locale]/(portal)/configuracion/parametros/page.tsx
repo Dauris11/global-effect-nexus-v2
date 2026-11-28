@@ -39,7 +39,7 @@ export default async function PaginaParametros({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const [t, filas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "parametros" }),

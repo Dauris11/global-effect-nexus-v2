@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import { consultar } from "@/lib/db";
 import { proyectarClasesEnRango } from "@/lib/horarios";
 import type { Rol } from "@/lib/rbac";
@@ -130,7 +131,7 @@ export async function calendarioDelMes({
   // 2. Reuniones institucionales:
   // Administradores supervisan la agenda general.
   // Demás roles (estudiantes, docentes) ven ÚNICAMENTE donde están convocados o son anfitriones.
-  const esAdmin = rol === "super_admin" || rol === "admin";
+  const esAdmin = esRolTotal(rol) || rol === "admin";
   const reuniones = await consultar<EntradaCalendario>(
     `SELECT 'reunion' AS origen,
             r.id,

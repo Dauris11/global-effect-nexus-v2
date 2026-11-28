@@ -6,7 +6,7 @@ export type RiesgoAcademico = { estudianteId: string; nombre: string; tipo: "per
 
 /**
  * Avisar a administración cuando un estudiante cae en riesgo académico: llega a la
- * campana de cada administrativo (admin y super_admin) con un enlace al expediente, sin
+ * campana de cada administrativo (admin y owner) con un enlace al expediente, sin
  * que nadie tenga que abrir ficha por ficha.
  *
  * No se repite: si ese administrativo ya recibió el mismo aviso del mismo estudiante en
@@ -18,7 +18,7 @@ export async function avisarRiesgoAcademico(riesgos: readonly RiesgoAcademico[])
 
   try {
     const admins = await consultar<{ id: string }>(
-      `SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.activo AND r.nombre IN ('admin', 'super_admin')`,
+      `SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.activo AND r.nombre IN ('admin', 'owner')`,
     );
 
     for (const r of riesgos) {

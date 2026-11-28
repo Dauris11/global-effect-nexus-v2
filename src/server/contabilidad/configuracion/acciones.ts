@@ -24,7 +24,7 @@ import { contextoDe, estadoDeError, type EstadoErrorContable } from "@/server/co
  * Dos permisos distintos, porque son dos responsabilidades distintas:
  * `configurar` toca la entidad, los parámetros y el catálogo; cerrar y
  * reabrir un período es `cerrar_periodo`, que congela o descongela meses
- * enteros de registros. `super_admin` no tiene ninguno de los dos: audita.
+ * enteros de registros. `owner` no tiene ninguno de los dos: audita.
  *
  * Todo va por `enTransaccionComo`: la bitácora de la base aborta cualquier
  * escritura sin usuario. Nada se borra: un parámetro nuevo cierra el

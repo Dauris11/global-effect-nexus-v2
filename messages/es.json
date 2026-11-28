@@ -466,7 +466,7 @@
     "accessText": "Ingresa con tus credenciales institucionales al portal que corresponde a tu rol.",
     "accessRolesTitle": "Portales disponibles",
     "accessRolesText": "Estudiantes, docentes, administración y contabilidad tienen su propio espacio.",
-    "role_super_admin": "Dirección",
+    "role_owner": "Dirección",
     "role_admin": "Administración",
     "role_docente": "Docente",
     "role_estudiante": "Estudiante",
@@ -483,7 +483,8 @@
     "stats_students": "{n, plural, =1 {becado activo} other {becados activos}}",
     "stats_g360": "{n, plural, =1 {estudiante en Global Effect 360} other {estudiantes en Global Effect 360}}",
     "stats_sponsors": "{n, plural, =1 {patrocinador activo} other {patrocinadores activos}}",
-    "stats_meals": "{n, plural, =1 {inscrito hoy al almuerzo} other {inscritos hoy al almuerzo}}"
+    "stats_meals": "{n, plural, =1 {inscrito hoy al almuerzo} other {inscritos hoy al almuerzo}}",
+    "role_developer": "Desarrollo"
   },
   "comida": {
     "title": "Inscripción de comida",
@@ -525,8 +526,9 @@
       "administrativo": "Portal Administrativo",
       "contabilidad": "Portal de Contabilidad",
       "admin": "Portal Administrativo",
-      "super_admin": "Portal Administrativo",
-      "default": "Portal"
+      "owner": "Portal Administrativo",
+      "default": "Portal",
+      "developer": "Portal del Desarrollador"
     }
   },
   "dashboard": {
@@ -3954,14 +3956,15 @@
     }
   },
   "roles": {
-    "super_admin": "Administración total",
+    "owner": "Owner",
     "admin": "Administrativo",
     "docente": "Docente",
     "estudiante": "Estudiante",
     "contabilidad": "Contabilidad",
     "habitudes": "Profesor de Habitudes",
     "dir_habitudes": "Director de Habitudes",
-    "chofer": "Chofer"
+    "chofer": "Chofer",
+    "developer": "Developer"
   },
   "requests": {
     "studentEyebrow": "Mi portal",
@@ -7237,7 +7240,8 @@
     },
     "adjuntar": "Adjuntar PDF o foto",
     "quitarAdjunto": "Quitar adjunto",
-    "errorAdjunto": "No se pudo usar el adjunto: solo PDF, JPG, PNG o WebP de hasta 5 MB."
+    "errorAdjunto": "No se pudo usar el adjunto: solo PDF, JPG, PNG o WebP de hasta 5 MB.",
+    "rolDeveloper": "Desarrollador"
   },
   "colaborador": {
     "portal": {

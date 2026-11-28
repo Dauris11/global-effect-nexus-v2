@@ -8,7 +8,7 @@ import { ROLES, type Rol } from "../src/lib/rbac";
 /**
  * Guardián de UX: criterio de «terminado» del rediseño (docs/ux-rules.md). Recorre cada
  * ruta del sidebar de cada rol, a 1440×900, con el mecanismo real de «Ver como» (la
- * cookie `ge_ver_como`, que solo obedece si la sesión real es super_admin).
+ * cookie `ge_ver_como`, que solo obedece si la sesión real es owner).
  *
  * Cada regla es un `test.step`; las fallas son suaves (expect.soft) para que una corrida
  * las cuente todas, y cada resultado se anota en e2e/.resultados para `resumen-ux.mjs`.
@@ -140,11 +140,12 @@ async function medir(page: Page) {
 test.describe("ux-guard", () => {
   test.describe.configure({ mode: "default" });
 
-  for (const rol of ROLES) {
+  // `developer` no se recorre: tiene el mismo menú y permisos que `owner` y «Ver como» no puede asumirlo (haría falta una cuenta real).
+  for (const rol of ROLES.filter((r) => r !== "developer")) {
     test(`rol ${rol}`, async ({ page, context }) => {
       test.setTimeout(20 * 60_000);
 
-      if (rol !== "super_admin") {
+      if (rol !== "owner") {
         await context.addCookies([{ name: COOKIE_VER_COMO, value: rol, url: test.info().project.use.baseURL ?? "http://localhost:3000" }]);
       }
 
@@ -239,7 +240,7 @@ test.describe("ux-guard", () => {
     for (const vieja of ["/ejecutivo", "/bandeja", "/administrativo", "/contabilidad/mi-dia", "/portal/contabilidad", "/portal/profesor", "/portal/estudiante"]) {
       const r = await request.get(vieja, { maxRedirects: 0 });
       const destino = r.headers()["location"] ?? "";
-      anotar("super_admin", vieja, "inicio-unico", r.status() === 308 && /\/inicio$/.test(destino), `HTTP ${r.status()} → ${destino || "(sin location)"}`);
+      anotar("owner", vieja, "inicio-unico", r.status() === 308 && /\/inicio$/.test(destino), `HTTP ${r.status()} → ${destino || "(sin location)"}`);
     }
   });
 });

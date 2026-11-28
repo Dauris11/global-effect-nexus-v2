@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import {
   DIAS_PARA_ESCALAR,
   DIRECCION_VE_DE_TODOS,
@@ -28,14 +29,14 @@ export function esEscalado(item: PrioridadItem, ctx: ContextoPrioridades, diaDe:
  * Regla de visibilidad (una sola, para el motor y para las pruebas). Un ítem aparece si:
  *   (a) `responsableId === userId`; o
  *   (b) su tipo está en MIS responsabilidades y no tiene responsable asignado; o
- *   (c) es escalado y soy super_admin.
+ *   (c) es escalado y soy owner.
  * Más dos reglas de alcance: lo universal propio (tareas, mi solicitud respondida) y lo que
  * dirección ve de todas las personas.
  */
 export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: DiaDe): boolean {
   if (item.responsableId === ctx.userId) return true;
 
-  if (ctx.rol === "super_admin") {
+  if (esRolTotal(ctx.rol)) {
     if (DIRECCION_VE_DE_TODOS.includes(item.tipo)) return true;
     if (esEscalado(item, ctx, diaDe)) return true;
   }
@@ -45,7 +46,7 @@ export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: 
   if (!ctx.responsabilidades.has(item.tipo)) return false;
 
   // A dirección solo le llegan las compras por pagar de monto alto; el resto es de contabilidad.
-  if (ctx.rol === "super_admin" && item.tipo === "compra_aprobada_por_pagar") {
+  if (esRolTotal(ctx.rol) && item.tipo === "compra_aprobada_por_pagar") {
     return (item.montoUsd ?? 0) > UMBRAL_COMPRA_DIRECCION_USD;
   }
 
@@ -61,5 +62,5 @@ export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: 
 export function filtrarVisibles(items: readonly PrioridadItem[], ctx: ContextoPrioridades, diaDe: DiaDe): PrioridadItem[] {
   return items
     .filter((i) => esVisible(i, ctx, diaDe))
-    .map((i) => (ctx.rol === "super_admin" && i.responsableId !== ctx.userId && esEscalado(i, ctx, diaDe) ? { ...i, escalado: true } : i));
+    .map((i) => (esRolTotal(ctx.rol) && i.responsableId !== ctx.userId && esEscalado(i, ctx, diaDe) ? { ...i, escalado: true } : i));
 }

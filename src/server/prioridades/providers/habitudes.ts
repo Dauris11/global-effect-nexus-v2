@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import { consultar } from "@/lib/db";
 
 import { diaComoFecha, type ItemCrudo, type Proveedor } from "../tipos";
@@ -12,7 +13,7 @@ export const proveedorHabitudes: Proveedor = {
   nombre: "habitudes",
   tipos: ["visita_hoy", "visita_semana", "evidencia_faltante"],
   async getItems({ userId, rol, hoy }) {
-    const dirige = rol === "dir_habitudes" || rol === "super_admin";
+    const dirige = rol === "dir_habitudes" || esRolTotal(rol);
     const [borradores, sinVisitar, sinFotos] = await Promise.all([
       consultar<{ id: string; liceo: string; creado: string }>(
         `SELECT v.id, l.nombre AS liceo, v.creado_en::text AS creado

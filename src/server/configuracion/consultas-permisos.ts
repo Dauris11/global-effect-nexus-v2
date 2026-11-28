@@ -24,7 +24,7 @@ export type PersonaConPermisos = {
  * lee de ahí, así que lo que se ve aquí es lo que el sistema aplica.
  */
 export async function listarPermisosPorRol(): Promise<PermisosDeRol[]> {
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
   return leerPermisosPorRol();
 }
 
@@ -54,7 +54,7 @@ export async function leerPermisosPorRol(): Promise<PermisosDeRol[]> {
  * Todas las personas con los cambios personales que tienen sobre su rol.
  */
 export async function listarPersonasConPermisos(): Promise<PersonaConPermisos[]> {
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
 
   const [personas, excepciones] = await Promise.all([
     consultar<{

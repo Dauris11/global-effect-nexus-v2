@@ -35,7 +35,7 @@ export async function generateMetadata({
  * anuncio de la ventana sale solo: la cabecera de todas las pantallas internas
  * lo muestra al estudiante en cuanto esta pantalla lo guarda.
  *
- * Cierra con `academico.escribir` —`admin` y `super_admin`— y no con una lista
+ * Cierra con `academico.escribir` —`admin` y `owner`— y no con una lista
  * de roles: quien administre el catálogo académico es quien tenga ese permiso.
  *
  * Todo el catálogo activo es obligatorio y se cursa una materia por tanda: por

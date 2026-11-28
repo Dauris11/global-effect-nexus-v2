@@ -13,6 +13,7 @@ import {
   type ExcepcionPermiso,
   type Permiso,
   type Rol,
+  esRolTotal,
 } from "@/lib/rbac";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
@@ -55,7 +56,7 @@ export type UsuarioSesion = {
    * `registrar` y sin `aprobar` tiene el mismo rol que quien aprueba.
    */
   excepciones: ExcepcionPermiso[];
-  /** Permisos del rol efectivo según `rol_permiso` (editables por el super_admin). */
+  /** Permisos del rol efectivo según `rol_permiso` (editables por el owner). */
   permisosRol: Permiso[];
   /** Rol más excepciones, ya resuelto: lo que el menú puede mostrar. */
   permisos: Permiso[];
@@ -84,7 +85,7 @@ type FilaUsuario = {
 /**
  * Cookie con la que el administrador maestro se pone en el lugar de otro rol.
  *
- * Solo se honra si el rol REAL de la cuenta es `super_admin`: a cualquier otra
+ * Solo se honra si el rol REAL de la cuenta es `owner`: a cualquier otra
  * persona la cookie no le hace nada, así que falsificarla no sube privilegios.
  * Y como el rol efectivo pasa a ser el de menos permisos, mientras se «ve como»
  * también se ACTÚA como ese rol: lo que no podría hacer él, tampoco aquí.
@@ -138,10 +139,10 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
   let excepciones = fila.excepciones;
   let permisosRol = fila.permisos_rol;
 
-  if (rolReal === "super_admin") {
+  if (esRolTotal(rolReal)) {
     const verComo = (await cookies()).get(COOKIE_VER_COMO)?.value;
 
-    if (esRol(verComo) && verComo !== "super_admin") {
+    if (esRol(verComo) && !esRolTotal(verComo)) {
       rol = verComo;
       // Las excepciones son de la cuenta del administrador, no del rol que se
       // está mirando: mezclarlas enseñaría una pantalla que nadie de ese rol ve.
@@ -209,7 +210,7 @@ export async function requerirUsuario(): Promise<UsuarioSesion> {
  *
  * Es lo que necesitan los módulos compartidos: `/contabilidad` no es "de
  * contabilidad", es de quien tenga `finanzas.leer`, que hoy son ese rol y
- * `super_admin` y mañana puede ser otro. Comprobar el rol en esas pantallas
+ * `owner` y mañana puede ser otro. Comprobar el rol en esas pantallas
  * obligaría a repasarlas todas cada vez que cambie la tabla `rol_permiso`.
  *
  * A quien no lo tiene se le lleva a su portal, igual que en `requerirRol`: la
@@ -231,14 +232,14 @@ export async function requerirPermiso(
 /**
  * Exige poder dar clases de Global Effect 360: el permiso `docencia.impartir`
  * (nativo de `docente`, concedible a título personal a otro rol) o ser
- * `super_admin`, que supervisa. Comprueba el permiso y no el rol porque un
+ * `owner`, que supervisa. Comprueba el permiso y no el rol porque un
  * profesor de Habitudes puede dar una clase de 360 sin dejar de ser de Habitudes.
  */
 export async function requerirDocencia(): Promise<UsuarioSesion> {
   const usuario = await requerirUsuario();
 
   if (
-    usuario.rol !== "super_admin" &&
+    !esRolTotal(usuario.rol) &&
     !usuarioTienePermiso(usuario, "docencia.impartir")
   ) {
     redirigir(PORTAL_POR_ROL[usuario.rol], await getLocale());
@@ -258,7 +259,9 @@ export async function requerirRol(
 ): Promise<UsuarioSesion> {
   const usuario = await requerirUsuario();
 
-  if (!admitidos.includes(usuario.rol)) {
+  // owner y developer entran a cualquier portal: ven y hacen todo (los datos propios de un rol, como los de un
+  // estudiante, salen vacíos porque la cuenta no es de ese rol).
+  if (!admitidos.includes(usuario.rol) && !esRolTotal(usuario.rol)) {
     redirigir(PORTAL_POR_ROL[usuario.rol], await getLocale());
   }
 

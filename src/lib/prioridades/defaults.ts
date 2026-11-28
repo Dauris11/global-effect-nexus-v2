@@ -20,7 +20,9 @@ export const UNIVERSALES: readonly TipoPrioridad[] = [
 const delModulo = (m: string) => (Object.keys(MODULO_DE_TIPO) as TipoPrioridad[]).filter((t) => MODULO_DE_TIPO[t] === m);
 
 export const DEFAULTS_POR_ROL: Record<Rol, readonly TipoPrioridad[]> = {
-  super_admin: [
+  // developer ve lo mismo que owner (y puede mirar como cualquier rol).
+  developer: [],
+  owner: [
     "solicitud_pendiente_direccion",
     "renovacion_beca",
     "compra_aprobada_por_pagar",
@@ -66,5 +68,6 @@ export const UMBRAL_COMPRA_DIRECCION_USD = 1000;
 export const MARCADOR_CONFIGURADO = "__configurado__";
 
 export function responsabilidadesPorDefecto(rol: Rol): ReadonlySet<TipoPrioridad> {
-  return new Set(DEFAULTS_POR_ROL[rol] ?? []);
+  // developer ve lo mismo que owner.
+  return new Set(DEFAULTS_POR_ROL[rol === "developer" ? "owner" : rol] ?? []);
 }

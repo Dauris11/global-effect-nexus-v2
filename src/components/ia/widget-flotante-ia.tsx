@@ -1,5 +1,6 @@
 "use client";
 
+import { esRolTotal } from "@/lib/rbac";
 import { useEffect, useRef, useState } from "react";
 import { AlertCircle, HelpCircle, Lock, Paperclip, RotateCcw, Send, Sparkles, X, Zap } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -379,7 +380,7 @@ export function WidgetFlotanteIA({
           t("sugerencias.generalCrearTarea"),
           t("sugerencias.adminDashboard"),
           t("sugerencias.adminTareas"),
-          ...(usuario.rol === "super_admin" ? [t("sugerencias.adminAuditoria")] : []),
+          ...(esRolTotal(usuario.rol) ? [t("sugerencias.adminAuditoria")] : []),
         ]
       : [
           t("sugerencias.generalTareas"),
@@ -395,7 +396,8 @@ export function WidgetFlotanteIA({
     contabilidad: t("rolContabilidad"),
     docente: t("rolDocente"),
     admin: t("rolAdmin"),
-    super_admin: t("rolSuperAdmin"),
+    owner: t("rolSuperAdmin"),
+    developer: t("rolDeveloper"),
     habitudes: t("rolHabitudes"),
     dir_habitudes: t("rolDirHabitudes"),
     chofer: t("rolChofer"),
@@ -424,6 +426,9 @@ export function WidgetFlotanteIA({
     <>
       <motion.button
         type="button"
+        // Explícito: `motion` añade `tabindex="0"` en el servidor cuando hay `whileTap` y el cliente lo quita con
+        // «reducir movimiento» (la preferencia solo se conoce en el navegador): hidratación distinta. Un botón ya es enfocable.
+        tabIndex={0}
         onClick={toggleAbierto}
         aria-label={t("botonFlotante")}
         aria-expanded={abierto}

@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import { consultar, consultarUna } from "@/lib/db";
 import type {
   CandidatoParticipante,
@@ -18,7 +19,7 @@ export async function metricasReuniones(filtro?: {
   rol?: Rol;
   estudianteId?: string | null;
 }): Promise<MetricasReuniones> {
-  const esAdmin = filtro?.rol === "super_admin" || filtro?.rol === "admin";
+  const esAdmin = esRolTotal(filtro?.rol) || filtro?.rol === "admin";
   const parametros: unknown[] = [];
   let whereCond = "";
 
@@ -97,7 +98,7 @@ export async function metricasReuniones(filtro?: {
 /**
  * Lista las reuniones según el usuario y su rol.
  *
- * Los administradores y super_admins ven todas las reuniones de la Fundación.
+ * Los administradores y owners ven todas las reuniones de la Fundación.
  * Los demás roles (docentes, contabilidad, Habitudes, estudiantes) ven las
  * reuniones donde son organizadores o están convocados como participantes.
  */
@@ -112,7 +113,7 @@ export async function listarReuniones({
   estudianteId?: string | null;
   mes?: string;
 }): Promise<Reunion[]> {
-  const esAdmin = rol === "super_admin" || rol === "admin";
+  const esAdmin = esRolTotal(rol) || rol === "admin";
 
   let sql = `
     SELECT
@@ -372,7 +373,7 @@ export async function reunionesActivasParaUsuario({
   usuarioId: string;
   rol: Rol;
 }): Promise<ReunionActivaBanner[]> {
-  const esSuper = rol === "super_admin" || rol === "admin";
+  const esSuper = esRolTotal(rol) || rol === "admin";
   return consultar<ReunionActivaBanner>(
     `SELECT DISTINCT r.id,
             r.titulo,

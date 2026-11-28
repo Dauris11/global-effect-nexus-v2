@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import {
   BarChart3,
   BookOpen,
@@ -29,7 +30,12 @@ const NUEVA_SOLICITUD: AccesoRapido = { clave: "newRequest", href: "/administrat
 
 /** Tres accesos por rol (los de la maqueta). Cada ruta la protege su propia pantalla. */
 export const ACCESOS_RAPIDOS: Record<Rol, readonly AccesoRapido[]> = {
-  super_admin: [
+  developer: [
+    NUEVA_SOLICITUD,
+    { clave: "newProject", href: "/administrativo/proyectos", icono: FolderPlus },
+    { clave: "viewReports", href: "/reportes", icono: BarChart3 },
+  ],
+  owner: [
     NUEVA_SOLICITUD,
     { clave: "newProject", href: "/administrativo/proyectos", icono: FolderPlus },
     { clave: "viewReports", href: "/reportes", icono: BarChart3 },
@@ -76,7 +82,7 @@ export type BotonPrimario =
   | { tipo: "enlace"; etiqueta: "publishTask"; href: string };
 
 export function botonPrimarioDe(rol: Rol): BotonPrimario | null {
-  if (rol === "admin" || rol === "super_admin") {
+  if (rol === "admin" || esRolTotal(rol)) {
     return {
       tipo: "menu",
       etiqueta: "newRequest",

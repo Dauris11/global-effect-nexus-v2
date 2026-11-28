@@ -181,7 +181,7 @@ export async function docentesAsignables(): Promise<DocenteAsignable[]> {
        JOIN rol r ON r.id = u.rol_id
       WHERE u.activo
         AND (
-          r.nombre IN ('admin', 'super_admin')
+          r.nombre IN ('admin', 'owner')
           -- Quien imparte por permiso: el del rol, salvo que una excepción
           -- personal lo conceda o lo retire (un profesor de Habitudes al que
           -- se le habilitó la docencia aparece aquí sin ser docente).

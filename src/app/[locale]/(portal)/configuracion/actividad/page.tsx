@@ -61,7 +61,7 @@ const SELECT =
   "border-linea-fuerte bg-background h-11 w-full rounded-control border px-3 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /**
- * Actividad del equipo: quién hizo qué y a qué hora. Solo `super_admin`.
+ * Actividad del equipo: quién hizo qué y a qué hora. Solo `owner`.
  *
  * Junta el rastro de todos los módulos en una línea de tiempo y lo resume en
  * cuatro gráficas. No enseña el detalle de cada evento (para eso está el
@@ -78,7 +78,7 @@ export default async function PaginaActividad({
   const { locale } = await params;
   const consulta = await searchParams;
 
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
 
   const dias = rangoValido(consulta.dias);
   const usuarioId = consulta.usuario && UUID.test(consulta.usuario) ? consulta.usuario : null;

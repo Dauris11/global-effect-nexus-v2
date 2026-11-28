@@ -103,7 +103,7 @@ export function CajonAccionesRapidas({
       clave: "today",
       href: "/bandeja?tab=tareas",
       icono: CheckSquare,
-      roles: ["super_admin", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "chofer"],
+      roles: ["owner", "developer", "admin", "contabilidad", "docente", "habitudes", "dir_habitudes", "chofer"],
     },
     {
       clave: "meeting",
@@ -121,7 +121,7 @@ export function CajonAccionesRapidas({
       clave: "habitudes",
       href: "/habitudes",
       icono: Sparkles,
-      roles: ["super_admin", "admin", "docente", "habitudes", "dir_habitudes"],
+      roles: ["owner", "developer", "admin", "docente", "habitudes", "dir_habitudes"],
     },
     {
       clave: "ia",

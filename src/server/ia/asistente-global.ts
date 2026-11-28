@@ -13,8 +13,7 @@ import {
   usuarioTieneAlgunPermiso,
   usuarioTienePermiso,
   type Permiso,
-  type Rol,
-} from "@/lib/rbac";
+  type Rol, esRolTotal } from "@/lib/rbac";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { revisarEntrada } from "@/lib/ia-seguridad";
 import { conversarComo } from "@/server/ia/agente";
@@ -76,10 +75,10 @@ const conPermiso = (permiso: Permiso) => (usuario: UsuarioSesion) =>
 const conAlguno = (...permisos: Permiso[]) => (usuario: UsuarioSesion) =>
   usuarioTieneAlgunPermiso(usuario, permisos);
 const soloRoles = (...roles: Rol[]) => (usuario: UsuarioSesion) =>
-  roles.includes(usuario.rol);
+  esRolTotal(usuario.rol) || roles.includes(usuario.rol);
 /** Calco de `requerirDocencia`. */
 const daClases = (usuario: UsuarioSesion) =>
-  usuario.rol === "super_admin" || usuarioTienePermiso(usuario, "docencia.impartir");
+  esRolTotal(usuario.rol) || usuarioTienePermiso(usuario, "docencia.impartir");
 const cualquiera = () => true;
 
 const CATALOGO_ACCIONES: DefinicionAccion[] = [
@@ -96,7 +95,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Actividad del equipo",
     descripcion: "Quién hizo qué y a qué hora, con gráficas y línea de tiempo.",
     ruta: "/configuracion/actividad",
-    puede: soloRoles("super_admin"),
+    puede: soloRoles("owner"),
   },
   {
     identificadores: [
@@ -345,7 +344,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Pendientes",
     descripcion: "Pendientes: lo que espera decisión, mis tareas, el equipo, proyectos, reuniones, notificaciones y gráficas.",
     ruta: "/bandeja?tab=decidir",
-    puede: soloRoles("admin", "super_admin"),
+    puede: soloRoles("admin", "owner"),
   },
   {
     identificadores: [
@@ -357,7 +356,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Registro de Auditoría",
     descripcion: "Bitácora inmutable de acciones realizadas en el sistema.",
     ruta: "/configuracion/auditoria",
-    puede: soloRoles("super_admin"),
+    puede: soloRoles("owner"),
   },
   {
     identificadores: [
@@ -367,7 +366,7 @@ const CATALOGO_ACCIONES: DefinicionAccion[] = [
     etiqueta: "Configuración del Sistema",
     descripcion: "Parámetros institucionales y preferencias de la plataforma.",
     ruta: "/configuracion",
-    puede: soloRoles("admin", "super_admin"),
+    puede: soloRoles("admin", "owner"),
   },
   {
     identificadores: [

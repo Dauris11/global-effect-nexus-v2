@@ -11,7 +11,7 @@
  * mal para la cuenta que gobierna la institución en producción.
  *
  * Orden obligatorio (regla de invitación, migración 0016):
- *   1. Existe la fila en `usuario` con rol `super_admin`  ← la invitación
+ *   1. Existe la fila en `usuario` con rol `owner`  ← la invitación
  *   2. Se crea la identidad en `auth.users`
  *   3. El trigger `trg_auth_user_created` enlaza por email; el script vuelve a
  *      enlazar explícitamente para ser idempotente aunque el trigger no esté.
@@ -97,11 +97,11 @@ const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await db.connect();
 
 try {
-  // ── 1. La invitación: perfil de aplicación con rol super_admin ────────────
-  const { rows: roles } = await db.query(`SELECT id FROM rol WHERE nombre = 'super_admin'`);
+  // ── 1. La invitación: perfil de aplicación con rol owner ────────────
+  const { rows: roles } = await db.query(`SELECT id FROM rol WHERE nombre = 'owner'`);
   if (!roles[0]) {
     throw new Error(
-      "No existe el rol 'super_admin'. Aplica las migraciones primero: npm run db:migrate",
+      "No existe el rol 'owner'. Aplica las migraciones primero: npm run db:migrate",
     );
   }
 
@@ -114,7 +114,7 @@ try {
             rol_id = EXCLUDED.rol_id`,
     [email, nombre, roles[0].id],
   );
-  console.log(`✓ Perfil de aplicación (super_admin) — ${email}`);
+  console.log(`✓ Perfil de aplicación (owner) — ${email}`);
 
   // ── 2. La identidad en Supabase Auth ─────────────────────────────────────
   const existente = await buscarAuthUser(email);

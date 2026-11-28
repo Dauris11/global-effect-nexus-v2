@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import { consultar } from "@/lib/db";
 import type { PrioridadTarea } from "@/lib/prioridades/types";
 
@@ -39,7 +40,7 @@ export const proveedorTareas: Proveedor = {
               )
         ORDER BY t.fecha_limite
         LIMIT 300`,
-      [userId, rol === "super_admin", hoy],
+      [userId, esRolTotal(rol), hoy],
     );
 
     // Una tarea con varias personas asignadas sale una vez; si una soy yo, gana la mía.

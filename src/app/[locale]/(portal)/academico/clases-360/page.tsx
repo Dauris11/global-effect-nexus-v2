@@ -42,7 +42,7 @@ export async function generateMetadata({
  * tres roles y ven cosas distintas, y la diferencia es UN parámetro:
  *
  *   · `docente` → `docenteId = usuario.id`: solo sus clases.
- *   · `admin` y `super_admin` → `docenteId = null`: el programa completo.
+ *   · `admin` y `owner` → `docenteId = null`: el programa completo.
  *
  * No es una comodidad, es la frontera: las acciones aplican la misma condición
  * dentro de sus WHERE, así que un docente con el id de una clase ajena tampoco

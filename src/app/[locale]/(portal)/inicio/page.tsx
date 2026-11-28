@@ -1,3 +1,4 @@
+import { esRolTotal } from "@/lib/rbac";
 import type { Metadata } from "next";
 import { CalendarDays, CheckCircle2, ChevronRight } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
@@ -57,10 +58,10 @@ export default async function PaginaInicio({
   const [{ locale }, { vista: vistaPedida, persona }] = await Promise.all([params, searchParams]);
   const real = await requerirUsuario();
 
-  const esDireccion = real.rolReal === "super_admin";
+  const esDireccion = esRolTotal(real.rolReal);
   const ajeno = esDireccion && persona && UUID.test(persona) ? await usuarioSesionDe(persona) : null;
   const usuario = ajeno ?? real;
-  const vista: Vista = vistaPedida === "esperando" ? "esperando" : vistaPedida === "equipo" && real.rol === "super_admin" && !ajeno ? "equipo" : "mias";
+  const vista: Vista = vistaPedida === "esperando" ? "esperando" : vistaPedida === "equipo" && esRolTotal(real.rol) && !ajeno ? "equipo" : "mias";
 
   const rol = usuario.rol;
   const [t, lista, mensajes, agenda, proyectos, contexto, cifras, equipo] = await Promise.all([
@@ -69,7 +70,7 @@ export default async function PaginaInicio({
     mensajesCliente(["priorities", "estados"]),
     agendaDeHoy(usuario),
     proyectosQueLidero(usuario.id),
-    rol === "admin" || rol === "super_admin" ? contextoInstitucional() : Promise.resolve([]),
+    rol === "admin" || esRolTotal(rol) ? contextoInstitucional() : Promise.resolve([]),
     rol === "contabilidad" ? cifrasContables() : Promise.resolve(null),
     vista === "equipo" ? equipoConVencidas() : Promise.resolve([]),
   ]);
@@ -162,7 +163,7 @@ export default async function PaginaInicio({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="min-w-0 space-y-4 lg:col-span-2">
           <nav aria-label={t("tabs.label")} className="flex flex-wrap gap-2">
-            {(["mias", "esperando", ...(real.rol === "super_admin" && !ajeno ? (["equipo"] as const) : [])] as Vista[]).map((v) => (
+            {(["mias", "esperando", ...(esRolTotal(real.rol) && !ajeno ? (["equipo"] as const) : [])] as Vista[]).map((v) => (
               <Link
                 key={v}
                 href={aVista(v)}

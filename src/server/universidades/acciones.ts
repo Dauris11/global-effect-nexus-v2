@@ -14,7 +14,7 @@ import { subirAvatar } from "@/lib/supabase/almacen";
  * Escrituras del catálogo universidad → carrera → pénsum → materias.
  *
  * El catálogo es de la institución, así que escribir exige `catalogo.escribir`
- * (admin y super_admin). Vincular a un estudiante con el catálogo es edición de
+ * (admin y owner). Vincular a un estudiante con el catálogo es edición de
  * su expediente: `expedientes.escribir`. Nada se borra: una universidad o
  * carrera con estudiantes colgando se desactiva, y las FK son RESTRICT para que
  * ni un SQL a mano se lleve un pénsum por delante.

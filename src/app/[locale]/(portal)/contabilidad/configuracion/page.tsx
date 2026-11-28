@@ -38,7 +38,7 @@ export async function generateMetadata({
 
 /**
  * Configuración contable (§4.13). Entra quien tiene `contabilidad.leer`
- * —también `super_admin`, que audita—, pero los botones solo aparecen con
+ * —también `owner`, que audita—, pero los botones solo aparecen con
  * el permiso de escribir. Esconderlos no protege nada: cada server action
  * vuelve a comprobar el permiso.
  */

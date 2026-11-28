@@ -58,13 +58,13 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
 8. Psicología ya no existe (migración `0030`, oct 2026): no reintroducirla.
 9. Los cursos técnicos ya no existen (migración `0047`, oct 2026): no
    reintroducirlos. Solo hay becados y Global Effect 360.
-10. Roles definitivos (migración `0065`): `super_admin`, `admin`, `docente`,
-    `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes`, `chofer`.
-    `colaborador` ya no existe: no reintroducirlo. Para decidir qué puede una
-    PERSONA usa `usuarioTienePermiso(usuario, …)` (rol en `rol_permiso` +
-    excepciones de `usuario_permiso`), nunca `tienePermiso(rol, …)`, que es
-    solo el reparto de fábrica. Las funciones fuera del rol (p. ej. dar clases
-    de 360) se controlan por permiso (`docencia.impartir`), no por `rol ===`.
+10. Roles (migraciones `0065` y `0138`): `owner` (los dueños de la Fundación: TODOS los permisos y «Ver como»;
+    antes `super_admin`), `developer` (equipo de desarrollo, mismos permisos que owner; no es dueño de nada),
+    `admin`, `docente`, `estudiante`, `contabilidad`, `habitudes`, `dir_habitudes` y `chofer`. `colaborador` ya no
+    existe: no lo reintroduzcas, y `super_admin` tampoco. Owner y developer pasan cualquier `requerirRol` (`esRolTotal`
+    en `src/lib/rbac.ts`). Para decidir qué puede una PERSONA usa `usuarioTienePermiso(usuario, …)`, nunca
+    `tienePermiso(rol, …)`, que es solo el reparto de fábrica. Las funciones fuera del rol (p. ej. dar clases de 360)
+    se controlan por permiso (`docencia.impartir`), no por `rol ===`.
 11. **Git:** todo se commitea y se sube directo a `main`, sin ramas ni PR. Antes
     de empujar, `git pull --rebase origin main` (hay más de una persona
     empujando). La base de Supabase es compartida: una migración y el código
@@ -85,7 +85,7 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     toca, del motor `src/server/prioridades`). `/ejecutivo`, `/bandeja`, `/administrativo`,
     `/contabilidad/mi-dia`, `/portal/contabilidad`, `/portal/profesor` y `/portal/estudiante`
     redirigen (308) ahí. «Pendientes», Tareas y Torre de control como inicios ya no existen: no los
-    recrees. El tablero ejecutivo vive en `/reportes/resumen` (solo super_admin), sin entrada en el menú.
+    recrees. El tablero ejecutivo vive en `/reportes/resumen` (solo owner), sin entrada en el menú.
 16. **Transporte:** solo lo usan los estudiantes de Rincón, Jima, Ranchito, Saba
     Rey y Rancho Viejo. Comedor y transporte no se acoplan.
 17. **Permisos reales** viven en `rol_permiso` (base de datos); `rbac.ts` es el

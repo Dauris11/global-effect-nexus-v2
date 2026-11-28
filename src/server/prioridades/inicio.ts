@@ -103,7 +103,7 @@ export async function equipoConVencidas(): Promise<PersonaDelEquipo[]> {
        JOIN rol r ON r.id = u.rol_id
        LEFT JOIN tarea_asignado ta ON ta.usuario_id = u.id
        LEFT JOIN tarea t ON t.id = ta.tarea_id
-      WHERE u.activo AND r.nombre NOT IN ('estudiante', 'super_admin') AND u.nombre NOT ILIKE 'Sistema%'
+      WHERE u.activo AND r.nombre NOT IN ('estudiante', 'owner') AND u.nombre NOT ILIKE 'Sistema%'
       GROUP BY u.id, u.nombre, r.nombre
       ORDER BY vencidas DESC, u.nombre`,
   );

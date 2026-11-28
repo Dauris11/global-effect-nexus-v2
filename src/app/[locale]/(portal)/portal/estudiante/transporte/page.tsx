@@ -38,7 +38,7 @@ export default async function PaginaTransporteEstudiante({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const usuario = await requerirRol(["estudiante", "admin", "super_admin"]);
+  const usuario = await requerirRol(["estudiante", "admin", "owner"]);
   const estudiante = await estudianteDeUsuario(usuario.id);
 
   const [t, viajeEnVivo, rutas, horarios, inscripciones, invitados, vivienda, mensajes] = await Promise.all([

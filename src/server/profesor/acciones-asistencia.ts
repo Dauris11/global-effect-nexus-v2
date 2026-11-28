@@ -13,7 +13,7 @@ import { usuarioTienePermiso } from "@/lib/rbac";
  *
  * DOS PUERTAS con el mismo alcance que las tareas y las notas:
  *
- *   · `academico.escribir` (`admin` y `super_admin`) sobre cualquier clase.
+ *   · `academico.escribir` (`admin` y `owner`) sobre cualquier clase.
  *   · `docencia.impartir` (`docente` o quien dé clases por excepción) sobre SUS
  *     propias clases (`materia_360.docente_id`), comprobado dentro del SQL.
  *

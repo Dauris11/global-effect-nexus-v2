@@ -19,8 +19,8 @@ const est = await consultarUna<{ id: string }>(
   `INSERT INTO estudiante (nombre, matricula, universidad_id, carrera_id, pensum_id) VALUES ('Zzprueba Notas Temporal', '9999-0002', $1, $2, $3) RETURNING id`,
   [uni!.id, pensum!.carrera_id, pensum!.id],
 );
-const admin = await consultarUna<{ id: string; nombre: string }>(`SELECT u.id, u.nombre FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre = 'super_admin' ORDER BY u.created_at LIMIT 1`);
-const usuario = { id: admin!.id, nombre: admin!.nombre, rol: "super_admin" as const, idioma: "es" as const };
+const admin = await consultarUna<{ id: string; nombre: string }>(`SELECT u.id, u.nombre FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre = 'owner' ORDER BY u.created_at LIMIT 1`);
+const usuario = { id: admin!.id, nombre: admin!.nombre, rol: "owner" as const, idioma: "es" as const };
 const ctx = { agente: "agente_direccion" };
 let fallo: unknown = null;
 

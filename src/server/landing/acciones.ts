@@ -13,7 +13,7 @@ import { TAG_LANDING } from "@/server/landing/consultas";
 /**
  * Anuncios del hero de la portada, desde administración.
  *
- * Las cuatro acciones comparten la misma puerta: rol `admin` o `super_admin` y
+ * Las cuatro acciones comparten la misma puerta: rol `admin` o `owner` y
  * permiso `landing.administrar`, que existe en la base desde la migración 0015 y
  * está asignado a esos dos roles. El rol se comprueba con `requerirRol` —que
  * redirige a quien no toca— y el permiso aparte, porque un rol puede perderlo y
@@ -65,7 +65,7 @@ export async function guardarAnuncio(
   const permiso = await comprobarPermiso();
   if (permiso) return permiso;
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const id = String(datos.get("id") ?? "").trim();
   const titulo = recortar(datos.get("titulo"), LARGO.titulo);
@@ -139,7 +139,7 @@ export async function alternarAnuncio(
   const permiso = await comprobarPermiso();
   if (permiso) return permiso;
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const id = String(datos.get("id") ?? "");
   const activar = String(datos.get("activar") ?? "") === "1";
@@ -196,7 +196,7 @@ export async function moverAnuncio(
   const permiso = await comprobarPermiso();
   if (permiso) return permiso;
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const id = String(datos.get("id") ?? "");
   const direccion = String(datos.get("direccion") ?? "");
@@ -264,7 +264,7 @@ export async function eliminarAnuncio(
   const permiso = await comprobarPermiso();
   if (permiso) return permiso;
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const id = String(datos.get("id") ?? "");
 
@@ -299,7 +299,7 @@ export async function eliminarAnuncio(
  * `if (permiso) return permiso;` y no se olvide de comprobarlo.
  */
 async function comprobarPermiso(): Promise<EstadoAnuncio | null> {
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   return usuarioTienePermiso(usuario, "landing.administrar")
     ? null

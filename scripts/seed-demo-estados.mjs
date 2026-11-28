@@ -494,7 +494,7 @@ try {
     for (const [k, [remitente_id, contenido]] of MENSAJES.entries()) await upsert("chat_mensaje", { id: uid(`msg:${i}:${k}`), canal_id: canal, remitente_id, contenido, tipo: "texto", created_at: instante(0, -(k + 1) * 2) });
     cuenta.chat_canal = (cuenta.chat_canal ?? 0) + 1;
   }
-  const todos = { ...CORREO, estudiante: U.estudiante, super_admin: U.admin };
+  const todos = { ...CORREO, estudiante: U.estudiante, owner: U.admin };
   const NOTIS = [
     ["solicitud", "Tu solicitud cambió de estado", "Coordinación actualizó tu solicitud.", "/portal/estudiante/solicitudes"],
     ["tarea", "Tienes una tarea por vencer", "Una tarea vence en los próximos 3 días.", "/bandeja?tab=tareas"],

@@ -13,13 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ROLES, type Rol } from "@/lib/rbac";
+import { ROLES, esRolTotal, type Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { verComoRol } from "@/server/auth/acciones";
 
 /**
  * Control del administrador maestro para mirar el sistema con los ojos de otro
- * rol. Solo se pinta si el rol REAL es `super_admin`; la acción lo vuelve a
+ * rol. Solo se pinta si el rol REAL es `owner`; la acción lo vuelve a
  * comprobar en el servidor, así que esconderlo no es lo que protege.
  *
  * Mientras se «ve como», sale como franja fija encima de la cabecera: olvidar
@@ -30,7 +30,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
   const tRoles = useTranslations("roles");
   const [pendiente, iniciar] = useTransition();
 
-  if (rolReal !== "super_admin") return null;
+  if (!esRolTotal(rolReal)) return null;
 
   const cambiar = (destino: Rol) => iniciar(() => verComoRol(destino));
   const viendoOtro = rol !== rolReal;
@@ -52,7 +52,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel>{t("label")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {ROLES.filter((r) => r !== "super_admin").map((r) => (
+        {ROLES.filter((r) => !esRolTotal(r)).map((r) => (
           <DropdownMenuItem
             key={r}
             onSelect={() => cambiar(r)}
@@ -80,7 +80,7 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
         {menu}
         <Button
           size="sm"
-          onClick={() => cambiar("super_admin")}
+          onClick={() => cambiar(rolReal)}
           cargando={pendiente}
           className="gap-1.5"
         >

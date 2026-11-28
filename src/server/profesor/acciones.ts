@@ -16,7 +16,7 @@ import { propuestaDeInscripcion } from "@/server/profesor/consultas";
  *
  * QUIÉN PUEDE. Dos puertas, y las dos valen:
  *
- *   · `academico.escribir` —`admin` y `super_admin`— sobre cualquier clase.
+ *   · `academico.escribir` —`admin` y `owner`— sobre cualquier clase.
  *   · el rol `docente` sobre SUS clases, comprobado en el propio WHERE con
  *     `materia_360.docente_id`.
  *
@@ -302,7 +302,7 @@ export async function revisarEntrega(
  * `reprobada`, y `aprobada` es lo que cuenta como "materia dada" en el avance
  * del programa. Borrar la nota la devuelve a `cursando`.
  *
- * Pide `calificaciones.registrar` —`docente` y `super_admin`— o
+ * Pide `calificaciones.registrar` —`docente` y `owner`— o
  * `docencia.impartir`, y no `academico.escribir`: coordinación monta el
  * programa pero no pone notas, y eso está así en `rbac.ts` a propósito. Quien
  * da una clase por permiso (un profesor de Habitudes) la cierra igual que un

@@ -38,7 +38,7 @@ const pool = new pg.Pool({
 
 // Usuario de sistema para el contexto de la bitácora durante el seed.
 // Este usuario DEBE existir en public.usuario antes de correr el seed.
-// En Supabase, el primer super_admin tiene este email por defecto.
+// En Supabase, el primer owner tiene este email por defecto.
 const SISTEMA_EMAIL = process.env.ADMIN_MAESTRO_EMAIL ?? "admin@globaleffect.org";
 
 async function obtenerIdUsuarioSistema(cliente) {

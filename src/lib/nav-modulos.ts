@@ -235,7 +235,8 @@ export const MODULOS: Record<string, ModuloNav> = {
 
 /** Los módulos del sidebar de cada rol, en orden. Máximo 9 sin contar los de `pie`. */
 export const SIDEBAR_POR_ROL: Record<Rol, readonly string[]> = {
-  super_admin: ["inicio", "estudiantes", "academico", "patrocinadores", "solicitudes", "proyectos", "operaciones", "habitudes", "contabilidad", "calendario", "reportes", "configuracion"],
+  owner: ["inicio", "estudiantes", "academico", "patrocinadores", "solicitudes", "proyectos", "operaciones", "habitudes", "contabilidad", "calendario", "reportes", "configuracion"],
+  developer: ["inicio", "estudiantes", "academico", "patrocinadores", "solicitudes", "proyectos", "operaciones", "habitudes", "contabilidad", "calendario", "reportes", "configuracion"],
   admin: ["inicio", "estudiantes", "academico", "patrocinadores", "solicitudes", "proyectos", "operaciones", "habitudes", "calendario", "reportes", "configuracion"],
   contabilidad: ["inicio", "registrar", "bancosCajas", "porPagar", "presupuesto", "reportesConta", "cierre", "configConta"],
   docente: ["inicio", "misClasesDocente", "porCalificar", "calendarioPrincipal", "solicitudes"],

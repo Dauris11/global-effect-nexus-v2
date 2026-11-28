@@ -11,7 +11,7 @@ import { crearIdentidad, reiniciarContrasena } from "@/lib/supabase/admin";
 
 /**
  * Gestión de cuentas del equipo. Solo `usuarios.administrar`, que en la base lo
- * tiene únicamente `super_admin`.
+ * tiene únicamente `owner`.
  *
  * El permiso se exige con `requerirPermiso` y no con una lista de roles: si
  * mañana se crea otro rol de administración, basta con darle el permiso en la

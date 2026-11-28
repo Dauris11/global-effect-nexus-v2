@@ -1,5 +1,6 @@
 "use client";
 
+import { esRolTotal } from "@/lib/rbac";
 import { useState, useTransition } from "react";
 import {
   AlertCircle,
@@ -24,7 +25,8 @@ import { guardarPermisoRol } from "@/server/configuracion/acciones-permisos";
 import type { PermisosDeRol } from "@/server/configuracion/consultas-permisos";
 
 const ICONO_ROL: Record<Rol, LucideIcon> = {
-  super_admin: Shield,
+  owner: Shield,
+  developer: Shield,
   admin: Shield,
   docente: GraduationCap,
   estudiante: UserRound,
@@ -35,13 +37,13 @@ const ICONO_ROL: Record<Rol, LucideIcon> = {
 };
 
 /**
- * Lo que trae cada rol. El super_admin no aparece: su acceso es total y no se
+ * Lo que trae cada rol. El owner no aparece: su acceso es total y no se
  * edita, así que ofrecerlo solo invitaría a un error.
  */
 export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
   const t = useTranslations("permisosAdmin");
   const tRoles = useTranslations("roles");
-  const editables = roles.filter((r) => r.rol !== "super_admin");
+  const editables = roles.filter((r) => !esRolTotal(r.rol));
 
   const [seleccionado, setSeleccionado] = useState<Rol>(
     editables[0]?.rol ?? "admin",

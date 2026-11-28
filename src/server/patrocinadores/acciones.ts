@@ -13,7 +13,7 @@ import {
  * Alta y edición de patrocinadores.
  *
  * Una sola puerta: `patrocinadores.escribir`, que hoy tienen `admin` y
- * `super_admin`. `contabilidad` tiene solo `patrocinadores.leer`: ve el
+ * `owner`. `contabilidad` tiene solo `patrocinadores.leer`: ve el
  * directorio y los aportes comprometidos —los necesita para cuadrar— pero no
  * cambia con quién tiene la Fundación un acuerdo.
  *

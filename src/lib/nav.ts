@@ -73,7 +73,7 @@ import { tienePermiso } from "@/lib/rbac";
  * inventario: aquel describe un menú de administrador con Contabilidad
  * dentro, pero en la base de datos `admin` no tiene `finanzas.leer`. En vez de mantener dos menús casi
  * idénticos, el de administración se declara completo y cada entrada sensible
- * se marca con su permiso: `super_admin` las ve todas y `admin` solo las que
+ * se marca con su permiso: `owner` las ve todas y `admin` solo las que
  * le corresponden. Así el menú nunca ofrece una puerta que el servidor va a
  * cerrar. Un área que se queda sin ninguna entrada no llega a dibujar su
  * icono en el raíl.
@@ -386,13 +386,13 @@ const MENU_ADMINISTRACION: AreaNav[] = [
     ],
   },
   {
-    // Reservado a contabilidad y super_admin.
+    // Reservado a contabilidad y owner.
     clave: "finanzas",
     etiqueta: "finances",
     icono: DollarSign,
     secciones: [
       {
-        // `contabilidad.leer` y no `finanzas.leer`: super_admin entra a
+        // `contabilidad.leer` y no `finanzas.leer`: owner entra a
         // mirar (y a auditar), pero las acciones de escritura del módulo le
         // responden que no. `admin` no tiene ninguno de los dos. Los módulos
         // salen del registro del departamento, igual que el menú de contabilidad.
@@ -452,7 +452,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: BarChart3,
             algunPermiso: ["operaciones.leer", "academico.leer", "finanzas.leer"],
           },
-          // Universal: `requerirRol(["admin", "super_admin"])`, o sea, acceso por
+          // Universal: `requerirRol(["admin", "owner"])`, o sea, acceso por
           // ROL y no por permiso; este menú ya es solo de esos dos roles.
           { etiqueta: "sitemap", href: "/sitemap", icono: Map, universal: true },
         ],
@@ -467,7 +467,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
       {
         items: [
           // Universal: la entrada de Configuración es por ROL
-          // (`requerirRol(["admin", "super_admin"])`); cada tarjeta de dentro
+          // (`requerirRol(["admin", "owner"])`); cada tarjeta de dentro
           // se filtra con su permiso.
           { etiqueta: "settings", href: "/configuracion", icono: Settings, universal: true },
           {
@@ -477,7 +477,7 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             permiso: "usuarios.administrar",
           },
           // La cara pública del sistema. Va con su permiso, que es el que la
-          // migración 0015 creó para esto: `admin` y `super_admin` lo tienen,
+          // migración 0015 creó para esto: `admin` y `owner` lo tienen,
           // y si alguna vez se le quita a uno, la entrada desaparece con él.
           {
             etiqueta: "homeAnnouncements",
@@ -998,13 +998,13 @@ const AREA_DOCENCIA: AreaNav = {
   ],
 };
 
-// Solo `super_admin`: el tablero de Dirección/Junta va primero y la bandeja sigue debajo.
+// Solo `owner`: el tablero de Dirección/Junta va primero y la bandeja sigue debajo.
 const MENU_SUPER_ADMIN: AreaNav[] = [
   {
     clave: "inicio",
     etiqueta: "home",
     icono: Home,
-    // Universal: `requerirRol(["super_admin"])`. Es acceso por ROL (Dirección/Junta),
+    // Universal: `requerirRol(["owner"])`. Es acceso por ROL (Dirección/Junta),
     // no un permiso que se reparta; el menú ya es solo de ese rol.
     secciones: [
       {
@@ -1020,7 +1020,8 @@ const AREAS_POR_CAPACIDAD: readonly { permiso: Permiso; area: AreaNav }[] = [
 ];
 
 const MENU_POR_ROL: Record<Rol, AreaNav[]> = {
-  super_admin: MENU_SUPER_ADMIN,
+  owner: MENU_SUPER_ADMIN,
+  developer: MENU_SUPER_ADMIN,
   admin: MENU_ADMINISTRACION,
   docente: MENU_DOCENTE,
   estudiante: MENU_ESTUDIANTE,

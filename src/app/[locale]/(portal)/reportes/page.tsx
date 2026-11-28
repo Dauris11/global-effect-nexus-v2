@@ -40,8 +40,7 @@ import {
 import {
   type Permiso,
   usuarioTieneAlgunPermiso,
-  usuarioTienePermiso,
-} from "@/lib/rbac";
+  usuarioTienePermiso, esRolTotal } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { periodosSimples, resumenDeNotas } from "@/server/academico/consultas";
 import {
@@ -106,7 +105,7 @@ export async function generateMetadata({
  *
  *   1. **El permiso cierra pestañas, no la puerta.** El esqueleto pedía
  *      `finanzas.leer` para entrar, que solo tienen contabilidad y
- *      `super_admin`; con eso, coordinación —que lleva los proyectos y el
+ *      `owner`; con eso, coordinación —que lleva los proyectos y el
  *      académico— no podía ver un informe de su propio trabajo. Ahora entra
  *      quien tenga cualquiera de los tres permisos y ve **solo sus pestañas**.
  *      La entrada del menú se movió a Herramientas por la misma razón.
@@ -177,7 +176,7 @@ export default async function PaginaReportes({
         titulo={t("title")}
         acciones={
           // El tablero ejecutivo dejó de ser la entrada de Dirección: vive aquí, sin entrada en el menú.
-          usuario.rol === "super_admin" ? (
+          esRolTotal(usuario.rol) ? (
             <Link href="/reportes/resumen" className={variantesBoton({ variant: "secondary" })}>
               {t("executiveSummary")}
             </Link>

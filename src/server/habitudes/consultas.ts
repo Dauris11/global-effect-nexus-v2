@@ -137,12 +137,12 @@ export async function listarLiceosHabitudes(): Promise<HabitudesLiceo[]> {
 /**
  * Condición SQL que decide si un usuario activo puede actuar como facilitador
  * de Habitudes (permiso `habitudes.evidencias.subir` por su rol o por excepción
- * en `usuario_permiso`, excluyendo super_admin y admin administrativos salvo
+ * en `usuario_permiso`, excluyendo owner y admin administrativos salvo
  * que sean del programa).
  */
 const CONDICION_FACILITADOR_HABITUDES = `
   u.activo = true
-  AND r.nombre NOT IN ('super_admin', 'admin', 'estudiante', 'contabilidad', 'chofer')
+  AND r.nombre NOT IN ('owner', 'admin', 'estudiante', 'contabilidad', 'chofer')
   AND EXISTS (
     SELECT 1
       FROM public.permiso p

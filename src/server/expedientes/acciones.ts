@@ -36,7 +36,7 @@ import { resolverCatalogo } from "@/server/universidades/catalogo-estudiante";
  * diferencia entre crear y corregir es el INSERT frente al UPDATE, no setenta
  * campos leídos dos veces.
  *
- * Escribe quien tenga `expedientes.escribir`: `admin` y `super_admin` desde
+ * Escribe quien tenga `expedientes.escribir`: `admin` y `owner` desde
  * la 0030, sobre cualquier estudiante. Hasta entonces el expediente era de
  * psicología con aislamiento por fila (`psicologo_id`); el departamento se
  * cerró, la columna se borró y el filtro con ella. Se comprueba el permiso y
@@ -721,7 +721,7 @@ export type EstadoEliminarExpediente = {
  * cambiar el estado a inactivo, graduado o suspendido: sale del trabajo diario
  * sin perder ese historial.
  *
- * Borra quien tenga `expedientes.eliminar`: `admin` y `super_admin`.
+ * Borra quien tenga `expedientes.eliminar`: `admin` y `owner`.
  */
 export async function eliminarExpediente(
   _previo: EstadoEliminarExpediente,
@@ -847,7 +847,7 @@ async function avisarPatrocinioVigente(estudianteId: string, nombre: string, nue
     if (beca.length === 0) return;
 
     const admins = await consultar<{ id: string }>(
-      `SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.activo AND r.nombre IN ('admin', 'super_admin')`,
+      `SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.activo AND r.nombre IN ('admin', 'owner')`,
     );
 
     for (const a of admins) {

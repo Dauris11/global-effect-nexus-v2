@@ -18,7 +18,7 @@ const PASSWORD = process.env.DEMO_PASSWORD ?? "GlobalEffect2026!";
 
 /** Un usuario por rol institucional, para poder probar cada portal. */
 const USUARIOS = [
-  { email: "admin@globaleffect.org",         nombre: "Administrador Global Effect", rol: "super_admin" },
+  { email: "admin@globaleffect.org",         nombre: "Administrador Global Effect", rol: "owner" },
   { email: "coordinacion@globaleffect.org",  nombre: "Marisol Peña",                rol: "admin" },
   { email: "docente@globaleffect.org",       nombre: "Roberto Gómez",               rol: "docente" },
   { email: "estudiante@globaleffect.org",    nombre: "Yeimy Rodríguez",             rol: "estudiante" },

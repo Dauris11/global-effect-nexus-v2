@@ -31,7 +31,7 @@ import type { Herramienta } from "./tipos";
  */
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ADMINISTRATIVOS = ["admin", "super_admin"] as const;
+const ADMINISTRATIVOS = ["admin", "owner", "developer"] as const;
 
 const texto = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const frase = (es: string, en: string, idioma: "es" | "en") => (idioma === "en" ? en : es);

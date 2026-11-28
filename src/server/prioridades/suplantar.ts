@@ -5,7 +5,7 @@ import { esPermiso, esRol, permisosEfectivos } from "@/lib/rbac";
 /**
  * La sesión de OTRA persona, armada igual que `obtenerUsuarioActual` pero desde su id. Es de LECTURA:
  * sirve para que dirección vea las prioridades de alguien del equipo (pestaña «Equipo») y para el
- * endpoint de depuración. Quien la llama comprueba que la sesión real sea super_admin; nunca se usa
+ * endpoint de depuración. Quien la llama comprueba que la sesión real sea owner; nunca se usa
  * para ejecutar acciones en nombre de otra persona.
  */
 export async function usuarioSesionDe(userId: string): Promise<UsuarioSesion | null> {

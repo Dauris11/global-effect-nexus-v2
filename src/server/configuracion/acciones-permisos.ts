@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirRol } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { esPermiso, esRol } from "@/lib/rbac";
+import { esPermiso, esRol, esRolTotal } from "@/lib/rbac";
 
 export type ResultadoPermiso = { ok: true } | { ok: false; error: "invalido" | "bloqueado" };
 
@@ -18,8 +18,8 @@ function refrescarPermisos() {
 }
 
 /**
- * Concede o quita un permiso a TODO un rol. Solo `super_admin`, y nunca sobre
- * `super_admin`: su acceso total no se edita, para que nadie (ni un descuido)
+ * Concede o quita un permiso a TODO un rol. Solo `owner`, y nunca sobre
+ * `owner`: su acceso total no se edita, para que nadie (ni un descuido)
  * deje al dueño del sistema fuera de su propia configuración.
  */
 export async function guardarPermisoRol(datos: {
@@ -27,12 +27,12 @@ export async function guardarPermisoRol(datos: {
   permiso: string;
   concedido: boolean;
 }): Promise<ResultadoPermiso> {
-  const autor = await requerirRol(["super_admin"]);
+  const autor = await requerirRol(["owner"]);
 
   if (!esRol(datos.rol) || !esPermiso(datos.permiso)) {
     return { ok: false, error: "invalido" };
   }
-  if (datos.rol === "super_admin") return { ok: false, error: "bloqueado" };
+  if (esRolTotal(datos.rol)) return { ok: false, error: "bloqueado" };
 
   const { rol, permiso, concedido } = datos;
 
@@ -78,7 +78,7 @@ export async function guardarExcepcionPermiso(datos: {
   concedido: boolean | null;
   motivo?: string;
 }): Promise<ResultadoPermiso> {
-  const autor = await requerirRol(["super_admin"]);
+  const autor = await requerirRol(["owner"]);
 
   if (!UUID.test(datos.usuarioId) || !esPermiso(datos.permiso)) {
     return { ok: false, error: "invalido" };

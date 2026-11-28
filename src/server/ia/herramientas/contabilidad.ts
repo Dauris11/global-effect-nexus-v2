@@ -14,7 +14,7 @@ import type { Herramienta } from "./tipos";
  * Los montos y nombres salen de la base; el modelo los redacta, no los calcula.
  */
 
-const ROLES = ["contabilidad", "admin", "super_admin"] as const;
+const ROLES = ["contabilidad", "admin", "owner", "developer"] as const;
 
 const comprobantesPendientes: Herramienta = {
   nombre: "comprobantes_pendientes",

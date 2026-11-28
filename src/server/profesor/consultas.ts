@@ -8,7 +8,7 @@ import { calcularNotaFinal } from "@/lib/nota-final";
  * Quién ve qué se decide con un solo parámetro, `docenteId`:
  *
  *   · Con un id → solo lo suyo. Es el caso del rol `docente`.
- *   · Con `null` → todo. Es el caso de `admin` y `super_admin`, que gestionan el
+ *   · Con `null` → todo. Es el caso de `admin` y `owner`, que gestionan el
  *     programa completo.
  *
  * El `null` es explícito y no un valor por omisión: quien llama tiene que

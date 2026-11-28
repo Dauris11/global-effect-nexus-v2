@@ -7,7 +7,7 @@ import { getLocale } from "next-intl/server";
 import { redirigir } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
 import { COOKIE_VER_COMO, obtenerUsuarioActual } from "@/lib/auth";
-import { esRol, PORTAL_POR_ROL } from "@/lib/rbac";
+import { esRol, esRolTotal, PORTAL_POR_ROL } from "@/lib/rbac";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /**
@@ -111,13 +111,13 @@ export async function verComoRol(rol: string) {
   const locale = await getLocale();
   const usuario = await obtenerUsuarioActual();
 
-  if (!usuario || usuario.rolReal !== "super_admin" || !esRol(rol)) {
+  if (!usuario || !esRolTotal(usuario.rolReal) || !esRol(rol)) {
     redirigir("/login", locale);
   }
 
   const almacen = await cookies();
 
-  if (rol === "super_admin") {
+  if (esRolTotal(rol)) {
     almacen.delete(COOKIE_VER_COMO);
   } else {
     // De sesión de navegador y con 8 h de tope: que no se quede olvidado días.
@@ -132,7 +132,7 @@ export async function verComoRol(rol: string) {
 
   await registrar({
     usuarioId: usuario.id,
-    accion: rol === "super_admin" ? "sesion.ver_como_fin" : "sesion.ver_como",
+    accion: esRolTotal(rol) ? "sesion.ver_como_fin" : "sesion.ver_como",
     entidad: "sesion",
     datos: { rol },
   });

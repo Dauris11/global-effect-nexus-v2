@@ -466,7 +466,7 @@
     "accessText": "Sign in with your institutional credentials to your role-based portal.",
     "accessRolesTitle": "Available portals",
     "accessRolesText": "Students, teachers, administration, and accounting each have their own space.",
-    "role_super_admin": "Director",
+    "role_owner": "Director",
     "role_admin": "Administration",
     "role_docente": "Teacher",
     "role_estudiante": "Student",
@@ -483,7 +483,8 @@
     "stats_students": "{n, plural, =1 {active scholar} other {active scholars}}",
     "stats_g360": "{n, plural, =1 {student in Global Effect 360} other {students in Global Effect 360}}",
     "stats_sponsors": "{n, plural, =1 {active sponsor} other {active sponsors}}",
-    "stats_meals": "{n, plural, =1 {signed up for lunch today} other {signed up for lunch today}}"
+    "stats_meals": "{n, plural, =1 {signed up for lunch today} other {signed up for lunch today}}",
+    "role_developer": "Development"
   },
   "comida": {
     "title": "Meal sign-up",
@@ -525,8 +526,9 @@
       "administrativo": "Administrative Portal",
       "contabilidad": "Accounting Portal",
       "admin": "Admin Portal",
-      "super_admin": "Admin Portal",
-      "default": "Portal"
+      "owner": "Admin Portal",
+      "default": "Portal",
+      "developer": "Developer Portal"
     }
   },
   "dashboard": {
@@ -3954,14 +3956,15 @@
     }
   },
   "roles": {
-    "super_admin": "Full administration",
+    "owner": "Owner",
     "admin": "Administrative",
     "docente": "Teacher",
     "estudiante": "Student",
     "contabilidad": "Accounting",
     "habitudes": "Habitudes teacher",
     "dir_habitudes": "Habitudes director",
-    "chofer": "Driver"
+    "chofer": "Driver",
+    "developer": "Developer"
   },
   "requests": {
     "studentEyebrow": "My portal",
@@ -7237,7 +7240,8 @@
     },
     "adjuntar": "Attach a PDF or photo",
     "quitarAdjunto": "Remove attachment",
-    "errorAdjunto": "The attachment could not be used: only PDF, JPG, PNG or WebP up to 5 MB."
+    "errorAdjunto": "The attachment could not be used: only PDF, JPG, PNG or WebP up to 5 MB.",
+    "rolDeveloper": "Developer"
   },
   "colaborador": {
     "portal": {

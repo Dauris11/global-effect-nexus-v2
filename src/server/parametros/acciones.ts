@@ -9,7 +9,7 @@ import { aMinutos, DEFINICIONES, validarParametro } from "@/lib/parametros";
 import { parametros } from "@/server/parametros/consultas";
 
 /**
- * Guarda los parámetros institucionales. `admin` y `super_admin`: es lo que
+ * Guarda los parámetros institucionales. `admin` y `owner`: es lo que
  * coordinación necesita ajustar (el horario del comedor, por ejemplo) y no
  * concede acceso a nada.
  *
@@ -31,7 +31,7 @@ export async function guardarParametros(
   _previo: EstadoParametros,
   datos: FormData,
 ): Promise<EstadoParametros> {
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const vigentes = await parametros();
   const errores: NonNullable<EstadoParametros["errores"]> = {};

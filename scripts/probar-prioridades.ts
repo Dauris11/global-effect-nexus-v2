@@ -89,10 +89,10 @@ test("(b) con responsable asignado el tipo ya no basta: lo atiende solo esa pers
   assert.equal(esVisible(conResponsable, ctx("admin", "luis"), diaDe), true);
 });
 
-test("(c) super_admin ve los escalados (de otro, > 3 días vencido) y los demás no", () => {
+test("(c) owner ve los escalados (de otro, > 3 días vencido) y los demás no", () => {
   const viejo = item({ tipo: "tarea_vencida", venceEn: en(-4), responsableId: "luis", id: "tarea_vencida:v" });
   const reciente = item({ tipo: "tarea_vencida", venceEn: en(-2), responsableId: "luis", id: "tarea_vencida:r" });
-  const dir = ctx("super_admin", "dir");
+  const dir = ctx("owner", "dir");
   const visibles = filtrarVisibles([viejo, reciente], dir, diaDe);
 
   assert.deepEqual(visibles.map((i) => i.id), ["tarea_vencida:v"]);
@@ -100,10 +100,10 @@ test("(c) super_admin ve los escalados (de otro, > 3 días vencido) y los demás
   assert.equal(filtrarVisibles([viejo], ctx("admin", "ana"), diaDe).length, 0);
 });
 
-test("super_admin ve el proyecto atrasado de todos", () => {
+test("owner ve el proyecto atrasado de todos", () => {
   const p = item({ tipo: "proyecto_atrasado", venceEn: en(-1), responsableId: "luis" });
 
-  assert.equal(esVisible(p, ctx("super_admin", "dir"), diaDe), true);
+  assert.equal(esVisible(p, ctx("owner", "dir"), diaDe), true);
   assert.equal(esVisible(p, ctx("admin", "ana"), diaDe), false);
 });
 
@@ -140,7 +140,7 @@ test("agrupar: Vencido · Hoy · Esta semana · Más adelante + Esperando a otro
 test("dirección solo ve las compras por pagar de monto mayor al umbral", () => {
   const grande = item({ tipo: "compra_aprobada_por_pagar", montoUsd: 5000, id: "compra_aprobada_por_pagar:g" });
   const chica = item({ tipo: "compra_aprobada_por_pagar", montoUsd: 200, id: "compra_aprobada_por_pagar:c" });
-  const dir = ctx("super_admin", "dir");
+  const dir = ctx("owner", "dir");
 
   assert.equal(esVisible(grande, dir, diaDe), true);
   assert.equal(esVisible(chica, dir, diaDe), false);

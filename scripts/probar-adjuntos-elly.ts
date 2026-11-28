@@ -14,7 +14,7 @@ const { buscarHerramienta } = await import("../src/server/ia/herramientas");
 const { ejecutarTurno, proveedorModelo } = await import("../src/server/ia/motor");
 const { modeloIA } = await import("../src/lib/modelo-ia");
 
-const admin = await consultarUna<{ id: string; nombre: string; rol: string }>(`SELECT u.id, u.nombre, r.nombre AS rol FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre IN ('super_admin','admin') ORDER BY u.created_at LIMIT 1`);
+const admin = await consultarUna<{ id: string; nombre: string; rol: string }>(`SELECT u.id, u.nombre, r.nombre AS rol FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre IN ('owner','admin') ORDER BY u.created_at LIMIT 1`);
 const usuario = { id: admin!.id, nombre: admin!.nombre, rol: admin!.rol as never, idioma: "es" as const, permisos: [] as never };
 const bytes = readFileSync(ruta);
 const g = await guardarAdjunto(usuario.id, new File([bytes], "notas.pdf", { type: "application/pdf" }));

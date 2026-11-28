@@ -44,7 +44,7 @@ const CARRERAS_UC: Record<string, string> = {
 };
 
 const { execFileSync } = await import("node:child_process");
-const admin = await consultarUna<{ id: string }>(`SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre IN ('super_admin','admin') ORDER BY u.created_at LIMIT 1`);
+const admin = await consultarUna<{ id: string }>(`SELECT u.id FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.nombre IN ('owner','admin') ORDER BY u.created_at LIMIT 1`);
 const trabajos: { ruta: string; siglas: string; carrera: string; version: string }[] = [];
 
 for (const f of readdirSync("docs/PENSUMS/UCATECI").filter((x) => x.endsWith(".pdf"))) {

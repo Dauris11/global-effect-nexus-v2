@@ -27,7 +27,7 @@ export default async function ComprobantesRecibidosPage({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ estado?: string; q?: string }>;
 }) {
-  // Por permiso y no por rol: antes entraban `admin` y `super_admin` por nombre
+  // Por permiso y no por rol: antes entraban `admin` y `owner` por nombre
   // de rol y sus botones chocaban con `contabilidad.registrar`, que no tienen.
   const usuario = await requerirPermiso("contabilidad.leer");
   const puedeValidar = usuarioTienePermiso(usuario, "contabilidad.registrar");

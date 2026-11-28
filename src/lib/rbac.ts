@@ -9,7 +9,7 @@
  *
  * Las rutas, en cambio, sí conservan los slugs del inventario
  * (`/portal/profesor`) porque son URLs públicas ya documentadas. El inicio de
- * `admin` y `super_admin` es `/bandeja`; `/portal/administrativo` y
+ * `admin` y `owner` es `/bandeja`; `/portal/administrativo` y
  * `/dashboard` solo redirigen allí para no romper enlaces viejos.
  *
  * Roles que ya no existen: `psicologo` (la 0030 movió sus cuentas a `admin`) y
@@ -17,13 +17,16 @@
  * no los reintroduzcas.
  *
  * El reparto de permisos por rol de este archivo es el de FÁBRICA. En marcha
- * manda `rol_permiso`, que el super_admin edita en `/configuracion/permisos`
+ * manda `rol_permiso`, que el owner edita en `/configuracion/permisos`
  * y que la sesión trae en `permisosRol`; estas constantes solo sirven de
  * valor inicial y de respaldo.
  */
 
 export const ROLES = [
-  "super_admin",
+  // Dueños de la Fundación: ven y hacen TODO en todos los portales (todos los permisos; migración 0138).
+  "owner",
+  // Equipo de desarrollo: ve y puede probar todo (mismos permisos y «Ver como» que owner); no es dueño de nada.
+  "developer",
   "admin",
   "docente",
   "estudiante",
@@ -39,6 +42,11 @@ export const ROLES = [
 ] as const;
 
 export type Rol = (typeof ROLES)[number];
+
+/** Los roles con acceso TOTAL (todos los permisos, todos los portales y «Ver como»): owner y developer. */
+export const ROLES_TOTALES: readonly Rol[] = ["owner", "developer"];
+
+export const esRolTotal = (rol: string | undefined): boolean => rol !== undefined && (ROLES_TOTALES as readonly string[]).includes(rol);
 
 /**
  * Roles que se pueden asignar desde la pantalla de personal.
@@ -121,7 +129,8 @@ export type Permiso = (typeof PERMISOS)[number];
 /** Portal al que se envía a cada rol tras iniciar sesión. */
 export const PORTAL_POR_ROL: Record<Rol, string> = {
   // `/inicio` es la entrada única: la lista de lo que a cada persona le toca (motor de prioridades).
-  super_admin: "/inicio",
+  owner: "/inicio",
+  developer: "/inicio",
   admin: "/inicio",
   docente: "/inicio",
   estudiante: "/inicio",
@@ -186,16 +195,16 @@ export function esRol(valor: unknown): valor is Rol {
  * Hay tres asimetrías que no son lo que sugieren los documentos de
  * especificación y que es fácil "corregir" por error:
  *
- *   · `super_admin` NO lo tiene todo: no tiene `expedientes.postular`, que es
+ *   · `owner` NO lo tiene todo: no tiene `expedientes.postular`, que es
  *     el trabajo de Habitudes y no una función de dirección.
  *   · `admin` NO tiene `finanzas.leer`: la contabilidad es de `contabilidad` y
- *     `super_admin`. Tampoco `solicitudes.direccion`: el segundo nivel de
+ *     `owner`. Tampoco `solicitudes.direccion`: el segundo nivel de
  *     aprobación (becas y gastos grandes) es de dirección.
  *   · `docente` NO tiene `academico.escribir`: pone tareas y la nota final de
  *     sus clases de Global Effect 360, pero no crea ni edita el catálogo.
  *
  * El expediente es de administración ENTERO desde la 0030: `admin` y
- * `super_admin` leen, escriben y borran cualquier ficha. El aislamiento por
+ * `owner` leen, escriben y borran cualquier ficha. El aislamiento por
  * fila que puso la 0025 protegía lo clínico, y con psicología fuera no
  * protegía nada; solo dejaba invisibles a los estudiantes sin asignar.
  *
@@ -203,51 +212,11 @@ export function esRol(valor: unknown): valor is Rol {
  * aquí, nunca solo aquí.
  */
 export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
-  // super_admin: solo lectura y auditoría en contabilidad.
-  // Separación de funciones: quien audita no opera.
-  // finanzas.escribir retirado en 0034 (a super_admin) y en 0036 (a todos).
-  super_admin: [
-    "academico.escribir",
-    "academico.leer",
-    "calificaciones.registrar",
-    "catalogo.escribir",
-    "catalogo.leer",
-    "contabilidad.auditar",
-    "contabilidad.leer",
-    "expedientes.costos.leer",
-    "expedientes.eliminar",
-    "expedientes.escribir",
-    "expedientes.leer",
-    "finanzas.leer",
-    "ia.administrar",
-    "ia.conocimiento",
-    "ia.usar",
-    "inventario.auditar",
-    "inventario.eliminar",
-    "inventario.escribir",
-    "inventario.leer",
-    "landing.administrar",
-    "operaciones.escribir",
-    "operaciones.leer",
-    "patrocinadores.escribir",
-    "patrocinadores.leer",
-    "proyectos.asignar_rol",
-    "rendicion.enviar",
-    "rendicion.revisar",
-    "habitudes.evidencias.auditar",
-    "habitudes.evidencias.subir",
-    "habitudes.recursos.leer",
-    "habitudes.recursos.subir",
-    "habitudes.supervisar",
-    "reuniones.agendar",
-    "reuniones.gestionar",
-    "reuniones.leer",
-    "solicitudes.direccion",
-    "solicitudes.gestionar",
-    "transporte.gestionar",
-    "transporte.operar",
-    "usuarios.administrar",
-  ],
+  // owner y developer: TODOS los permisos (decisión de nov 2026: los dueños de la Fundación ven y hacen todo en todos los
+  // portales; antes `owner` no operaba contabilidad ni daba el segundo visto bueno). La separación de funciones entre
+  // personas sigue en las acciones: nadie aprueba lo que él mismo pidió.
+  owner: PERMISOS,
+  developer: PERMISOS,
   admin: [
     "academico.escribir",
     "academico.leer",
@@ -354,7 +323,7 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
 
 /**
  * Reparto de FÁBRICA de un rol. Para decidir qué puede una PERSONA usa
- * `usuarioTienePermiso`: este ignora lo que el super_admin cambió en la base.
+ * `usuarioTienePermiso`: este ignora lo que el owner cambió en la base.
  */
 export function tienePermiso(rol: Rol, permiso: Permiso): boolean {
   return PERMISOS_POR_ROL[rol].includes(permiso);

@@ -10,7 +10,7 @@ import { umbralDeIndice } from "@/server/academico/indice";
  * Esto es la cara interna de `estudiante`: aquí sí se ve todo, al revés de
  * `server/estudiantes/portal.ts`, donde el propio joven solo lee lo que ya sabe
  * de sí mismo. La puerta es el permiso `expedientes.leer`, que tienen
- * administración y `super_admin`.
+ * administración y `owner`.
  *
  * El expediente completo vive repartido en seis tablas —`estudiante` más los
  * perfiles de la migración 0005—, no en una fila ancha como en

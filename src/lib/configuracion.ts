@@ -3,8 +3,7 @@ import {
   usuarioTienePermiso,
   type Permiso,
   type Rol,
-  type UsuarioConPermisos,
-} from "@/lib/rbac";
+  type UsuarioConPermisos, esRolTotal } from "@/lib/rbac";
 
 /**
  * Las pantallas de configuración, en el orden de la barra de iconos.
@@ -13,14 +12,14 @@ import {
  * cliente, y el layout que la filtra en el servidor— y una lista repetida
  * acaba con una entrada de más en uno de los dos.
  *
- * `soloMaestro`: además del permiso, solo `super_admin`. Son las pantallas que
+ * `soloMaestro`: además del permiso, solo `owner`. Son las pantallas que
  * enseñan lo que hacen las demás cuentas, incluida la de quien coordina.
  */
 export const AJUSTES = [
-  { clave: "general", href: "/configuracion", permiso: "usuarios.administrar", roles: ["admin", "super_admin"] },
+  { clave: "general", href: "/configuracion", permiso: "usuarios.administrar", roles: ["admin", "owner", "developer"] },
   { clave: "staff", href: "/administrativo/personal", permiso: "usuarios.administrar" },
   { clave: "permissions", href: "/configuracion/permisos", permiso: "usuarios.administrar", soloMaestro: true },
-  { clave: "parameters", href: "/configuracion/parametros", permiso: "usuarios.administrar", roles: ["admin", "super_admin"] },
+  { clave: "parameters", href: "/configuracion/parametros", permiso: "usuarios.administrar", roles: ["admin", "owner", "developer"] },
   { clave: "landing", href: "/configuracion/landing", permiso: "landing.administrar" },
   { clave: "ia", href: "/configuracion/ia", permiso: "ia.administrar" },
   { clave: "knowledge", href: "/configuracion/conocimiento", permiso: "ia.conocimiento" },
@@ -44,7 +43,7 @@ export function ajustesDeUsuario(usuario: UsuarioConPermisos) {
     const roles: readonly Rol[] | undefined = "roles" in ajuste ? ajuste.roles : undefined;
     const maestro = "soloMaestro" in ajuste && ajuste.soloMaestro;
 
-    if (maestro && rol !== "super_admin") return false;
+    if (maestro && !esRolTotal(rol)) return false;
     return roles?.includes(rol) || usuarioTienePermiso(usuario, ajuste.permiso);
   });
 }

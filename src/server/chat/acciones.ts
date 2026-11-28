@@ -137,7 +137,7 @@ export async function reportarGastoDesdeChat(datos: {
     const { rows: contadores } = await cliente.query(
       `SELECT u.id FROM public.usuario u
          JOIN public.rol r ON r.id = u.rol_id
-        WHERE r.nombre IN ('contabilidad', 'super_admin', 'admin') AND u.activo = true`,
+        WHERE r.nombre IN ('contabilidad', 'owner', 'admin') AND u.activo = true`,
     );
 
     for (const c of contadores) {

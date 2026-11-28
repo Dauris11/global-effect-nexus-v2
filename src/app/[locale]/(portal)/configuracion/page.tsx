@@ -35,7 +35,7 @@ export default async function PaginaConfiguracion({
 }) {
   const { locale } = await params;
 
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const [t, tRoles, cuentas, cifras] = await Promise.all([
     getTranslations({ locale, namespace: "settings" }),

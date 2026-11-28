@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 /**
  * Reporte comparativo del costo de un becado por carrera y universidad: la
  * cifra para la Junta y para captar donantes. Entra quien tenga
- * `expedientes.costos.leer` (super_admin, contabilidad y admin).
+ * `expedientes.costos.leer` (owner, contabilidad y admin).
  */
 export default async function PaginaCostoEstudiantes({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

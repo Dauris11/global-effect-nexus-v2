@@ -36,7 +36,7 @@ const ENLACE = "block rounded-card outline-offset-2 focus-visible:outline-2 focu
 /**
  * Resumen ejecutivo (antes «Tablero ejecutivo»): la vista de Dirección Ejecutiva y Junta. Ya NO es
  * la entrada de nadie —el inicio es `/inicio`—: vive dentro de Reportes, sin entrada en el menú, y
- * solo para `super_admin`. Es de lectura; cada cifra enlaza a la pantalla donde se actúa sobre ella.
+ * solo para `owner`. Es de lectura; cada cifra enlaza a la pantalla donde se actúa sobre ella.
  *
  * Saldos en cero tras el reinicio contable: se muestran como 0 y no se oculta
  * la tarjeta, para que la ausencia de movimientos no parezca un error de carga.
@@ -44,7 +44,7 @@ const ENLACE = "block rounded-card outline-offset-2 focus-visible:outline-2 focu
 export default async function PaginaResumenEjecutivo({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
 
   const t = await getTranslations({ locale, namespace: "executive" });
   const d = await cargarTableroEjecutivo(t("charts.others"));

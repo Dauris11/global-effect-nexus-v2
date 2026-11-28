@@ -27,7 +27,7 @@ import { consultar, consultarUna } from "@/lib/db";
  * Entidades cuyo detalle no se enseña nunca en el visor: las del antiguo
  * módulo clínico, que ya no existen como tablas (0030).
  *
- * `estudiante` NO está en la lista, y es a propósito: `super_admin` tiene
+ * `estudiante` NO está en la lista, y es a propósito: `owner` tiene
  * `expedientes.leer`, así que ver "consultó el expediente de X" no le dice nada
  * que no pueda abrir él mismo.
  */

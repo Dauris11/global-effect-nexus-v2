@@ -24,7 +24,7 @@ export async function generateMetadata({
 }
 
 /**
- * Permisos, solo del super_admin. Dos vistas de lo mismo: lo que trae cada rol
+ * Permisos, solo del owner. Dos vistas de lo mismo: lo que trae cada rol
  * y los cambios personales sobre ese rol (la función fuera de lo nativo, como
  * el profesor de Habitudes que además da una clase de 360).
  */
@@ -34,7 +34,7 @@ export default async function PaginaPermisos({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  await requerirRol(["super_admin"]);
+  await requerirRol(["owner"]);
 
   const [t, roles, personas, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "permisosAdmin" }),

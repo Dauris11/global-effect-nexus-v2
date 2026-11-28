@@ -26,7 +26,7 @@ export async function generateMetadata({
  * Anuncios del hero de la portada.
  *
  * Entra quien tenga `landing.administrar`, el permiso que la migración 0015 creó
- * para esto y asignó a `admin` y `super_admin`. Se comprueba por permiso y no
+ * para esto y asignó a `admin` y `owner`. Se comprueba por permiso y no
  * por rol porque es la base la que decide quién edita la cara pública del
  * sistema, no una lista escrita aquí.
  *

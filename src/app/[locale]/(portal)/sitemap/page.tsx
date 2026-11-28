@@ -51,7 +51,7 @@ export default async function PaginaSitemap({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const usuario = await requerirRol(["admin", "super_admin"]);
+  const usuario = await requerirRol(["admin", "owner"]);
 
   const [t, tn, tr, ta] = await Promise.all([
     getTranslations({ locale, namespace: "sitemap" }),

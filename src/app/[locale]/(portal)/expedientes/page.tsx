@@ -56,7 +56,7 @@ export async function generateMetadata({
  * (`lib/filtros-expedientes.ts`); la foto de cada estudiante se ve en las dos
  * vistas.
  *
- * Entra quien tenga `expedientes.leer`: administración y `super_admin`. El
+ * Entra quien tenga `expedientes.leer`: administración y `owner`. El
  * permiso se comprueba aquí y no por rol: si otro rol gana la lectura, se le
  * da en la base y aquí no hay que tocar nada.
  */
