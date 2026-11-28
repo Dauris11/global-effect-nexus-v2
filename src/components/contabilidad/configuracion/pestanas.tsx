@@ -1,4 +1,4 @@
-import { BookOpen, Building2, CalendarRange, Landmark, ListChecks, Scale } from "lucide-react";
+import { BookOpen, Building2, Landmark, ListChecks, ReceiptText, Scale } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
@@ -8,7 +8,7 @@ import type { PestanaConfig } from "@/server/contabilidad/configuracion/consulta
 const ICONOS = {
   entidad: Building2,
   parametros: Scale,
-  periodos: CalendarRange,
+  comprobantes: ReceiptText,
   catalogo: BookOpen,
   codigos: ListChecks,
   "formatos-banco": Landmark,

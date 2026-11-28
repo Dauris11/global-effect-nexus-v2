@@ -15,7 +15,7 @@ import { consultar, consultarUna } from "@/lib/db";
 export const PESTANAS_CONFIG = [
   "entidad",
   "parametros",
-  "periodos",
+  "comprobantes",
   "catalogo",
   "codigos",
   "formatos-banco",
@@ -303,5 +303,33 @@ export async function cuentasConMovimientoActivas(): Promise<CuentaMovimientoOpc
        FROM contabilidad.cuenta_contable
       WHERE admite_movimiento = true AND activa = true
       ORDER BY contabilidad.clave_codigo(codigo)`,
+  );
+}
+
+// ----------------------------------------------------------------
+// Comprobantes fiscales (0140)
+// ----------------------------------------------------------------
+
+export type ComprobanteSecuencia = {
+  id: string;
+  tipo: string;
+  cantidad: number;
+  desde: number;
+  hasta: number;
+  usados: number;
+  vigente: boolean | null;
+};
+
+export async function comprobantesSecuencias(): Promise<ComprobanteSecuencia[]> {
+  return consultar<ComprobanteSecuencia>(
+    `SELECT id,
+            tipo,
+            cantidad::int AS cantidad,
+            desde::int AS desde,
+            hasta::int AS hasta,
+            usados::int AS usados,
+            vigente
+       FROM contabilidad.comprobante_secuencia
+      ORDER BY creado_en DESC, tipo ASC, desde DESC`,
   );
 }

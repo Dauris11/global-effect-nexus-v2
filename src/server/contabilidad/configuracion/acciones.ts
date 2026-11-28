@@ -6,6 +6,7 @@ import type { PoolClient } from "pg";
 import { requerirUsuario, type UsuarioSesion } from "@/lib/auth";
 import { enTransaccionComo } from "@/lib/db";
 import { esFechaIso, esUuid, montoValido } from "@/lib/contabilidad/formato";
+import { esTipoComprobanteRd } from "@/lib/contabilidad/comprobantes-rd";
 import { limpiarIdentificacion, rncValido } from "@/lib/contabilidad/identificacion";
 import {
   esFormatoValorCargo,
@@ -820,6 +821,73 @@ export async function cambiarEstadoReglaLegal(
           SET activo = $2, actualizado_en = now()
         WHERE id = $1`,
       [id, activo],
+    );
+    if (!rowCount) throw new Rechazo("no_encontrado");
+  });
+}
+
+// ----------------------------------------------------------------
+// Comprobantes fiscales (0140)
+// ----------------------------------------------------------------
+
+export async function agregarComprobanteSecuencia(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const tipo = texto(datos, "tipo", 10).toUpperCase();
+  const cantidadTexto = texto(datos, "cantidad", 12).replace(/\D/g, "");
+  const cantidad = Number.parseInt(cantidadTexto, 10);
+
+  if (!esTipoComprobanteRd(tipo) || !Number.isInteger(cantidad) || cantidad <= 0 || cantidad > 10_000_000) {
+    return { estado: "datos_invalidos" };
+  }
+
+  return ejecutar(usuario, async (cliente) => {
+    const { rows: [ultima] } = await cliente.query<{ ultimo: string }>(
+      `SELECT coalesce(max(hasta), 0)::text AS ultimo
+         FROM contabilidad.comprobante_secuencia
+        WHERE tipo = $1`,
+      [tipo],
+    );
+    const desde = Number(ultima?.ultimo ?? 0) + 1;
+    const hasta = desde + cantidad;
+
+    await fijarAccion(cliente, "crear");
+    await cliente.query(
+      `INSERT INTO contabilidad.comprobante_secuencia
+         (tipo, cantidad, desde, hasta, usados, vigente, creado_por)
+       VALUES ($1, $2, $3, $4, 0, NULL, $5)`,
+      [tipo, cantidad, desde, hasta, usuario.id],
+    );
+  });
+}
+
+export async function definirVigenciaComprobante(
+  _previo: EstadoConfig,
+  datos: FormData,
+): Promise<EstadoConfig> {
+  const usuario = await usuarioCon("contabilidad.configurar");
+  if (!usuario) return { estado: "no_permitido" };
+
+  const id = texto(datos, "id", 40);
+  const respuesta = texto(datos, "vigente", 5);
+  if (!esUuid(id) || (respuesta !== "si" && respuesta !== "no")) {
+    return { estado: "datos_invalidos" };
+  }
+
+  return ejecutar(usuario, async (cliente) => {
+    await fijarAccion(cliente, "editar");
+    const { rowCount } = await cliente.query(
+      `UPDATE contabilidad.comprobante_secuencia
+          SET vigente = $2,
+              actualizado_por = $3,
+              actualizado_en = now()
+        WHERE id = $1
+          AND vigente IS NULL`,
+      [id, respuesta === "si", usuario.id],
     );
     if (!rowCount) throw new Rechazo("no_encontrado");
   });

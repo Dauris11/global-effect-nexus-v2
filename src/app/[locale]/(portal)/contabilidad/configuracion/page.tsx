@@ -5,10 +5,10 @@ import { getTranslations } from "next-intl/server";
 import { PestanasConfig } from "@/components/contabilidad/configuracion/pestanas";
 import { SeccionCodigos } from "@/components/contabilidad/configuracion/seccion-codigos";
 import { SeccionCatalogo } from "@/components/contabilidad/configuracion/seccion-catalogo";
+import { SeccionComprobantes } from "@/components/contabilidad/configuracion/seccion-comprobantes";
 import { SeccionEntidad } from "@/components/contabilidad/configuracion/seccion-entidad";
 import { SeccionFormatosBanco } from "@/components/contabilidad/configuracion/seccion-formatos-banco";
 import { SeccionParametros } from "@/components/contabilidad/configuracion/seccion-parametros";
-import { SeccionPeriodos } from "@/components/contabilidad/configuracion/seccion-periodos";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { requerirPermiso } from "@/lib/auth";
@@ -16,12 +16,12 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 import { listarCodigos } from "@/server/contabilidad/codigos-transaccion/consultas";
 import {
   catalogo,
+  comprobantesSecuencias,
   cuentasConMovimientoActivas,
   entidad,
   esPestanaConfig,
   formatosEstadoBanco,
   impuestosCargos,
-  periodos,
   reglasLegales,
   type PestanaConfig,
 } from "@/server/contabilidad/configuracion/consultas";
@@ -52,17 +52,17 @@ export default async function PaginaConfiguracionContable({
   const { locale } = await params;
   const { tab } = await searchParams;
   const usuario = await requerirPermiso("contabilidad.leer");
-  const pestana: PestanaConfig = esPestanaConfig(tab) ? tab : "entidad";
+  const tabNormalizado = tab === "periodos" ? "comprobantes" : tab;
+  const pestana: PestanaConfig = esPestanaConfig(tabNormalizado) ? tabNormalizado : "entidad";
 
   const t = await getTranslations({ locale, namespace: "contab.config" });
   const puedeConfigurar = usuarioTienePermiso(usuario, "contabilidad.configurar");
-  const puedeCerrar = usuarioTienePermiso(usuario, "contabilidad.cerrar_periodo");
 
   return (
     <div className="space-y-6 animate-entrada">
       <EncabezadoPagina titulo={t("titulo")} />
       <PestanasConfig activa={pestana} />
-      <Seccion pestana={pestana} locale={locale} puedeConfigurar={puedeConfigurar} puedeCerrar={puedeCerrar} />
+      <Seccion pestana={pestana} locale={locale} puedeConfigurar={puedeConfigurar} />
     </div>
   );
 }
@@ -72,12 +72,10 @@ async function Seccion({
   pestana,
   locale,
   puedeConfigurar,
-  puedeCerrar,
 }: {
   pestana: PestanaConfig;
   locale: string;
   puedeConfigurar: boolean;
-  puedeCerrar: boolean;
 }) {
   switch (pestana) {
     case "parametros": {
@@ -95,8 +93,13 @@ async function Seccion({
         />
       );
     }
-    case "periodos":
-      return <SeccionPeriodos periodos={await periodos()} puedeCerrar={puedeCerrar} />;
+    case "comprobantes":
+      return (
+        <SeccionComprobantes
+          comprobantes={await comprobantesSecuencias()}
+          puedeEditar={puedeConfigurar}
+        />
+      );
     case "catalogo":
       return (
         <SeccionCatalogo

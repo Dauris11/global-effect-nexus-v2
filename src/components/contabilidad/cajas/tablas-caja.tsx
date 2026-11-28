@@ -106,7 +106,15 @@ export function TablaMovimientos({
                 <td className="px-4 py-3 text-tinta">{t(TIPO[m.tipo])}</td>
                 <td className="max-w-xs px-4 py-3">
                   <p className="truncate text-tinta">{m.concepto}</p>
-                  <p className="texto-meta truncate">{m.cuentaGasto ?? m.personaNombre ?? ""}</p>
+                  <p className="texto-meta truncate">
+                    {[
+                      m.comprobanteNumero,
+                      m.entregadoA ?? m.personaNombre,
+                      m.cuentaGasto,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-tinta">
                   {signo(m)}

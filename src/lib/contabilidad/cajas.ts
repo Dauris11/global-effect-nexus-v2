@@ -103,6 +103,12 @@ export const ERRORES_CAJA = [
   "codigo_sin_cuenta",
   "codigo_repetido",
   "periodo_cerrado",
+  "solo_supervisor",
+  "desglose_requerido",
+  "desglose_no_coincide",
+  "sin_comprobante_vigente",
+  "comprobante_requerido",
+  "entregado_requerido",
   "error",
 ] as const;
 

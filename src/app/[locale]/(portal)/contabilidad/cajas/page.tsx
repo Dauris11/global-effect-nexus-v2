@@ -33,7 +33,7 @@ export default async function PaginaCajas({
   const [t, cajas, responsables] = await Promise.all([
     getTranslations({ locale, namespace: "contab.cajas" }),
     listarCajas(),
-    puedeCrear ? listarUsuariosSolicitantes() : Promise.resolve([]),
+    listarUsuariosSolicitantes(),
   ]);
 
   return (
@@ -47,7 +47,12 @@ export default async function PaginaCajas({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cajas.map((caja) => (
-            <TarjetaCaja key={caja.id} caja={caja} />
+            <TarjetaCaja
+              key={caja.id}
+              caja={caja}
+              usuarios={responsables}
+              usuarioActualId={usuario.id}
+            />
           ))}
         </div>
       )}

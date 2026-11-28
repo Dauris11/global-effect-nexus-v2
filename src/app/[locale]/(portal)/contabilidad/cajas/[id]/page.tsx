@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Calculator } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { DialogoConfigurarCaja } from "@/components/contabilidad/cajas/dialogo-configurar-caja";
 import { ModalReposicionCaja } from "@/components/contabilidad/cajas/modal-reposicion";
 import { FormularioMovimientoCaja } from "@/components/contabilidad/cajas/formulario-movimiento";
 import { TablaArqueos, TablaMovimientos } from "@/components/contabilidad/cajas/tablas-caja";
@@ -20,6 +21,7 @@ import {
   listarArqueos,
   listarMovimientosCaja,
   obtenerCaja,
+  proximoComprobanteCaja,
 } from "@/server/contabilidad/cajas/consultas";
 import { listarUsuariosSolicitantes } from "@/server/contabilidad/proveedores/consultas";
 
@@ -47,19 +49,22 @@ export default async function PaginaDetalleCaja({
   const usuario = await requerirPermiso("contabilidad.leer");
   if (!esUuid(id)) notFound();
 
-  const [t, caja, movimientos, arqueos, cuentas, personas, categorias] = await Promise.all([
-    getTranslations({ locale, namespace: "contab.cajas" }),
-    obtenerCaja(id),
-    listarMovimientosCaja(id),
-    listarArqueos(id),
-    cuentasConSaldo(),
-    listarUsuariosSolicitantes(),
-    categoriasGastoCaja(),
-  ]);
+  const [t, caja, movimientos, arqueos, cuentas, personas, categorias, proximoComprobanteB11] =
+    await Promise.all([
+      getTranslations({ locale, namespace: "contab.cajas" }),
+      obtenerCaja(id),
+      listarMovimientosCaja(id),
+      listarArqueos(id),
+      cuentasConSaldo(),
+      listarUsuariosSolicitantes(),
+      categoriasGastoCaja(),
+      proximoComprobanteCaja("B11"),
+    ]);
   if (!caja) notFound();
 
   const hoy = claveDia();
   const puedeRegistrar = usuarioTienePermiso(usuario, "contabilidad.registrar");
+  const esSupervisor = caja.supervisorId === usuario.id;
   const m = (valor: string) => formatearMonto(valor, caja.moneda);
   const cifras = [
     { etiqueta: t("efectivo"), valor: m(caja.saldoActual) },
@@ -78,12 +83,26 @@ export default async function PaginaDetalleCaja({
           </Link>
         </Button>
         <EncabezadoPagina
-          antetitulo={`${t("antetitulo")} · ${caja.codigo}`}
-          titulo={caja.nombre}
+          antetitulo={`${t(`tiposCaja.${caja.tipo}`)} · ${caja.codigo}`}
+          titulo={
+            <span className="inline-flex items-center gap-2">
+              <span>{caja.nombre}</span>
+              <DialogoConfigurarCaja
+                caja={caja}
+                usuarios={personas}
+                esSupervisor={esSupervisor}
+              />
+            </span>
+          }
           acciones={
             puedeRegistrar ? (
               <>
-                <FormularioMovimientoCaja caja={caja} personas={personas} categorias={categorias} hoy={hoy} />
+                <FormularioMovimientoCaja
+                  caja={caja}
+                  categorias={categorias}
+                  hoy={hoy}
+                  proximoComprobanteB11={proximoComprobanteB11}
+                />
                 <ModalReposicionCaja
                   caja={caja}
                   hoy={hoy}

@@ -1,5 +1,12 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { requerirPermiso } from "@/lib/auth";
+import { formatearNumeroComprobante } from "@/lib/contabilidad/comprobantes-rd";
+
+export type DesgloseDenominacion = {
+  denominacion: number;
+  tipo: "billete" | "moneda";
+  cantidad: number;
+};
 
 /**
  * Lecturas del cuadre de caja chica.
@@ -28,6 +35,8 @@ export type CajaResumen = {
   cuentaContableCodigo: string | null;
   cuentaContableNombre: string | null;
   estado: "activa" | "inactiva";
+  desgloseConfigurado: boolean;
+  desglose: DesgloseDenominacion[];
   creadoEn: string;
   /** Gastos con comprobante aún no repuestos desde banco. */
   pendienteReposicion: string;
@@ -47,6 +56,9 @@ export type MovimientoCaja = {
   concepto: string;
   personaId: string | null;
   personaNombre: string | null;
+  entregadoA: string | null;
+  facturaConComprobante: boolean;
+  comprobanteNumero: string | null;
   reciboId: string | null;
   tieneAdjunto: boolean;
   estado: "pendiente" | "completado" | "anulado";
@@ -104,6 +116,8 @@ type FilaCaja = {
   cuenta_codigo: string | null;
   cuenta_nombre: string | null;
   estado: "activa" | "inactiva";
+  desglose_configurado: boolean;
+  desglose: DesgloseDenominacion[] | null;
   creado_en: string;
   pendiente_reposicion: string;
   vales_pendientes: string;
@@ -120,7 +134,19 @@ const SELECT_CAJA = `
          c.supervisor_id, sup.nombre AS supervisor_nombre,
          c.moneda, c.fondo_fijo, c.saldo_actual, c.umbral_adjunto,
          cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
-         c.estado, c.creado_en,
+         c.estado, c.desglose_configurado,
+         COALESCE((
+           SELECT json_agg(
+                    json_build_object(
+                      'denominacion', d.denominacion::float8,
+                      'tipo', d.tipo,
+                      'cantidad', d.cantidad::int
+                    ) ORDER BY d.denominacion DESC
+                  )
+             FROM contabilidad.caja_desglose d
+            WHERE d.caja_id = c.id
+         ), '[]'::json) AS desglose,
+         c.creado_en,
          COALESCE((SELECT SUM(m.monto) FROM contabilidad.caja_movimiento m
                     WHERE m.caja_id = c.id AND m.tipo = 'gasto' AND m.estado = 'pendiente'), 0)::text
            AS pendiente_reposicion,
@@ -157,6 +183,8 @@ function aCaja(f: FilaCaja): CajaResumen {
     cuentaContableCodigo: f.cuenta_codigo,
     cuentaContableNombre: f.cuenta_nombre,
     estado: f.estado,
+    desgloseConfigurado: Boolean(f.desglose_configurado),
+    desglose: Array.isArray(f.desglose) ? f.desglose : [],
     creadoEn: f.creado_en,
     pendienteReposicion: f.pendiente_reposicion,
     valesPendientes: f.vales_pendientes,
@@ -202,6 +230,9 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
     concepto: string;
     persona_id: string | null;
     persona_nombre: string | null;
+    entregado_a: string | null;
+    factura_con_comprobante: boolean;
+    comprobante_numero: string | null;
     recibo_id: string | null;
     tiene_adjunto: boolean;
     estado: MovimientoCaja["estado"];
@@ -214,6 +245,7 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
     `SELECT m.id, m.numero, m.caja_id, to_char(m.fecha, 'YYYY-MM-DD') AS fecha,
             m.tipo, m.monto, m.concepto,
             m.persona_id, p.nombre AS persona_nombre,
+            m.entregado_a, m.factura_con_comprobante, m.comprobante_numero,
             m.recibo_id, (m.adjunto_ruta IS NOT NULL) AS tiene_adjunto,
             m.estado, m.arqueo_id,
             ast.cuenta_gasto, ast.id AS asiento_id,
@@ -248,6 +280,9 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
     concepto: f.concepto,
     personaId: f.persona_id,
     personaNombre: f.persona_nombre,
+    entregadoA: f.entregado_a,
+    facturaConComprobante: Boolean(f.factura_con_comprobante),
+    comprobanteNumero: f.comprobante_numero,
     reciboId: f.recibo_id,
     tieneAdjunto: f.tiene_adjunto,
     estado: f.estado,
@@ -257,6 +292,27 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
     creadoPorNombre: f.creado_por_nombre,
     creadoEn: f.creado_en,
   }));
+}
+
+/**
+ * Próximo comprobante fiscal disponible para salidas de caja chica sin factura
+ * con comprobante (utilizando B11 mientras tanto). Ignora secuencias marcadas
+ * como no vigentes (`vigente = false`).
+ */
+export async function proximoComprobanteCaja(tipo = "B11"): Promise<string | null> {
+  await requerirPermiso("contabilidad.leer");
+  const fila = await consultarUna<{ desde: string; usados: number }>(
+    `SELECT desde::text AS desde, usados::int AS usados
+       FROM contabilidad.comprobante_secuencia
+      WHERE tipo = $1
+        AND vigente IS NOT FALSE
+        AND usados < cantidad
+      ORDER BY desde ASC, creado_en ASC
+      LIMIT 1`,
+    [tipo],
+  );
+  if (!fila) return null;
+  return formatearNumeroComprobante(tipo, Number(fila.desde) + fila.usados);
 }
 
 type FilaArqueo = {
