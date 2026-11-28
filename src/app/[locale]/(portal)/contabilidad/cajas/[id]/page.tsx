@@ -12,9 +12,8 @@ import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
-import { esUuid, formatearMonto } from "@/lib/contabilidad/formato";
+import { esUuid } from "@/lib/contabilidad/formato";
 import { claveDia } from "@/lib/fechas";
-import { TARJETA } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo } from "@/server/contabilidad/bancos/consultas";
 import {
@@ -68,24 +67,18 @@ export default async function PaginaDetalleCaja({
   const hoy = claveDia();
   const puedeRegistrar = usuarioTienePermiso(usuario, "contabilidad.registrar");
   const esSupervisor = caja.supervisorId === usuario.id;
-  const m = (valor: string) => formatearMonto(valor, caja.moneda);
-  const cifras = [
-    { etiqueta: t("efectivo"), valor: m(caja.saldoActual) },
-    { etiqueta: t("valesPendientes"), valor: m(caja.valesPendientes) },
-    { etiqueta: t("porReponer"), valor: m(caja.pendienteReposicion) },
-    { etiqueta: t("fondoFijo"), valor: m(caja.fondoFijo) },
-  ];
 
   return (
-    <div className="space-y-8 animate-entrada">
-      <div>
-        <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-tinta-2">
+    <div className="space-y-6 animate-entrada">
+      <div className="space-y-2.5">
+        <Button asChild variant="ghost" size="sm" className="-ml-3 text-tinta-2">
           <Link href="/contabilidad/cajas">
             <ChevronLeft className="size-4" />
             {t("volverCajas")}
           </Link>
         </Button>
         <EncabezadoPagina
+          className="md:items-center"
           antetitulo={`${t(`tiposCaja.${caja.tipo}`)} · ${caja.codigo}`}
           titulo={
             <span className="inline-flex items-center gap-2">
@@ -107,67 +100,61 @@ export default async function PaginaDetalleCaja({
             </span>
           }
           acciones={
-            puedeRegistrar ? (
-              <>
-                <FormularioMovimientoCaja
-                  caja={caja}
-                  categorias={categorias}
-                  hoy={hoy}
-                  proximoComprobanteB11={proximoComprobanteB11}
-                />
-                <ModalReposicionCaja
-                  caja={caja}
-                  hoy={hoy}
-                  cuentasBanco={cuentas
-                    .filter((c) => c.estado === "activa")
-                    .map((c) => ({
-                      id: c.id,
-                      bancoNombre: c.banco,
-                      numeroCuenta: c.numero,
-                      moneda: c.moneda,
-                      saldoActual: c.saldo,
-                    }))}
-                />
-                <Button asChild size="sm" disabled={caja.estado !== "activa"}>
-                  <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>
-                    <Calculator className="size-4" />
-                    {t("nuevoArqueo")}
-                  </Link>
-                </Button>
-                <ModalHistoricoCaja
-                  movimientos={historico}
-                  moneda={caja.moneda}
-                  categorias={categorias}
-                />
-              </>
-            ) : (
+            <div className="flex flex-wrap items-center gap-2.5">
+              {puedeRegistrar && (
+                <>
+                  <FormularioMovimientoCaja
+                    caja={caja}
+                    categorias={categorias}
+                    hoy={hoy}
+                    proximoComprobanteB11={proximoComprobanteB11}
+                  />
+                  <ModalReposicionCaja
+                    caja={caja}
+                    hoy={hoy}
+                    cuentasBanco={cuentas
+                      .filter((c) => c.estado === "activa")
+                      .map((c) => ({
+                        id: c.id,
+                        bancoNombre: c.banco,
+                        numeroCuenta: c.numero,
+                        moneda: c.moneda,
+                        saldoActual: c.saldo,
+                      }))}
+                  />
+                  <Button
+                    asChild
+                    className="h-9 whitespace-nowrap px-3.5"
+                    disabled={caja.estado !== "activa"}
+                  >
+                    <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>
+                      <Calculator className="size-4" />
+                      {t("nuevoArqueo")}
+                    </Link>
+                  </Button>
+                </>
+              )}
               <ModalHistoricoCaja
                 movimientos={historico}
                 moneda={caja.moneda}
                 categorias={categorias}
               />
-            )
+            </div>
           }
         />
-      </div>
-
-      <section className="space-y-2">
-        <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {cifras.map((cifra) => (
-            <div key={cifra.etiqueta} className={`${TARJETA.contenido} p-4`}>
-              <dt className="texto-meta">{cifra.etiqueta}</dt>
-              <dd className="mt-1 truncate text-xl font-semibold text-tinta">{cifra.valor}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="texto-meta">
+        <p className="texto-meta pt-0.5">
           {t("responsableDe", { nombre: caja.responsableNombre, departamento: caja.departamento })} · {t("ultimoArqueo")}:{" "}
           {caja.ultimoArqueo ?? t("nunca")}
           {caja.cuentaContableCodigo && ` · ${t("cuentaContable")}: ${caja.cuentaContableCodigo}`}
         </p>
+      </div>
+
+      <section className="space-y-4 border-t border-linea pt-6">
+        <h2 className="texto-titulo-seccion">{t("movimientos")}</h2>
+        <TablaMovimientos movimientos={movimientos} moneda={caja.moneda} />
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 border-t border-linea pt-6">
         <h2 className="texto-titulo-seccion">{t("arqueos")}</h2>
         <TablaArqueos
           arqueos={arqueos}
@@ -175,11 +162,6 @@ export default async function PaginaDetalleCaja({
           usuarioId={usuario.id}
           puedeAprobar={usuarioTienePermiso(usuario, "contabilidad.aprobar")}
         />
-      </section>
-
-      <section className="space-y-4 border-t border-linea pt-8">
-        <h2 className="texto-titulo-seccion">{t("movimientos")}</h2>
-        <TablaMovimientos movimientos={movimientos} moneda={caja.moneda} />
       </section>
     </div>
   );

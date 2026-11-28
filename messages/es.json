@@ -4988,6 +4988,7 @@
       "bancoOrigen": "Banco",
       "efectivoEnCaja": "Efectivo en caja",
       "porReponerTitulo": "Por reponer",
+      "sinMontoPorReponer": "No hay monto pendiente por reponer",
       "historico": "Histórico",
       "historicoTitulo": "Histórico de movimientos",
       "sinHistorico": "No hay movimientos en el histórico.",

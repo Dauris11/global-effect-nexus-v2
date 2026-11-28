@@ -4988,6 +4988,7 @@
       "bancoOrigen": "Bank",
       "efectivoEnCaja": "Cash on hand",
       "porReponerTitulo": "To replenish",
+      "sinMontoPorReponer": "No amount pending replenishment",
       "historico": "History",
       "historicoTitulo": "Movement history",
       "sinHistorico": "No movements in history.",

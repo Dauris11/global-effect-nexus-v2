@@ -179,7 +179,11 @@ export function FormularioMovimientoCaja({
         }}
       >
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline" disabled={caja.estado !== "activa"}>
+          <Button
+            variant="outline"
+            className="h-9 whitespace-nowrap px-3.5"
+            disabled={caja.estado !== "activa"}
+          >
             <Receipt className="size-4" />
             {t("registrarSalida")}
           </Button>

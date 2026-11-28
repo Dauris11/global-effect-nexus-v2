@@ -121,7 +121,7 @@ export function ModalHistoricoCaja({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="h-9 whitespace-nowrap px-3.5">
           <History className="size-4" />
           {t("historico")}
         </Button>
