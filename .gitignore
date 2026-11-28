@@ -56,3 +56,6 @@ e2e/.auth/
 e2e/.resultados/
 e2e/reporte-html/
 test-results/
+
+# Material fuente del hero (video de 130 MB y fotos originales): no se publica
+public/media/landing/original/

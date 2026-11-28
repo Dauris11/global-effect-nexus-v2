@@ -141,3 +141,26 @@
     }
   }
 }
+
+/*
+ * Velo del hero: único degradado permitido del sistema, y solo para que el texto blanco se lea
+ * (≥ 4,5:1) sobre cualquier fotograma del video. No decora: oscurece más abajo, donde está el texto.
+ * Valor pedido por la Fundación: rgba(10,15,20,.72) abajo. La marca `audit:permitir-degradado` lo declara.
+ */
+.hero-velo {
+  background: linear-gradient(to top, rgb(10 15 20 / 0.72) 0%, rgb(10 15 20 / 0.55) 55%, rgb(10 15 20 / 0.35) 100%); /* audit:permitir-degradado */
+}
+
+/* El video entra con un fade cuando puede reproducirse; sin movimiento reducido es instantáneo. */
+.hero-video {
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+}
+.hero-video[data-listo="true"] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    transition: none;
+  }
+}

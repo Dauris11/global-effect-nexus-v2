@@ -78,6 +78,8 @@ for (const archivo of archivos) {
     if (
       DEGRADADO.test(linea) &&
       !/mask-image/.test(linea) &&
+      // Excepción puntual y declarada en la propia línea: el velo de legibilidad del hero (pedido del cliente).
+      !/audit:permitir-degradado/.test(linea) &&
       !/^\s*(\*|\/\/|\/\*)/.test(linea)
     ) {
       degradados++;

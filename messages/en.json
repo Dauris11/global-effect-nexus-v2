@@ -133,7 +133,7 @@
     "scholarships": "Scholarships",
     "sponsorLetters": "Letters to sponsors",
     "accounting": "Accounting",
-    "accountingHome": "Accounting home",
+    "accountingHome": "Home",
     "calendar": "Calendar",
     "meetings": "Meetings",
     "timeline": "Timeline",
@@ -203,7 +203,6 @@
     "commandShortcut": "Ctrl K",
     "banks": "Banks",
     "receipts": "Receipts",
-    "accountingHome": "Home",
     "department": "Department",
     "suppliers": "Suppliers",
     "payables": "Payables",
@@ -480,7 +479,10 @@
     "mapDestination": "La Vega · Dominican Republic",
     "mapDestinationShort": "La Vega, D. R.",
     "access_requests_title": "Requests and paperwork",
-    "footerContact": "Contact"
+    "footerContact": "Contact",
+    "heroImageAlt": "Global Effect Foundation building in La Vega",
+    "heroPause": "Pause background video",
+    "heroPlay": "Play background video"
   },
   "comida": {
     "title": "Meal sign-up",
@@ -3887,7 +3889,11 @@
     "noMatchesHint": "Try other dates, another entity, or clear the filters."
   },
   "settings": {
-    "institutionPage": { "title": "Institution details", "name": "Name", "fiscalYear": "Fiscal year" },
+    "institutionPage": {
+      "title": "Institution details",
+      "name": "Name",
+      "fiscalYear": "Fiscal year"
+    },
     "eyebrow": "Settings",
     "title": "Settings",
     "description": "The platform's settings, the accounts that exist, and what each role can do.",

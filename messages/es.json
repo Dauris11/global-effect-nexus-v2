@@ -133,7 +133,7 @@
     "scholarships": "Becas",
     "sponsorLetters": "Cartas a patrocinadores",
     "accounting": "Contabilidad",
-    "accountingHome": "Inicio contable",
+    "accountingHome": "Inicio",
     "calendar": "Calendario",
     "meetings": "Reuniones",
     "timeline": "Línea de tiempo",
@@ -203,7 +203,6 @@
     "commandShortcut": "Ctrl K",
     "banks": "Bancos",
     "receipts": "Recibos",
-    "accountingHome": "Inicio",
     "department": "Departamento",
     "suppliers": "Proveedores",
     "payables": "Cuentas por pagar",
@@ -480,7 +479,10 @@
     "mapDestination": "La Vega · República Dominicana",
     "mapDestinationShort": "La Vega, R. D.",
     "access_requests_title": "Solicitudes y trámites",
-    "footerContact": "Contacto"
+    "footerContact": "Contacto",
+    "heroImageAlt": "Edificio de la Fundación Global Effect en La Vega",
+    "heroPause": "Pausar video de fondo",
+    "heroPlay": "Reanudar video de fondo"
   },
   "comida": {
     "title": "Inscripción de comida",
@@ -3887,7 +3889,11 @@
     "noMatchesHint": "Prueba con otras fechas, otra entidad, o quita los filtros."
   },
   "settings": {
-    "institutionPage": { "title": "Datos de la institución", "name": "Nombre", "fiscalYear": "Año fiscal" },
+    "institutionPage": {
+      "title": "Datos de la institución",
+      "name": "Nombre",
+      "fiscalYear": "Año fiscal"
+    },
     "eyebrow": "Configuración",
     "title": "Configuración",
     "description": "Los ajustes de la plataforma, las cuentas que existen y lo que puede hacer cada rol.",

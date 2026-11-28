@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { Rol } from "@/lib/rbac";
-import { ROLE_DESCRIPTION, ROLE_LABEL, rolesVerComo } from "@/lib/roles";
+import { ROLE_LABEL, rolesVerComo } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { buscarPersonasVerComo, type PersonaVerComo } from "@/server/auth/buscar-personas";
 import { salirVerComoUsuario, verComoRol, verComoUsuario } from "@/server/auth/acciones";
@@ -73,7 +73,7 @@ export function VerComo({
           <ChevronDown className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72">
+      <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel>{t("rolesSection")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {roles.map((r) => (
@@ -81,10 +81,9 @@ export function VerComo({
             key={r}
             onSelect={() => cambiar(r)}
             aria-current={!suplantando && r === rol ? "true" : undefined}
-            className={cn("flex-col items-start gap-0.5", !suplantando && r === rol && "text-marca-700 font-medium")}
+            className={cn(!suplantando && r === rol && "text-marca-700 font-medium")}
           >
-            <span>{tRaiz(ROLE_LABEL[r])}</span>
-            <span className="text-meta line-clamp-2 font-normal">{tRaiz(ROLE_DESCRIPTION[r])}</span>
+            {tRaiz(ROLE_LABEL[r])}
           </DropdownMenuItem>
         ))}
         {puedeUsuario && (
