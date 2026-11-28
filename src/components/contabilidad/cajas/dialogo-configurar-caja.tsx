@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { Banknote, Loader2, Save, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { BotonAsiento } from "@/components/contabilidad/asiento/boton-asiento";
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
+import type { CuentaBancoCaja } from "@/components/contabilidad/cajas/formulario-caja";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,22 +24,25 @@ import {
   actualizarCajaAction,
   guardarDesgloseCajaAction,
 } from "@/server/contabilidad/cajas/acciones";
+import { asientoPreviaAjusteFondo } from "@/server/contabilidad/cajas/acciones-asiento";
 import type { CajaResumen } from "@/server/contabilidad/cajas/consultas";
 import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
 
 /**
  * Botón de tuerca para configurar una caja (exclusivo del supervisor).
- * Permite editar Número, Responsable, Supervisor, Moneda y Fondo — nunca
+ * Permite editar Número, Responsable, Supervisor, Moneda, Banco y Fondo — nunca
  * el Tipo de caja; en su lugar muestra el botón «Desglose» para registrar
  * monedas y billetes de RD y habilitar «Movimientos de caja».
  */
 export function DialogoConfigurarCaja({
   caja,
   usuarios,
+  cuentasBancarias = [],
   esSupervisor,
 }: {
   caja: CajaResumen;
   usuarios: UsuarioSolicitante[];
+  cuentasBancarias?: CuentaBancoCaja[];
   esSupervisor: boolean;
 }) {
   const t = useTranslations("contab.cajas");
@@ -54,6 +59,15 @@ export function DialogoConfigurarCaja({
   const [supervisorId, setSupervisorId] = useState(caja.supervisorId ?? usuarios[0]?.id ?? "");
   const [moneda, setMoneda] = useState<"DOP" | "USD">(caja.moneda);
   const [fondo, setFondo] = useState(String(Number(caja.fondoFijo)));
+  const [cuentaBancariaId, setCuentaBancariaId] = useState(caja.cuentaBancariaId ?? "");
+
+  const bancosMismaMoneda = useMemo(
+    () => cuentasBancarias.filter((b) => b.moneda === moneda),
+    [cuentasBancarias, moneda],
+  );
+  const bancoSeleccionado = bancosMismaMoneda.some((b) => b.id === cuentaBancariaId)
+    ? cuentaBancariaId
+    : (bancosMismaMoneda[0]?.id ?? "");
 
   const denominaciones = useMemo(() => denominacionesDe(moneda), [moneda]);
   const [cantidades, setCantidades] = useState<Record<number, number>>(() => {
@@ -75,10 +89,19 @@ export function DialogoConfigurarCaja({
   );
   const totalDesglose = redondear(totalContado(conteos));
   const fondoObjetivo = redondear(Number(fondo) || Number(caja.fondoFijo));
+  const cambioFondo = Math.abs(fondoObjetivo - Number(caja.fondoFijo)) > 0.005;
   const diferencia = redondear(totalDesglose - fondoObjetivo);
 
   const controlAlineado = "h-9 px-3 py-0 text-sm";
   const selectAlineado = cn(SELECT, "h-9 px-3 text-sm");
+
+  function previaAjuste() {
+    return asientoPreviaAjusteFondo({
+      cajaId: caja.id,
+      cuentaBancariaId: bancoSeleccionado,
+      fondoNuevo: fondoObjetivo,
+    });
+  }
 
   async function onGuardarConfig(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +123,7 @@ export function DialogoConfigurarCaja({
         supervisorId,
         moneda,
         fondo: montoFondo,
+        cuentaBancariaId: bancoSeleccionado || null,
       });
       if (res.exito) {
         setAbierto(false);
@@ -290,19 +314,44 @@ export function DialogoConfigurarCaja({
                   onChange={(e) => setFondo(e.target.value)}
                 />
               </div>
+
+              {bancosMismaMoneda.length > 0 && (
+                <div className="min-w-0 space-y-1.5 sm:col-span-3">
+                  <Label htmlFor={`cfg-banco-${caja.id}`} className="block text-xs font-medium leading-none text-tinta-2">
+                    {t("bancoOrigen")}
+                  </Label>
+                  <select
+                    id={`cfg-banco-${caja.id}`}
+                    className={selectAlineado}
+                    value={bancoSeleccionado}
+                    onChange={(e) => setCuentaBancariaId(e.target.value)}
+                  >
+                    {bancosMismaMoneda.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.nombre} ({b.moneda})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {desgloseOk && <AvisoOk>{t("desgloseGuardado")}</AvisoOk>}
             {error && <AvisoError>{error}</AvisoError>}
 
-            <div className="flex justify-end gap-2 border-t border-linea pt-4">
-              <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
-                {t("cancelar")}
-              </Button>
-              <Button type="submit" cargando={guardando}>
-                {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {t("guardarCambios")}
-              </Button>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-linea pt-4">
+              <div>
+                {cambioFondo && <BotonAsiento cargar={previaAjuste} size="default" />}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>
+                  {t("cancelar")}
+                </Button>
+                <Button type="submit" cargando={guardando}>
+                  {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {t("guardarCambios")}
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>

@@ -32,8 +32,10 @@ export type CajaResumen = {
   /** Efectivo que debería haber en la caja según el sistema. */
   saldoActual: string;
   umbralAdjunto: string;
+  cuentaContableId: string | null;
   cuentaContableCodigo: string | null;
   cuentaContableNombre: string | null;
+  cuentaBancariaId: string | null;
   estado: "activa" | "inactiva";
   desgloseConfigurado: boolean;
   desglose: DesgloseDenominacion[];
@@ -113,8 +115,10 @@ type FilaCaja = {
   fondo_fijo: string;
   saldo_actual: string;
   umbral_adjunto: string;
+  cuenta_contable_id: string | null;
   cuenta_codigo: string | null;
   cuenta_nombre: string | null;
+  cuenta_bancaria_id: string | null;
   estado: "activa" | "inactiva";
   desglose_configurado: boolean;
   desglose: DesgloseDenominacion[] | null;
@@ -133,7 +137,8 @@ const SELECT_CAJA = `
          c.responsable_id, u.nombre AS responsable_nombre,
          c.supervisor_id, sup.nombre AS supervisor_nombre,
          c.moneda, c.fondo_fijo, c.saldo_actual, c.umbral_adjunto,
-         cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
+         c.cuenta_contable_id, cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
+         c.cuenta_bancaria_id,
          c.estado, c.desglose_configurado,
          COALESCE((
            SELECT json_agg(
@@ -180,8 +185,10 @@ function aCaja(f: FilaCaja): CajaResumen {
     fondoFijo: f.fondo_fijo,
     saldoActual: f.saldo_actual,
     umbralAdjunto: f.umbral_adjunto,
+    cuentaContableId: f.cuenta_contable_id,
     cuentaContableCodigo: f.cuenta_codigo,
     cuentaContableNombre: f.cuenta_nombre,
+    cuentaBancariaId: f.cuenta_bancaria_id,
     estado: f.estado,
     desgloseConfigurado: Boolean(f.desglose_configurado),
     desglose: Array.isArray(f.desglose) ? f.desglose : [],
@@ -205,15 +212,16 @@ export async function obtenerCaja(cajaId: string): Promise<CajaResumen | null> {
   return fila ? aCaja(fila) : null;
 }
 
-/** Categorías de egreso con cuenta contable: sin cuenta no hay asiento posible. */
+/** Cuentas del catálogo marcadas con «Agregar a caja chica» (para Categoría de gasto en salidas). */
 export async function categoriasGastoCaja(): Promise<CategoriaGastoCaja[]> {
   await requerirPermiso("contabilidad.leer");
   return consultar<CategoriaGastoCaja>(
-    `SELECT cat.id, cat.nombre, cc.codigo || ' ' || cc.nombre AS cuenta
-       FROM contabilidad.categoria cat
-       JOIN contabilidad.cuenta_contable cc ON cc.id = cat.cuenta_id
-      WHERE cat.activa AND cat.tipo IN ('egreso', 'ambos') AND cc.tipo = 'gasto'
-      ORDER BY cat.nombre`,
+    `SELECT cc.id, cc.nombre, cc.codigo AS cuenta
+       FROM contabilidad.cuenta_contable cc
+      WHERE cc.activa = true
+        AND cc.admite_movimiento = true
+        AND cc.agregar_a_caja_chica = true
+      ORDER BY cc.nombre ASC`,
   );
 }
 

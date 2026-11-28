@@ -4982,6 +4982,8 @@
       "barraDisponible": "Available fund vs used",
       "disponible": "Available",
       "utilizado": "Used",
+      "bancoOrigen": "Bank",
+      "sinCategoriasCajaChica": "Check accounts with “Add to petty cash” in Accounting settings > Chart of accounts.",
       "errores": {
         "datos_invalidos": "Check the data: something is missing or invalid.",
         "no_permitido": "You don't have permission for this.",
@@ -5520,6 +5522,7 @@
         "tipo": "Account type",
         "recibeAsientos": "Accepts entries",
         "agregarAFacturas": "Add to Invoices",
+        "agregarACajaChica": "Add to petty cash",
         "si": "Yes",
         "no": "No",
         "editar": {

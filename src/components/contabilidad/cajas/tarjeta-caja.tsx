@@ -2,6 +2,7 @@ import { ReceiptText, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { DialogoConfigurarCaja } from "@/components/contabilidad/cajas/dialogo-configurar-caja";
+import type { CuentaBancoCaja } from "@/components/contabilidad/cajas/formulario-caja";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,10 +22,12 @@ import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consu
 export function TarjetaCaja({
   caja,
   usuarios = [],
+  cuentasBancarias = [],
   usuarioActualId,
 }: {
   caja: CajaResumen;
   usuarios?: UsuarioSolicitante[];
+  cuentasBancarias?: CuentaBancoCaja[];
   usuarioActualId?: string;
 }) {
   const t = useTranslations("contab.cajas");
@@ -46,6 +49,7 @@ export function TarjetaCaja({
               <DialogoConfigurarCaja
                 caja={caja}
                 usuarios={usuarios}
+                cuentasBancarias={cuentasBancarias}
                 esSupervisor={esSupervisor}
               />
             </div>

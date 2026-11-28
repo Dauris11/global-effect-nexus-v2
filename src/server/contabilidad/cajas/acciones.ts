@@ -17,6 +17,7 @@ import {
 } from "@/lib/contabilidad/cajas";
 import { formatearNumeroComprobante } from "@/lib/contabilidad/comprobantes-rd";
 import { MAXIMO_ADJUNTO, TIPOS_ADJUNTO, esFechaIso, esUuid } from "@/lib/contabilidad/formato";
+import { claveDia } from "@/lib/fechas";
 import { subirContable } from "@/lib/supabase/almacen";
 import { construirLineasPorCodigo, ErrorCodigosTransaccion } from "@/server/contabilidad/codigos-transaccion/asiento";
 import { fijarAccion } from "../bitacora";
@@ -105,6 +106,106 @@ const texto = (datos: FormData, campo: string, maximo = 200): string =>
 // Alta de caja
 // ---------------------------------------------------------------------------
 
+/**
+ * Contabiliza la apertura, aumento o disminución del fondo de una caja contra
+ * su banco de origen (asiento contable + movimiento bancario).
+ *   · delta > 0 (apertura o aumento): DEBE Caja / HABER Banco, débito en banco.
+ *   · delta < 0 (disminución): DEBE Banco / HABER Caja, depósito en banco.
+ */
+async function contabilizarFondoCaja(
+  cliente: PoolClient,
+  params: {
+    cajaId: string;
+    nombreCaja: string;
+    cuentaCajaId: string;
+    cuentaBancariaId: string;
+    moneda: "DOP" | "USD";
+    delta: number;
+    concepto: string;
+    usuarioId: string;
+  },
+): Promise<void> {
+  const { rows: [banco] } = await cliente.query<{
+    id: string;
+    moneda: "DOP" | "USD";
+    cuenta_contable_id: string;
+  }>(
+    `SELECT id, moneda, cuenta_contable_id
+       FROM contabilidad.cuenta_bancaria
+      WHERE id = $1 AND estado = 'activa'
+      FOR UPDATE`,
+    [params.cuentaBancariaId],
+  );
+  if (!banco) throw new Rechazo("datos_invalidos");
+  if (banco.moneda !== params.moneda) throw new Rechazo("moneda_distinta");
+
+  const fecha = claveDia();
+  const montoAbs = redondear(Math.abs(params.delta));
+  let tasa: number | null = null;
+  let montoDop = montoAbs;
+
+  if (params.moneda === "USD") {
+    const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+      `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+      [fecha],
+    );
+    if (!tasaRow?.tasa) throw new Rechazo("datos_invalidos");
+    tasa = Number(tasaRow.tasa);
+    montoDop = redondear(montoAbs * tasa);
+  }
+
+  const aumento = params.delta > 0;
+  const lineas = aumento
+    ? [
+        { cuenta_id: params.cuentaCajaId, debe: montoDop, descripcion: params.concepto },
+        { cuenta_id: banco.cuenta_contable_id, haber: montoDop, descripcion: params.concepto },
+      ]
+    : [
+        { cuenta_id: banco.cuenta_contable_id, debe: montoDop, descripcion: params.concepto },
+        { cuenta_id: params.cuentaCajaId, haber: montoDop, descripcion: params.concepto },
+      ];
+
+  await cliente.query(
+    `SELECT contabilidad.crear_asiento(
+       $1::date, $2, 'automatico', 'caja', $3::uuid, $4::jsonb
+     )`,
+    [fecha, params.concepto.slice(0, 200), params.cajaId, JSON.stringify(lineas)],
+  );
+
+  await cliente.query(
+    `INSERT INTO contabilidad.movimiento_bancario
+       (numero, cuenta_id, periodo_id, fecha, tipo, monto, moneda, tasa, monto_dop,
+        concepto, origen_tabla, origen_id, creado_por)
+     VALUES (
+       contabilidad.siguiente_numero('MB'),
+       $1,
+       contabilidad.periodo_para($2::date),
+       $2::date,
+       $3,
+       $4::numeric,
+       $5,
+       $6::numeric,
+       $7::numeric,
+       $8,
+       'caja',
+       $9::uuid,
+       $10::uuid
+     )`,
+    [
+      banco.id,
+      fecha,
+      aumento ? "debito" : "deposito",
+      montoAbs.toFixed(2),
+      params.moneda,
+      tasa,
+      montoDop.toFixed(2),
+      params.concepto.slice(0, 200),
+      params.cajaId,
+      params.usuarioId,
+    ],
+  );
+}
+
 export async function crearCajaAction(datos: {
   numero: string;
   responsableId: string;
@@ -112,6 +213,8 @@ export async function crearCajaAction(datos: {
   tipo: "caja_chica" | "caja";
   moneda: "DOP" | "USD";
   fondo: number;
+  cuentaContableId: string;
+  cuentaBancariaId: string;
 }): Promise<ResultadoCaja> {
   const usuario = await requerirPermiso("contabilidad.configurar");
 
@@ -120,6 +223,8 @@ export async function crearCajaAction(datos: {
     !numeroLimpio ||
     !esUuid(datos.responsableId) ||
     !esUuid(datos.supervisorId) ||
+    !esUuid(datos.cuentaContableId) ||
+    !esUuid(datos.cuentaBancariaId) ||
     (datos.tipo !== "caja_chica" && datos.tipo !== "caja") ||
     !(datos.fondo > 0) ||
     !["DOP", "USD"].includes(datos.moneda)
@@ -129,21 +234,15 @@ export async function crearCajaAction(datos: {
 
   try {
     const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
-      let cuenta: string | null = null;
-      if (datos.tipo === "caja") {
-        const { rows: cg } = await cliente.query<{ id: string }>(
-          `SELECT id
-             FROM contabilidad.cuenta_contable
-            WHERE codigo = '1.1.1.1' AND activa AND admite_movimiento
-            LIMIT 1`,
-        );
-        cuenta = cg[0]?.id ?? null;
-      }
-      if (!cuenta) {
-        cuenta = await cuentaDeCajaPorDefecto(cliente);
-      }
-      if (!cuenta) throw new Rechazo("sin_cuenta_contable");
+      const { rows: [cuentaRow] } = await cliente.query<{ id: string }>(
+        `SELECT id
+           FROM contabilidad.cuenta_contable
+          WHERE id = $1 AND activa = true AND admite_movimiento = true`,
+        [datos.cuentaContableId],
+      );
+      if (!cuentaRow) throw new Rechazo("sin_cuenta_contable");
 
+      const fondoRedondeado = redondear(datos.fondo);
       const nombreGenerado =
         datos.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
       const departamentoGenerado = datos.tipo === "caja_chica" ? "Caja chica" : "Caja";
@@ -152,8 +251,9 @@ export async function crearCajaAction(datos: {
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.caja
            (codigo, nombre, departamento, tipo, responsable_id, supervisor_id, moneda,
-            fondo_fijo, saldo_actual, umbral_adjunto, cuenta_contable_id, creado_por)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10, $11)
+            fondo_fijo, saldo_actual, umbral_adjunto, cuenta_contable_id, cuenta_bancaria_id,
+            creado_por)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10, $11, $12)
          RETURNING id`,
         [
           numeroLimpio,
@@ -163,15 +263,31 @@ export async function crearCajaAction(datos: {
           datos.responsableId,
           datos.supervisorId,
           datos.moneda,
-          redondear(datos.fondo),
+          fondoRedondeado,
           500,
-          cuenta,
+          cuentaRow.id,
+          datos.cuentaBancariaId,
           usuario.id,
         ],
       );
-      return rows[0].id;
+      const cajaId = rows[0].id;
+
+      await contabilizarFondoCaja(cliente, {
+        cajaId,
+        nombreCaja: nombreGenerado,
+        cuentaCajaId: cuentaRow.id,
+        cuentaBancariaId: datos.cuentaBancariaId,
+        moneda: datos.moneda,
+        delta: fondoRedondeado,
+        concepto: `Apertura ${nombreGenerado}`,
+        usuarioId: usuario.id,
+      });
+
+      return cajaId;
     });
     refrescar();
+    revalidatePath("/[locale]/contabilidad/bancos", "layout");
+    revalidatePath("/[locale]/contabilidad/asientos", "layout");
     return { exito: true, id };
   } catch (error) {
     return fallo(error);
@@ -180,7 +296,9 @@ export async function crearCajaAction(datos: {
 
 /**
  * Configura una caja existente. Exclusivo del usuario configurado como supervisor.
- * Permite cambiar número, responsable, supervisor, moneda y fondo (nunca el tipo).
+ * Permite cambiar número, responsable, supervisor, moneda, banco y fondo (nunca
+ * el tipo). Si el fondo aumenta o disminuye, contabiliza el asiento correspondiente
+ * contra la cuenta bancaria elegida.
  */
 export async function actualizarCajaAction(datos: {
   cajaId: string;
@@ -189,6 +307,7 @@ export async function actualizarCajaAction(datos: {
   supervisorId: string;
   moneda: "DOP" | "USD";
   fondo: number;
+  cuentaBancariaId?: string | null;
 }): Promise<ResultadoCaja> {
   const usuario = await requerirUsuario();
   const numeroLimpio = datos.numero.trim().toUpperCase().slice(0, 30);
@@ -210,10 +329,14 @@ export async function actualizarCajaAction(datos: {
         id: string;
         tipo: "caja_chica" | "caja";
         supervisor_id: string | null;
+        moneda: "DOP" | "USD";
         fondo_fijo: string;
         saldo_actual: string;
+        cuenta_contable_id: string | null;
+        cuenta_bancaria_id: string | null;
       }>(
-        `SELECT id, tipo, supervisor_id, fondo_fijo, saldo_actual
+        `SELECT id, tipo, supervisor_id, moneda, fondo_fijo, saldo_actual,
+                cuenta_contable_id, cuenta_bancaria_id
            FROM contabilidad.caja
           WHERE id = $1
           FOR UPDATE`,
@@ -223,16 +346,22 @@ export async function actualizarCajaAction(datos: {
       if (!caja) throw new Rechazo("no_encontrada");
       if (caja.supervisor_id !== usuario.id) throw new Rechazo("solo_supervisor");
 
-      const { rows: [movs] } = await cliente.query<{ n: number }>(
-        `SELECT count(*)::int AS n FROM contabilidad.caja_movimiento WHERE caja_id = $1`,
-        [datos.cajaId],
-      );
+      const fondoAnterior = redondear(Number(caja.fondo_fijo));
       const fondoNuevo = redondear(datos.fondo);
-      const utilizado = Math.max(0, redondear(Number(caja.fondo_fijo) - Number(caja.saldo_actual)));
-      const saldoNuevo = movs.n === 0 ? fondoNuevo : Math.max(0, redondear(fondoNuevo - utilizado));
+      const deltaFondo = redondear(fondoNuevo - fondoAnterior);
+      const saldoActual = redondear(Number(caja.saldo_actual));
 
+      if (deltaFondo < 0 && saldoActual < Math.abs(deltaFondo)) {
+        throw new Rechazo("saldo_insuficiente");
+      }
+
+      const saldoNuevo = Math.max(0, redondear(saldoActual + deltaFondo));
       const nombreGenerado =
         caja.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
+      const bancoId =
+        datos.cuentaBancariaId && esUuid(datos.cuentaBancariaId)
+          ? datos.cuentaBancariaId
+          : caja.cuenta_bancaria_id;
 
       await fijarAccion(cliente, "editar");
       await cliente.query(
@@ -243,7 +372,8 @@ export async function actualizarCajaAction(datos: {
                 supervisor_id = $5,
                 moneda = $6,
                 fondo_fijo = $7,
-                saldo_actual = $8
+                saldo_actual = $8,
+                cuenta_bancaria_id = $9
           WHERE id = $1`,
         [
           datos.cajaId,
@@ -254,10 +384,33 @@ export async function actualizarCajaAction(datos: {
           datos.moneda,
           fondoNuevo,
           saldoNuevo,
+          bancoId,
         ],
       );
+
+      if (Math.abs(deltaFondo) > 0.005) {
+        const cuentaCajaId = caja.cuenta_contable_id ?? (await cuentaDeCajaPorDefecto(cliente));
+        if (!cuentaCajaId) throw new Rechazo("sin_cuenta_contable");
+        if (!bancoId) throw new Rechazo("datos_invalidos");
+
+        await contabilizarFondoCaja(cliente, {
+          cajaId: datos.cajaId,
+          nombreCaja: nombreGenerado,
+          cuentaCajaId,
+          cuentaBancariaId: bancoId,
+          moneda: datos.moneda,
+          delta: deltaFondo,
+          concepto:
+            deltaFondo > 0
+              ? `Aumento de fondo · ${nombreGenerado}`
+              : `Disminución de fondo · ${nombreGenerado}`,
+          usuarioId: usuario.id,
+        });
+      }
     });
     refrescar();
+    revalidatePath("/[locale]/contabilidad/bancos", "layout");
+    revalidatePath("/[locale]/contabilidad/asientos", "layout");
     return { exito: true, id: datos.cajaId };
   } catch (error) {
     return fallo(error);
@@ -459,11 +612,21 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
 
       let cuentaGasto: string | null = null;
       if (categoriaId && esUuid(categoriaId)) {
-        const { rows } = await cliente.query<{ cuenta_id: string | null }>(
-          `SELECT cuenta_id FROM contabilidad.categoria WHERE id = $1 AND activa`,
+        const { rows: ccRows } = await cliente.query<{ id: string }>(
+          `SELECT id
+             FROM contabilidad.cuenta_contable
+            WHERE id = $1 AND activa = true AND admite_movimiento = true`,
           [categoriaId],
         );
-        cuentaGasto = rows[0]?.cuenta_id ?? null;
+        if (ccRows[0]) {
+          cuentaGasto = ccRows[0].id;
+        } else {
+          const { rows } = await cliente.query<{ cuenta_id: string | null }>(
+            `SELECT cuenta_id FROM contabilidad.categoria WHERE id = $1 AND activa`,
+            [categoriaId],
+          );
+          cuentaGasto = rows[0]?.cuenta_id ?? null;
+        }
       }
 
       await fijarAccion(cliente, "crear");

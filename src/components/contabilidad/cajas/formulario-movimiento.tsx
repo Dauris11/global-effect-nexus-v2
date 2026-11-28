@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Loader2, Receipt, Save, Upload } from "lucide-react";
+import { ArrowRight, Loader2, Receipt, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
@@ -55,12 +55,12 @@ export function FormularioMovimientoCaja({
   const [entregadoA, setEntregadoA] = useState("");
   const [concepto, setConcepto] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
-  const [archivoObj, setArchivoObj] = useState<File | null>(null);
 
   const denominaciones = useMemo(() => denominacionesDe(caja.moneda), [caja.moneda]);
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
 
   const montoNum = redondear(Number(monto) || 0);
+  const disponibleRestante = redondear(Number(caja.saldoActual) - montoNum);
   const conteos = useMemo(
     () =>
       denominaciones.map((d) => ({
@@ -84,7 +84,6 @@ export function FormularioMovimientoCaja({
     setEntregadoA("");
     setConcepto("");
     setCategoriaId("");
-    setArchivoObj(null);
     setCantidades({});
     setError(null);
     setErrorDesglose(null);
@@ -150,7 +149,6 @@ export function FormularioMovimientoCaja({
           .map((c) => ({ denominacion: c.denominacion, cantidad: c.cantidad })),
       ),
     );
-    if (archivoObj) datos.set("adjunto", archivoObj);
 
     try {
       const res = await registrarMovimientoCajaAction(datos);
@@ -299,50 +297,36 @@ export function FormularioMovimientoCaja({
                 />
               </div>
 
-              {categorias.length > 0 && (
-                <div className="min-w-0 space-y-1.5 sm:col-span-2">
-                  <Label htmlFor="sal-cat" className="block text-xs font-medium leading-none text-tinta-2">
-                    {t("categoria")}
-                  </Label>
-                  <select
-                    id="sal-cat"
-                    className={selectAlineado}
-                    value={categoriaId}
-                    onChange={(e) => setCategoriaId(e.target.value)}
-                  >
-                    <option value="">{t("elegirCategoria")}</option>
-                    {categorias.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre} · {c.cuenta}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="min-w-0 space-y-1.5">
-                <Label htmlFor="sal-adjunto" className="block text-xs font-medium leading-none text-tinta-2">
-                  {t("adjunto")}
+              <div className="min-w-0 space-y-1.5 sm:col-span-3">
+                <Label htmlFor="sal-cat" className="block text-xs font-medium leading-none text-tinta-2">
+                  {t("categoria")}
                 </Label>
-                <label
-                  htmlFor="sal-adjunto"
-                  className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-control border border-dashed border-linea-fuerte px-3 text-xs text-tinta-2 hover:bg-muted/50"
+                <select
+                  id="sal-cat"
+                  className={selectAlineado}
+                  value={categoriaId}
+                  onChange={(e) => setCategoriaId(e.target.value)}
                 >
-                  <Upload className="size-3.5 shrink-0 text-marca-600" />
-                  <span className="truncate">{archivoObj?.name ?? t("subirAdjunto")}</span>
-                </label>
-                <input
-                  id="sal-adjunto"
-                  type="file"
-                  accept="application/pdf,image/jpeg,image/png"
-                  className="sr-only"
-                  onChange={(e) => setArchivoObj(e.target.files?.[0] ?? null)}
-                />
+                  <option value="">{t("elegirCategoria")}</option>
+                  {categorias.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+                {categorias.length === 0 && (
+                  <p className="texto-meta">{t("sinCategoriasCajaChica")}</p>
+                )}
               </div>
             </div>
 
-            <p className="texto-meta">
-              {t("disponible")}: {formatearMonto(caja.saldoActual, caja.moneda)}
+            <p
+              className={cn(
+                "text-sm tabular-nums",
+                disponibleRestante < 0 ? "font-semibold text-status-danger-fg" : "text-tinta-2",
+              )}
+            >
+              {t("disponible")}: {formatearMonto(disponibleRestante.toFixed(2), caja.moneda)}
             </p>
 
             {error && <AvisoError>{error}</AvisoError>}

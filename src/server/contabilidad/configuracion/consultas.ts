@@ -203,6 +203,7 @@ export type CuentaCatalogo = {
   padreId: string | null;
   admiteMovimiento: boolean;
   agregarAFacturas: boolean;
+  agregarACajaChica: boolean;
   activa: boolean;
   nivel: number;
   /** Líneas de asiento que la usan: con alguna, ya no puede tener hijas. */
@@ -233,6 +234,7 @@ export async function catalogo(): Promise<CuentaCatalogo[]> {
      SELECT c.id, c.codigo, c.nombre, c.tipo, c.padre_id AS "padreId",
             c.admite_movimiento AS "admiteMovimiento",
             c.agregar_a_facturas AS "agregarAFacturas",
+            c.agregar_a_caja_chica AS "agregarACajaChica",
             c.activa, a.nivel,
             coalesce(u.n, 0) AS movimientos, coalesce(u.saldo, 0)::text AS saldo
        FROM arbol a

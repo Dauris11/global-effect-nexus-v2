@@ -4982,6 +4982,8 @@
       "barraDisponible": "Fondo disponible frente a utilizado",
       "disponible": "Disponible",
       "utilizado": "Utilizado",
+      "bancoOrigen": "Banco",
+      "sinCategoriasCajaChica": "Marca cuentas con «Agregar a caja chica» en Configuración contable > Catálogo.",
       "errores": {
         "datos_invalidos": "Revisa los datos: falta algo o no es válido.",
         "no_permitido": "No tienes permiso para esto.",
@@ -5520,6 +5522,7 @@
         "tipo": "Tipo de cuenta",
         "recibeAsientos": "Recibe asientos",
         "agregarAFacturas": "Agregar a Facturas",
+        "agregarACajaChica": "Agregar a caja chica",
         "si": "Sí",
         "no": "No",
         "editar": {

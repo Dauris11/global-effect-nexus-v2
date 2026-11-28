@@ -383,9 +383,17 @@ export async function crearSubcuenta(_previo: EstadoConfig, datos: FormData): Pr
     }
 
     await cliente.query(
-      `INSERT INTO contabilidad.cuenta_contable (codigo, nombre, tipo, padre_id, admite_movimiento, agregar_a_facturas)
-       VALUES ($1, $2, $3, $4, true, $5)`,
-      [codigo, nombre, padre.tipo, padre.id, texto(datos, "agregar_a_facturas", 1) === "1"],
+      `INSERT INTO contabilidad.cuenta_contable
+         (codigo, nombre, tipo, padre_id, admite_movimiento, agregar_a_facturas, agregar_a_caja_chica)
+       VALUES ($1, $2, $3, $4, true, $5, $6)`,
+      [
+        codigo,
+        nombre,
+        padre.tipo,
+        padre.id,
+        texto(datos, "agregar_a_facturas", 1) === "1",
+        texto(datos, "agregar_a_caja_chica", 1) === "1",
+      ],
     );
   });
 }
@@ -432,6 +440,7 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
   const tipoNuevo = texto(datos, "tipo", 20);
   const movimientoNuevo = texto(datos, "movimiento", 1) === "1";
   const agregarAFacturasNuevo = movimientoNuevo && texto(datos, "agregar_a_facturas", 1) === "1";
+  const agregarACajaChicaNuevo = movimientoNuevo && texto(datos, "agregar_a_caja_chica", 1) === "1";
   if (!esUuid(id)) return { estado: "no_encontrado" };
   if (!nombre) return { estado: "datos_invalidos" };
 
@@ -507,9 +516,12 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
 
     await cliente.query(
       `UPDATE contabilidad.cuenta_contable
-          SET nombre = $2, admite_movimiento = $3, agregar_a_facturas = $4
+          SET nombre = $2,
+              admite_movimiento = $3,
+              agregar_a_facturas = $4,
+              agregar_a_caja_chica = $5
         WHERE id = $1`,
-      [id, nombre, movimientoNuevo, agregarAFacturasNuevo],
+      [id, nombre, movimientoNuevo, agregarAFacturasNuevo, agregarACajaChicaNuevo],
     );
   });
 }

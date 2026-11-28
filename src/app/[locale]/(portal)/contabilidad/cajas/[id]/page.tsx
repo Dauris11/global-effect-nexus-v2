@@ -90,6 +90,15 @@ export default async function PaginaDetalleCaja({
               <DialogoConfigurarCaja
                 caja={caja}
                 usuarios={personas}
+                cuentasBancarias={cuentas
+                  .filter((c) => c.estado === "activa")
+                  .map((c) => ({
+                    id: c.id,
+                    nombre: c.nombre,
+                    banco: c.banco,
+                    numero: c.numero,
+                    moneda: c.moneda,
+                  }))}
                 esSupervisor={esSupervisor}
               />
             </span>

@@ -71,6 +71,9 @@ export function DialogoCuenta({
   const [agregarAFacturas, setAgregarAFacturas] = useState(
     modo === "editar" ? (cuenta?.agregarAFacturas ?? false) : false,
   );
+  const [agregarACajaChica, setAgregarACajaChica] = useState(
+    modo === "editar" ? (cuenta?.agregarACajaChica ?? false) : false,
+  );
   const maxSegmento = prefijo ? 4 : 2;
   const pideNombre = modo === "subcuenta" || modo === "editar" || modo === "raiz";
   const pideCodigo = pideNombre;
@@ -154,7 +157,10 @@ export function DialogoCuenta({
                 onChange={(e) => {
                   const activo = e.target.checked;
                   setMovimiento(activo);
-                  if (!activo) setAgregarAFacturas(false);
+                  if (!activo) {
+                    setAgregarAFacturas(false);
+                    setAgregarACajaChica(false);
+                  }
                 }}
                 className="size-4 accent-marca-500"
               />
@@ -165,23 +171,33 @@ export function DialogoCuenta({
           )}
 
           {(modo === "subcuenta" || (modo === "editar" && movimiento)) && (
-            <div className="space-y-1.5">
-              <Label htmlFor="cuenta-agregar-facturas" className="text-sm font-medium">
-                {t("agregarAFacturas")}
-              </Label>
-              <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
-              <Select
-                value={agregarAFacturas ? "1" : "0"}
-                onValueChange={(v) => setAgregarAFacturas(v === "1")}
-              >
-                <SelectTrigger id="cuenta-agregar-facturas" className="max-w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">{t("si")}</SelectItem>
-                  <SelectItem value="0">{t("no")}</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap items-center gap-6 pt-1 text-sm">
+              <div className="flex items-center gap-2.5">
+                <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
+                <input
+                  id="cuenta-agregar-facturas"
+                  type="checkbox"
+                  checked={agregarAFacturas}
+                  onChange={(e) => setAgregarAFacturas(e.target.checked)}
+                  className="size-4 accent-marca-500"
+                />
+                <Label htmlFor="cuenta-agregar-facturas" className="cursor-pointer text-sm font-medium text-tinta">
+                  {t("agregarAFacturas")}
+                </Label>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <input type="hidden" name="agregar_a_caja_chica" value={agregarACajaChica ? "1" : "0"} />
+                <input
+                  id="cuenta-agregar-caja-chica"
+                  type="checkbox"
+                  checked={agregarACajaChica}
+                  onChange={(e) => setAgregarACajaChica(e.target.checked)}
+                  className="size-4 accent-marca-500"
+                />
+                <Label htmlFor="cuenta-agregar-caja-chica" className="cursor-pointer text-sm font-medium text-tinta">
+                  {t("agregarACajaChica")}
+                </Label>
+              </div>
             </div>
           )}
 
