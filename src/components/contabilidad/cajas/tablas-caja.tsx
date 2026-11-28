@@ -1,11 +1,12 @@
-import { AlertCircle, CheckCircle2, Receipt, Scale } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Printer, Receipt, Scale } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { formatearMonto } from "@/lib/contabilidad/formato";
-import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
+import { TARJETA } from "@/lib/paleta";
 import type { ArqueoCaja, MovimientoCaja } from "@/server/contabilidad/cajas/consultas";
 import { BotonAprobarArqueo } from "./acciones-caja";
 import { AsientoArqueo } from "./botones-asiento-caja";
@@ -135,14 +136,19 @@ export function TablaArqueos({
                 <span className="font-mono text-xs text-tinta-2">AR-{a.numero}</span>
                 {a.fecha}
                 {dif === 0 ? (
-                  <Badge className={INSIGNIA_SEMAFORO.dentro}>
+                  <Badge className="border border-status-success-border bg-status-success-bg text-status-success-fg">
                     <CheckCircle2 className="size-3.5" />
                     {t("exacto")}
                   </Badge>
-                ) : (
-                  <Badge className={INSIGNIA_SEMAFORO.alerta}>
+                ) : dif < 0 ? (
+                  <Badge className="border border-status-danger-border bg-status-danger-bg text-status-danger-fg">
                     <AlertCircle className="size-3.5" />
-                    {dif > 0 ? t("sobrante") : t("faltante")} {formatearMonto(Math.abs(dif).toFixed(2), moneda)}
+                    {t("faltante")} {formatearMonto(Math.abs(dif).toFixed(2), moneda)}
+                  </Badge>
+                ) : (
+                  <Badge className="border border-status-warning-border bg-status-warning-bg text-status-warning-fg">
+                    <AlertTriangle className="size-3.5" />
+                    {t("sobrante")} {formatearMonto(Math.abs(dif).toFixed(2), moneda)}
                   </Badge>
                 )}
               </p>
@@ -157,6 +163,16 @@ export function TablaArqueos({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Button asChild variant="outline" size="sm" className="h-8 whitespace-nowrap">
+                <a
+                  href={`/api/contabilidad/cajas/arqueos/${a.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Printer className="size-3.5" />
+                  {t("reimprimirActaPdf")}
+                </a>
+              </Button>
               {/* Sin diferencia no hay asiento que ver. */}
               {dif !== 0 && <AsientoArqueo arqueoId={a.id} />}
               {a.estado === "aprobado" ? (

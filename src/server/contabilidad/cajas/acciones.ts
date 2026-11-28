@@ -830,13 +830,31 @@ export async function realizarArqueoAction(datos: {
 
       // Solo cuentan las denominaciones que existen para la moneda de la caja:
       // la lista viene del cliente y no se le cree.
-      const validas = new Map(denominacionesDe(caja.moneda).map((d) => [d.valor, d.tipo]));
-      const conteos = datos.conteos
-        .filter((c) => validas.has(c.denominacion) && Number.isInteger(c.cantidad) && c.cantidad > 0)
-        .map((c) => ({ ...c, tipo: validas.get(c.denominacion)! }));
+      const conteosNormalizados = normalizarDesglose(caja.moneda, datos.conteos);
+      const contadoPorClave = new Map(
+        conteosNormalizados.map((c) => [claveDenominacion(c.denominacion), c.cantidad]),
+      );
 
-      const saldoSistema = Number(caja.saldo_actual);
-      const saldoContado = totalContado(conteos);
+      // Leemos el desglose esperado actual del sistema para guardarlo junto al conteo físico.
+      const { rows: desgloseSistema } = await cliente.query<{
+        denominacion: number;
+        cantidad: number;
+      }>(
+        `SELECT denominacion::float8 AS denominacion, cantidad::int AS cantidad
+           FROM contabilidad.caja_desglose
+          WHERE caja_id = $1`,
+        [datos.cajaId],
+      );
+      const esperadoPorClave = new Map<number, number>();
+      for (const d of desgloseSistema) {
+        esperadoPorClave.set(
+          claveDenominacion(d.denominacion),
+          Math.max(0, Math.trunc(Number(d.cantidad) || 0)),
+        );
+      }
+
+      const saldoSistema = redondear(Number(caja.saldo_actual) || 0);
+      const saldoContado = redondear(totalContado(conteosNormalizados));
       const diferencia = redondear(saldoContado - saldoSistema);
       const justificacion = datos.justificacion?.trim().slice(0, 500) || null;
 
@@ -856,11 +874,15 @@ export async function realizarArqueoAction(datos: {
       );
       const arqueoId = rows[0].id;
 
-      for (const c of conteos) {
+      for (const d of denominacionesDe(caja.moneda)) {
+        const clave = claveDenominacion(d.valor);
+        const cantidadFisica = contadoPorClave.get(clave) ?? 0;
+        const cantidadEsperada = esperadoPorClave.get(clave) ?? 0;
         await cliente.query(
-          `INSERT INTO contabilidad.arqueo_denominacion (arqueo_id, denominacion, tipo, cantidad)
-           VALUES ($1, $2, $3, $4)`,
-          [arqueoId, c.denominacion, c.tipo, c.cantidad],
+          `INSERT INTO contabilidad.arqueo_denominacion
+             (arqueo_id, denominacion, tipo, cantidad, cantidad_esperada)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [arqueoId, d.valor, d.tipo, cantidadFisica, cantidadEsperada],
         );
       }
 

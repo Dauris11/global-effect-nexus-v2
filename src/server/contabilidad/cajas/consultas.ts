@@ -1,5 +1,6 @@
 import { consultar, consultarUna } from "@/lib/db";
 import { requerirPermiso } from "@/lib/auth";
+import { claveDenominacion, denominacionesDe, redondear } from "@/lib/contabilidad/cajas";
 import { formatearNumeroComprobante } from "@/lib/contabilidad/comprobantes-rd";
 
 export type DesgloseDenominacion = {
@@ -75,8 +76,20 @@ export type MovimientoCaja = {
 export type DenominacionConteo = {
   denominacion: number;
   tipo: "billete" | "moneda";
+  cantidadEsperada: number;
+  subtotalEsperado: number;
   cantidad: number;
   subtotal: number;
+};
+
+export type DatosActaArqueo = ArqueoCaja & {
+  cajaCodigo: string;
+  cajaMoneda: "DOP" | "USD";
+  cuentaContableCodigo: string | null;
+  cuentaContableNombre: string | null;
+  responsableNombre: string;
+  supervisorNombre: string | null;
+  denominaciones: DenominacionConteo[];
 };
 
 export type ArqueoCaja = {
@@ -422,10 +435,12 @@ export async function obtenerArqueoConDenominaciones(arqueoId: string): Promise<
   const denominaciones = await consultar<{
     denominacion: string;
     tipo: "billete" | "moneda";
+    cantidad_esperada: number;
     cantidad: number;
     subtotal: string;
   }>(
-    `SELECT denominacion, tipo, cantidad, subtotal
+    `SELECT denominacion, tipo, COALESCE(cantidad_esperada, 0)::int AS cantidad_esperada,
+            cantidad, subtotal
        FROM contabilidad.arqueo_denominacion
       WHERE arqueo_id = $1
       ORDER BY denominacion DESC`,
@@ -434,12 +449,104 @@ export async function obtenerArqueoConDenominaciones(arqueoId: string): Promise<
 
   return {
     ...aArqueo(fila),
-    denominaciones: denominaciones.map((d) => ({
-      denominacion: Number(d.denominacion),
+    denominaciones: denominaciones.map((d) => {
+      const denom = Number(d.denominacion);
+      const esperada = Number(d.cantidad_esperada) || 0;
+      return {
+        denominacion: denom,
+        tipo: d.tipo,
+        cantidadEsperada: esperada,
+        subtotalEsperado: redondear(denom * esperada),
+        cantidad: d.cantidad,
+        subtotal: Number(d.subtotal),
+      };
+    }),
+  };
+}
+
+/** Datos completos para generar o reimprimir el Acta de Arqueo de Caja Chica en PDF. */
+export async function obtenerDatosActaArqueo(arqueoId: string): Promise<DatosActaArqueo | null> {
+  await requerirPermiso("contabilidad.leer");
+
+  const fila = await consultarUna<
+    FilaArqueo & {
+      caja_codigo: string;
+      caja_moneda: "DOP" | "USD";
+      cuenta_codigo: string | null;
+      cuenta_nombre: string | null;
+      responsable_nombre: string;
+      supervisor_nombre: string | null;
+    }
+  >(
+    `SELECT a.id, a.numero, a.caja_id, c.nombre AS caja_nombre,
+            c.codigo AS caja_codigo, c.moneda AS caja_moneda,
+            cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
+            resp.nombre AS responsable_nombre, sup.nombre AS supervisor_nombre,
+            to_char(a.fecha, 'YYYY-MM-DD') AS fecha,
+            a.saldo_sistema, a.saldo_contado, a.diferencia,
+            a.estado, a.justificacion,
+            r.nombre AS revisado_por_nombre, a.revisado_en,
+            a.creado_por, u.nombre AS creado_por_nombre, a.creado_en,
+            (SELECT s.id FROM contabilidad.asiento s
+              WHERE s.origen_tabla = 'arqueo' AND s.origen_id = a.id AND NOT s.anulado
+              LIMIT 1) AS asiento_id
+       FROM contabilidad.arqueo a
+       JOIN contabilidad.caja c ON a.caja_id = c.id
+       JOIN public.usuario u ON a.creado_por = u.id
+       JOIN public.usuario resp ON c.responsable_id = resp.id
+       LEFT JOIN public.usuario sup ON c.supervisor_id = sup.id
+       LEFT JOIN public.usuario r ON a.revisado_por = r.id
+       LEFT JOIN contabilidad.cuenta_contable cc
+              ON cc.id = COALESCE(c.cuenta_contable_id,
+                                  (SELECT cuenta_id FROM contabilidad.codigo_transaccion
+                                   WHERE codigo = 'CAJ_CAJA_CHICA'))
+      WHERE a.id = $1`,
+    [arqueoId],
+  );
+  if (!fila) return null;
+
+  const filasDenom = await consultar<{
+    denominacion: string;
+    tipo: "billete" | "moneda";
+    cantidad_esperada: number;
+    cantidad: number;
+    subtotal: string;
+  }>(
+    `SELECT denominacion, tipo, COALESCE(cantidad_esperada, 0)::int AS cantidad_esperada,
+            cantidad, subtotal
+       FROM contabilidad.arqueo_denominacion
+      WHERE arqueo_id = $1
+      ORDER BY denominacion DESC`,
+    [arqueoId],
+  );
+
+  const porClave = new Map(
+    filasDenom.map((d) => [claveDenominacion(Number(d.denominacion)), d]),
+  );
+
+  const denominaciones: DenominacionConteo[] = denominacionesDe(fila.caja_moneda).map((d) => {
+    const guardada = porClave.get(claveDenominacion(d.valor));
+    const cantidadEsperada = guardada ? Number(guardada.cantidad_esperada) || 0 : 0;
+    const cantidad = guardada ? Number(guardada.cantidad) || 0 : 0;
+    return {
+      denominacion: d.valor,
       tipo: d.tipo,
-      cantidad: d.cantidad,
-      subtotal: Number(d.subtotal),
-    })),
+      cantidadEsperada,
+      subtotalEsperado: redondear(d.valor * cantidadEsperada),
+      cantidad,
+      subtotal: redondear(d.valor * cantidad),
+    };
+  });
+
+  return {
+    ...aArqueo(fila),
+    cajaCodigo: fila.caja_codigo,
+    cajaMoneda: fila.caja_moneda,
+    cuentaContableCodigo: fila.cuenta_codigo,
+    cuentaContableNombre: fila.cuenta_nombre,
+    responsableNombre: fila.responsable_nombre,
+    supervisorNombre: fila.supervisor_nombre,
+    denominaciones,
   };
 }
 
