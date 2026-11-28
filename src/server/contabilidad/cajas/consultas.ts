@@ -38,6 +38,8 @@ export type CajaResumen = {
   cuentaContableNombre: string | null;
   cuentaBancariaId: string | null;
   estado: "activa" | "inactiva";
+  /** Para Caja General: indica si la caja está abierta para operar o cerrada tras cuadre. */
+  abierta: boolean;
   desgloseConfigurado: boolean;
   desglose: DesgloseDenominacion[];
   creadoEn: string;
@@ -133,6 +135,7 @@ type FilaCaja = {
   cuenta_nombre: string | null;
   cuenta_bancaria_id: string | null;
   estado: "activa" | "inactiva";
+  abierta: boolean;
   desglose_configurado: boolean;
   desglose: DesgloseDenominacion[] | null;
   creado_en: string;
@@ -152,7 +155,7 @@ const SELECT_CAJA = `
          c.moneda, c.fondo_fijo, c.saldo_actual, c.umbral_adjunto,
          c.cuenta_contable_id, cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
          c.cuenta_bancaria_id,
-         c.estado, c.desglose_configurado,
+         c.estado, COALESCE(c.abierta, true) AS abierta, c.desglose_configurado,
          COALESCE((
            SELECT json_agg(
                     json_build_object(
@@ -203,6 +206,7 @@ function aCaja(f: FilaCaja): CajaResumen {
     cuentaContableNombre: f.cuenta_nombre,
     cuentaBancariaId: f.cuenta_bancaria_id,
     estado: f.estado,
+    abierta: Boolean(f.abierta),
     desgloseConfigurado: Boolean(f.desglose_configurado),
     desglose: Array.isArray(f.desglose) ? f.desglose : [],
     creadoEn: f.creado_en,
@@ -215,13 +219,18 @@ function aCaja(f: FilaCaja): CajaResumen {
 
 export async function listarCajas(): Promise<CajaResumen[]> {
   await requerirPermiso("contabilidad.leer");
-  const filas = await consultar<FilaCaja>(`${SELECT_CAJA} ORDER BY c.estado ASC, c.nombre ASC`);
+  const filas = await consultar<FilaCaja>(
+    `${SELECT_CAJA} WHERE c.eliminada_en IS NULL ORDER BY c.estado ASC, c.nombre ASC`,
+  );
   return filas.map(aCaja);
 }
 
 export async function obtenerCaja(cajaId: string): Promise<CajaResumen | null> {
   await requerirPermiso("contabilidad.leer");
-  const fila = await consultarUna<FilaCaja>(`${SELECT_CAJA} WHERE c.id = $1`, [cajaId]);
+  const fila = await consultarUna<FilaCaja>(
+    `${SELECT_CAJA} WHERE c.id = $1 AND c.eliminada_en IS NULL`,
+    [cajaId],
+  );
   return fila ? aCaja(fila) : null;
 }
 
@@ -235,6 +244,32 @@ export async function categoriasGastoCaja(): Promise<CategoriaGastoCaja[]> {
         AND cc.admite_movimiento = true
         AND cc.agregar_a_caja_chica = true
       ORDER BY cc.nombre ASC`,
+  );
+}
+
+/** Cuentas auxiliares marcadas con «Permitir en Tipo de Ingreso» para Caja General. */
+export async function cuentasTipoIngresoCaja(): Promise<CategoriaGastoCaja[]> {
+  await requerirPermiso("contabilidad.leer");
+  return consultar<CategoriaGastoCaja>(
+    `SELECT cc.id, cc.nombre, cc.codigo AS cuenta
+       FROM contabilidad.cuenta_contable cc
+      WHERE cc.activa = true
+        AND cc.admite_movimiento = true
+        AND cc.agregar_a_caja_ingreso = true
+      ORDER BY cc.codigo ASC, cc.nombre ASC`,
+  );
+}
+
+/** Cuentas auxiliares marcadas con «Permitir en Tipo de Egreso» para Caja General. */
+export async function cuentasTipoEgresoCaja(): Promise<CategoriaGastoCaja[]> {
+  await requerirPermiso("contabilidad.leer");
+  return consultar<CategoriaGastoCaja>(
+    `SELECT cc.id, cc.nombre, cc.codigo AS cuenta
+       FROM contabilidad.cuenta_contable cc
+      WHERE cc.activa = true
+        AND cc.admite_movimiento = true
+        AND cc.agregar_a_caja_egreso = true
+      ORDER BY cc.codigo ASC, cc.nombre ASC`,
   );
 }
 
@@ -560,4 +595,126 @@ export async function adjuntoDeMovimiento(
       WHERE id = $1 AND adjunto_ruta IS NOT NULL`,
     [movimientoId],
   );
+}
+
+export type MovimientoCajaGeneral = {
+  id: string;
+  numero: number;
+  fecha: string;
+  tipo: "ingreso" | "egreso";
+  concepto: string;
+  monto: string;
+  cuentaContrapartidaNombre: string | null;
+  cuentaContrapartidaCodigo: string | null;
+  arqueoId: string | null;
+  cierreNumero: number | null;
+  cierreFecha: string | null;
+  creadoPorNombre: string;
+};
+
+export type CierreCajaGeneral = {
+  id: string;
+  numero: number;
+  fecha: string;
+};
+
+type FilaCajaGeneralDb = {
+  id: string;
+  numero: number;
+  fecha: string;
+  tipo: "ingreso" | "egreso";
+  concepto: string;
+  monto: string;
+  cuenta_nombre: string | null;
+  cuenta_codigo: string | null;
+  arqueo_id: string | null;
+  cierre_numero: number | null;
+  cierre_fecha: string | null;
+  creado_por_nombre: string;
+};
+
+function aMovimientoGeneral(f: FilaCajaGeneralDb): MovimientoCajaGeneral {
+  return {
+    id: f.id,
+    numero: f.numero,
+    fecha: f.fecha,
+    tipo: f.tipo,
+    concepto: f.concepto,
+    monto: f.monto,
+    cuentaContrapartidaNombre: f.cuenta_nombre,
+    cuentaContrapartidaCodigo: f.cuenta_codigo,
+    arqueoId: f.arqueo_id,
+    cierreNumero: f.cierre_numero,
+    cierreFecha: f.cierre_fecha,
+    creadoPorNombre: f.creado_por_nombre,
+  };
+}
+
+const SELECT_MOV_GENERAL = `
+  SELECT m.id, m.numero, to_char(m.fecha, 'YYYY-MM-DD') AS fecha,
+         m.tipo, m.concepto, m.monto::text AS monto,
+         cc.nombre AS cuenta_nombre, cc.codigo AS cuenta_codigo,
+         m.arqueo_id,
+         a.numero::int AS cierre_numero,
+         to_char(a.fecha, 'YYYY-MM-DD') AS cierre_fecha,
+         u.nombre AS creado_por_nombre
+    FROM contabilidad.caja_movimiento m
+    JOIN public.usuario u ON u.id = m.creado_por
+    LEFT JOIN contabilidad.cuenta_contable cc ON cc.id = m.cuenta_contrapartida_id
+    LEFT JOIN contabilidad.arqueo a ON a.id = m.arqueo_id`;
+
+/** Ingresos y egresos activos del turno actual en Caja General. */
+export async function listarMovimientosCajaGeneral(cajaId: string): Promise<{
+  ingresos: MovimientoCajaGeneral[];
+  egresos: MovimientoCajaGeneral[];
+}> {
+  await requerirPermiso("contabilidad.leer");
+  const filas = await consultar<FilaCajaGeneralDb>(
+    `${SELECT_MOV_GENERAL}
+      WHERE m.caja_id = $1
+        AND m.tipo IN ('ingreso', 'egreso')
+        AND m.estado = 'pendiente'
+      ORDER BY m.fecha DESC, m.numero DESC
+      LIMIT 400`,
+    [cajaId],
+  );
+  const todos = filas.map(aMovimientoGeneral);
+  return {
+    ingresos: todos.filter((m) => m.tipo === "ingreso"),
+    egresos: todos.filter((m) => m.tipo === "egreso"),
+  };
+}
+
+/** Ingresos y egresos cerrados por Cuadre y Cierre (Historial de Caja General). */
+export async function listarHistorialCajaGeneral(cajaId: string): Promise<{
+  ingresos: MovimientoCajaGeneral[];
+  egresos: MovimientoCajaGeneral[];
+  cierres: CierreCajaGeneral[];
+}> {
+  await requerirPermiso("contabilidad.leer");
+  const [filas, cierres] = await Promise.all([
+    consultar<FilaCajaGeneralDb>(
+      `${SELECT_MOV_GENERAL}
+        WHERE m.caja_id = $1
+          AND m.tipo IN ('ingreso', 'egreso')
+          AND m.estado = 'completado'
+        ORDER BY m.fecha DESC, m.numero DESC
+        LIMIT 800`,
+      [cajaId],
+    ),
+    consultar<CierreCajaGeneral>(
+      `SELECT a.id, a.numero::int AS numero, to_char(a.fecha, 'YYYY-MM-DD') AS fecha
+         FROM contabilidad.arqueo a
+        WHERE a.caja_id = $1
+        ORDER BY a.fecha DESC, a.numero DESC
+        LIMIT 100`,
+      [cajaId],
+    ),
+  ]);
+  const todos = filas.map(aMovimientoGeneral);
+  return {
+    ingresos: todos.filter((m) => m.tipo === "ingreso"),
+    egresos: todos.filter((m) => m.tipo === "egreso"),
+    cierres,
+  };
 }

@@ -1,6 +1,8 @@
 import { ReceiptText, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { StatusBadge } from "@/components/app/status-badge";
+import { BotonAbrirCajaGeneral } from "@/components/contabilidad/cajas/boton-abrir-caja";
 import { DialogoConfigurarCaja } from "@/components/contabilidad/cajas/dialogo-configurar-caja";
 import type { CuentaBancoCaja } from "@/components/contabilidad/cajas/formulario-caja";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +16,10 @@ import type { CajaResumen } from "@/server/contabilidad/cajas/consultas";
 import type { UsuarioSolicitante } from "@/server/contabilidad/proveedores/consultas";
 
 /**
- * Tarjeta de una caja: Número de caja (con tuerca para configuración del
- * supervisor), Tipo de caja (Caja chica / Caja), Responsable, Fondo, barra de
- * Fondo − Utilizado y botón «Movimientos de caja» (habilitado solo cuando el
- * supervisor haya guardado el desglose de efectivo).
+ * Tarjeta de una caja:
+ *   · Caja chica: muestra Fondo, barra Disponible/Utilizado y botón «Movimientos de caja».
+ *   · Caja (Caja General): muestra estado Abierta/Cerrada, Saldo actual y alterna entre
+ *     «Movimientos de caja» (Abierta) y «Abrir» (Cerrada).
  */
 export function TarjetaCaja({
   caja,
@@ -31,6 +33,7 @@ export function TarjetaCaja({
   usuarioActualId?: string;
 }) {
   const t = useTranslations("contab.cajas");
+  const esCajaGeneral = caja.tipo === "caja";
   const fondo = Number(caja.fondoFijo) || 0;
   const disponible = Number(caja.saldoActual) || 0;
   const utilizado = Math.max(0, redondear(fondo - disponible));
@@ -53,7 +56,12 @@ export function TarjetaCaja({
                 esSupervisor={esSupervisor}
               />
             </div>
-            <Badge variant="neutra">{t(`tiposCaja.${caja.tipo}`)}</Badge>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="neutra">{t(`tiposCaja.${caja.tipo}`)}</Badge>
+              {esCajaGeneral && (
+                <StatusBadge status={caja.abierta ? "abierta" : "cerrada"} />
+              )}
+            </div>
           </div>
           {caja.estado === "inactiva" && <Badge variant="neutra">{t("inactiva")}</Badge>}
         </div>
@@ -63,34 +71,54 @@ export function TarjetaCaja({
           <span className="truncate">{caja.responsableNombre}</span>
         </p>
 
-        <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="texto-meta">{t("fondo")}</span>
-            <span className="text-lg font-semibold tabular-nums text-tinta">
-              {formatearMonto(caja.fondoFijo, caja.moneda)}
+        {esCajaGeneral ? (
+          <div className="rounded-control border border-linea bg-muted/20 px-3.5 py-2.5">
+            <span className="texto-meta block">{t("cajaGeneral.saldoActual")}</span>
+            <span className="mt-0.5 block font-mono text-lg font-semibold tabular-nums text-tinta">
+              {formatearMonto(disponible.toFixed(2), caja.moneda)}
             </span>
           </div>
+        ) : (
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="texto-meta">{t("fondo")}</span>
+              <span className="text-lg font-semibold tabular-nums text-tinta">
+                {formatearMonto(caja.fondoFijo, caja.moneda)}
+              </span>
+            </div>
 
-          <Progress
-            value={pct}
-            tono={baja ? "tinta" : "acento"}
-            aria-label={t("barraDisponible")}
-            className="h-2"
-          />
+            <Progress
+              value={pct}
+              tono={baja ? "tinta" : "acento"}
+              aria-label={t("barraDisponible")}
+              className="h-2"
+            />
 
-          <div className="flex items-center justify-between text-xs text-tinta-2 tabular-nums">
-            <span>
-              {t("disponible")}: {formatearMonto(disponible.toFixed(2), caja.moneda)}
-            </span>
-            <span>
-              {t("utilizado")}: {formatearMonto(utilizado.toFixed(2), caja.moneda)}
-            </span>
+            <div className="flex items-center justify-between text-xs text-tinta-2 tabular-nums">
+              <span>
+                {t("disponible")}: {formatearMonto(disponible.toFixed(2), caja.moneda)}
+              </span>
+              <span>
+                {t("utilizado")}: {formatearMonto(utilizado.toFixed(2), caja.moneda)}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="border-t border-linea pt-3">
-        {caja.desgloseConfigurado ? (
+        {esCajaGeneral ? (
+          caja.abierta ? (
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <Link href={`/contabilidad/cajas/${caja.id}`}>
+                <ReceiptText className="size-4" />
+                {t("movimientos")}
+              </Link>
+            </Button>
+          ) : (
+            <BotonAbrirCajaGeneral caja={caja} esSupervisor={esSupervisor} />
+          )
+        ) : caja.desgloseConfigurado ? (
           <Button asChild variant="outline" size="sm" className="w-full">
             <Link href={`/contabilidad/cajas/${caja.id}`}>
               <ReceiptText className="size-4" />

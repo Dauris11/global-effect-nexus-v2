@@ -109,6 +109,7 @@ async function ejecutar(
     return { estado: traducirError(error) };
   }
   revalidatePath("/[locale]/contabilidad/configuracion", "page");
+  revalidatePath("/[locale]/contabilidad/cajas", "layout");
   return { estado: "ok" };
 }
 
@@ -384,8 +385,9 @@ export async function crearSubcuenta(_previo: EstadoConfig, datos: FormData): Pr
 
     await cliente.query(
       `INSERT INTO contabilidad.cuenta_contable
-         (codigo, nombre, tipo, padre_id, admite_movimiento, agregar_a_facturas, agregar_a_caja_chica)
-       VALUES ($1, $2, $3, $4, true, $5, $6)`,
+         (codigo, nombre, tipo, padre_id, admite_movimiento, agregar_a_facturas,
+          agregar_a_caja_chica, agregar_a_caja_ingreso, agregar_a_caja_egreso)
+       VALUES ($1, $2, $3, $4, true, $5, $6, $7, $8)`,
       [
         codigo,
         nombre,
@@ -393,6 +395,8 @@ export async function crearSubcuenta(_previo: EstadoConfig, datos: FormData): Pr
         padre.id,
         texto(datos, "agregar_a_facturas", 1) === "1",
         texto(datos, "agregar_a_caja_chica", 1) === "1",
+        texto(datos, "agregar_a_caja_ingreso", 1) === "1",
+        texto(datos, "agregar_a_caja_egreso", 1) === "1",
       ],
     );
   });
@@ -441,6 +445,8 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
   const movimientoNuevo = texto(datos, "movimiento", 1) === "1";
   const agregarAFacturasNuevo = movimientoNuevo && texto(datos, "agregar_a_facturas", 1) === "1";
   const agregarACajaChicaNuevo = movimientoNuevo && texto(datos, "agregar_a_caja_chica", 1) === "1";
+  const agregarACajaIngresoNuevo = movimientoNuevo && texto(datos, "agregar_a_caja_ingreso", 1) === "1";
+  const agregarACajaEgresoNuevo = movimientoNuevo && texto(datos, "agregar_a_caja_egreso", 1) === "1";
   if (!esUuid(id)) return { estado: "no_encontrado" };
   if (!nombre) return { estado: "datos_invalidos" };
 
@@ -519,9 +525,19 @@ export async function editarCuenta(_previo: EstadoConfig, datos: FormData): Prom
           SET nombre = $2,
               admite_movimiento = $3,
               agregar_a_facturas = $4,
-              agregar_a_caja_chica = $5
+              agregar_a_caja_chica = $5,
+              agregar_a_caja_ingreso = $6,
+              agregar_a_caja_egreso = $7
         WHERE id = $1`,
-      [id, nombre, movimientoNuevo, agregarAFacturasNuevo, agregarACajaChicaNuevo],
+      [
+        id,
+        nombre,
+        movimientoNuevo,
+        agregarAFacturasNuevo,
+        agregarACajaChicaNuevo,
+        agregarACajaIngresoNuevo,
+        agregarACajaEgresoNuevo,
+      ],
     );
   });
 }

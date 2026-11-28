@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Calculator } from "lucide-react";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { DialogoConfigurarCaja } from "@/components/contabilidad/cajas/dialogo-configurar-caja";
@@ -8,9 +9,11 @@ import { ModalHistoricoCaja } from "@/components/contabilidad/cajas/modal-histor
 import { ModalReposicionCaja } from "@/components/contabilidad/cajas/modal-reposicion";
 import { FormularioMovimientoCaja } from "@/components/contabilidad/cajas/formulario-movimiento";
 import { TablaArqueos, TablaMovimientos } from "@/components/contabilidad/cajas/tablas-caja";
+import { VistaCajaGeneral } from "@/components/contabilidad/cajas/vista-caja-general";
 import { Button } from "@/components/ui/button";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
-import { Link } from "@/i18n/navigation";
+import { mensajesCliente } from "@/i18n/mensajes-cliente";
+import { Link, redirigir } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { esUuid } from "@/lib/contabilidad/formato";
 import { claveDia } from "@/lib/fechas";
@@ -18,9 +21,13 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 import { cuentasConSaldo } from "@/server/contabilidad/bancos/consultas";
 import {
   categoriasGastoCaja,
+  cuentasTipoEgresoCaja,
+  cuentasTipoIngresoCaja,
   listarArqueos,
+  listarHistorialCajaGeneral,
   listarHistoricoCaja,
   listarMovimientosCaja,
+  listarMovimientosCajaGeneral,
   obtenerCaja,
   proximoComprobanteCaja,
 } from "@/server/contabilidad/cajas/consultas";
@@ -50,10 +57,53 @@ export default async function PaginaDetalleCaja({
   const usuario = await requerirPermiso("contabilidad.leer");
   if (!esUuid(id)) notFound();
 
-  const [t, caja, movimientos, historico, arqueos, cuentas, personas, categorias, proximoComprobanteB11] =
+  const caja = await obtenerCaja(id);
+  if (!caja) notFound();
+
+  const hoy = claveDia();
+  const puedeRegistrar = usuarioTienePermiso(usuario, "contabilidad.registrar");
+  const esSupervisor = caja.supervisorId === usuario.id;
+
+  // Vista dedicada de Caja General (independiente de Caja Chica)
+  if (caja.tipo === "caja") {
+    if (!caja.abierta) {
+      redirigir("/contabilidad/cajas", locale);
+    }
+
+    const [movsGeneral, histGeneral, cuentasIngreso, cuentasEgreso, personas, mensajes] =
+      await Promise.all([
+        listarMovimientosCajaGeneral(id),
+        listarHistorialCajaGeneral(id),
+        cuentasTipoIngresoCaja(),
+        cuentasTipoEgresoCaja(),
+        listarUsuariosSolicitantes(),
+        mensajesCliente(["contab", "common"]),
+      ]);
+
+    return (
+      <NextIntlClientProvider messages={mensajes}>
+        <VistaCajaGeneral
+          caja={caja}
+          ingresos={movsGeneral.ingresos}
+          egresos={movsGeneral.egresos}
+          historialIngresos={histGeneral.ingresos}
+          historialEgresos={histGeneral.egresos}
+          cierres={histGeneral.cierres}
+          cuentasIngreso={cuentasIngreso}
+          cuentasEgreso={cuentasEgreso}
+          personas={personas}
+          hoy={hoy}
+          puedeRegistrar={puedeRegistrar}
+          esSupervisor={esSupervisor}
+          usuarioActualNombre={usuario.nombre}
+        />
+      </NextIntlClientProvider>
+    );
+  }
+
+  const [t, movimientos, historico, arqueos, cuentas, personas, categorias, proximoComprobanteB11] =
     await Promise.all([
       getTranslations({ locale, namespace: "contab.cajas" }),
-      obtenerCaja(id),
       listarMovimientosCaja(id),
       listarHistoricoCaja(id),
       listarArqueos(id),
@@ -62,11 +112,6 @@ export default async function PaginaDetalleCaja({
       categoriasGastoCaja(),
       proximoComprobanteCaja("B11"),
     ]);
-  if (!caja) notFound();
-
-  const hoy = claveDia();
-  const puedeRegistrar = usuarioTienePermiso(usuario, "contabilidad.registrar");
-  const esSupervisor = caja.supervisorId === usuario.id;
 
   return (
     <div className="space-y-6 animate-entrada">

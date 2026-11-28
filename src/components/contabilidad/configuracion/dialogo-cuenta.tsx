@@ -74,6 +74,12 @@ export function DialogoCuenta({
   const [agregarACajaChica, setAgregarACajaChica] = useState(
     modo === "editar" ? (cuenta?.agregarACajaChica ?? false) : false,
   );
+  const [agregarACajaIngreso, setAgregarACajaIngreso] = useState(
+    modo === "editar" ? (cuenta?.agregarACajaIngreso ?? false) : false,
+  );
+  const [agregarACajaEgreso, setAgregarACajaEgreso] = useState(
+    modo === "editar" ? (cuenta?.agregarACajaEgreso ?? false) : false,
+  );
   const maxSegmento = prefijo ? 4 : 2;
   const pideNombre = modo === "subcuenta" || modo === "editar" || modo === "raiz";
   const pideCodigo = pideNombre;
@@ -160,6 +166,8 @@ export function DialogoCuenta({
                   if (!activo) {
                     setAgregarAFacturas(false);
                     setAgregarACajaChica(false);
+                    setAgregarACajaIngreso(false);
+                    setAgregarACajaEgreso(false);
                   }
                 }}
                 className="size-4 accent-marca-500"
@@ -171,7 +179,7 @@ export function DialogoCuenta({
           )}
 
           {(modo === "subcuenta" || (modo === "editar" && movimiento)) && (
-            <div className="flex flex-wrap items-center gap-6 pt-1 text-sm">
+            <div className="grid grid-cols-1 gap-3 pt-1 text-sm sm:grid-cols-2">
               <div className="flex items-center gap-2.5">
                 <input type="hidden" name="agregar_a_facturas" value={agregarAFacturas ? "1" : "0"} />
                 <input
@@ -196,6 +204,32 @@ export function DialogoCuenta({
                 />
                 <Label htmlFor="cuenta-agregar-caja-chica" className="cursor-pointer text-sm font-medium text-tinta">
                   {t("agregarACajaChica")}
+                </Label>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <input type="hidden" name="agregar_a_caja_ingreso" value={agregarACajaIngreso ? "1" : "0"} />
+                <input
+                  id="cuenta-agregar-caja-ingreso"
+                  type="checkbox"
+                  checked={agregarACajaIngreso}
+                  onChange={(e) => setAgregarACajaIngreso(e.target.checked)}
+                  className="size-4 accent-marca-500"
+                />
+                <Label htmlFor="cuenta-agregar-caja-ingreso" className="cursor-pointer text-sm font-medium text-tinta">
+                  {t("agregarACajaIngreso")}
+                </Label>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <input type="hidden" name="agregar_a_caja_egreso" value={agregarACajaEgreso ? "1" : "0"} />
+                <input
+                  id="cuenta-agregar-caja-egreso"
+                  type="checkbox"
+                  checked={agregarACajaEgreso}
+                  onChange={(e) => setAgregarACajaEgreso(e.target.checked)}
+                  className="size-4 accent-marca-500"
+                />
+                <Label htmlFor="cuenta-agregar-caja-egreso" className="cursor-pointer text-sm font-medium text-tinta">
+                  {t("agregarACajaEgreso")}
                 </Label>
               </div>
             </div>

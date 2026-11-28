@@ -156,6 +156,9 @@ export const ERRORES_CAJA = [
   "sin_comprobante_vigente",
   "comprobante_requerido",
   "entregado_requerido",
+  "caja_cerrada",
+  "caja_con_saldo",
+  "cuenta_no_permitida",
   "error",
 ] as const;
 

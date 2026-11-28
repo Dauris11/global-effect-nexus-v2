@@ -204,6 +204,8 @@ export type CuentaCatalogo = {
   admiteMovimiento: boolean;
   agregarAFacturas: boolean;
   agregarACajaChica: boolean;
+  agregarACajaIngreso: boolean;
+  agregarACajaEgreso: boolean;
   activa: boolean;
   nivel: number;
   /** Líneas de asiento que la usan: con alguna, ya no puede tener hijas. */
@@ -235,6 +237,8 @@ export async function catalogo(): Promise<CuentaCatalogo[]> {
             c.admite_movimiento AS "admiteMovimiento",
             c.agregar_a_facturas AS "agregarAFacturas",
             c.agregar_a_caja_chica AS "agregarACajaChica",
+            c.agregar_a_caja_ingreso AS "agregarACajaIngreso",
+            c.agregar_a_caja_egreso AS "agregarACajaEgreso",
             c.activa, a.nivel,
             coalesce(u.n, 0) AS movimientos, coalesce(u.saldo, 0)::text AS saldo
        FROM arbol a

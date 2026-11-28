@@ -5,6 +5,13 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Módulo de Caja (Caja General) — Etapa #1 (28 nov 2026)
+
+- [x] Migración `0147_caja_general_etapa1.sql` aplicada en Supabase: banderas `agregar_a_caja_ingreso` y `agregar_a_caja_egreso` en `contabilidad.cuenta_contable`, estado `abierta` + baja lógica controlada (`eliminada_en`/`eliminada_por`) + `fondo_fijo >= 0` en `contabilidad.caja`, y tipos `ingreso`/`egreso` + `cuenta_contrapartida_id` en `contabilidad.caja_movimiento`.
+- [x] Creación, apertura y eliminación de Caja General: campo `Banco` oculto al crear tipo `Caja`; solo el Supervisor puede cargar desglose inicial (si no, queda en `0.00`) y solo el Supervisor puede eliminarla cuando saldo y desglose estén exactamente en `0.00`; botón de tarjeta alterna entre «Movimientos de caja» (Abierta) y «Abrir» (Cerrada).
+- [x] Catálogo de cuentas auxiliares (`SI`): agregados checks independientes «Permitir en Tipo de Ingreso» y «Permitir en Tipo de Egreso» en `DialogoCuenta` + acciones de configuración.
+- [x] Vista principal de Caja General (`/contabilidad/cajas/[id]`): 4 botones (`Ingreso`, `Egreso`, `Cuadre y cierre` solo Supervisor, `Historial`), filtros reactivos por rango de fecha y monto sin botón «Filtrar», dos tablas paralelas (`Ingresos` y `Egresos` con `Fecha`, `Concepto`, `Monto` y fila `Total`), flujo con desglose de efectivo + asiento contable cuadrado automático, «Cuadre y cierre» comparativo que traslada movimientos al Historial y cierra la caja saliendo automáticamente, e «Historial» paralelo con los mismos filtros reactivos y selector de cierre.
+
 ## Solicitudes, Cuentas por Pagar y Módulo Pasaje — Etapa #3 (28 nov 2026)
 
 - [x] Migración `0146_solicitudes_etapa3_pasaje.sql` aplicada en Supabase: `multiplicar_por_dias` en `public.lugar_pasaje`, estado `'entregado'` en `public.solicitud` y columnas de entrega (`monto_entregado`, `entregado_por`, `entregado_en`, `en_historial_pasaje`).

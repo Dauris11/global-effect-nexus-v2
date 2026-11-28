@@ -56,7 +56,9 @@ function fallo(error: unknown): ResultadoCaja {
   if (error instanceof ErrorCodigosTransaccion) return { exito: false, error: "codigo_sin_cuenta" };
   const mensaje = error instanceof Error ? error.message : String(error);
   if (mensaje.includes("período contable está cerrado")) return { exito: false, error: "periodo_cerrado" };
-  if (mensaje.includes("caja_codigo_key")) return { exito: false, error: "codigo_repetido" };
+  if (mensaje.includes("caja_codigo_key") || mensaje.includes("idx_caja_codigo_activo")) {
+    return { exito: false, error: "codigo_repetido" };
+  }
   console.error("[cajas]", error);
   return { exito: false, error: "error" };
 }
@@ -75,6 +77,7 @@ type CajaBloqueada = {
   saldo_actual: string;
   umbral_adjunto: string;
   estado: string;
+  abierta: boolean;
   desglose_configurado: boolean;
   supervisor_id: string | null;
   cuenta_id: string | null;
@@ -87,11 +90,11 @@ async function bloquearCaja(
 ): Promise<CajaBloqueada & { cuenta_id: string }> {
   const { rows } = await cliente.query<CajaBloqueada>(
     `SELECT id, nombre, tipo, moneda, fondo_fijo, saldo_actual, umbral_adjunto, estado,
-            desglose_configurado, supervisor_id,
+            COALESCE(abierta, true) AS abierta, desglose_configurado, supervisor_id,
             COALESCE(cuenta_contable_id,
                      (SELECT cuenta_id FROM contabilidad.codigo_transaccion
                        WHERE codigo = 'CAJ_CAJA_CHICA')) AS cuenta_id
-       FROM contabilidad.caja WHERE id = $1 FOR UPDATE`,
+       FROM contabilidad.caja WHERE id = $1 AND eliminada_en IS NULL FOR UPDATE`,
     [cajaId],
   );
   const caja = rows[0];
@@ -214,24 +217,32 @@ export async function crearCajaAction(datos: {
   supervisorId: string;
   tipo: "caja_chica" | "caja";
   moneda: "DOP" | "USD";
-  fondo: number;
+  fondo?: number;
   cuentaContableId: string;
-  cuentaBancariaId: string;
+  cuentaBancariaId?: string | null;
+  desgloseInicial?: { denominacion: number; cantidad: number }[];
+  confirmarDesgloseInicial?: boolean;
 }): Promise<ResultadoCaja> {
   const usuario = await requerirPermiso("contabilidad.configurar");
 
   const numeroLimpio = datos.numero.trim().toUpperCase().slice(0, 30);
+  const esCajaGeneral = datos.tipo === "caja";
+
   if (
     !numeroLimpio ||
     !esUuid(datos.responsableId) ||
     !esUuid(datos.supervisorId) ||
     !esUuid(datos.cuentaContableId) ||
-    !esUuid(datos.cuentaBancariaId) ||
     (datos.tipo !== "caja_chica" && datos.tipo !== "caja") ||
-    !(datos.fondo > 0) ||
     !["DOP", "USD"].includes(datos.moneda)
   ) {
     return { exito: false, error: "datos_invalidos" };
+  }
+
+  if (!esCajaGeneral) {
+    if (!datos.cuentaBancariaId || !esUuid(datos.cuentaBancariaId) || !(Number(datos.fondo) > 0)) {
+      return { exito: false, error: "datos_invalidos" };
+    }
   }
 
   try {
@@ -244,10 +255,59 @@ export async function crearCajaAction(datos: {
       );
       if (!cuentaRow) throw new Rechazo("sin_cuenta_contable");
 
-      const fondoRedondeado = redondear(datos.fondo);
       const nombreGenerado =
         datos.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
       const departamentoGenerado = datos.tipo === "caja_chica" ? "Caja chica" : "Caja";
+
+      if (esCajaGeneral) {
+        // Únicamente el supervisor asignado puede cargar el desglose inicial al crear.
+        // Si la crea alguien distinto (o sin desglose inicial), queda en 0.00 hasta que el supervisor la abra.
+        const esSupervisorCreador = datos.supervisorId === usuario.id;
+        const tieneDesglose =
+          esSupervisorCreador &&
+          Boolean(datos.confirmarDesgloseInicial || (datos.desgloseInicial && datos.desgloseInicial.length > 0));
+        const desgloseLimpio = tieneDesglose
+          ? normalizarDesglose(datos.moneda, datos.desgloseInicial ?? [])
+          : [];
+        const saldoInicial = tieneDesglose ? redondear(totalContado(desgloseLimpio)) : 0;
+
+        await fijarAccion(cliente, "crear");
+        const { rows } = await cliente.query<{ id: string }>(
+          `INSERT INTO contabilidad.caja
+             (codigo, nombre, departamento, tipo, responsable_id, supervisor_id, moneda,
+              fondo_fijo, saldo_actual, umbral_adjunto, cuenta_contable_id, cuenta_bancaria_id,
+              desglose_configurado, abierta, creado_por)
+           VALUES ($1, $2, $3, 'caja', $4, $5, $6, $7, $7, 0, $8, NULL, $9, $10, $11)
+           RETURNING id`,
+          [
+            numeroLimpio,
+            nombreGenerado.slice(0, 120),
+            departamentoGenerado,
+            datos.responsableId,
+            datos.supervisorId,
+            datos.moneda,
+            saldoInicial,
+            cuentaRow.id,
+            tieneDesglose,
+            tieneDesglose,
+            usuario.id,
+          ],
+        );
+        const cajaId = rows[0].id;
+
+        for (const item of desgloseLimpio) {
+          await cliente.query(
+            `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad)
+             VALUES ($1, $2, $3, $4)`,
+            [cajaId, item.denominacion, item.tipo, item.cantidad],
+          );
+        }
+
+        return cajaId;
+      }
+
+      const fondoRedondeado = redondear(Number(datos.fondo));
+      const cuentaBancariaId = datos.cuentaBancariaId as string;
 
       await fijarAccion(cliente, "crear");
       const { rows } = await cliente.query<{ id: string }>(
@@ -268,7 +328,7 @@ export async function crearCajaAction(datos: {
           fondoRedondeado,
           500,
           cuentaRow.id,
-          datos.cuentaBancariaId,
+          cuentaBancariaId,
           usuario.id,
         ],
       );
@@ -278,7 +338,7 @@ export async function crearCajaAction(datos: {
         cajaId,
         nombreCaja: nombreGenerado,
         cuentaCajaId: cuentaRow.id,
-        cuentaBancariaId: datos.cuentaBancariaId,
+        cuentaBancariaId,
         moneda: datos.moneda,
         delta: fondoRedondeado,
         concepto: `Apertura ${nombreGenerado}`,
@@ -319,7 +379,8 @@ export async function actualizarCajaAction(datos: {
     !numeroLimpio ||
     !esUuid(datos.responsableId) ||
     !esUuid(datos.supervisorId) ||
-    !(datos.fondo > 0) ||
+    !Number.isFinite(datos.fondo) ||
+    datos.fondo < 0 ||
     !["DOP", "USD"].includes(datos.moneda)
   ) {
     return { exito: false, error: "datos_invalidos" };
@@ -340,13 +401,41 @@ export async function actualizarCajaAction(datos: {
         `SELECT id, tipo, supervisor_id, moneda, fondo_fijo, saldo_actual,
                 cuenta_contable_id, cuenta_bancaria_id
            FROM contabilidad.caja
-          WHERE id = $1
+          WHERE id = $1 AND eliminada_en IS NULL
           FOR UPDATE`,
         [datos.cajaId],
       );
       const caja = rows[0];
       if (!caja) throw new Rechazo("no_encontrada");
       if (caja.supervisor_id !== usuario.id) throw new Rechazo("solo_supervisor");
+
+      const nombreGenerado =
+        caja.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
+
+      if (caja.tipo === "caja") {
+        await fijarAccion(cliente, "editar");
+        await cliente.query(
+          `UPDATE contabilidad.caja
+              SET codigo = $2,
+                  nombre = $3,
+                  responsable_id = $4,
+                  supervisor_id = $5,
+                  moneda = $6,
+                  cuenta_bancaria_id = NULL
+            WHERE id = $1`,
+          [
+            datos.cajaId,
+            numeroLimpio,
+            nombreGenerado.slice(0, 120),
+            datos.responsableId,
+            datos.supervisorId,
+            datos.moneda,
+          ],
+        );
+        return;
+      }
+
+      if (!(datos.fondo > 0)) throw new Rechazo("datos_invalidos");
 
       const fondoAnterior = redondear(Number(caja.fondo_fijo));
       const fondoNuevo = redondear(datos.fondo);
@@ -358,8 +447,6 @@ export async function actualizarCajaAction(datos: {
       }
 
       const saldoNuevo = Math.max(0, redondear(saldoActual + deltaFondo));
-      const nombreGenerado =
-        caja.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
       const bancoId =
         datos.cuentaBancariaId && esUuid(datos.cuentaBancariaId)
           ? datos.cuentaBancariaId
@@ -438,13 +525,14 @@ export async function guardarDesgloseCajaAction(datos: {
     await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       const { rows } = await cliente.query<{
         id: string;
+        tipo: "caja_chica" | "caja";
         moneda: "DOP" | "USD";
         fondo_fijo: string;
         supervisor_id: string | null;
       }>(
-        `SELECT id, moneda, fondo_fijo, supervisor_id
+        `SELECT id, tipo, moneda, fondo_fijo, supervisor_id
            FROM contabilidad.caja
-          WHERE id = $1
+          WHERE id = $1 AND eliminada_en IS NULL
           FOR UPDATE`,
         [datos.cajaId],
       );
@@ -463,8 +551,11 @@ export async function guardarDesgloseCajaAction(datos: {
         }));
 
       const total = redondear(totalContado(limpias));
-      const objetivo = redondear(datos.fondo && datos.fondo > 0 ? datos.fondo : Number(caja.fondo_fijo));
-      if (!(total > 0) || Math.abs(total - objetivo) > 0.005) {
+      const objetivo =
+        caja.tipo === "caja"
+          ? total
+          : redondear(datos.fondo && datos.fondo > 0 ? datos.fondo : Number(caja.fondo_fijo));
+      if (caja.tipo !== "caja" && (!(total > 0) || Math.abs(total - objetivo) > 0.005)) {
         throw new Rechazo("desglose_no_coincide");
       }
 
@@ -472,6 +563,7 @@ export async function guardarDesgloseCajaAction(datos: {
       await cliente.query(`DELETE FROM contabilidad.caja_desglose WHERE caja_id = $1`, [datos.cajaId]);
 
       for (const item of limpias) {
+        if (item.cantidad <= 0) continue;
         await cliente.query(
           `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad)
            VALUES ($1, $2, $3, $4)`,
@@ -484,6 +576,7 @@ export async function guardarDesgloseCajaAction(datos: {
             SET desglose_configurado = true,
                 fondo_fijo = $2,
                 saldo_actual = CASE
+                  WHEN tipo = 'caja' THEN $2
                   WHEN EXISTS (SELECT 1 FROM contabilidad.caja_movimiento WHERE caja_id = $1)
                   THEN saldo_actual
                   ELSE $2
@@ -1219,6 +1312,593 @@ export async function reponerCajaDesdeBancoAction(datos: {
     revalidatePath("/[locale]/contabilidad/bancos", "layout");
     revalidatePath("/[locale]/contabilidad/asientos", "layout");
     return { exito: true, id };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Caja General — Etapa #1 (Eliminar, Abrir, Ingreso, Egreso, Cuadre y Cierre)
+// ---------------------------------------------------------------------------
+
+/**
+ * Elimina una caja (baja lógica en bitácora) exclusivamente por el Supervisor
+ * cuando su saldo actual, su desglose de efectivo y sus movimientos abiertos
+ * estén exactamente en 0.00.
+ */
+export async function eliminarCajaAction(cajaId: string): Promise<ResultadoCaja> {
+  const usuario = await requerirUsuario();
+  if (!esUuid(cajaId)) return { exito: false, error: "datos_invalidos" };
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const { rows } = await cliente.query<{
+        id: string;
+        supervisor_id: string | null;
+        saldo_actual: string;
+      }>(
+        `SELECT id, supervisor_id, saldo_actual
+           FROM contabilidad.caja
+          WHERE id = $1 AND eliminada_en IS NULL
+          FOR UPDATE`,
+        [cajaId],
+      );
+      const caja = rows[0];
+      if (!caja) throw new Rechazo("no_encontrada");
+      if (caja.supervisor_id !== usuario.id) throw new Rechazo("solo_supervisor");
+
+      const saldo = redondear(Number(caja.saldo_actual) || 0);
+      if (Math.abs(saldo) > 0.005) throw new Rechazo("caja_con_saldo");
+
+      const { rows: [desg] } = await cliente.query<{ total: string }>(
+        `SELECT COALESCE(SUM(denominacion * cantidad), 0)::text AS total
+           FROM contabilidad.caja_desglose
+          WHERE caja_id = $1`,
+        [cajaId],
+      );
+      if (Math.abs(redondear(Number(desg?.total ?? 0))) > 0.005) {
+        throw new Rechazo("caja_con_saldo");
+      }
+
+      const { rowCount: abiertos } = await cliente.query(
+        `SELECT 1 FROM contabilidad.caja_movimiento
+          WHERE caja_id = $1 AND estado = 'pendiente'
+          LIMIT 1`,
+        [cajaId],
+      );
+      if (abiertos && abiertos > 0) throw new Rechazo("caja_con_saldo");
+
+      await fijarAccion(cliente, "anular", "Eliminación de caja en 0.00 por supervisor");
+      await cliente.query(`DELETE FROM contabilidad.caja_desglose WHERE caja_id = $1`, [cajaId]);
+      await cliente.query(
+        `UPDATE contabilidad.caja
+            SET estado = 'inactiva',
+                abierta = false,
+                eliminada_en = now(),
+                eliminada_por = $2
+          WHERE id = $1`,
+        [cajaId, usuario.id],
+      );
+    });
+    refrescar();
+    return { exito: true, id: cajaId };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
+/**
+ * Abre una Caja General cerrada (o pendiente de desglose inicial).
+ *   · Si aún no tenía desglose configurado, únicamente el Supervisor puede
+ *     configurar el desglose inicial y abrirla.
+ *   · Si el Supervisor envía conteos al abrir, actualiza el desglose físico y
+ *     el saldo de apertura; si no, conserva el efectivo actual y marca `abierta = true`.
+ */
+export async function abrirCajaGeneralAction(datos: {
+  cajaId: string;
+  conteos?: { denominacion: number; cantidad: number }[];
+  actualizarDesglose?: boolean;
+}): Promise<ResultadoCaja> {
+  const usuario = await requerirUsuario();
+  if (!esUuid(datos.cajaId)) return { exito: false, error: "datos_invalidos" };
+
+  try {
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const caja = await bloquearCaja(cliente, datos.cajaId);
+      if (caja.tipo !== "caja") throw new Rechazo("datos_invalidos");
+
+      const esSupervisor = caja.supervisor_id === usuario.id;
+      if (!caja.desglose_configurado && !esSupervisor) {
+        throw new Rechazo("solo_supervisor");
+      }
+
+      await fijarAccion(cliente, "editar", "Apertura de caja general");
+
+      if (esSupervisor && datos.actualizarDesglose && Array.isArray(datos.conteos)) {
+        const desgloseLimpio = normalizarDesglose(caja.moneda, datos.conteos);
+        const total = redondear(totalContado(desgloseLimpio));
+
+        await cliente.query(`DELETE FROM contabilidad.caja_desglose WHERE caja_id = $1`, [
+          datos.cajaId,
+        ]);
+        for (const item of desgloseLimpio) {
+          await cliente.query(
+            `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad)
+             VALUES ($1, $2, $3, $4)`,
+            [datos.cajaId, item.denominacion, item.tipo, item.cantidad],
+          );
+        }
+
+        await cliente.query(
+          `UPDATE contabilidad.caja
+              SET abierta = true,
+                  desglose_configurado = true,
+                  saldo_actual = $2,
+                  fondo_fijo = $2
+            WHERE id = $1`,
+          [datos.cajaId, total],
+        );
+      } else {
+        await cliente.query(
+          `UPDATE contabilidad.caja
+              SET abierta = true,
+                  desglose_configurado = true
+            WHERE id = $1`,
+          [datos.cajaId],
+        );
+      }
+    });
+    refrescar();
+    return { exito: true, id: datos.cajaId };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
+/**
+ * Registra un Ingreso en Caja General con desglose físico exacto y asiento automático:
+ *   · Débito: Cuenta contable de la Caja
+ *   · Crédito: Cuenta contable elegida en «Tipo de ingreso»
+ */
+export async function registrarIngresoCajaGeneralAction(datos: {
+  cajaId: string;
+  cuentaIngresoId: string;
+  concepto: string;
+  monto: number;
+  fecha: string;
+  desglose: { denominacion: number; cantidad: number }[];
+}): Promise<ResultadoCaja> {
+  const usuario = await requerirPermiso("contabilidad.registrar");
+  const concepto = datos.concepto.trim().slice(0, 200);
+  const monto = redondear(Number(datos.monto));
+
+  if (
+    !esUuid(datos.cajaId) ||
+    !esUuid(datos.cuentaIngresoId) ||
+    !esFechaIso(datos.fecha) ||
+    concepto.length < 2 ||
+    !(monto > 0) ||
+    !Array.isArray(datos.desglose)
+  ) {
+    return { exito: false, error: "datos_invalidos" };
+  }
+
+  try {
+    const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const caja = await bloquearCaja(cliente, datos.cajaId);
+      if (caja.tipo !== "caja") throw new Rechazo("datos_invalidos");
+      if (!caja.abierta) throw new Rechazo("caja_cerrada");
+
+      const { rows: [cuentaIngreso] } = await cliente.query<{ id: string }>(
+        `SELECT id
+           FROM contabilidad.cuenta_contable
+          WHERE id = $1
+            AND activa = true
+            AND admite_movimiento = true
+            AND agregar_a_caja_ingreso = true`,
+        [datos.cuentaIngresoId],
+      );
+      if (!cuentaIngreso) throw new Rechazo("cuenta_no_permitida");
+
+      const desgloseLimpio = normalizarDesglose(caja.moneda, datos.desglose);
+      const totalDesglose = redondear(totalContado(desgloseLimpio));
+      if (desgloseLimpio.length === 0 || Math.abs(totalDesglose - monto) > 0.005) {
+        throw new Rechazo("desglose_no_coincide");
+      }
+
+      let montoDop = monto;
+      if (caja.moneda === "USD") {
+        const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+          `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+          [datos.fecha],
+        );
+        if (!tasaRow?.tasa) throw new Rechazo("datos_invalidos");
+        montoDop = redondear(monto * Number(tasaRow.tasa));
+      }
+
+      await fijarAccion(cliente, "crear");
+      const { rows: [movRow] } = await cliente.query<{ id: string; numero: number }>(
+        `INSERT INTO contabilidad.caja_movimiento
+           (numero, caja_id, fecha, periodo_id, tipo, monto, concepto,
+            cuenta_contrapartida_id, desglose, estado, creado_por)
+         VALUES (
+           contabilidad.siguiente_numero('CJ'),
+           $1, $2::date, contabilidad.periodo_para($2::date),
+           'ingreso', $3::numeric, $4, $5, $6::jsonb, 'pendiente', $7
+         )
+         RETURNING id, numero::int AS numero`,
+        [
+          datos.cajaId,
+          datos.fecha,
+          monto.toFixed(2),
+          concepto,
+          cuentaIngreso.id,
+          JSON.stringify(desgloseLimpio),
+          usuario.id,
+        ],
+      );
+
+      for (const item of desgloseLimpio) {
+        await cliente.query(
+          `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad, actualizado_en)
+           VALUES ($1, $2, $3, $4, now())
+           ON CONFLICT (caja_id, denominacion)
+           DO UPDATE SET cantidad = contabilidad.caja_desglose.cantidad + EXCLUDED.cantidad,
+                         actualizado_en = now()`,
+          [datos.cajaId, item.denominacion, item.tipo, item.cantidad],
+        );
+      }
+
+      await cliente.query(
+        `UPDATE contabilidad.caja
+            SET saldo_actual = saldo_actual + $2::numeric,
+                desglose_configurado = true
+          WHERE id = $1`,
+        [datos.cajaId, monto.toFixed(2)],
+      );
+
+      // Asiento contable automático: Débito Caja / Crédito Tipo de ingreso
+      const lineas = [
+        { cuenta_id: caja.cuenta_id, debe: montoDop, descripcion: concepto },
+        { cuenta_id: cuentaIngreso.id, haber: montoDop, descripcion: concepto },
+      ];
+      await cliente.query(
+        `SELECT contabilidad.crear_asiento(
+           $1::date, $2, 'automatico', 'caja_movimiento', $3::uuid, $4::jsonb
+         )`,
+        [
+          datos.fecha,
+          `Ingreso ${caja.nombre} · ${concepto}`.slice(0, 200),
+          movRow.id,
+          JSON.stringify(lineas),
+        ],
+      );
+
+      return movRow.id;
+    });
+
+    refrescar();
+    revalidatePath("/[locale]/contabilidad/asientos", "layout");
+    return { exito: true, id };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
+/**
+ * Registra un Egreso en Caja General validando estrictamente el saldo y stock
+ * físico por denominación, y genera el asiento automático:
+ *   · Débito: Cuenta contable elegida en «Tipo de egreso»
+ *   · Crédito: Cuenta contable de la Caja
+ */
+export async function registrarEgresoCajaGeneralAction(datos: {
+  cajaId: string;
+  cuentaEgresoId: string;
+  concepto: string;
+  monto: number;
+  fecha: string;
+  desglose: { denominacion: number; cantidad: number }[];
+}): Promise<ResultadoCaja> {
+  const usuario = await requerirPermiso("contabilidad.registrar");
+  const concepto = datos.concepto.trim().slice(0, 200);
+  const monto = redondear(Number(datos.monto));
+
+  if (
+    !esUuid(datos.cajaId) ||
+    !esUuid(datos.cuentaEgresoId) ||
+    !esFechaIso(datos.fecha) ||
+    concepto.length < 2 ||
+    !(monto > 0) ||
+    !Array.isArray(datos.desglose)
+  ) {
+    return { exito: false, error: "datos_invalidos" };
+  }
+
+  try {
+    const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const caja = await bloquearCaja(cliente, datos.cajaId);
+      if (caja.tipo !== "caja") throw new Rechazo("datos_invalidos");
+      if (!caja.abierta) throw new Rechazo("caja_cerrada");
+      if (redondear(Number(caja.saldo_actual)) < monto) {
+        throw new Rechazo("saldo_insuficiente");
+      }
+
+      const { rows: [cuentaEgreso] } = await cliente.query<{ id: string }>(
+        `SELECT id
+           FROM contabilidad.cuenta_contable
+          WHERE id = $1
+            AND activa = true
+            AND admite_movimiento = true
+            AND agregar_a_caja_egreso = true`,
+        [datos.cuentaEgresoId],
+      );
+      if (!cuentaEgreso) throw new Rechazo("cuenta_no_permitida");
+
+      const desgloseLimpio = normalizarDesglose(caja.moneda, datos.desglose);
+      const totalDesglose = redondear(totalContado(desgloseLimpio));
+      if (desgloseLimpio.length === 0 || Math.abs(totalDesglose - monto) > 0.005) {
+        throw new Rechazo("desglose_no_coincide");
+      }
+
+      const { rows: stockFilas } = await cliente.query<{
+        denominacion: number;
+        cantidad: number;
+      }>(
+        `SELECT denominacion::float8 AS denominacion, cantidad::int AS cantidad
+           FROM contabilidad.caja_desglose
+          WHERE caja_id = $1
+          FOR UPDATE`,
+        [datos.cajaId],
+      );
+      const disponiblePorClave = new Map<number, number>();
+      for (const fila of stockFilas) {
+        disponiblePorClave.set(
+          claveDenominacion(fila.denominacion),
+          Math.max(0, Math.trunc(Number(fila.cantidad) || 0)),
+        );
+      }
+
+      for (const item of desgloseLimpio) {
+        const disponible = disponiblePorClave.get(claveDenominacion(item.denominacion)) ?? 0;
+        if (item.cantidad > disponible) {
+          throw new Rechazo("denominacion_insuficiente");
+        }
+      }
+
+      let montoDop = monto;
+      if (caja.moneda === "USD") {
+        const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+          `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+          [datos.fecha],
+        );
+        if (!tasaRow?.tasa) throw new Rechazo("datos_invalidos");
+        montoDop = redondear(monto * Number(tasaRow.tasa));
+      }
+
+      await fijarAccion(cliente, "crear");
+      const { rows: [movRow] } = await cliente.query<{ id: string; numero: number }>(
+        `INSERT INTO contabilidad.caja_movimiento
+           (numero, caja_id, fecha, periodo_id, tipo, monto, concepto,
+            cuenta_contrapartida_id, desglose, estado, creado_por)
+         VALUES (
+           contabilidad.siguiente_numero('CJ'),
+           $1, $2::date, contabilidad.periodo_para($2::date),
+           'egreso', $3::numeric, $4, $5, $6::jsonb, 'pendiente', $7
+         )
+         RETURNING id, numero::int AS numero`,
+        [
+          datos.cajaId,
+          datos.fecha,
+          monto.toFixed(2),
+          concepto,
+          cuentaEgreso.id,
+          JSON.stringify(desgloseLimpio),
+          usuario.id,
+        ],
+      );
+
+      for (const item of desgloseLimpio) {
+        await cliente.query(
+          `UPDATE contabilidad.caja_desglose
+              SET cantidad = cantidad - $3,
+                  actualizado_en = now()
+            WHERE caja_id = $1 AND denominacion = $2`,
+          [datos.cajaId, item.denominacion, item.cantidad],
+        );
+      }
+
+      await cliente.query(
+        `UPDATE contabilidad.caja
+            SET saldo_actual = saldo_actual - $2::numeric
+          WHERE id = $1`,
+        [datos.cajaId, monto.toFixed(2)],
+      );
+
+      // Asiento contable automático: Débito Tipo de egreso / Crédito Caja
+      const lineas = [
+        { cuenta_id: cuentaEgreso.id, debe: montoDop, descripcion: concepto },
+        { cuenta_id: caja.cuenta_id, haber: montoDop, descripcion: concepto },
+      ];
+      await cliente.query(
+        `SELECT contabilidad.crear_asiento(
+           $1::date, $2, 'automatico', 'caja_movimiento', $3::uuid, $4::jsonb
+         )`,
+        [
+          datos.fecha,
+          `Egreso ${caja.nombre} · ${concepto}`.slice(0, 200),
+          movRow.id,
+          JSON.stringify(lineas),
+        ],
+      );
+
+      return movRow.id;
+    });
+
+    refrescar();
+    revalidatePath("/[locale]/contabilidad/asientos", "layout");
+    return { exito: true, id };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
+/**
+ * Ejecuta «Cuadre y cierre» de una Caja General (exclusivo del Supervisor):
+ *   · Registra el cuadre físico comparativo (esperado vs contado por denominación).
+ *   · Mueve todos los Ingresos y Egresos del turno actual al Historial (`completado`).
+ *   · Actualiza el desglose físico y marca la caja como Cerrada (`abierta = false`).
+ */
+export async function cuadreYCierreCajaGeneralAction(datos: {
+  cajaId: string;
+  fecha: string;
+  conteos: { denominacion: number; cantidad: number }[];
+  justificacion?: string;
+}): Promise<ResultadoCaja> {
+  const usuario = await requerirUsuario();
+  if (!esUuid(datos.cajaId) || !esFechaIso(datos.fecha) || !Array.isArray(datos.conteos)) {
+    return { exito: false, error: "datos_invalidos" };
+  }
+
+  try {
+    const arqueoId = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      const caja = await bloquearCaja(cliente, datos.cajaId);
+      if (caja.tipo !== "caja") throw new Rechazo("datos_invalidos");
+      if (caja.supervisor_id !== usuario.id) throw new Rechazo("solo_supervisor");
+      if (!caja.abierta) throw new Rechazo("caja_cerrada");
+
+      const permitidas = denominacionesDe(caja.moneda);
+      const conteoPorClave = new Map<number, number>();
+      for (const c of datos.conteos) {
+        const clave = claveDenominacion(Number(c.denominacion));
+        const cant = Math.max(0, Math.trunc(Number(c.cantidad) || 0));
+        conteoPorClave.set(clave, (conteoPorClave.get(clave) ?? 0) + cant);
+      }
+
+      const { rows: stockFilas } = await cliente.query<{
+        denominacion: number;
+        cantidad: number;
+      }>(
+        `SELECT denominacion::float8 AS denominacion, cantidad::int AS cantidad
+           FROM contabilidad.caja_desglose
+          WHERE caja_id = $1
+          FOR UPDATE`,
+        [datos.cajaId],
+      );
+      const esperadoPorClave = new Map<number, number>();
+      for (const f of stockFilas) {
+        esperadoPorClave.set(
+          claveDenominacion(f.denominacion),
+          Math.max(0, Math.trunc(Number(f.cantidad) || 0)),
+        );
+      }
+
+      const saldoSistema = redondear(Number(caja.saldo_actual) || 0);
+      const saldoContado = redondear(
+        totalContado(
+          permitidas.map((d) => ({
+            denominacion: d.valor,
+            cantidad: conteoPorClave.get(claveDenominacion(d.valor)) ?? 0,
+          })),
+        ),
+      );
+      const diferencia = redondear(saldoContado - saldoSistema);
+      const justificacion = (datos.justificacion ?? "").trim().slice(0, 500) || null;
+
+      if (Math.abs(diferencia) > 0.005 && (!justificacion || justificacion.length < JUSTIFICACION_MINIMA)) {
+        throw new Rechazo("falta_justificacion");
+      }
+
+      await fijarAccion(cliente, "crear", "Cuadre y cierre de caja general");
+      const { rows: [arq] } = await cliente.query<{ id: string; numero: number }>(
+        `INSERT INTO contabilidad.arqueo
+           (numero, caja_id, fecha, periodo_id, saldo_sistema, saldo_contado,
+            estado, justificacion, revisado_por, revisado_en, creado_por)
+         VALUES (
+           contabilidad.siguiente_numero('AR'),
+           $1, $2::date, contabilidad.periodo_para($2::date),
+           $3::numeric, $4::numeric,
+           'cerrado', $5, $6, now(), $6
+         )
+         RETURNING id, numero::int AS numero`,
+        [
+          datos.cajaId,
+          datos.fecha,
+          saldoSistema.toFixed(2),
+          saldoContado.toFixed(2),
+          justificacion,
+          usuario.id,
+        ],
+      );
+
+      for (const d of permitidas) {
+        const clave = claveDenominacion(d.valor);
+        const cantEsperada = esperadoPorClave.get(clave) ?? 0;
+        const cantFisica = conteoPorClave.get(clave) ?? 0;
+        if (cantEsperada === 0 && cantFisica === 0) continue;
+        await cliente.query(
+          `INSERT INTO contabilidad.arqueo_denominacion
+             (arqueo_id, denominacion, tipo, cantidad_esperada, cantidad)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [arq.id, d.valor, d.tipo, cantEsperada, cantFisica],
+        );
+      }
+
+      if (Math.abs(diferencia) >= UMBRAL_ALERTA_DIFERENCIA) {
+        await cliente.query(
+          `INSERT INTO contabilidad.alerta (tipo, severidad, tabla, registro_id, detalle)
+           VALUES ('diferencia_caja', 'alta', 'arqueo', $1, $2::jsonb)`,
+          [
+            arq.id,
+            JSON.stringify({
+              caja: caja.nombre,
+              arqueo: arq.numero,
+              diferencia,
+              moneda: caja.moneda,
+            }),
+          ],
+        );
+      }
+
+      // Todos los ingresos y egresos del turno actual pasan al Historial
+      await fijarAccion(cliente, "editar", "Cierre de turno de caja general");
+      await cliente.query(
+        `UPDATE contabilidad.caja_movimiento
+            SET estado = 'completado',
+                arqueo_id = $2
+          WHERE caja_id = $1
+            AND tipo IN ('ingreso', 'egreso')
+            AND estado = 'pendiente'`,
+        [datos.cajaId, arq.id],
+      );
+
+      // Actualiza el desglose físico al conteo verificado y deja la caja Cerrada
+      await cliente.query(`DELETE FROM contabilidad.caja_desglose WHERE caja_id = $1`, [
+        datos.cajaId,
+      ]);
+      for (const d of permitidas) {
+        const cantFisica = conteoPorClave.get(claveDenominacion(d.valor)) ?? 0;
+        if (cantFisica <= 0) continue;
+        await cliente.query(
+          `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad)
+           VALUES ($1, $2, $3, $4)`,
+          [datos.cajaId, d.valor, d.tipo, cantFisica],
+        );
+      }
+
+      await cliente.query(
+        `UPDATE contabilidad.caja
+            SET saldo_actual = $2::numeric,
+                fondo_fijo = $2::numeric,
+                abierta = false
+          WHERE id = $1`,
+        [datos.cajaId, saldoContado.toFixed(2)],
+      );
+
+      return arq.id;
+    });
+
+    refrescar();
+    return { exito: true, id: arqueoId };
   } catch (error) {
     return fallo(error);
   }

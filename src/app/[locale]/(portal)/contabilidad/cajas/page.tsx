@@ -62,6 +62,7 @@ export default async function PaginaCajas({
               responsables={responsables}
               cuentasContables={cuentasContables}
               cuentasBancarias={cuentasBancarias}
+              usuarioActualId={usuario.id}
             />
           ) : undefined
         }
