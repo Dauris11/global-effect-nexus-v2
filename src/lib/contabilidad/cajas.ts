@@ -66,18 +66,64 @@ export const JUSTIFICACION_MINIMA = 5;
  * la asignen.
  */
 
+export type ConteoDenominacion = {
+  denominacion: number;
+  tipo: "billete" | "moneda";
+  cantidad: number;
+};
+
+/** Clave entera en centavos para indexar denominaciones sin errores de punto flotante. */
+export function claveDenominacion(valor: number): number {
+  return Math.round(Number(valor) * 100);
+}
+
+/**
+ * Normaliza una lista cruda de `{ denominacion, cantidad }` contra las
+ * denominaciones válidas de la moneda, sumando duplicados y descartando ceros/NaN.
+ */
+export function normalizarDesglose(
+  moneda: "DOP" | "USD",
+  entradas: readonly { denominacion: number; cantidad: number }[],
+): ConteoDenominacion[] {
+  const permitidas = denominacionesDe(moneda);
+  const porClave = new Map(permitidas.map((d) => [claveDenominacion(d.valor), d]));
+  const acumulado = new Map<number, number>();
+
+  for (const e of entradas) {
+    const numDenom = Number(e.denominacion);
+    const numCant = Number(e.cantidad);
+    if (!Number.isFinite(numDenom) || !Number.isFinite(numCant)) continue;
+    const clave = claveDenominacion(numDenom);
+    if (!porClave.has(clave)) continue;
+    const entera = Math.max(0, Math.trunc(numCant));
+    if (entera <= 0) continue;
+    acumulado.set(clave, (acumulado.get(clave) ?? 0) + entera);
+  }
+
+  return permitidas
+    .map((d) => ({
+      denominacion: d.valor,
+      tipo: d.tipo,
+      cantidad: acumulado.get(claveDenominacion(d.valor)) ?? 0,
+    }))
+    .filter((item) => item.cantidad > 0);
+}
+
 /** Suma en centavos para que 0.1 + 0.2 no deje un descuadre de 0.0000001. */
 export function totalContado(
   conteos: readonly { denominacion: number; cantidad: number }[],
 ): number {
-  const centavos = conteos.reduce(
-    (suma, c) => suma + Math.round(c.denominacion * 100) * Math.max(0, Math.trunc(c.cantidad)),
-    0,
-  );
+  const centavos = conteos.reduce((suma, c) => {
+    const denom = Number(c.denominacion);
+    const cant = Number(c.cantidad);
+    if (!Number.isFinite(denom) || !Number.isFinite(cant)) return suma;
+    return suma + Math.round(denom * 100) * Math.max(0, Math.trunc(cant));
+  }, 0);
   return centavos / 100;
 }
 
-export const redondear = (valor: number): number => Math.round(valor * 100) / 100;
+export const redondear = (valor: number): number =>
+  Number.isFinite(valor) ? Math.round(valor * 100) / 100 : 0;
 
 /**
  * Errores que las acciones de caja devuelven como clave de
@@ -106,6 +152,7 @@ export const ERRORES_CAJA = [
   "solo_supervisor",
   "desglose_requerido",
   "desglose_no_coincide",
+  "denominacion_insuficiente",
   "sin_comprobante_vigente",
   "comprobante_requerido",
   "entregado_requerido",

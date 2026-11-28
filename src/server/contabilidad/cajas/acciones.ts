@@ -9,7 +9,9 @@ import { enTransaccionComo } from "@/lib/db";
 import {
   JUSTIFICACION_MINIMA,
   UMBRAL_ALERTA_DIFERENCIA,
+  claveDenominacion,
   denominacionesDe,
+  normalizarDesglose,
   redondear,
   totalContado,
   type ErrorCaja,
@@ -558,21 +560,37 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
       if (!caja.desglose_configurado) throw new Rechazo("desglose_requerido");
       if (Number(caja.saldo_actual) < monto) throw new Rechazo("saldo_insuficiente");
 
-      // Validar que el desglose del efectivo utilizado coincida exactamente con el monto.
-      const permitidas = denominacionesDe(caja.moneda);
-      const porValor = new Map(permitidas.map((d) => [d.valor, d.tipo]));
-      const desgloseLimpio = conteosEntrada
-        .filter((c) => porValor.has(Number(c.denominacion)))
-        .map((c) => ({
-          denominacion: Number(c.denominacion),
-          tipo: porValor.get(Number(c.denominacion))!,
-          cantidad: Math.max(0, Math.trunc(Number(c.cantidad) || 0)),
-        }))
-        .filter((c) => c.cantidad > 0);
-
+      // Validar que el desglose del efectivo utilizado coincida exactamente con el monto
+      // y que ninguna denominación exceda la cantidad física disponible en caja.
+      const desgloseLimpio = normalizarDesglose(caja.moneda, conteosEntrada);
       const totalDesglose = redondear(totalContado(desgloseLimpio));
-      if (Math.abs(totalDesglose - monto) > 0.005) {
+      if (desgloseLimpio.length === 0 || Math.abs(totalDesglose - monto) > 0.005) {
         throw new Rechazo("desglose_no_coincide");
+      }
+
+      const { rows: stockFilas } = await cliente.query<{
+        denominacion: number;
+        cantidad: number;
+      }>(
+        `SELECT denominacion::float8 AS denominacion, cantidad::int AS cantidad
+           FROM contabilidad.caja_desglose
+          WHERE caja_id = $1
+          FOR UPDATE`,
+        [cajaId],
+      );
+      const disponiblePorClave = new Map<number, number>();
+      for (const fila of stockFilas) {
+        disponiblePorClave.set(
+          claveDenominacion(fila.denominacion),
+          Math.max(0, Math.trunc(Number(fila.cantidad) || 0)),
+        );
+      }
+
+      for (const item of desgloseLimpio) {
+        const disponible = disponiblePorClave.get(claveDenominacion(item.denominacion)) ?? 0;
+        if (item.cantidad > disponible) {
+          throw new Rechazo("denominacion_insuficiente");
+        }
       }
 
       // Resolver comprobante: manual si es factura con comprobante, o siguiente B11 vigente.
@@ -663,13 +681,16 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
       );
 
       for (const item of desgloseLimpio) {
-        await cliente.query(
+        const resUpdate = await cliente.query(
           `UPDATE contabilidad.caja_desglose
-              SET cantidad = GREATEST(0, cantidad - $3),
+              SET cantidad = cantidad - $3,
                   actualizado_en = now()
-            WHERE caja_id = $1 AND denominacion = $2`,
+            WHERE caja_id = $1 AND denominacion = $2 AND cantidad >= $3`,
           [cajaId, item.denominacion, item.cantidad],
         );
+        if (resUpdate.rowCount !== 1) {
+          throw new Rechazo("denominacion_insuficiente");
+        }
       }
 
       return movimientoId;
@@ -951,13 +972,15 @@ export async function aprobarArqueoAction(arqueoId: string): Promise<ResultadoCa
 // ---------------------------------------------------------------------------
 
 /**
- * Repone la caja desde banco:
+ * Repone la caja desde banco con desglose de efectivo:
  *   · Monto a reponer = Fondo − Efectivo en caja (calculado en servidor).
+ *   · Valida que el desglose de billetes y monedas coincida exactamente con el monto a reponer.
  *   · Asiento contable: todas las cuentas contables utilizadas en los gastos
  *     pendientes (débito) + faltante si existe (débito) contra el banco (crédito).
  *   · Movimiento bancario de débito en el banco seleccionado.
- *   · Marca todas las salidas pendientes como `completado` (pasan a Histórico)
- *     y restaura `saldo_actual = fondo_fijo`.
+ *   · Registra el ingreso de reposición (`tipo = 'reposicion'`) con su desglose,
+ *     suma cada denominación al efectivo en caja (`caja_desglose`), marca todas
+ *     las salidas pendientes como `completado` (Histórico) y restaura `saldo_actual = fondo_fijo`.
  */
 export async function reponerCajaDesdeBancoAction(datos: {
   cajaId: string;
@@ -965,6 +988,7 @@ export async function reponerCajaDesdeBancoAction(datos: {
   monto?: number;
   fecha: string;
   concepto: string;
+  desglose: { denominacion: number; cantidad: number }[];
 }): Promise<ResultadoCaja> {
   const usuario = await requerirPermiso("contabilidad.registrar");
   const concepto = datos.concepto.trim().slice(0, 200);
@@ -973,7 +997,8 @@ export async function reponerCajaDesdeBancoAction(datos: {
     !esUuid(datos.cajaId) ||
     !esUuid(datos.cuentaBancoId) ||
     !esFechaIso(datos.fecha) ||
-    concepto.length < 3
+    concepto.length < 3 ||
+    !Array.isArray(datos.desglose)
   ) {
     return { exito: false, error: "datos_invalidos" };
   }
@@ -986,6 +1011,12 @@ export async function reponerCajaDesdeBancoAction(datos: {
         redondear(Number(caja.fondo_fijo) - Number(caja.saldo_actual)),
       );
       if (!(porReponer > 0)) throw new Rechazo("datos_invalidos");
+
+      const desgloseLimpio = normalizarDesglose(caja.moneda, datos.desglose);
+      const totalDesglose = redondear(totalContado(desgloseLimpio));
+      if (desgloseLimpio.length === 0 || Math.abs(totalDesglose - porReponer) > 0.005) {
+        throw new Rechazo("desglose_no_coincide");
+      }
 
       const { rows: [banco] } = await cliente.query<{
         id: string;
@@ -1107,6 +1138,31 @@ export async function reponerCajaDesdeBancoAction(datos: {
         ],
       );
 
+      await cliente.query(
+        `INSERT INTO contabilidad.caja_movimiento
+           (numero, caja_id, fecha, periodo_id, tipo, monto, concepto, desglose, estado, creado_por)
+         VALUES (
+           contabilidad.siguiente_numero('CJ'),
+           $1,
+           $2::date,
+           contabilidad.periodo_para($2::date),
+           'reposicion',
+           $3::numeric,
+           $4,
+           $5::jsonb,
+           'completado',
+           $6::uuid
+         )`,
+        [
+          datos.cajaId,
+          datos.fecha,
+          porReponer.toFixed(2),
+          concepto,
+          JSON.stringify(desgloseLimpio),
+          usuario.id,
+        ],
+      );
+
       await fijarAccion(cliente, "editar");
       await cliente.query(
         `UPDATE contabilidad.caja_movimiento
@@ -1114,9 +1170,22 @@ export async function reponerCajaDesdeBancoAction(datos: {
           WHERE caja_id = $1 AND tipo = 'gasto' AND estado = 'pendiente'`,
         [datos.cajaId],
       );
+
+      for (const item of desgloseLimpio) {
+        await cliente.query(
+          `INSERT INTO contabilidad.caja_desglose (caja_id, denominacion, tipo, cantidad, actualizado_en)
+           VALUES ($1, $2, $3, $4, now())
+           ON CONFLICT (caja_id, denominacion)
+           DO UPDATE SET cantidad = contabilidad.caja_desglose.cantidad + EXCLUDED.cantidad,
+                         actualizado_en = now()`,
+          [datos.cajaId, item.denominacion, item.tipo, item.cantidad],
+        );
+      }
+
       await cliente.query(
         `UPDATE contabilidad.caja
-            SET saldo_actual = fondo_fijo
+            SET saldo_actual = fondo_fijo,
+                desglose_configurado = true
           WHERE id = $1`,
         [datos.cajaId],
       );

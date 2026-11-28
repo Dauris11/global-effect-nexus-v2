@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ArrowRight, Loader2, Receipt, Save } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Receipt } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { ModalDesgloseEfectivo } from "@/components/contabilidad/cajas/modal-desglose-efectivo";
 import { AvisoError, SELECT } from "@/components/contabilidad/comun";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { denominacionesDe, redondear, totalContado } from "@/lib/contabilidad/cajas";
+import { redondear, type ConteoDenominacion } from "@/lib/contabilidad/cajas";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { cn } from "@/lib/utils";
 import { registrarMovimientoCajaAction } from "@/server/contabilidad/cajas/acciones";
@@ -27,8 +28,9 @@ import type { CajaResumen, CategoriaGastoCaja } from "@/server/contabilidad/caja
  *      campo Comprobante (en modo lectura con el próximo B11 disponible, o editable
  *      si se marca el check), Monto, A quien fue entregado, Fecha, Concepto y
  *      Categoría de gasto opcional.
- *   2. Al pulsar «Dar salida», abre la ventana de desglose de efectivo utilizado,
- *      que debe cuadrar exactamente con el monto de la salida.
+ *   2. Al pulsar «Dar salida», abre el modal de desglose en modo egreso validando
+ *      estrictamente que ninguna denominación supere el efectivo disponible en caja
+ *      y que el total coincida exactamente con el monto.
  */
 export function FormularioMovimientoCaja({
   caja,
@@ -55,23 +57,11 @@ export function FormularioMovimientoCaja({
   const [entregadoA, setEntregadoA] = useState("");
   const [concepto, setConcepto] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
-
-  const denominaciones = useMemo(() => denominacionesDe(caja.moneda), [caja.moneda]);
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
 
   const montoNum = redondear(Number(monto) || 0);
-  const disponibleRestante = redondear(Number(caja.saldoActual) - montoNum);
-  const conteos = useMemo(
-    () =>
-      denominaciones.map((d) => ({
-        denominacion: d.valor,
-        tipo: d.tipo,
-        cantidad: cantidades[d.valor] ?? 0,
-      })),
-    [denominaciones, cantidades],
-  );
-  const totalDesglose = redondear(totalContado(conteos));
-  const diferencia = redondear(totalDesglose - montoNum);
+  const saldoActualNum = redondear(Number(caja.saldoActual) || 0);
+  const disponibleRestante = redondear(saldoActualNum - montoNum);
 
   const controlAlineado = "h-9 px-3 py-0 text-sm";
   const selectAlineado = cn(SELECT, "h-9 px-3 text-sm");
@@ -97,7 +87,7 @@ export function FormularioMovimientoCaja({
       setError(t("errores.datos_invalidos"));
       return;
     }
-    if (montoNum > Number(caja.saldoActual)) {
+    if (montoNum > saldoActualNum) {
       setError(t("errores.saldo_insuficiente"));
       return;
     }
@@ -118,17 +108,12 @@ export function FormularioMovimientoCaja({
       return;
     }
 
+    setCantidades({});
     setErrorDesglose(null);
     setAbiertoDesglose(true);
   }
 
-  async function onConfirmarSalida(e: React.FormEvent) {
-    e.preventDefault();
-    if (Math.abs(diferencia) > 0.005) {
-      setErrorDesglose(t("errores.desglose_no_coincide"));
-      return;
-    }
-
+  async function onConfirmarSalida(conteos: ConteoDenominacion[]) {
     setGuardando(true);
     setErrorDesglose(null);
 
@@ -144,9 +129,7 @@ export function FormularioMovimientoCaja({
     datos.set(
       "desglose",
       JSON.stringify(
-        conteos
-          .filter((c) => c.cantidad > 0)
-          .map((c) => ({ denominacion: c.denominacion, cantidad: c.cantidad })),
+        conteos.map((c) => ({ denominacion: c.denominacion, cantidad: c.cantidad })),
       ),
     );
 
@@ -175,6 +158,11 @@ export function FormularioMovimientoCaja({
           if (v) {
             setFacturaConComprobante(false);
             setError(null);
+            setErrorDesglose(null);
+            setCantidades({});
+          } else {
+            setAbiertoDesglose(false);
+            setCantidades({});
           }
         }}
       >
@@ -245,7 +233,7 @@ export function FormularioMovimientoCaja({
                   inputMode="decimal"
                   step="0.01"
                   min="0.01"
-                  max={caja.saldoActual}
+                  max={saldoActualNum}
                   required
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
@@ -348,111 +336,27 @@ export function FormularioMovimientoCaja({
         </DialogContent>
       </Dialog>
 
-      {/* Ventana 2: Desglose del efectivo utilizado (debe dar igual que el monto) */}
-      <Dialog open={abiertoDesglose} onOpenChange={setAbiertoDesglose}>
-        <DialogContent className="md:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t("desgloseSalidaTitulo")}</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={onConfirmarSalida} className="space-y-4 pt-2 text-sm">
-            <div className="overflow-x-auto rounded-control border border-linea">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-linea bg-muted/40 text-xs text-tinta-2">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">{t("colDenominacion")}</th>
-                    <th className="w-32 px-3 py-2 text-right font-medium">{t("cantidad")}</th>
-                    <th className="w-40 px-3 py-2 text-right font-medium">{t("monto")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-linea">
-                  {denominaciones.map((d) => {
-                    const cant = cantidades[d.valor] ?? 0;
-                    const sub = redondear(d.valor * cant);
-                    return (
-                      <tr key={d.valor}>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            readOnly
-                            tabIndex={-1}
-                            value={`${d.tipo === "billete" ? t("billete") : t("monedaUnidad")} · ${formatearMonto(d.valor.toFixed(2), caja.moneda)}`}
-                            className="h-8 bg-muted/40 font-mono text-xs text-tinta"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            min={0}
-                            step={1}
-                            value={cant === 0 ? "" : String(cant)}
-                            placeholder="0"
-                            onChange={(e) => {
-                              const n = Math.max(0, Math.trunc(Number(e.target.value) || 0));
-                              setCantidades((prev) => ({ ...prev, [d.valor]: n }));
-                            }}
-                            className="h-8 text-right font-mono text-xs tabular-nums"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            readOnly
-                            tabIndex={-1}
-                            value={formatearMonto(sub.toFixed(2), caja.moneda)}
-                            className="h-8 bg-muted/40 text-right font-mono text-xs tabular-nums text-tinta"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-control border border-linea bg-superficie/60 px-4 py-3 text-sm">
-              <div>
-                <span className="texto-meta block">{t("monto")}</span>
-                <span className="font-mono font-semibold text-tinta">
-                  {formatearMonto(montoNum.toFixed(2), caja.moneda)}
-                </span>
-              </div>
-              <div>
-                <span className="texto-meta block">{t("totalDesglose")}</span>
-                <span className="font-mono font-semibold text-marca-700">
-                  {formatearMonto(totalDesglose.toFixed(2), caja.moneda)}
-                </span>
-              </div>
-              <div>
-                <span className="texto-meta block">{t("diferencia")}</span>
-                <span
-                  className={cn(
-                    "font-mono font-semibold",
-                    Math.abs(diferencia) < 0.005 ? "text-tinta-2" : "text-status-danger-fg",
-                  )}
-                >
-                  {formatearMonto(diferencia.toFixed(2), caja.moneda)}
-                </span>
-              </div>
-            </div>
-
-            {errorDesglose && <AvisoError>{errorDesglose}</AvisoError>}
-
-            <div className="flex justify-end gap-2 border-t border-linea pt-4">
-              <Button type="button" variant="ghost" onClick={() => setAbiertoDesglose(false)}>
-                {t("cancelar")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={Math.abs(diferencia) > 0.005}
-                cargando={guardando}
-              >
-                {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {t("confirmarSalida")}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <ModalDesgloseEfectivo
+        abierto={abiertoDesglose}
+        onOpenChange={(v) => {
+          setAbiertoDesglose(v);
+          if (!v) setErrorDesglose(null);
+        }}
+        titulo={t("desgloseSalidaTitulo")}
+        etiquetaObjetivo={t("monto")}
+        etiquetaConfirmar={t("confirmarSalida")}
+        moneda={caja.moneda}
+        montoObjetivo={montoNum}
+        modo="egreso"
+        desgloseDisponible={caja.desglose}
+        cantidades={cantidades}
+        onCambiarCantidad={(denom, cant) =>
+          setCantidades((prev) => ({ ...prev, [denom]: cant }))
+        }
+        guardando={guardando}
+        errorExterno={errorDesglose}
+        onConfirmar={onConfirmarSalida}
+      />
     </>
   );
 }

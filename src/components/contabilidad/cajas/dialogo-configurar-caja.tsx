@@ -261,6 +261,11 @@ export function DialogoConfigurarCaja({
                   type="button"
                   variant="outline"
                   onClick={() => {
+                    const mapa: Record<number, number> = {};
+                    for (const d of caja.desglose) {
+                      mapa[Number(d.denominacion)] = Math.max(0, Math.trunc(Number(d.cantidad) || 0));
+                    }
+                    setCantidades(mapa);
                     setErrorDesglose(null);
                     setAbiertoDesglose(true);
                   }}
