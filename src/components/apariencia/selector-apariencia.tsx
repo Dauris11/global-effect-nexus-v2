@@ -1,16 +1,14 @@
 "use client";
 
-import { Check, Moon, PanelLeft, Palette, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 
 import {
   ACENTOS,
-  BARRAS,
   COLORES_ACENTO,
   COLORES_MINIATURA,
   TEMAS,
-  type Barra,
   type Tema,
 } from "@/lib/apariencia";
 import { cn } from "@/lib/utils";
@@ -18,12 +16,12 @@ import { cn } from "@/lib/utils";
 import { useApariencia } from "./usar-apariencia";
 
 /**
- * Elegir cómo se ve el portal: tema y barra lateral. Cada opción es una
- * miniatura de lo que va a pasar, porque "barra negra" dice menos que verla.
+ * Elegir cómo se ve el portal: tema (claro, oscuro o el del sistema) y color de acento. Cada
+ * opción es una miniatura de lo que va a pasar.
  */
 export function SelectorApariencia() {
   const t = useTranslations("profile.appearance");
-  const { tema, barra, acento, cambiar } = useApariencia();
+  const { tema, acento, cambiar } = useApariencia();
 
   return (
     <div className="space-y-6">
@@ -33,10 +31,10 @@ export function SelectorApariencia() {
             key={valor}
             activa={tema === valor}
             etiqueta={t(`themes.${valor}`)}
-            icono={valor === "claro" ? Sun : Moon}
+            icono={valor === "claro" ? Sun : valor === "oscuro" ? Moon : Monitor}
             onElegir={() => cambiar({ tema: valor })}
           >
-            <Miniatura tema={valor} barra={barra} />
+            <Miniatura tema={valor} />
           </Opcion>
         ))}
       </Grupo>
@@ -59,20 +57,6 @@ export function SelectorApariencia() {
                 style={{ background: COLORES_ACENTO[valor] }}
               />
             </span>
-          </Opcion>
-        ))}
-      </Grupo>
-
-      <Grupo titulo={t("sidebar")}>
-        {BARRAS.map((valor) => (
-          <Opcion
-            key={valor}
-            activa={barra === valor}
-            etiqueta={t(`sidebars.${valor}`)}
-            icono={PanelLeft}
-            onElegir={() => cambiar({ barra: valor })}
-          >
-            <Miniatura tema={tema} barra={valor} />
           </Opcion>
         ))}
       </Grupo>
@@ -139,28 +123,38 @@ function Opcion({
  * tokens cambian con el tema vigente, y la miniatura "oscuro" tiene que verse
  * oscura aunque ahora mismo estés en claro.
  */
-function Miniatura({ tema, barra }: { tema: Tema; barra: Barra }) {
-  const c = COLORES_MINIATURA[tema];
-  const negra = barra === "negra";
+function Miniatura({ tema }: { tema: Tema }) {
+  // «Sistema» se enseña partido: mitad clara y mitad oscura.
+  if (tema === "sistema") {
+    return (
+      <span aria-hidden className="flex h-20 overflow-hidden rounded-control border border-linea">
+        <span className="flex-1">
+          <Maqueta tema="claro" />
+        </span>
+        <span className="flex-1">
+          <Maqueta tema="oscuro" />
+        </span>
+      </span>
+    );
+  }
 
   return (
-    <span
-      aria-hidden
-      className="flex h-20 overflow-hidden rounded-control border"
-      style={{ background: c.lienzo, borderColor: c.trazo }}
-    >
-      <span
-        className="flex w-1/4 flex-col gap-1.5 border-r p-2"
-        style={{
-          background: negra ? c.lateralNegra : c.lienzo,
-          borderColor: negra ? c.trazoNegra : c.trazo,
-        }}
-      >
-        <span className="bg-marca-500 h-1.5 rounded-full" />
-        <span className="h-1.5 rounded-full" style={{ background: negra ? c.textoNegra : c.texto }} />
-        <span className="h-1.5 rounded-full" style={{ background: negra ? c.textoNegra : c.texto }} />
-      </span>
+    <span aria-hidden className="flex h-20 overflow-hidden rounded-control border border-linea">
+      <Maqueta tema={tema} />
+    </span>
+  );
+}
 
+function Maqueta({ tema }: { tema: "claro" | "oscuro" }) {
+  const c = COLORES_MINIATURA[tema];
+
+  return (
+    <span className="flex size-full" style={{ background: c.lienzo }}>
+      <span className="flex w-1/4 flex-col gap-1.5 border-r p-2" style={{ borderColor: c.trazo }}>
+        <span className="bg-marca-500 h-1.5 rounded-full" />
+        <span className="h-1.5 rounded-full" style={{ background: c.texto }} />
+        <span className="h-1.5 rounded-full" style={{ background: c.texto }} />
+      </span>
       <span className="flex flex-1 flex-col gap-1.5 p-2">
         <span className="h-2 w-1/2 rounded-full" style={{ background: c.texto }} />
         <span className="h-6 rounded-md" style={{ background: c.trazo }} />

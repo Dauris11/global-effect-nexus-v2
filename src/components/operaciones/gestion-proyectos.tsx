@@ -188,7 +188,7 @@ function Tarjeta({
     proyecto.tareas > 0 ? Math.round((proyecto.hechas / proyecto.tareas) * 100) : null;
 
   return (
-    <div className="group space-y-2.5 rounded-card border border-linea bg-card p-3 shadow-card transition-shadow hover:shadow-elevada">
+    <div className="group space-y-2.5 rounded-card border border-linea bg-card p-3 shadow-card transition-shadow hover:shadow-elevada hover:border-linea-fuerte">
       <div className="flex items-start gap-1.5">
         <Link
           href={`/administrativo/proyectos/${proyecto.id}`}

@@ -3,6 +3,7 @@
 import { useState, useTransition, type ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
 
+import { StatusBadge } from "@/components/app/status-badge";
 import { ALERTA_RIESGO } from "@/lib/paleta";
 import { visualEstado } from "@/lib/estados-trabajo";
 import { cn } from "@/lib/utils";
@@ -123,9 +124,9 @@ export function KanbanBase<T>({
                 setEncima(null);
               }}
               className={cn(
-                "min-h-40 rounded-card border border-t-4 border-linea p-3 transition-colors",
+                "min-h-40 rounded-card border border-t-2 border-linea p-3 transition-colors",
                 visual.franja,
-                visual.suave,
+                "bg-card",
                 sobre && "ring-2 ring-tinta/20",
               )}
             >
@@ -134,9 +135,7 @@ export function KanbanBase<T>({
                   <Icono className="size-4" aria-hidden />
                   {etiquetaColumna(columna)}
                 </p>
-                <span className="rounded-full bg-background px-2 py-0.5 text-xs font-semibold text-tinta-2 tabular-nums">
-                  {dentro.length}
-                </span>
+                <StatusBadge status={columna} label={String(dentro.length)} className="tabular-nums" />
               </header>
 
               {dentro.length === 0 ? (

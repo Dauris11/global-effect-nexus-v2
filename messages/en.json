@@ -3070,13 +3070,8 @@
       "themeHint": "Light or dark for the whole screen.",
       "themes": {
         "claro": "Light",
-        "oscuro": "Dark"
-      },
-      "sidebar": "Sidebar",
-      "sidebarHint": "Standard, as it is today, or black.",
-      "sidebars": {
-        "estandar": "Standard",
-        "negra": "Black"
+        "oscuro": "Dark",
+        "sistema": "System"
       },
       "forms": "Forms",
       "formModes": {

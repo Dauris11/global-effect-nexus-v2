@@ -123,7 +123,7 @@ export function EliminarExpediente({
             </DialogHeader>
 
             {conError && (
-              <p className="mt-2 rounded-lg bg-tinta/5 p-2.5 text-xs font-medium text-tinta dark:bg-white/5 dark:text-white">
+              <p className="mt-2 rounded-lg bg-surface-2 p-2.5 text-xs font-medium text-tinta">
                 {textos.error}
               </p>
             )}

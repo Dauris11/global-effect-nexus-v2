@@ -18,7 +18,8 @@ export default async function PaginaEstablecerClave({ params }: { params: Promis
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 rounded-hoja bg-card p-6 shadow-elevada sm:p-8">
-      <Image src="/logo.webp" alt="" width={180} height={39} priority />
+      <Image src="/logo.webp" alt="" width={180} height={39} priority className="logo-claro" />
+      <Image src="/logo-dark.webp" alt="" width={180} height={39} priority className="logo-oscuro" />
       <h1 className="texto-titulo-seccion">{t("title")}</h1>
       <EstablecerClave />
     </div>

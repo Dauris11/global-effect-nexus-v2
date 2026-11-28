@@ -254,7 +254,7 @@ export const GRAFICA = {
 export const TARJETA = {
   /** Tarjeta clicable: se eleva al pasar, se comprime al pulsar. */
   interactiva:
-    "rounded-card border border-linea bg-card shadow-card transition-all duration-200 hover:shadow-elevada hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer",
+    "rounded-card border border-linea bg-card shadow-card transition-all duration-200 hover:shadow-elevada hover:border-linea-fuerte hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer",
   /** Tarjeta de contenido, sin movimiento. */
   contenido: "rounded-card border border-linea bg-card shadow-card",
   /** Icono en círculo gris: el acento lo pone el icono, no el fondo. */

@@ -3070,13 +3070,8 @@
       "themeHint": "Claro u oscuro para toda la pantalla.",
       "themes": {
         "claro": "Claro",
-        "oscuro": "Oscuro"
-      },
-      "sidebar": "Barra lateral",
-      "sidebarHint": "Estándar, como hasta ahora, o negra.",
-      "sidebars": {
-        "estandar": "Estándar",
-        "negra": "Negra"
+        "oscuro": "Oscuro",
+        "sistema": "Sistema"
       },
       "forms": "Formularios",
       "formModes": {

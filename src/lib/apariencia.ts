@@ -8,19 +8,17 @@
  * que cargue nada, sin esperar una consulta.
  */
 
-export const TEMAS = ["claro", "oscuro"] as const;
-export const BARRAS = ["estandar", "negra"] as const;
+export const TEMAS = ["claro", "oscuro", "sistema"] as const;
 export const ACENTOS = ["azul", "negro"] as const;
 
 export type Tema = (typeof TEMAS)[number];
-export type Barra = (typeof BARRAS)[number];
 export type Acento = (typeof ACENTOS)[number];
 
-export type Apariencia = { tema: Tema; barra: Barra; acento: Acento };
+export type Apariencia = { tema: Tema; acento: Acento };
 
 export const APARIENCIA_INICIAL: Apariencia = {
-  tema: "claro",
-  barra: "estandar",
+  // «Sistema» sigue al aparato: de noche oscuro y de día claro, sin que nadie tenga que elegir.
+  tema: "sistema",
   acento: "azul",
 };
 
@@ -38,32 +36,11 @@ export const COLORES_ACENTO: Record<Acento, string> = {
  * son fijos a propósito: enseñan cada tema entero, no el vigente.
  */
 export const COLORES_MINIATURA: Record<
-  Tema,
-  {
-    lienzo: string;
-    trazo: string;
-    texto: string;
-    lateralNegra: string;
-    trazoNegra: string;
-    textoNegra: string;
-  }
+  Exclude<Tema, "sistema">,
+  { lienzo: string; trazo: string; texto: string }
 > = {
-  claro: {
-    lienzo: "#ffffff",
-    trazo: "#ebeef1",
-    texto: "#d5dbe1",
-    lateralNegra: "#0b0d0f",
-    trazoNegra: "#2a2f35",
-    textoNegra: "#3a4047",
-  },
-  oscuro: {
-    lienzo: "#111416",
-    trazo: "#2a2f35",
-    texto: "#363c43",
-    lateralNegra: "#0b0d0f",
-    trazoNegra: "#2a2f35",
-    textoNegra: "#3a4047",
-  },
+  claro: { lienzo: "#ffffff", trazo: "#ebeef1", texto: "#d5dbe1" },
+  oscuro: { lienzo: "#0d0c0c", trazo: "#3c3939", texto: "#535050" },
 };
 
 export const CLAVE_APARIENCIA = "ge-apariencia";
@@ -75,7 +52,6 @@ export function leerApariencia(): Apariencia {
 
     return {
       tema: TEMAS.includes(crudo.tema) ? crudo.tema : APARIENCIA_INICIAL.tema,
-      barra: BARRAS.includes(crudo.barra) ? crudo.barra : APARIENCIA_INICIAL.barra,
       acento: ACENTOS.includes(crudo.acento) ? crudo.acento : APARIENCIA_INICIAL.acento,
     };
   } catch {
@@ -84,20 +60,26 @@ export function leerApariencia(): Apariencia {
   }
 }
 
-/** Pinta la apariencia en `<html>`, donde la leen `.dark`, `data-barra` y `data-acento`. */
-export function aplicarApariencia({ tema, barra, acento }: Apariencia) {
-  const raiz = document.documentElement;
+/** ¿Debe verse oscuro ahora? «Sistema» lo decide el aparato. */
+export function esOscuro(tema: Tema): boolean {
+  return tema === "oscuro" || (tema === "sistema" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
 
-  raiz.classList.toggle("dark", tema === "oscuro");
-  raiz.dataset.barra = barra;
+/** Pinta la apariencia en `<html>`, donde la leen `.dark` y `data-acento`. */
+export function aplicarApariencia({ tema, acento }: Apariencia) {
+  const raiz = document.documentElement;
+  // La página de inicio pública no está pensada para el modo oscuro: siempre clara.
+  const esLanding = /^\/(es|en)?\/?$/.test(location.pathname);
+
+  raiz.classList.toggle("dark", !esLanding && esOscuro(tema));
   raiz.dataset.acento = acento;
 }
 
 /**
  * Lo mismo que `leerApariencia` + `aplicarApariencia`, como texto para un
- * `<script>` en línea. Corre antes de pintar, así que no hay un destello claro
- * antes de que la página se ponga oscura.
+ * `<script>` en línea en el `<head>`. Corre antes de pintar, así que no hay un destello
+ * claro antes de que la página se ponga oscura. Sin nada guardado manda el sistema.
  */
 export const SCRIPT_APARIENCIA = `(function(){try{var a=JSON.parse(localStorage.getItem(${JSON.stringify(
   CLAVE_APARIENCIA,
-)})||"{}");var r=document.documentElement;r.classList.toggle("dark",a.tema==="oscuro");r.dataset.barra=a.barra==="negra"?"negra":"estandar";r.dataset.acento=a.acento==="negro"?"negro":"azul"}catch(e){}})()`;
+)})||"{}");var r=document.documentElement;var t=a.tema==="claro"||a.tema==="oscuro"?a.tema:"sistema";var h=/^\/(es|en)?\/?$/.test(location.pathname);r.classList.toggle("dark",!h&&(t==="oscuro"||(t==="sistema"&&matchMedia("(prefers-color-scheme: dark)").matches)));r.dataset.acento=a.acento==="negro"?"negro":"azul"}catch(e){}})()`;

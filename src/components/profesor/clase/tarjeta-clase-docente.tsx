@@ -17,7 +17,7 @@ export async function TarjetaClaseDocente({ clase, idioma }: { clase: ClaseDelDo
   const t = await getTranslations("teacherClasses");
 
   return (
-    <Card className="transition-shadow hover:shadow-elevada">
+    <Card className="transition-shadow hover:shadow-elevada hover:border-linea-fuerte">
       <Link
         href={`/portal/profesor/clases/${claveDeClase(clase.origen, clase.id)}`}
         className="flex h-full flex-col gap-3 rounded-card p-5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

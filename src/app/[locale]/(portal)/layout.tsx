@@ -1,12 +1,9 @@
-import Script from "next/script";
 import { getTranslations } from "next-intl/server";
 
-import { AplicadorApariencia } from "@/components/apariencia/aplicador-apariencia";
 import { WidgetFlotanteIA } from "@/components/ia/widget-flotante-ia";
 import { AppShell } from "@/components/layout/app-shell";
 import { requerirUsuario } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
-import { SCRIPT_APARIENCIA } from "@/lib/apariencia";
 import { fechaConHora } from "@/lib/fechas";
 import { urlDeAvatar } from "@/lib/supabase/almacen";
 import { marcarPresencia } from "@/server/auditoria/actividad";
@@ -89,12 +86,6 @@ export default async function LayoutPortal({
 
   return (
     <>
-      {/* Antes de pintar: sin esto la página sale clara un instante y luego se
-          oscurece. El aplicador de abajo lo retira al salir del portal. */}
-      <Script id="apariencia-portal" strategy="afterInteractive">
-        {SCRIPT_APARIENCIA}
-      </Script>
-      <AplicadorApariencia />
       <AppShell
         rol={usuario.rol}
         rolReal={usuario.rolReal}

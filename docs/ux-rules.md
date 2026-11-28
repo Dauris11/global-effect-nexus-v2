@@ -90,3 +90,15 @@ tokens `--btn-*` de `globals.css`, con su valor claro y oscuro). Prohibido un `<
 - Filas de tabla: columna de acciones fija a la derecha (`sticky right-0`), un botón `sm` secondary + menú ⋯; «Aprobar» secondary con ✓ y «Rechazar» ghost-peligro que pide el motivo en un popover.
 - Chips de filtro: 30 px, 13/500, radio completo; el activo es tinta sobre fondo; el conteo va en 12/600 con opacidad .7.
 - Muestra viva: `/ui-kit`. Pruebas: reglas `altura-botones`, `secundario-visible` y `acciones-dentro` de `e2e/ux-guard.spec.ts`.
+
+## Modo oscuro (28 nov 2026)
+
+Escala de grises de la Fundación (`--gray-50…950`, con el 925 entre 900 y 950) y un override COMPLETO de los
+tokens semánticos en `.dark` (`globals.css`): ninguno se queda con el valor claro. Capas: fondo y sidebar 950 →
+barra superior y tarjetas 925 → hover, cabeceras de tabla, popover y modal 900 → selección `brand-50`.
+
+- Nada de blanco puro en fondos (solo el chip de filtro activo). Sin sombras: la elevación es un borde (`--sh-2`) y el hover marca el borde 700.
+- Primario `#2096BA` con texto 950 (5,7:1); texto de marca y enlaces `#74C5DD`; estados con texto claro sobre fondo y borde translúcidos.
+- Apariencia: Claro · Oscuro · **Sistema** (por defecto), en localStorage; un script `beforeInteractive` fija `.dark` antes de pintar (sin parpadeo) y la página pública (`/`) siempre es clara. «Barra lateral negra» desapareció; el acento «Negro» solo cambia la marca y solo en claro.
+- Logo: `public/logo.webp` (claro) y `public/logo-dark.webp` (texto #F3F2F2, globo turquesa), con las clases `logo-claro` / `logo-oscuro`. Nada de `filter: invert`.
+- Pruebas: `e2e/ux-guard.spec.ts` recorre cada rol en claro Y en oscuro, con las reglas `sin-blanco` y `contraste-oscuro` (axe-core, 4,5:1).

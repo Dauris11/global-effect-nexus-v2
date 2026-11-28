@@ -151,7 +151,7 @@ function Tarjeta({
   return (
     <div
       className={cn(
-        "space-y-2.5 rounded-card border border-l-4 border-linea bg-card p-3 shadow-card transition-shadow hover:shadow-elevada",
+        "space-y-2.5 rounded-card border border-l-4 border-linea bg-card p-3 shadow-card transition-shadow hover:shadow-elevada hover:border-linea-fuerte",
         prioridad.barra,
       )}
     >

@@ -29,7 +29,7 @@ export async function TorreProyectos({ proyectos }: { proyectos: ProyectoTorre[]
             return (
               <li key={p.id}>
                 <Link href={`/administrativo/proyectos/${p.id}`} className="block rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-                  <Card className="h-full space-y-3 p-4 transition-shadow hover:shadow-elevada">
+                  <Card className="h-full space-y-3 p-4 transition-shadow hover:shadow-elevada hover:border-linea-fuerte">
                     <div className="flex items-start justify-between gap-2">
                       <p className="texto-titulo-tarjeta">{p.nombre}</p>
                       <Badge className={clasesDeEstado(p.estado)}>

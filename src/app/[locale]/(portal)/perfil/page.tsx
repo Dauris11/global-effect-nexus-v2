@@ -50,12 +50,9 @@ export default async function PaginaPerfil({
   return (
     <div className="animate-entrada space-y-8 pb-10">
       {/* Banner / Header del Perfil */}
-      <div className="relative overflow-hidden rounded-hoja bg-marca-600 p-6 sm:p-8 text-white shadow-card">
-        <div className="absolute -right-10 -top-10 size-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute -left-10 -bottom-10 size-48 rounded-full bg-tinta/20 blur-xl pointer-events-none" />
-
+      <div className="relative overflow-hidden rounded-hoja border border-linea bg-card p-6 sm:p-8 text-tinta shadow-card">
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="relative size-20 sm:size-24 shrink-0 rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-lg bg-white/20 flex items-center justify-center text-3xl font-extrabold text-white backdrop-blur-xs">
+          <div className="relative size-20 sm:size-24 shrink-0 rounded-2xl overflow-hidden ring-1 ring-linea bg-surface-2 flex items-center justify-center text-3xl font-extrabold text-tinta">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -70,22 +67,22 @@ export default async function PaginaPerfil({
 
           <div className="space-y-1.5 min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-xs">
-                <ShieldCheck className="size-3.5 text-white" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-marca-50 text-marca-700 border border-linea">
+                <ShieldCheck className="size-3.5" />
                 {rolTraducido}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/15 text-white border border-white/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-surface-2 text-tinta-2 border border-linea">
                 <UserCheck className="size-3" />
                 {t("accountActive")}
               </span>
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white truncate">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-tinta truncate">
               {usuario.nombre}
             </h1>
             
-            <p className="text-tinta/90 text-xs sm:text-sm font-mono flex items-center gap-2">
-              <Mail className="size-3.5 text-white/80 shrink-0" />
+            <p className="text-tinta-2 text-xs sm:text-sm font-mono flex items-center gap-2">
+              <Mail className="size-3.5 text-tinta-3 shrink-0" />
               {/* `truncate` como el nombre de arriba: un correo no tiene
                   espacios, así que sin esto un correo institucional largo se
                   salía del banner en móvil sin siquiera puntos suspensivos. */}

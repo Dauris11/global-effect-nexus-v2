@@ -53,14 +53,8 @@ export default async function PaginaLogin({
           aria-label={tComun("foundation")}
           className="block w-fit rounded-control focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
-          <Image
-            src="/logo.webp"
-            alt={tComun("foundation")}
-            width={720}
-            height={157}
-            priority
-            className="h-9 w-auto"
-          />
+          <Image src="/logo.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-claro h-9 w-auto" />
+          <Image src="/logo-dark.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-oscuro h-9 w-auto" />
         </Link>
 
         <Link

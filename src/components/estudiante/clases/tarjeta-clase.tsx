@@ -33,7 +33,7 @@ export async function TarjetaClase({
     .sort((a, b) => Number(b.vencida) - Number(a.vencida) || (a.vence ?? "9999").localeCompare(b.vence ?? "9999"))[0];
 
   return (
-    <Card className="transition-shadow hover:shadow-elevada">
+    <Card className="transition-shadow hover:shadow-elevada hover:border-linea-fuerte">
       <Link
         href={`/portal/estudiante/clases/${claveDeClase(clase.origen, clase.id)}`}
         className="flex h-full flex-col gap-4 rounded-card p-5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

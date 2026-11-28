@@ -51,6 +51,8 @@ const PERMITIDOS_HEX = new Set([
 const EXCEPCIONES_HEX = [
   "src/lib/paleta.ts",
   "src/components/landing/globe.tsx",
+  // `<meta name="theme-color">` no admite variables CSS: el gris 950 del modo oscuro va en crudo.
+  "src/app/[locale]/layout.tsx",
 ];
 
 const archivos = [];

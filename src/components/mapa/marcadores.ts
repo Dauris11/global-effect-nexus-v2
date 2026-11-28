@@ -17,11 +17,11 @@ import { enlaceComoLlegar } from "@/lib/la-vega-geografia";
  */
 export const TESELAS = {
   claro: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  oscuro: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  oscuro: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
 } as const;
 
 export const ATRIBUCION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
 
 /**
  * Trazos de iconos de lucide (ISC), copiados tal cual: un `divIcon` necesita

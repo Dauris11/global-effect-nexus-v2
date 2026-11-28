@@ -156,12 +156,12 @@ export const ESTADO_VISUAL: Record<
   },
   postulado: {
     insignia: "bg-linea text-tinta-2",
-    franja: "bg-slate-400",
+    franja: "bg-tinta-3",
     icono: Send,
   },
   academia_liderazgo: {
     insignia: "bg-marca-500/15 text-marca-700",
-    franja: "bg-[#5FB8D4]",
+    franja: "bg-marca-300",
     icono: Sparkles,
   },
   standby_tecnico: {

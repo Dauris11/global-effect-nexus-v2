@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CENTRO_LA_VEGA } from "@/lib/la-vega-geografia";
+import { ATRIBUCION, TESELAS } from "@/components/mapa/marcadores";
 import { AZUL, BLANCO, TINTA } from "@/lib/paleta";
 import type { TransporteParada, TransporteViaje } from "@/lib/transporte";
 import { cn } from "@/lib/utils";
@@ -291,12 +292,18 @@ export function MapaTransporteCliente({
       zoomControl: false,
     });
 
-    // Capa de mapa limpia OpenStreetMap (100 % libre sin marcas de agua ni API keys)
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // En oscuro usa teselas oscuras; la clase `dark` de <html> se observa para
+    // cambiar sin recargar.
+    const esOscuro = () => document.documentElement.classList.contains("dark");
+    const teselas = L.tileLayer(esOscuro() ? TESELAS.oscuro : TESELAS.claro, {
       maxZoom: 19,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      subdomains: "abcd",
+      attribution: ATRIBUCION,
     }).addTo(mapa);
+    const observadorTema = new MutationObserver(() => {
+      teselas.setUrl(esOscuro() ? TESELAS.oscuro : TESELAS.claro);
+    });
+    observadorTema.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     L.control.zoom({ position: "bottomright" }).addTo(mapa);
 
@@ -314,6 +321,7 @@ export function MapaTransporteCliente({
 
     return () => {
       observadorResize?.disconnect();
+      observadorTema.disconnect();
       mapa.remove();
       mapaRef.current = null;
     };

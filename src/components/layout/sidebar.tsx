@@ -186,14 +186,10 @@ export function Sidebar({
             )}
           >
             {nombresVisibles ? (
-              <Image
-                src="/logo.webp"
-                alt={tComun("appName")}
-                width={720}
-                height={157}
-                priority
-                className="logo-barra h-8 w-auto"
-              />
+              <>
+                <Image src="/logo.webp" alt={tComun("appName")} width={720} height={157} priority className="logo-claro h-8 w-auto" />
+                <Image src="/logo-dark.webp" alt={tComun("appName")} width={720} height={157} priority className="logo-oscuro h-8 w-auto" />
+              </>
             ) : (
               <Image
                 src="/isotipo.webp"

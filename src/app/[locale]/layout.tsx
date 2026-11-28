@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { AplicadorApariencia } from "@/components/apariencia/aplicador-apariencia";
 import { ToastProvider } from "@/components/app/toaster";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { routing } from "@/i18n/routing";
+import { SCRIPT_APARIENCIA } from "@/lib/apariencia";
 import { BLANCO } from "@/lib/paleta";
 
 import "../globals.css";
@@ -64,7 +67,10 @@ export async function generateMetadata({
  * variables `safe-area-inset-*` que usa la barra inferior.
  */
 export const viewport: Viewport = {
-  themeColor: BLANCO,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: BLANCO },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0c0c" },
+  ],
   viewportFit: "cover",
 };
 
@@ -88,6 +94,12 @@ export default async function LayoutRaiz({
   return (
     <html lang={locale} className={`${jakarta.variable} ${plexMono.variable}`} suppressHydrationWarning>
       <body>
+        {/* Antes de pintar: sin esto la página sale clara un instante y luego se oscurece. React 19 no
+            deja poner un `<script>` a mano en un componente; `beforeInteractive` lo sube al `<head>`. */}
+        <Script id="apariencia" strategy="beforeInteractive">
+          {SCRIPT_APARIENCIA}
+        </Script>
+        <AplicadorApariencia />
         <NextIntlClientProvider messages={messages}>
           <ToastProvider>{children}</ToastProvider>
         </NextIntlClientProvider>

@@ -113,7 +113,7 @@ export function FormularioEdicionExpediente({
       <input type="hidden" name="id" value={expediente.id} />
 
       {!puedeEditar && (
-        <div className="flex items-center gap-2 rounded-xl border border-tinta/20 bg-tinta/5 p-3 text-xs font-medium text-tinta dark:border-white/20 dark:bg-white/5 dark:text-white">
+        <div className="flex items-center gap-2 rounded-xl border border-linea bg-surface-2 p-3 text-xs font-medium text-tinta">
           <Eye className="size-4 shrink-0" />
           {textos.notOwner}
         </div>

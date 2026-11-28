@@ -1,4 +1,5 @@
 import { appendFileSync } from "node:fs";
+import { createRequire } from "node:module";
 
 import { expect, test, type Page } from "@playwright/test";
 
@@ -14,6 +15,7 @@ import { ROLES, type Rol } from "../src/lib/rbac";
  * las cuente todas, y cada resultado se anota en e2e/.resultados para `resumen-ux.mjs`.
  */
 
+const require = createRequire(import.meta.url);
 const COOKIE_VER_COMO = "ge_ver_como";
 const SALIDA = "e2e/.resultados/ux.ndjson";
 
@@ -158,6 +160,15 @@ async function medir(page: Page) {
       .filter(visible)
       .filter((b) => fondoReal(b) === fondoReal(b.parentElement))
       .map(etiquetaDe);
+    // En oscuro, nada grande puede ser casi blanco (salvo el chip activo y las imágenes).
+    const blancos: string[] = [];
+    for (const e of document.body.querySelectorAll("*")) {
+      if (!visible(e) || e.closest("[data-chip][data-active],img,picture,video,canvas,svg,.leaflet-container,[data-impersonation-bar]")) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width <= 120 || r.height <= 32) continue;
+      const c = rgba(getComputedStyle(e).backgroundColor);
+      if (c && c.a > 0.5 && lum(c) > 0.85) blancos.push(`${e.tagName.toLowerCase()}.${String(e.className).split(" ").slice(0, 2).join(".")}`);
+    }
     const botonesFuera: string[] = [];
     for (const tabla of document.querySelectorAll("main table")) {
       if (!visible(tabla)) continue;
@@ -174,7 +185,7 @@ async function medir(page: Page) {
       }
     }
 
-    return { alturasMalas, secundariosIguales, botonesFuera, variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
+    return { blancos, alturasMalas, secundariosIguales, botonesFuera, variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
   });
 }
 
@@ -182,9 +193,21 @@ test.describe("ux-guard", () => {
   test.describe.configure({ mode: "default" });
 
   // `developer` no se recorre: tiene el mismo menú y permisos que `owner` y «Ver como» no puede asumirlo (haría falta una cuenta real).
-  for (const rol of ROLES.filter((r) => r !== "developer")) {
-    test(`rol ${rol}`, async ({ page, context }) => {
+  // Cada rol se recorre dos veces: en claro y en oscuro (mismas reglas, más las del modo oscuro).
+  const combinaciones = ROLES.filter((r) => r !== "developer").flatMap((r) => (["claro", "oscuro"] as const).map((m) => [r, m] as const));
+
+  for (const [rol, modo] of combinaciones) {
+    test(`rol ${rol} · ${modo}`, async ({ page, context }) => {
       test.setTimeout(20 * 60_000);
+      const oscuro = modo === "oscuro";
+
+      await page.emulateMedia({ colorScheme: oscuro ? "dark" : "light" });
+      // La apariencia vive en localStorage: se fija antes de que cargue cualquier página.
+      await context.addInitScript((tema) => {
+        try {
+          localStorage.setItem("ge-apariencia", JSON.stringify({ tema, acento: "azul" }));
+        } catch {}
+      }, oscuro ? "oscuro" : "claro");
 
       if (rol !== "owner") {
         await context.addCookies([{ name: COOKIE_VER_COMO, value: rol, url: test.info().project.use.baseURL ?? "http://localhost:3000" }]);
@@ -193,6 +216,7 @@ test.describe("ux-guard", () => {
       const rutas = rutasDelSidebar(rol);
 
       await test.step("sidebar-corto", async () => {
+        if (oscuro) return;
         // ≤ 9 enlaces principales; los de «pie» (abajo, en gris) y perfil/cerrar sesión no cuentan.
         const enlaces = enlacesDelSidebar(rol);
         const principales = enlaces.filter((e) => !e.pie && !esPerfilOSalir(e.href));
@@ -200,6 +224,7 @@ test.describe("ux-guard", () => {
       });
 
       await test.step("inicio-unico (ítems de sidebar → /inicio)", async () => {
+        if (oscuro) return;
         const n = rutas.filter(esInicio).length;
         anotar(rol, "(sidebar)", "inicio-unico", n === 1, `${n} ítems apuntan a /inicio`);
       });
@@ -230,6 +255,7 @@ test.describe("ux-guard", () => {
           const m = await medir(page);
 
           await test.step("tokens", async () => {
+            if (oscuro) return;
             const v = m.variables;
             const fallos = [
               v["--primary"] !== "#177a99" && `--primary=${v["--primary"] || "∅"}`,
@@ -242,6 +268,7 @@ test.describe("ux-guard", () => {
           });
 
           await test.step("sin-negro", async () => {
+            if (oscuro) return;
             anotar(rol, href, "sin-negro", m.oscuros.length === 0, `${m.oscuros.length} fondos oscuros: ${m.oscuros.slice(0, 2).join(" | ")}`);
           });
 
@@ -264,6 +291,18 @@ test.describe("ux-guard", () => {
             const incluyeVencidas = /abiert|todas|vencid|open|all|overdue/i.test(m.chipActivo);
             const ok = m.nVencidas === 0 || m.vencidasVisibles > 0 || incluyeVencidas;
             anotar(rol, href, "vencidas-visibles", ok, `chip Vencidas=${m.tieneChipVencidas ? m.nVencidas : "no existe"}, filtro por defecto="${m.chipActivo}", vencidas visibles=${m.vencidasVisibles}`);
+          });
+
+          await test.step("sin-blanco", async () => {
+            if (!oscuro) return;
+            anotar(rol, href, "sin-blanco", m.blancos.length === 0, `${m.blancos.length} fondos casi blancos: ${m.blancos.slice(0, 3).join(" | ")}`);
+          });
+
+          await test.step("contraste-oscuro", async () => {
+            if (!oscuro) return;
+            await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") }).catch(() => {});
+            const informe = await page.evaluate(async () => (window as any).axe.run(document.body, { runOnly: ["color-contrast"] }).then((r: { violations: { nodes: { target: string[]; any: { data?: { contrastRatio?: number } }[] }[] }[] }) => r.violations.flatMap((v) => v.nodes.map((n) => `${n.target.join(" ")} ${n.any[0]?.data?.contrastRatio ?? ""}`)))).catch(() => ["axe no cargó"]);
+            anotar(rol, href, "contraste-oscuro", informe.length === 0, `${informe.length} textos bajo 4,5:1: ${informe.slice(0, 3).join(" | ")}`);
           });
 
           await test.step("altura-botones", async () => {
