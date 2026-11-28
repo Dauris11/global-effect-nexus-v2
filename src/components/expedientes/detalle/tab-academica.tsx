@@ -4,7 +4,6 @@ import { ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { GraficaTendencia } from "@/components/dashboard/graficas";
 import { Filas, Seccion, Vacio } from "@/components/expedientes/detalle/ficha";
 import { Historial360 } from "@/components/expedientes/historial-360";
-import { MateriasUniversidad } from "@/components/expedientes/materias-universidad";
 import { TareasExpediente } from "@/components/expedientes/tareas-expediente";
 import { ArchivosAcademicos } from "@/components/universidades/archivos-academicos";
 import { RecordPorCuatrimestre } from "@/components/expedientes/detalle/record-nativo";
@@ -95,7 +94,6 @@ export async function TabUniversidad({
           </ol>
         </Seccion>
       )}
-      <MateriasUniversidad inscripciones={inscripciones} />
       <TareasExpediente asignaciones={asignaciones} />
     </>
   );
