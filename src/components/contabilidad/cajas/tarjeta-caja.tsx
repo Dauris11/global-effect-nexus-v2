@@ -38,6 +38,7 @@ export function TarjetaCaja({ caja }: { caja: CajaResumen }) {
             <p className="texto-meta flex items-center gap-1 truncate">
               <User className="size-3.5 shrink-0" />
               {caja.responsableNombre}
+              {caja.supervisorNombre ? ` · ${t("supervisor")}: ${caja.supervisorNombre}` : ""}
             </p>
           </div>
           {caja.arqueosPorAprobar > 0 ? (

@@ -101,22 +101,22 @@ const texto = (datos: FormData, campo: string, maximo = 200): string =>
 // ---------------------------------------------------------------------------
 
 export async function crearCajaAction(datos: {
-  codigo: string;
-  nombre: string;
-  departamento: string;
+  numero: string;
   responsableId: string;
+  supervisorId: string;
+  tipo: "caja_chica" | "caja";
   moneda: "DOP" | "USD";
-  fondoFijo: number;
-  umbralAdjunto?: number;
+  fondo: number;
 }): Promise<ResultadoCaja> {
   const usuario = await requerirPermiso("contabilidad.configurar");
 
+  const numeroLimpio = datos.numero.trim().toUpperCase().slice(0, 30);
   if (
-    !datos.codigo.trim() ||
-    !datos.nombre.trim() ||
-    !datos.departamento.trim() ||
+    !numeroLimpio ||
     !esUuid(datos.responsableId) ||
-    !(datos.fondoFijo > 0) ||
+    !esUuid(datos.supervisorId) ||
+    (datos.tipo !== "caja_chica" && datos.tipo !== "caja") ||
+    !(datos.fondo > 0) ||
     !["DOP", "USD"].includes(datos.moneda)
   ) {
     return { exito: false, error: "datos_invalidos" };
@@ -124,23 +124,42 @@ export async function crearCajaAction(datos: {
 
   try {
     const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
-      const cuenta = await cuentaDeCajaPorDefecto(cliente);
+      let cuenta: string | null = null;
+      if (datos.tipo === "caja") {
+        const { rows: cg } = await cliente.query<{ id: string }>(
+          `SELECT id
+             FROM contabilidad.cuenta_contable
+            WHERE codigo = '1.1.1.1' AND activa AND admite_movimiento
+            LIMIT 1`,
+        );
+        cuenta = cg[0]?.id ?? null;
+      }
+      if (!cuenta) {
+        cuenta = await cuentaDeCajaPorDefecto(cliente);
+      }
       if (!cuenta) throw new Rechazo("sin_cuenta_contable");
+
+      const nombreGenerado =
+        datos.tipo === "caja_chica" ? `Caja chica #${numeroLimpio}` : `Caja #${numeroLimpio}`;
+      const departamentoGenerado = datos.tipo === "caja_chica" ? "Caja chica" : "Caja";
+
       await fijarAccion(cliente, "crear");
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.caja
-           (codigo, nombre, departamento, responsable_id, moneda, fondo_fijo, saldo_actual,
-            umbral_adjunto, cuenta_contable_id, creado_por)
-         VALUES ($1, $2, $3, $4, $5, $6, $6, $7, $8, $9)
+           (codigo, nombre, departamento, tipo, responsable_id, supervisor_id, moneda,
+            fondo_fijo, saldo_actual, umbral_adjunto, cuenta_contable_id, creado_por)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10, $11)
          RETURNING id`,
         [
-          datos.codigo.trim().toUpperCase().slice(0, 30),
-          datos.nombre.trim().slice(0, 120),
-          datos.departamento.trim().slice(0, 80),
+          numeroLimpio,
+          nombreGenerado.slice(0, 120),
+          departamentoGenerado,
+          datos.tipo,
           datos.responsableId,
+          datos.supervisorId,
           datos.moneda,
-          redondear(datos.fondoFijo),
-          redondear(datos.umbralAdjunto ?? 500),
+          redondear(datos.fondo),
+          500,
           cuenta,
           usuario.id,
         ],

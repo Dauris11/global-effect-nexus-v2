@@ -15,8 +15,11 @@ export type CajaResumen = {
   codigo: string;
   nombre: string;
   departamento: string;
+  tipo: "caja_chica" | "caja";
   responsableId: string;
   responsableNombre: string;
+  supervisorId: string | null;
+  supervisorNombre: string | null;
   moneda: "DOP" | "USD";
   fondoFijo: string;
   /** Efectivo que debería haber en la caja según el sistema. */
@@ -89,8 +92,11 @@ type FilaCaja = {
   codigo: string;
   nombre: string;
   departamento: string;
+  tipo: "caja_chica" | "caja";
   responsable_id: string;
   responsable_nombre: string;
+  supervisor_id: string | null;
+  supervisor_nombre: string | null;
   moneda: "DOP" | "USD";
   fondo_fijo: string;
   saldo_actual: string;
@@ -109,8 +115,9 @@ type FilaCaja = {
 // creó sin cuenta (la del código de transacción CAJ_CAJA_CHICA): así
 // el cuadre nunca se queda sin contrapartida.
 const SELECT_CAJA = `
-  SELECT c.id, c.codigo, c.nombre, c.departamento,
+  SELECT c.id, c.codigo, c.nombre, c.departamento, c.tipo,
          c.responsable_id, u.nombre AS responsable_nombre,
+         c.supervisor_id, sup.nombre AS supervisor_nombre,
          c.moneda, c.fondo_fijo, c.saldo_actual, c.umbral_adjunto,
          cc.codigo AS cuenta_codigo, cc.nombre AS cuenta_nombre,
          c.estado, c.creado_en,
@@ -126,6 +133,7 @@ const SELECT_CAJA = `
            WHERE a.caja_id = c.id) AS ultimo_arqueo
     FROM contabilidad.caja c
     JOIN public.usuario u ON c.responsable_id = u.id
+    LEFT JOIN public.usuario sup ON c.supervisor_id = sup.id
     LEFT JOIN contabilidad.cuenta_contable cc
            ON cc.id = COALESCE(c.cuenta_contable_id,
                                (SELECT cuenta_id FROM contabilidad.codigo_transaccion
@@ -137,8 +145,11 @@ function aCaja(f: FilaCaja): CajaResumen {
     codigo: f.codigo,
     nombre: f.nombre,
     departamento: f.departamento,
+    tipo: f.tipo,
     responsableId: f.responsable_id,
     responsableNombre: f.responsable_nombre,
+    supervisorId: f.supervisor_id,
+    supervisorNombre: f.supervisor_nombre,
     moneda: f.moneda,
     fondoFijo: f.fondo_fijo,
     saldoActual: f.saldo_actual,
