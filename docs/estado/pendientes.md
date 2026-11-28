@@ -5,6 +5,11 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Acceso y correo (28 nov 2026)
+
+- [ ] **Acceso:** Google y correo/contraseña para todos, **solo si ya están registrados** (sin autoregistro). Documentado en [`correo-y-acceso-resend.md`](../referencia/correo-y-acceso-resend.md) §7.4. Falta: desactivar «Allow new users to sign up» en Supabase, probar con un Gmail no registrado, «¿Olvidaste tu contraseña?» y alta con invitación real.
+- [ ] **Mailgun:** cambiar el envío de `cola.ts` (hoy Resend), el SMTP de Supabase y escribir el adaptador de la Route entrante hacia `/api/correo/entrante` (§9b–9c de la guía). La carta mensual estudiante → patrocinador ya está construida.
+
 ## Rediseño UX — base (26 nov 2026)
 
 - [x] **Base creada:** `docs/ux-rules.md`, Plus Jakarta Sans + Plex Mono, escala `text-*`, botones 36/32/44, tokens `status-*`, `src/lib/status-map.ts` (105 estados) y `src/components/app/*`. Muestra en `/ui-kit` (solo desarrollo).

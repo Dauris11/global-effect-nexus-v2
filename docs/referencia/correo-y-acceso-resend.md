@@ -1,16 +1,30 @@
-# Correo y acceso con Resend, Google Workspace y Supabase
+# Correo y acceso: Google, correo y contraseña, y el correo del sistema
 
 Guía para dejar funcionando **todos los correos del Portal GlobalEffect**
-(bienvenida, recuperar contraseña y los demás) y las **dos formas de entrar**:
+(bienvenida, recuperar contraseña, notificaciones y la carta mensual de los
+becados) y **las formas de entrar** (decisión del 28 nov 2026).
 
-| Quién | Cómo entra | Por qué |
-|---|---|---|
-| Administrativos y contabilidad (`super_admin`, `admin`, `contabilidad`) | **Google**, con su cuenta del Workspace de la Fundación | Su correo es del dominio de la Fundación: se controla desde Workspace (alta, baja, 2FA). |
-| Estudiantes, docentes y el resto | **Correo y contraseña** | Sus correos son personales (Gmail, Outlook…): no están en el Workspace. |
+## Regla de acceso (la que no se rompe)
 
-> Los pasos de las consolas de Resend, Supabase y Google cambian de lugar con
-> el tiempo. Los nombres de menú de esta guía son los de nov 2026; si alguno ya
-> no existe, busca el equivalente en la documentación oficial de cada servicio.
+**Nadie se registra solo.** Una persona entra al portal únicamente si la
+Fundación ya la dio de alta (fila activa en `usuario`, con su rol) y le llegó su
+invitación. Da igual cómo se autentique:
+
+| Vía | Quién puede usarla |
+|---|---|
+| **Continuar con Google** | Cualquier cuenta de Google: del Workspace de la Fundación o un Gmail personal. **Solo si su correo ya está dado de alta y activo.** |
+| **Correo y contraseña** | Cualquier correo (Hotmail, Yahoo, dominio propio…), también **solo si ya está dado de alta**. Es la vía de quien no tiene cuenta de Google. |
+
+Google únicamente **prueba que el correo es de esa persona**; no decide nada más.
+Quien manda es la tabla `usuario`: el rol, los permisos y si está activa salen
+de ahí. Un Gmail cualquiera que pulse «Continuar con Google» no entra: vuelve al
+login con «no registrado».
+
+> **La brecha que hay que cuidar:** por defecto, Supabase Auth crea un usuario
+> nuevo la primera vez que alguien entra con Google. El portal igual lo rechaza
+> (sin fila en `usuario` se cierra la sesión), pero queda una identidad
+> huérfana en Supabase. Por eso se cierra por dos lados (§7.4): registro
+> desactivado en Supabase **y** comprobación en `/auth/callback`.
 
 ---
 
@@ -228,16 +242,18 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://<dominio-del-portal>/api/cr
 # → {"enviados":N,"fallidos":0,"sinClave":false}
 ```
 
-## 7. Entrar con Google (administrativos y contabilidad)
+## 7. Entrar con Google (todos, si ya están registrados)
 
 ### 7.1 Consola de Google Cloud
 
 1. <https://console.cloud.google.com> con una cuenta **del Workspace de la
    Fundación** (administrador). Crea un proyecto (p. ej. «Portal GlobalEffect»).
 2. **APIs & Services → OAuth consent screen.**
-   - **User type: Internal.** Es lo importante: solo pueden iniciar sesión
-     cuentas del Workspace de la Fundación. Un Gmail o un correo de estudiante
-     queda fuera sin escribir código.
+   - **User type: External** y publicada («In production»). Con «Internal»
+     solo entrarían cuentas del Workspace y los estudiantes con Gmail
+     quedarían fuera. Quien controla el acceso es la tabla `usuario` (§7.4),
+     no el tipo de pantalla. Sin publicar, Google solo deja entrar a usuarios
+     de prueba.
    - Nombre de la app, correo de soporte, logo y dominio autorizado
      (`globaleffect.org`).
    - Alcances (scopes): `openid`, `email`, `profile`. Nada más.
@@ -256,13 +272,32 @@ Client secret. Confirma que las **Redirect URLs** de §3 están cargadas.
 
 ### 7.3 Cómo entra la persona
 
-1. En el login toca **Continuar con Google** y elige su cuenta de la Fundación.
+1. En el login toca **Continuar con Google** y elige su cuenta (Workspace o personal).
 2. Supabase la devuelve a `/auth/callback`, que canjea el código por la sesión.
 3. El callback exige fila activa en `usuario` con ese correo. **El rol lo manda
    la tabla `usuario`**, no Google: crear la cuenta de un administrativo es dar
-   de alta su fila con el mismo correo del Workspace.
-4. Una cuenta de Google que no esté en `usuario` vuelve al login con el aviso
-   «no registrado» y se le cierra la sesión.
+   de alta su fila con el mismo correo con el que va a entrar.
+4. Una cuenta de Google que no esté en `usuario` (o esté inactiva) vuelve al
+   login con el aviso «no registrado» y se le cierra la sesión.
+
+### 7.4 Cerrar el autoregistro
+
+1. **Supabase → Authentication → Sign In / Providers → desactivar «Allow new
+   users to sign up».** Sin esto, cualquier Gmail crea una identidad en
+   Supabase al pulsar el botón de Google. Con esto apagado, Supabase solo deja
+   entrar a identidades que **ya existen** (creadas por la invitación).
+2. **Al invitar, crear el usuario de Supabase con el mismo correo** que tendrá
+   en Google. Supabase vincula la identidad de Google con esa cuenta por correo
+   verificado, así que la persona puede usar luego tanto Google como su
+   contraseña.
+3. `/auth/callback` y el login por contraseña exigen siempre fila **activa** en
+   `usuario` (`obtenerUsuarioActual`): es la segunda barrera, por si la primera
+   se desconfigura.
+4. Dar de baja = `usuario.activo = false`. Se rechaza en la siguiente petición,
+   con cualquiera de las dos vías.
+5. Prueba obligatoria antes de abrirlo: entrar con un Gmail **no registrado** y
+   comprobar que (a) no entra y (b) no aparece una identidad nueva en
+   Supabase → Authentication → Users.
 
 ## 8. Entrar con correo y contraseña (estudiantes y el resto)
 
@@ -296,20 +331,68 @@ Estas piezas **no están hechas** y conviene pedirlas como tarea aparte:
       `supabase.auth.resetPasswordForEmail(email, { redirectTo: <origen>/establecer-clave })`
       y responde **siempre** igual, exista o no el correo (para no revelar qué
       correos están registrados, igual que el login actual).
-- [ ] **Restringir Google al Workspace y a los roles administrativos.** Hoy el
-      botón de Google se ofrece a todos y funciona con cualquier cuenta de
-      Google cuyo correo esté en `usuario`. Propuesta:
-      1. Pedir `queryParams: { hd: "globaleffect.org", prompt: "select_account" }`
-         en `signInWithOAuth` (es solo una pista: no es seguridad).
-      2. En `/auth/callback`, rechazar si el correo no termina en el dominio
-         del Workspace **o** si el rol no es `super_admin`, `admin` o
-         `contabilidad`. La pantalla «Internal» de §7.1 ya impide cuentas
-         ajenas; esto cubre el caso de un rol que no deba usar Google.
-- [ ] **Mostrar cada vía a quien le toca:** que el botón de Google solo aparezca
-      para correos del dominio de la Fundación (o con un enlace «Soy del
-      equipo») y que los estudiantes vean solo correo y contraseña.
+- [ ] **Quitar la restricción por dominio/rol que se había propuesto:** la
+      decisión es que Google sirve a todos los registrados. Lo que sí hay que
+      hacer es el cierre del autoregistro de §7.4 (consola de Supabase) y la
+      prueba con un Gmail no registrado.
+- [ ] **Ocultar el botón de Google a quien no lo necesita:** no hace falta; los
+      dos métodos se muestran a todos.
 - [ ] **Alta de usuarios desde el portal con invitación real** (§8).
 - [ ] **`vercel.json` con el cron** (§6).
+
+## 9b. Proveedor de correo: Mailgun (decisión) y lo que hay hoy
+
+La Fundación usará **Mailgun** para el correo saliente y el entrante. El código
+actual está hecho con **Resend** (`src/server/correos/cola.ts`), así que el
+cambio de proveedor es **trabajo de código pendiente**; hasta entonces todo lo
+de las secciones 1–6 aplica tal cual a Resend. Lo que cambia con Mailgun:
+
+- **Saliente:** reemplazar la llamada a Resend de `cola.ts` por la API de
+  Mailgun (dominio verificado con SPF y DKIM, mismo subdominio
+  `mail.globaleffect.org`). La cola, los reintentos y el cron no cambian.
+- **Auth de Supabase:** el SMTP de §3 pasa a `smtp.mailgun.org`, con usuario y
+  contraseña SMTP del dominio.
+- **Entrante:** una **Route** de Mailgun reenvía cada correo recibido a nuestra
+  puerta. Ver §9c.
+
+## 9c. La carta mensual del estudiante a su patrocinador
+
+Es el único correo recurrente del sistema. Ya está construido
+(`src/server/correos/*`, puerta `/api/correo/entrante`). Recorrido:
+
+1. **El estudiante escribe desde su correo** (Gmail u otro; el mismo que está
+   en su expediente) al buzón de la Fundación. Es la razón por la que el
+   correo del estudiante debe estar registrado y ser el que usa de verdad.
+2. **El sistema la recibe y la guarda primero** (los proveedores reintentan y
+   no se debe perder nada). Queda auditada: remitente, fecha, resultado de
+   SPF/DKIM/DMARC y cada decisión.
+3. **Identifica al estudiante por el remitente.** Como un remitente se puede
+   falsificar, si SPF/DKIM/DMARC no están en `pass` la carta se **retiene**.
+   Sin estudiante activo con ese correo → `sin_identificar`.
+4. **Busca su patrocinador en la base** (asignación activa → correo del
+   patrocinador). El destinatario **nunca** sale del texto de la carta. Sin
+   patrocinador asignado → `sin_patrocinador`: no se envía nada.
+5. **Elly revisa y traduce** al idioma del patrocinador. Una carta por
+   estudiante y mes (la segunda queda `duplicado`).
+6. **Comprobaciones propias** sobre el texto traducido (enlaces, cifras,
+   contenido ajeno). Si algo no cuadra queda `retenido` y lo decide una
+   persona.
+7. **Si todo pasa, se envía sola** al patrocinador por la cola de correo y la
+   carta queda marcada `reenviado`, con su traducción y quién (o qué) la
+   aprobó.
+
+Estados de una carta: `sin_identificar`, `sin_patrocinador`, `retenido`,
+`duplicado`, `reenviado`. Ante cualquier duda se retiene: nunca se envía por
+defecto.
+
+**Para conectar Mailgun (pendiente):** la puerta espera un JSON con
+`Authorization: Bearer <CORREO_ENTRANTE_SECRET>`, y la Route de Mailgun envía
+un formulario firmado. Hace falta un adaptador (una ruta nueva o un flujo de
+n8n) que (a) verifique la firma de Mailgun, (b) convierta los campos
+(`sender`, `subject`, `body-plain`, `body-html`, `Message-Id`; verifica los
+nombres en la documentación de Mailgun) al JSON de la puerta y (c) traduzca los
+resultados SPF/DKIM de Mailgun a `authentication: "pass" | "fail"`. Sin eso, la
+autenticación llega como `desconocida` y toda carta se retiene.
 
 ## 10. Lista de comprobación
 
@@ -319,8 +402,9 @@ Estas piezas **no están hechas** y conviene pedirlas como tarea aparte:
 - [ ] SMTP de Resend activo en Supabase Auth.
 - [ ] Site URL y Redirect URLs cargadas.
 - [ ] Plantillas **Invite user** y **Reset password** en español.
-- [ ] Google OAuth: pantalla **Internal**, cliente creado, proveedor activo en
-      Supabase.
+- [ ] Google OAuth: pantalla **External** publicada, cliente creado, proveedor
+      activo en Supabase y **registro de usuarios nuevos desactivado** (§7.4).
+- [ ] Prueba real: un Gmail **no registrado** no entra ni crea identidad.
 - [ ] Prueba real: invitar a una cuenta personal, recibir el correo (revisa
       spam), elegir contraseña, entrar.
 - [ ] Prueba real: entrar con una cuenta de Workspace por Google.
