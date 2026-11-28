@@ -6,7 +6,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ENTIDAD, type Idioma } from "@content/entidad";
 
-import { BotonCopiar, MapaAnimado, MapaInteractivo } from "@/components/landing/mapa-cliente";
+import { BotonCopiar, MapaInteractivo } from "@/components/landing/mapa-cliente";
 import { CONTENEDOR, SECCION, TITULO_SECCION } from "@/components/landing/piezas";
 import { variantesBoton } from "@/components/ui/button-variantes";
 
@@ -77,19 +77,20 @@ export async function SeccionMapa() {
   return (
     <section id="ubicacion" aria-labelledby="ubicacion-titulo" className={SECCION}>
       <div className={CONTENEDOR}>
-        <div className="revelar max-w-2xl">
+        <div className="rv max-w-2xl">
           <h2 id="ubicacion-titulo" className={TITULO_SECCION}>
             {t("titulo")}
           </h2>
-          <p className="mt-3 text-tinta-2">{t("resumen")}</p>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-12">
-          <MapaAnimado className="revelar rounded-card border border-linea bg-card p-4 shadow-card md:p-6 lg:col-span-7">
+          {/* `mapa-host` + `rv`: cuando `useReveal` revela el mapa, el pin cae y empieza a pulsar (landing.css). */}
+          <div className="rv mapa-host rounded-card border border-linea bg-card p-4 shadow-card md:p-6 lg:col-span-7">
             <div dangerouslySetInnerHTML={{ __html: svg }} />
-          </MapaAnimado>
+          </div>
 
-          <div className="revelar flex flex-col gap-5 rounded-card border border-linea bg-card p-6 shadow-card lg:col-span-5">
+          <div style={{ "--rv-i": 1 } as React.CSSProperties}
+            className="rv flex flex-col gap-5 rounded-card border border-linea bg-card p-6 shadow-card lg:col-span-5">
             <h3 className="text-section font-semibold text-tinta">{ENTIDAD.nombre}</h3>
 
             <Fila icono={<MapPin aria-hidden className="size-5" />} etiqueta={t("direccion")}>

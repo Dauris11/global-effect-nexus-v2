@@ -4,45 +4,12 @@ import { Check, Copy, Map as IconoMapa } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 /**
- * Pieza cliente mínima del mapa: pone `mapa-visible` cuando el mapa entra en
- * pantalla, y eso dispara la caída del pin (CSS en `globals.css`). El SVG llega
- * ya pintado como `children` desde el servidor; aquí no se vuelve a serializar.
+ * «Copiar dirección» → «Copiada ✓» durante 1,6 s. El botón es la región `aria-live="polite"`:
+ * existe desde el primer pintado y solo cambia su texto, que es lo que un lector de pantalla
+ * anuncia (una región creada junto con el mensaje no se anuncia de forma fiable).
  */
-export function MapaAnimado({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [listo, setListo] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    // Sin observer (navegador viejo) el pin se queda quieto y visible: es el estado sin JS.
-    if (!el || typeof IntersectionObserver === "undefined") return;
-
-    setListo(true);
-    const observador = new IntersectionObserver(
-      ([entrada]) => {
-        if (!entrada?.isIntersecting) return;
-        setVisible(true);
-        observador.disconnect();
-      },
-      { threshold: 0.4 },
-    );
-
-    observador.observe(el);
-    return () => observador.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className={cn(listo && "mapa-listo", visible && "mapa-visible", className)}>
-      {children}
-    </div>
-  );
-}
-
-/** «Copiar dirección» → «Copiada ✓» durante 1,6 s. */
 export function BotonCopiar({
   texto,
   etiqueta,

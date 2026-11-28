@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+
+import { ENTIDAD, urlLocalizada, urlSitio, type Idioma } from "@content/entidad";
 
 import { Footer } from "@/components/landing/footer";
 import { Hero } from "@/components/landing/hero";
@@ -14,6 +16,8 @@ import {
   type Perfil,
   type TextosPerfiles,
 } from "@/components/landing/seccion-perfiles";
+
+import { jsonLdInicio } from "@/lib/seo/json-ld-inicio";
 
 // Movimiento propio de la portada; el portal no lo carga.
 import "@/components/landing/landing.css";
@@ -32,11 +36,34 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "landing" });
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const idioma = (locale === "en" ? "en" : "es") as Idioma;
+  const url = urlLocalizada("/", idioma);
 
   return {
-    title: t("heroTitle"),
-    description: t("heroDefinition"),
+    title: { absolute: t("title") },
+    description: t("description"),
+    // El canónico apunta siempre al dominio definitivo, también si se entra por *.vercel.app.
+    alternates: {
+      canonical: url,
+      languages: { "es-DO": urlLocalizada("/", "es"), "en-DO": urlLocalizada("/", "en"), "x-default": urlLocalizada("/", "es") },
+    },
+    openGraph: {
+      type: "website",
+      siteName: ENTIDAD.portal,
+      locale: idioma === "en" ? "en_US" : "es_DO",
+      url,
+      title: t("title"),
+      description: t("description"),
+      // Se declara explícita: el archivo `opengraph-image` de la raíz no hereda a esta ruta con `[locale]`.
+      images: [{ url: `${urlSitio()}/opengraph-image`, width: 1200, height: 630, alt: t("ogAlt") }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+      images: [`${urlSitio()}/opengraph-image`],
+    },
   };
 }
 
@@ -60,8 +87,11 @@ export default async function PaginaInicio({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // Sin esto next-intl lee el idioma de las cabeceras de la petición y la página se vuelve dinámica.
+  setRequestLocale(locale);
   const idioma = locale === "en" ? "en" : "es";
   const t = await getTranslations({ locale, namespace: "landing" });
+  const tSeo = await getTranslations({ locale, namespace: "seo" });
   const tComun = await getTranslations({ locale, namespace: "common" });
 
   // Las anclas, en el orden de la página. La barra y el pie leen esta lista, así
@@ -94,6 +124,23 @@ export default async function PaginaInicio({
   return (
     // 16 px de cuerpo en la landing (docs/09 §2.4); el portal se queda en 15.
     <div className="text-base">
+      {/* Un solo grafo; se escapa `<` para que un texto no pueda cerrar el script. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            jsonLdInicio(idioma, {
+              appName: tSeo("appName"),
+              titulo: tSeo("title"),
+              descripcion: tSeo("description"),
+              audienciaEstudiantes: tSeo("audienciaEstudiantes"),
+              audienciaDocentes: tSeo("audienciaDocentes"),
+              audienciaPersonal: tSeo("audienciaPersonal"),
+              areaServida: tSeo("areaServida"),
+            }),
+          ).replace(/</g, "\\u003c"),
+        }}
+      />
       <Navbar
         enlaces={secciones}
         textos={{

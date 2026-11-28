@@ -1,25 +1,24 @@
 /*
  * Movimiento de la landing.
  *
- * Vive aquí y no en `globals.css` porque solo lo usa la portada: el portal es
- * una herramienta de trabajo y no debe animar nada al hacer scroll.
+ * Vive aquí y no en `globals.css` porque solo lo usa la portada: el portal es una herramienta de
+ * trabajo y no debe animar nada al hacer scroll.
  *
- * Tres reglas para todo lo de este archivo:
- *   1. Solo `transform` y `opacity`. Nada que recalcule la maquetación.
- *   2. Todo dentro de `prefers-reduced-motion: no-preference`: quien pide menos
- *      movimiento ve la página entera, quieta, desde el primer momento.
- *   3. El estado de partida nunca es "oculto" sin red: si el navegador no
- *      entiende `animation-timeline`, la regla no se aplica y el contenido se
- *      ve tal cual. Por eso no hay JavaScript ni clase "visible" que poner.
+ * Reglas de todo este archivo:
+ *   1. Solo `transform` y `opacity`. La única excepción es el acordeón de preguntas, que usa
+ *      `grid-template-rows` 0fr -> 1fr porque su alto no se conoce de antemano.
+ *   2. Duraciones: 160 ms hover y foco, 250-400 ms interfaz, 600-800 ms entrada de secciones.
+ *   3. FAIL-SAFE: por defecto TODO es visible en el HTML del servidor. El estado inicial oculto solo
+ *      existe bajo `html.js` (la clase la pone un script del `<head>`; sin JavaScript no hay clase).
+ *      Las animaciones de entrada terminan siempre en visible.
+ *   4. `prefers-reduced-motion: reduce`: nada se anima y todo queda visible y quieto.
  *
- * `transform` y no `translate`: Tailwind 4 mueve las tarjetas en hover con la
- * propiedad `translate`, y si la animación usara la misma la dejaría fija al
- * terminar (una animación con `fill: both` gana a cualquier `:hover`).
+ * `transform` y no `translate` en los keyframes: Tailwind 4 mueve cosas con la propiedad `translate`
+ * y una animación con `fill: both` ganaría a cualquier `:hover` y lo dejaría fijo.
  */
 
 :root {
-  /* Salida rápida y frenada larga: lo que entra parece llegar, no deslizarse. */
-  --landing-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --landing-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes landing-subir {
@@ -44,6 +43,35 @@
   }
 }
 
+@keyframes landing-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-desvanecer {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes landing-girar {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes landing-latido {
   0% {
     transform: scale(0.6);
@@ -55,28 +83,138 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  /* Palabras del titular: entran una tras otra, 70 ms entre cada una. */
-  .landing-palabra {
-    animation: landing-subir 700ms var(--landing-salida) both;
-    animation-delay: calc(var(--paso, 0) * 70ms);
+/* Caída del pin con un rebote corto, y pulso que se abre desde el pin. */
+@keyframes landing-pin-cae {
+  0% {
+    opacity: 0;
+    transform: translateY(-48px);
   }
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-7px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-  /*
-   * Perfiles: al mostrarse un panel (pasa de `display: none` a visible) sus
-   * filas se reinician solas, así que no hace falta JavaScript para repetirlas.
-   */
-  .landing-perfil-fila {
-    animation: landing-entrar-lado 400ms var(--landing-salida) both;
+@keyframes landing-pin-pulso {
+  from {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+/* ---- Revelado al hacer scroll (lo gobierna `useReveal`) ---------------------------------------- */
+
+.js .rv {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms var(--landing-ease),
+    transform 700ms var(--landing-ease);
+  /* Escalonado entre hermanos: `--rv-i` lo pone cada sección. */
+  transition-delay: calc(var(--rv-i, 0) * 80ms);
+}
+.js .rv.rv-in {
+  opacity: 1;
+  transform: none;
+}
+/* Lo que ya estaba en pantalla al cargar aparece sin animar. */
+.js .rv.rv-ya {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .js .rv {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Hero: titular, párrafo y botones en cascada ------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero-in {
+    animation: landing-subir 700ms var(--landing-ease) both;
+    animation-delay: calc(var(--paso, 0) * 120ms);
+  }
+}
+
+/* ---- Tarjetas de acceso ------------------------------------------------------------------------- */
+
+/*
+ * El hover es solo feedback: la tarjeta sube 3 px mientras se señala y VUELVE a su sitio. En reposo
+ * ninguna se mueve (la gente busca comida y transporte por posición).
+ */
+.acceso {
+  transition:
+    transform 160ms var(--landing-ease),
+    box-shadow 160ms var(--landing-ease),
+    border-color 160ms var(--landing-ease);
+}
+.acceso-icono,
+.acceso-flecha {
+  transition: transform 250ms var(--landing-ease);
+}
+
+@media (hover: hover) {
+  .acceso:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-marca-500);
+  }
+  .acceso:hover .acceso-icono {
+    transform: rotate(-6deg) scale(1.06);
+  }
+  .acceso:hover .acceso-flecha {
+    transform: translateX(4px);
+  }
+}
+.acceso:focus-visible .acceso-flecha {
+  transform: translateX(4px);
+}
+
+/* ---- Botón de tema: el icono gira 180 grados al cambiar ------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .tema-giro {
+    animation: landing-girar 300ms var(--landing-ease) both;
+  }
+}
+
+/* ---- Pestañas de perfil -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Las filas se reinician solas al pasar el panel de `display: none` a visible. */
+  .perfil-fila {
+    animation: landing-entrar-lado 400ms var(--landing-ease) both;
     animation-delay: calc(var(--paso, 0) * 60ms);
   }
-
-  .landing-perfil-vista > * {
-    animation: landing-subir 450ms var(--landing-salida) both;
-    animation-delay: calc(var(--paso, 0) * 70ms + 120ms);
+  .vista-entra {
+    animation: landing-aparecer 300ms var(--landing-ease) both;
   }
+  .vista-sale {
+    animation: landing-desvanecer 300ms var(--landing-ease) both;
+  }
+}
+.vista-sale {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 
-  /* Punto «en vivo»: un anillo que se abre y se desvanece. */
+/* ---- Punto «en vivo»: un anillo que se abre y se desvanece ---------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
   .landing-vivo::after {
     content: "";
     position: absolute;
@@ -84,67 +222,63 @@
     border-radius: 9999px;
     border: 2px solid currentColor;
     opacity: 0;
-    animation: landing-latido 1.8s var(--landing-salida) infinite;
+    animation: landing-latido 1.8s var(--landing-ease) infinite;
   }
+}
 
-  /*
-   * Revelado al hacer scroll, atado a la posición del propio elemento. Lo que
-   * ya está en pantalla al cargar se calcula como "ya entrado" y no parpadea.
-   */
-  @supports (animation-timeline: view()) {
-    .revelar,
-    .revelar-hijos > * {
-      animation: landing-subir linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 55%;
-    }
+/* ---- Preguntas frecuentes ------------------------------------------------------------------------ */
 
-    /*
-     * Escalonado entre hermanos de una misma fila. Todos comparten posición
-     * vertical, así que el retraso se expresa como un tramo más tardío del
-     * mismo recorrido y no como milisegundos.
-     */
-    .revelar-hijos > :nth-child(2) {
-      animation-range: entry 6% entry 61%;
-    }
-    .revelar-hijos > :nth-child(3) {
-      animation-range: entry 12% entry 67%;
-    }
-    .revelar-hijos > :nth-child(4) {
-      animation-range: entry 18% entry 73%;
-    }
-    .revelar-hijos > :nth-child(n + 5) {
-      animation-range: entry 22% entry 77%;
-    }
+/* Sin JavaScript todas las respuestas están abiertas: se leen igual y las ve un buscador. */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.faq-panel > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.js .faq-panel {
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--landing-ease);
+}
+.js .faq-panel > div {
+  opacity: 0;
+  transition: opacity 250ms var(--landing-ease);
+}
+.js [data-abierta="true"] > .faq-panel {
+  grid-template-rows: 1fr;
+}
+.js [data-abierta="true"] > .faq-panel > div {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .faq-panel,
+  .js .faq-panel > div {
+    transition: none;
   }
+}
 
-  /*
-   * Apertura suave de las preguntas. `::details-content` solo existe en los
-   * Chromium recientes; en el resto el `<details>` se abre de golpe, que es
-   * lo que hacía antes.
-   */
-  @supports selector(::details-content) {
-    .landing-faq {
-      interpolate-size: allow-keywords;
-    }
+/* ---- Mapa: el pin cae y luego pulsa sin parar ------------------------------------------------------ */
 
-    .landing-faq details::details-content {
-      block-size: 0;
-      overflow: hidden;
-      transition:
-        block-size 300ms var(--landing-salida),
-        content-visibility 300ms allow-discrete;
-    }
-
-    .landing-faq details[open]::details-content {
-      block-size: auto;
-    }
+@media (prefers-reduced-motion: no-preference) {
+  /* Antes de revelarse el pin no existe; sin `.js` nunca se oculta y se ve fijo. */
+  .js .mapa-host:not(.rv-in) .mapa-cae,
+  .js .mapa-host:not(.rv-in) .mapa-pulso {
+    opacity: 0;
+  }
+  .js .mapa-host.rv-in .mapa-cae {
+    animation: landing-pin-cae 800ms var(--landing-ease) 500ms both;
+  }
+  .js .mapa-host.rv-in .mapa-pulso {
+    animation: landing-pin-pulso 2.4s ease-out 1.3s infinite;
   }
 }
 
 /*
  * Velo del hero: único degradado permitido del sistema, y solo para que el texto blanco se lea
- * (≥ 4,5:1) sobre cualquier fotograma del video. No decora: oscurece más abajo, donde está el texto.
+ * (>= 4,5:1) sobre cualquier fotograma del video. No decora: oscurece más abajo, donde está el texto.
  * Valor pedido por la Fundación: rgba(10,15,20,.72) abajo. La marca `audit:permitir-degradado` lo declara.
  */
 .hero-velo {

@@ -5,14 +5,12 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
-## Landing `/` como puerta del portal (28 nov 2026), VERIFICADA con capturas (claro/oscuro, 1440 y 390 px)
-
-- [x] Reescrita según `docs/landing-login-reference.html`: header fijo de 68 px con tema Claro/Oscuro/Sistema, hero (único `<h1>` + definición citable; video de 12 s solo en escritorio, imagen en móvil), «Accesos rápidos» (4 tarjetas fijas, estado del comedor en vivo calculado en servidor con hora de La Vega y `revalidate = 60`), «¿Qué puedo hacer según mi perfil?» (pestañas con píldora y vista previa), «¿Cómo entro por primera vez?», FAQ, mapa y pie. La landing ya respeta el tema oscuro (sin `esLanding` en `apariencia.ts` ni en el script del `<head>`).
-- [x] Eliminado de `/`: carrusel, cifras, programas, globo, patrocinadores, eventos, noticias, cierre y sus consultas (`cifrasPublicas`, `eventosPublicos`, `noticiasPublicas`, `inscritosComidaHoy`, `diapositivasLanding`); dependencia `cobe` desinstalada; claves `landing.*` huérfanas fuera de `messages`.
-- [ ] `/configuracion/landing` (anuncios del hero) y la tabla `landing_slide` quedan sin efecto visible: decidir si se retiran (con migración) o se reutilizan.
-- [ ] Eventos y noticias públicas no tienen otra ruta: si la Fundación los quiere de cara al público, van en su sitio institucional, no en el portal.
-- [ ] El clip `public/media/landing/hero.mp4` (+ `.webm`) sale del video institucional en inglés; confirmar con la Fundación el tramo y el permiso de uso. Falta limpiar a mano `public/landing-login-reference.html`/`docs/` si ya no se necesitan.
-- [ ] El `h2` de la FAQ («Preguntas sobre el portal») no es una pregunta; pertenece a `seccion-faq.tsx`.
+## Landing `/` como puerta del portal y Login `/login` (28 nov 2026), COMPLETADO
+- [x] Rediseño de la landing `/`: hero con video en escritorio y foto optimizada en móvil, velo de legibilidad, accesos rápidos sin descripciones redundantes, estado del comedor en vivo, perfiles con pestañas y vista previa escalonada sin subtítulos innecesarios, primeros pasos claros, preguntas frecuentes con buscador sin acentos y schema JSON-LD, mapa interactivo inline con coordenadas de La Vega y pie con enlaces legales.
+- [x] Selector «Ver como»: eliminadas las descripciones innecesarias de roles (`ROLE_DESCRIPTION`) para dejar una lista compacta y clara de opciones por etiqueta.
+- [x] Rediseño de `/login` y recuperación de contraseña: botón de Google con marca SVG, formulario correo/clave con botón mostrar/ocultar contraseña, advertencia de Bloq Mayús, recordar correo en localStorage, mensajes de error amigables (`sin-acceso`), validación de `?next=` seguro (`destinoSeguro`) y flujo completo de recuperación (`/recuperar` y `/recuperar/nueva`) con medidor de fortaleza y mínimo 10 caracteres.
+- [x] SEO / AEO / GEO según estándar GS-01: `@graph` JSON-LD unificado con NGO, WebSite, WebApplication, WebPage y FAQPage, `sitemap.xml`, `robots.txt` y OpenGraph image dinámico.
+- [x] Pruebas y verificación de calidad: `npm run lint`, `npm run build` (251 páginas generadas), `npm run i18n:check` (8,138 claves es/en) y `npm run audit:ui` (0 infracciones de paleta) 100% en verde. Limpieza de archivos multimedia originales temporales en `public/`.
 
 ## Roles owner / developer, capa de datos y seguridad (28 nov 2026), SIN PROBAR en navegador
 

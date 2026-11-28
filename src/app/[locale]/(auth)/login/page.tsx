@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
-import { LoginForm } from "@/components/auth/login-form";
-import { Link, redirigir } from "@/i18n/navigation";
+import { CabeceraAcceso } from "@/components/auth/cabecera-acceso";
+import { LoginForm, type ErrorFormulario } from "@/components/auth/login-form";
+import { redirigir } from "@/i18n/navigation";
 import { obtenerUsuarioActual } from "@/lib/auth";
+import { destinoSeguro } from "@/lib/destino-seguro";
 import { PORTAL_POR_ROL } from "@/lib/rbac";
 
 export async function generateMetadata({
@@ -18,53 +19,42 @@ export async function generateMetadata({
   return { title: t("signInTitle") };
 }
 
+/** Avisos que `/auth/callback` deja en `?error=` tras un Google que no pudo entrar. */
+const ERRORES_DE_VUELTA: ErrorFormulario[] = ["oauth", "notRegistered", "inactive"];
+
 /**
- * Acceso general: una sola puerta para los seis portales.
+ * Acceso general: una sola puerta para todos los roles.
  *
- * Quien ya tiene sesión no ve el formulario, se le lleva a su portal. Sin esto,
- * volver a `/login` con la sesión abierta mostraría un login que al enviarse
+ * Quien ya tiene sesión no ve el formulario: se le lleva a `?next=` (si es una ruta interna) o a su
+ * portal. Sin esto, volver a `/login` con la sesión abierta mostraría un login que al enviarse
  * acabaría en el mismo sitio.
  *
- * La tarjeta es la de login de la norma (docs/09 §2.5–2.6): `rounded-hoja` y
- * `shadow-elevada`, con el logo arriba y un solo titular. Aquí llegó a haber un
- * rótulo, un titular, una explicación de los seis portales, la lista de roles y
- * un aviso de invitación: cinco textos para un formulario de dos campos. Queda
- * el único que resuelve algo: a quién pedirle el acceso si no lo tienes.
+ * El marco (foto, «Volver al inicio») es del layout; aquí solo va lo que cambia por pantalla.
  */
 export default async function PaginaLogin({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { locale } = await params;
+  const { next, error } = await searchParams;
   const usuario = await obtenerUsuarioActual();
+  const destino = destinoSeguro(next);
 
-  if (usuario) redirigir(PORTAL_POR_ROL[usuario.rol], locale);
+  if (usuario) redirigir(destino === "/inicio" ? PORTAL_POR_ROL[usuario.rol] : destino, locale);
 
   const t = await getTranslations({ locale, namespace: "auth" });
-  const tComun = await getTranslations({ locale, namespace: "common" });
+  const errorInicial = ERRORES_DE_VUELTA.find((e) => e === error);
 
   return (
-    <div className="rounded-hoja border border-linea bg-card p-6 shadow-elevada sm:p-10">
-      <div className="flex items-center">
-        <Link
-          href="/"
-          aria-label={tComun("foundation")}
-          className="block w-fit rounded-control focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          <Image src="/logo.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-claro h-9 w-auto" />
-          <Image src="/logo-dark.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-oscuro h-9 w-auto" />
-        </Link>
+    <div>
+      <CabeceraAcceso titulo={t("signInHeading")} subtitulo={t("signInSubtitle")} />
+
+      <div className="mt-8">
+        <LoginForm destino={destino === "/inicio" ? undefined : destino} errorInicial={errorInicial} />
       </div>
-
-      <h1 className="mt-8 text-[26px] leading-tight font-semibold tracking-tight text-tinta">
-        {t("signInHeading")}
-      </h1>
-
-      <div className="mt-6">
-        <LoginForm />
-      </div>
-
     </div>
   );
 }

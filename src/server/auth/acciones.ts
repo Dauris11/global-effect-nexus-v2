@@ -1,13 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 
 import { redirigir } from "@/i18n/navigation";
 import { registrar } from "@/lib/auditoria";
 import { COOKIE_VER_COMO, obtenerUsuarioActual } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
+import { destinoSeguro } from "@/lib/destino-seguro";
+import { ipDeCabeceras, permitirFrecuencia } from "@/lib/frecuencia";
 import { esRol, esRolTotal, PORTAL_POR_ROL } from "@/lib/rbac";
 import { puedeVerComo } from "@/lib/roles";
 import {
@@ -18,7 +20,18 @@ import {
   secretoSuplantacion,
 } from "@/lib/suplantacion";
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { motivoSinAcceso } from "@/server/auth/sin-acceso";
 import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
+
+/** Claves de `messages.auth` que puede devolver el login. */
+export type ErrorLogin =
+  | "required"
+  | "invalidCredentials"
+  | "notRegistered"
+  | "inactive"
+  | "unconfirmed"
+  | "tooManyAttempts"
+  | "offline";
 
 /**
  * Estado que la acción de inicio de sesión devuelve al formulario.
@@ -27,8 +40,16 @@ import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
  * traduce el cliente. Nunca lleva el mensaje crudo de Supabase, que distingue
  * "contraseña incorrecta" de "usuario inexistente" y con eso permitiría
  * averiguar qué correos están registrados.
+ *
+ * `intento` cambia en cada respuesta: así el cliente repite la sacudida y el foco
+ * aunque el error sea el mismo que el anterior (el objeto de estado ya es nuevo,
+ * pero esto lo hace explícito y sirve de `key`).
  */
-export type EstadoLogin = { error?: string };
+export type EstadoLogin = { error?: ErrorLogin; intento?: number; esperaS?: number };
+
+/** Cupo de intentos por IP + correo y su ventana (punto 5 del rediseño del login). */
+const INTENTOS_POR_VENTANA = 5;
+const VENTANA_MS = 60_000;
 
 /**
  * Inicia sesión con correo y contraseña.
@@ -37,7 +58,12 @@ export type EstadoLogin = { error?: string };
  * después se comprueba que exista fila en `usuario`, esté activa y tenga un rol
  * conocido. Si no la hay se cierra la sesión recién abierta —dejarla viva
  * daría una sesión de Supabase válida sin sitio al que ir— y se responde con
- * `notRegistered`.
+ * `notRegistered` o `inactive`; esos dos solo salen tras una contraseña correcta.
+ *
+ * El límite de tasa va ANTES de hablar con Supabase y cuenta todos los intentos de la
+ * misma IP + correo: frena la fuerza bruta sobre una cuenta sin bloquear a una oficina
+ * entera detrás de una IP compartida. Es en memoria (`permitirFrecuencia`): protege por
+ * instancia del servidor, no es un contador global.
  */
 export async function iniciarSesion(
   _estadoPrevio: EstadoLogin,
@@ -45,8 +71,16 @@ export async function iniciarSesion(
 ): Promise<EstadoLogin> {
   const email = String(datos.get("email") ?? "").trim();
   const password = String(datos.get("password") ?? "");
+  const destino = destinoSeguro(String(datos.get("next") ?? ""));
+  const intento = Date.now();
 
-  if (!email || !password) return { error: "required" };
+  if (!email || !password) return { error: "required", intento };
+
+  const ip = ipDeCabeceras(await headers());
+
+  if (!permitirFrecuencia(`login:${ip}:${email.toLowerCase()}`, INTENTOS_POR_VENTANA, VENTANA_MS)) {
+    return { error: "tooManyAttempts", intento, esperaS: VENTANA_MS / 1000 };
+  }
 
   const locale = await getLocale();
   const supabase = await crearClienteServidor();
@@ -54,6 +88,17 @@ export async function iniciarSesion(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    // Sin conexión con Supabase no hay veredicto sobre la contraseña: no es «credenciales inválidas».
+    if (error.name === "AuthRetryableFetchError" || error.status === 0) return { error: "offline", intento };
+
+    // Supabase solo da este código con la contraseña ya validada, así que no revela cuentas ajenas.
+    if (error.code === "email_not_confirmed") return { error: "unconfirmed", intento };
+
+    // El límite propio de Supabase se muestra igual que el nuestro.
+    if (error.status === 429 || error.code === "over_request_rate_limit") {
+      return { error: "tooManyAttempts", intento, esperaS: VENTANA_MS / 1000 };
+    }
+
     // Sin cuenta no hay autor: queda el correo intentado, recortado. Sirve para
     // ver quién prueba claves, y solo lo ve quien audita.
     await registrar({
@@ -63,14 +108,17 @@ export async function iniciarSesion(
       datos: { email: email.slice(0, 80).toLowerCase() },
     });
 
-    return { error: "invalidCredentials" };
+    return { error: "invalidCredentials", intento };
   }
 
   const usuario = await obtenerUsuarioActual();
 
   if (!usuario) {
+    const { data } = await supabase.auth.getUser();
+    const motivo = data.user ? await motivoSinAcceso(data.user.id) : "notRegistered";
+
     await supabase.auth.signOut();
-    return { error: "notRegistered" };
+    return { error: motivo, intento };
   }
 
   await registrar({
@@ -80,9 +128,9 @@ export async function iniciarSesion(
     datos: { rol: usuario.rol },
   });
 
-  // El portal de destino lo decide el rol, no la puerta por la que se entró.
+  // Sin `?next=` el destino lo decide el rol, no la puerta por la que se entró.
   revalidatePath("/", "layout");
-  redirigir(PORTAL_POR_ROL[usuario.rol], locale);
+  redirigir(destino === "/inicio" ? PORTAL_POR_ROL[usuario.rol] : destino, locale);
 }
 
 /**

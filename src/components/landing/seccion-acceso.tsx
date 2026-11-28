@@ -13,12 +13,13 @@ import { parametros } from "@/server/parametros/consultas";
  *
  * El orden es FIJO (portal, comida, transporte, solicitudes) y cada tarjeta
  * ocupa siempre su sitio: quien viene a inscribirse al comedor o a ver la guagua
- * la busca por posición, no leyendo. Por eso aquí no hay reordenado, ni entrada
- * animada, ni elevación al pasar el ratón: lo único que reacciona es el borde, la
- * sombra y la flecha.
+ * la busca por posición, no leyendo. Por eso aquí no hay reordenado ni entrada
+ * animada. El hover (`.acceso`, landing.css) es solo feedback: sube 3 px, borde de
+ * marca, el icono gira y la flecha avanza, y todo VUELVE al soltar; en reposo
+ * ninguna tarjeta cambia de sitio.
  *
- * La segunda línea de las cuatro mide lo mismo (`min-h`), esté o no el estado del
- * comedor; así nada se desplaza cuando el estado en vivo se renueva.
+ * Sin descripciones bajo el título: solo el estado en vivo del comedor, que reserva
+ * su alto (`min-h`) para que nada se desplace cuando se renueva.
  *
  * Los parámetros se llaman `comedor.apertura` y `comedor.cierre` (Configuración →
  * Parámetros). La hora actual es la de La Vega, no la del servidor (que corre en
@@ -57,25 +58,23 @@ export async function SeccionAcceso({ idioma }: { idioma: "es" | "en" }) {
             <li key={tarjeta.clave}>
               <Link
                 href={tarjeta.href}
-                className="group flex h-full flex-col gap-3.5 rounded-card border border-linea bg-card p-4 shadow-card transition-[box-shadow,border-color] duration-200 hover:border-marca-300 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:p-5"
+                className="acceso group flex h-full flex-col gap-3.5 rounded-card border border-linea bg-card p-4 shadow-card hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:p-5"
               >
-                <span className="flex size-10 items-center justify-center rounded-control bg-marca-50 text-marca-600 dark:text-marca-300">
+                <span className="acceso-icono flex size-10 items-center justify-center rounded-control bg-marca-50 text-marca-600 dark:text-marca-300">
                   <tarjeta.icono className="size-5" />
                 </span>
 
                 <b className="text-base font-bold text-tinta">{t(`quick_${tarjeta.clave}_title`)}</b>
 
-                <span className="-mt-2 flex min-h-[42px] items-start text-sm text-tinta-2">
-                  {tarjeta.clave === "meals" ? (
+                {tarjeta.clave === "meals" && (
+                  <span className="-mt-2 flex min-h-[26px] items-start text-sm text-tinta-2">
                     <EstadoComedor abierto={abierto} texto={textoComida} />
-                  ) : (
-                    t(`quick_${tarjeta.clave}_desc`)
-                  )}
-                </span>
+                  </span>
+                )}
 
                 <span className="mt-auto flex items-center justify-between text-sm font-semibold text-marca-700">
                   {t(`quick_${tarjeta.clave}_go`)}
-                  <ArrowRight className="size-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="acceso-flecha size-[18px]" />
                 </span>
               </Link>
             </li>

@@ -1,13 +1,14 @@
 import createMiddleware from "next-intl/middleware";
 import { NextRequest } from "next/server";
 
+import { dominioDefinitivo, ENTIDAD } from "@content/entidad";
 import { routing } from "@/i18n/routing";
 import { refrescarSesion } from "@/lib/supabase/proxy";
 
 /**
  * Proxy de Next.js 16 (lo que hasta la 15 era `middleware.ts`).
  *
- * Hace dos cosas, en este orden:
+ * Hace dos cosas, en este orden (más la cabecera `noindex` de los hosts *.vercel.app):
  *   1. next-intl resuelve el idioma y, si hace falta, redirige.
  *   2. Supabase refresca la sesión sobre esa misma respuesta.
  *
@@ -25,7 +26,18 @@ export default async function proxy(original: NextRequest) {
   const request = new NextRequest(original);
   const respuesta = manejarIdioma(request);
 
-  return refrescarSesion(request, respuesta);
+  const conSesion = await refrescarSesion(request, respuesta);
+
+  // Un despliegue *.vercel.app que no es el dominio definitivo no debe indexarse: evita contenido
+  // duplicado con el dominio real y que un buscador adopte la URL de pruebas.
+  const host = (request.headers.get("host") ?? "").split(":")[0];
+  const hostDefinitivo = dominioDefinitivo() ? new URL(ENTIDAD.dominio!).hostname : null;
+
+  if (host.endsWith(".vercel.app") && host !== hostDefinitivo) {
+    conSesion.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  return conSesion;
 }
 
 export const config = {

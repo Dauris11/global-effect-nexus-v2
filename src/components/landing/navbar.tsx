@@ -6,6 +6,7 @@ import { Check, Monitor, Moon, Sun } from "lucide-react";
 
 import { useApariencia } from "@/components/apariencia/usar-apariencia";
 import { CONTENEDOR } from "@/components/landing/piezas";
+import { Revelador } from "@/components/landing/revelador";
 import { variantesBoton } from "@/components/ui/button-variantes";
 import {
   DropdownMenu,
@@ -29,6 +30,11 @@ import { cn } from "@/lib/utils";
  * pasarla por el enrutador solo le añadiría el prefijo de idioma. En el móvil se
  * ocultan (no caben junto al botón) y siguen en el pie de la página.
  *
+ * Este componente también monta `Revelador` (`useReveal`): es el único cliente que toda la
+ * portada renderiza, y así las secciones de servidor no necesitan envoltorio.
+ *
+ * El icono del tema gira 180° al cambiar (no al cargar: `giros` empieza en 0).
+ *
  * El tema usa `useApariencia`, el mismo mecanismo del portal: se guarda en el
  * aparato y el script del `<head>` lo aplica antes de pintar, sin destello.
  */
@@ -50,6 +56,7 @@ export function Navbar({
   };
 }) {
   const [bajado, setBajado] = useState(false);
+  const [giros, setGiros] = useState(0);
   const { tema, cambiar } = useApariencia();
   const IconoTema = ICONOS_TEMA[tema];
 
@@ -63,9 +70,11 @@ export function Navbar({
   }, []);
 
   return (
+    <>
+    <Revelador />
     <header
       className={cn(
-        "sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-200",
+        "sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-[250ms] ease-[var(--landing-ease)] motion-reduce:transition-none",
         bajado ? "border-linea bg-surface/88 backdrop-blur-[10px]" : "border-transparent",
       )}
     >
@@ -99,7 +108,9 @@ export function Navbar({
                 aria-label={textos.tema}
                 className="flex size-9 items-center justify-center rounded-[8px] border border-linea-fuerte bg-surface text-tinta transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
-                <IconoTema className="size-[18px]" />
+                <span key={giros} className={cn("flex", giros > 0 && "tema-giro")}>
+                  <IconoTema className="size-[18px]" />
+                </span>
               </button>
             </DropdownMenuTrigger>
 
@@ -108,7 +119,10 @@ export function Navbar({
                 const Icono = ICONOS_TEMA[valor];
 
                 return (
-                  <DropdownMenuItem key={valor} onSelect={() => cambiar({ tema: valor })}>
+                  <DropdownMenuItem key={valor} onSelect={() => {
+                      setGiros((n) => n + 1);
+                      cambiar({ tema: valor });
+                    }}>
                     <Icono className="size-4" />
                     {textos.temas[valor]}
                     {tema === valor && <Check className="ml-auto size-4" />}
@@ -125,5 +139,6 @@ export function Navbar({
         </div>
       </div>
     </header>
+    </>
   );
 }

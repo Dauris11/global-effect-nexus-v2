@@ -45,7 +45,7 @@ export function CabeceraSeccion({
   id?: string;
 }) {
   return (
-    <div className="revelar flex flex-wrap items-end justify-between gap-4">
+    <div className="rv flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl">
         <h2 id={id} className={TITULO_SECCION}>
           {titulo}
@@ -69,29 +69,27 @@ export function Etiqueta({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Cabecera de las secciones del portal: etiqueta, titular en forma de PREGUNTA y
- * una línea que la responde. El H2 es la pregunta que una persona (o un
- * buscador) se hace de verdad; el texto de debajo es la respuesta corta, y va en
- * el HTML del servidor para que se lea sin JavaScript.
+ * Cabecera de las secciones del portal: etiqueta y titular en forma de PREGUNTA. El
+ * H2 es la pregunta que una persona (o un buscador) se hace de verdad; va en el
+ * HTML del servidor para que se lea sin JavaScript.
  */
 export function CabeceraPregunta({
   etiqueta,
   titulo,
-  respuesta,
   id,
 }: {
   etiqueta: string;
   titulo: string;
+  /** Ya no se pinta (se quitaron las descripciones bajo los títulos); se acepta mientras `page.tsx` la pase. */
   respuesta?: string;
   id?: string;
 }) {
   return (
-    <div className="mb-10 max-w-[640px]">
+    <div className="rv mb-10 max-w-[640px]">
       <Etiqueta>{etiqueta}</Etiqueta>
       <h2 id={id} className={cn(TITULO_SECCION, "mt-3.5")}>
         {titulo}
       </h2>
-      {respuesta && <p className="mt-3 text-[17px] text-tinta-2">{respuesta}</p>}
     </div>
   );
 }

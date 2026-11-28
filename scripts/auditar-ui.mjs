@@ -52,6 +52,8 @@ const EXCEPCIONES_HEX = [
   "src/lib/paleta.ts",
   // `<meta name="theme-color">` no admite variables CSS: el gris 950 del modo oscuro va en crudo.
   "src/app/[locale]/layout.tsx",
+  // `ImageResponse` (satori) no resuelve variables CSS: el fondo marca-950 y el acento suave van en crudo.
+  "src/app/opengraph-image.tsx",
 ];
 
 const archivos = [];

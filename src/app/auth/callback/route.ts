@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { obtenerUsuarioActual } from "@/lib/auth";
+import { destinoSeguro } from "@/lib/destino-seguro";
 import { PORTAL_POR_ROL } from "@/lib/rbac";
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { motivoSinAcceso } from "@/server/auth/sin-acceso";
 
 /**
  * Vuelta de OAuth: canjea el código por una sesión.
@@ -33,19 +35,17 @@ export async function GET(request: NextRequest) {
   const usuario = await obtenerUsuarioActual();
 
   if (!usuario) {
+    // Ya autenticó con Google, así que aquí sí se puede decir por qué no entra.
+    const { data } = await supabase.auth.getUser();
+    const motivo = data.user ? await motivoSinAcceso(data.user.id) : "notRegistered";
+
     await supabase.auth.signOut();
-    return NextResponse.redirect(`${origin}/login?error=notRegistered`);
+    return NextResponse.redirect(`${origin}/login?error=${motivo}`);
   }
 
-  /*
-   * `next` llega de la URL, así que se trata como texto ajeno: solo se acepta
-   * una ruta interna. Sin esta comprobación, un `next=https://otro-sitio`
-   * convertiría el callback en un salto abierto a cualquier dominio.
-   */
-  const destino =
-    destinoPedido && destinoPedido.startsWith("/") && !destinoPedido.startsWith("//")
-      ? destinoPedido
-      : PORTAL_POR_ROL[usuario.rol];
+  // `destinoSeguro` descarta todo lo que no sea una ruta interna (`https://otro-sitio`, `//host`):
+  // sin eso el callback sería un salto abierto a cualquier dominio. Sin `next`, el portal del rol.
+  const destino = destinoSeguro(destinoPedido, PORTAL_POR_ROL[usuario.rol]);
 
   return NextResponse.redirect(`${origin}${destino}`);
 }

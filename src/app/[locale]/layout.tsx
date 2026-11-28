@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AplicadorApariencia } from "@/components/apariencia/aplicador-apariencia";
 import { ToastProvider } from "@/components/app/toaster";
@@ -87,6 +87,9 @@ export default async function LayoutRaiz({
   // llegaría hasta aquí; sin esta comprobación se renderizaría sin mensajes.
   if (!hasLocale(routing.locales, locale)) notFound();
 
+  // Fija el idioma para esta petición sin leer cabeceras: es lo que permite servir `/` desde caché (ISR).
+  setRequestLocale(locale);
+
   // Solo los espacios que consumen componentes cliente. Sin este recorte se
   // serializarían los 45 KB de mensajes en cada página.
   const messages = await mensajesCliente();
@@ -98,6 +101,11 @@ export default async function LayoutRaiz({
             deja poner un `<script>` a mano en un componente; `beforeInteractive` lo sube al `<head>`. */}
         <Script id="apariencia" strategy="beforeInteractive">
           {SCRIPT_APARIENCIA}
+        </Script>
+        {/* Marca que hay JavaScript: la portada solo oculta contenido para revelarlo (`.rv`) bajo `html.js`,
+            así que sin JS (o si este script falla) todo se ve. Va antes de pintar para no parpadear. */}
+        <Script id="marca-js" strategy="beforeInteractive">
+          {"document.documentElement.classList.add('js')"}
         </Script>
         <AplicadorApariencia />
         <NextIntlClientProvider messages={messages}>

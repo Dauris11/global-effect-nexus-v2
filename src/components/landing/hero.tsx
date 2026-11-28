@@ -17,8 +17,10 @@ import { cn } from "@/lib/utils";
  * se puede hacer, en una sola oración.
  *
  * El texto es de servidor y se ve sin JavaScript. Las palabras del titular
- * entran escalonadas con CSS (`landing-palabra`), que solo se aplica si no se
- * pidió «reducir movimiento»; si no corre, el texto ya está en su sitio.
+ * entran escalonadas (120 ms) con CSS (`hero-in`), que solo existe bajo `html.js`
+ * y sin «reducir movimiento»: sin JS o con movimiento reducido el texto ya está
+ * en su sitio, y la animación siempre termina en visible. Es CSS y no `motion`
+ * porque un estado inicial inline (opacity 0) dejaría el titular invisible sin JS.
  *
  * Media: en el móvil una imagen fija; en escritorio la misma imagen hace de
  * póster mientras `HeroVideo` decide si monta el video (ver ese archivo). El
@@ -100,24 +102,24 @@ export async function Hero() {
             >
               {palabras.map((palabra, i) => (
                 <span key={i}>
-                  <span className="landing-palabra inline-block" style={{ "--paso": i } as React.CSSProperties}>
+                  <span className="hero-in inline-block" style={{ "--paso": i } as React.CSSProperties}>
                     {palabra}
                   </span>{" "}
                 </span>
               ))}
             </h1>
 
-            <p className="landing-palabra max-w-[560px] text-lg text-white/85" style={{ "--paso": palabras.length } as React.CSSProperties}>
+            <p className="hero-in max-w-[560px] text-lg text-white/85" style={{ "--paso": palabras.length } as React.CSSProperties}>
               {t("heroDefinition")}
             </p>
 
             <div
-              className="landing-palabra mt-7 flex flex-wrap gap-3"
+              className="hero-in mt-7 flex flex-wrap gap-3"
               style={{ "--paso": palabras.length + 2 } as React.CSSProperties}
             >
               <Link href="/login" className={variantesBoton({ size: "lg", className: "group/cta" })}>
                 {t("heroCta")}
-                <ChevronRight className="transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+                <ChevronRight className="transition-transform duration-[160ms] ease-[var(--landing-ease)] group-hover/cta:translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover/cta:translate-x-0" />
               </Link>
 
               {/* Cristal sobre el video: el hero es siempre oscuro, así que el botón no cambia con el tema. */}

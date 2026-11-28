@@ -1,0 +1,51 @@
+/*
+ * Estilos propios de las pantallas de acceso. Van aparte de `globals.css` porque solo los
+ * usa este grupo de rutas.
+ */
+
+/*
+ * Velo de la foto del edificio: marca-950 abajo y transparente arriba, para que la frase en
+ * blanco se lea (≥ 4,5:1) sobre cualquier zona de la foto. Es el único degradado del sistema
+ * además del hero de la landing; `audit:permitir-degradado` lo declara en la propia línea.
+ */
+.auth-velo {
+  background: linear-gradient(to top, var(--brand-950) 0%, color-mix(in srgb, var(--brand-950) 55%, transparent) 45%, transparent 100%); /* audit:permitir-degradado */
+}
+
+/* Entrada del error: solo `transform`, 350 ms. Con movimiento reducido no se mueve nada. */
+@keyframes auth-sacudida {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.auth-sacudida {
+  animation: auth-sacudida 350ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-sacudida {
+    animation: none;
+  }
+}
+
+/*
+ * Los cuatro colores del logo de Google: los fija la guía de marca de Google («Sign in with
+ * Google») y no son parte de la paleta del portal. Viven aquí, como variables, para no
+ * escribir hex sueltos en el .tsx (`audit:ui`).
+ */
+.auth-google-azul {
+  fill: #4285f4;
+}
+.auth-google-verde {
+  fill: #34a853;
+}
+.auth-google-amarillo {
+  fill: #fbbc05;
+}
+.auth-google-rojo {
+  fill: #ea4335;
+}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
@@ -16,6 +17,9 @@ import { misNotificaciones } from "@/server/notificaciones/consultas";
 import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
 import { prioridadesDe } from "@/server/prioridades/motor";
 import { cuantasPorAtender } from "@/server/solicitudes/consultas";
+
+/** Todo el portal exige sesión: nada de esto debe aparecer en un buscador. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * Puerta de todas las pantallas internas.

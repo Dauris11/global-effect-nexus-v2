@@ -5,10 +5,65 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
+const esProduccion = process.env.NODE_ENV === "production";
+
+/** Origen (y websocket) de Supabase: auth, REST y storage se llaman desde el navegador. */
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseWs = supabase.replace(/^https:/, "wss:");
+
+/**
+ * Política de contenido. Qué se permite y por qué:
+ * - script/style `'unsafe-inline'`: Next inyecta los scripts de hidratación y el de apariencia en línea
+ *   y aún no hay nonce por petición (un nonce volvería dinámicas las páginas, justo lo que se evita
+ *   para el LCP de `/`). `'unsafe-eval'` solo en desarrollo (React lo usa para depurar).
+ * - img: Supabase Storage (avatares, adjuntos), teselas de OpenStreetMap y CARTO (mapas Leaflet),
+ *   `data:` y `blob:` (vistas previas de subidas, el mapa de La Vega) y la foto de cuenta de Google.
+ * - frame: el iframe de Google Maps (solo bajo demanda) y las salas Jitsi/8x8 de Reuniones.
+ * - connect: Supabase (HTTP y websocket). Groq, Gemini y OpenAI se llaman desde el servidor, no aquí.
+ * - `frame-ancestors 'none'`: nadie puede incrustar el portal (clickjacking).
+ * Probado en `/`, `/login`, `/comida` y `/transporte` sin errores de CSP en consola.
+ */
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${esProduccion ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: ${supabase} https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://lh3.googleusercontent.com`,
+  "font-src 'self' data:",
+  "media-src 'self' blob:",
+  `connect-src 'self' ${supabase} ${supabaseWs}`,
+  "frame-src https://www.google.com https://meet.jit.si https://8x8.vc",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(esProduccion ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
+const cabecerasSeguridad = [
+  { key: "Content-Security-Policy", value: csp },
+  // Dos años y subdominios; sin `preload` hasta que el cliente confirme el dominio definitivo.
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Geolocalización: visitas de Habitudes y guagua del chofer. Cámara/micrófono/pantalla: solo la
+  // propia página y las salas de Reuniones (Jitsi y 8x8), que las piden desde su iframe.
+  {
+    key: "Permissions-Policy",
+    value:
+      'geolocation=(self), camera=(self "https://meet.jit.si" "https://8x8.vc"), microphone=(self "https://meet.jit.si" "https://8x8.vc"), display-capture=(self "https://meet.jit.si" "https://8x8.vc"), payment=(), usb=()',
+  },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Fija la raíz del workspace (hay otro lockfile en el home del usuario).
   turbopack: { root: projectRoot },
+  // `quality={72}` del hero se ignoraba (salía 75) porque Next 16 solo admite las calidades declaradas aquí.
+  images: { qualities: [72, 75] },
+  async headers() {
+    return [{ source: "/:path*", headers: cabecerasSeguridad }];
+  },
   // pg y el lienzo nativo (portadas de PDF) solo corren en el servidor y no se empaquetan.
   serverExternalPackages: ["pg", "@napi-rs/canvas"],
   // El tope por defecto de una Server Action es 1 MB y las subidas (entregas,
