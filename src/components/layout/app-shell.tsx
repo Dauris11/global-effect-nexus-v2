@@ -1,5 +1,6 @@
 "use client";
 
+import { Navegacion } from "@/components/layout/navegacion";
 import { useState } from "react";
 
 import { DialogoEnviarAviso } from "@/components/layout/dialogo-enviar-aviso";
@@ -75,6 +76,7 @@ export function AppShell({
 
   return (
     <ProveedorPermisos permisos={permisos} rol={rol}>
+      <Navegacion />
       {/* Dos columnas: la barra y el resto. El contenido lleva `min-w-0` porque sin
         él una tabla ancha o un titular largo estiran la columna y empujan la
         barra fuera de la pantalla en vez de desbordar dentro de su propio hueco. */}

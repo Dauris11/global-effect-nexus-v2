@@ -388,10 +388,17 @@ function Enlace({
   insigniaRoja?: boolean;
 }) {
   const Icono = item.icono;
+  // Prefetch completo solo cuando la persona apunta al enlace: precargar así los
+  // nueve del menú al abrir el portal lanzaría nueve pantallas con sus consultas.
+  const [precargar, setPrecargar] = useState(false);
 
   return (
     <Link
       href={item.href}
+      prefetch={precargar ? true : undefined}
+      onMouseEnter={() => setPrecargar(true)}
+      onFocus={() => setPrecargar(true)}
+      onTouchStart={() => setPrecargar(true)}
       aria-current={activo ? "page" : undefined}
       title={soloIcono ? texto : undefined}
       aria-label={soloIcono ? texto : undefined}

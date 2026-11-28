@@ -857,3 +857,38 @@ html:not(.dark)[data-acento="negro"] {
     background: var(--surface-2);
   }
 }
+
+/* Barra de progreso de navegación (components/layout/navegacion.tsx): un tramo que recorre la línea. */
+@keyframes barra-progreso {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.barra-progreso {
+  animation: barra-progreso 1.1s var(--ease-salida) infinite;
+}
+
+/*
+ * Un esqueleto que dura menos de 300 ms es un parpadeo, no un aviso: entra con un
+ * retraso y, si la página llega antes, nunca se llega a ver (docs/ux-rules.md).
+ */
+@keyframes aparece-tarde {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.carga-diferida {
+  animation: aparece-tarde 120ms linear 300ms backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .barra-progreso {
+    animation: none;
+    width: 100%;
+  }
+}

@@ -179,7 +179,9 @@ export function FilterBar({
       </div>
 
       {chips && chips.length > 0 && (
-        <div role="group" className="sin-barra -mx-6 flex gap-2 overflow-x-auto px-6 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
+        <div role="group" // Una sola línea siempre: si no caben, se desplazan y el borde se difumina para
+          // avisar de que hay más. Partirlos en dos filas movía toda la lista hacia abajo.
+          className="sin-barra -mx-6 flex flex-nowrap gap-2 overflow-x-auto px-6 pr-10 [mask-image:linear-gradient(to_right,#000_calc(100%-2.5rem),transparent)] md:mx-0 md:px-0 md:pr-10">
           {[...(porDefecto === undefined ? [{ value: "", label: t("filterBar.all"), count: totalChips, param: undefined as string | undefined }] : []), ...chips].map((c) => {
             const esteActivo =
               c.value === ""

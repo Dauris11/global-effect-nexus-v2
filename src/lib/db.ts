@@ -73,7 +73,17 @@ export async function consultar<T extends QueryResultRow>(
   sql: string,
   valores: readonly unknown[] = [],
 ): Promise<T[]> {
+  // `DB_TIMING=1` imprime cada consulta con su duración: es como se mide qué
+  // pantalla se va en la base y cuál en otra cosa. Apagado, no cuesta nada.
+  const inicio = process.env.DB_TIMING ? performance.now() : 0;
   const resultado = await pool.query<T>(sql, valores as unknown[]);
+
+  if (process.env.DB_TIMING) {
+    console.log(
+      `[db] ${(performance.now() - inicio).toFixed(0).padStart(4)} ms · ${resultado.rowCount ?? 0} filas · ${sql.replace(/\s+/g, " ").trim().slice(0, 110)}`,
+    );
+  }
+
   return resultado.rows;
 }
 

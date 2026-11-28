@@ -18,7 +18,7 @@ export function CargaPagina({ variante = "lista" }: { variante?: VarianteCarga }
   const t = useTranslations("common");
 
   return (
-    <div role="status" aria-busy="true" className="w-full space-y-6">
+    <div role="status" aria-busy="true" className="carga-diferida w-full space-y-6">
       <span className="sr-only">{t("loading")}</span>
 
       {variante === "lista" && (
