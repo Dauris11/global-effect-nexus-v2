@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   AlertCircle,
+  ArrowUpDown,
   CalendarDays,
   Check,
   Clock,
@@ -129,6 +130,11 @@ export function FormularioRecurrente({
       const usados = new Set(actual.viajes.map((v) => v.horarioId));
       const disponible = horarios.find((h) => !usados.has(h.id)) ?? horarios[0];
 
+      // Si ya hay un viaje previo, para el viaje de vuelta sugerimos invertir las paradas
+      const ultimoViaje = actual.viajes[actual.viajes.length - 1];
+      const abordajeSugerido = ultimoViaje ? ultimoViaje.paradaDestinoId : paradaInicialAbordaje;
+      const destinoSugerido = ultimoViaje ? ultimoViaje.paradaAbordajeId : paradaInicialDestino;
+
       return {
         ...prev,
         [dia]: {
@@ -137,8 +143,8 @@ export function FormularioRecurrente({
             ...actual.viajes,
             {
               horarioId: disponible?.id ?? "",
-              paradaAbordajeId: paradaInicialAbordaje,
-              paradaDestinoId: paradaInicialDestino,
+              paradaAbordajeId: abordajeSugerido,
+              paradaDestinoId: destinoSugerido,
             },
           ],
         },
@@ -181,6 +187,32 @@ export function FormularioRecurrente({
       const actual = prev[dia];
       const nuevosViajes = actual.viajes.map((v, i) =>
         i === indice ? { ...v, ...cambio } : v,
+      );
+      return {
+        ...prev,
+        [dia]: {
+          ...actual,
+          viajes: nuevosViajes,
+        },
+      };
+    });
+  };
+
+  const invertirParadas = (dia: number, indice: number) => {
+    setGuardadoExitoso(false);
+    setDias((prev) => {
+      const actual = prev[dia];
+      const viajeActual = actual.viajes[indice];
+      if (!viajeActual) return prev;
+
+      const nuevosViajes = actual.viajes.map((v, i) =>
+        i === indice
+          ? {
+              ...v,
+              paradaAbordajeId: v.paradaDestinoId,
+              paradaDestinoId: v.paradaAbordajeId,
+            }
+          : v,
       );
       return {
         ...prev,
@@ -380,25 +412,43 @@ export function FormularioRecurrente({
                         <div className="mb-2.5 flex items-center justify-between">
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-marca-700">
                             <Clock className="size-3.5 text-marca-500" />
-                            {t("tripNumber", {
-                              n: idx + 1,
-                              defaultValue: `Viaje ${idx + 1}`,
-                            })}
+                            {idx === 0
+                              ? t("tripGoing", { defaultValue: "Ida" })
+                              : idx === 1
+                                ? t("tripReturn", { defaultValue: "Vuelta" })
+                                : t("tripNumber", {
+                                    n: idx + 1,
+                                    defaultValue: `Viaje ${idx + 1}`,
+                                  })}
                           </span>
-                          {config.viajes.length > 1 && (
+                          <div className="flex items-center gap-1">
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon-sm"
-                              className="size-7 text-muted-foreground hover:text-danger"
-                              title={t("removeTrip", {
-                                defaultValue: "Quitar viaje",
+                              className="size-7 text-muted-foreground hover:text-marca-700"
+                              title={t("swapStops", {
+                                defaultValue: "Invertir paradas (ida / vuelta)",
                               })}
-                              onClick={() => eliminarViaje(dia, idx)}
+                              onClick={() => invertirParadas(dia, idx)}
                             >
-                              <Trash2 className="size-3.5" />
+                              <ArrowUpDown className="size-3.5" />
                             </Button>
-                          )}
+                            {config.viajes.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                className="size-7 text-muted-foreground hover:text-danger"
+                                title={t("removeTrip", {
+                                  defaultValue: "Quitar viaje",
+                                })}
+                                onClick={() => eliminarViaje(dia, idx)}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="space-y-3">
