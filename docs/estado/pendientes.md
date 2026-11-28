@@ -5,6 +5,14 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Solicitudes y Cuentas por Pagar — Etapa #2 (28 nov 2026)
+
+- [x] Migración `0145_solicitudes_etapa2_cxp.sql` aplicada en Supabase: amplía `public.solicitud.estado` (`solicitado`, `aceptada`, `pagada`), vincula `contabilidad.factura_proveedor.solicitud_id` con índice único parcial para facturas activas y exige NCF/e-CF en `contabilidad.aprobar_factura`.
+- [x] Retirada la pestaña y flujo de trámites académicos en `/portal/estudiante/solicitudes`, el filtro de tipos en `/administrativo/solicitudes` y `crearTramite`.
+- [x] Tabla «Mis Solicitudes» (`TablaMisSolicitudes`) con exactamente 5 columnas (`Tipo de solicitud`, `Monto`, `Proveedor`, `Cotización`, `Estado` por defecto `Solicitado`) aplicada en portal del estudiante y en «Mías» del personal.
+- [x] Pestaña «Rendiciones» de Cuentas por Pagar renombrada a «Solicitudes» (`/contabilidad/cuentas-por-pagar/solicitudes`) con la tabla de 5 columnas + columna sin encabezado con botón «Atender».
+- [x] Flujo sincronizado de solicitudes `MATERIALES` → modal «Agregar Factura» (NCF/e-CF opcional en primer guardado → `Pendiente de llenado` en CxP y `Aceptada` en Mis Solicitudes) → completar NCF/e-CF y «Aprobar» (`Pendiente` en CxP) → al pagar la CxP (`pagarCxp`), la solicitud pasa a `Pagada` en Mis Solicitudes y CxP.
+
 ## Landing `/` como puerta del portal y Login `/login` (28 nov 2026), COMPLETADO
 - [x] Rediseño de la landing `/`: hero con video en escritorio y foto optimizada en móvil, velo de legibilidad, accesos rápidos sin descripciones redundantes, estado del comedor en vivo, perfiles con pestañas y vista previa escalonada sin subtítulos innecesarios, primeros pasos claros, preguntas frecuentes con buscador sin acentos y schema JSON-LD, mapa interactivo inline con coordenadas de La Vega y pie con enlaces legales.
 - [x] Selector «Ver como»: eliminadas las descripciones innecesarias de roles (`ROLE_DESCRIPTION`) para dejar una lista compacta y clara de opciones por etiqueta.

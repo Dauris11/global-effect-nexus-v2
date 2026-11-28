@@ -85,15 +85,25 @@ export const TIPOS_SOLICITUD = [
   ...COMPRAS,
 ] as const;
 
+/** Tipos visibles en filtros y formularios vigentes (excluye trámites académicos retirados). */
+export const TIPOS_SOLICITUD_ACTIVOS = [
+  ...SOLICITUDES_DINAMICAS,
+  ...APROBACIONES_INTERNAS,
+  ...COMPRAS,
+] as const;
+
 export type TipoSolicitud = (typeof TIPOS_SOLICITUD)[number];
 export type TramiteEstudiante = (typeof TRAMITES_ESTUDIANTE)[number];
 export type AprobacionInterna = (typeof APROBACIONES_INTERNAS)[number];
 
 export const ESTADOS_SOLICITUD = [
+  "solicitado",
   "enviada",
   "en_revision",
   "pendiente_direccion",
+  "aceptada",
   "aprobada",
+  "pagada",
   "rechazada",
   "completada",
   "cancelada",
@@ -103,9 +113,11 @@ export type EstadoSolicitud = (typeof ESTADOS_SOLICITUD)[number];
 
 /** Las que todavía esperan algo de alguien. */
 export const ESTADOS_ABIERTOS: readonly EstadoSolicitud[] = [
+  "solicitado",
   "enviada",
   "en_revision",
   "pendiente_direccion",
+  "aceptada",
   "aprobada",
 ];
 
@@ -363,6 +375,7 @@ export function puedeVerCotizacion(
     solicitanteId === usuario.id ||
     usuarioTieneAlgunPermiso(usuario, [
       REGLAS.compra.revisa,
+      "contabilidad.leer",
       "solicitudes.gestionar",
       "solicitudes.direccion",
     ])
@@ -424,6 +437,7 @@ export function accionesPermitidas(
     usuarioTienePermiso(usuario, "solicitudes.direccion");
 
   switch (solicitud.estado) {
+    case "solicitado":
     case "enviada":
       return [
         ...(revisa ? (["tomar", "rechazar"] as const) : []),
@@ -491,13 +505,16 @@ export const ESTADO_SOLICITUD_VISUAL: Record<
   EstadoSolicitud,
   { insignia: string; icono: LucideIcon }
 > = {
+  solicitado: { insignia: "bg-muted text-tinta-2", icono: Send },
   enviada: { insignia: "bg-muted text-tinta-2", icono: Send },
   en_revision: { insignia: "bg-marca-500/15 text-marca-700", icono: Eye },
   pendiente_direccion: {
     insignia: "bg-tinta text-white",
     icono: ShieldCheck,
   },
+  aceptada: { insignia: "bg-marca-500/15 text-marca-700", icono: CheckCircle2 },
   aprobada: { insignia: "bg-status-success text-white", icono: CheckCircle2 },
+  pagada: { insignia: "bg-status-success text-white", icono: PackageCheck },
   rechazada: { insignia: "bg-status-danger text-white", icono: XCircle },
   completada: { insignia: "bg-marca-700 text-white", icono: PackageCheck },
   cancelada: { insignia: "bg-muted text-tinta-3", icono: Ban },

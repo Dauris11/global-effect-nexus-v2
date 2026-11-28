@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { Loader2, Save, Search } from "lucide-react";
+import { CheckCircle2, Loader2, Save, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { AvisoError, AvisoOk, SELECT } from "@/components/contabilidad/comun";
@@ -21,7 +21,7 @@ import {
   restarMontos,
   sumarMontos,
 } from "@/lib/contabilidad/formato";
-import { limpiarIdentificacion, rncOCedulaValida } from "@/lib/contabilidad/identificacion";
+import { limpiarIdentificacion, ncfValido, rncOCedulaValida } from "@/lib/contabilidad/identificacion";
 import { PROGRAMAS_INSTITUCIONALES } from "@/lib/contabilidad/programas";
 import {
   calcularItbis,
@@ -45,7 +45,9 @@ const INICIAL: EstadoProveedor = { estado: "inicial" };
 
 function useError(estado: EstadoProveedor): string | null {
   const t = useTranslations("contab");
-  return estado.estado === "inicial" || estado.estado === "ok" ? null : t(`error.${estado.estado}` as never);
+  return estado.estado === "inicial" || estado.estado === "ok"
+    ? null
+    : t(`error.${estado.estado}` as never, { codigo: estado.codigo ?? "" } as never);
 }
 
 /** Tras guardar, a la ficha que corresponde. */
@@ -442,6 +444,13 @@ export function FormularioFactura({
   solicitantes = [],
   estudiantes = [],
   hoy,
+  solicitudId,
+  ncfOpcional = false,
+  valoresIniciales,
+  enModal = false,
+  puedeAprobar = false,
+  alGuardar,
+  alCancelar,
 }: {
   proveedores: (Opcion & { tipo: "fisica" | "juridica"; dias: number; identificacion?: string })[];
   proveedorId?: string;
@@ -453,6 +462,24 @@ export function FormularioFactura({
   /** Becados a quienes se puede imputar el gasto (costo por estudiante). */
   estudiantes?: Opcion[];
   hoy: string;
+  /** Solicitud de Materiales que origina esta factura (Etapa 2). */
+  solicitudId?: string;
+  /** Permite guardar el borrador sin NCF / e-CF (se exige al aprobar). */
+  ncfOpcional?: boolean;
+  /** Valores sugeridos para el primer guardado desde una solicitud. */
+  valoresIniciales?: {
+    subtotal?: string;
+    concepto?: string;
+    moneda?: "DOP" | "USD";
+    solicitanteId?: string | null;
+    estudianteId?: string | null;
+  };
+  /** En modal no navega al proveedor: refresca y llama `alGuardar`. */
+  enModal?: boolean;
+  /** Habilita el botón «Aprobar» al editar un borrador con NCF / e-CF válido. */
+  puedeAprobar?: boolean;
+  alGuardar?: () => void;
+  alCancelar?: () => void;
 }) {
   const locale = useLocale();
   const router = useRouter();
@@ -463,9 +490,9 @@ export function FormularioFactura({
 
   const [proveedor, setProveedor] = useState(factura?.proveedor_id ?? proveedorId ?? proveedores[0]?.id ?? "");
   const datosProveedor = proveedores.find((p) => p.id === proveedor);
-  const [moneda, setMoneda] = useState<string>(factura?.moneda ?? "DOP");
+  const [moneda, setMoneda] = useState<string>(factura?.moneda ?? valoresIniciales?.moneda ?? "DOP");
   const [emision, setEmision] = useState(factura?.fecha_emision ?? hoy);
-  const [monto, setMonto] = useState(factura?.subtotal ?? "");
+  const [monto, setMonto] = useState(factura?.subtotal ?? valoresIniciales?.subtotal ?? "");
   const [exentoItbis, setExentoItbis] = useState(
     factura ? Number(factura.itbis) === 0 : true,
   );
@@ -475,29 +502,36 @@ export function FormularioFactura({
   const [tipoRetencionIsr, setTipoRetencionIsr] = useState(factura?.tipo_retencion_isr ?? "");
   const [tipoRetencionItbis, setTipoRetencionItbis] = useState(factura?.tipo_retencion_itbis ?? "");
   const [ncf, setNcf] = useState(factura?.ncf ?? "");
-  const [concepto, setConcepto] = useState(factura?.concepto ?? "");
+  const [concepto, setConcepto] = useState(factura?.concepto ?? valoresIniciales?.concepto ?? "");
   const [cuentaGastoId, setCuentaGastoId] = useState(factura?.cuenta_gasto_id ?? "");
+  const solicitanteInicial = factura?.solicitante_id ?? valoresIniciales?.solicitanteId ?? "";
+  const estudianteInicial = factura?.estudiante_id ?? valoresIniciales?.estudianteId ?? "";
   const [incluirAsignaciones, setIncluirAsignaciones] = useState(
     Boolean(
-      factura?.solicitante_id ||
+      solicitanteInicial ||
         factura?.programa_codigo ||
         factura?.proyecto_id ||
-        factura?.estudiante_id,
+        estudianteInicial,
     ),
   );
   const [fondo, setFondo] = useState(factura?.fondo_id ?? fondos[0]?.id ?? "");
   const [proyecto, setProyecto] = useState(factura?.proyecto_id ?? "");
-  const [solicitante, setSolicitante] = useState(factura?.solicitante_id ?? "");
+  const [solicitante, setSolicitante] = useState(solicitanteInicial);
   const [programa, setPrograma] = useState(factura?.programa_codigo ?? "");
-  const [estudiante, setEstudiante] = useState(factura?.estudiante_id ?? "");
+  const [estudiante, setEstudiante] = useState(estudianteInicial);
 
-  // Tras guardar la factura, llevar siempre al resumen del proveedor.
+  // Tras guardar la factura: en modal cierra y refresca; en página navega al proveedor.
   useEffect(() => {
     if (estado.estado === "ok") {
-      const destino = estado.proveedorId ?? proveedor;
-      router.push(destino ? fichaProveedor(destino) : "/contabilidad/proveedores");
+      if (enModal) {
+        router.refresh();
+        alGuardar?.();
+      } else {
+        const destino = estado.proveedorId ?? proveedor;
+        router.push(destino ? fichaProveedor(destino) : "/contabilidad/proveedores");
+      }
     }
-  }, [estado, proveedor, router]);
+  }, [estado, proveedor, router, enModal, alGuardar]);
 
   function manejarCambioMonto(nuevoMonto: string) {
     setMonto(nuevoMonto);
@@ -549,10 +583,15 @@ export function FormularioFactura({
   const neto = restarMontos(totalFactura, totalRetenciones);
   const monedaVista = moneda === "USD" ? "USD" : "DOP";
 
+  const mostrarBotonAprobar = puedeAprobar && Boolean(factura && factura.estado === "borrador");
+  const ncfLimpio = ncf.trim().toUpperCase();
+  const ncfCompletoYValido = ncfLimpio.length > 0 && ncfValido(ncfLimpio);
+
   return (
     <div className="space-y-6">
       <form action={enviar} className="space-y-5">
         {factura && <input type="hidden" name="id" value={factura.id} />}
+        {solicitudId && <input type="hidden" name="solicitud_id" value={solicitudId} />}
         <input type="hidden" name="exento_itbis" value={exentoItbis ? "1" : "0"} />
         {!incluirAsignaciones && <input type="hidden" name="fondo" value={fondo} />}
 
@@ -589,11 +628,24 @@ export function FormularioFactura({
               </Campo>
             </div>
             <div className="md:col-span-3">
-              <Campo id="ncf" etiqueta={t("ncf")} obligatorio>
+              <Campo
+                id="ncf"
+                etiqueta={t("ncf")}
+                obligatorio={!ncfOpcional}
+                ayuda={
+                  ncfOpcional
+                    ? mostrarBotonAprobar && !ncfCompletoYValido
+                      ? t("ncfParaAprobarAyuda")
+                      : !factura
+                        ? t("ncfOpcionalAyuda")
+                        : undefined
+                    : undefined
+                }
+              >
                 <Input
                   id="ncf"
                   name="ncf"
-                  required
+                  required={!ncfOpcional}
                   maxLength={13}
                   value={ncf}
                   onChange={(e) => setNcf(e.target.value.toUpperCase())}
@@ -917,15 +969,33 @@ export function FormularioFactura({
         {error && <AvisoError>{error}</AvisoError>}
         <AccionesFormulario>
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" cargando={enviando}>
+            <Button type="submit" variant={mostrarBotonAprobar ? "outline" : "default"} cargando={enviando}>
               {enviando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               {t("guardar")}
             </Button>
-            <Button asChild variant="ghost">
-              <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
+            {mostrarBotonAprobar && (
+              <Button
+                type="submit"
+                name="aprobar_despues"
+                value="1"
+                disabled={enviando || !ncfCompletoYValido}
+                cargando={enviando}
+              >
+                {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                {t("aprobar")}
+              </Button>
+            )}
+            {enModal ? (
+              <Button type="button" variant="ghost" onClick={alCancelar} disabled={enviando}>
                 {t("cancelar")}
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild variant="ghost">
+                <Link href={factura ? fichaFactura(factura.id) : proveedor ? fichaProveedor(proveedor) : "/contabilidad/proveedores"}>
+                  {t("cancelar")}
+                </Link>
+              </Button>
+            )}
           </div>
         </AccionesFormulario>
       </form>

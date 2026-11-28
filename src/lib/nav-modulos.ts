@@ -156,6 +156,7 @@ export const MODULOS: Record<string, ModuloNav> = {
       p("cashboxes", "/contabilidad/cajas"),
       p("suppliers", "/contabilidad/proveedores"),
       p("payables", "/contabilidad/cuentas-por-pagar"),
+      p("requests", "/contabilidad/cuentas-por-pagar/solicitudes"),
       p("budget", "/contabilidad/presupuesto"),
       p("financialStatements", "/contabilidad/reportes"),
       p("ledgers", "/contabilidad/libros"),
@@ -189,7 +190,7 @@ export const MODULOS: Record<string, ModuloNav> = {
     id: "porPagar",
     etiqueta: "payables",
     icono: HandCoins,
-    pestanas: [p("suppliers", "/contabilidad/proveedores"), p("payables", "/contabilidad/cuentas-por-pagar"), p("expenseReports", "/administrativo/rendiciones")],
+    pestanas: [p("suppliers", "/contabilidad/proveedores"), p("payables", "/contabilidad/cuentas-por-pagar"), p("requests", "/contabilidad/cuentas-por-pagar/solicitudes")],
   },
   presupuesto: { id: "presupuesto", etiqueta: "budget", icono: Calculator, pestanas: [p("budget", "/contabilidad/presupuesto")] },
   reportesConta: {

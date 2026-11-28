@@ -228,7 +228,7 @@ export async function solicitudesPorAtender(
     `SELECT ${COLUMNAS}
        ${ORIGEN}
       WHERE (s.tipo = ANY($1::text[])
-             AND s.estado IN ('enviada', 'en_revision', 'aprobada'))
+             AND s.estado IN ('solicitado', 'enviada', 'en_revision', 'aprobada'))
          OR ($2 AND s.estado = 'pendiente_direccion')
       ORDER BY s.created_at
       LIMIT 200`,

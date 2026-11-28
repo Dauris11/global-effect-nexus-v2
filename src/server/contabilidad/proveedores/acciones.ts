@@ -95,6 +95,9 @@ function idOpcional(datos: FormData, campo: string): string | null {
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad", "layout");
   revalidatePath("/[locale]/portal/contabilidad", "page");
+  revalidatePath("/[locale]/contabilidad/cuentas-por-pagar/solicitudes", "page");
+  revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");
+  revalidatePath("/[locale]/administrativo/solicitudes", "page");
 }
 
 export type DatosRncDgii = {
@@ -293,6 +296,8 @@ export async function guardarFactura(
   if (!usuarioTienePermiso(usuario, "contabilidad.registrar")) return { estado: "no_permitido" };
 
   const id = texto(datos, "id", 40);
+  const solicitudId = idOpcional(datos, "solicitud_id");
+  const aprobarDespues = datos.get("aprobar_despues") === "1";
   const proveedorId = idOpcional(datos, "proveedor");
   const ncf = texto(datos, "ncf", 13).toUpperCase() || null;
   const emision = texto(datos, "fecha_emision", 10);
@@ -311,13 +316,32 @@ export async function guardarFactura(
   const concepto = texto(datos, "concepto");
 
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
+  if (aprobarDespues && !usuarioTienePermiso(usuario, "contabilidad.aprobar")) {
+    return { estado: "no_permitido" };
+  }
   if (!proveedorId || !esFechaIso(emision) || !esFechaIso(vencimiento) || vencimiento < emision
       || !esMoneda(moneda) || !cuentaGastoId || !fondo || !concepto) {
     return { estado: "datos_invalidos" };
   }
   if (!subtotal) return { estado: "monto_invalido" };
-  if (!ncf) return { estado: "ncf_requerido" };
-  if (!ncfValido(ncf)) return { estado: "ncf_invalido" };
+
+  const facturaExistente = id
+    ? await consultarUna<{ estado: string; solicitud_id: string | null; creado_por: string }>(
+        `SELECT estado, solicitud_id, creado_por FROM contabilidad.factura_proveedor WHERE id = $1`,
+        [id],
+      )
+    : null;
+  if (id && !facturaExistente) return { estado: "no_encontrado" };
+
+  const vinculadaASolicitud = Boolean(solicitudId || facturaExistente?.solicitud_id);
+  // Al guardar el borrador desde Solicitudes (Etapa 2) el NCF / e-CF no es obligatorio;
+  // al aprobar (o en facturas independientes) sí es estrictamente requerido y validado.
+  if (aprobarDespues || !vinculadaASolicitud) {
+    if (!ncf) return { estado: "ncf_requerido" };
+    if (!ncfValido(ncf)) return { estado: "ncf_invalido" };
+  } else if (ncf && !ncfValido(ncf)) {
+    return { estado: "ncf_invalido" };
+  }
   if (tipoRetencionIsr && retencionPorCodigo(tipoRetencionIsr)?.impuesto !== "isr") {
     return { estado: "datos_invalidos" };
   }
@@ -381,6 +405,76 @@ export async function guardarFactura(
 
   try {
     const guardado = await enTransaccionComo(contexto, async (cliente) => {
+      if (!id && solicitudId) {
+        const resSol = await cliente.query<{
+          id: string;
+          tipo: string;
+          estado: string;
+          folio: number;
+          titulo: string;
+          solicitante_id: string | null;
+        }>(
+          `SELECT id, tipo, estado, folio::int AS folio, titulo, solicitante_id
+             FROM public.solicitud
+            WHERE id = $1
+            FOR UPDATE`,
+          [solicitudId],
+        );
+        const sol = resSol.rows[0];
+        if (!sol || sol.tipo !== "MATERIALES" || sol.estado === "cancelada" || sol.estado === "rechazada") {
+          return { tipo: "invalido" as const };
+        }
+
+        const { rows } = await cliente.query<{ id: string }>(
+          `INSERT INTO contabilidad.factura_proveedor
+             (numero, proveedor_id, ncf, fecha_emision, fecha_vencimiento, periodo_id, moneda, tasa,
+              subtotal, itbis, retencion_isr, retencion_itbis, tipo_retencion_isr, tipo_retencion_itbis,
+              concepto, cuenta_gasto_id, categoria_id, fondo_id, proyecto_id, solicitante_id,
+              programa_codigo, estudiante_id, pilar_costo, solicitud_id, creado_por)
+           VALUES (contabilidad.siguiente_numero('FP'), $1, $2, $3, $4, contabilidad.periodo_para($3),
+                   $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+           RETURNING id`,
+          [...valores, solicitudId, usuario.id],
+        );
+        const nuevaFacturaId = rows[0]?.id ?? null;
+        if (!nuevaFacturaId) return { tipo: "no_es_borrador" as const };
+
+        // Al guardar la factura inicial, la solicitud en «Mis Solicitudes» pasa a «Aceptada».
+        if (sol.estado !== "aceptada" && sol.estado !== "pagada") {
+          await cliente.query(
+            `UPDATE public.solicitud
+                SET estado = 'aceptada'
+              WHERE id = $1`,
+            [sol.id],
+          );
+          await cliente.query(
+            `INSERT INTO public.solicitud_paso
+               (solicitud_id, estado_anterior, estado_nuevo, usuario_id)
+             VALUES ($1, $2, 'aceptada', $3)`,
+            [sol.id, sol.estado, usuario.id],
+          );
+          if (sol.solicitante_id && sol.solicitante_id !== usuario.id) {
+            const rolRes = await cliente.query<{ nombre: string }>(
+              `SELECT r.nombre FROM public.usuario u JOIN public.rol r ON r.id = u.rol_id WHERE u.id = $1`,
+              [sol.solicitante_id],
+            );
+            const enlace =
+              rolRes.rows[0]?.nombre === "estudiante"
+                ? "/portal/estudiante/solicitudes"
+                : "/administrativo/solicitudes";
+            await cliente.query(
+              `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+               SELECT u.id, $2, 'aceptada', 'solicitud', $3
+                 FROM public.usuario u
+                WHERE u.id = $1 AND u.activo`,
+              [sol.solicitante_id, `#${sol.folio} · ${sol.titulo}`, enlace],
+            );
+          }
+        }
+
+        return { tipo: "ok" as const, id: nuevaFacturaId };
+      }
+
       const { rows } = id
         ? await cliente.query<{ id: string }>(
             `UPDATE contabilidad.factura_proveedor
@@ -405,13 +499,42 @@ export async function guardarFactura(
              RETURNING id`,
             [...valores, usuario.id],
           );
-      return rows[0]?.id ?? null;
+      const facturaId = rows[0]?.id ?? null;
+      if (!facturaId) return { tipo: "no_es_borrador" as const };
+
+      if (aprobarDespues) {
+        const creadorId = facturaExistente?.creado_por ?? usuario.id;
+        if (creadorId === usuario.id) {
+          if (vinculadaASolicitud) {
+            await fijarAccion(
+              cliente,
+              "aprobar",
+              "Aprobada tras completar NCF/e-CF de solicitud de materiales.",
+            );
+          } else {
+            if ((await otrosConPermiso(usuario.id, "contabilidad.aprobar")) > 0) {
+              return { tipo: "mismo_usuario" as const };
+            }
+            await fijarAccion(
+              cliente,
+              "aprobar",
+              "Aprobada por quien la registró: es la única cuenta con contabilidad.aprobar.",
+            );
+          }
+        }
+        await cliente.query(`SELECT contabilidad.aprobar_factura($1)`, [facturaId]);
+      }
+
+      return { tipo: "ok" as const, id: facturaId };
     });
-    if (!guardado) return { estado: "no_es_borrador" };
+    if (guardado.tipo === "invalido") return { estado: "datos_invalidos" };
+    if (guardado.tipo === "no_es_borrador") return { estado: "no_es_borrador" };
+    if (guardado.tipo === "mismo_usuario") return { estado: "mismo_usuario" };
     refrescar();
-    return { estado: "ok", id: guardado, proveedorId };
+    return { estado: "ok", id: guardado.id, proveedorId };
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : "";
+    if (mensaje.includes("falta el NCF")) return { estado: "ncf_requerido" };
     if (mensaje.includes("factura_proveedor_proveedor_id_ncf_key")) {
       // Transacción aparte: la de la factura ya se deshizo.
       await enTransaccionComo(contexto, (cliente) =>
@@ -424,9 +547,14 @@ export async function guardarFactura(
       ).catch((e) => console.error("[contabilidad] no se pudo registrar la alerta", e));
       return { estado: "factura_duplicada" };
     }
+    if (mensaje.includes("idx_factura_proveedor_solicitud_activa")) {
+      return { estado: "factura_duplicada" };
+    }
     if (mensaje.includes("factura_proveedor_check") || mensaje.includes("check constraint")) {
       return { estado: "monto_invalido" };
     }
+    const deCodigo = await errorDeCodigoSql(error);
+    if (deCodigo) return deCodigo;
     return { estado: estadoDeError(error) };
   }
 }
@@ -440,18 +568,31 @@ export async function aprobarFactura(
 
   const id = texto(datos, "id", 40);
   if (!esUuid(id)) return { estado: "no_encontrado" };
-  const factura = await consultarUna<{ estado: string; creado_por: string }>(
-    `SELECT estado, creado_por FROM contabilidad.factura_proveedor WHERE id = $1`,
+  const factura = await consultarUna<{
+    estado: string;
+    creado_por: string;
+    ncf: string | null;
+    solicitud_id: string | null;
+  }>(
+    `SELECT estado, creado_por, ncf, solicitud_id FROM contabilidad.factura_proveedor WHERE id = $1`,
     [id],
   );
   if (!factura) return { estado: "no_encontrado" };
   if (factura.estado !== "borrador") return { estado: "no_es_borrador" };
+  if (!factura.ncf) return { estado: "ncf_requerido" };
+  if (!ncfValido(factura.ncf)) return { estado: "ncf_invalido" };
 
-  // Quien registra no aprueba (§2.2), con la misma salida que los recibos.
+  // Quien registra no aprueba (§2.2), salvo facturas vinculadas a solicitudes de
+  // materiales (que siguen un flujo en dos pasos: borrador inicial → completar NCF y aprobar)
+  // o cuando es la única cuenta con contabilidad.aprobar.
   let motivo: string | undefined;
   if (factura.creado_por === usuario.id) {
-    if ((await otrosConPermiso(usuario.id, "contabilidad.aprobar")) > 0) return { estado: "mismo_usuario" };
-    motivo = "Aprobada por quien la registró: es la única cuenta con contabilidad.aprobar.";
+    if (factura.solicitud_id) {
+      motivo = "Aprobada tras completar NCF/e-CF de solicitud de materiales.";
+    } else {
+      if ((await otrosConPermiso(usuario.id, "contabilidad.aprobar")) > 0) return { estado: "mismo_usuario" };
+      motivo = "Aprobada por quien la registró: es la única cuenta con contabilidad.aprobar.";
+    }
   }
 
   try {
@@ -462,6 +603,8 @@ export async function aprobarFactura(
     refrescar();
     return { estado: "ok", id };
   } catch (error) {
+    const mensaje = error instanceof Error ? error.message : "";
+    if (mensaje.includes("falta el NCF")) return { estado: "ncf_requerido" };
     // Sin cuenta asignada a un código de proveedores: se dice cuál, no «error».
     const deCodigo = await errorDeCodigoSql(error);
     if (deCodigo) return deCodigo;

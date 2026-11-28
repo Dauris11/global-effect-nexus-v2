@@ -9,6 +9,7 @@ import { FilterBar } from "@/components/app/filter-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { CrearSolicitud } from "@/components/solicitudes/crear-solicitud";
 import { ListaSolicitudes } from "@/components/solicitudes/lista-solicitudes";
+import { TablaMisSolicitudes } from "@/components/solicitudes/tabla-mis-solicitudes";
 import { Button } from "@/components/ui/button";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link, redirigir } from "@/i18n/navigation";
@@ -22,7 +23,7 @@ import {
   esTipoSolicitud,
   REGLAS,
   revisaAlgo,
-  TIPOS_SOLICITUD,
+  TIPOS_SOLICITUD_ACTIVOS,
   tiposQuePuedeCrear,
 } from "@/lib/solicitudes";
 import { proveedoresActivosPorProposito } from "@/server/contabilidad/proveedores/consultas";
@@ -102,7 +103,7 @@ export default async function PaginaSolicitudes({
     : esEstadoSolicitud(estadoPedido)
       ? estadoPedido
       : null;
-  const claseFiltro = (TIPOS_SOLICITUD as readonly string[]).includes(clase ?? "") ? clase : null;
+  const claseFiltro = (TIPOS_SOLICITUD_ACTIVOS as readonly string[]).includes(clase ?? "") ? clase : null;
   const busqueda = normalizar((q ?? "").trim());
 
   const [
@@ -133,7 +134,7 @@ export default async function PaginaSolicitudes({
     listarTiposMaterial(true),
     listarLugaresPasaje(true),
     proveedoresActivosPorProposito("estudiantes"),
-    mensajesCliente(["requests"]),
+    mensajesCliente(["requests", "estados"]),
   ]);
 
   // Lo que requiere mi decisión vs. lo ya aprobado que falta ejecutar: ambas salen de la misma
@@ -222,7 +223,7 @@ export default async function PaginaSolicitudes({
                 param: "clase",
                 label: tl("solicitudes.tipoFiltro"),
                 todos: tl("solicitudes.todosTipos"),
-                opciones: TIPOS_SOLICITUD.map((x) => ({ value: x, label: t(`type.${x}` as never) })),
+                opciones: TIPOS_SOLICITUD_ACTIVOS.map((x) => ({ value: x, label: t(`type.${x}` as never) })),
               },
             ]}
           />
@@ -268,6 +269,12 @@ export default async function PaginaSolicitudes({
               action={botonSolicitud(false)}
             />
           )
+        ) : vista === MIAS || !revisa ? (
+          <TablaMisSolicitudes
+            resaltarId={/^[0-9a-f-]{36}$/i.test(nuevo ?? "") ? nuevo : undefined}
+            filas={filas}
+            catalogos={catalogos}
+          />
         ) : (
           <ListaSolicitudes
             resaltarId={/^[0-9a-f-]{36}$/i.test(nuevo ?? "") ? nuevo : undefined}

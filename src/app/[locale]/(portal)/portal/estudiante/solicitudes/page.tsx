@@ -4,16 +4,12 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { Cabecera } from "@/components/estudiante/cabecera";
-import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
 import { FormularioSolicitudDinamica } from "@/components/solicitudes/formulario-solicitud-dinamica";
-import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
+import { TablaMisSolicitudes } from "@/components/solicitudes/tabla-mis-solicitudes";
 import { Card } from "@/components/ui/card";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
-import { claveDia } from "@/lib/fechas";
-import { TRAMITES_ESTUDIANTE } from "@/lib/solicitudes";
 import { proveedoresActivosPorProposito } from "@/server/contabilidad/proveedores/consultas";
 import {
   listarLugaresPasaje,
@@ -33,9 +29,8 @@ export async function generateMetadata({
 }
 
 /**
- * Solicitudes y trámites del estudiante desde su portal.
- * Incluye los 3 tipos dinámicos (`MATERIALES`, `PASAJE`, `OTRO`) y los trámites
- * académicos tradicionales (`constancia`, `carta`, `cita_administracion`, `permiso`, `otro`).
+ * Solicitudes del estudiante desde su portal (`MATERIALES`, `PASAJE`, `OTRO`).
+ * Los trámites académicos fueron retirados en Etapa 2.
  */
 export default async function PaginaSolicitudesEstudiante({
   params,
@@ -53,7 +48,7 @@ export default async function PaginaSolicitudesEstudiante({
       listarTiposMaterial(true),
       listarLugaresPasaje(true),
       proveedoresActivosPorProposito("estudiantes"),
-      mensajesCliente(["requests"]),
+      mensajesCliente(["requests", "estados"]),
     ]);
 
   const catalogos = { tiposMaterial, lugaresPasaje, proveedoresEstudiantes };
@@ -66,22 +61,7 @@ export default async function PaginaSolicitudesEstudiante({
         <section className="space-y-4">
           <h2 className="texto-titulo-seccion">{t("newTitle")}</h2>
           <Card className="p-5 md:p-6">
-            <Tabs defaultValue="dinamicas" className="space-y-4">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="dinamicas">{t("dinamica.tabSolicitudes")}</TabsTrigger>
-                <TabsTrigger value="tramites">{t("dinamica.tabTramites")}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="dinamicas">
-                <FormularioSolicitudDinamica catalogos={catalogos} />
-              </TabsContent>
-              <TabsContent value="tramites">
-                <FormularioSolicitud
-                  origen="estudiante"
-                  tipos={TRAMITES_ESTUDIANTE}
-                  minimoFecha={claveDia()}
-                />
-              </TabsContent>
-            </Tabs>
+            <FormularioSolicitudDinamica catalogos={catalogos} />
           </Card>
         </section>
 
@@ -91,15 +71,7 @@ export default async function PaginaSolicitudesEstudiante({
           {solicitudes.length === 0 ? (
             <EstadoVacio icono={Inbox} titulo={t("mineEmpty")} />
           ) : (
-            <ul className="space-y-3">
-              {solicitudes.map((solicitud) => (
-                <TarjetaSolicitud
-                  key={solicitud.id}
-                  solicitud={solicitud}
-                  catalogos={catalogos}
-                />
-              ))}
-            </ul>
+            <TablaMisSolicitudes filas={solicitudes} catalogos={catalogos} />
           )}
         </section>
       </NextIntlClientProvider>

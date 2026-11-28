@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { PoolClient } from "pg";
 
 import { registrar } from "@/lib/auditoria";
-import { requerirRol, requerirUsuario } from "@/lib/auth";
+import { requerirUsuario } from "@/lib/auth";
 import { enTransaccion, fijarContexto } from "@/lib/db";
 import { contextoDe } from "@/server/contabilidad/sesion";
 import { usuarioTienePermiso, type Permiso } from "@/lib/rbac";
@@ -20,7 +20,6 @@ import {
   esPeriodoPasaje,
   esRncOCedulaFormatoValido,
   esSolicitudDinamica,
-  esTramiteEstudiante,
   estadoTrasAccion,
   HORAS_CITA,
   limpiarRnc,
@@ -92,69 +91,12 @@ export type EstadoPasoSolicitud = {
 };
 
 /**
- * Trámite pedido por el estudiante desde su portal.
- *
- * El estudiante sale de la sesión, nunca del formulario: si viniera de un campo,
- * cualquiera podría pedir una constancia a nombre de otro.
- *
- * Un trámite abierto del mismo tipo a la vez. Sin ese tope, un doble clic deja
- * dos constancias en la bandeja y quien revisa no sabe cuál vale.
+ * Trámites académicos retirados en Etapa 2: los estudiantes utilizan
+ * exclusivamente `guardarSolicitudDinamica` (Materiales, Pasaje u Otro).
  */
-export async function crearTramite(
-  _previo: EstadoFormularioSolicitud,
-  datos: FormData,
-): Promise<EstadoFormularioSolicitud> {
-  const usuario = await requerirRol(["estudiante"]);
-  const estudiante = await estudianteDeUsuario(usuario.id);
-
-  const tipo = String(datos.get("tipo") ?? "");
-  if (!esTramiteEstudiante(tipo)) return { estado: "invalido" };
-
-  const campos = leerCampos(datos, tipo);
-  if (campos === "invalido" || campos === "fecha_invalida") {
-    return { estado: campos };
-  }
-
-  let nuevaId: string | undefined;
-  try {
-    const resultado = await enTransaccion(async (cliente) => {
-      const abierta = await cliente.query(
-        `SELECT 1 FROM solicitud
-          WHERE solicitante_id = $1 AND tipo = $2
-            AND estado IN ('enviada', 'en_revision', 'pendiente_direccion')
-          LIMIT 1`,
-        [usuario.id, tipo],
-      );
-
-      if (abierta.rowCount) return "duplicada" as const;
-
-      nuevaId = await insertarSolicitud(cliente, {
-        tipo,
-        ...campos,
-        solicitanteId: usuario.id,
-        estudianteId: estudiante.id,
-        requiereDireccion: false,
-      });
-
-      return "ok" as const;
-    });
-
-    if (resultado === "duplicada") return { estado: "duplicada" };
-  } catch (error) {
-    if (error instanceof FechaPasada) return { estado: "fecha_invalida" };
-    console.error("[solicitudes] no se pudo registrar el trámite", error);
-    return { estado: "error" };
-  }
-
-  await registrar({
-    usuarioId: usuario.id,
-    accion: "solicitud.creada",
-    entidad: "solicitud",
-    datos: { tipo },
-  });
-
-  refrescar();
-  return { estado: "ok", id: nuevaId };
+export async function crearTramite(): Promise<EstadoFormularioSolicitud> {
+  await requerirUsuario();
+  return { estado: "no_permitido" };
 }
 
 /**
@@ -400,7 +342,7 @@ export async function reemplazarCotizacionCompra(
       if (
         fila.solicitante_id !== usuario.id ||
         (fila.tipo !== "compra" && fila.tipo !== "MATERIALES" && fila.tipo !== "OTRO") ||
-        (fila.estado !== "enviada" && fila.estado !== "en_revision")
+        (fila.estado !== "solicitado" && fila.estado !== "enviada" && fila.estado !== "en_revision")
       ) {
         return "no_permitido" as const;
       }
@@ -625,7 +567,7 @@ export async function guardarSolicitudDinamica(
         if (!existente) return "invalido" as const;
         if (
           existente.solicitante_id !== usuario.id ||
-          (existente.estado !== "enviada" && existente.estado !== "en_revision")
+          (existente.estado !== "solicitado" && existente.estado !== "enviada" && existente.estado !== "en_revision")
         ) {
           return "no_permitido" as const;
         }
@@ -732,11 +674,11 @@ export async function guardarSolicitudDinamica(
       } else {
         const resIns = await cliente.query<{ id: string; folio: number }>(
           `INSERT INTO solicitud
-             (tipo, titulo, detalle, solicitante_id, estudiante_id, monto, moneda,
+             (tipo, estado, titulo, detalle, solicitante_id, estudiante_id, monto, moneda,
               requiere_direccion, tipo_material_id, proveedor_id, lugar_pasaje_id,
               lugar_pasaje_otro, motivo_pasaje, periodo_pasaje, dias_pasaje,
               proposito_otro, proveedor_nombre, proveedor_rnc)
-           VALUES ($1, $2, $3, $4, $5, $6, 'DOP', FALSE, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, $15, $16)
+           VALUES ($1, 'solicitado', $2, $3, $4, $5, $6, 'DOP', FALSE, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, $15, $16)
            RETURNING id, folio::int AS folio`,
           [
             tipo,
@@ -771,7 +713,7 @@ export async function guardarSolicitudDinamica(
 
         await cliente.query(
           `INSERT INTO solicitud_paso (solicitud_id, estado_anterior, estado_nuevo, usuario_id)
-           VALUES ($1, NULL, 'enviada', $2)`,
+           VALUES ($1, NULL, 'solicitado', $2)`,
           [creada.id, usuario.id],
         );
 
@@ -779,7 +721,7 @@ export async function guardarSolicitudDinamica(
           cliente,
           REGLAS[tipo].revisa,
           `#${creada.folio} · ${titulo}`,
-          "enviada",
+          "solicitado",
           usuario.id,
         );
       }
@@ -1101,6 +1043,7 @@ class FechaPasada extends Error {}
 function refrescar() {
   revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");
   revalidatePath("/[locale]/administrativo/solicitudes", "page");
+  revalidatePath("/[locale]/contabilidad/cuentas-por-pagar/solicitudes", "page");
   revalidatePath("/[locale]/portal/administrativo", "page");
   revalidatePath("/[locale]/portal/estudiante", "page");
   revalidatePath("/[locale]/expedientes", "page");

@@ -199,13 +199,13 @@ export const MODULOS_CONTABLES: readonly ModuloContable[] = [
     enAdministracion: true,
   },
   {
-    clave: "rendiciones",
+    clave: "solicitudes_cxp",
     grupo: "gastos",
-    etiqueta: "expenseReports",
-    href: "/administrativo/rendiciones",
+    etiqueta: "requests",
+    href: "/contabilidad/cuentas-por-pagar/solicitudes",
     icono: ScrollText,
-    permiso: "rendicion.revisar",
-    enAdministracion: false,
+    permiso: "contabilidad.leer",
+    enAdministracion: true,
   },
   // ── Activos y Kardex ────────────────────────────────────────────────
   {

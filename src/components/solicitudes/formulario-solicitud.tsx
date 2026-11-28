@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
 import { HORAS_CITA, MAXIMO_TEXTO, MAXIMO_TITULO, REGLAS, type TipoSolicitud } from "@/lib/solicitudes";
-import { crearSolicitudInterna, crearTramite } from "@/server/solicitudes/acciones";
+import { crearSolicitudInterna } from "@/server/solicitudes/acciones";
 import type { EstudianteOpcion } from "@/server/solicitudes/consultas";
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
@@ -70,7 +70,7 @@ const ICONO: Record<TipoSolicitud, LucideIcon> = {
  * página: aviso «Solicitud creada» con «Ver» y, en la bandeja, la fila nueva resaltada.
  */
 export function FormularioSolicitud({
-  origen,
+  origen = "personal",
   tipos,
   estudiantes = [],
   minimoFecha,
@@ -78,7 +78,7 @@ export function FormularioSolicitud({
   hrefLista,
   alCrear,
 }: {
-  origen: "estudiante" | "personal";
+  origen?: "personal";
   /** Los tipos que esta persona puede pedir, ya filtrados en el servidor. */
   tipos: readonly TipoSolicitud[];
   estudiantes?: readonly EstudianteOpcion[];
@@ -151,7 +151,7 @@ export function FormularioSolicitud({
 
     setError(null);
     enviar(async () => {
-      const r = await (origen === "estudiante" ? crearTramite : crearSolicitudInterna)({ estado: "inicial" }, datos);
+      const r = await crearSolicitudInterna({ estado: "inicial" }, datos);
 
       if (r.estado !== "ok") {
         setError(t(`form.error.${r.estado}` as never));

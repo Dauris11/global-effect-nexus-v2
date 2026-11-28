@@ -1384,7 +1384,10 @@
     "fallido": "Failed",
     "propuesta": "Proposed",
     "ejecutada": "Executed",
-    "fallida": "Failed"
+    "fallida": "Failed",
+    "solicitado": "Requested",
+    "pendiente_llenado": "Pending completion",
+    "aceptada": "Accepted"
   },
   "listas": {
     "asientos": {
@@ -4131,7 +4134,10 @@
       "aprobada": "Approved",
       "rechazada": "Rejected",
       "completada": "Completed",
-      "cancelada": "Cancelled"
+      "cancelada": "Cancelled",
+      "solicitado": "Requested",
+      "aceptada": "Accepted",
+      "pagada": "Paid"
     },
     "form": {
       "type": "Type",
@@ -4172,7 +4178,6 @@
     "dinamica": {
       "tabSolicitudes": "Materials / Transport / Other",
       "tabAprobaciones": "Internal approvals",
-      "tabTramites": "Academic requests",
       "tipoSolicitud": "Request type",
       "tipoMaterial": "Material type",
       "seleccionarMaterial": "Select material type",
@@ -4212,7 +4217,12 @@
       "guardarCambios": "Save changes",
       "actualizada": "Request updated",
       "editar": "Edit",
-      "editarTitulo": "Edit request #{folio}"
+      "editarTitulo": "Edit request #{folio}",
+      "colTipoSolicitud": "Request type",
+      "colMonto": "Amount",
+      "colProveedor": "Supplier",
+      "colCotizacion": "Quotation",
+      "colEstado": "Status"
     },
     "purchase": {
       "title": "Purchase request to accounting",
@@ -4987,7 +4997,10 @@
         "materiales": "Materials and equipment",
         "transporte": "Transport",
         "tramites": "Paperwork and direct expenses"
-      }
+      },
+      "ncfOpcionalAyuda": "Optional on first save; required when approving.",
+      "ncfParaAprobarAyuda": "Fill in the NCF or e-CF to enable approval.",
+      "aprobar": "Approve"
     },
     "cajas": {
       "titulo": "Petty Cash & Cash Counts",
@@ -6798,6 +6811,18 @@
         "depreciacion_sin_activos": "No assets are pending depreciation on this date, so there is no entry.",
         "depreciacion_misma_cuenta": "Depreciation expense and accumulated depreciation point to the same account; assign them different accounts."
       }
+    },
+    "solicitudesCxp": {
+      "titulo": "Requests",
+      "vacio": "No material requests recorded.",
+      "atender": "Attend",
+      "colAccion": "Action",
+      "modalAgregarTitulo": "Add Invoice",
+      "modalCompletarTitulo": "Complete Invoice",
+      "modalSubtitulo": "Request #{folio} · {titulo}",
+      "verCotizacion": "View attached quotation",
+      "solicitante": "Requester",
+      "tipoMaterial": "Material type"
     }
   },
   "iaAdmin": {

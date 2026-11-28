@@ -1384,7 +1384,10 @@
     "fallido": "Fallido",
     "propuesta": "Propuesta",
     "ejecutada": "Ejecutada",
-    "fallida": "Fallida"
+    "fallida": "Fallida",
+    "solicitado": "Solicitado",
+    "pendiente_llenado": "Pendiente de llenado",
+    "aceptada": "Aceptada"
   },
   "listas": {
     "asientos": {
@@ -4131,7 +4134,10 @@
       "aprobada": "Aprobada",
       "rechazada": "Rechazada",
       "completada": "Completada",
-      "cancelada": "Cancelada"
+      "cancelada": "Cancelada",
+      "solicitado": "Solicitado",
+      "aceptada": "Aceptada",
+      "pagada": "Pagada"
     },
     "form": {
       "type": "Tipo",
@@ -4172,7 +4178,6 @@
     "dinamica": {
       "tabSolicitudes": "Materiales / Pasaje / Otro",
       "tabAprobaciones": "Aprobaciones internas",
-      "tabTramites": "Trámites académicos",
       "tipoSolicitud": "Tipo de solicitud",
       "tipoMaterial": "Tipo de material",
       "seleccionarMaterial": "Seleccionar tipo de material",
@@ -4212,7 +4217,12 @@
       "guardarCambios": "Guardar cambios",
       "actualizada": "Solicitud actualizada",
       "editar": "Editar",
-      "editarTitulo": "Editar solicitud #{folio}"
+      "editarTitulo": "Editar solicitud #{folio}",
+      "colTipoSolicitud": "Tipo de solicitud",
+      "colMonto": "Monto",
+      "colProveedor": "Proveedor",
+      "colCotizacion": "Cotización",
+      "colEstado": "Estado"
     },
     "purchase": {
       "title": "Compra a contabilidad",
@@ -4987,7 +4997,10 @@
         "materiales": "Materiales y equipos",
         "transporte": "Transporte",
         "tramites": "Trámites y gastos directos"
-      }
+      },
+      "ncfOpcionalAyuda": "Opcional en este primer guardado; se exigirá al aprobar.",
+      "ncfParaAprobarAyuda": "Completa el NCF o e-CF para habilitar la aprobación.",
+      "aprobar": "Aprobar"
     },
     "cajas": {
       "titulo": "Cajas Chicas y Arqueos",
@@ -6798,6 +6811,18 @@
         "depreciacion_sin_activos": "No hay activos pendientes de depreciación en esta fecha, así que no hay asiento.",
         "depreciacion_misma_cuenta": "El gasto de depreciación y la depreciación acumulada apuntan a la misma cuenta; asígnales cuentas distintas."
       }
+    },
+    "solicitudesCxp": {
+      "titulo": "Solicitudes",
+      "vacio": "No hay solicitudes de materiales registradas.",
+      "atender": "Atender",
+      "colAccion": "Acción",
+      "modalAgregarTitulo": "Agregar Factura",
+      "modalCompletarTitulo": "Completar Factura",
+      "modalSubtitulo": "Solicitud #{folio} · {titulo}",
+      "verCotizacion": "Ver cotización adjunta",
+      "solicitante": "Solicitante",
+      "tipoMaterial": "Tipo de material"
     }
   },
   "iaAdmin": {

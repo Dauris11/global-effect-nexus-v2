@@ -46,6 +46,9 @@ function texto(datos: FormData, campo: string, maximo = 200): string {
 function refrescar(): void {
   revalidatePath("/[locale]/contabilidad", "layout");
   revalidatePath("/[locale]/portal/contabilidad", "page");
+  revalidatePath("/[locale]/contabilidad/cuentas-por-pagar/solicitudes", "page");
+  revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");
+  revalidatePath("/[locale]/administrativo/solicitudes", "page");
 }
 
 export async function programarCxp(
@@ -116,11 +119,73 @@ export async function pagarCxp(
   if (moneda === "USD" && !tasa) return { estado: "tasa_requerida" };
 
   try {
-    await enTransaccionComo(await contextoDe(usuario), (cliente) =>
-      cliente.query(`SELECT contabilidad.pagar_cxp($1, $2, $3, $4, $5, $6, $7)`, [
+    await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
+      await cliente.query(`SELECT contabilidad.pagar_cxp($1, $2, $3, $4, $5, $6, $7)`, [
         id, cuenta, fecha, monto, forma, texto(datos, "referencia", 120) || null, tasa,
-      ]),
-    );
+      ]);
+
+      // Si la CxP quedó completamente pagada y proviene de una solicitud (vía factura o directa),
+      // sincroniza el estado en «Mis Solicitudes» a «Pagada» (Etapa 2).
+      const vinculo = await cliente.query<{
+        estado: string;
+        solicitud_id: string | null;
+      }>(
+        `SELECT x.estado,
+                coalesce(x.solicitud_id, f.solicitud_id) AS solicitud_id
+           FROM contabilidad.cuenta_por_pagar x
+           LEFT JOIN contabilidad.factura_proveedor f ON f.id = x.factura_id
+          WHERE x.id = $1`,
+        [id],
+      );
+      const filaCxp = vinculo.rows[0];
+      if (filaCxp?.estado === "pagada" && filaCxp.solicitud_id) {
+        const resSol = await cliente.query<{
+          estado: string;
+          folio: number;
+          titulo: string;
+          solicitante_id: string | null;
+        }>(
+          `SELECT estado, folio::int AS folio, titulo, solicitante_id
+             FROM public.solicitud
+            WHERE id = $1
+            FOR UPDATE`,
+          [filaCxp.solicitud_id],
+        );
+        const sol = resSol.rows[0];
+        if (sol && sol.estado !== "pagada") {
+          await cliente.query(
+            `UPDATE public.solicitud
+                SET estado = 'pagada',
+                    resuelta_en = coalesce(resuelta_en, now())
+              WHERE id = $1`,
+            [filaCxp.solicitud_id],
+          );
+          await cliente.query(
+            `INSERT INTO public.solicitud_paso
+               (solicitud_id, estado_anterior, estado_nuevo, usuario_id)
+             VALUES ($1, $2, 'pagada', $3)`,
+            [filaCxp.solicitud_id, sol.estado, usuario.id],
+          );
+          if (sol.solicitante_id && sol.solicitante_id !== usuario.id) {
+            const rolRes = await cliente.query<{ nombre: string }>(
+              `SELECT r.nombre FROM public.usuario u JOIN public.rol r ON r.id = u.rol_id WHERE u.id = $1`,
+              [sol.solicitante_id],
+            );
+            const enlace =
+              rolRes.rows[0]?.nombre === "estudiante"
+                ? "/portal/estudiante/solicitudes"
+                : "/administrativo/solicitudes";
+            await cliente.query(
+              `INSERT INTO public.notificacion (usuario_id, titulo, mensaje, tipo, enlace)
+               SELECT u.id, $2, 'pagada', 'solicitud', $3
+                 FROM public.usuario u
+                WHERE u.id = $1 AND u.activo`,
+              [sol.solicitante_id, `#${sol.folio} · ${sol.titulo}`, enlace],
+            );
+          }
+        }
+      }
+    });
     refrescar();
     return { estado: "ok", id };
   } catch (error) {
