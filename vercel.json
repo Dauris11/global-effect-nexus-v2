@@ -1,4 +1,4 @@
 {
   "regions": ["sfo1"],
-  "crons": [{ "path": "/api/cron/correos", "schedule": "*/5 * * * *" }]
+  "crons": [{ "path": "/api/cron/correos", "schedule": "0 12 * * *" }]
 }
