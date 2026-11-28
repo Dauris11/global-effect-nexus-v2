@@ -90,7 +90,7 @@ export function FormularioCaja({
           <span>{t("nuevaCaja")}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{t("crearCaja")}</DialogTitle>
         </DialogHeader>
