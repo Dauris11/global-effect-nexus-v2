@@ -572,10 +572,6 @@ export async function conciliarCargoBancario(
       );
       if (!cargo) throw new RechazoBanco("datos_invalidos");
 
-      if (cargo.tipo_valor === "fijo" && extractos.length > 1) {
-        throw new RechazoBanco("datos_invalidos");
-      }
-
       const { rows: [cb] } = await cliente.query<{
         id: string;
         moneda: "DOP" | "USD";
@@ -611,17 +607,21 @@ export async function conciliarCargoBancario(
         throw new RechazoBanco("datos_invalidos");
       }
 
+      const lineasLibroUsadas = new Set<string>();
+
       for (const ext of filasExtracto) {
         const montoNum = Number(ext.monto);
         if (!Number.isFinite(montoNum) || Math.abs(montoNum) < 0.005) {
           throw new RechazoBanco("monto_invalido");
         }
 
-        // Si es un impuesto fijo de transferencia que ya fue generado al pagar una
-        // factura por Transferencia, se enlaza con esa línea existente sin duplicar
-        // el asiento ni el gasto. Si no existe (p. ej. pago en efectivo), se crea.
         let lineaBancoId: string | null = null;
-        if (cargo.tipo_valor === "fijo" && cargo.proposito === "transferencia") {
+
+        if (cargo.tipo_valor === "fijo") {
+          // Impuesto/cargo fijo (p. ej. 0.20% por transferencia): nunca genera
+          // un asiento nuevo en la cuenta del impuesto; si ya existe la línea en
+          // libros del pago por transferencia la enlaza, y si no, queda conciliada
+          // directamente como registro en Movimientos y Conciliadas.
           const { rows: existentes } = await cliente.query<{
             id: string;
             referencia: string | null;
@@ -644,16 +644,19 @@ export async function conciliarCargoBancario(
             [cb.cuenta_contable_id, cargo.nombre, montoNum.toFixed(2)],
           );
 
-          if (existentes.length > 0) {
+          const disponibles = existentes.filter((row) => !lineasLibroUsadas.has(row.id));
+          if (disponibles.length > 0) {
             const refExt = normalizarReferenciaBanco(ext.referencia);
             const exacta = refExt
-              ? existentes.find((row) => normalizarReferenciaBanco(row.referencia) === refExt)
+              ? disponibles.find((row) => normalizarReferenciaBanco(row.referencia) === refExt)
               : undefined;
-            lineaBancoId = (exacta ?? existentes[0]).id;
+            const elegida = exacta ?? disponibles[0];
+            lineaBancoId = elegida.id;
+            lineasLibroUsadas.add(elegida.id);
           }
-        }
-
-        if (!lineaBancoId) {
+        } else {
+          // Cargo variable (p. ej. Comisiones bancarias): se contabiliza contra
+          // la cuenta contable configurada y se concilia en el acto.
           const montoAbs = Math.abs(montoNum).toFixed(2);
           const esSalida = montoNum < 0;
 
@@ -739,9 +742,9 @@ export async function conciliarCargoBancario(
 
         await cliente.query(
           `INSERT INTO contabilidad.conciliacion_partida
-             (cuenta_id, extracto_linea_id, asiento_linea_id, grupo_id, conciliado_por)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [cb.id, ext.id, lineaBancoId, grupo.id, usuario.id],
+             (cuenta_id, extracto_linea_id, asiento_linea_id, impuesto_cargo_id, grupo_id, conciliado_por)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [cb.id, ext.id, lineaBancoId, cargo.id, grupo.id, usuario.id],
         );
       }
     });

@@ -232,6 +232,7 @@ export type FiltroExtracto = {
   desde: string | null;
   hasta: string | null;
   tipo: "retiro" | "deposito" | null;
+  comision: string | null;
   q: string | null;
 };
 
@@ -240,11 +241,13 @@ export function leerFiltroExtracto(crudo: Record<string, string | string[] | und
   const desde = uno(crudo.desde);
   const hasta = uno(crudo.hasta);
   const tipo = uno(crudo.tipo);
+  const comision = uno(crudo.comision);
   const q = uno(crudo.q).slice(0, 120);
   return {
     desde: esFechaIso(desde) ? desde : null,
     hasta: esFechaIso(hasta) ? hasta : null,
     tipo: tipo === "retiro" || tipo === "deposito" ? tipo : null,
+    comision: esUuid(comision) ? comision : null,
     q: q || null,
   };
 }
@@ -261,6 +264,7 @@ export type FilaExtractoMovimiento = {
   monto: string;
   saldo: string | null;
   conciliada: boolean;
+  cargo_nombre: string | null;
 };
 
 /** Transacciones subidas del estado de cuenta (.csv) con filtros funcionales. */
@@ -286,7 +290,14 @@ export async function extractoDeBanco(
             EXISTS (
               SELECT 1 FROM contabilidad.conciliacion_partida p
                WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
-            ) AS conciliada
+            ) AS conciliada,
+            (
+              SELECT ic.nombre
+                FROM contabilidad.conciliacion_partida p
+                JOIN contabilidad.impuesto_cargo ic ON ic.id = p.impuesto_cargo_id
+               WHERE p.extracto_linea_id = e.id AND p.anulado_en IS NULL
+               LIMIT 1
+            ) AS cargo_nombre
        FROM contabilidad.extracto_linea e
       WHERE e.cuenta_id = $1
         AND ($2::date IS NULL OR e.fecha >= $2)
@@ -302,9 +313,21 @@ export async function extractoDeBanco(
           OR coalesce(e.referencia, '') ILIKE '%' || $5 || '%'
           OR coalesce(e.no_cheque, '') ILIKE '%' || $5 || '%'
         )
+        AND (
+          $6::uuid IS NULL
+          OR EXISTS (
+            SELECT 1
+              FROM contabilidad.conciliacion_partida p
+              LEFT JOIN contabilidad.asiento_linea l ON l.id = p.asiento_linea_id
+              JOIN contabilidad.impuesto_cargo ic ON ic.id = $6
+             WHERE p.extracto_linea_id = e.id
+               AND p.anulado_en IS NULL
+               AND (p.impuesto_cargo_id = $6 OR l.descripcion = ic.nombre)
+          )
+        )
       ORDER BY e.fecha DESC, e.importado_en DESC, e.id DESC
       LIMIT 500`,
-    [cuentaId, filtro.desde, filtro.hasta, filtro.tipo, filtro.q],
+    [cuentaId, filtro.desde, filtro.hasta, filtro.tipo, filtro.q, filtro.comision],
   );
 }
 
@@ -345,9 +368,10 @@ export type PartidaConciliada = {
   banco_descripcion: string;
   banco_referencia: string | null;
   monto: string;
-  asiento_id: string;
-  asiento_numero: string;
-  asiento_concepto: string;
+  asiento_id: string | null;
+  asiento_numero: string | null;
+  asiento_concepto: string | null;
+  cargo_nombre: string | null;
 };
 
 export type PorConciliar = { banco: LineaExtracto[]; libros: LineaAsientoBanco[] };
@@ -417,11 +441,13 @@ export async function partidasConciliadas(cuentaId: string): Promise<PartidaConc
             u.nombre AS conciliado_por,
             e.fecha::text AS banco_fecha, e.descripcion AS banco_descripcion,
             e.referencia AS banco_referencia, e.monto::text AS monto,
-            a.id AS asiento_id, a.numero::text AS asiento_numero, a.concepto AS asiento_concepto
+            a.id AS asiento_id, a.numero::text AS asiento_numero, a.concepto AS asiento_concepto,
+            ic.nombre AS cargo_nombre
        FROM contabilidad.conciliacion_partida p
        JOIN contabilidad.extracto_linea e ON e.id = p.extracto_linea_id
-       JOIN contabilidad.asiento_linea l ON l.id = p.asiento_linea_id
-       JOIN contabilidad.asiento a ON a.id = l.asiento_id
+       LEFT JOIN contabilidad.asiento_linea l ON l.id = p.asiento_linea_id
+       LEFT JOIN contabilidad.asiento a ON a.id = l.asiento_id
+       LEFT JOIN contabilidad.impuesto_cargo ic ON ic.id = p.impuesto_cargo_id
        JOIN public.usuario u ON u.id = p.conciliado_por
       WHERE p.cuenta_id = $1 AND p.anulado_en IS NULL
       ORDER BY e.fecha DESC, p.conciliado_en DESC

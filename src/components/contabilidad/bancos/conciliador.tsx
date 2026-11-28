@@ -76,7 +76,7 @@ export function Conciliador({
     () => cargos.find((c) => c.id === cargoId) ?? null,
     [cargos, cargoId],
   );
-  const permiteMultipleBanco = cargoActivo?.tipoValor === "variable";
+  const permiteMultipleBanco = Boolean(cargoActivo);
 
   const [estado, enviar, enviando] = useActionState(async (previo: EstadoBanco, datos: FormData) => {
     const modoCargo = Boolean(String(datos.get("cargo_id") ?? "").trim());
@@ -94,8 +94,7 @@ export function Conciliador({
   function cambiarCargo(nuevoId: string) {
     setCargoId(nuevoId);
     setLineas([]);
-    const nuevo = cargos.find((c) => c.id === nuevoId) ?? null;
-    if (nuevo?.tipoValor !== "variable") {
+    if (!nuevoId) {
       setExtractos((prev) => prev.slice(0, 1));
     }
   }

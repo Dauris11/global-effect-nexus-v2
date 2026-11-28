@@ -132,11 +132,10 @@ export default async function PaginaCuentaBanco({
 
       {vista === "movimientos" && (
         <NextIntlClientProvider messages={mensajes}>
-          <LibroBanco
+          <VistaMovimientos
             cuentaId={cuenta.id}
             moneda={cuenta.moneda}
-            filtro={leerFiltroExtracto(crudo)}
-            movimientos={await extractoDeBanco(cuenta.id, leerFiltroExtracto(crudo))}
+            crudo={crudo}
             idioma={idioma}
           />
         </NextIntlClientProvider>
@@ -154,6 +153,34 @@ export default async function PaginaCuentaBanco({
         </NextIntlClientProvider>
       )}
     </div>
+  );
+}
+
+async function VistaMovimientos({
+  cuentaId,
+  moneda,
+  crudo,
+  idioma,
+}: {
+  cuentaId: string;
+  moneda: "DOP" | "USD";
+  crudo: Record<string, string | string[] | undefined>;
+  idioma: "es" | "en";
+}) {
+  const filtro = leerFiltroExtracto(crudo);
+  const [movimientos, cargos] = await Promise.all([
+    extractoDeBanco(cuentaId, filtro),
+    impuestosCargos(true),
+  ]);
+  return (
+    <LibroBanco
+      cuentaId={cuentaId}
+      moneda={moneda}
+      filtro={filtro}
+      movimientos={movimientos}
+      cargos={cargos}
+      idioma={idioma}
+    />
   );
 }
 
@@ -220,9 +247,13 @@ async function VistaConciliadas({
               </div>
               <div className="min-w-0">
                 <p className="texto-meta">{t("deLibrosCorto")}</p>
-                <Link href={`/contabilidad/asientos/${p.asiento_id}`} className="block truncate text-marca-600 hover:underline">
-                  {numeroDocumento("AS", p.asiento_numero)} · {p.asiento_concepto}
-                </Link>
+                {p.asiento_id && p.asiento_numero ? (
+                  <Link href={`/contabilidad/asientos/${p.asiento_id}`} className="block truncate text-marca-600 hover:underline">
+                    {numeroDocumento("AS", p.asiento_numero)} · {p.asiento_concepto}
+                  </Link>
+                ) : (
+                  <p className="truncate font-medium text-tinta">{p.cargo_nombre ?? t("comisionesDefault")}</p>
+                )}
                 <p className="texto-meta">{t("conciliadaPor", { nombre: p.conciliado_por, fecha: fechaCorta(p.conciliado_en, idioma) })}</p>
               </div>
             </div>

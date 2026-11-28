@@ -20,7 +20,7 @@ export function claveDeTransaccion(linea: {
   referencia: string | null;
 }): string {
   const referencia = linea.referencia?.trim().replace(/\s+/g, " ").toUpperCase();
-  if (referencia) return `ref:${referencia}`;
+  if (referencia) return `ref:${referencia}|${Number(linea.monto).toFixed(2)}|${linea.fecha}`;
   const descripcion = linea.descripcion.trim().replace(/\s+/g, " ").toUpperCase();
   return `sin:${linea.fecha}|${Number(linea.monto).toFixed(2)}|${descripcion}`;
 }
