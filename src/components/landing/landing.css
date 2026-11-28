@@ -33,47 +33,58 @@
   }
 }
 
-@keyframes landing-acercar {
+@keyframes landing-entrar-lado {
   from {
-    transform: scale(1.06);
+    opacity: 0;
+    transform: translateX(-8px);
   }
   to {
-    transform: scale(1);
+    opacity: 1;
+    transform: none;
   }
 }
 
-@keyframes landing-progreso {
-  from {
-    transform: scaleX(0);
+@keyframes landing-latido {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
   }
-  to {
-    transform: scaleX(1);
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
   }
-}
-
-/* La barra del punto activo: sin movimiento, se ve llena y quieta. */
-.landing-progreso {
-  transform-origin: left center;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /*
-   * Entrada del hero al cargar y al cambiar de anuncio. Es por tiempo, no por
-   * scroll: el hero ya está a la vista y no hay nada que esperar.
-   */
-  .landing-entrada {
+  /* Palabras del titular: entran una tras otra, 70 ms entre cada una. */
+  .landing-palabra {
     animation: landing-subir 700ms var(--landing-salida) both;
-    animation-delay: calc(var(--paso, 0) * 80ms);
+    animation-delay: calc(var(--paso, 0) * 70ms);
   }
 
-  /* Acercamiento lento de la foto activa: el hero respira sin distraer. */
-  .landing-foto-activa {
-    animation: landing-acercar 7s var(--landing-salida) both;
+  /*
+   * Perfiles: al mostrarse un panel (pasa de `display: none` a visible) sus
+   * filas se reinician solas, así que no hace falta JavaScript para repetirlas.
+   */
+  .landing-perfil-fila {
+    animation: landing-entrar-lado 400ms var(--landing-salida) both;
+    animation-delay: calc(var(--paso, 0) * 60ms);
   }
 
-  /* Dura lo mismo que `INTERVALO_MS` en hero.tsx. */
-  .landing-progreso {
-    animation: landing-progreso 6s linear both;
+  .landing-perfil-vista > * {
+    animation: landing-subir 450ms var(--landing-salida) both;
+    animation-delay: calc(var(--paso, 0) * 70ms + 120ms);
+  }
+
+  /* Punto «en vivo»: un anillo que se abre y se desvanece. */
+  .landing-vivo::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    opacity: 0;
+    animation: landing-latido 1.8s var(--landing-salida) infinite;
   }
 
   /*

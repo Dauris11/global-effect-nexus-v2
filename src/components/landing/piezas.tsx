@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
  * Piezas de maquetación que comparten todas las secciones de la landing.
  *
  * Viven juntas y no en `ui/` porque solo tienen sentido aquí: el contenedor de
- * la landing, la cabecera de sección y el carrusel de tarjetas tipo anuncio.
+ * la landing y las cabeceras de sección.
  * Si mañana cambia el ancho o el margen de la página, cambia en un sitio y no
  * en nueve secciones.
  */
@@ -57,106 +57,41 @@ export function CabeceraSeccion({
 }
 
 /**
- * Fila de tarjetas: carrusel horizontal con snap en el teléfono y rejilla
- * desde `md`, como las filas de anuncios de Airbnb.
- *
- * En móvil cada tarjeta mide el 78 % del ancho para que asome la siguiente:
- * es lo que dice "hay más, desliza" sin poner flechas. `scroll-px-4` hace que
- * el snap respete el mismo margen que el resto de la página.
+ * Etiqueta de sección sobre el titular (`Qué puedes hacer`, `Primer acceso`). Es
+ * una pastilla de marca con tokens `marca-*`, que ya se invierten en oscuro.
  */
-export function Carrusel({
-  children,
-  columnas = 3,
-  etiqueta,
-}: {
-  children: React.ReactNode;
-  columnas?: 3 | 4;
-  etiqueta?: string;
-}) {
+export function Etiqueta({ children }: { children: React.ReactNode }) {
   return (
-    <ul
-      aria-label={etiqueta}
-      className={cn(
-        "sin-barra -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2",
-        "md:mx-0 md:grid md:gap-6 md:overflow-visible md:px-0 md:pb-0 revelar-hijos",
-        columnas === 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3",
-      )}
-    >
+    <span className="inline-flex items-center gap-2 rounded-full border border-marca-100 bg-marca-50 px-3 py-1 text-[13px] font-semibold text-marca-700">
       {children}
-    </ul>
-  );
-}
-
-/** Elemento del carrusel: fija el ancho en móvil y el punto de snap. */
-export function ElementoCarrusel({ children }: { children: React.ReactNode }) {
-  return (
-    <li className="w-[78%] shrink-0 snap-start sm:w-[46%] md:w-auto">
-      {children}
-    </li>
+    </span>
   );
 }
 
 /**
- * Tarjeta tipo anuncio (docs/09 §4.4): la cabecera visual arriba —foto o un
- * icono grande—, el título en semibold y una o dos líneas en `tinta-2`.
- *
- * La cabecera la pone quien la usa porque cambia por sección (foto de la
- * noticia, icono del programa, fecha del evento); la insignia va arriba a la
- * izquierda, sobre ella.
+ * Cabecera de las secciones del portal: etiqueta, titular en forma de PREGUNTA y
+ * una línea que la responde. El H2 es la pregunta que una persona (o un
+ * buscador) se hace de verdad; el texto de debajo es la respuesta corta, y va en
+ * el HTML del servidor para que se lea sin JavaScript.
  */
-export function TarjetaAnuncio({
-  cabecera,
-  insignia,
+export function CabeceraPregunta({
+  etiqueta,
   titulo,
-  lineas,
-  pie,
+  respuesta,
+  id,
 }: {
-  cabecera: React.ReactNode;
-  insignia?: React.ReactNode;
+  etiqueta: string;
   titulo: string;
-  lineas?: readonly (string | null | undefined)[];
-  pie?: React.ReactNode;
-}) {
-  const lineasVisibles = lineas?.filter(Boolean) ?? [];
-
-  return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-card border border-linea bg-card shadow-card transition-[translate,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada">
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-        {cabecera}
-        {insignia && <div className="absolute top-3 left-3 z-10">{insignia}</div>}
-      </div>
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="texto-titulo-tarjeta text-tinta transition-colors group-hover:text-marca-600">
-          {titulo}
-        </h3>
-        {lineasVisibles.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {lineasVisibles.map((linea) => (
-              <p key={linea} className="line-clamp-2 text-sm text-tinta-2">
-                {linea}
-              </p>
-            ))}
-          </div>
-        )}
-        {pie && (
-          <div className="mt-auto border-t border-linea/60 pt-4">
-            {pie}
-          </div>
-        )}
-      </div>
-    </article>
-  );
-}
-
-/** Cabecera de tarjeta sin foto: un icono grande centrado sobre `marca-50`. */
-export function CabeceraIcono({
-  icono: Icono,
-}: {
-  icono: React.ComponentType<{ className?: string }>;
+  respuesta?: string;
+  id?: string;
 }) {
   return (
-    <div className="flex size-full items-center justify-center bg-marca-50/70 transition-colors group-hover:bg-marca-50">
-      <Icono className="size-12 text-marca-600 transition-transform duration-300 group-hover:scale-110" />
+    <div className="mb-10 max-w-[640px]">
+      <Etiqueta>{etiqueta}</Etiqueta>
+      <h2 id={id} className={cn(TITULO_SECCION, "mt-3.5")}>
+        {titulo}
+      </h2>
+      {respuesta && <p className="mt-3 text-[17px] text-tinta-2">{respuesta}</p>}
     </div>
   );
 }

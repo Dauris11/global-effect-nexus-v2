@@ -1,68 +1,60 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Bus, Menu, UtensilsCrossed, X } from "lucide-react";
+import { Check, Monitor, Moon, Sun } from "lucide-react";
 
-import {
-  BuscadorPortal,
-  type DestinoPortal,
-} from "@/components/landing/buscador-portal";
+import { useApariencia } from "@/components/apariencia/usar-apariencia";
 import { CONTENEDOR } from "@/components/landing/piezas";
 import { variantesBoton } from "@/components/ui/button-variantes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
+import { TEMAS, type Tema } from "@/lib/apariencia";
 import { cn } from "@/lib/utils";
 
 /**
- * Barra superior de la landing: blanca, con la búsqueda-píldora como acceso.
+ * Encabezado fijo de la portada: 68 px, transparente arriba y, al bajar más de
+ * 12 px, superficie al 88 % con desenfoque y línea inferior.
  *
- * Los enlaces de sección son anclas (`#que-hacemos`), así que van con `<a>` y no
- * con el `Link` de i18n: un ancla no cambia de ruta y pasarla por el enrutador
- * solo le añadiría el prefijo de idioma sin motivo.
+ * Arriba no lleva fondo ni línea porque el hero ya empieza separado por aire y
+ * una raya sobre nada se ve como un corte. Al rodar sí: sin fondo, el texto de
+ * las secciones se vería pasar por debajo de los enlaces.
  *
- * Decisiones que no se ven en el JSX:
+ * Las anclas son `<a>` y no el `Link` de i18n: un ancla no cambia de ruta y
+ * pasarla por el enrutador solo le añadiría el prefijo de idioma. En el móvil se
+ * ocultan (no caben junto al botón) y siguen en el pie de la página.
  *
- * - La píldora va en el centro en escritorio y en una segunda fila a todo lo
- *   ancho en el teléfono, como en Airbnb. Junto al logo y "Acceder" no cabe a
- *   390 px sin recortar la pregunta, y la pregunta es lo que la hace útil.
- *
- * - Las anclas de sección viven en el menú de la derecha a todos los anchos.
- *   Antes iban en línea en `lg`, pero con la píldora en el centro competirían
- *   las dos por la mirada; la sección se encuentra también bajando y en el pie.
- *
- * - "Acceder" es el único botón relleno; "Comida" es un enlace discreto. Antes
- *   eran dos azules iguales y no se sabía cuál era el camino normal.
- *
- * - Al bajar, la barra gana su línea inferior. Arriba no la lleva: el hero ya
- *   empieza separado por aire y una línea sobre nada se ve como un corte.
+ * El tema usa `useApariencia`, el mismo mecanismo del portal: se guarda en el
+ * aparato y el script del `<head>` lo aplica antes de pintar, sin destello.
  */
+
+const ICONOS_TEMA: Record<Tema, typeof Sun> = { claro: Sun, oscuro: Moon, sistema: Monitor };
+
 export function Navbar({
   enlaces,
-  destinos,
-  roles,
   textos,
 }: {
   enlaces: readonly { ancla: string; texto: string }[];
-  destinos: readonly DestinoPortal[];
-  roles: readonly DestinoPortal[];
   textos: {
-    comida: string;
-    transporte: string;
     acceder: string;
-    abrirMenu: string;
-    cerrarMenu: string;
-    secciones: string;
-    pregunta: string;
-    porRol: string;
+    accederCorto: string;
     logo: string;
+    principal: string;
+    tema: string;
+    temas: Record<Tema, string>;
   };
 }) {
-  const [abierto, setAbierto] = useState(false);
-  const [posada, setPosada] = useState(false);
-  const menu = useRef<HTMLDivElement>(null);
+  const [bajado, setBajado] = useState(false);
+  const { tema, cambiar } = useApariencia();
+  const IconoTema = ICONOS_TEMA[tema];
 
   useEffect(() => {
-    const alRodar = () => setPosada(window.scrollY > 8);
+    const alRodar = () => setBajado(window.scrollY > 12);
 
     alRodar();
     window.addEventListener("scroll", alRodar, { passive: true });
@@ -70,139 +62,68 @@ export function Navbar({
     return () => window.removeEventListener("scroll", alRodar);
   }, []);
 
-  // El menú se cierra con Escape o al pulsar fuera, como cualquier desplegable.
-  useEffect(() => {
-    if (!abierto) return;
-
-    const alTeclear = (evento: KeyboardEvent) => {
-      if (evento.key === "Escape") setAbierto(false);
-    };
-    const alPulsar = (evento: PointerEvent) => {
-      if (!menu.current?.contains(evento.target as Node)) setAbierto(false);
-    };
-
-    document.addEventListener("keydown", alTeclear);
-    document.addEventListener("pointerdown", alPulsar);
-
-    return () => {
-      document.removeEventListener("keydown", alTeclear);
-      document.removeEventListener("pointerdown", alPulsar);
-    };
-  }, [abierto]);
-
-  const buscador = (
-    <BuscadorPortal
-      destinos={destinos}
-      roles={roles}
-      textos={{ pregunta: textos.pregunta, porRol: textos.porRol }}
-    />
-  );
-
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b bg-background transition-colors duration-200",
-        posada ? "border-linea" : "border-transparent",
+        "sticky top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-200",
+        bajado ? "border-linea bg-surface/88 backdrop-blur-[10px]" : "border-transparent",
       )}
     >
-      <div className={cn(CONTENEDOR, "flex h-16 items-center gap-4 md:h-20")}>
+      <div className={cn(CONTENEDOR, "flex h-[68px] items-center gap-2.5 md:gap-6")}>
         <Link
           href="/"
           className="flex shrink-0 items-center rounded-control focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
         >
-          <Image
-            src="/logo-white.webp"
-            alt={textos.logo}
-            width={132}
-            height={36}
-            priority
-            // El logo es blanco; sobre la barra clara se pasa a negro. En modo
-            // oscuro la barra es oscura y el logo vuelve a ser blanco.
-            className="h-9 w-auto brightness-0 dark:brightness-100"
-          />
+          {/* Dos versiones del logo, una por tema: la de texto oscuro y la de texto claro. */}
+          <Image src="/logo.webp" alt={textos.logo} width={720} height={157} priority className="logo-claro h-8 w-auto" />
+          <Image src="/logo-dark.webp" alt={textos.logo} width={720} height={157} priority className="logo-oscuro h-8 w-auto" />
         </Link>
 
-        <div className="hidden min-w-0 flex-1 justify-center md:flex">
-          <div className="w-full max-w-sm">{buscador}</div>
-        </div>
+        <nav aria-label={textos.principal} className="ml-auto hidden gap-1 md:flex">
+          {enlaces.map((enlace) => (
+            <a
+              key={enlace.ancla}
+              href={`#${enlace.ancla}`}
+              className="rounded-[8px] px-3 py-2 text-sm font-medium text-tinta-2 transition-colors hover:bg-surface-2 hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {enlace.texto}
+            </a>
+          ))}
+        </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1 md:ml-0">
-          <Link
-            href="/comida"
-            className="hidden h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:flex"
-          >
-            <UtensilsCrossed className="size-4" />
-            {textos.comida}
-          </Link>
+        <div className="ml-auto flex items-center gap-2.5 md:ml-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label={textos.tema}
+                className="flex size-9 items-center justify-center rounded-[8px] border border-linea-fuerte bg-surface text-tinta transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <IconoTema className="size-[18px]" />
+              </button>
+            </DropdownMenuTrigger>
 
-          <Link
-            href="/transporte"
-            className="hidden h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:flex"
-          >
-            <Bus className="size-4" />
-            {textos.transporte}
-          </Link>
+            <DropdownMenuContent align="end">
+              {TEMAS.map((valor) => {
+                const Icono = ICONOS_TEMA[valor];
+
+                return (
+                  <DropdownMenuItem key={valor} onSelect={() => cambiar({ tema: valor })}>
+                    <Icono className="size-4" />
+                    {textos.temas[valor]}
+                    {tema === valor && <Check className="ml-auto size-4" />}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Link href="/login" className={variantesBoton()}>
-            {textos.acceder}
+            <span className="hidden sm:inline">{textos.acceder}</span>
+            <span className="sm:hidden">{textos.accederCorto}</span>
           </Link>
-
-          <div ref={menu} className="relative">
-            <button
-              type="button"
-              onClick={() => setAbierto((valor) => !valor)}
-              aria-label={abierto ? textos.cerrarMenu : textos.abrirMenu}
-              aria-expanded={abierto}
-              aria-controls="menu-landing"
-              className="ml-1 flex size-11 items-center justify-center rounded-full border border-linea-fuerte text-tinta transition-shadow hover:shadow-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {abierto ? <X className="size-5" /> : <Menu className="size-5" />}
-            </button>
-
-            {abierto && (
-              <nav
-                id="menu-landing"
-                aria-label={textos.secciones}
-                className="animate-in fade-in slide-in-from-top-1 absolute top-full right-0 mt-2 w-64 rounded-card border border-linea bg-background py-2 shadow-elevada duration-150"
-              >
-                {enlaces.map((enlace) => (
-                  <a
-                    key={enlace.ancla}
-                    href={`#${enlace.ancla}`}
-                    onClick={() => setAbierto(false)}
-                    className="flex h-11 items-center px-4 text-sm text-tinta transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                  >
-                    {enlace.texto}
-                  </a>
-                ))}
-
-                <div className="my-2 border-t border-linea" />
-
-                <Link
-                  href="/comida"
-                  onClick={() => setAbierto(false)}
-                  className="flex h-11 items-center gap-2 px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                >
-                  <UtensilsCrossed className="size-4" />
-                  {textos.comida}
-                </Link>
-
-                <Link
-                  href="/transporte"
-                  onClick={() => setAbierto(false)}
-                  className="flex h-11 items-center gap-2 px-4 text-sm font-semibold text-tinta transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                >
-                  <Bus className="size-4" />
-                  {textos.transporte}
-                </Link>
-              </nav>
-            )}
-          </div>
         </div>
       </div>
-
-      {/* Segunda fila en el teléfono: la píldora a todo lo ancho. */}
-      <div className={cn(CONTENEDOR, "pb-3 md:hidden")}>{buscador}</div>
     </header>
   );
 }

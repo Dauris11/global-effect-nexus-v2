@@ -68,10 +68,8 @@ export function esOscuro(tema: Tema): boolean {
 /** Pinta la apariencia en `<html>`, donde la leen `.dark` y `data-acento`. */
 export function aplicarApariencia({ tema, acento }: Apariencia) {
   const raiz = document.documentElement;
-  // La página de inicio pública no está pensada para el modo oscuro: siempre clara.
-  const esLanding = /^\/(es|en)?\/?$/.test(location.pathname);
-
-  raiz.classList.toggle("dark", !esLanding && esOscuro(tema));
+  // La portada pública también respeta el tema: tiene su propio diseño oscuro y ya no se fuerza clara.
+  raiz.classList.toggle("dark", esOscuro(tema));
   raiz.dataset.acento = acento;
 }
 
@@ -82,4 +80,4 @@ export function aplicarApariencia({ tema, acento }: Apariencia) {
  */
 export const SCRIPT_APARIENCIA = `(function(){try{var a=JSON.parse(localStorage.getItem(${JSON.stringify(
   CLAVE_APARIENCIA,
-)})||"{}");var r=document.documentElement;var t=a.tema==="claro"||a.tema==="oscuro"?a.tema:"sistema";var h=/^\/(es|en)?\/?$/.test(location.pathname);r.classList.toggle("dark",!h&&(t==="oscuro"||(t==="sistema"&&matchMedia("(prefers-color-scheme: dark)").matches)));r.dataset.acento=a.acento==="negro"?"negro":"azul"}catch(e){}})()`;
+)})||"{}");var r=document.documentElement;var t=a.tema==="claro"||a.tema==="oscuro"?a.tema:"sistema";r.classList.toggle("dark",(t==="oscuro"||(t==="sistema"&&matchMedia("(prefers-color-scheme: dark)").matches)));r.dataset.acento=a.acento==="negro"?"negro":"azul"}catch(e){}})()`;

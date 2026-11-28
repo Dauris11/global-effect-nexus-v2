@@ -1,36 +1,14 @@
-import { unstable_cache } from "next/cache";
-
-import { consultar, consultarUna } from "@/lib/db";
-import { SQL_HOY_RD } from "@/lib/fecha-rd";
+import { consultar } from "@/lib/db";
 
 /**
- * Datos públicos de la página de inicio.
+ * Lo que queda de las consultas de la portada.
  *
- * Todo lo de aquí lo lee gente sin sesión, así que las consultas solo piden
- * columnas que se pueden mostrar en abierto: ni un nombre de estudiante, ni un
- * dato de contacto, ni nada de un expediente. Las cifras salen agregadas.
- *
- * Las consultas filtran lo no publicado en SQL, no en el componente: es lo que
- * evita que un borrador se cuele por descuido en un `map`.
- */
-
-/**
- * Etiqueta de caché de todo lo público de la portada.
- *
- * La landing es la página más visitada y la única que cualquiera abre sin
- * sesión. Sin caché, cada visita disparaba cinco consultas al pooler para
- * devolver exactamente lo mismo que a la anterior. Ahora las respuestas se
- * guardan y se tiran de golpe cuando administración publica algo, llamando a
- * `revalidateTag(TAG_LANDING)` desde las acciones.
- *
- * El `revalidate` de cada consulta es el tope por si el dato cambia por fuera
- * del panel —una fila tocada a mano, un evento importado— y va acorde a lo
- * rápido que cada cosa envejece.
+ * La portada ya no lee la base para nada más que los parámetros del comedor: es
+ * la puerta del portal y no muestra cifras, eventos ni noticias. Solo sobrevive
+ * lo que usa la pantalla de administración de anuncios (`/configuracion/landing`)
+ * y la etiqueta de caché que sus acciones invalidan.
  */
 export const TAG_LANDING = "landing";
-
-/** Cinco minutos: lo que tarda en importar que una cifra esté vieja. */
-const VIDA_NORMAL = 300;
 
 export type DiapositivaLanding = {
   id: string;
@@ -49,25 +27,6 @@ export type DiapositivaAdmin = DiapositivaLanding & {
 };
 
 /**
- * Anuncios del hero que administración haya publicado y dejado activos.
- *
- * Cuando no hay ninguno, el hero usa el contenido de `messages`, que sí está
- * traducido a los dos idiomas. Estas filas son texto libre en un solo idioma,
- * así que solo deben mandar cuando alguien las publique de verdad.
- */
-export const diapositivasLanding = unstable_cache(
-  async (): Promise<DiapositivaLanding[]> =>
-    consultar<DiapositivaLanding>(
-      `SELECT id, titulo, subtitulo, texto, imagen_url, cta_texto, cta_enlace
-         FROM landing_slide
-        WHERE activo
-        ORDER BY orden, created_at`,
-    ),
-  ["landing-diapositivas"],
-  { tags: [TAG_LANDING], revalidate: VIDA_NORMAL },
-);
-
-/**
  * Todos los anuncios, activos y ocultos, para el panel de administración.
  *
  * Sin caché a propósito: es la pantalla desde la que se edita, y ver ahí un
@@ -82,118 +41,3 @@ export async function diapositivasParaAdmin(): Promise<DiapositivaAdmin[]> {
       ORDER BY activo DESC, orden, created_at`,
   );
 }
-
-export type EventoPublico = {
-  id: string;
-  titulo: string;
-  descripcion: string | null;
-  tipo: string;
-  fecha: string;
-  hora_inicio: string | null;
-  ubicacion: string | null;
-};
-
-/**
- * Eventos que aún no han pasado.
- *
- * `fecha::text` en lugar de la fecha cruda: `pg` convierte DATE a un Date de
- * JavaScript en la zona del servidor, y un evento del día 15 puede acabar
- * mostrándose como el 14. Como texto `YYYY-MM-DD` no hay nada que desplazar.
- *
- * Se excluyen los cancelados: siguen en la tabla para el historial interno,
- * pero anunciar en público algo cancelado sería peor que no anunciarlo.
- */
-export const eventosPublicos = unstable_cache(
-  async (limite = 12): Promise<EventoPublico[]> =>
-    consultar<EventoPublico>(
-      `SELECT id, titulo, descripcion, tipo, fecha::text AS fecha, hora_inicio, ubicacion
-         FROM evento
-        WHERE audiencia = 'todos'
-          AND fecha >= (now() AT TIME ZONE 'America/Santo_Domingo')::date
-          AND estado <> 'cancelado'
-        ORDER BY fecha, hora_inicio NULLS LAST
-        LIMIT $1`,
-      [limite],
-    ),
-  ["landing-eventos"],
-  { tags: [TAG_LANDING], revalidate: VIDA_NORMAL },
-);
-
-export type NoticiaPublica = {
-  id: string;
-  titulo: string;
-  resumen: string | null;
-  imagen_url: string | null;
-  fecha: string;
-  autor: string | null;
-};
-
-/** Noticias publicadas, de la más reciente a la más antigua. */
-export const noticiasPublicas = unstable_cache(
-  async (limite = 6): Promise<NoticiaPublica[]> =>
-    consultar<NoticiaPublica>(
-      `SELECT id, titulo, resumen, imagen_url, fecha::text AS fecha, autor
-         FROM noticia
-        WHERE publicada
-        ORDER BY fecha DESC
-        LIMIT $1`,
-      [limite],
-    ),
-  ["landing-noticias"],
-  { tags: [TAG_LANDING], revalidate: VIDA_NORMAL },
-);
-
-/**
- * Cuántas personas se han inscrito hoy al almuerzo.
- *
- * Solo el número. La portada no muestra nombres: quién come es asunto de quien
- * organiza el comedor, no de quien visita la web.
- *
- * Un minuto de caché y no cinco: es la única cifra que se mueve mientras la
- * ventana está abierta, de 6:00 a 8:30, y verla clavada media hora se notaría.
- */
-export const inscritosComidaHoy = unstable_cache(
-  async (): Promise<number> => {
-    const fila = await consultarUna<{ n: number }>(
-      `SELECT count(*)::int AS n FROM inscripcion_comida WHERE fecha = ${SQL_HOY_RD}`,
-    );
-
-    return fila?.n ?? 0;
-  },
-  ["landing-comida-hoy"],
-  { tags: [TAG_LANDING], revalidate: 60 },
-);
-
-export type CifrasPublicas = {
-  /** Estudiantes activos. Desde la 0047 todos son becados. */
-  becados: number;
-  /** Patrocinadores con el estado `activo`. */
-  patrocinadores: number;
-  /** Estudiantes distintos con una materia de Global Effect 360 en curso. */
-  cursando_360: number;
-};
-
-/**
- * Las cifras de la franja de la portada.
- *
- * Solo recuentos: ni un nombre ni un monto. El monto mensual de los
- * patrocinadores es dato de contabilidad y no se publica aunque sumado no
- * identificara a nadie, porque decir cuánto entra es decisión de la Dirección.
- *
- * Una sola ida al pooler con tres subconsultas, y la misma caché que el resto:
- * estas cifras cambian al ritmo de una matrícula, no de una visita.
- */
-export const cifrasPublicas = unstable_cache(
-  async (): Promise<CifrasPublicas> => {
-    const fila = await consultarUna<CifrasPublicas>(
-      `SELECT (SELECT count(*)::int FROM estudiante WHERE estado = 'activo') AS becados,
-              (SELECT count(*)::int FROM patrocinador WHERE estado = 'activo') AS patrocinadores,
-              (SELECT count(DISTINCT estudiante_id)::int FROM inscripcion_360
-                WHERE estado = 'cursando') AS cursando_360`,
-    );
-
-    return fila ?? { becados: 0, patrocinadores: 0, cursando_360: 0 };
-  },
-  ["landing-cifras"],
-  { tags: [TAG_LANDING], revalidate: VIDA_NORMAL },
-);

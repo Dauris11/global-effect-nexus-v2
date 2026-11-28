@@ -1,135 +1,86 @@
-import {
-  ChevronRight,
-  BookOpen,
-  DollarSign,
-  GraduationCap,
-  Inbox,
-  LogIn,
-  Shield,
-  UtensilsCrossed,
-} from "lucide-react";
+import { ArrowRight, Bus, FileText, LogIn, Utensils } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { aMinutos, horaLegible } from "@/lib/parametros";
+import { EstadoComedor } from "@/components/landing/estado-comedor";
+import { CONTENEDOR } from "@/components/landing/piezas";
+import { Link } from "@/i18n/navigation";
+import { horaEnRD } from "@/lib/fechas";
+import { aMinutos, horaCorta } from "@/lib/parametros";
 import { parametros } from "@/server/parametros/consultas";
 
-import { EstadoComedor } from "@/components/landing/estado-comedor";
-import { CabeceraSeccion, CONTENEDOR } from "@/components/landing/piezas";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
-
 /**
- * Franja de acción: las puertas a los portales y servicios del sistema, justo
- * debajo del hero, más los accesos directos por rol.
+ * Accesos rápidos: cuatro tarjetas que suben 64 px sobre el hero.
  *
- * Tres tarjetas blancas del mismo peso; la del portal no se pinta distinta
- * porque el CTA principal ya está en la barra ("Acceder") y repetir el
- * turquesa en una superficie entera rompería la regla del acento único
- * (docs/09 §1.2). El estado del comedor va dentro de su puerta, que es donde
- * sirve de algo.
+ * El orden es FIJO (portal, comida, transporte, solicitudes) y cada tarjeta
+ * ocupa siempre su sitio: quien viene a inscribirse al comedor o a ver la guagua
+ * la busca por posición, no leyendo. Por eso aquí no hay reordenado, ni entrada
+ * animada, ni elevación al pasar el ratón: lo único que reacciona es el borde, la
+ * sombra y la flecha.
+ *
+ * La segunda línea de las cuatro mide lo mismo (`min-h`), esté o no el estado del
+ * comedor; así nada se desplaza cuando el estado en vivo se renueva.
+ *
+ * Los parámetros se llaman `comedor.apertura` y `comedor.cierre` (Configuración →
+ * Parámetros). La hora actual es la de La Vega, no la del servidor (que corre en
+ * UTC): `horaEnRD`. La página se revalida cada 60 s, ver `page.tsx`.
  */
-export async function SeccionAcceso({ inscritosHoy }: { inscritosHoy: number }) {
+export async function SeccionAcceso({ idioma }: { idioma: "es" | "en" }) {
   const t = await getTranslations("landing");
   const p = await parametros();
-  const horas = {
-    apertura: horaLegible(p["comedor.apertura"]),
-    cierre: horaLegible(p["comedor.cierre"]),
-  };
 
-  const puertas = [
+  const ahora = aMinutos(horaEnRD(new Date()));
+  const apertura = aMinutos(p["comedor.apertura"]);
+  const cierre = aMinutos(p["comedor.cierre"]);
+  const abierto = ahora >= apertura && ahora < cierre;
+
+  const textoComida = abierto
+    ? t("mealOpenNow", { hora: horaCorta(p["comedor.cierre"], idioma) })
+    : t("mealClosedNow", { hora: horaCorta(p["comedor.apertura"], idioma) });
+
+  const tarjetas = [
     { clave: "portal", icono: LogIn, href: "/login" },
-    { clave: "meals", icono: UtensilsCrossed, href: "/comida" },
-    { clave: "requests", icono: Inbox, href: "/portal/estudiante/solicitudes" },
-  ] as const;
-
-  const roles = [
-    { clave: "students", icono: GraduationCap },
-    { clave: "teachers", icono: BookOpen },
-    { clave: "admin", icono: Shield },
-    { clave: "accounting", icono: DollarSign },
+    { clave: "meals", icono: Utensils, href: "/comida" },
+    { clave: "transport", icono: Bus, href: "/transporte" },
+    // Solicitudes pide sesión: el login devuelve a la pantalla de solicitudes.
+    { clave: "requests", icono: FileText, href: "/login" },
   ] as const;
 
   return (
-    <section id="acceso" className="scroll-mt-36 py-16 md:scroll-mt-24 md:py-24">
+    <section id="accesos" aria-labelledby="accesos-titulo" className="relative z-[2] -mt-10 scroll-mt-24 md:-mt-16">
       <div className={CONTENEDOR}>
-        <CabeceraSeccion titulo={t("accessTitle")} />
+        <h2 id="accesos-titulo" className="sr-only">
+          {t("quickTitle")}
+        </h2>
 
-        <ul className="revelar-hijos mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
-          {puertas.map((puerta) => (
-            <li key={puerta.clave}>
+        <ul aria-label={t("quickLabel")} className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+          {tarjetas.map((tarjeta) => (
+            <li key={tarjeta.clave}>
               <Link
-                href={puerta.href}
-                className="group flex h-full flex-col justify-between rounded-card border border-linea bg-card p-6 shadow-card transition-[translate,box-shadow,border-color,scale] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:border-marca-300/80 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.99] md:p-7"
+                href={tarjeta.href}
+                className="group flex h-full flex-col gap-3.5 rounded-card border border-linea bg-card p-4 shadow-card transition-[box-shadow,border-color] duration-200 hover:border-marca-300 hover:shadow-elevada focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:p-5"
               >
-                <div>
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-control bg-muted text-tinta transition-colors duration-200 group-hover:bg-marca-500 group-hover:text-white">
-                    <puerta.icono className="size-6" />
-                  </span>
+                <span className="flex size-10 items-center justify-center rounded-control bg-marca-50 text-marca-600 dark:text-marca-300">
+                  <tarjeta.icono className="size-5" />
+                </span>
 
-                  <h3 className="mt-6 text-xl font-semibold tracking-[-0.015em] text-tinta">
-                    {t(`access_${puerta.clave}_title`)}
-                  </h3>
+                <b className="text-base font-bold text-tinta">{t(`quick_${tarjeta.clave}_title`)}</b>
 
-                  {puerta.clave === "meals" && (
-                    <div className="mt-4">
-                      <EstadoComedor
-                        aperturaMin={aMinutos(p["comedor.apertura"])}
-                        cierreMin={aMinutos(p["comedor.cierre"])}
-                        textos={{
-                          abierto: t("panelMealsOpen"),
-                          cerrado: t("panelMealsClosed"),
-                          ventana: t("panelMealsWindow", horas),
-                          quedan: t.raw("panelMealsLeft") as string,
-                          proximaApertura: t("panelMealsNext", horas),
-                          inscritos:
-                            inscritosHoy > 0
-                              ? `${inscritosHoy} ${t("accessMealsSignups", { n: inscritosHoy })}`
-                              : "",
-                        }}
-                      />
-                    </div>
+                <span className="-mt-2 flex min-h-[42px] items-start text-sm text-tinta-2">
+                  {tarjeta.clave === "meals" ? (
+                    <EstadoComedor abierto={abierto} texto={textoComida} />
+                  ) : (
+                    t(`quick_${tarjeta.clave}_desc`)
                   )}
-                </div>
+                </span>
 
-                <div className="mt-8 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-marca-600 transition-colors group-hover:text-marca-700">
-                    {t("enter")}
-                  </span>
-                  {/* La flecha en un círculo que se llena al pasar: el gesto
-                      dice "esto se pulsa" sin pintar la tarjeta entera. */}
-                  <span className="flex size-10 items-center justify-center rounded-full border border-linea text-tinta transition-[background-color,border-color,color] duration-200 group-hover:border-marca-500 group-hover:bg-marca-500 group-hover:text-white">
-                    <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </span>
-                </div>
+                <span className="mt-auto flex items-center justify-between text-sm font-semibold text-marca-700">
+                  {t(`quick_${tarjeta.clave}_go`)}
+                  <ArrowRight className="size-[18px] transition-transform duration-200 group-hover:translate-x-1" />
+                </span>
               </Link>
             </li>
           ))}
         </ul>
-
-        {/* Accesos por rol: todos llevan al mismo inicio de sesión, pero
-            nombrar el rol le dice a cada uno "esto también es para ti". */}
-        <div className="revelar mt-10 flex flex-col gap-4 border-t border-linea pt-8 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="font-semibold text-tinta">{t("accessRolesTitle")}</p>
-          </div>
-
-          <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-            {roles.map((rol) => (
-              <li key={rol.clave}>
-                <Link
-                  href="/login"
-                  className={cn(
-                    "flex h-11 items-center gap-2 rounded-full border border-linea-fuerte bg-background px-4 text-sm font-medium text-tinta transition-colors",
-                    "hover:border-tinta hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.97]",
-                  )}
-                >
-                  <rol.icono className="size-4 shrink-0 text-tinta-2" />
-                  <span className="truncate">{t(`role_${rol.clave}`)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </section>
   );

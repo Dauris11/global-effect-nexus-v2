@@ -988,3 +988,74 @@ html:not(.dark)[data-acento="negro"] {
   color: var(--tinta-2);
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * Mapa de la landing (`SeccionMapa`): el SVG se pega en línea para que sus
+ * colores salgan de estos tokens y sigan al tema, cosa que un `<img>` no puede.
+ * Derivados de los neutros y la marca existentes, nada propio.
+ */
+:root {
+  --map-land: var(--brand-100);
+  --map-stroke: var(--brand-300);
+  --map-neighbor: var(--line);
+  --map-city: var(--ink-3);
+  --map-label: var(--ink);
+  --map-pin: var(--brand-500);
+  /* El borde del pin es el de la superficie donde se apoya el mapa, para que lo recorte limpio. */
+  --map-pin-borde: var(--surface);
+}
+.dark {
+  /* La marca a baja opacidad sobre la tarjeta oscura: tierra visible sin brillar. */
+  --map-land: var(--brand-100);
+  --map-stroke: var(--brand-600);
+  --map-neighbor: var(--gray-900);
+  --map-city: var(--gray-400);
+  --map-label: var(--gray-50);
+  --map-pin-borde: var(--gray-925);
+}
+
+/* Todo el movimiento del mapa vive dentro de `no-preference`: quien pide menos movimiento ve el pin quieto. */
+@keyframes mapa-caida {
+  0% {
+    opacity: 0;
+    transform: translateY(-48px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-7px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes mapa-pulso {
+  from {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+.mapa-pulso {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Sin JS la clase `mapa-listo` nunca se pone y el pin se ve fijo: el movimiento solo mejora. */
+  .mapa-listo:not(.mapa-visible) .mapa-cae,
+  .mapa-listo:not(.mapa-visible) .mapa-pulso {
+    opacity: 0;
+  }
+  .mapa-visible .mapa-cae {
+    animation: mapa-caida 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .mapa-visible .mapa-pulso {
+    animation: mapa-pulso 2.4s ease-out 0.8s infinite;
+  }
+}

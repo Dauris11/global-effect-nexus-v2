@@ -108,3 +108,17 @@ export function horaLegible(hora: string): string {
 
   return `${doce}:${String(m).padStart(2, "0")} ${sufijo}`;
 }
+
+/**
+ * «08:30» → «8:30 a. m.» en español y «8:30 AM» en inglés. Es la hora tal como la
+ * lee una persona en la portada; `horaLegible` (arriba) se queda para los textos
+ * que ya la usaban sin distinguir idioma.
+ */
+export function horaCorta(hora: string, idioma: "es" | "en"): string {
+  const [h = 0, m = 0] = hora.split(":").map(Number);
+  const doce = h % 12 === 0 ? 12 : h % 12;
+  const minutos = String(m).padStart(2, "0");
+  const sufijo = idioma === "es" ? (h >= 12 ? "p. m." : "a. m.") : h >= 12 ? "PM" : "AM";
+
+  return `${doce}:${minutos} ${sufijo}`;
+}
