@@ -52,17 +52,6 @@ export async function SeccionFaq() {
             <h2 id="faq-titulo" className={TITULO_SECCION}>
               {t("titulo")}
             </h2>
-            <p className="mt-3 text-tinta-2">
-              {t("ayuda")}{" "}
-              <a
-                href={`mailto:${ENTIDAD.correo}`}
-                className="inline-flex items-center gap-1.5 rounded-control font-semibold text-marca-600 underline-offset-4 hover:text-marca-700 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                <Mail aria-hidden className="size-4 shrink-0" />
-                {ENTIDAD.correo}
-              </a>
-              .
-            </p>
 
             <FiltroFaq
               categorias={CATEGORIAS_FAQ.map((c) => ({ id: c, etiqueta: t(`categorias.${c}`) }))}

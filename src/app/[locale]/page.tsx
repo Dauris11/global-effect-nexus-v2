@@ -148,12 +148,8 @@ export default async function PaginaInicio({
           accederCorto: t("enterShort"),
           logo: tComun("foundation"),
           principal: t("navMain"),
-          tema: t("themeLabel"),
-          temas: {
-            claro: t("themeLight"),
-            oscuro: t("themeDark"),
-            sistema: t("themeSystem"),
-          },
+          comida: t("quick_meals_title"),
+          transporte: t("quick_transport_title"),
         }}
       />
 

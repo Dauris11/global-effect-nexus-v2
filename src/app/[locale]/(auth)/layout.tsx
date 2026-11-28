@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import "@/components/auth/auth.css";
+import { FondoGrano } from "@/components/auth/fondo-grano";
 import { Link } from "@/i18n/navigation";
 
 /** Las pantallas de acceso no se indexan (GS-01: login y áreas privadas con `noindex`). */
@@ -43,8 +44,9 @@ export default function LayoutAuth({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
 
-      <main className="flex flex-col px-6 py-6 sm:px-12 lg:order-1">
-        <div>
+      <main className="relative flex flex-col px-6 py-6 sm:px-12 lg:order-1 overflow-hidden">
+        <FondoGrano opacidadGrano={0.06} cantidadParticulas={30} />
+        <div className="relative z-10">
           <Link
             href="/"
             className="-ml-2.5 inline-flex h-9 items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-tinta-2 transition-colors hover:bg-muted hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -54,7 +56,7 @@ export default function LayoutAuth({ children }: { children: React.ReactNode }) 
           </Link>
         </div>
 
-        <div className="flex flex-1 items-center justify-center py-8">
+        <div className="relative z-10 flex flex-1 items-center justify-center py-8">
           <div className="w-full max-w-[400px]">{children}</div>
         </div>
       </main>

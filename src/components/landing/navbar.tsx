@@ -2,20 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { Bus, Utensils } from "lucide-react";
 
-import { useApariencia } from "@/components/apariencia/usar-apariencia";
 import { CONTENEDOR } from "@/components/landing/piezas";
 import { Revelador } from "@/components/landing/revelador";
 import { variantesBoton } from "@/components/ui/button-variantes";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
-import { TEMAS, type Tema } from "@/lib/apariencia";
 import { cn } from "@/lib/utils";
 
 /**
@@ -39,8 +31,6 @@ import { cn } from "@/lib/utils";
  * aparato y el script del `<head>` lo aplica antes de pintar, sin destello.
  */
 
-const ICONOS_TEMA: Record<Tema, typeof Sun> = { claro: Sun, oscuro: Moon, sistema: Monitor };
-
 export function Navbar({
   enlaces,
   textos,
@@ -51,14 +41,11 @@ export function Navbar({
     accederCorto: string;
     logo: string;
     principal: string;
-    tema: string;
-    temas: Record<Tema, string>;
+    comida?: string;
+    transporte?: string;
   };
 }) {
   const [bajado, setBajado] = useState(false);
-  const [giros, setGiros] = useState(0);
-  const { tema, cambiar } = useApariencia();
-  const IconoTema = ICONOS_TEMA[tema];
 
   useEffect(() => {
     const alRodar = () => setBajado(window.scrollY > 12);
@@ -100,37 +87,25 @@ export function Navbar({
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2.5 md:ml-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label={textos.tema}
-                className="flex size-9 items-center justify-center rounded-[8px] border border-linea-fuerte bg-surface text-tinta transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                <span key={giros} className={cn("flex", giros > 0 && "tema-giro")}>
-                  <IconoTema className="size-[18px]" />
-                </span>
-              </button>
-            </DropdownMenuTrigger>
+        <div className="ml-auto flex items-center gap-2 md:ml-0">
+          {/* Accesos directos a Comida y Transporte en la barra */}
+          <Link
+            href="/comida"
+            aria-label={textos.comida ?? "Inscripción de comida"}
+            title={textos.comida ?? "Comida"}
+            className="flex size-9 items-center justify-center rounded-[8px] border border-linea-fuerte bg-surface text-tinta transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Utensils className="size-[18px]" />
+          </Link>
 
-            <DropdownMenuContent align="end">
-              {TEMAS.map((valor) => {
-                const Icono = ICONOS_TEMA[valor];
-
-                return (
-                  <DropdownMenuItem key={valor} onSelect={() => {
-                      setGiros((n) => n + 1);
-                      cambiar({ tema: valor });
-                    }}>
-                    <Icono className="size-4" />
-                    {textos.temas[valor]}
-                    {tema === valor && <Check className="ml-auto size-4" />}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Link
+            href="/transporte"
+            aria-label={textos.transporte ?? "Transporte en vivo"}
+            title={textos.transporte ?? "Transporte"}
+            className="flex size-9 items-center justify-center rounded-[8px] border border-linea-fuerte bg-surface text-tinta transition-colors hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Bus className="size-[18px]" />
+          </Link>
 
           <Link href="/login" className={variantesBoton()}>
             <span className="hidden sm:inline">{textos.acceder}</span>

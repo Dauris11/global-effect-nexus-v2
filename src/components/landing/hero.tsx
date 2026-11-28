@@ -98,7 +98,7 @@ export async function Hero() {
 
             <h1
               id="hero-titulo"
-              className="mt-[18px] mb-4 text-[clamp(36px,5.2vw,60px)] leading-[1.05] font-bold tracking-[-0.03em] text-balance"
+              className="mt-[18px] mb-6 text-[clamp(36px,5.2vw,60px)] leading-[1.05] font-bold tracking-[-0.03em] text-balance"
             >
               {palabras.map((palabra, i) => (
                 <span key={i}>
@@ -109,13 +109,9 @@ export async function Hero() {
               ))}
             </h1>
 
-            <p className="hero-in max-w-[560px] text-lg text-white/85" style={{ "--paso": palabras.length } as React.CSSProperties}>
-              {t("heroDefinition")}
-            </p>
-
             <div
               className="hero-in mt-7 flex flex-wrap gap-3"
-              style={{ "--paso": palabras.length + 2 } as React.CSSProperties}
+              style={{ "--paso": palabras.length + 1 } as React.CSSProperties}
             >
               <Link href="/login" className={variantesBoton({ size: "lg", className: "group/cta" })}>
                 {t("heroCta")}
