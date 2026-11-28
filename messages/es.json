@@ -5000,7 +5000,7 @@
       "filtroCategoria": "Categoría de gasto",
       "filtroMontoMin": "Monto mín.",
       "filtroMontoMax": "Monto máx.",
-      "limpiarFiltros": "Limpiar",
+      "limpiarFiltros": "Limpiar filtros",
       "total": "Total",
       "sinCategoriasCajaChica": "Marca cuentas con «Agregar a caja chica» en Configuración contable > Catálogo.",
       "errores": {

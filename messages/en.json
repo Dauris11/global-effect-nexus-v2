@@ -5000,7 +5000,7 @@
       "filtroCategoria": "Expense category",
       "filtroMontoMin": "Min amount",
       "filtroMontoMax": "Max amount",
-      "limpiarFiltros": "Clear",
+      "limpiarFiltros": "Clear filters",
       "total": "Total",
       "sinCategoriasCajaChica": "Check accounts with “Add to petty cash” in Accounting settings > Chart of accounts.",
       "errores": {
