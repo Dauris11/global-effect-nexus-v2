@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Download, ListChecks, Rows3, Scale } from "lucide-react";
+import { CheckCircle2, ChevronLeft, Download, ListChecks, Rows3, Scale, XCircle } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
@@ -9,6 +9,7 @@ import { DialogoConfigurarCuentaBanco } from "@/components/contabilidad/bancos/d
 import { DialogoSubirEstado } from "@/components/contabilidad/bancos/formularios-banco";
 import { LibroBanco } from "@/components/contabilidad/bancos/libro-banco";
 import { Monto } from "@/components/contabilidad/comun";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChipFiltro } from "@/components/ui/chip-filtro";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
@@ -20,7 +21,7 @@ import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { numeroDocumento } from "@/lib/contabilidad/formato";
 import { fechaCorta } from "@/lib/fechas";
-import { TARJETA } from "@/lib/paleta";
+import { INSIGNIA_SEMAFORO } from "@/lib/paleta";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   cuentaPorId,
@@ -233,37 +234,86 @@ async function VistaConciliadas({
         <h2 className="texto-titulo-seccion">{t("conciliadasTitulo", { n: partidas.length })}</h2>
         <TooltipAyuda texto={t("conciliadasAyuda")} etiqueta={t("masInformacion")} />
       </div>
-      <ul className="space-y-3">
-        {partidas.map((p) => (
-          <li key={p.id} className={`${TARJETA.contenido} flex flex-col gap-3 p-4 sm:flex-row sm:items-center`}>
-            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 sm:gap-6">
-              <div className="min-w-0">
-                <p className="texto-meta">{t("delBancoCorto")}</p>
-                <p className="truncate text-tinta">{p.banco_descripcion}</p>
-                <p className="texto-meta">
-                  {fechaCorta(p.banco_fecha, idioma)}
-                  {p.banco_referencia && ` · ${p.banco_referencia}`}
-                </p>
-              </div>
-              <div className="min-w-0">
-                <p className="texto-meta">{t("deLibrosCorto")}</p>
-                {p.asiento_id && p.asiento_numero ? (
-                  <Link href={`/contabilidad/asientos/${p.asiento_id}`} className="block truncate text-marca-600 hover:underline">
-                    {numeroDocumento("AS", p.asiento_numero)} · {p.asiento_concepto}
-                  </Link>
-                ) : (
-                  <p className="truncate font-medium text-tinta">{p.cargo_nombre ?? t("comisionesDefault")}</p>
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-linea text-tinta-3">
+            <tr>
+              <th className="whitespace-nowrap px-3 py-3 font-medium">{t("colConciliadas.fecha")}</th>
+              <th className="px-3 py-3 font-medium">{t("colConciliadas.descBanco")}</th>
+              <th className="whitespace-nowrap px-3 py-3 font-medium">{t("colConciliadas.refBanco")}</th>
+              <th className="whitespace-nowrap px-3 py-3 font-medium">{t("colConciliadas.asiento")}</th>
+              <th className="px-3 py-3 font-medium">{t("colConciliadas.descLibro")}</th>
+              <th className="whitespace-nowrap px-3 py-3 font-medium">{t("colConciliadas.refLibro")}</th>
+              <th className="whitespace-nowrap px-3 py-3 text-right font-medium">{t("colConciliadas.monto")}</th>
+              <th className="whitespace-nowrap px-3 py-3 text-center font-medium">{t("colConciliadas.comision")}</th>
+              <th className="whitespace-nowrap px-3 py-3 font-medium">{t("colConciliadas.usuario")}</th>
+              {concilia && (
+                <th className="whitespace-nowrap px-3 py-3 text-right font-medium">{t("colConciliadas.anular")}</th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-linea">
+            {partidas.map((p) => (
+              <tr key={p.id} className="transition-colors hover:bg-muted/40">
+                <td className="whitespace-nowrap px-3 py-2.5 tabular-nums text-tinta-2">
+                  {fechaCorta(p.conciliado_en, idioma)}
+                </td>
+                <td className="max-w-52 truncate px-3 py-2.5 text-tinta" title={p.banco_descripcion}>
+                  {p.banco_descripcion}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 font-mono text-tinta-2">
+                  {p.banco_referencia || "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 font-mono">
+                  {p.asiento_id && p.asiento_numero ? (
+                    <Link
+                      href={`/contabilidad/asientos/${p.asiento_id}`}
+                      className="font-medium text-marca-600 hover:underline"
+                    >
+                      {numeroDocumento("AS", p.asiento_numero)}
+                    </Link>
+                  ) : (
+                    <span className="text-tinta-3">—</span>
+                  )}
+                </td>
+                <td
+                  className="max-w-52 truncate px-3 py-2.5 text-tinta"
+                  title={p.libro_descripcion ?? p.cargo_nombre ?? undefined}
+                >
+                  {p.libro_descripcion ?? p.cargo_nombre ?? "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 font-mono text-tinta-2">
+                  {p.libro_referencia || "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums">
+                  <Monto valor={p.monto} moneda={moneda} conSigno className="font-semibold" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-center">
+                  {p.es_comision ? (
+                    <Badge className={INSIGNIA_SEMAFORO.dentro}>
+                      <CheckCircle2 />
+                      {t("si")}
+                    </Badge>
+                  ) : (
+                    <Badge className={INSIGNIA_SEMAFORO.alerta}>
+                      <XCircle />
+                      {t("no")}
+                    </Badge>
+                  )}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-tinta-2">
+                  {p.conciliado_por}
+                </td>
+                {concilia && (
+                  <td className="whitespace-nowrap px-3 py-2.5 text-right">
+                    <BotonAnularPartida id={p.id} />
+                  </td>
                 )}
-                <p className="texto-meta">{t("conciliadaPor", { nombre: p.conciliado_por, fecha: fechaCorta(p.conciliado_en, idioma) })}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-3 sm:justify-end">
-              <Monto valor={p.monto} moneda={moneda} conSigno className="font-semibold" />
-              {concilia && <BotonAnularPartida id={p.id} />}
-            </div>
-          </li>
-        ))}
-      </ul>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

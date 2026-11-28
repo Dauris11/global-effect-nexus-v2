@@ -371,7 +371,10 @@ export type PartidaConciliada = {
   asiento_id: string | null;
   asiento_numero: string | null;
   asiento_concepto: string | null;
+  libro_descripcion: string | null;
+  libro_referencia: string | null;
   cargo_nombre: string | null;
+  es_comision: boolean;
 };
 
 export type PorConciliar = { banco: LineaExtracto[]; libros: LineaAsientoBanco[] };
@@ -442,15 +445,20 @@ export async function partidasConciliadas(cuentaId: string): Promise<PartidaConc
             e.fecha::text AS banco_fecha, e.descripcion AS banco_descripcion,
             e.referencia AS banco_referencia, e.monto::text AS monto,
             a.id AS asiento_id, a.numero::text AS asiento_numero, a.concepto AS asiento_concepto,
-            ic.nombre AS cargo_nombre
+            coalesce(l.descripcion, a.concepto) AS libro_descripcion,
+            coalesce(nullif(trim(r.referencia), ''), nullif(trim(ti.referencia), '')) AS libro_referencia,
+            ic.nombre AS cargo_nombre,
+            (p.impuesto_cargo_id IS NOT NULL) AS es_comision
        FROM contabilidad.conciliacion_partida p
        JOIN contabilidad.extracto_linea e ON e.id = p.extracto_linea_id
        LEFT JOIN contabilidad.asiento_linea l ON l.id = p.asiento_linea_id
        LEFT JOIN contabilidad.asiento a ON a.id = l.asiento_id
+       LEFT JOIN contabilidad.recibo r ON r.asiento_id = a.id
+       LEFT JOIN contabilidad.transferencia_interna ti ON ti.asiento_id = a.id
        LEFT JOIN contabilidad.impuesto_cargo ic ON ic.id = p.impuesto_cargo_id
        JOIN public.usuario u ON u.id = p.conciliado_por
       WHERE p.cuenta_id = $1 AND p.anulado_en IS NULL
-      ORDER BY e.fecha DESC, p.conciliado_en DESC
+      ORDER BY p.conciliado_en DESC, e.fecha DESC
       LIMIT 500`,
     [cuentaId],
   );

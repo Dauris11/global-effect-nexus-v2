@@ -1,23 +1,20 @@
-import { BookOpen, CheckCircle2, Search, X } from "lucide-react";
+import { BookOpen, CheckCircle2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { Monto, SELECT } from "@/components/contabilidad/comun";
+import { FiltrosMovimientosBanco } from "@/components/contabilidad/bancos/filtros-movimientos";
+import { Monto } from "@/components/contabilidad/comun";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
-import { Input } from "@/components/ui/input";
 import { TooltipAyuda } from "@/components/ui/tooltip-ayuda";
-import { Link } from "@/i18n/navigation";
 import { sumarMontos, type Moneda } from "@/lib/contabilidad/formato";
 import type { ImpuestoCargo } from "@/lib/contabilidad/impuestos-cargos";
 import { fechaCorta } from "@/lib/fechas";
 import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
-import { cn } from "@/lib/utils";
 import type { FilaExtractoMovimiento, FiltroExtracto } from "@/server/contabilidad/bancos/consultas";
 
 /**
  * Resumen de movimientos del estado de cuenta (.csv) subido a la cuenta,
- * con filtros alineados por fecha, tipo, comisiones y texto, y totales de
+ * con filtros en vivo por fecha, tipo, comisiones y texto, y totales de
  * débitos y créditos debajo de la tabla.
  */
 export async function LibroBanco({
@@ -36,14 +33,9 @@ export async function LibroBanco({
   idioma: "es" | "en";
 }) {
   const t = await getTranslations("contab.libro");
-  const hayFiltro = Boolean(
-    filtro.desde || filtro.hasta || filtro.tipo || filtro.comision || filtro.q,
-  );
   const esCero = (v: string) => /^-?0+(\.0+)?$/.test(v);
   const totalDebitos = sumarMontos(movimientos.map((m) => m.retiros));
   const totalCreditos = sumarMontos(movimientos.map((m) => m.depositos));
-  const controlAlineado = "h-9 px-3 py-0 text-sm";
-  const selectAlineado = cn(SELECT, "h-9 px-3 text-sm");
 
   return (
     <div className="space-y-4">
@@ -52,72 +44,7 @@ export async function LibroBanco({
         <TooltipAyuda texto={t("resumenEstadoAyuda")} etiqueta={t("masInformacion")} />
       </div>
 
-      <form
-        method="get"
-        className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[148px_148px_148px_210px_minmax(170px,1fr)_auto]"
-      >
-        <input type="hidden" name="vista" value="movimientos" />
-        <label className="min-w-0 space-y-1.5">
-          <span className="block text-xs font-medium leading-none text-tinta-2">{t("desde")}</span>
-          <Input
-            type="date"
-            name="desde"
-            defaultValue={filtro.desde ?? ""}
-            className={controlAlineado}
-          />
-        </label>
-        <label className="min-w-0 space-y-1.5">
-          <span className="block text-xs font-medium leading-none text-tinta-2">{t("hasta")}</span>
-          <Input
-            type="date"
-            name="hasta"
-            defaultValue={filtro.hasta ?? ""}
-            className={controlAlineado}
-          />
-        </label>
-        <label className="min-w-0 space-y-1.5">
-          <span className="block text-xs font-medium leading-none text-tinta-2">{t("tipo")}</span>
-          <select name="tipo" defaultValue={filtro.tipo ?? ""} className={selectAlineado}>
-            <option value="">{t("todos")}</option>
-            <option value="retiro">{t("retiros")}</option>
-            <option value="deposito">{t("depositos")}</option>
-          </select>
-        </label>
-        <label className="min-w-0 space-y-1.5">
-          <span className="block text-xs font-medium leading-none text-tinta-2">{t("comisiones")}</span>
-          <select name="comision" defaultValue={filtro.comision ?? ""} className={selectAlineado}>
-            <option value="">{t("todasComisiones")}</option>
-            {cargos.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="min-w-0 space-y-1.5">
-          <span className="block text-xs font-medium leading-none text-tinta-2">{t("buscar")}</span>
-          <Input
-            type="search"
-            name="q"
-            defaultValue={filtro.q ?? ""}
-            className={controlAlineado}
-          />
-        </label>
-        <div className="flex items-center gap-2">
-          <Button type="submit" className="h-9 shrink-0">
-            <Search className="size-4" />
-            {t("filtrar")}
-          </Button>
-          {hayFiltro && (
-            <Button asChild variant="ghost" className="h-9 shrink-0">
-              <Link href={`/contabilidad/bancos/${cuentaId}?vista=movimientos`}>
-                <X className="size-4" />
-                {t("limpiar")}
-              </Link>
-            </Button>
-          )}
-        </div>
-      </form>
+      <FiltrosMovimientosBanco cuentaId={cuentaId} filtro={filtro} cargos={cargos} />
 
       {movimientos.length === 0 ? (
         <EstadoVacio icono={BookOpen} titulo={t("vacio")} />
