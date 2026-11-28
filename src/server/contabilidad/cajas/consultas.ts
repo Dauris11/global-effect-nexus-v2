@@ -256,14 +256,15 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
             m.entregado_a, m.factura_con_comprobante, m.comprobante_numero,
             m.recibo_id, (m.adjunto_ruta IS NOT NULL) AS tiene_adjunto,
             m.estado, m.arqueo_id,
-            ast.cuenta_gasto, ast.id AS asiento_id,
+            COALESCE(cg.nombre, ast.cuenta_gasto) AS cuenta_gasto, ast.id AS asiento_id,
             u.nombre AS creado_por_nombre, m.creado_en
        FROM contabilidad.caja_movimiento m
        JOIN public.usuario u ON m.creado_por = u.id
        LEFT JOIN public.usuario p ON m.persona_id = p.id
+       LEFT JOIN contabilidad.cuenta_contable cg ON cg.id = m.cuenta_gasto_id
        LEFT JOIN LATERAL (
          SELECT a.id,
-                (SELECT cc.codigo || ' ' || cc.nombre
+                (SELECT cc.nombre
                    FROM contabilidad.asiento_linea l
                    JOIN contabilidad.cuenta_contable cc ON cc.id = l.cuenta_id
                   WHERE l.asiento_id = a.id AND l.debe > 0

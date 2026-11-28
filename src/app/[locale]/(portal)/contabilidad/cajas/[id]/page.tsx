@@ -165,13 +165,7 @@ export default async function PaginaDetalleCaja({
 
       <section className="space-y-4 border-t border-linea pt-8">
         <h2 className="texto-titulo-seccion">{t("movimientos")}</h2>
-        <TablaMovimientos
-          movimientos={movimientos}
-          moneda={caja.moneda}
-          categorias={categorias}
-          hoy={hoy}
-          puedeRegistrar={puedeRegistrar}
-        />
+        <TablaMovimientos movimientos={movimientos} moneda={caja.moneda} />
       </section>
     </div>
   );

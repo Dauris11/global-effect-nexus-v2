@@ -629,14 +629,16 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
         }
       }
 
+      // La salida NO genera asiento contable: el asiento se realiza al momento
+      // de la reposición agrupando los gastos por su cuenta_gasto_id.
       await fijarAccion(cliente, "crear");
       const { rows } = await cliente.query<{ id: string }>(
         `INSERT INTO contabilidad.caja_movimiento
            (numero, caja_id, fecha, periodo_id, tipo, monto, concepto, entregado_a,
             factura_con_comprobante, comprobante_numero, comprobante_secuencia_id,
-            desglose, adjunto_ruta, estado, creado_por)
+            cuenta_gasto_id, desglose, adjunto_ruta, estado, creado_por)
          VALUES (contabilidad.siguiente_numero('CJ'), $1, $2, contabilidad.periodo_para($2::date),
-                 'gasto', $3, $4, $5, $6, $7, $8, $9::jsonb, $10, 'pendiente', $11)
+                 'gasto', $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, 'pendiente', $12)
          RETURNING id`,
         [
           cajaId,
@@ -647,32 +649,13 @@ export async function registrarMovimientoCajaAction(datos: FormData): Promise<Re
           facturaConComprobante,
           comprobanteNumero,
           comprobanteSecuenciaId,
+          cuentaGasto,
           JSON.stringify(desgloseLimpio),
           ruta,
           usuario.id,
         ],
       );
       const movimientoId = rows[0].id;
-
-      if (cuentaGasto) {
-        await cliente.query(
-          `SELECT contabilidad.crear_asiento($1::date, $2, 'automatico', 'caja_movimiento', $3, $4::jsonb)`,
-          [
-            fecha,
-            `${caja.nombre}: ${concepto}`,
-            movimientoId,
-            aJsonDeAsiento(
-              lineasDeGastoCaja({
-                cuentaGasto,
-                cuentaCaja: caja.cuenta_id,
-                monto,
-                concepto,
-                nombreCaja: caja.nombre,
-              }),
-            ),
-          ],
-        );
-      }
 
       await cliente.query(
         `UPDATE contabilidad.caja SET saldo_actual = saldo_actual - $1 WHERE id = $2`,

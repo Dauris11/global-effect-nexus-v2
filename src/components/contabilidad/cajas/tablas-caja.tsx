@@ -1,129 +1,79 @@
-import { AlertCircle, CheckCircle2, FileText, Receipt, Scale } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { AlertCircle, CheckCircle2, Receipt, Scale } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { Link } from "@/i18n/navigation";
 import { formatearMonto } from "@/lib/contabilidad/formato";
 import { INSIGNIA_SEMAFORO, TARJETA } from "@/lib/paleta";
-import type {
-  ArqueoCaja,
-  CategoriaGastoCaja,
-  MovimientoCaja,
-} from "@/server/contabilidad/cajas/consultas";
-import { BotonAprobarArqueo, DialogoLiquidarVale } from "./acciones-caja";
-import { AsientoArqueo, AsientoMovimientoCaja } from "./botones-asiento-caja";
+import type { ArqueoCaja, MovimientoCaja } from "@/server/contabilidad/cajas/consultas";
+import { BotonAprobarArqueo } from "./acciones-caja";
+import { AsientoArqueo } from "./botones-asiento-caja";
 
-const TIPO = { gasto: "tipoGasto", vale: "tipoVale", reposicion: "tipoReposicion", ajuste: "tipoAjuste" } as const;
-
-function claveEstado(m: MovimientoCaja) {
-  if (m.estado === "anulado") return "estadoAnulado";
-  if (m.tipo === "vale") return m.estado === "pendiente" ? "estadoPorLiquidar" : "estadoLiquidado";
-  if (m.tipo === "gasto") return m.estado === "pendiente" ? "estadoPorReponer" : "estadoRepuesto";
-  return "estadoRecibida";
+function formatearFechaDdMmYyyy(iso: string): string {
+  const partes = iso.split("-");
+  if (partes.length !== 3) return iso;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 /**
- * Movimientos de la caja: tabla en escritorio, tarjetas en el móvil. La
- * reposición lleva "+" y el resto "−": el signo es la única señal que
- * sobrevive en gris.
+ * Movimientos de la caja: tabla con No., Fecha (DD/MM/YYYY), Comprobante,
+ * Concepto (solo el concepto), Entregado a, Categoría de gasto y Monto.
  */
 export function TablaMovimientos({
   movimientos,
   moneda,
-  categorias,
-  hoy,
-  puedeRegistrar,
 }: {
   movimientos: MovimientoCaja[];
   moneda: "DOP" | "USD";
-  categorias: CategoriaGastoCaja[];
-  hoy: string;
-  puedeRegistrar: boolean;
 }) {
   const t = useTranslations("contab.cajas");
-  // El comprobante se descarga con un <a> y no con Link: es una ruta que
-  // redirige a un enlace firmado, no una página.
-  const locale = useLocale();
   if (movimientos.length === 0) {
     return <EstadoVacio icono={Receipt} titulo={t("sinMovimientos")} />;
   }
 
   const signo = (m: MovimientoCaja) => (m.tipo === "reposicion" ? "+" : "−");
-  const acciones = (m: MovimientoCaja) => (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      {m.tieneAdjunto && (
-        <a
-          href={`/${locale}/contabilidad/cajas/${m.cajaId}/adjunto/${m.id}`}
-          className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-marca-600 hover:underline"
-        >
-          <FileText className="size-4" />
-          <span className="sr-only md:not-sr-only">{t("verAdjunto")}</span>
-        </a>
-      )}
-      {m.asientoId && (
-        <Link
-          href={`/contabilidad/asientos/${m.asientoId}`}
-          className="inline-flex min-h-11 items-center text-sm font-medium text-marca-600 hover:underline"
-        >
-          {t("verAsiento")}
-        </Link>
-      )}
-      {/* El vale pendiente aún no tiene asiento; la reposición lo tiene en su recibo. */}
-      {(m.asientoId || (m.tipo === "reposicion" && m.reciboId)) && <AsientoMovimientoCaja movimientoId={m.id} />}
-      {puedeRegistrar && m.tipo === "vale" && m.estado === "pendiente" && (
-        <DialogoLiquidarVale
-          movimientoId={m.id}
-          monto={m.monto}
-          moneda={moneda}
-          categorias={categorias}
-          hoy={hoy}
-        />
-      )}
-    </div>
-  );
 
   return (
     <>
       <div className={`${TARJETA.contenido} hidden overflow-x-auto md:block`}>
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-linea text-tinta-2">
+          <thead className="border-b border-linea text-xs text-tinta-2">
             <tr>
-              <th className="px-4 py-3 font-medium">{t("colNumero")}</th>
-              <th className="px-4 py-3 font-medium">{t("colFecha")}</th>
-              <th className="px-4 py-3 font-medium">{t("colTipo")}</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">{t("colNumero")}</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">{t("colFecha")}</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">{t("colComprobante")}</th>
               <th className="px-4 py-3 font-medium">{t("colConcepto")}</th>
-              <th className="px-4 py-3 text-right font-medium">{t("colMonto")}</th>
-              <th className="px-4 py-3 font-medium">{t("colEstado")}</th>
-              <th className="px-4 py-3" />
+              <th className="whitespace-nowrap px-4 py-3 font-medium">{t("colEntregadoA")}</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">{t("colCategoriaGasto")}</th>
+              <th className="whitespace-nowrap px-4 py-3 text-right font-medium">{t("colMonto")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-linea">
             {movimientos.map((m) => (
-              <tr key={m.id}>
-                <td className="px-4 py-3 font-mono text-xs text-tinta-2">CJ-{m.numero}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-tinta">{m.fecha}</td>
-                <td className="px-4 py-3 text-tinta">{t(TIPO[m.tipo])}</td>
-                <td className="max-w-xs px-4 py-3">
-                  <p className="truncate text-tinta">{m.concepto}</p>
-                  <p className="texto-meta truncate">
-                    {[
-                      m.comprobanteNumero,
-                      m.entregadoA ?? m.personaNombre,
-                      m.cuentaGasto,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
+              <tr key={m.id} className="transition-colors hover:bg-muted/40">
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-tinta-2">
+                  CJ-{m.numero}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-tinta">
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs tabular-nums text-tinta">
+                  {formatearFechaDdMmYyyy(m.fecha)}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-tinta-2">
+                  {m.comprobanteNumero || "—"}
+                </td>
+                <td className="max-w-xs truncate px-4 py-3 text-tinta" title={m.concepto}>
+                  {m.concepto}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-tinta">
+                  {m.entregadoA ?? m.personaNombre ?? "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-tinta-2">
+                  {m.cuentaGasto ?? "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums text-tinta">
                   {signo(m)}
                   {formatearMonto(m.monto, moneda)}
                 </td>
-                <td className="px-4 py-3">
-                  <Badge variant="neutra">{t(claveEstado(m))}</Badge>
-                </td>
-                <td className="px-4 py-2">{acciones(m)}</td>
               </tr>
             ))}
           </tbody>
@@ -136,8 +86,9 @@ export function TablaMovimientos({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-medium text-tinta">{m.concepto}</p>
-                <p className="texto-meta">
-                  {t(TIPO[m.tipo])} · {m.fecha}
+                <p className="texto-meta font-mono tabular-nums">
+                  CJ-{m.numero} · {formatearFechaDdMmYyyy(m.fecha)}
+                  {m.comprobanteNumero && ` · ${m.comprobanteNumero}`}
                 </p>
               </div>
               <p className="whitespace-nowrap font-mono font-semibold text-tinta">
@@ -145,9 +96,9 @@ export function TablaMovimientos({
                 {formatearMonto(m.monto, moneda)}
               </p>
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <Badge variant="neutra">{t(claveEstado(m))}</Badge>
-              {acciones(m)}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-tinta-2">
+              <span>{m.entregadoA ?? m.personaNombre ?? "—"}</span>
+              <span>{m.cuentaGasto ?? "—"}</span>
             </div>
           </li>
         ))}
