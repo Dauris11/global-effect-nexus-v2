@@ -349,7 +349,8 @@
       "payables": "Por pagar",
       "budget": "Presupuesto",
       "closing": "Cierre",
-      "accountingSettings": "Configuración"
+      "accountingSettings": "Configuración",
+      "pasaje": "Pasaje"
     },
     "tab": {
       "home": "Inicio",
@@ -407,12 +408,14 @@
       "team": "Equipo",
       "impact": "Reportes de impacto",
       "tripToday": "Viaje de hoy",
-      "expenses": "Gastos"
+      "expenses": "Gastos",
+      "pasaje": "Pasaje"
     },
     "newFileAction": "Nuevo expediente",
     "newRequestAction": "Nueva solicitud",
     "newReceiptAction": "Registrar recibo",
-    "newEntryAction": "Nuevo asiento manual"
+    "newEntryAction": "Nuevo asiento manual",
+    "pasaje": "Pasaje"
   },
   "landing": {
     "navMain": "Principal",
@@ -4137,7 +4140,8 @@
       "cancelada": "Cancelada",
       "solicitado": "Solicitado",
       "aceptada": "Aceptada",
-      "pagada": "Pagada"
+      "pagada": "Pagada",
+      "entregado": "Entregado"
     },
     "form": {
       "type": "Tipo",
@@ -4188,7 +4192,6 @@
       "montoSolicitado": "Monto solicitado (DOP)",
       "montoDop": "Monto (DOP)",
       "monto": "Monto",
-      "montoConfigurado": "Monto configurado (DOP)",
       "cotizacionOpcional": "Cotización (opcional · PDF o imagen)",
       "cotizacionActual": "Cotización actual: {nombre}",
       "lugar": "Lugar",
@@ -4222,7 +4225,8 @@
       "colMonto": "Monto",
       "colProveedor": "Proveedor",
       "colCotizacion": "Cotización",
-      "colEstado": "Estado"
+      "colEstado": "Estado",
+      "colSolicitante": "Solicitante"
     },
     "purchase": {
       "title": "Compra a contabilidad",
@@ -5350,7 +5354,8 @@
       "presupuesto": "Presupuesto anual, ejecución y alertas de sobregiro",
       "fondos": "Fondos restringidos y no restringidos con liberación",
       "rendicion": "Trazabilidad donación → fondo → gastos por donante",
-      "nomina": "Nómina institucional, cálculo TSS y recibos de pago"
+      "nomina": "Nómina institucional, cálculo TSS y recibos de pago",
+      "pasaje": "Solicitudes e historial de pasajes de estudiantes y personal."
     },
     "impuestos": {
       "antetitulo": "Contabilidad",
@@ -6814,7 +6819,7 @@
     },
     "solicitudesCxp": {
       "titulo": "Solicitudes",
-      "vacio": "No hay solicitudes de materiales registradas.",
+      "vacio": "No hay solicitudes de materiales u otro tipo registradas.",
       "atender": "Atender",
       "colAccion": "Acción",
       "modalAgregarTitulo": "Agregar Factura",
@@ -6822,7 +6827,44 @@
       "modalSubtitulo": "Solicitud #{folio} · {titulo}",
       "verCotizacion": "Ver cotización adjunta",
       "solicitante": "Solicitante",
-      "tipoMaterial": "Tipo de material"
+      "tipoMaterial": "Tipo de material",
+      "proveedorNoRegistradoTitulo": "Proveedor no registrado",
+      "proveedorNoRegistradoDesc": "El proveedor indicado en esta solicitud no existe todavía en el catálogo. Agrégalo primero en Proveedores antes de continuar.",
+      "rncEtiqueta": "RNC",
+      "cerrar": "Cerrar",
+      "irAgregarProveedor": "Agregar proveedor"
+    },
+    "pasaje": {
+      "titulo": "Pasaje",
+      "tabSolicitudes": "Solicitudes",
+      "tabHistorial": "Historial",
+      "solicitudesVacio": "No hay solicitudes de pasaje pendientes.",
+      "historialVacio": "Aún no hay registros en el historial de pasaje.",
+      "colSolicitante": "Solicitante",
+      "colLugar": "Lugar",
+      "colMontoEntregar": "Monto a entregar",
+      "colMotivo": "Motivo",
+      "colPeriodo": "Periodo",
+      "colEstado": "Estado",
+      "motivoPasajeFijo": "Pasaje",
+      "entregar": "Entregar",
+      "imprimir": "Imprimir",
+      "modalTitulo": "Entrega de pasaje",
+      "modalSubtitulo": "Solicitud #{folio} · {solicitante}",
+      "fechaSolicitud": "Fecha de solicitud",
+      "montoBase": "Monto base",
+      "observaciones": "Observaciones",
+      "campoEntregado": "Entregado",
+      "cancelar": "Cancelar",
+      "entregadoOk": "Pasaje marcado como entregado",
+      "montoFijoCorto": "monto fijo · {dias} d",
+      "errores": {
+        "no_permitido": "No tienes permiso para registrar entregas de pasaje.",
+        "datos_invalidos": "Ingresa un monto entregado válido mayor a 0.",
+        "no_encontrado": "La solicitud de pasaje no se encontró o ya no está activa.",
+        "ya_entregado": "Esta solicitud de pasaje ya fue marcada como entregada.",
+        "error": "No se pudo confirmar la entrega. Inténtalo de nuevo."
+      }
     }
   },
   "iaAdmin": {
@@ -7247,7 +7289,12 @@
         "duplicado": "Ya existe un registro con ese nombre.",
         "no_encontrado": "No se encontró el registro.",
         "error": "No se pudo guardar. Inténtalo de nuevo."
-      }
+      },
+      "colReglaPersonalizado": "Período personalizado",
+      "reglaMultiplicarDias": "Multiplica por días",
+      "reglaMontoFijo": "Monto fijo",
+      "multiplicarPorDiasLabel": "Multiplicar por días seleccionados",
+      "multiplicarPorDiasAyuda": "Al elegir período Personalizado, multiplica el monto por la cantidad de días seleccionados. Si se desmarca, aplica el monto base una sola vez."
     },
     "groups": {
       "comedor": {

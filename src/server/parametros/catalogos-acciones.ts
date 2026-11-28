@@ -15,6 +15,7 @@ function refrescarCatalogos() {
   revalidatePath("/[locale]/configuracion/parametros", "page");
   revalidatePath("/[locale]/administrativo/solicitudes", "page");
   revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");
+  revalidatePath("/[locale]/contabilidad/pasaje", "page");
 }
 
 function esDuplicado(error: unknown): boolean {
@@ -119,11 +120,13 @@ export async function guardarLugarPasajeAction(datos: {
   id?: string;
   nombre: string;
   monto: number;
+  multiplicarPorDias?: boolean;
 }): Promise<ResultadoCatalogo> {
   const usuario = await requerirRol(["admin", "owner"]);
   const id = datos.id?.trim() || "";
   const nombre = String(datos.nombre ?? "").trim().slice(0, 120);
   const monto = Number(datos.monto);
+  const multiplicarPorDias = datos.multiplicarPorDias !== false;
 
   if (
     !nombre ||
@@ -142,10 +145,11 @@ export async function guardarLugarPasajeAction(datos: {
       const filas = await consultar<{ id: string }>(
         `UPDATE public.lugar_pasaje
             SET nombre = $2,
-                monto = $3
+                monto = $3,
+                multiplicar_por_dias = $4
           WHERE id = $1
           RETURNING id`,
-        [id, nombre, montoRedondeado],
+        [id, nombre, montoRedondeado, multiplicarPorDias],
       );
       if (filas.length === 0) return { ok: false, error: "no_encontrado" };
       await registrar({
@@ -153,21 +157,21 @@ export async function guardarLugarPasajeAction(datos: {
         accion: "lugar_pasaje.editado",
         entidad: "lugar_pasaje",
         entidadId: id,
-        datos: { nombre, monto: montoRedondeado },
+        datos: { nombre, monto: montoRedondeado, multiplicarPorDias },
       });
     } else {
       const filas = await consultar<{ id: string }>(
-        `INSERT INTO public.lugar_pasaje (nombre, monto)
-         VALUES ($1, $2)
+        `INSERT INTO public.lugar_pasaje (nombre, monto, multiplicar_por_dias)
+         VALUES ($1, $2, $3)
          RETURNING id`,
-        [nombre, montoRedondeado],
+        [nombre, montoRedondeado, multiplicarPorDias],
       );
       await registrar({
         usuarioId: usuario.id,
         accion: "lugar_pasaje.creado",
         entidad: "lugar_pasaje",
         entidadId: filas[0]?.id,
-        datos: { nombre, monto: montoRedondeado },
+        datos: { nombre, monto: montoRedondeado, multiplicarPorDias },
       });
     }
   } catch (error) {

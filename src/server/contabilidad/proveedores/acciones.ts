@@ -421,7 +421,12 @@ export async function guardarFactura(
           [solicitudId],
         );
         const sol = resSol.rows[0];
-        if (!sol || sol.tipo !== "MATERIALES" || sol.estado === "cancelada" || sol.estado === "rechazada") {
+        if (
+          !sol ||
+          (sol.tipo !== "MATERIALES" && sol.tipo !== "OTRO") ||
+          sol.estado === "cancelada" ||
+          sol.estado === "rechazada"
+        ) {
           return { tipo: "invalido" as const };
         }
 

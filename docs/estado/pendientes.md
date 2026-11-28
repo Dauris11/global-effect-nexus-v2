@@ -5,6 +5,13 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Solicitudes, Cuentas por Pagar y Módulo Pasaje — Etapa #3 (28 nov 2026)
+
+- [x] Migración `0146_solicitudes_etapa3_pasaje.sql` aplicada en Supabase: `multiplicar_por_dias` en `public.lugar_pasaje`, estado `'entregado'` en `public.solicitud` y columnas de entrega (`monto_entregado`, `entregado_por`, `entregado_en`, `en_historial_pasaje`).
+- [x] Ajustes generales: columna `Solicitante` antes de `Tipo de solicitud` en Mis Solicitudes y CxP > Solicitudes; selector `Lugar` de Pasaje sin montos y etiqueta «Monto»; configuración de regla por días en `Configuración > Parámetros > Lugares de Pasaje`; modal «Atender» ampliado (`md:max-w-5xl lg:max-w-[1100px]`); checkbox «Incluir asignaciones» desmarcado por defecto.
+- [x] Solicitudes tipo `OTRO` conectadas al mismo flujo de `MATERIALES` en CxP > Solicitudes, con alerta bloqueante de proveedor + RNC cuando el proveedor no está registrado en catálogo.
+- [x] Nuevo módulo **Contabilidad > Pasaje** (`/contabilidad/pasaje`) con pestañas `Solicitudes` e `Historial`, cálculo por período (`×1`, `×5`, `×días` respetando la regla de `Lugares de Pasaje`), modal de entrega (`Monto a entregar` de solo lectura y `Entregado` editable sin asiento aún), actualización a `Entregado` en ambas vistas sin mover a Historial, habilitación de `Imprimir` y comprobante PDF (`/api/contabilidad/pasaje/[id]/pdf`) con firmas para solicitante y quien entrega.
+
 ## Solicitudes y Cuentas por Pagar — Etapa #2 (28 nov 2026)
 
 - [x] Migración `0145_solicitudes_etapa2_cxp.sql` aplicada en Supabase: amplía `public.solicitud.estado` (`solicitado`, `aceptada`, `pagada`), vincula `contabilidad.factura_proveedor.solicitud_id` con índice único parcial para facturas activas y exige NCF/e-CF en `contabilidad.aprobar_factura`.

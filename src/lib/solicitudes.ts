@@ -104,6 +104,7 @@ export const ESTADOS_SOLICITUD = [
   "aceptada",
   "aprobada",
   "pagada",
+  "entregado",
   "rechazada",
   "completada",
   "cancelada",
@@ -313,6 +314,33 @@ export function esDiaSemanaPasaje(valor: unknown): valor is DiaSemanaPasaje {
   );
 }
 
+/**
+ * Calcula el multiplicador y el monto total de una solicitud de Pasaje según su período:
+ *   · `hoy`: monto * 1
+ *   · `semana`: monto * 5
+ *   · `personalizado`: si `multiplicarPorDias` es true, monto * cantidad de días seleccionados
+ *     (mínimo 1); si es false, monto * 1.
+ */
+export function calcularPasajePorPeriodo(
+  montoBase: number,
+  periodo: PeriodoPasaje | null,
+  diasSeleccionados: readonly string[] | null,
+  multiplicarPorDias = true,
+): { factor: number; total: number } {
+  const base = Number.isFinite(montoBase) && montoBase > 0 ? montoBase : 0;
+  let factor = 1;
+  if (periodo === "semana") {
+    factor = 5;
+  } else if (periodo === "personalizado") {
+    const nDias = Array.isArray(diasSeleccionados) && diasSeleccionados.length > 0
+      ? diasSeleccionados.length
+      : 1;
+    factor = multiplicarPorDias ? nDias : 1;
+  }
+  const total = Math.round(base * factor * 100) / 100;
+  return { factor, total };
+}
+
 /** Valida formato estándar dominicano de RNC (9 dígitos) o Cédula (11 dígitos), ignorando guiones/espacios. */
 export function limpiarRnc(valor: string): string {
   return valor.replace(/[^0-9]/g, "");
@@ -515,6 +543,7 @@ export const ESTADO_SOLICITUD_VISUAL: Record<
   aceptada: { insignia: "bg-marca-500/15 text-marca-700", icono: CheckCircle2 },
   aprobada: { insignia: "bg-status-success text-white", icono: CheckCircle2 },
   pagada: { insignia: "bg-status-success text-white", icono: PackageCheck },
+  entregado: { insignia: "bg-status-success text-white", icono: PackageCheck },
   rechazada: { insignia: "bg-status-danger text-white", icono: XCircle },
   completada: { insignia: "bg-marca-700 text-white", icono: PackageCheck },
   cancelada: { insignia: "bg-muted text-tinta-3", icono: Ban },

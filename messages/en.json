@@ -349,7 +349,8 @@
       "payables": "Payables",
       "budget": "Budget",
       "closing": "Closing",
-      "accountingSettings": "Settings"
+      "accountingSettings": "Settings",
+      "pasaje": "Transport allowance"
     },
     "tab": {
       "home": "Home",
@@ -407,12 +408,14 @@
       "team": "Team",
       "impact": "Impact reports",
       "tripToday": "Today's trip",
-      "expenses": "Expenses"
+      "expenses": "Expenses",
+      "pasaje": "Transport allowance"
     },
     "newFileAction": "New student file",
     "newRequestAction": "New request",
     "newReceiptAction": "Record a receipt",
-    "newEntryAction": "New manual entry"
+    "newEntryAction": "New manual entry",
+    "pasaje": "Transport allowance"
   },
   "landing": {
     "navMain": "Main",
@@ -4137,7 +4140,8 @@
       "cancelada": "Cancelled",
       "solicitado": "Requested",
       "aceptada": "Accepted",
-      "pagada": "Paid"
+      "pagada": "Paid",
+      "entregado": "Delivered"
     },
     "form": {
       "type": "Type",
@@ -4188,7 +4192,6 @@
       "montoSolicitado": "Requested amount (DOP)",
       "montoDop": "Amount (DOP)",
       "monto": "Amount",
-      "montoConfigurado": "Configured amount (DOP)",
       "cotizacionOpcional": "Quote (optional · PDF or image)",
       "cotizacionActual": "Current quote: {nombre}",
       "lugar": "Place",
@@ -4222,7 +4225,8 @@
       "colMonto": "Amount",
       "colProveedor": "Supplier",
       "colCotizacion": "Quotation",
-      "colEstado": "Status"
+      "colEstado": "Status",
+      "colSolicitante": "Requester"
     },
     "purchase": {
       "title": "Purchase request to accounting",
@@ -5350,7 +5354,8 @@
       "presupuesto": "Annual budget, execution and overrun alerts",
       "fondos": "Restricted and unrestricted funds with release",
       "rendicion": "Traceability donation → fund → expenses by donor",
-      "nomina": "Staff payroll, social security TSS calculations, and pay slips"
+      "nomina": "Staff payroll, social security TSS calculations, and pay slips",
+      "pasaje": "Transport allowance requests and delivery history."
     },
     "impuestos": {
       "antetitulo": "Accounting",
@@ -6814,7 +6819,7 @@
     },
     "solicitudesCxp": {
       "titulo": "Requests",
-      "vacio": "No material requests recorded.",
+      "vacio": "No material or other requests recorded.",
       "atender": "Attend",
       "colAccion": "Action",
       "modalAgregarTitulo": "Add Invoice",
@@ -6822,7 +6827,44 @@
       "modalSubtitulo": "Request #{folio} · {titulo}",
       "verCotizacion": "View attached quotation",
       "solicitante": "Requester",
-      "tipoMaterial": "Material type"
+      "tipoMaterial": "Material type",
+      "proveedorNoRegistradoTitulo": "Supplier not registered",
+      "proveedorNoRegistradoDesc": "The supplier specified in this request is not in the catalog yet. Please add it under Suppliers before continuing.",
+      "rncEtiqueta": "Tax ID (RNC)",
+      "cerrar": "Close",
+      "irAgregarProveedor": "Add supplier"
+    },
+    "pasaje": {
+      "titulo": "Transport allowance",
+      "tabSolicitudes": "Requests",
+      "tabHistorial": "History",
+      "solicitudesVacio": "No pending transport allowance requests.",
+      "historialVacio": "No records in transport allowance history yet.",
+      "colSolicitante": "Requester",
+      "colLugar": "Destination",
+      "colMontoEntregar": "Amount to deliver",
+      "colMotivo": "Reason",
+      "colPeriodo": "Period",
+      "colEstado": "Status",
+      "motivoPasajeFijo": "Transport",
+      "entregar": "Deliver",
+      "imprimir": "Print",
+      "modalTitulo": "Transport allowance delivery",
+      "modalSubtitulo": "Request #{folio} · {solicitante}",
+      "fechaSolicitud": "Request date",
+      "montoBase": "Base amount",
+      "observaciones": "Notes",
+      "campoEntregado": "Delivered",
+      "cancelar": "Cancel",
+      "entregadoOk": "Transport allowance marked as delivered",
+      "montoFijoCorto": "fixed · {dias} d",
+      "errores": {
+        "no_permitido": "You do not have permission to deliver transport allowances.",
+        "datos_invalidos": "Enter a valid delivered amount greater than 0.",
+        "no_encontrado": "The transport request was not found or is no longer active.",
+        "ya_entregado": "This transport request has already been marked as delivered.",
+        "error": "Could not confirm delivery. Please try again."
+      }
     }
   },
   "iaAdmin": {
@@ -7247,7 +7289,12 @@
         "duplicado": "A record with that name already exists.",
         "no_encontrado": "Record not found.",
         "error": "Could not save. Try again."
-      }
+      },
+      "colReglaPersonalizado": "Custom period",
+      "reglaMultiplicarDias": "Multiplies by days",
+      "reglaMontoFijo": "Fixed amount",
+      "multiplicarPorDiasLabel": "Multiply by selected days",
+      "multiplicarPorDiasAyuda": "When Custom period is selected, multiplies the amount by the number of chosen days. When unchecked, applies the base amount once."
     },
     "groups": {
       "comedor": {

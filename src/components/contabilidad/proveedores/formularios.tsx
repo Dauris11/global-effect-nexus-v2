@@ -506,14 +506,8 @@ export function FormularioFactura({
   const [cuentaGastoId, setCuentaGastoId] = useState(factura?.cuenta_gasto_id ?? "");
   const solicitanteInicial = factura?.solicitante_id ?? valoresIniciales?.solicitanteId ?? "";
   const estudianteInicial = factura?.estudiante_id ?? valoresIniciales?.estudianteId ?? "";
-  const [incluirAsignaciones, setIncluirAsignaciones] = useState(
-    Boolean(
-      solicitanteInicial ||
-        factura?.programa_codigo ||
-        factura?.proyecto_id ||
-        estudianteInicial,
-    ),
-  );
+  // Etapa 3: «Incluir asignaciones» inicia desmarcado (false) por defecto.
+  const [incluirAsignaciones, setIncluirAsignaciones] = useState(false);
   const [fondo, setFondo] = useState(factura?.fondo_id ?? fondos[0]?.id ?? "");
   const [proyecto, setProyecto] = useState(factura?.proyecto_id ?? "");
   const [solicitante, setSolicitante] = useState(solicitanteInicial);

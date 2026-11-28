@@ -1044,6 +1044,7 @@ function refrescar() {
   revalidatePath("/[locale]/portal/estudiante/solicitudes", "page");
   revalidatePath("/[locale]/administrativo/solicitudes", "page");
   revalidatePath("/[locale]/contabilidad/cuentas-por-pagar/solicitudes", "page");
+  revalidatePath("/[locale]/contabilidad/pasaje", "page");
   revalidatePath("/[locale]/portal/administrativo", "page");
   revalidatePath("/[locale]/portal/estudiante", "page");
   revalidatePath("/[locale]/expedientes", "page");

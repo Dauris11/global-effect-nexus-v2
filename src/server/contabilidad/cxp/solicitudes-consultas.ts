@@ -10,7 +10,7 @@ export type EstadoSolicitudCxp =
 export type FilaSolicitudMaterialCxp = {
   id: string;
   folio: number;
-  tipo: "MATERIALES";
+  tipo: "MATERIALES" | "OTRO";
   titulo: string;
   detalle: string | null;
   monto: number | null;
@@ -20,7 +20,12 @@ export type FilaSolicitudMaterialCxp = {
   estudiante_id: string | null;
   proveedor_id: string | null;
   proveedor: string | null;
+  proveedor_nombre: string | null;
+  proveedor_rnc: string | null;
+  /** ID del proveedor registrado en catálogo cuando el RNC de «OTRO» ya existe. */
+  proveedor_registrado_id: string | null;
   tipo_material: string | null;
+  proposito_otro: string | null;
   cotizacion: { nombre: string; formato: string } | null;
   estado_solicitud: string;
   estado_cxp: EstadoSolicitudCxp;
@@ -39,9 +44,9 @@ type FilaCruda = Omit<FilaSolicitudMaterialCxp, "cotizacion" | "estado_cxp"> & {
 };
 
 /**
- * Solicitudes de tipo «Materiales» atendibles desde Cuentas por Pagar > Solicitudes.
+ * Solicitudes de tipo «Materiales» y «Otro» atendibles desde Cuentas por Pagar > Solicitudes.
  *
- * El estado mostrado en CxP refleja el ciclo sincronizado de Etapa 2:
+ * El estado mostrado en CxP refleja el ciclo sincronizado de Etapas 2 y 3:
  *   · Sin factura activa              → `solicitado`
  *   · Factura en borrador             → `pendiente_llenado`
  *   · Factura aprobada (CxP abierta)  → `pendiente`
@@ -60,8 +65,12 @@ export async function solicitudesMaterialesParaCxp(): Promise<FilaSolicitudMater
             so.nombre AS solicitante,
             s.estudiante_id,
             s.proveedor_id,
-            COALESCE(pr.nombre, s.proveedor_nombre) AS proveedor,
+            COALESCE(pr.nombre, pr_rnc.nombre, s.proveedor_nombre) AS proveedor,
+            s.proveedor_nombre,
+            s.proveedor_rnc,
+            pr_rnc.id AS proveedor_registrado_id,
             tm.nombre AS tipo_material,
+            s.proposito_otro,
             ad.nombre AS cotizacion_nombre,
             ad.formato AS cotizacion_formato,
             s.estado AS estado_solicitud,
@@ -73,13 +82,15 @@ export async function solicitudesMaterialesParaCxp(): Promise<FilaSolicitudMater
             x.estado AS cxp_estado,
             s.created_at::text AS creada
        FROM public.solicitud s
-       LEFT JOIN public.usuario so                  ON so.id = s.solicitante_id
-       LEFT JOIN public.tipo_material tm            ON tm.id = s.tipo_material_id
-       LEFT JOIN contabilidad.proveedor pr          ON pr.id = s.proveedor_id
-       LEFT JOIN public.solicitud_adjunto ad        ON ad.solicitud_id = s.id
-       LEFT JOIN contabilidad.factura_proveedor f   ON f.solicitud_id = s.id AND f.estado <> 'anulada'
-       LEFT JOIN contabilidad.cuenta_por_pagar x    ON x.id = f.cuenta_por_pagar_id
-      WHERE s.tipo = 'MATERIALES'
+       LEFT JOIN public.usuario so                    ON so.id = s.solicitante_id
+       LEFT JOIN public.tipo_material tm              ON tm.id = s.tipo_material_id
+       LEFT JOIN contabilidad.proveedor pr            ON pr.id = s.proveedor_id
+       LEFT JOIN contabilidad.proveedor pr_rnc        ON s.proveedor_rnc IS NOT NULL
+                                                     AND pr_rnc.identificacion = s.proveedor_rnc
+       LEFT JOIN public.solicitud_adjunto ad          ON ad.solicitud_id = s.id
+       LEFT JOIN contabilidad.factura_proveedor f     ON f.solicitud_id = s.id AND f.estado <> 'anulada'
+       LEFT JOIN contabilidad.cuenta_por_pagar x      ON x.id = f.cuenta_por_pagar_id
+      WHERE s.tipo IN ('MATERIALES', 'OTRO')
         AND s.estado NOT IN ('cancelada', 'rechazada')
       ORDER BY s.created_at DESC
       LIMIT 200`,

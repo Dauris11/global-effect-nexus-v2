@@ -51,9 +51,10 @@ export function TablaMisSolicitudes({
   return (
     <>
       <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
-        <table className="w-full min-w-[680px] text-sm">
+        <table className="w-full min-w-[760px] text-sm">
           <thead className="border-b border-linea bg-muted/30 text-left text-xs font-medium uppercase tracking-wider text-tinta-2">
             <tr>
+              <th className="px-4 py-3">{td("colSolicitante")}</th>
               <th className="px-4 py-3">{td("colTipoSolicitud")}</th>
               <th className="px-4 py-3 text-right">{td("colMonto")}</th>
               <th className="px-4 py-3">{td("colProveedor")}</th>
@@ -76,6 +77,13 @@ export function TablaMisSolicitudes({
                     fila.id === resaltarId ? "animate-resaltar" : ""
                   }`}
                 >
+                  <td className="px-4 py-3 text-tinta">
+                    {fila.solicitante ? (
+                      <span className="block max-w-[200px] truncate">{fila.solicitante}</span>
+                    ) : (
+                      <span className="text-tinta-3">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium text-tinta">
                     {t(`type.${fila.tipo}` as never)}
                   </td>

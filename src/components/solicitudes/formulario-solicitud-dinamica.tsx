@@ -130,6 +130,7 @@ export function FormularioSolicitudDinamica({
         id: solicitud.lugar_pasaje_id,
         nombre: solicitud.lugar_pasaje,
         monto: solicitud.monto ?? 0,
+        multiplicar_por_dias: true,
         activo: false,
       });
     }
@@ -394,7 +395,7 @@ export function FormularioSolicitudDinamica({
               <option value="">{td("seleccionarLugar")}</option>
               {opcionesLugar.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.nombre} — {formatearMonto(l.monto.toFixed(2), "DOP")}
+                  {l.nombre}
                 </option>
               ))}
               <option value={LUGAR_PASAJE_OTRO}>{td("lugarOtro")}</option>
@@ -404,7 +405,7 @@ export function FormularioSolicitudDinamica({
           {lugarSeleccionado && !esLugarOtro && (
             <div className="space-y-1.5">
               <Label htmlFor="sol-monto-auto" className="text-xs font-medium text-tinta-2">
-                {td("montoConfigurado")}
+                {td("monto")}
               </Label>
               <Input
                 id="sol-monto-auto"

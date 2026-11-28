@@ -284,6 +284,7 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
   const [editando, setEditando] = useState<LugarPasaje | null>(null);
   const [nombre, setNombre] = useState("");
   const [monto, setMonto] = useState("");
+  const [multiplicarPorDias, setMultiplicarPorDias] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [guardando, iniciar] = useTransition();
   const [cambiandoId, setCambiandoId] = useState<string | null>(null);
@@ -292,6 +293,7 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
     setEditando(null);
     setNombre("");
     setMonto("");
+    setMultiplicarPorDias(true);
     setError(null);
     setAbierto(true);
   }
@@ -300,6 +302,7 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
     setEditando(item);
     setNombre(item.nombre);
     setMonto(String(item.monto));
+    setMultiplicarPorDias(item.multiplicar_por_dias);
     setError(null);
     setAbierto(true);
   }
@@ -319,12 +322,14 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
         id: editando?.id,
         nombre: limpio,
         monto: montoNum,
+        multiplicarPorDias,
       });
       if (res.ok) {
         setAbierto(false);
         setEditando(null);
         setNombre("");
         setMonto("");
+        setMultiplicarPorDias(true);
       } else {
         setError(t(`errores.${res.error}` as never));
       }
@@ -367,6 +372,7 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
               <tr>
                 <th className="px-4 py-3 font-medium">{t("colLugar")}</th>
                 <th className="w-40 px-4 py-3 text-right font-medium">{t("colMontoDop")}</th>
+                <th className="w-48 px-4 py-3 font-medium">{t("colReglaPersonalizado")}</th>
                 <th className="w-36 px-4 py-3 font-medium">{t("colEstado")}</th>
                 <th className="w-56 px-4 py-3 text-right font-medium">{t("colAcciones")}</th>
               </tr>
@@ -379,6 +385,11 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
                     <td className="px-4 py-3 font-medium text-tinta">{item.nombre}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums text-tinta">
                       {formatearMonto(item.monto.toFixed(2), "DOP")}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-tinta-2">
+                      {item.multiplicar_por_dias
+                        ? t("reglaMultiplicarDias")
+                        : t("reglaMontoFijo")}
                     </td>
                     <td className="px-4 py-3">
                       {item.activo ? (
@@ -467,6 +478,19 @@ function MantenimientoLugaresPasaje({ items }: { items: LugarPasaje[] }) {
                 className="h-9 font-mono text-sm tabular-nums"
               />
             </div>
+
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-control border border-linea bg-muted/20 p-3 text-sm">
+              <input
+                type="checkbox"
+                checked={multiplicarPorDias}
+                onChange={(e) => setMultiplicarPorDias(e.target.checked)}
+                className="mt-0.5 size-4 shrink-0 accent-marca-500"
+              />
+              <span className="space-y-0.5">
+                <span className="block font-medium text-tinta">{t("multiplicarPorDiasLabel")}</span>
+                <span className="block text-xs text-tinta-2">{t("multiplicarPorDiasAyuda")}</span>
+              </span>
+            </label>
 
             {error && (
               <p
