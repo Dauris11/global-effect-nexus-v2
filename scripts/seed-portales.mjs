@@ -205,6 +205,12 @@ try {
   } else {
     const usuario = usuarios[0];
     await db.query("BEGIN");
+    await db.query(
+      `SELECT set_config('app.usuario_id', $1, true),
+              set_config('app.ip', 'seed', true),
+              set_config('app.agente', 'seed', true)`,
+      [usuario.id],
+    );
 
     // El expediente se busca por `usuario_id`, no por nombre: es el enlace real
     // y el que usa el portal.

@@ -23,7 +23,10 @@ import pg from "pg";
 
 config({ path: ".env.local", quiet: true });
 
-const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
+const db = new pg.Client({
+  connectionString: process.env.DATABASE_URL,
+  keepAlive: true,
+});
 await db.connect();
 
 /** UUID estable a partir de una clave: la misma clave da siempre el mismo id. */
@@ -46,7 +49,7 @@ function instante(dias, horas = 0) {
 
 /**
  * Inserta o actualiza una fila. `conflicto` son las columnas de la clave
- * única; con el resto se actualiza. Devuelve el número de filas tocadas (1).
+ * única; con el resto se actualiza (sin tocar id). Devuelve el número de filas tocadas.
  */
 async function upsert(tabla, fila, conflicto = ["id"]) {
   const cols = Object.keys(fila);
@@ -57,20 +60,26 @@ async function upsert(tabla, fila, conflicto = ["id"]) {
       : v;
   });
   const marcas = cols.map((_, i) => `$${i + 1}`).join(", ");
-  const resto = cols.filter((c) => !conflicto.includes(c));
+  const resto = cols.filter((c) => !conflicto.includes(c) && c !== "id");
   const accion = resto.length
     ? `DO UPDATE SET ${resto.map((c) => `"${c}" = EXCLUDED."${c}"`).join(", ")}`
     : "DO NOTHING";
-  await db.query(
+  const returning = cols.includes("id") ? "RETURNING id" : "";
+  const res = await db.query(
     `INSERT INTO ${tabla} (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${marcas})
-     ON CONFLICT (${conflicto.map((c) => `"${c}"`).join(", ")}) ${accion}`,
+     ON CONFLICT (${conflicto.map((c) => `"${c}"`).join(", ")}) ${accion}
+     ${returning}`,
     vals,
   );
+  return res.rows[0]?.id ?? fila.id;
 }
 
 const cuenta = {};
 async function sembrar(tabla, filas, conflicto) {
-  for (const f of filas) await upsert(tabla, f, conflicto);
+  for (const f of filas) {
+    const idReal = await upsert(tabla, f, conflicto);
+    if (idReal) f.id = idReal;
+  }
   cuenta[tabla] = (cuenta[tabla] ?? 0) + filas.length;
 }
 
@@ -101,7 +110,14 @@ const DEPTOS = (await db.query(`SELECT id, nombre FROM departamento ORDER BY nom
 const YEIMY = (await una(`SELECT id FROM estudiante WHERE usuario_id = $1`, [U.estudiante]))?.id;
 
 await db.query("BEGIN");
+await db.query(
+  `SELECT set_config('app.usuario_id', $1, true),
+          set_config('app.ip', 'seed', true),
+          set_config('app.agente', 'seed', true)`,
+  [COORD],
+);
 try {
+  console.log("  [1/8] Patrocinadores y estudiantes (estados y perfiles)...");
   // ===== 1. Patrocinadores y estudiantes (los 8 estados) ====================
   const PATROCINADORES = [
     ["empresa", "Grupo Ramos Industrial", "activo", 18000, "DO"],
@@ -180,33 +196,63 @@ try {
     monto: 3500 + i * 500, fecha_inicio: dia(-300 + i * 20), fecha_fin: estado === "finalizado" ? dia(-30) : dia(200), estado,
   })));
 
+  console.log("  [2/8] Académico: 360, matrícula, notas, asignaciones y servicio...");
   // ===== 2. Académico: 360, matrícula, notas, servicio ======================
-  await sembrar("periodo", [{
-    id: uid("periodo:2025-III"), nombre: "2025-III", tipo: "cuatrimestre", estado: "cerrado",
-    fecha_inicio: "2025-09-01", fecha_fin: "2025-12-20",
-  }]);
-  const PERIODO_CERRADO = uid("periodo:2025-III");
+  let PERIODO_CERRADO = (await una(`SELECT id FROM periodo WHERE nombre = '2025-III' LIMIT 1`))?.id;
+  if (!PERIODO_CERRADO) {
+    const { rows: pCreado } = await db.query(
+      `INSERT INTO periodo (id, nombre, tipo, estado, fecha_inicio, fecha_fin)
+       VALUES ($1, '2025-III', 'cuatrimestre', 'completado', '2025-09-01', '2025-12-20')
+       ON CONFLICT (nombre) DO UPDATE SET estado = EXCLUDED.estado
+       RETURNING id`,
+      [uid("periodo:2025-III")],
+    );
+    PERIODO_CERRADO = pCreado[0].id;
+  }
 
   // Docente asignado al catálogo de 360 donde no tenía a nadie.
   await db.query(`UPDATE materia_360 SET docente_id = $1 WHERE docente_id IS NULL`, [DOCENTE]);
 
   // Una inscripción por cada estado de 360 (una sola por tanda y estudiante).
   const ESTADOS_360 = ["prematriculada", "cursando", "aprobada", "reprobada", "retirada"];
-  await sembrar("inscripcion_360", ESTADOS_360.flatMap((estado, i) => {
+  for (const [i, estado] of ESTADOS_360.entries()) {
+    const estudiante_id = ACTIVOS[(i + 1) % ACTIVOS.length];
     const hecha = estado === "aprobada" || estado === "reprobada";
-    return [{
-      id: uid(`i360:${estado}`), estudiante_id: ACTIVOS[(i + 1) % ACTIVOS.length],
-      materia_id: MATERIAS360[i % MATERIAS360.length].id,
-      periodo_id: hecha ? PERIODO_CERRADO : PERIODO, estado,
-      nota: estado === "aprobada" ? 91 : estado === "reprobada" ? 54 : null, ronda: 1,
-    }];
-  }));
+    const periodo_id = hecha ? PERIODO_CERRADO : PERIODO;
+    const materia_id = MATERIAS360[i % MATERIAS360.length].id;
+    const existe = await una(
+      `SELECT id FROM inscripcion_360 WHERE estudiante_id = $1 AND periodo_id = $2 AND ronda = 1`,
+      [estudiante_id, periodo_id],
+    );
+    if (!existe) {
+      await upsert("inscripcion_360", {
+        id: uid(`i360:${estado}`), estudiante_id, materia_id, periodo_id, estado,
+        nota: estado === "aprobada" ? 91 : estado === "reprobada" ? 54 : null, ronda: 1,
+      });
+      cuenta.inscripcion_360 = (cuenta.inscripcion_360 ?? 0) + 1;
+    }
+  }
+
   // Estudiantes cursando, con asistencia por sesión.
-  const CURSANDO = ACTIVOS.slice(0, 5).map((estudiante_id, i) => ({
-    id: uid(`i360:curso:${i}`), estudiante_id, materia_id: MATERIAS360[(i + 2) % MATERIAS360.length].id,
-    periodo_id: PERIODO, estado: "cursando", nota: null, ronda: 2,
-  }));
-  await sembrar("inscripcion_360", CURSANDO);
+  const CURSANDO = [];
+  for (const [i, estudiante_id] of ACTIVOS.slice(0, 5).entries()) {
+    const materia_id = MATERIAS360[(i + 2) % MATERIAS360.length].id;
+    const existe = await una(
+      `SELECT id, estudiante_id, materia_id, periodo_id FROM inscripcion_360
+        WHERE estudiante_id = $1 AND periodo_id = $2 AND ronda = 2`,
+      [estudiante_id, PERIODO],
+    );
+    if (existe) {
+      CURSANDO.push(existe);
+    } else {
+      const id = uid(`i360:curso:${i}`);
+      await upsert("inscripcion_360", {
+        id, estudiante_id, materia_id, periodo_id: PERIODO, estado: "cursando", nota: null, ronda: 2,
+      });
+      CURSANDO.push({ id, estudiante_id, materia_id, periodo_id: PERIODO });
+      cuenta.inscripcion_360 = (cuenta.inscripcion_360 ?? 0) + 1;
+    }
+  }
   const sesiones = [];
   for (const m of MATERIAS360.slice(0, 3)) {
     for (const d of [-21, -14, -7, 7]) {
@@ -220,8 +266,11 @@ try {
   for (const s of sesiones.filter((x) => x.fecha < dia(0))) {
     for (const [k, insc] of CURSANDO.filter((c) => c.materia_id === s.materia_360_id).entries()) {
       await upsert("asistencia_360", {
-        sesion_id: (await una(`SELECT id FROM sesion_360 WHERE materia_360_id=$1 AND periodo_id=$2 AND fecha=$3`, [s.materia_360_id, s.periodo_id, s.fecha])).id,
-        inscripcion_id: insc.id, presente: (k + s.fecha.length) % 3 !== 0, marcado_por: DOCENTE, marcado_en: instante(-7),
+        sesion_id: s.id,
+        inscripcion_id: insc.id,
+        presente: (k + s.fecha.length) % 3 !== 0,
+        marcado_por: DOCENTE,
+        marcado_en: instante(-7),
       }, ["sesion_id", "inscripcion_id"]);
       cuenta.asistencia_360 = (cuenta.asistencia_360 ?? 0) + 1;
     }
@@ -283,6 +332,7 @@ try {
     { id: uid("vp:abierta"), periodo_id: PERIODO, abre: instante(-2), cierra: instante(10), mensaje: "Elige tu materia de Global Effect 360.", activa: true, ronda: 2 },
   ]);
 
+  console.log("  [3/8] Solicitudes y gastos...");
   // ===== 3. Solicitudes y gastos (todos los estados) ========================
   const SOLIC = [
     ["constancia", "enviada", "Constancia de estudios para el banco", null, false],
@@ -304,6 +354,17 @@ try {
       respuesta: ["aprobada", "rechazada", "completada"].includes(estado) ? (estado === "rechazada" ? "No cumple con el soporte requerido: falta la factura con NCF." : "Atendida por coordinación.") : null,
       resuelta_en: ["aprobada", "rechazada", "completada", "cancelada"].includes(estado) ? instante(-1) : null,
     });
+    if (tipo === "compra") {
+      await upsert("solicitud_adjunto", {
+        id: uid(`adj:${id}`),
+        solicitud_id: id,
+        ruta: `solicitudes/${id}/cotizacion.pdf`,
+        nombre: "Cotización Sillas Ergonomicas.pdf",
+        formato: "pdf",
+        tamano_bytes: 245760,
+        subido_por: i % 2 ? U.estudiante : U.docente,
+      }, ["solicitud_id"]);
+    }
     const camino = { enviada: [], en_revision: ["en_revision"], pendiente_direccion: ["en_revision", "pendiente_direccion"], aprobada: ["en_revision", "aprobada"], rechazada: ["en_revision", "rechazada"], completada: ["en_revision", "aprobada", "completada"], cancelada: ["cancelada"] }[estado];
     let previo = "enviada";
     await upsert("solicitud_paso", { id: uid(`solp:${i}:0`), solicitud_id: id, estado_anterior: null, estado_nuevo: "enviada", comentario: null, usuario_id: i % 2 ? U.estudiante : U.docente });
@@ -334,6 +395,7 @@ try {
     revisado_en: ["aprobada", "rechazada", "contabilizada"].includes(estado) ? instante(-1) : null,
   })));
 
+  console.log("  [4/8] Proyectos, tareas, bitácora, reuniones y eventos...");
   // ===== 4. Proyectos, tareas, bitácora, reuniones, eventos ==================
   const PROYECTOS = [
     ["Jornada de salud comunitaria", "planificacion", 5], ["Torneo interescolar de debate", "en_curso", 45],
@@ -414,6 +476,7 @@ try {
     responsable: "Marisol Peña", estado, descripcion: `Evento de demostración: ${titulo}.`,
   })));
 
+  console.log("  [5/8] Transporte e incidencias...");
   // ===== 5. Transporte (viaje en cada estado + incidencias) =================
   const ESTADOS_VIAJE = ["programado", "en_curso", "completado", "averiado", "cancelado"];
   const VIAJES = ESTADOS_VIAJE.map((estado, i) => ({
@@ -438,13 +501,14 @@ try {
   await sembrar("transporte_inscripcion_recurrente", ACTIVOS.slice(0, 5).map((estudiante_id, i) => ({
     id: uid(`tir:${i}`), estudiante_id, horario_id: HORARIOS[i % HORARIOS.length].id, dia_semana: (i % 5) + 1,
     parada_abordaje_id: PARADAS[0].id, parada_destino_id: PARADAS[PARADAS.length - 1].id, activo: i !== 4,
-  })));
+  })), ["estudiante_id", "dia_semana", "horario_id"]);
   await sembrar("transporte_inscripcion_diaria", ACTIVOS.slice(0, 6).map((estudiante_id, i) => ({
     id: uid(`tid:${i}`), fecha: dia(i < 3 ? 0 : -1), horario_id: HORARIOS[i % HORARIOS.length].id, estudiante_id,
     nombre_beneficiario: ESTUDIANTES[i]?.nombre ?? "Yeimy Rodríguez", parada_abordaje_id: PARADAS[0].id,
     parada_destino_id: PARADAS[PARADAS.length - 1].id, presente: i % 3 !== 2, inscrito_por: COORD,
   })));
 
+  console.log("  [6/8] Habitudes y evidencias de liceos...");
   // ===== 6. Habitudes: liceos, profesores, visitas en cada estado ===========
   await sembrar("habitudes_liceo_estudiante", EST.slice(0, 8).map((estudiante_id, i) => ({
     id: uid(`hle:${i}`), liceo_id: LICEOS[i % LICEOS.length].id, estudiante_id, grado: `${4 + (i % 3)}to`, seccion: "AB"[i % 2],
@@ -459,6 +523,7 @@ try {
     latitud: 19.22 + i * 0.004, longitud: -70.53 - i * 0.004,
   }))));
 
+  console.log("  [7/8] Inventario y activos...");
   // ===== 7. Inventario: estados que faltaban + historial ====================
   const INV = [
     ["GE-INV-DEMO-01", "Proyector Epson X49", "tecnologia", "prestado", "Salón multiuso", 18500],
@@ -478,6 +543,7 @@ try {
     ...(estado !== "operativo" ? [{ id: uid(`invh:${codigo}:1`), activo_id: uid(`inv:${codigo}`), usuario_id: COORD, accion: "cambio_estado", estado_anterior: "operativo", estado_nuevo: estado, notas: `Pasó a ${estado}.` }] : []),
   ]));
 
+  console.log("  [8/8] Comunicación, notificaciones, chat y departamentos...");
   // ===== 8. Comunicación: chat, notificaciones, correo, asistente IA =========
   const CANALES = [
     ["grupo", "Equipo de coordinación", null], ["departamento", "Contabilidad y Finanzas", DEPTOS.find((d) => d.nombre.startsWith("Contabilidad"))?.id],

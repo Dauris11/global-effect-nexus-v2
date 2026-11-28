@@ -66,14 +66,14 @@ const TAREAS = [
   // proyecto, título, estado, prioridad, días para la fecha límite, correos asignados
   [0, "Actualizar el listado de patrocinadores activos", "completada", "media", -20, ["coordinacion@globaleffect.org"]],
   [0, "Redactar la carta de renovación de aportes", "en_progreso", "alta", 5, ["coordinacion@globaleffect.org", "contabilidad@globaleffect.org"]],
-  [0, "Revisar los expedientes de los 12 candidatos", "pendiente", "urgente", -2, ["habitudes@globaleffect.org", "coordinacion@globaleffect.org", "docente@globaleffect.org"]],
-  [0, "Preparar el acto de entrega de becas", "pendiente", "baja", 45, []],
+  [0, "Revisar los expedientes de los 12 candidatos", "por_hacer", "urgente", -2, ["habitudes@globaleffect.org", "coordinacion@globaleffect.org", "docente@globaleffect.org"]],
+  [0, "Preparar el acto de entrega de becas", "por_hacer", "baja", 45, []],
   [1, "Cotizar 20 equipos con tres proveedores", "completada", "alta", -10, ["contabilidad@globaleffect.org"]],
   [1, "Instalar el cableado de red del aula", "en_progreso", "media", 8, ["docente@globaleffect.org"]],
-  [1, "Definir el plan de clases de Global Effect 360", "pendiente", "media", 21, ["docente@globaleffect.org"]],
-  [2, "Recopilar las cifras de matrícula del año", "pendiente", "media", 25, ["coordinacion@globaleffect.org"]],
-  [2, "Cerrar el balance contable anual", "pendiente", "alta", 30, ["contabilidad@globaleffect.org"]],
-  [null, "Renovar el permiso de operación de la cocina", "pendiente", "urgente", 3, ["coordinacion@globaleffect.org"]],
+  [1, "Definir el plan de clases de Global Effect 360", "por_hacer", "media", 21, ["docente@globaleffect.org"]],
+  [2, "Recopilar las cifras de matrícula del año", "por_hacer", "media", 25, ["coordinacion@globaleffect.org"]],
+  [2, "Cerrar el balance contable anual", "por_hacer", "alta", 30, ["contabilidad@globaleffect.org"]],
+  [null, "Renovar el permiso de operación de la cocina", "por_hacer", "urgente", 3, ["coordinacion@globaleffect.org"]],
 ];
 
 /**
@@ -94,7 +94,18 @@ const EVENTOS = [
 ];
 
 try {
+  const { rows: adminUser } = await db.query(
+    `SELECT id FROM usuario WHERE email IN ('admin@globaleffect.org', 'coordinacion@globaleffect.org') LIMIT 1`,
+  );
   await db.query("BEGIN");
+  if (adminUser.length > 0) {
+    await db.query(
+      `SELECT set_config('app.usuario_id', $1, true),
+              set_config('app.ip', 'seed', true),
+              set_config('app.agente', 'seed', true)`,
+      [adminUser[0].id],
+    );
+  }
 
   // Limpia solo lo que creó este script en ejecuciones anteriores. Los eventos
   // van primero: los espejo de tareas caen con la tarea, y los de demo aquí.

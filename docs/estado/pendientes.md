@@ -12,6 +12,14 @@ módulo) — esto es solo la cola de pendientes concretos.
 - [x] Solicitudes tipo `OTRO` conectadas al mismo flujo de `MATERIALES` en CxP > Solicitudes, con alerta bloqueante de proveedor + RNC cuando el proveedor no está registrado en catálogo.
 - [x] Nuevo módulo **Contabilidad > Pasaje** (`/contabilidad/pasaje`) con pestañas `Solicitudes` e `Historial`, cálculo por período (`×1`, `×5`, `×días` respetando la regla de `Lugares de Pasaje`), modal de entrega (`Monto a entregar` de solo lectura y `Entregado` editable sin asiento aún), actualización a `Entregado` en ambas vistas sin mover a Historial, habilitación de `Imprimir` y comprobante PDF (`/api/contabilidad/pasaje/[id]/pdf`) con firmas para solicitante y quien entrega.
 
+## Datos de prueba y sembrado completo para todos los roles y estados (28 nov 2026), COMPLETADO
+
+- [x] Sincronización y creación de los 8 roles de prueba (`admin`, `coordinacion`, `contabilidad`, `docente`, `estudiante`, `habitudes`, `director.habitudes`, `chofer`) con contraseña única `GlobalEffect2026!`.
+- [x] Ajuste y compatibilidad de triggers contables (`app.usuario_id` vía `set_config`) en scripts de seed (`seed-portales.mjs`, `seed-operaciones.mjs`, `seed-demo-estados.mjs`, `seed-habitudes.mjs`, `seed-moodle-g360.mjs`).
+- [x] Normalización de estados de tareas (`por_hacer` en vez de `pendiente` según migración `0074`) y cotización adjunta requerida para solicitudes de tipo compra (según migración `0084`).
+- [x] Resolución de conflictos de unicidad en períodos cerrados, inscripciones de Global Effect 360 por tanda (`uq_inscripcion_360_una_por_tanda`), e inscripciones recurrentes de transporte (`uq_transporte_estudiante_dia_horario`).
+- [x] Ejecución y verificación exitosa de todos los seeds: `db:seed:usuarios`, `db:seed:portales`, `db:seed:operaciones`, `db:seed:inventario`, `db:seed:reuniones`, `db:seed:contabilidad`, `db:seed:demo:contabilidad` y `db:seed:demo`.
+
 ## Solicitudes y Cuentas por Pagar — Etapa #2 (28 nov 2026)
 
 - [x] Migración `0145_solicitudes_etapa2_cxp.sql` aplicada en Supabase: amplía `public.solicitud.estado` (`solicitado`, `aceptada`, `pagada`), vincula `contabilidad.factura_proveedor.solicitud_id` con índice único parcial para facturas activas y exige NCF/e-CF en `contabilidad.aprobar_factura`.

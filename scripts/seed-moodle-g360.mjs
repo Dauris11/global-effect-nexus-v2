@@ -13,13 +13,21 @@ async function seed() {
   try {
     console.log("-> Iniciando seed de Moodle y Matrícula Global 360...");
 
-    await client.query("BEGIN");
-
     // 1. Obtener docente y materias
     const docenteRes = await client.query(
       `SELECT u.id FROM public.usuario u JOIN public.rol r ON r.id = u.rol_id WHERE r.nombre = 'docente' LIMIT 1`,
     );
     const docenteId = docenteRes.rows[0]?.id;
+
+    await client.query("BEGIN");
+    if (docenteId) {
+      await client.query(
+        `SELECT set_config('app.usuario_id', $1, true),
+                set_config('app.ip', 'seed', true),
+                set_config('app.agente', 'seed', true)`,
+        [docenteId],
+      );
+    }
 
     const estudianteRes = await client.query(
       `SELECT e.id FROM public.estudiante e WHERE e.tipo = 'becado' LIMIT 1`,

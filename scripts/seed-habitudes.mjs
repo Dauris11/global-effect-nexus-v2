@@ -12,8 +12,6 @@ async function seedHabitudes() {
   const client = await pool.connect();
   try {
     console.log("-> Sembrando datos para Hub Habitudes y Evidencias de Liceos...");
-    await client.query("BEGIN");
-
     // 1. Obtener usuario de habitudes y docente
     const userRes = await client.query(
       `SELECT u.id, r.nombre as rol
@@ -28,6 +26,14 @@ async function seedHabitudes() {
     if (!facilitadorId) {
       throw new Error("No se encontró usuario para Habitudes");
     }
+
+    await client.query("BEGIN");
+    await client.query(
+      `SELECT set_config('app.usuario_id', $1, true),
+              set_config('app.ip', 'seed', true),
+              set_config('app.agente', 'seed', true)`,
+      [facilitadorId],
+    );
 
     // 2. Insertar Liceos de La Vega
     const liceos = [
