@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import type { Locale } from "@/i18n/routing";
+import { formatearMonto } from "@/lib/contabilidad/formato";
 import { fechaCorta } from "@/lib/fechas";
 import { montoUsd } from "@/lib/finanzas";
 import type { AccionSolicitud } from "@/lib/solicitudes";
@@ -21,6 +22,7 @@ import {
   personaDeSolicitud,
 } from "./confirmar-accion-solicitud";
 import { DetalleSolicitud } from "./detalle-solicitud";
+import type { CatalogosSolicitud } from "./formulario-solicitud-dinamica";
 
 /**
  * Bandeja de solicitudes (patrón Lista, docs/ux-rules.md): tabla densa; en pantalla
@@ -36,12 +38,14 @@ export function ListaSolicitudes({
   filas,
   mostrarSolicitante,
   resaltarId,
+  catalogos,
 }: {
   filas: readonly FilaSolicitud[];
   /** En la bandeja de quien revisa importa quién lo pidió; en «lo mío» no. */
   mostrarSolicitante: boolean;
   /** Solicitud recién creada: entra resaltada unos segundos. */
   resaltarId?: string;
+  catalogos?: CatalogosSolicitud;
 }) {
   const t = useTranslations("requests");
   const tl = useTranslations("listas");
@@ -55,6 +59,12 @@ export function ListaSolicitudes({
 
   const fecha = (fila: FilaSolicitud) => fechaCorta(fila.creada.slice(0, 10), locale);
   const persona = (fila: FilaSolicitud) => personaDeSolicitud(fila, t("unknownUser"));
+  const formatoMontoFila = (fila: FilaSolicitud) =>
+    fila.monto === null
+      ? null
+      : fila.moneda === "DOP"
+        ? formatearMonto(fila.monto.toFixed(2), "DOP")
+        : montoUsd(fila.monto);
 
   return (
     <>
@@ -130,7 +140,7 @@ export function ListaSolicitudes({
                     </td>
                   )}
                   <td className="px-4 py-1.5 text-right tabular-nums">
-                    {fila.monto !== null ? montoUsd(fila.monto) : <span className="text-meta">—</span>}
+                    {formatoMontoFila(fila) ?? <span className="text-meta">—</span>}
                   </td>
                   <td className="text-meta px-4 py-1.5 whitespace-nowrap">{fecha(fila)}</td>
                   {/* Rechazar abre el diálogo que nombra la solicitud y pide el motivo (no hay popover de Radix instalado). */}
@@ -170,7 +180,7 @@ export function ListaSolicitudes({
                 <SheetDescription className="text-meta">
                   #{abierta.folio} · {t(`type.${abierta.tipo}` as never)}
                   {abierta.solicitante ? ` · ${abierta.solicitante}` : ""}
-                  {abierta.monto !== null ? ` · ${montoUsd(abierta.monto)}` : ""}
+                  {formatoMontoFila(abierta) ? ` · ${formatoMontoFila(abierta)}` : ""}
                 </SheetDescription>
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={abierta.estado} />
@@ -184,7 +194,7 @@ export function ListaSolicitudes({
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
                 {/* `key`: al cambiar de solicitud se reinicia el comentario y el estado del formulario. */}
-                <DetalleSolicitud key={abierta.id} solicitud={abierta} />
+                <DetalleSolicitud key={abierta.id} solicitud={abierta} catalogos={catalogos} />
               </div>
             </>
           )}

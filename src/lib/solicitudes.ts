@@ -33,6 +33,29 @@ import {
   type UsuarioConPermisos,
 } from "@/lib/rbac";
 
+/** Nuevos tipos dinámicos de solicitudes (Etapa 1, migración 0144). */
+export const SOLICITUDES_DINAMICAS = ["MATERIALES", "PASAJE", "OTRO"] as const;
+export type TipoSolicitudDinamica = (typeof SOLICITUDES_DINAMICAS)[number];
+
+/** Periodos permitidos en solicitudes de Pasaje. */
+export const PERIODOS_PASAJE = ["hoy", "semana", "personalizado"] as const;
+export type PeriodoPasaje = (typeof PERIODOS_PASAJE)[number];
+
+/** Días de la semana para periodo personalizado de Pasaje. */
+export const DIAS_SEMANA_PASAJE = [
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+  "domingo",
+] as const;
+export type DiaSemanaPasaje = (typeof DIAS_SEMANA_PASAJE)[number];
+
+/** Valor centinela del selector de lugar de pasaje cuando se elige «Otro». */
+export const LUGAR_PASAJE_OTRO = "__otro__";
+
 /** Lo que pide el estudiante desde su portal. */
 export const TRAMITES_ESTUDIANTE = [
   "constancia",
@@ -56,6 +79,7 @@ export const APROBACIONES_INTERNAS = ["alta_expediente", "beca", "gasto"] as con
 export const COMPRAS = ["compra"] as const;
 
 export const TIPOS_SOLICITUD = [
+  ...SOLICITUDES_DINAMICAS,
   ...TRAMITES_ESTUDIANTE,
   ...APROBACIONES_INTERNAS,
   ...COMPRAS,
@@ -148,6 +172,30 @@ const NUNCA = () => false;
  * compromete dinero de un patrocinador durante meses, no una vez.
  */
 export const REGLAS: Record<TipoSolicitud, ReglaTipo> = {
+  MATERIALES: {
+    crea: [],
+    revisa: "solicitudes.gestionar",
+    estudiante: "no",
+    monto: "obligatorio",
+    fecha: "no",
+    direccion: NUNCA,
+  },
+  PASAJE: {
+    crea: [],
+    revisa: "solicitudes.gestionar",
+    estudiante: "no",
+    monto: "obligatorio",
+    fecha: "no",
+    direccion: NUNCA,
+  },
+  OTRO: {
+    crea: [],
+    revisa: "solicitudes.gestionar",
+    estudiante: "no",
+    monto: "obligatorio",
+    fecha: "no",
+    direccion: NUNCA,
+  },
   constancia: {
     crea: [],
     revisa: "solicitudes.gestionar",
@@ -232,6 +280,37 @@ export const REGLAS: Record<TipoSolicitud, ReglaTipo> = {
   },
 };
 
+export function esSolicitudDinamica(valor: unknown): valor is TipoSolicitudDinamica {
+  return (
+    typeof valor === "string" &&
+    (SOLICITUDES_DINAMICAS as readonly string[]).includes(valor)
+  );
+}
+
+export function esPeriodoPasaje(valor: unknown): valor is PeriodoPasaje {
+  return (
+    typeof valor === "string" &&
+    (PERIODOS_PASAJE as readonly string[]).includes(valor)
+  );
+}
+
+export function esDiaSemanaPasaje(valor: unknown): valor is DiaSemanaPasaje {
+  return (
+    typeof valor === "string" &&
+    (DIAS_SEMANA_PASAJE as readonly string[]).includes(valor)
+  );
+}
+
+/** Valida formato estándar dominicano de RNC (9 dígitos) o Cédula (11 dígitos), ignorando guiones/espacios. */
+export function limpiarRnc(valor: string): string {
+  return valor.replace(/[^0-9]/g, "");
+}
+
+export function esRncOCedulaFormatoValido(valor: string): boolean {
+  const limpio = limpiarRnc(valor);
+  return /^[0-9]{9}$|^[0-9]{11}$/.test(limpio);
+}
+
 export function esTipoSolicitud(valor: unknown): valor is TipoSolicitud {
   return (
     typeof valor === "string" &&
@@ -282,7 +361,11 @@ export function puedeVerCotizacion(
 ): boolean {
   return (
     solicitanteId === usuario.id ||
-    usuarioTienePermiso(usuario, REGLAS.compra.revisa)
+    usuarioTieneAlgunPermiso(usuario, [
+      REGLAS.compra.revisa,
+      "solicitudes.gestionar",
+      "solicitudes.direccion",
+    ])
   );
 }
 

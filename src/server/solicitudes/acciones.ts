@@ -11,15 +11,24 @@ import { usuarioTienePermiso, type Permiso } from "@/lib/rbac";
 import { borrarDocumento, subirMaterial } from "@/lib/supabase/almacen";
 import {
   accionesPermitidas,
+  DIAS_SEMANA_PASAJE,
   FORMATOS_COTIZACION,
+  LUGAR_PASAJE_OTRO,
   MAXIMO_COTIZACION_BYTES,
   esAccionSolicitud,
+  esDiaSemanaPasaje,
+  esPeriodoPasaje,
+  esRncOCedulaFormatoValido,
+  esSolicitudDinamica,
   esTramiteEstudiante,
   estadoTrasAccion,
   HORAS_CITA,
+  limpiarRnc,
   MAXIMO_TEXTO,
   MAXIMO_TITULO,
   REGLAS,
+  type DiaSemanaPasaje,
+  type PeriodoPasaje,
   type TipoSolicitud,
   tiposQuePuedeCrear,
 } from "@/lib/solicitudes";
@@ -55,8 +64,18 @@ export type EstadoFormularioSolicitud = {
     | "sin_archivo"
     | "formato_no_admitido"
     | "muy_grande"
+    | "material_requerido"
+    | "proveedor_invalido"
+    | "lugar_requerido"
+    | "motivo_requerido"
+    | "monto_invalido"
+    | "periodo_requerido"
+    | "dias_requeridos"
+    | "proposito_requerido"
+    | "rnc_requerido"
+    | "rnc_invalido"
     | "error";
-  /** Solo con `ok`: la solicitud recién creada, para el aviso «Ver» y el resaltado en la lista. */
+  /** Solo con `ok`: la solicitud recién creada o editada, para el aviso «Ver» y el resaltado en la lista. */
   id?: string;
 };
 
@@ -380,7 +399,7 @@ export async function reemplazarCotizacionCompra(
       if (!fila) return "invalido" as const;
       if (
         fila.solicitante_id !== usuario.id ||
-        fila.tipo !== "compra" ||
+        (fila.tipo !== "compra" && fila.tipo !== "MATERIALES" && fila.tipo !== "OTRO") ||
         (fila.estado !== "enviada" && fila.estado !== "en_revision")
       ) {
         return "no_permitido" as const;
@@ -428,6 +447,370 @@ export async function reemplazarCotizacionCompra(
 
   refrescar();
   return { estado: "ok" };
+}
+
+/**
+ * Crea o edita una solicitud dinámica de los 3 tipos de Etapa 1:
+ *   · `MATERIALES`: tipo de material (catálogo), proveedor opcional (solo propósito Estudiantes), monto (>0), cotización opcional.
+ *   · `PASAJE`: lugar (catálogo con monto DOP automático u «Otro» con motivo + monto obligatorios), periodo (Hoy / Semana / Personalizado con al menos 1 día).
+ *   · `OTRO`: propósito obligatorio, monto (>0), proveedor editable opcional + RNC obligatorio (9 u 11 dígitos) si hay proveedor, cotización opcional.
+ *
+ * Todas las reglas condicionales se validan de nuevo en el servidor.
+ */
+export async function guardarSolicitudDinamica(
+  _previo: EstadoFormularioSolicitud,
+  datos: FormData,
+): Promise<EstadoFormularioSolicitud> {
+  const usuario = await requerirUsuario();
+
+  const id = String(datos.get("id") ?? "").trim();
+  if (id && !esUuid(id)) return { estado: "invalido" };
+
+  const tipo = String(datos.get("tipo") ?? "").trim();
+  if (!esSolicitudDinamica(tipo)) return { estado: "invalido" };
+
+  const detalle = String(datos.get("detalle") ?? "").trim().slice(0, MAXIMO_TEXTO) || null;
+
+  // Campos normalizados por tipo
+  let tipoMaterialId: string | null = null;
+  let proveedorId: string | null = null;
+  let lugarPasajeId: string | null = null;
+  let lugarPasajeOtro = false;
+  let motivoPasaje: string | null = null;
+  let periodoPasaje: PeriodoPasaje | null = null;
+  let diasPasaje: DiaSemanaPasaje[] | null = null;
+  let propositoOtro: string | null = null;
+  let proveedorNombre: string | null = null;
+  let proveedorRnc: string | null = null;
+  let monto: number | null = null;
+
+  const parsearMontoPositivo = (valor: string): number | null => {
+    const limpio = valor.trim();
+    if (!limpio) return null;
+    const n = Number(limpio);
+    if (!Number.isFinite(n) || n <= 0 || n >= 1e10) return null;
+    return Math.round(n * 100) / 100;
+  };
+
+  if (tipo === "MATERIALES") {
+    const matId = String(datos.get("tipo_material_id") ?? "").trim();
+    if (!esUuid(matId)) return { estado: "material_requerido" };
+    tipoMaterialId = matId;
+
+    const provId = String(datos.get("proveedor_id") ?? "").trim();
+    if (provId) {
+      if (!esUuid(provId)) return { estado: "proveedor_invalido" };
+      proveedorId = provId;
+    }
+
+    monto = parsearMontoPositivo(String(datos.get("monto") ?? ""));
+    if (monto === null) return { estado: "monto_invalido" };
+  } else if (tipo === "PASAJE") {
+    const lugar = String(datos.get("lugar") ?? "").trim();
+    if (!lugar) return { estado: "lugar_requerido" };
+
+    if (lugar === LUGAR_PASAJE_OTRO) {
+      lugarPasajeOtro = true;
+      motivoPasaje = String(datos.get("motivo_pasaje") ?? "").trim().slice(0, 300);
+      if (motivoPasaje.length < 2) return { estado: "motivo_requerido" };
+      monto = parsearMontoPositivo(String(datos.get("monto") ?? ""));
+      if (monto === null) return { estado: "monto_invalido" };
+    } else {
+      if (!esUuid(lugar)) return { estado: "lugar_requerido" };
+      lugarPasajeId = lugar;
+    }
+
+    const periodo = String(datos.get("periodo_pasaje") ?? "").trim();
+    if (!esPeriodoPasaje(periodo)) return { estado: "periodo_requerido" };
+    periodoPasaje = periodo;
+
+    if (periodoPasaje === "personalizado") {
+      const seleccionados = new Set<DiaSemanaPasaje>();
+      for (const d of datos.getAll("dias_pasaje")) {
+        const val = String(d).trim();
+        if (esDiaSemanaPasaje(val)) seleccionados.add(val);
+      }
+      const ordenados = DIAS_SEMANA_PASAJE.filter((d) => seleccionados.has(d));
+      if (ordenados.length === 0) return { estado: "dias_requeridos" };
+      diasPasaje = ordenados;
+    }
+  } else if (tipo === "OTRO") {
+    propositoOtro = String(datos.get("proposito_otro") ?? "").trim().slice(0, 300);
+    if (propositoOtro.length < 2) return { estado: "proposito_requerido" };
+
+    monto = parsearMontoPositivo(String(datos.get("monto") ?? ""));
+    if (monto === null) return { estado: "monto_invalido" };
+
+    const provTexto = String(datos.get("proveedor_nombre") ?? "").trim().slice(0, 160);
+    proveedorNombre = provTexto || null;
+
+    const rncCrudo = String(datos.get("proveedor_rnc") ?? "").trim();
+    if (proveedorNombre) {
+      if (!rncCrudo) return { estado: "rnc_requerido" };
+      if (!esRncOCedulaFormatoValido(rncCrudo)) return { estado: "rnc_invalido" };
+      proveedorRnc = limpiarRnc(rncCrudo);
+    } else if (rncCrudo) {
+      if (!esRncOCedulaFormatoValido(rncCrudo)) return { estado: "rnc_invalido" };
+      proveedorRnc = limpiarRnc(rncCrudo);
+    }
+  }
+
+  // Archivo de cotización opcional (solo para MATERIALES y OTRO)
+  let rutaNueva: string | null = null;
+  let nombreArchivo: string | null = null;
+  let formatoArchivo: string | null = null;
+  let tamanoArchivo = 0;
+
+  if (tipo === "MATERIALES" || tipo === "OTRO") {
+    const archivo = datos.get("cotizacion");
+    if (archivo instanceof File && archivo.size > 0) {
+      const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
+      if (!(extension in FORMATOS_COTIZACION)) return { estado: "formato_no_admitido" };
+      if (archivo.type && archivo.type !== FORMATOS_COTIZACION[extension]) {
+        return { estado: "formato_no_admitido" };
+      }
+      if (archivo.size > MAXIMO_COTIZACION_BYTES) return { estado: "muy_grande" };
+
+      formatoArchivo = extension === "jpeg" ? "jpg" : extension;
+      nombreArchivo = archivo.name.slice(0, 200);
+      tamanoArchivo = archivo.size;
+      rutaNueva = `solicitudes/${crypto.randomUUID()}.${formatoArchivo}`;
+
+      const subida = await subirMaterial(rutaNueva, archivo);
+      if (!subida.ok) return { estado: "error" };
+    }
+  }
+
+  let estudianteId: string | null = null;
+  if (usuario.rol === "estudiante") {
+    try {
+      const est = await estudianteDeUsuario(usuario.id);
+      estudianteId = est.id;
+    } catch {
+      if (rutaNueva) await borrarDocumento(rutaNueva);
+      return { estado: "sin_expediente" };
+    }
+  }
+
+  let rutaAnterior: string | null = null;
+  let solicitudIdFinal: string | undefined;
+
+  try {
+    const resultado = await enTransaccion(async (cliente) => {
+      let existente: {
+        solicitante_id: string | null;
+        estado: string;
+        tipo_material_id: string | null;
+        lugar_pasaje_id: string | null;
+        ruta_anterior: string | null;
+      } | null = null;
+
+      if (id) {
+        const resEx = await cliente.query<{
+          solicitante_id: string | null;
+          estado: string;
+          tipo_material_id: string | null;
+          lugar_pasaje_id: string | null;
+          ruta_anterior: string | null;
+        }>(
+          `SELECT s.solicitante_id, s.estado, s.tipo_material_id, s.lugar_pasaje_id,
+                  ad.ruta AS ruta_anterior
+             FROM solicitud s
+             LEFT JOIN solicitud_adjunto ad ON ad.solicitud_id = s.id
+            WHERE s.id = $1
+            FOR UPDATE OF s`,
+          [id],
+        );
+        existente = resEx.rows[0] ?? null;
+        if (!existente) return "invalido" as const;
+        if (
+          existente.solicitante_id !== usuario.id ||
+          (existente.estado !== "enviada" && existente.estado !== "en_revision")
+        ) {
+          return "no_permitido" as const;
+        }
+        rutaAnterior = existente.ruta_anterior;
+      }
+
+      let titulo = "";
+
+      if (tipo === "MATERIALES" && tipoMaterialId) {
+        const resMat = await cliente.query<{ nombre: string; activo: boolean }>(
+          `SELECT nombre, activo FROM public.tipo_material WHERE id = $1`,
+          [tipoMaterialId],
+        );
+        const mat = resMat.rows[0];
+        if (!mat || (!mat.activo && existente?.tipo_material_id !== tipoMaterialId)) {
+          return "material_requerido" as const;
+        }
+
+        if (proveedorId) {
+          const resProv = await cliente.query<{ id: string }>(
+            `SELECT id FROM contabilidad.proveedor
+              WHERE id = $1 AND estado = 'activo' AND proposito = 'estudiantes'`,
+            [proveedorId],
+          );
+          if (!resProv.rowCount) return "proveedor_invalido" as const;
+        }
+
+        titulo = `Materiales · ${mat.nombre}`.slice(0, MAXIMO_TITULO);
+      } else if (tipo === "PASAJE") {
+        if (!lugarPasajeOtro && lugarPasajeId) {
+          const resLugar = await cliente.query<{ nombre: string; monto: string; activo: boolean }>(
+            `SELECT nombre, monto::text AS monto, activo FROM public.lugar_pasaje WHERE id = $1`,
+            [lugarPasajeId],
+          );
+          const lp = resLugar.rows[0];
+          if (!lp || (!lp.activo && existente?.lugar_pasaje_id !== lugarPasajeId)) {
+            return "lugar_requerido" as const;
+          }
+          monto = Math.round(Number(lp.monto) * 100) / 100;
+          titulo = `Pasaje · ${lp.nombre}`.slice(0, MAXIMO_TITULO);
+        } else {
+          titulo = `Pasaje · ${motivoPasaje ?? ""}`.slice(0, MAXIMO_TITULO);
+        }
+      } else if (tipo === "OTRO") {
+        titulo = (propositoOtro ?? "Otro").slice(0, MAXIMO_TITULO);
+      }
+
+      if (id) {
+        await cliente.query(
+          `UPDATE solicitud
+              SET tipo = $2,
+                  titulo = $3,
+                  detalle = $4,
+                  monto = $5,
+                  moneda = 'DOP',
+                  tipo_material_id = $6,
+                  proveedor_id = $7,
+                  lugar_pasaje_id = $8,
+                  lugar_pasaje_otro = $9,
+                  motivo_pasaje = $10,
+                  periodo_pasaje = $11,
+                  dias_pasaje = $12::jsonb,
+                  proposito_otro = $13,
+                  proveedor_nombre = $14,
+                  proveedor_rnc = $15
+            WHERE id = $1`,
+          [
+            id,
+            tipo,
+            titulo,
+            detalle,
+            monto,
+            tipoMaterialId,
+            proveedorId,
+            lugarPasajeId,
+            lugarPasajeOtro,
+            motivoPasaje,
+            periodoPasaje,
+            diasPasaje ? JSON.stringify(diasPasaje) : null,
+            propositoOtro,
+            proveedorNombre,
+            proveedorRnc,
+          ],
+        );
+
+        if (tipo === "PASAJE" && rutaAnterior) {
+          await cliente.query(`DELETE FROM solicitud_adjunto WHERE solicitud_id = $1`, [id]);
+        } else if (rutaNueva && nombreArchivo && formatoArchivo) {
+          await cliente.query(
+            `INSERT INTO solicitud_adjunto
+               (solicitud_id, ruta, nombre, formato, tamano_bytes, subido_por)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (solicitud_id) DO UPDATE SET
+               ruta = EXCLUDED.ruta,
+               nombre = EXCLUDED.nombre,
+               formato = EXCLUDED.formato,
+               tamano_bytes = EXCLUDED.tamano_bytes,
+               subido_por = EXCLUDED.subido_por`,
+            [id, rutaNueva, nombreArchivo, formatoArchivo, tamanoArchivo, usuario.id],
+          );
+        }
+
+        solicitudIdFinal = id;
+      } else {
+        const resIns = await cliente.query<{ id: string; folio: number }>(
+          `INSERT INTO solicitud
+             (tipo, titulo, detalle, solicitante_id, estudiante_id, monto, moneda,
+              requiere_direccion, tipo_material_id, proveedor_id, lugar_pasaje_id,
+              lugar_pasaje_otro, motivo_pasaje, periodo_pasaje, dias_pasaje,
+              proposito_otro, proveedor_nombre, proveedor_rnc)
+           VALUES ($1, $2, $3, $4, $5, $6, 'DOP', FALSE, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, $15, $16)
+           RETURNING id, folio::int AS folio`,
+          [
+            tipo,
+            titulo,
+            detalle,
+            usuario.id,
+            estudianteId,
+            monto,
+            tipoMaterialId,
+            proveedorId,
+            lugarPasajeId,
+            lugarPasajeOtro,
+            motivoPasaje,
+            periodoPasaje,
+            diasPasaje ? JSON.stringify(diasPasaje) : null,
+            propositoOtro,
+            proveedorNombre,
+            proveedorRnc,
+          ],
+        );
+        const creada = resIns.rows[0];
+        solicitudIdFinal = creada.id;
+
+        if (rutaNueva && nombreArchivo && formatoArchivo) {
+          await cliente.query(
+            `INSERT INTO solicitud_adjunto
+               (solicitud_id, ruta, nombre, formato, tamano_bytes, subido_por)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [creada.id, rutaNueva, nombreArchivo, formatoArchivo, tamanoArchivo, usuario.id],
+          );
+        }
+
+        await cliente.query(
+          `INSERT INTO solicitud_paso (solicitud_id, estado_anterior, estado_nuevo, usuario_id)
+           VALUES ($1, NULL, 'enviada', $2)`,
+          [creada.id, usuario.id],
+        );
+
+        await avisarA(
+          cliente,
+          REGLAS[tipo].revisa,
+          `#${creada.folio} · ${titulo}`,
+          "enviada",
+          usuario.id,
+        );
+      }
+
+      return "ok" as const;
+    });
+
+    if (resultado !== "ok") {
+      if (rutaNueva) await borrarDocumento(rutaNueva);
+      return { estado: resultado };
+    }
+  } catch (error) {
+    if (rutaNueva) await borrarDocumento(rutaNueva);
+    console.error("[solicitudes] no se pudo guardar solicitud dinámica", error);
+    return { estado: "error" };
+  }
+
+  if (rutaAnterior && ((rutaNueva && rutaAnterior !== rutaNueva) || tipo === "PASAJE")) {
+    await borrarDocumento(rutaAnterior);
+  }
+
+  await registrar({
+    usuarioId: usuario.id,
+    accion: id ? "solicitud.editada" : "solicitud.creada",
+    entidad: "solicitud",
+    entidadId: solicitudIdFinal,
+    datos: { tipo },
+  });
+
+  refrescar();
+  return { estado: "ok", id: solicitudIdFinal };
 }
 
 /**

@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  Bus,
   CalendarClock,
   CalendarOff,
   ChevronLeft,
@@ -10,6 +11,7 @@ import {
   GraduationCap,
   Loader2,
   Mail,
+  Package,
   Receipt,
   Send,
   ShoppingCart,
@@ -42,6 +44,9 @@ const EMBUDO = ["reclutado", "postulado", "academia_liderazgo"];
  * (un componente no puede cruzar de servidor a cliente).
  */
 const ICONO: Record<TipoSolicitud, LucideIcon> = {
+  MATERIALES: Package,
+  PASAJE: Bus,
+  OTRO: CircleHelp,
   constancia: FileText,
   carta: Mail,
   cita_administracion: CalendarClock,

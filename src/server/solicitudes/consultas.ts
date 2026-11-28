@@ -3,7 +3,9 @@ import { usuarioTienePermiso, type UsuarioConPermisos } from "@/lib/rbac";
 import {
   accionesPermitidas,
   type AccionSolicitud,
+  type DiaSemanaPasaje,
   type EstadoSolicitud,
+  type PeriodoPasaje,
   REGLAS,
   TIPOS_SOLICITUD,
 } from "@/lib/solicitudes";
@@ -48,6 +50,7 @@ export type FilaSolicitud = {
   estudiante_id: string | null;
   estudiante: string | null;
   monto: number | null;
+  moneda: "DOP" | "USD";
   fecha_requerida: string | null;
   hora_preferida: string | null;
   requiere_direccion: boolean;
@@ -56,8 +59,21 @@ export type FilaSolicitud = {
   respuesta: string | null;
   creada: string;
   resuelta_en: string | null;
+  tipo_material_id: string | null;
+  tipo_material: string | null;
+  proveedor_id: string | null;
+  proveedor_catalogo: string | null;
+  lugar_pasaje_id: string | null;
+  lugar_pasaje: string | null;
+  lugar_pasaje_otro: boolean;
+  motivo_pasaje: string | null;
+  periodo_pasaje: PeriodoPasaje | null;
+  dias_pasaje: DiaSemanaPasaje[] | null;
+  proposito_otro: string | null;
+  proveedor_nombre: string | null;
+  proveedor_rnc: string | null;
   pasos: PasoSolicitud[];
-  /** Solo las compras (0070). La descarga comprueba el acceso en el servidor. */
+  /** Compras (0070) y solicitudes dinámicas con cotización adjunta (0144). */
   cotizacion: CotizacionSolicitud | null;
   /** Lo que quien mira puede hacer ahora mismo. Vacío si nada. */
   acciones: AccionSolicitud[];
@@ -120,6 +136,7 @@ const COLUMNAS = `
   s.estudiante_id,
   e.nombre AS estudiante,
   s.monto::float8 AS monto,
+  COALESCE(s.moneda, 'USD') AS moneda,
   to_char(s.fecha_requerida, 'YYYY-MM-DD') AS fecha_requerida,
   s.hora_preferida,
   s.requiere_direccion,
@@ -128,15 +145,31 @@ const COLUMNAS = `
   s.respuesta,
   s.created_at::text AS creada,
   s.resuelta_en::text AS resuelta_en,
+  s.tipo_material_id,
+  tm.nombre AS tipo_material,
+  s.proveedor_id,
+  pr.nombre AS proveedor_catalogo,
+  s.lugar_pasaje_id,
+  lp.nombre AS lugar_pasaje,
+  COALESCE(s.lugar_pasaje_otro, FALSE) AS lugar_pasaje_otro,
+  s.motivo_pasaje,
+  s.periodo_pasaje,
+  s.dias_pasaje,
+  s.proposito_otro,
+  s.proveedor_nombre,
+  s.proveedor_rnc,
   ad.nombre AS cotizacion_nombre,
   ad.formato AS cotizacion_formato`;
 
 const ORIGEN = `
   FROM solicitud s
-  LEFT JOIN usuario so    ON so.id = s.solicitante_id
-  LEFT JOIN usuario re    ON re.id = s.responsable_id
-  LEFT JOIN estudiante e  ON e.id  = s.estudiante_id
-  LEFT JOIN solicitud_adjunto ad ON ad.solicitud_id = s.id`;
+  LEFT JOIN usuario so               ON so.id = s.solicitante_id
+  LEFT JOIN usuario re               ON re.id = s.responsable_id
+  LEFT JOIN estudiante e             ON e.id  = s.estudiante_id
+  LEFT JOIN public.tipo_material tm  ON tm.id = s.tipo_material_id
+  LEFT JOIN contabilidad.proveedor pr ON pr.id = s.proveedor_id
+  LEFT JOIN public.lugar_pasaje lp   ON lp.id = s.lugar_pasaje_id
+  LEFT JOIN solicitud_adjunto ad     ON ad.solicitud_id = s.id`;
 
 /** La línea de tiempo de varias solicitudes en una sola consulta. */
 async function conPasos(
@@ -162,6 +195,7 @@ async function conPasos(
 
   return filas.map(({ cotizacion_nombre, cotizacion_formato, ...fila }) => ({
     ...fila,
+    dias_pasaje: Array.isArray(fila.dias_pasaje) ? fila.dias_pasaje : null,
     pasos: pasos.filter((paso) => paso.solicitud_id === fila.id),
     cotizacion:
       cotizacion_nombre && cotizacion_formato

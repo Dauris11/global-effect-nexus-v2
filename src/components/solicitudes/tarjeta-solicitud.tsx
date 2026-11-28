@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Dato, FilaDatos } from "@/components/ui/dato";
 import type { Locale } from "@/i18n/routing";
+import { formatearMonto } from "@/lib/contabilidad/formato";
 import { fechaConHora } from "@/lib/fechas";
 import { montoUsd } from "@/lib/finanzas";
 import { visualDeSolicitud } from "@/lib/solicitudes";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import type { FilaSolicitud } from "@/server/solicitudes/consultas";
 
 import { DetalleSolicitud } from "./detalle-solicitud";
+import type { CatalogosSolicitud } from "./formulario-solicitud-dinamica";
 
 /**
  * Una solicitud en una tarjeta expandible. El cuerpo (línea de tiempo y botones del
@@ -27,9 +29,11 @@ import { DetalleSolicitud } from "./detalle-solicitud";
  */
 export function TarjetaSolicitud({
   solicitud,
+  catalogos,
   mostrarSolicitante = false,
 }: {
   solicitud: FilaSolicitud;
+  catalogos?: CatalogosSolicitud;
   /** En la bandeja de quien revisa sí importa quién lo pidió. */
   mostrarSolicitante?: boolean;
 }) {
@@ -81,7 +85,9 @@ export function TarjetaSolicitud({
             )}
             {solicitud.monto !== null && (
               <Dato icono={DollarSign} className="text-xs">
-                {montoUsd(solicitud.monto)}
+                {solicitud.moneda === "DOP"
+                  ? formatearMonto(solicitud.monto.toFixed(2), "DOP")
+                  : montoUsd(solicitud.monto)}
               </Dato>
             )}
             {solicitud.fecha_requerida && (
@@ -108,6 +114,7 @@ export function TarjetaSolicitud({
       {abierta && (
         <DetalleSolicitud
           solicitud={solicitud}
+          catalogos={catalogos}
           className="border-t border-linea px-4 pt-3 pb-4 dark:border-linea"
         />
       )}

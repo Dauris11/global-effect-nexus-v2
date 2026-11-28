@@ -17,6 +17,7 @@ import { claveDia } from "@/lib/fechas";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import {
   esEstadoSolicitud,
+  esSolicitudDinamica,
   ESTADOS_SOLICITUD,
   esTipoSolicitud,
   REGLAS,
@@ -24,6 +25,11 @@ import {
   TIPOS_SOLICITUD,
   tiposQuePuedeCrear,
 } from "@/lib/solicitudes";
+import { proveedoresActivosPorProposito } from "@/server/contabilidad/proveedores/consultas";
+import {
+  listarLugaresPasaje,
+  listarTiposMaterial,
+} from "@/server/parametros/catalogos-consultas";
 import {
   conteosSolicitudes,
   estudiantesParaSolicitud,
@@ -99,7 +105,19 @@ export default async function PaginaSolicitudes({
   const claseFiltro = (TIPOS_SOLICITUD as readonly string[]).includes(clase ?? "") ? clase : null;
   const busqueda = normalizar((q ?? "").trim());
 
-  const [t, tl, abiertas, conteos, filasVista, propias, estudiantes, mensajes] = await Promise.all([
+  const [
+    t,
+    tl,
+    abiertas,
+    conteos,
+    filasVista,
+    propias,
+    estudiantes,
+    tiposMaterial,
+    lugaresPasaje,
+    proveedoresEstudiantes,
+    mensajes,
+  ] = await Promise.all([
     getTranslations({ locale, namespace: "requests" }),
     getTranslations({ locale, namespace: "listas" }),
     revisa ? solicitudesPorAtender(usuario, { incluirAprobadas: true }) : Promise.resolve([] as FilaSolicitud[]),
@@ -112,6 +130,9 @@ export default async function PaginaSolicitudes({
     conEstudiante
       ? estudiantesParaSolicitud(!usuarioTienePermiso(usuario, "expedientes.leer"))
       : Promise.resolve([]),
+    listarTiposMaterial(true),
+    listarLugaresPasaje(true),
+    proveedoresActivosPorProposito("estudiantes"),
     mensajesCliente(["requests"]),
   ]);
 
@@ -119,6 +140,7 @@ export default async function PaginaSolicitudes({
   // consulta, así que la separación de funciones sigue siendo la de `accionesPermitidas`.
   const porAtender = abiertas.filter((f) => f.estado !== "aprobada");
   const porCompletar = abiertas.filter((f) => f.estado === "aprobada");
+  const catalogos = { tiposMaterial, lugaresPasaje, proveedoresEstudiantes };
 
   const base: readonly FilaSolicitud[] =
     vista === POR_ATENDER
@@ -158,22 +180,23 @@ export default async function PaginaSolicitudes({
         count: conteos.propias[e] ?? 0,
       }));
 
-  const crearPersonal = tipos.length > 0;
   const tipoInicial = esTipoSolicitud(tipoPedido) ? tipoPedido : undefined;
-  const abrirInicial = Boolean(tipoInicial && (tipos as readonly string[]).includes(tipoInicial));
-  // Solo la copia del encabezado abre el panel por el atajo `?tipo=`: dos copias abiertas a la vez serían dos paneles.
-  const botonSolicitud = (conAtajo: boolean) =>
-    crearPersonal ? (
-      <CrearSolicitud
-        modo="solicitud"
-        tipos={tipos}
-        estudiantes={estudiantes}
-        minimoFecha={claveDia()}
-        tipoInicial={tipoInicial}
-        abrirInicial={conAtajo && abrirInicial}
-      />
-    ) : null;
-  // Todo rol puede pedir una compra; si no hay otra alta, esa es la acción primaria.
+  const abrirInicial = Boolean(
+    tipoInicial &&
+      (esSolicitudDinamica(tipoInicial) || (tipos as readonly string[]).includes(tipoInicial)),
+  );
+  // Todo el personal puede crear solicitudes dinámicas (MATERIALES, PASAJE, OTRO).
+  const botonSolicitud = (conAtajo: boolean) => (
+    <CrearSolicitud
+      modo="solicitud"
+      tipos={tipos}
+      estudiantes={estudiantes}
+      catalogos={catalogos}
+      minimoFecha={claveDia()}
+      tipoInicial={tipoInicial}
+      abrirInicial={conAtajo && abrirInicial}
+    />
+  );
   const botonCompra = (variante: "default" | "outline") => <CrearSolicitud modo="compra" variante={variante} />;
 
   const hayBusqueda = Boolean(busqueda || claseFiltro);
@@ -184,8 +207,8 @@ export default async function PaginaSolicitudes({
       <NextIntlClientProvider messages={mensajes}>
         <PageHeader
           title={t("staffTitle")}
-          primaryAction={crearPersonal ? botonSolicitud(true) : botonCompra("default")}
-          secondaryActions={crearPersonal ? botonCompra("outline") : undefined}
+          primaryAction={botonSolicitud(true)}
+          secondaryActions={botonCompra("outline")}
         />
 
         <Suspense fallback={null}>
@@ -242,11 +265,16 @@ export default async function PaginaSolicitudes({
             <EmptyState
               icon={Inbox}
               title={t("mineEmpty")}
-              action={crearPersonal ? botonSolicitud(false) : botonCompra("default")}
+              action={botonSolicitud(false)}
             />
           )
         ) : (
-          <ListaSolicitudes resaltarId={/^[0-9a-f-]{36}$/i.test(nuevo ?? "") ? nuevo : undefined} filas={filas} mostrarSolicitante={mostrarSolicitante} />
+          <ListaSolicitudes
+            resaltarId={/^[0-9a-f-]{36}$/i.test(nuevo ?? "") ? nuevo : undefined}
+            filas={filas}
+            mostrarSolicitante={mostrarSolicitante}
+            catalogos={catalogos}
+          />
         )}
       </NextIntlClientProvider>
     </div>

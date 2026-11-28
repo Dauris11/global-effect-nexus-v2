@@ -171,6 +171,8 @@ export async function guardarProveedor(
 
   const id = texto(datos, "id", 40);
   const tipo = texto(datos, "tipo", 10);
+  const propositoCrudo = texto(datos, "proposito", 20);
+  const proposito = propositoCrudo === "gasto" || propositoCrudo === "estudiantes" ? propositoCrudo : "";
   const identificacion = limpiarIdentificacion(texto(datos, "identificacion", 20));
   const nombre = texto(datos, "nombre", 160);
   const actividadEconomica = texto(datos, "actividad_economica", 300);
@@ -183,6 +185,7 @@ export async function guardarProveedor(
   if (id && !esUuid(id)) return { estado: "no_encontrado" };
   if (
     (tipo !== "fisica" && tipo !== "juridica") ||
+    !proposito ||
     !nombre ||
     !actividadEconomica ||
     !direccion ||
@@ -196,7 +199,7 @@ export async function guardarProveedor(
   if (!rncOCedulaValida(identificacion)) return { estado: "identificacion_invalida" };
 
   const valores = [
-    tipo, identificacion, nombre, texto(datos, "nombre_comercial", 160) || null,
+    tipo, proposito, identificacion, nombre, texto(datos, "nombre_comercial", 160) || null,
     actividadEconomica,
     texto(datos, "administracion_local", 160) || null,
     texto(datos, "contacto", 120) || null, texto(datos, "telefono", 40) || null,
@@ -209,19 +212,19 @@ export async function guardarProveedor(
       const { rows } = id
         ? await cliente.query<{ id: string }>(
             `UPDATE contabilidad.proveedor
-                SET tipo = $2, identificacion = $3, nombre = $4, nombre_comercial = $5,
-                    actividad_economica = $6, administracion_local = $7,
-                    contacto = $8, telefono = $9, email = $10, direccion = $11,
-                    condiciones_pago_dias = $12, categoria_id = $13, estado = $14
+                SET tipo = $2, proposito = $3, identificacion = $4, nombre = $5, nombre_comercial = $6,
+                    actividad_economica = $7, administracion_local = $8,
+                    contacto = $9, telefono = $10, email = $11, direccion = $12,
+                    condiciones_pago_dias = $13, categoria_id = $14, estado = $15
               WHERE id = $1 RETURNING id`,
             [id, ...valores],
           )
         : await cliente.query<{ id: string }>(
             `INSERT INTO contabilidad.proveedor
-               (tipo, identificacion, nombre, nombre_comercial, actividad_economica,
+               (tipo, proposito, identificacion, nombre, nombre_comercial, actividad_economica,
                 administracion_local, contacto, telefono, email, direccion,
                 condiciones_pago_dias, categoria_id, estado, creado_por)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
             [...valores, usuario.id],
           );
       return rows[0]?.id ?? null;

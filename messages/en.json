@@ -4021,6 +4021,9 @@
       "student": "Student: {nombre}"
     },
     "type": {
+      "MATERIALES": "Materials",
+      "PASAJE": "Transport fare",
+      "OTRO": "Other",
       "constancia": "Certificate",
       "carta": "Letter",
       "cita_administracion": "Administration appointment",
@@ -4032,6 +4035,9 @@
       "compra": "Purchase with quote"
     },
     "typeHint": {
+      "MATERIALES": "Request for materials with catalog type, optional student supplier, amount and quote.",
+      "PASAJE": "Transport fare request by configured place or custom reason, with period or specific days.",
+      "OTRO": "Other request with purpose, amount, optional supplier and quote.",
       "constancia": "Of studies or scholarship. Say which institution it is for.",
       "carta": "Recommendation or reference letter.",
       "cita_administracion": "The time is a preference; administration confirms it.",
@@ -4043,6 +4049,9 @@
       "compra": "Ask accounting to buy something. Attach the quote; accounting approves or rejects it."
     },
     "titlePlaceholder": {
+      "MATERIALES": "Study materials",
+      "PASAJE": "Transport fare",
+      "OTRO": "Briefly describe the request",
       "constancia": "Scholarship certificate for the university",
       "carta": "Recommendation letter for an internship",
       "cita_administracion": "Review my transport allowance",
@@ -4054,6 +4063,9 @@
       "compra": "Projector for the leadership workshop"
     },
     "dateLabel": {
+      "MATERIALES": "Date",
+      "PASAJE": "Date",
+      "OTRO": "Date",
       "constancia": "When you need it",
       "carta": "When you need it",
       "cita_administracion": "Preferred date",
@@ -4096,8 +4108,63 @@
         "sin_archivo": "Attach the quote: accounting cannot decide without it.",
         "formato_no_admitido": "The quote must be a PDF, PNG, JPG or DOCX.",
         "muy_grande": "The quote file is too large.",
+        "material_requerido": "Select a valid material type.",
+        "proveedor_invalido": "The selected supplier does not have the Students purpose or is inactive.",
+        "lugar_requerido": "Select a valid transport place.",
+        "motivo_requerido": "Enter the reason when selecting “Other” as the place.",
+        "monto_invalido": "Enter a numeric amount greater than 0.",
+        "periodo_requerido": "Select a valid period.",
+        "dias_requeridos": "Select at least one day of the week for the custom period.",
+        "proposito_requerido": "Describe the purpose of the request.",
+        "rnc_requerido": "Supplier RNC is required when a supplier name is entered.",
+        "rnc_invalido": "Enter a valid 9-digit RNC or 11-digit ID number.",
         "error": "Couldn't send it. Try again."
       }
+    },
+    "dinamica": {
+      "tabSolicitudes": "Materials / Transport / Other",
+      "tabAprobaciones": "Internal approvals",
+      "tabTramites": "Academic requests",
+      "tipoSolicitud": "Request type",
+      "tipoMaterial": "Material type",
+      "seleccionarMaterial": "Select material type",
+      "sinMaterialesCatalogo": "Configure material types in Settings > Parameters.",
+      "proveedor": "Supplier",
+      "proveedorOpcional": "Supplier (optional)",
+      "sinProveedor": "No specific supplier",
+      "montoSolicitado": "Requested amount (DOP)",
+      "montoDop": "Amount (DOP)",
+      "monto": "Amount",
+      "montoConfigurado": "Configured amount (DOP)",
+      "cotizacionOpcional": "Quote (optional · PDF or image)",
+      "cotizacionActual": "Current quote: {nombre}",
+      "lugar": "Place",
+      "seleccionarLugar": "Select place",
+      "lugarOtro": "Other",
+      "motivo": "Reason",
+      "periodo": "Period",
+      "periodos": {
+        "hoy": "Today",
+        "semana": "Week",
+        "personalizado": "Custom"
+      },
+      "diasSemana": "Days of the week",
+      "dias": {
+        "lunes": "Monday",
+        "martes": "Tuesday",
+        "miercoles": "Wednesday",
+        "jueves": "Thursday",
+        "viernes": "Friday",
+        "sabado": "Saturday",
+        "domingo": "Sunday"
+      },
+      "proposito": "Purpose",
+      "proveedorEditable": "Supplier (optional)",
+      "rncProveedor": "Supplier RNC",
+      "guardarCambios": "Save changes",
+      "actualizada": "Request updated",
+      "editar": "Edit",
+      "editarTitulo": "Edit request #{folio}"
     },
     "purchase": {
       "title": "Purchase request to accounting",
@@ -4698,6 +4765,10 @@
       "fisica": "Informal / Independent professional",
       "juridica": "Formal / Legal entity"
     },
+    "propositoProveedor": {
+      "gasto": "Expense",
+      "estudiantes": "Students"
+    },
     "estadoProveedor": {
       "activo": "Active",
       "inactivo": "Inactive"
@@ -4759,6 +4830,8 @@
       "contacto": "Contact person",
       "telefono": "Phone",
       "email": "Email",
+      "proposito": "Purpose",
+      "seleccionarProposito": "Select purpose",
       "direccion": "Address",
       "direccionAyuda": "Physical or tax address of the supplier.",
       "condiciones": "Credit days",
@@ -7068,6 +7141,41 @@
     "title": "Institutional parameters",
     "subtitle": "What used to be written in the code and is now changed here: meal hours, scholarship minimums and the contact email.",
     "back": "Back to settings",
+    "tabs": {
+      "generales": "General parameters",
+      "materiales": "Material types",
+      "pasajes": "Transport places"
+    },
+    "catalogos": {
+      "materialesTitulo": "Material types",
+      "agregarMaterial": "Add material type",
+      "materialesVacio": "No material types registered yet.",
+      "nuevoMaterialTitulo": "New material type",
+      "editarMaterialTitulo": "Edit material type",
+      "pasajesTitulo": "Transport places",
+      "agregarLugar": "Add transport place",
+      "pasajesVacio": "No transport places registered yet.",
+      "nuevoLugarTitulo": "New transport place",
+      "editarLugarTitulo": "Edit transport place",
+      "colNombre": "Name",
+      "colLugar": "Place",
+      "colMontoDop": "Amount (DOP)",
+      "colEstado": "Status",
+      "colAcciones": "Actions",
+      "activo": "Active",
+      "inactivo": "Inactive",
+      "editar": "Edit",
+      "activar": "Activate",
+      "desactivar": "Deactivate",
+      "cancelar": "Cancel",
+      "guardar": "Save",
+      "errores": {
+        "datos_invalidos": "Check the fields: name is required and amount must be greater than 0.",
+        "duplicado": "A record with that name already exists.",
+        "no_encontrado": "Record not found.",
+        "error": "Could not save. Try again."
+      }
+    },
     "groups": {
       "comedor": {
         "title": "Meals",

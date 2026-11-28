@@ -285,6 +285,23 @@ export function FormularioProveedor({
             <Campo id="email" etiqueta={t("email")}>
               <Input id="email" name="email" type="email" maxLength={120} defaultValue={proveedor?.email ?? ""} />
             </Campo>
+            <Campo
+              id="proposito"
+              etiqueta={t("proposito")}
+              obligatorio
+            >
+              <select
+                id="proposito"
+                name="proposito"
+                className={SELECT}
+                required
+                defaultValue={proveedor?.proposito ?? ""}
+              >
+                <option value="" disabled>{t("seleccionarProposito")}</option>
+                <option value="gasto">{tc("propositoProveedor.gasto")}</option>
+                <option value="estudiantes">{tc("propositoProveedor.estudiantes")}</option>
+              </select>
+            </Campo>
           </div>
           <Campo
             id="direccion"

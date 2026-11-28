@@ -4021,6 +4021,9 @@
       "student": "Estudiante: {nombre}"
     },
     "type": {
+      "MATERIALES": "Materiales",
+      "PASAJE": "Pasaje",
+      "OTRO": "Otro",
       "constancia": "Constancia",
       "carta": "Carta",
       "cita_administracion": "Cita con administración",
@@ -4032,6 +4035,9 @@
       "compra": "Compra con cotización"
     },
     "typeHint": {
+      "MATERIALES": "Solicitud de materiales con catálogo, proveedor de estudiantes opcional, monto y cotización.",
+      "PASAJE": "Solicitud de pasaje por lugar configurado u otro motivo, con periodo o días específicos.",
+      "OTRO": "Solicitud de otro tipo con propósito, monto, proveedor opcional y cotización.",
       "constancia": "De estudios o de beca. Di para qué institución es.",
       "carta": "De recomendación o de referencia.",
       "cita_administracion": "La hora es una preferencia; administración la confirma.",
@@ -4043,6 +4049,9 @@
       "compra": "Pide a contabilidad que compre algo. Adjunta la cotización; contabilidad la aprueba o la rechaza."
     },
     "titlePlaceholder": {
+      "MATERIALES": "Materiales de estudio",
+      "PASAJE": "Pasaje para asistencia",
+      "OTRO": "Describe brevemente la solicitud",
       "constancia": "Constancia de beca para la universidad",
       "carta": "Carta de recomendación para una pasantía",
       "cita_administracion": "Revisar el apoyo de transporte",
@@ -4054,6 +4063,9 @@
       "compra": "Proyector para el taller de liderazgo"
     },
     "dateLabel": {
+      "MATERIALES": "Fecha",
+      "PASAJE": "Fecha",
+      "OTRO": "Fecha",
       "constancia": "Para cuándo la necesitas",
       "carta": "Para cuándo la necesitas",
       "cita_administracion": "Fecha preferida",
@@ -4096,8 +4108,63 @@
         "sin_archivo": "Adjunta la cotización: sin ella contabilidad no puede decidir.",
         "formato_no_admitido": "La cotización debe ser PDF, PNG, JPG o DOCX.",
         "muy_grande": "La cotización pesa demasiado.",
+        "material_requerido": "Selecciona un tipo de material válido.",
+        "proveedor_invalido": "El proveedor seleccionado no pertenece al propósito Estudiantes o está inactivo.",
+        "lugar_requerido": "Selecciona un lugar de pasaje válido.",
+        "motivo_requerido": "Indica el motivo al seleccionar «Otro» en lugar.",
+        "monto_invalido": "Ingresa un monto numérico mayor a 0.",
+        "periodo_requerido": "Selecciona un periodo válido.",
+        "dias_requeridos": "Selecciona al menos un día de la semana para el periodo personalizado.",
+        "proposito_requerido": "Describe el propósito de la solicitud.",
+        "rnc_requerido": "El RNC del proveedor es obligatorio cuando se indica un proveedor.",
+        "rnc_invalido": "Ingresa un RNC (9 dígitos) o Cédula (11 dígitos) válido.",
         "error": "No se pudo enviar. Inténtalo de nuevo."
       }
+    },
+    "dinamica": {
+      "tabSolicitudes": "Materiales / Pasaje / Otro",
+      "tabAprobaciones": "Aprobaciones internas",
+      "tabTramites": "Trámites académicos",
+      "tipoSolicitud": "Tipo de solicitud",
+      "tipoMaterial": "Tipo de material",
+      "seleccionarMaterial": "Seleccionar tipo de material",
+      "sinMaterialesCatalogo": "Configura tipos de materiales en Configuración > Parámetros.",
+      "proveedor": "Proveedor",
+      "proveedorOpcional": "Proveedor (opcional)",
+      "sinProveedor": "Sin proveedor específico",
+      "montoSolicitado": "Monto solicitado (DOP)",
+      "montoDop": "Monto (DOP)",
+      "monto": "Monto",
+      "montoConfigurado": "Monto configurado (DOP)",
+      "cotizacionOpcional": "Cotización (opcional · PDF o imagen)",
+      "cotizacionActual": "Cotización actual: {nombre}",
+      "lugar": "Lugar",
+      "seleccionarLugar": "Seleccionar lugar",
+      "lugarOtro": "Otro",
+      "motivo": "Motivo",
+      "periodo": "Periodo",
+      "periodos": {
+        "hoy": "Hoy",
+        "semana": "Semana",
+        "personalizado": "Personalizado"
+      },
+      "diasSemana": "Días de la semana",
+      "dias": {
+        "lunes": "Lunes",
+        "martes": "Martes",
+        "miercoles": "Miércoles",
+        "jueves": "Jueves",
+        "viernes": "Viernes",
+        "sabado": "Sábado",
+        "domingo": "Domingo"
+      },
+      "proposito": "Propósito",
+      "proveedorEditable": "Proveedor (opcional)",
+      "rncProveedor": "RNC del proveedor",
+      "guardarCambios": "Guardar cambios",
+      "actualizada": "Solicitud actualizada",
+      "editar": "Editar",
+      "editarTitulo": "Editar solicitud #{folio}"
     },
     "purchase": {
       "title": "Compra a contabilidad",
@@ -4698,6 +4765,10 @@
       "fisica": "Informal / Profesional independiente",
       "juridica": "Formal / Jurídico"
     },
+    "propositoProveedor": {
+      "gasto": "Gasto",
+      "estudiantes": "Estudiantes"
+    },
     "estadoProveedor": {
       "activo": "Activo",
       "inactivo": "Inactivo"
@@ -4759,6 +4830,8 @@
       "contacto": "Persona de contacto",
       "telefono": "Teléfono",
       "email": "Correo",
+      "proposito": "Propósito",
+      "seleccionarProposito": "Seleccionar propósito",
       "direccion": "Dirección",
       "direccionAyuda": "Dirección física o fiscal del proveedor.",
       "condiciones": "Días de crédito",
@@ -7068,6 +7141,41 @@
     "title": "Parámetros institucionales",
     "subtitle": "Lo que antes estaba escrito en el código y ahora se cambia aquí: el horario del comedor, los mínimos de la beca y el correo de contacto.",
     "back": "Volver a configuración",
+    "tabs": {
+      "generales": "Parámetros generales",
+      "materiales": "Tipos de Materiales",
+      "pasajes": "Lugares de Pasaje"
+    },
+    "catalogos": {
+      "materialesTitulo": "Tipos de Materiales",
+      "agregarMaterial": "Agregar tipo de material",
+      "materialesVacio": "Aún no hay tipos de materiales registrados.",
+      "nuevoMaterialTitulo": "Nuevo tipo de material",
+      "editarMaterialTitulo": "Editar tipo de material",
+      "pasajesTitulo": "Lugares de Pasaje",
+      "agregarLugar": "Agregar lugar de pasaje",
+      "pasajesVacio": "Aún no hay lugares de pasaje registrados.",
+      "nuevoLugarTitulo": "Nuevo lugar de pasaje",
+      "editarLugarTitulo": "Editar lugar de pasaje",
+      "colNombre": "Nombre",
+      "colLugar": "Lugar",
+      "colMontoDop": "Monto (DOP)",
+      "colEstado": "Estado",
+      "colAcciones": "Acciones",
+      "activo": "Activo",
+      "inactivo": "Inactivo",
+      "editar": "Editar",
+      "activar": "Activar",
+      "desactivar": "Desactivar",
+      "cancelar": "Cancelar",
+      "guardar": "Guardar",
+      "errores": {
+        "datos_invalidos": "Revisa los campos: el nombre es obligatorio y el monto debe ser mayor a 0.",
+        "duplicado": "Ya existe un registro con ese nombre.",
+        "no_encontrado": "No se encontró el registro.",
+        "error": "No se pudo guardar. Inténtalo de nuevo."
+      }
+    },
     "groups": {
       "comedor": {
         "title": "Comedor",

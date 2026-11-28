@@ -5,13 +5,20 @@ import { getTranslations } from "next-intl/server";
 
 import { Cabecera } from "@/components/estudiante/cabecera";
 import { FormularioSolicitud } from "@/components/solicitudes/formulario-solicitud";
+import { FormularioSolicitudDinamica } from "@/components/solicitudes/formulario-solicitud-dinamica";
 import { TarjetaSolicitud } from "@/components/solicitudes/tarjeta-solicitud";
 import { Card } from "@/components/ui/card";
 import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
 import { claveDia } from "@/lib/fechas";
 import { TRAMITES_ESTUDIANTE } from "@/lib/solicitudes";
+import { proveedoresActivosPorProposito } from "@/server/contabilidad/proveedores/consultas";
+import {
+  listarLugaresPasaje,
+  listarTiposMaterial,
+} from "@/server/parametros/catalogos-consultas";
 import { solicitudesDe } from "@/server/solicitudes/consultas";
 
 export async function generateMetadata({
@@ -26,16 +33,9 @@ export async function generateMetadata({
 }
 
 /**
- * Trámites del estudiante con administración (migración 0031).
- *
- * Sustituye a la cita de psicología, que desapareció con el departamento. Lo
- * que el estudiante pide ahora no es siempre una cita: una constancia, una
- * carta, un permiso. Cada trámite pasa por los mismos pasos y él ve cada uno en
- * la línea de tiempo, con el nombre de quien lo lleva.
- *
- * Solo el rol `estudiante`, y solo lo suyo: `solicitudesDe` filtra por el
- * usuario de la sesión. La única acción que le aparece es cancelar, mientras
- * nadie la haya decidido.
+ * Solicitudes y trámites del estudiante desde su portal.
+ * Incluye los 3 tipos dinámicos (`MATERIALES`, `PASAJE`, `OTRO`) y los trámites
+ * académicos tradicionales (`constancia`, `carta`, `cita_administracion`, `permiso`, `otro`).
  */
 export default async function PaginaSolicitudesEstudiante({
   params,
@@ -46,29 +46,42 @@ export default async function PaginaSolicitudesEstudiante({
 
   const usuario = await requerirRol(["estudiante"]);
 
-  const [t, solicitudes, mensajes] = await Promise.all([
-    getTranslations({ locale, namespace: "requests" }),
-    solicitudesDe(usuario),
-    mensajesCliente(["requests"]),
-  ]);
+  const [t, solicitudes, tiposMaterial, lugaresPasaje, proveedoresEstudiantes, mensajes] =
+    await Promise.all([
+      getTranslations({ locale, namespace: "requests" }),
+      solicitudesDe(usuario),
+      listarTiposMaterial(true),
+      listarLugaresPasaje(true),
+      proveedoresActivosPorProposito("estudiantes"),
+      mensajesCliente(["requests"]),
+    ]);
+
+  const catalogos = { tiposMaterial, lugaresPasaje, proveedoresEstudiantes };
 
   return (
     <div className="animate-entrada space-y-10">
-      <Cabecera
-        titulo={t("studentTitle")}
-      />
+      <Cabecera titulo={t("studentTitle")} />
 
       <NextIntlClientProvider messages={mensajes}>
-        {/* El formulario es lo que se viene a hacer: va en su tarjeta, arriba.
-            Lo ya pedido queda debajo, como lista. */}
         <section className="space-y-4">
           <h2 className="texto-titulo-seccion">{t("newTitle")}</h2>
           <Card className="p-5 md:p-6">
-            <FormularioSolicitud
-              origen="estudiante"
-              tipos={TRAMITES_ESTUDIANTE}
-              minimoFecha={claveDia()}
-            />
+            <Tabs defaultValue="dinamicas" className="space-y-4">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="dinamicas">{t("dinamica.tabSolicitudes")}</TabsTrigger>
+                <TabsTrigger value="tramites">{t("dinamica.tabTramites")}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="dinamicas">
+                <FormularioSolicitudDinamica catalogos={catalogos} />
+              </TabsContent>
+              <TabsContent value="tramites">
+                <FormularioSolicitud
+                  origen="estudiante"
+                  tipos={TRAMITES_ESTUDIANTE}
+                  minimoFecha={claveDia()}
+                />
+              </TabsContent>
+            </Tabs>
           </Card>
         </section>
 
@@ -80,7 +93,11 @@ export default async function PaginaSolicitudesEstudiante({
           ) : (
             <ul className="space-y-3">
               {solicitudes.map((solicitud) => (
-                <TarjetaSolicitud key={solicitud.id} solicitud={solicitud} />
+                <TarjetaSolicitud
+                  key={solicitud.id}
+                  solicitud={solicitud}
+                  catalogos={catalogos}
+                />
               ))}
             </ul>
           )}

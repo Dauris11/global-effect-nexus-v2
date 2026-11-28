@@ -8,9 +8,12 @@ import { esUuid, type Moneda } from "@/lib/contabilidad/formato";
  * se da por moneda: lo que se le debe en pesos y en dólares no se suma.
  */
 
+export type PropositoProveedor = "gasto" | "estudiantes";
+
 export type FilaProveedor = {
   id: string;
   tipo: "fisica" | "juridica";
+  proposito: PropositoProveedor;
   identificacion: string;
   nombre: string;
   nombre_comercial: string | null;
@@ -47,7 +50,7 @@ const COINCIDE_TEXTO = `($1::text IS NULL
 
 export async function listarProveedores(filtro: FiltroProveedores): Promise<FilaProveedor[]> {
   return consultar<FilaProveedor>(
-    `SELECT p.id, p.tipo, p.identificacion, p.nombre, p.nombre_comercial, p.estado,
+    `SELECT p.id, p.tipo, p.proposito, p.identificacion, p.nombre, p.nombre_comercial, p.estado,
             p.condiciones_pago_dias,
             coalesce((SELECT json_agg(json_build_object('moneda', s.moneda, 'saldo', s.saldo::text))
                         FROM (SELECT x.moneda, sum(x.saldo) AS saldo
@@ -91,6 +94,7 @@ export async function conteosProveedores(filtro: Pick<FiltroProveedores, "texto"
 export type DetalleProveedor = {
   id: string;
   tipo: "fisica" | "juridica";
+  proposito: PropositoProveedor;
   identificacion: string;
   nombre: string;
   nombre_comercial: string | null;
@@ -110,7 +114,7 @@ export type DetalleProveedor = {
 export async function proveedorPorId(id: string): Promise<DetalleProveedor | null> {
   if (!esUuid(id)) return null;
   return consultarUna<DetalleProveedor>(
-    `SELECT p.id, p.tipo, p.identificacion, p.nombre, p.nombre_comercial,
+    `SELECT p.id, p.tipo, p.proposito, p.identificacion, p.nombre, p.nombre_comercial,
             p.actividad_economica, p.administracion_local, p.contacto, p.telefono,
             p.email, p.direccion, p.condiciones_pago_dias, p.categoria_id, c.nombre AS categoria,
             p.estado, u.nombre AS creado_por
@@ -119,6 +123,26 @@ export async function proveedorPorId(id: string): Promise<DetalleProveedor | nul
        LEFT JOIN contabilidad.categoria c ON c.id = p.categoria_id
       WHERE p.id = $1`,
     [id],
+  );
+}
+
+export type ProveedorOpcion = {
+  id: string;
+  nombre: string;
+  identificacion: string;
+};
+
+/** Proveedores activos filtrados por propósito (p. ej. `estudiantes` para solicitudes de Materiales). */
+export async function proveedoresActivosPorProposito(
+  proposito: PropositoProveedor,
+): Promise<ProveedorOpcion[]> {
+  return consultar<ProveedorOpcion>(
+    `SELECT id, nombre, identificacion
+       FROM contabilidad.proveedor
+      WHERE estado = 'activo'
+        AND proposito = $1
+      ORDER BY nombre ASC`,
+    [proposito],
   );
 }
 

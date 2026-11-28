@@ -57,6 +57,8 @@ export function PanelProveedor({
             <dd className="font-mono">{formatearIdentificacion(p.identificacion)}</dd>
             <dt className="text-meta">{t("panel.tipo")}</dt>
             <dd>{tc(`tipoProveedor.${p.tipo}` as never)}</dd>
+            <dt className="text-meta">{tc("proveedorForm.proposito")}</dt>
+            <dd>{tc(`propositoProveedor.${p.proposito}` as never)}</dd>
             <dt className="text-meta">{t("panel.credito")}</dt>
             <dd>{tp("condiciones", { dias: p.condiciones_pago_dias })}</dd>
             <dt className="text-meta">{t("panel.facturas")}</dt>

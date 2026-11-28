@@ -107,6 +107,9 @@ export default async function PaginaDetalleProveedor({
           {proveedor.nombre_comercial && (
             <Dato etiqueta={tc("proveedorForm.nombreComercial")}>{proveedor.nombre_comercial}</Dato>
           )}
+          <Dato etiqueta={tc("proveedorForm.proposito")}>
+            {tc(`propositoProveedor.${proveedor.proposito}` as never)}
+          </Dato>
           <Dato etiqueta="Estado">
             <Badge
               className={proveedor.estado === "activo" ? undefined : INSIGNIA_SEMAFORO.alerta}

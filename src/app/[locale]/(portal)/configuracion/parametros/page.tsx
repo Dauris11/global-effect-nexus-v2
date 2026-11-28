@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import {
-  FormularioParametros,
-  type CampoParametro,
-} from "@/components/parametros/formulario-parametros";
+import { type CampoParametro } from "@/components/parametros/formulario-parametros";
 import { InterruptorTecnico } from "@/components/parametros/interruptor-tecnico";
+import { PanelParametros } from "@/components/parametros/mantenimiento-catalogos";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirRol } from "@/lib/auth";
@@ -14,6 +12,10 @@ import { fechaConHora } from "@/lib/fechas";
 import { GRUPOS } from "@/lib/parametros";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { CLAVE_IMPERSONATION_WRITE } from "@/lib/suplantacion";
+import {
+  listarLugaresPasaje,
+  listarTiposMaterial,
+} from "@/server/parametros/catalogos-consultas";
 import { parametrosParaEditar } from "@/server/parametros/consultas";
 import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
 
@@ -46,9 +48,11 @@ export default async function PaginaParametros({
   const usuario = await requerirRol(["admin", "owner"]);
 
   const verTecnicos = usuarioTienePermiso(usuario, "tecnico.parametros");
-  const [t, filas, mensajes, escritura] = await Promise.all([
+  const [t, filas, tiposMaterial, lugaresPasaje, mensajes, escritura] = await Promise.all([
     getTranslations({ locale, namespace: "parametros" }),
     parametrosParaEditar(),
+    listarTiposMaterial(false),
+    listarLugaresPasaje(false),
     mensajesCliente(["parametros"]),
     verTecnicos ? impersonationWriteActivo() : Promise.resolve(false),
   ]);
@@ -81,7 +85,11 @@ export default async function PaginaParametros({
       <EncabezadoPagina titulo={t("title")} />
 
       <NextIntlClientProvider messages={mensajes}>
-        <FormularioParametros grupos={grupos} />
+        <PanelParametros
+          grupos={grupos}
+          tiposMaterial={tiposMaterial}
+          lugaresPasaje={lugaresPasaje}
+        />
 
         {verTecnicos && (
           <section aria-labelledby="parametros-tecnicos" className="space-y-4 rounded-card border border-linea bg-card p-5 shadow-card">
