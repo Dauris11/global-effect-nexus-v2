@@ -45,6 +45,7 @@ export async function generateMetadata({
 }
 
 const POR_ATENDER = "por_atender";
+const POR_COMPLETAR = "por_completar";
 const MIAS = "mias";
 
 /** Sin tildes ni mayúsculas, para que «Rodriguez» encuentre «Rodríguez». */
@@ -89,7 +90,7 @@ export default async function PaginaSolicitudes({
 
   // Quien revisa arranca en «Por atender»; quien no, en todo lo suyo (sin filtro de estado).
   const vista = revisa
-    ? estadoPedido === MIAS || esEstadoSolicitud(estadoPedido)
+    ? estadoPedido === MIAS || estadoPedido === POR_COMPLETAR || esEstadoSolicitud(estadoPedido)
       ? estadoPedido
       : POR_ATENDER
     : esEstadoSolicitud(estadoPedido)
@@ -98,10 +99,10 @@ export default async function PaginaSolicitudes({
   const claseFiltro = (TIPOS_SOLICITUD as readonly string[]).includes(clase ?? "") ? clase : null;
   const busqueda = normalizar((q ?? "").trim());
 
-  const [t, tl, porAtender, conteos, filasVista, propias, estudiantes, mensajes] = await Promise.all([
+  const [t, tl, abiertas, conteos, filasVista, propias, estudiantes, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "requests" }),
     getTranslations({ locale, namespace: "listas" }),
-    revisa ? solicitudesPorAtender(usuario) : Promise.resolve([] as FilaSolicitud[]),
+    revisa ? solicitudesPorAtender(usuario, { incluirAprobadas: true }) : Promise.resolve([] as FilaSolicitud[]),
     conteosSolicitudes(usuario),
     revisa && esEstadoSolicitud(vista)
       ? solicitudesRevisionPorEstado(usuario, vista)
@@ -114,9 +115,16 @@ export default async function PaginaSolicitudes({
     mensajesCliente(["requests"]),
   ]);
 
+  // Lo que requiere mi decisión vs. lo ya aprobado que falta ejecutar: ambas salen de la misma
+  // consulta, así que la separación de funciones sigue siendo la de `accionesPermitidas`.
+  const porAtender = abiertas.filter((f) => f.estado !== "aprobada");
+  const porCompletar = abiertas.filter((f) => f.estado === "aprobada");
+
   const base: readonly FilaSolicitud[] =
     vista === POR_ATENDER
       ? porAtender
+      : vista === POR_COMPLETAR
+        ? porCompletar
       : vista === MIAS || !revisa
         ? propias.filter((f) => (vista && vista !== MIAS ? f.estado === vista : true))
         : (filasVista ?? []);
@@ -136,6 +144,7 @@ export default async function PaginaSolicitudes({
   const chips = revisa
     ? [
         { value: POR_ATENDER, label: tl("solicitudes.porAtender"), count: porAtender.length },
+        { value: POR_COMPLETAR, label: tl("solicitudes.porCompletar"), count: porCompletar.length },
         { value: MIAS, label: tl("solicitudes.mias"), count: totalPropias },
         ...ESTADOS_SOLICITUD.filter((e) => (conteos.revision[e] ?? 0) > 0 || vista === e).map((e) => ({
           value: e,

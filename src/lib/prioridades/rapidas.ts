@@ -31,13 +31,15 @@ const NUEVA_SOLICITUD: AccesoRapido = { clave: "newRequest", href: "/administrat
 /** Tres accesos por rol (los de la maqueta). Cada ruta la protege su propia pantalla. */
 export const ACCESOS_RAPIDOS: Record<Rol, readonly AccesoRapido[]> = {
   developer: [
-    NUEVA_SOLICITUD,
+    // «Nueva solicitud» ya es el botón primario de la cabecera: aquí van otras tres acciones.
     { clave: "newProject", href: "/administrativo/proyectos", icono: FolderPlus },
+    { clave: "newTask", href: "/administrativo/tareas", icono: ListTodo },
     { clave: "viewReports", href: "/reportes", icono: BarChart3 },
   ],
   owner: [
-    NUEVA_SOLICITUD,
+    // «Nueva solicitud» ya es el botón primario de la cabecera: aquí van otras tres acciones.
     { clave: "newProject", href: "/administrativo/proyectos", icono: FolderPlus },
+    { clave: "newTask", href: "/administrativo/tareas", icono: ListTodo },
     { clave: "viewReports", href: "/reportes", icono: BarChart3 },
   ],
   admin: [

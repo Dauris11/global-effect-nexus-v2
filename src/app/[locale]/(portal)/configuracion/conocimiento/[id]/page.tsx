@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { ChevronLeft } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { FormularioDocumento } from "@/components/ia-admin/formulario-documento";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
-import { Link, redirect } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
 import { requerirUsuario } from "@/lib/auth";
 import { AGENTES_CLAVES } from "@/lib/ia-conocimiento";
 import { TARJETA } from "@/lib/paleta";
@@ -65,12 +63,6 @@ export default async function PaginaEditarDocumento({
     <div className="animate-entrada space-y-6 pb-10">
       <EncabezadoPagina titulo={t("knowledge.editTitle")} />
 
-      <Button asChild variant="outline" size="sm">
-        <Link href="/configuracion/conocimiento">
-          <ChevronLeft className="size-4" />
-          {t("knowledge.back")}
-        </Link>
-      </Button>
 
       <Card className={TARJETA.contenido}>
         <CardContent className="pt-5">

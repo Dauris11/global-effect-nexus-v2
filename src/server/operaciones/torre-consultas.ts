@@ -137,7 +137,7 @@ export async function cargaPorPersona(): Promise<CargaPersona[]> {
        JOIN rol r ON r.id = u.rol_id
        LEFT JOIN asignadas t ON t.usuario_id = u.id
       WHERE u.activo
-        AND (r.nombre <> 'estudiante'
+        AND ((r.nombre <> 'estudiante' AND r.nombre <> 'developer')
              OR EXISTS (SELECT 1 FROM tarea_asignado x WHERE x.usuario_id = u.id))
       GROUP BY u.id, u.nombre, r.nombre
       ORDER BY count(*) FILTER (WHERE ${ABIERTA} AND t.fecha_limite < (now() AT TIME ZONE 'America/Santo_Domingo')::date) DESC,

@@ -122,6 +122,7 @@
     }
   },
   "nav": {
+    "devTools": "Technical tools",
     "inbox": "Inbox",
     "records": "Records",
     "academic": "Subject assignment",
@@ -132,6 +133,7 @@
     "scholarships": "Scholarships",
     "sponsorLetters": "Letters to sponsors",
     "accounting": "Accounting",
+    "accountingHome": "Accounting home",
     "calendar": "Calendar",
     "meetings": "Meetings",
     "timeline": "Timeline",
@@ -186,6 +188,7 @@
     "home": "Home",
     "classroom": "Classroom",
     "more": "More",
+    "languageCurrent": "Language: {actual}",
     "accountMenu": "Account menu",
     "language": "Language",
     "spanish": "Español",
@@ -328,9 +331,9 @@
       "financialStatements": "Financial statements",
       "ledgers": "Ledgers",
       "closing": "Closing",
-      "calendar": "Calendar",
+      "calendar": "Schedule",
       "meetings": "Meetings",
-      "reports": "Reports",
+      "reports": "Overview",
       "studentCost": "Cost per student",
       "general": "General",
       "staff": "Staff",
@@ -346,7 +349,7 @@
       "logVisit": "Log a visit",
       "resources": "Resources",
       "evidences": "Evidence",
-      "schoolsTab": "Schools",
+      "schoolsTab": "Directory",
       "team": "Team",
       "impact": "Impact reports",
       "tripToday": "Today's trip",
@@ -599,7 +602,7 @@
       "link_staff": "Staff",
       "link_reports": "Reports",
       "link_my_day": "My Day (Today)",
-      "link_role_assignments": "Assign Projects by Role"
+      "link_role_assignments": "Assign by role"
     },
     "tasks": {
       "title": "Tasks",
@@ -1032,6 +1035,10 @@
     }
   },
   "staff": {
+    "teamFoundation": "Foundation team",
+    "includeTech": "Include the technical team",
+    "technicalTeam": "Technical team",
+    "roleHelp": "Each role decides what the person sees and can do.",
     "eyebrow": "Operations",
     "title": "Staff",
     "description": "Who is on the team, in what role, and how much they are carrying.",
@@ -1083,6 +1090,9 @@
     "activate": "Activate",
     "resetAccess": "Reset access",
     "cannotSelf": "You cannot change your own account.",
+    "errDeveloperOnly": "Only a developer can assign, remove or change the developer role.",
+    "errOwnerOnly": "Only an owner or a developer can assign the owner role.",
+    "errLastOwner": "At least one active owner must remain: the last one cannot be removed, deactivated or deleted.",
     "cannotEnter": "No sign-in",
     "errEmail": "That email does not look valid.",
     "errRepeated": "There is already an account with that email.",
@@ -1461,8 +1471,9 @@
       "pedirCompra": "Request a purchase",
       "porAtender": "To handle",
       "mias": "Mine",
+      "porCompletar": "To complete",
       "buscar": "Search by title, number or person",
-      "tipoFiltro": "Request type",
+      "tipoFiltro": "Type",
       "todosTipos": "All types",
       "column": {
         "request": "Request",
@@ -3883,6 +3894,7 @@
     "noMatchesHint": "Try other dates, another entity, or clear the filters."
   },
   "settings": {
+    "institutionPage": { "title": "Institution details", "name": "Name", "fiscalYear": "Fiscal year" },
     "eyebrow": "Settings",
     "title": "Settings",
     "description": "The platform's settings, the accounts that exist, and what each role can do.",
@@ -3942,6 +3954,7 @@
     "rolesHint": "It comes from the same function that decides access, so it cannot contradict the system. Its source is the “rol” and “rol_permiso” tables: if a permission is missing or extra here, the database is what to change.",
     "noPermissions": "No permissions assigned.",
     "nav": {
+      "dev": "Technical tools",
       "label": "Settings",
       "general": "General",
       "staff": "Staff",
@@ -3965,6 +3978,17 @@
     "dir_habitudes": "Habitudes director",
     "chofer": "Driver",
     "developer": "Developer"
+  },
+  "roleDescriptions": {
+    "owner": "Owners of the Foundation: see and do all of the business in every portal.",
+    "developer": "Development team: full access plus the technical tools (AI, audit, technical parameters, /dev panel).",
+    "admin": "Administration: files, requests, catalog, sponsors and operations.",
+    "contabilidad": "Accounting: entries, receipts, cash boxes, reconciliations and closings.",
+    "docente": "Teacher: teaches their Global Effect 360 classes, sets tasks and grades.",
+    "estudiante": "Student: their scholarship, classes, tasks and requests.",
+    "dir_habitudes": "Habitudes director: supervises teachers and schools.",
+    "habitudes": "Habitudes teacher: visits, evidence and candidate nominations.",
+    "chofer": "Driver: routes and transport follow-up."
   },
   "requests": {
     "studentEyebrow": "My portal",
@@ -7034,6 +7058,12 @@
     }
   },
   "parametros": {
+    "technicalTitle": "Technical parameters",
+    "technicalHint": "Only the development team sees and edits these. Every change is logged in the audit trail.",
+    "impersonationWrite": "Write while «View as user»",
+    "impersonationWriteHint": "Off: while acting as another person, write actions are blocked. On: they are allowed after confirming, under the developer's real name.",
+    "technicalSaved": "Parameter saved.",
+    "technicalFailed": "Could not save the parameter.",
     "eyebrow": "Settings",
     "title": "Institutional parameters",
     "subtitle": "What used to be written in the code and is now changed here: meal hours, scholarship minimums and the contact email.",
@@ -7840,10 +7870,28 @@
     }
   },
   "verComo": {
+    "rolesSection": "View as role",
+    "userSection": "View as user",
+    "userSearch": "Search by name or email",
+    "userEmpty": "No one matches",
+    "userSearching": "Searching…",
+    "userError": "Search failed. Try again.",
+    "exit": "Exit",
+    "dismiss": "Dismiss",
+    "confirmTitle": "You are acting as {nombre}",
+    "confirmBody": "What you save is done with their account and logged under your name in the audit trail. Confirm only if you really need to write as that person.",
+    "confirmCancel": "Not now",
+    "confirmFailed": "Could not confirm: writing as another person is not enabled.",
     "label": "View as",
     "cambiar": "Switch role",
     "viendo": "You are viewing the system as {rol}",
-    "volver": "Back to my view"
+    "volver": "Back to my view",
+    "usuario": "View as user…",
+    "viendoUsuario": "You are acting as {nombre}: actions that write are blocked",
+    "viendoUsuarioEscribe": "You are acting as {nombre}: whatever you do is saved under their account and logged under your name",
+    "bloqueado": "You are acting as {nombre}: actions that write are blocked.",
+    "confirmar": "You are acting as {nombre}: confirm to allow actions that write during this session.",
+    "confirmarBoton": "Allow writing"
   },
   "torre": {
     "title": "My control tower",
@@ -8253,6 +8301,12 @@
       "habitudes_recursos_subir": "Upload Habitudes resources",
       "habitudes_supervisar": "Supervise Habitudes",
       "ia_administrar": "Manage the AI",
+      "tecnico_actividad": "View the system's technical activity",
+      "tecnico_auditoria": "View the technical audit",
+      "tecnico_conocimiento": "Manage every agent's knowledge base",
+      "tecnico_dev_panel": "Open the development panel (/dev)",
+      "tecnico_ia": "Configure the AI (providers, models and quotas)",
+      "tecnico_parametros": "Edit the technical parameters",
       "ia_conocimiento": "Edit the student assistant's knowledge base",
       "ia_usar": "Use the AI assistant",
       "inventario_auditar": "Audit inventory",
@@ -9151,7 +9205,8 @@
       "docencia": "Teaching",
       "estudiante": "Student",
       "habitudes": "Habitudes",
-      "transporte": "Transport"
+      "transporte": "Transport",
+      "tecnico": "Technical"
     },
     "types": {
       "solicitud_por_decidir": "Approve letter, certificate and permit requests",
@@ -9184,6 +9239,9 @@
       "cierre_mes_pendiente": "Do the month-end close",
       "compra_aprobada_por_pagar": "Pay approved purchases",
       "liquidez_negativa": "Handle negative liquidity",
+      "error_produccion": "Handle a production error",
+      "job_fallido": "Check failed background jobs",
+      "integracion_caida": "Handle a down integration",
       "entrega_por_calificar": "Grade submissions in my classes",
       "nota_final_pendiente": "Enter final grades",
       "asistencia_hoy": "Take today's attendance",
@@ -9234,11 +9292,22 @@
     },
     "emptyWaiting": "You're not waiting on anyone.",
     "upToDate": "You're all caught up",
+    "accountingUpToDate": "Accounting is all caught up",
+    "accountingUpToDateAction": "See the receipts",
     "upToDateAction": "See the calendar",
     "row": {
       "open": "Open",
       "more": "More actions",
-      "groupOf": "{n} · {tipo}"
+      "group": {
+        "entrega_por_calificar": "{n, plural, one {1 submission waiting for a grade} other {# submissions waiting for a grade}} in {contexto}",
+        "tarea_vencida": "{n, plural, one {1 overdue task} other {# overdue tasks}} in {contexto}",
+        "tarea_hoy": "{n, plural, one {1 task due today} other {# tasks due today}} in {contexto}",
+        "tarea_semana": "{n, plural, one {1 task this week} other {# tasks this week}} in {contexto}",
+        "solicitud_por_decidir": "{n, plural, one {1 request to decide} other {# requests to decide}} from {contexto}",
+        "solicitud_pendiente_direccion": "{n, plural, one {1 request waiting for management} other {# requests waiting for management}} from {contexto}",
+        "alta_expediente_por_revisar": "{n, plural, one {1 file registration to review} other {# file registrations to review}} from {contexto}"
+      },
+      "seeRemaining": "See the {n} remaining"
     },
     "context": {
       "prematricula": "Pre-enrollment closes {fecha} · {n, plural, =0 {everyone chose} one {1 student hasn't chosen} other {# students haven't chosen}}"
@@ -9320,5 +9389,39 @@
       "impact": "{n} students in {l} schools this year",
       "todo": "Visits and evidence"
     }
+  },
+  "dev": {
+    "title": "Technical tools",
+    "intro": "System status, flags and shortcuts for the development team.",
+    "forbiddenTitle": "This section is for the development team",
+    "forbiddenBody": "Your account has no access to the technical tools. Everything about the business is still available from your Home.",
+    "goHome": "Go to my Home",
+    "logs": "Recent logs",
+    "logsAll": "All events",
+    "logsFilterAll": "All",
+    "logsFilterSession": "Sessions",
+    "logsFilterTech": "Technical parameters",
+    "logsFilterBlocked": "Blocked writes",
+    "logsEmpty": "No events match that filter.",
+    "colWhen": "When",
+    "colWho": "Who",
+    "colAction": "Action",
+    "colEntity": "Entity",
+    "systemActor": "System",
+    "flags": "Flags",
+    "on": "On",
+    "off": "Off",
+    "jobs": "Jobs and integrations",
+    "mailQueue": "Mail queue",
+    "mailPending": "Pending",
+    "mailFailed": "Failed",
+    "mailLastSent": "Last sent",
+    "mailLastError": "Last error",
+    "noData": "No data",
+    "resend": "Resend webhook",
+    "gemini": "Gemini",
+    "noSource": "No source records this yet.",
+    "quick": "Quick links",
+    "quickParams": "Technical parameters"
   }
 }

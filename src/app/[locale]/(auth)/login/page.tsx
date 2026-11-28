@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ChevronLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -47,7 +46,7 @@ export default async function PaginaLogin({
 
   return (
     <div className="rounded-hoja border border-linea bg-card p-6 shadow-elevada sm:p-10">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center">
         <Link
           href="/"
           aria-label={tComun("foundation")}
@@ -55,14 +54,6 @@ export default async function PaginaLogin({
         >
           <Image src="/logo.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-claro h-9 w-auto" />
           <Image src="/logo-dark.webp" alt={tComun("foundation")} width={720} height={157} priority className="logo-oscuro h-9 w-auto" />
-        </Link>
-
-        <Link
-          href="/"
-          className="inline-flex h-9 items-center gap-1.5 rounded-control border border-linea bg-background px-3 text-xs font-medium text-tinta-2 shadow-xs transition-colors hover:bg-muted hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          <ChevronLeft className="size-3.5" />
-          {t("backHome")}
         </Link>
       </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { RolBadge } from "@/components/app/rol-badge";
 import { useState, useTransition } from "react";
 import { AlertCircle, RotateCcw, Search, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -159,7 +160,7 @@ export function PermisosPorPersona({
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="texto-titulo-seccion truncate">{persona.nombre}</h2>
-                <p className="texto-meta">{tRoles(persona.rol)}</p>
+                <RolBadge rol={persona.rol} className="mt-1" />
               </div>
               <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                 <Input

@@ -49,13 +49,16 @@ export function PageHeader({
           ))}
         </nav>
       )}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
+      {/* items-end: el botón primario queda sobre la línea base del h1 y no centrado con el subtítulo.
+          En móvil también va en fila (envuelve solo si no cabe) y el botón se compacta en vez de ocupar
+          una fila propia. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-3">
+        <div className="min-w-0 flex-1 basis-40">
           <TituloPagina className="text-page">{title}</TituloPagina>
           {subtitle && <p className="text-meta mt-1">{subtitle}</p>}
         </div>
         {(secondaryActions || primaryAction) && (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2 max-sm:[&_[data-slot=button]]:px-3 max-sm:[&_[data-slot=button]]:text-[13px]">
             {secondaryActions}
             {primaryAction}
           </div>

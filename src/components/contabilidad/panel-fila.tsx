@@ -45,7 +45,7 @@ export function PanelFila({
 
       <SheetContent>
         <header className="space-y-2 border-b border-linea px-6 pt-6 pr-16 pb-4">
-          <SheetTitle className="text-section font-mono">{titulo}</SheetTitle>
+          <SheetTitle className="folio">{titulo}</SheetTitle>
           <SheetDescription className="sr-only">{descripcion}</SheetDescription>
           {estado}
         </header>

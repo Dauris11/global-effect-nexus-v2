@@ -30,6 +30,8 @@ import type { Permiso, Rol } from "@/lib/rbac";
 export function AppShell({
   rol,
   rolReal,
+  suplantando = false,
+  escrituraSuplantada = false,
   nombre,
   foto,
   aviso,
@@ -43,6 +45,10 @@ export function AppShell({
   rol: Rol;
   /** Rol de verdad de la cuenta; distinto de `rol` mientras se «ve como». */
   rolReal: Rol;
+  /** Un developer actúa como una persona concreta («Ver como usuario…»): `nombre` es el de esa persona. */
+  suplantando?: boolean;
+  /** `tecnico.impersonation_write` activo: la barra avisa de que lo que se haga se guarda. */
+  escrituraSuplantada?: boolean;
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
@@ -94,10 +100,13 @@ export function AppShell({
         />
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-          {rol !== rolReal && <VerComo rol={rol} rolReal={rolReal} />}
+          {(rol !== rolReal || suplantando) && (
+            <VerComo rol={rol} rolReal={rolReal} nombre={nombre} suplantando={suplantando} escrituraSuplantada={escrituraSuplantada} />
+          )}
           <TopBar
             rol={rol}
             rolReal={rolReal}
+            suplantando={suplantando}
             nombre={nombre}
             foto={foto}
             aviso={aviso}
@@ -108,8 +117,10 @@ export function AppShell({
 
           {/* Contenedor de 1280 px con 16 / 24 / 32 de margen (docs/09 §2.7).
             Abajo, en el móvil, el alto de la barra inferior más el área
-            segura: sin él, la barra tapa el último botón de cada página. */}
-          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-10 lg:px-8">
+            segura: sin él, la barra tapa el último botón de cada página. Los 9,5 rem
+            (y los 88 px de escritorio) también dejan libre el botón flotante de Elly AI, que ocupa
+            hasta 136 px (móvil) y 80 px (escritorio) desde el borde inferior. */}
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))] md:px-6 md:pt-8 md:pb-[88px] lg:px-8">
             {children}
           </main>
         </div>

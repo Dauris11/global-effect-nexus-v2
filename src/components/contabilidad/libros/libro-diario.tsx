@@ -176,7 +176,7 @@ async function Cabecera({ asiento: a, idioma }: { asiento: AsientoDiario; idioma
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <Link
         href={`/contabilidad/asientos/${a.id}`}
-        className="inline-flex min-h-11 items-center font-semibold text-marca-600 tabular-nums hover:underline md:min-h-0"
+        className="folio inline-flex min-h-11 items-center hover:underline md:min-h-0"
       >
         {t("numeroAsiento", { numero: a.numero })}
       </Link>

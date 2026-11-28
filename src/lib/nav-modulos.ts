@@ -73,6 +73,8 @@ export type PestanaNav = {
   href: string;
   /** Rutas hijas que también cuentan como esta pestaña (detalles). */
   activoEn?: readonly string[];
+  /** Solo cuenta la ruta idéntica, no las hijas: la raíz de un módulo (`/contabilidad`) no debe adueñarse de pantallas sueltas que cuelgan de ella. */
+  soloExacta?: boolean;
 };
 
 export type ModuloNav = {
@@ -87,7 +89,7 @@ export type ModuloNav = {
   pie?: boolean;
 };
 
-const p = (etiqueta: string, href: string, activoEn?: readonly string[]): PestanaNav => ({ etiqueta, href, activoEn });
+const p = (etiqueta: string, href: string, activoEn?: readonly string[], soloExacta?: boolean): PestanaNav => ({ etiqueta, href, activoEn, soloExacta });
 
 export const MODULOS: Record<string, ModuloNav> = {
   inicio: { id: "inicio", etiqueta: "home", icono: Home, pestanas: [p("home", "/inicio")], insignia: "vencidos" },
@@ -146,6 +148,8 @@ export const MODULOS: Record<string, ModuloNav> = {
     etiqueta: "accounting",
     icono: Landmark,
     pestanas: [
+      // El módulo abre en su inicio (prioridades + 3 cifras), no en «Recibos».
+      p("home", "/contabilidad", undefined, true),
       p("receipts", "/contabilidad/recibos"),
       p("journal", "/contabilidad/asientos"),
       p("banks", "/contabilidad/bancos"),
@@ -173,6 +177,8 @@ export const MODULOS: Record<string, ModuloNav> = {
       p("permissions", "/configuracion/permisos"),
       p("announcements", "/configuracion/landing"),
       p("accountingSettings", "/contabilidad/configuracion"),
+      // Solo para `tecnico.dev_panel`: la pestaña se filtra por el permiso que declara `nav.ts` (regla 17).
+      p("devTools", "/dev"),
     ],
   },
 
@@ -283,7 +289,8 @@ export function pestanaActiva(rol: Rol, ruta: string, ctx: Contexto): { modulo: 
   for (const modulo of modulosVisibles(rol, ctx)) {
     for (const pestana of modulo.pestanasVisibles) {
       for (const prefijo of [pestana.href, ...(pestana.activoEn ?? [])]) {
-        if (casa(ruta, prefijo) && (!mejor || prefijo.length > mejor.largo)) {
+        const coincide = pestana.soloExacta && prefijo === pestana.href ? ruta === prefijo : casa(ruta, prefijo);
+        if (coincide && (!mejor || prefijo.length > mejor.largo)) {
           mejor = { modulo, pestana, exacta: ruta === pestana.href, largo: prefijo.length };
         }
       }

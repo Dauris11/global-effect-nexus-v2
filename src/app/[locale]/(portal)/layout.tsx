@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
 import { WidgetFlotanteIA } from "@/components/ia/widget-flotante-ia";
 import { AppShell } from "@/components/layout/app-shell";
+import { AvisoSuplantacion } from "@/components/layout/aviso-suplantacion";
 import { requerirUsuario } from "@/lib/auth";
 import { usuarioTienePermiso } from "@/lib/rbac";
 import { fechaConHora } from "@/lib/fechas";
@@ -11,6 +13,7 @@ import { cerrarSesion } from "@/server/auth/acciones";
 import { estudianteDeUsuario } from "@/server/estudiantes/portal";
 import { ventanaVigente } from "@/server/global360/consultas";
 import { misNotificaciones } from "@/server/notificaciones/consultas";
+import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
 import { prioridadesDe } from "@/server/prioridades/motor";
 import { cuantasPorAtender } from "@/server/solicitudes/consultas";
 
@@ -84,11 +87,17 @@ export default async function LayoutPortal({
    */
   const avisos = await misNotificaciones(usuario.id, 8);
 
+  // Solo importa mientras un developer actúa como otra persona: la barra de arriba cambia su texto si lo que
+  // haga se va a guardar (`tecnico.impersonation_write`) en vez de bloquearse.
+  const escrituraSuplantada = usuario.suplantando && (await impersonationWriteActivo());
+
   return (
     <>
       <AppShell
         rol={usuario.rol}
         rolReal={usuario.rolReal}
+        suplantando={usuario.suplantando}
+        escrituraSuplantada={escrituraSuplantada}
         nombre={usuario.nombre}
         // La URL se firma aquí, en el servidor: el armazón es cliente y no tiene
         // por qué saber en qué bucket vive la foto.
@@ -109,6 +118,11 @@ export default async function LayoutPortal({
         cerrarSesion={cerrarSesion}
       >
         {children}
+        {usuario.suplantando && (
+          <Suspense fallback={null}>
+            <AvisoSuplantacion nombre={usuario.nombre} />
+          </Suspense>
+        )}
         {asistenteVisible && (
           <WidgetFlotanteIA
             usuario={{

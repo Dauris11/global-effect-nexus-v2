@@ -181,6 +181,7 @@ async function conPasos(
  */
 export async function solicitudesPorAtender(
   usuario: ConPermisos,
+  { incluirAprobadas = true }: { incluirAprobadas?: boolean } = {},
 ): Promise<FilaSolicitud[]> {
   const tipos = TIPOS_SOLICITUD.filter((tipo) =>
     usuarioTienePermiso(usuario, REGLAS[tipo].revisa),
@@ -205,9 +206,13 @@ export async function solicitudesPorAtender(
   // Cancelar no es "atender": es lo único que puede hacer quien la pidió, y lo
   // hace desde "Mis solicitudes". Sin este filtro, lo propio se colaba en la
   // bandeja de quien también revisa ese tipo.
-  return completas.filter((fila) =>
+  const conAccion = completas.filter((fila) =>
     fila.acciones.some((accion) => accion !== "cancelar"),
   );
+
+  // La bandeja de la pantalla separa «Por atender» (decidir) de «Por completar»
+  // (ejecutar lo ya aprobado); el Inicio sigue pidiendo todo junto (por defecto).
+  return incluirAprobadas ? conAccion : conAccion.filter((fila) => fila.estado !== "aprobada");
 }
 
 /** Cuántas esperan a esta persona, para el portal y el resumen. */

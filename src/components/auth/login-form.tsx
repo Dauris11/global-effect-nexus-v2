@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,7 +97,7 @@ export function LoginForm({ destino }: { destino?: string }) {
           </div>
         </div>
 
-        {estado.error && <AvisoError>{t(estado.error)}</AvisoError>}
+        {estado.error && <Alert variant="danger">{t(estado.error)}</Alert>}
 
         <Button
           type="submit"
@@ -127,23 +128,7 @@ export function LoginForm({ destino }: { destino?: string }) {
         {t("continueWithGoogle")}
       </Button>
 
-      {errorGoogle && <AvisoError>{t("oauth")}</AvisoError>}
+      {errorGoogle && <Alert variant="danger">{t("oauth")}</Alert>}
     </div>
-  );
-}
-
-/**
- * Error del acceso: tinta sólida con su icono, nunca rojo (docs/09 §5). El
- * peso basta para que se vea, y el icono para que se entienda en gris.
- */
-function AvisoError({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      role="alert"
-      className="flex items-start gap-2.5 rounded-control bg-tinta px-4 py-3 text-sm text-background"
-    >
-      <AlertCircle className="mt-0.5 size-4 shrink-0" />
-      <span>{children}</span>
-    </p>
   );
 }

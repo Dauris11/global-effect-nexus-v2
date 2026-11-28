@@ -1,9 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Check, Copy, KeyRound, Loader2, Plus, Search, UserMinus, UserPlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { RolBadge } from "@/components/app/rol-badge";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -12,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { Rol } from "@/lib/rbac";
+import { ROLE_LABEL } from "@/lib/roles";
 import {
   alternarCuenta,
   cambiarRol,
@@ -134,6 +137,39 @@ export function GestionCuentas({
   );
 }
 
+/**
+ * Clave de `staff.*` con el mensaje de un estado de error, o `null` si no hay nada que avisar. Una sola tabla para
+ * el alta, el cambio de rol y los botones de cuenta: las reglas de roles (`solo_developer`, `solo_owner`,
+ * `ultimo_owner`) tienen que sonar igual en los tres.
+ */
+function claveDeError(estado: EstadoCuenta["estado"]): string | null {
+  switch (estado) {
+    case "inicial":
+    case "ok":
+      return null;
+    case "no_permitido":
+      return "cannotSelf";
+    case "no_encontrada":
+      return "errNotFound";
+    case "solo_developer":
+      return "errDeveloperOnly";
+    case "solo_owner":
+      return "errOwnerOnly";
+    case "ultimo_owner":
+      return "errLastOwner";
+    case "correo_invalido":
+      return "errEmail";
+    case "correo_repetido":
+      return "errRepeated";
+    case "nombre_vacio":
+      return "errName";
+    case "rol_invalido":
+      return "errRole";
+    default:
+      return "errGeneric";
+  }
+}
+
 /** Una persona: su rol en un desplegable y los botones de su estado. */
 export function FilaCuenta({
   persona,
@@ -145,11 +181,16 @@ export function FilaCuenta({
   esYo: boolean;
 }) {
   const t = useTranslations("staff");
-  const tRoles = useTranslations("roles");
+  const tRaiz = useTranslations();
   const [estadoRol, cambiar, cambiando] = useActionState<EstadoCuenta, FormData>(
     cambiarRol,
     { estado: "inicial" },
   );
+  // Activar, desactivar y reiniciar acceso avisan aquí: el fallo se ve en la fila y no se pierde en un botón de icono.
+  const [estadoBoton, setEstadoBoton] = useState<EstadoCuenta["estado"]>("inicial");
+  const claveError = claveDeError(estadoBoton !== "inicial" && estadoBoton !== "ok" ? estadoBoton : estadoRol.estado);
+  // Un rol que quien mira no puede asignar (el developer, para un owner) no se edita: se muestra y ya.
+  const rolEditable = (roles as readonly string[]).includes(persona.rol);
 
   return (
     <li className="flex flex-wrap items-center gap-3 py-3">
@@ -187,10 +228,8 @@ export function FilaCuenta({
 
         {/* El rol se cambia enviando el desplegable: sin botón aparte, que
             obligaría a dos clics para una sola decisión. */}
-        {esYo ? (
-          <span className="text-muted-foreground px-2 text-xs">
-            {tRoles(persona.rol)}
-          </span>
+        {esYo || !rolEditable ? (
+          <RolBadge rol={persona.rol} />
         ) : (
           <form action={cambiar} className="flex items-center gap-1">
             <input type="hidden" name="id" value={persona.id} />
@@ -204,7 +243,7 @@ export function FilaCuenta({
             >
               {roles.map((rol) => (
                 <option key={rol} value={rol}>
-                  {tRoles(rol)}
+                  {tRaiz(ROLE_LABEL[rol])}
                 </option>
               ))}
             </select>
@@ -219,6 +258,7 @@ export function FilaCuenta({
               campos={{ id: persona.id, activar: persona.activo ? "0" : "1" }}
               etiqueta={persona.activo ? t("deactivate") : t("activate")}
               icono={persona.activo ? UserMinus : UserPlus}
+              alResultado={setEstadoBoton}
             />
 
             {persona.puede_entrar && (
@@ -228,20 +268,17 @@ export function FilaCuenta({
                 etiqueta={t("resetAccess")}
                 icono={KeyRound}
                 muestraContrasena
+                alResultado={setEstadoBoton}
               />
             )}
           </>
         )}
       </div>
 
-      {estadoRol.estado !== "inicial" && estadoRol.estado !== "ok" && (
-        <p role="alert" className="text-destructive w-full text-xs">
-          {estadoRol.estado === "no_permitido"
-            ? t("cannotSelf")
-            : estadoRol.estado === "no_encontrada"
-              ? t("errNotFound")
-              : t("errGeneric")}
-        </p>
+      {claveError && (
+        <Alert variant="danger" className="w-full">
+          {t(claveError)}
+        </Alert>
       )}
     </li>
   );
@@ -309,19 +346,7 @@ export function FormularioAlta({
         </div>
       </div>
 
-      {estado.estado !== "inicial" && estado.estado !== "ok" && (
-        <p role="alert" className="text-destructive text-xs">
-          {estado.estado === "correo_invalido"
-            ? t("errEmail")
-            : estado.estado === "correo_repetido"
-              ? t("errRepeated")
-              : estado.estado === "nombre_vacio"
-                ? t("errName")
-                : estado.estado === "rol_invalido"
-                  ? t("errRole")
-                  : t("errGeneric")}
-        </p>
-      )}
+      {claveDeError(estado.estado) && <Alert variant="danger">{t(claveDeError(estado.estado)!)}</Alert>}
 
       <div className="flex items-center gap-2">
         <Button type="submit" cargando={enviando}>
@@ -399,17 +424,24 @@ function BotonCuenta({
   etiqueta,
   icono: Icono,
   muestraContrasena = false,
+  alResultado,
 }: {
   accion: (previo: EstadoCuenta, datos: FormData) => Promise<EstadoCuenta>;
   campos: Record<string, string>;
   etiqueta: string;
   icono: React.ComponentType<{ className?: string }>;
   muestraContrasena?: boolean;
+  /** Avisa a la fila del resultado, para que ella muestre el error traducido. */
+  alResultado?: (estado: EstadoCuenta["estado"]) => void;
 }) {
   const [estado, enviar, enviando] = useActionState<EstadoCuenta, FormData>(
     accion,
     { estado: "inicial" },
   );
+
+  useEffect(() => {
+    alResultado?.(estado.estado);
+  }, [estado, alResultado]);
 
   return (
     <form action={enviar}>

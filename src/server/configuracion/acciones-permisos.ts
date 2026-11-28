@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { registrar } from "@/lib/auditoria";
 import { requerirRol } from "@/lib/auth";
 import { consultarUna, enTransaccion } from "@/lib/db";
-import { esPermiso, esRol, esRolTotal } from "@/lib/rbac";
+import { esPermiso, esPermisoTecnico, esRol, esRolTotal } from "@/lib/rbac";
 
 export type ResultadoPermiso = { ok: true } | { ok: false; error: "invalido" | "bloqueado" };
 
@@ -33,6 +33,8 @@ export async function guardarPermisoRol(datos: {
     return { ok: false, error: "invalido" };
   }
   if (esRolTotal(datos.rol)) return { ok: false, error: "bloqueado" };
+  // Lo técnico es solo del developer: ni el owner puede repartirlo a otros roles.
+  if (esPermisoTecnico(datos.permiso)) return { ok: false, error: "bloqueado" };
 
   const { rol, permiso, concedido } = datos;
 
@@ -83,6 +85,7 @@ export async function guardarExcepcionPermiso(datos: {
   if (!UUID.test(datos.usuarioId) || !esPermiso(datos.permiso)) {
     return { ok: false, error: "invalido" };
   }
+  if (esPermisoTecnico(datos.permiso)) return { ok: false, error: "bloqueado" };
 
   const persona = await consultarUna<{ id: string }>(
     `SELECT id FROM usuario WHERE id = $1`,

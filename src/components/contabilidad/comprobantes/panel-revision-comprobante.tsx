@@ -135,7 +135,7 @@ export function PanelRevisionComprobante({
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-tinta-3">
+                    <span className="folio">
                       {t("folio", { folio: comp.folio })}
                     </span>
                     <Badge

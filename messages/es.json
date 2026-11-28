@@ -122,6 +122,7 @@
     }
   },
   "nav": {
+    "devTools": "Herramientas técnicas",
     "inbox": "Bandeja",
     "records": "Expedientes",
     "academic": "Asignación de materias",
@@ -132,6 +133,7 @@
     "scholarships": "Becas",
     "sponsorLetters": "Cartas a patrocinadores",
     "accounting": "Contabilidad",
+    "accountingHome": "Inicio contable",
     "calendar": "Calendario",
     "meetings": "Reuniones",
     "timeline": "Línea de tiempo",
@@ -186,6 +188,7 @@
     "home": "Inicio",
     "classroom": "Aula",
     "more": "Más",
+    "languageCurrent": "Idioma: {actual}",
     "accountMenu": "Menú de la cuenta",
     "language": "Idioma",
     "spanish": "Español",
@@ -328,9 +331,9 @@
       "financialStatements": "Estados financieros",
       "ledgers": "Libros",
       "closing": "Cierre",
-      "calendar": "Calendario",
+      "calendar": "Agenda",
       "meetings": "Reuniones",
-      "reports": "Reportes",
+      "reports": "Resumen",
       "studentCost": "Costo por estudiante",
       "general": "General",
       "staff": "Personal",
@@ -346,7 +349,7 @@
       "logVisit": "Registrar visita",
       "resources": "Recursos",
       "evidences": "Evidencias",
-      "schoolsTab": "Liceos",
+      "schoolsTab": "Directorio",
       "team": "Equipo",
       "impact": "Reportes de impacto",
       "tripToday": "Viaje de hoy",
@@ -599,7 +602,7 @@
       "link_staff": "Personal",
       "link_reports": "Reportes",
       "link_my_day": "Mi Jornada (Hoy)",
-      "link_role_assignments": "Asignar Proyectos por Rol"
+      "link_role_assignments": "Asignar por rol"
     },
     "tasks": {
       "title": "Tareas",
@@ -1032,6 +1035,10 @@
     }
   },
   "staff": {
+    "teamFoundation": "Equipo de la fundación",
+    "includeTech": "Incluir al equipo técnico",
+    "technicalTeam": "Equipo técnico",
+    "roleHelp": "Cada rol decide lo que la persona ve y puede hacer.",
     "eyebrow": "Operaciones",
     "title": "Personal",
     "description": "Quién forma el equipo, con qué rol y cuánta carga lleva encima.",
@@ -1083,6 +1090,9 @@
     "activate": "Activar",
     "resetAccess": "Reiniciar acceso",
     "cannotSelf": "No puedes cambiar tu propia cuenta.",
+    "errDeveloperOnly": "Solo un desarrollador puede asignar, quitar o modificar el rol de desarrollador.",
+    "errOwnerOnly": "Solo un propietario o un desarrollador puede asignar el rol de propietario.",
+    "errLastOwner": "Debe quedar al menos un propietario activo: no se puede quitar, desactivar ni borrar al último.",
     "cannotEnter": "Sin acceso",
     "errEmail": "Ese correo no parece válido.",
     "errRepeated": "Ya hay una cuenta con ese correo.",
@@ -1461,8 +1471,9 @@
       "pedirCompra": "Pedir compra",
       "porAtender": "Por atender",
       "mias": "Mías",
+      "porCompletar": "Por completar",
       "buscar": "Buscar por título, folio o persona",
-      "tipoFiltro": "Tipo de solicitud",
+      "tipoFiltro": "Tipo",
       "todosTipos": "Todos los tipos",
       "column": {
         "request": "Solicitud",
@@ -3883,6 +3894,7 @@
     "noMatchesHint": "Prueba con otras fechas, otra entidad, o quita los filtros."
   },
   "settings": {
+    "institutionPage": { "title": "Datos de la institución", "name": "Nombre", "fiscalYear": "Año fiscal" },
     "eyebrow": "Configuración",
     "title": "Configuración",
     "description": "Los ajustes de la plataforma, las cuentas que existen y lo que puede hacer cada rol.",
@@ -3942,6 +3954,7 @@
     "rolesHint": "Sale de la misma función que decide los accesos, así que no puede contradecir al sistema. Su origen son las tablas «rol» y «rol_permiso»: si aquí sobra o falta un permiso, lo que hay que cambiar es la base.",
     "noPermissions": "Sin permisos asignados.",
     "nav": {
+      "dev": "Herramientas técnicas",
       "label": "Ajustes",
       "general": "General",
       "staff": "Personal",
@@ -3956,7 +3969,7 @@
     }
   },
   "roles": {
-    "owner": "Owner",
+    "owner": "Propietario",
     "admin": "Administrativo",
     "docente": "Docente",
     "estudiante": "Estudiante",
@@ -3964,7 +3977,18 @@
     "habitudes": "Profesor de Habitudes",
     "dir_habitudes": "Director de Habitudes",
     "chofer": "Chofer",
-    "developer": "Developer"
+    "developer": "Desarrollador"
+  },
+  "roleDescriptions": {
+    "owner": "Dueños de la Fundación: ven y hacen todo el negocio en todos los portales.",
+    "developer": "Equipo de desarrollo: acceso total y las herramientas técnicas (IA, auditoría, parámetros técnicos, panel /dev).",
+    "admin": "Administración: expedientes, solicitudes, catálogo, patrocinadores y operaciones.",
+    "contabilidad": "Contabilidad: asientos, recibos, cajas, conciliaciones y cierres.",
+    "docente": "Docente: da sus clases de Global Effect 360, pone tareas y notas.",
+    "estudiante": "Estudiante: su beca, sus clases, tareas y solicitudes.",
+    "dir_habitudes": "Director de Habitudes: supervisa a los profesores y a los liceos.",
+    "habitudes": "Profesor de Habitudes: visitas, evidencias y postulación de candidatos.",
+    "chofer": "Chofer: rutas y seguimiento del transporte."
   },
   "requests": {
     "studentEyebrow": "Mi portal",
@@ -7034,6 +7058,12 @@
     }
   },
   "parametros": {
+    "technicalTitle": "Parámetros técnicos",
+    "technicalHint": "Solo el equipo de desarrollo los ve y los edita. Cada cambio queda en la auditoría.",
+    "impersonationWrite": "Escribir al «Ver como usuario»",
+    "impersonationWriteHint": "Apagado: al actuar como otra persona las acciones que escriben se bloquean. Encendido: se permiten tras confirmarlo, a nombre real del desarrollador.",
+    "technicalSaved": "Parámetro guardado.",
+    "technicalFailed": "No se pudo guardar el parámetro.",
     "eyebrow": "Configuración",
     "title": "Parámetros institucionales",
     "subtitle": "Lo que antes estaba escrito en el código y ahora se cambia aquí: el horario del comedor, los mínimos de la beca y el correo de contacto.",
@@ -7840,10 +7870,28 @@
     }
   },
   "verComo": {
+    "rolesSection": "Ver como rol",
+    "userSection": "Ver como usuario",
+    "userSearch": "Buscar por nombre o correo",
+    "userEmpty": "Ninguna persona coincide",
+    "userSearching": "Buscando…",
+    "userError": "No se pudo buscar. Inténtalo otra vez.",
+    "exit": "Salir",
+    "dismiss": "Cerrar aviso",
+    "confirmTitle": "Estás actuando como {nombre}",
+    "confirmBody": "Lo que guardes quedará hecho con su cuenta y registrado a tu nombre en la auditoría. Confirma solo si de verdad necesitas escribir como esa persona.",
+    "confirmCancel": "Ahora no",
+    "confirmFailed": "No se pudo confirmar: la escritura como otra persona no está activa.",
     "label": "Ver como",
     "cambiar": "Cambiar rol",
     "viendo": "Estás viendo el sistema como {rol}",
-    "volver": "Volver a mi vista"
+    "volver": "Volver a mi vista",
+    "usuario": "Ver como usuario…",
+    "viendoUsuario": "Estás actuando como {nombre}: las acciones que escriben están bloqueadas",
+    "viendoUsuarioEscribe": "Estás actuando como {nombre}: lo que hagas se guarda con su cuenta y queda registrado a tu nombre",
+    "bloqueado": "Estás actuando como {nombre}: las acciones que escriben están bloqueadas.",
+    "confirmar": "Estás actuando como {nombre}: confirma para permitir acciones que escriben durante esta sesión.",
+    "confirmarBoton": "Permitir escritura"
   },
   "torre": {
     "title": "Mi torre de control",
@@ -8253,6 +8301,12 @@
       "habitudes_recursos_subir": "Subir recursos de Habitudes",
       "habitudes_supervisar": "Supervisar Habitudes",
       "ia_administrar": "Administrar la IA",
+      "tecnico_actividad": "Ver la actividad técnica del sistema",
+      "tecnico_auditoria": "Ver la auditoría técnica",
+      "tecnico_conocimiento": "Gestionar la base de conocimiento de todos los agentes",
+      "tecnico_dev_panel": "Entrar al panel de desarrollo (/dev)",
+      "tecnico_ia": "Configurar la IA (proveedores, modelos y cuotas)",
+      "tecnico_parametros": "Editar los parámetros técnicos",
       "ia_conocimiento": "Editar el conocimiento del asistente de estudiantes",
       "ia_usar": "Usar el asistente de IA",
       "inventario_auditar": "Auditar el inventario",
@@ -9151,7 +9205,8 @@
       "docencia": "Docencia",
       "estudiante": "Estudiante",
       "habitudes": "Habitudes",
-      "transporte": "Transporte"
+      "transporte": "Transporte",
+      "tecnico": "Técnico"
     },
     "types": {
       "solicitud_por_decidir": "Aprobar solicitudes de cartas, constancias y permisos",
@@ -9184,6 +9239,9 @@
       "cierre_mes_pendiente": "Hacer el cierre de mes",
       "compra_aprobada_por_pagar": "Pagar compras aprobadas",
       "liquidez_negativa": "Atender liquidez negativa",
+      "error_produccion": "Atender un error en producción",
+      "job_fallido": "Revisar tareas en segundo plano que fallaron",
+      "integracion_caida": "Atender una integración caída",
       "entrega_por_calificar": "Calificar entregas de mis clases",
       "nota_final_pendiente": "Subir notas finales",
       "asistencia_hoy": "Pasar asistencia de hoy",
@@ -9234,11 +9292,22 @@
     },
     "emptyWaiting": "No estás esperando respuesta de nadie.",
     "upToDate": "Estás al día",
+    "accountingUpToDate": "Contabilidad está al día",
+    "accountingUpToDateAction": "Ver los recibos",
     "upToDateAction": "Ver el calendario",
     "row": {
       "open": "Abrir",
       "more": "Más acciones",
-      "groupOf": "{n} · {tipo}"
+      "group": {
+        "entrega_por_calificar": "{n, plural, one {1 entrega esperando nota} other {# entregas esperando nota}} en {contexto}",
+        "tarea_vencida": "{n, plural, one {1 tarea vencida} other {# tareas vencidas}} en {contexto}",
+        "tarea_hoy": "{n, plural, one {1 tarea para hoy} other {# tareas para hoy}} en {contexto}",
+        "tarea_semana": "{n, plural, one {1 tarea esta semana} other {# tareas esta semana}} en {contexto}",
+        "solicitud_por_decidir": "{n, plural, one {1 solicitud por decidir} other {# solicitudes por decidir}} de {contexto}",
+        "solicitud_pendiente_direccion": "{n, plural, one {1 solicitud esperando a dirección} other {# solicitudes esperando a dirección}} de {contexto}",
+        "alta_expediente_por_revisar": "{n, plural, one {1 alta de expediente por revisar} other {# altas de expediente por revisar}} de {contexto}"
+      },
+      "seeRemaining": "Ver las {n} restantes"
     },
     "context": {
       "prematricula": "Prematrícula cierra el {fecha} · {n, plural, =0 {todos eligieron} one {1 estudiante sin elegir} other {# estudiantes sin elegir}}"
@@ -9320,5 +9389,39 @@
       "impact": "{n} estudiantes en {l} liceos este año",
       "todo": "Visitas y evidencias"
     }
+  },
+  "dev": {
+    "title": "Herramientas técnicas",
+    "intro": "Estado del sistema, banderas y accesos del equipo de desarrollo.",
+    "forbiddenTitle": "Esta sección es del equipo de desarrollo",
+    "forbiddenBody": "Tu cuenta no tiene acceso a las herramientas técnicas. Todo lo del negocio sigue disponible en tu Inicio.",
+    "goHome": "Ir a mi Inicio",
+    "logs": "Registros recientes",
+    "logsAll": "Todos los eventos",
+    "logsFilterAll": "Todos",
+    "logsFilterSession": "Sesiones",
+    "logsFilterTech": "Parámetros técnicos",
+    "logsFilterBlocked": "Escrituras bloqueadas",
+    "logsEmpty": "No hay eventos con ese filtro.",
+    "colWhen": "Cuándo",
+    "colWho": "Quién",
+    "colAction": "Acción",
+    "colEntity": "Entidad",
+    "systemActor": "Sistema",
+    "flags": "Banderas",
+    "on": "Encendida",
+    "off": "Apagada",
+    "jobs": "Tareas e integraciones",
+    "mailQueue": "Cola de correos",
+    "mailPending": "Pendientes",
+    "mailFailed": "Fallidos",
+    "mailLastSent": "Último envío",
+    "mailLastError": "Último error",
+    "noData": "Sin datos",
+    "resend": "Webhook de Resend",
+    "gemini": "Gemini",
+    "noSource": "Aún no hay una fuente que lo registre.",
+    "quick": "Accesos rápidos",
+    "quickParams": "Parámetros técnicos"
   }
 }

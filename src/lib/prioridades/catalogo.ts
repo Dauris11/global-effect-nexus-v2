@@ -47,7 +47,15 @@ export const MODULO_DE_TIPO: Record<TipoPrioridad, string> = {
   visita_semana: "habitudes",
   evidencia_faltante: "habitudes",
   viaje_del_turno: "transporte",
+  error_produccion: "tecnico",
+  job_fallido: "tecnico",
+  integracion_caida: "tecnico",
 };
+
+/** Los tipos que solo atiende el developer: ningún otro rol los recibe ni puede marcarlos en «Qué atiende». */
+export const TIPOS_TECNICOS: readonly TipoPrioridad[] = (Object.keys(MODULO_DE_TIPO) as TipoPrioridad[]).filter(
+  (t) => MODULO_DE_TIPO[t] === "tecnico",
+);
 
 export const MODULOS = [...new Set(Object.values(MODULO_DE_TIPO))];
 

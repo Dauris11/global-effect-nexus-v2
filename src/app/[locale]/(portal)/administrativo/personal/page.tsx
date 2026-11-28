@@ -7,13 +7,15 @@ import { EmptyState } from "@/components/app/empty-state";
 import { FilterBar, type ChipEstado } from "@/components/app/filter-bar";
 import { PageContainer } from "@/components/app/page-container";
 import { PageHeader } from "@/components/app/page-header";
+import { RolBadge } from "@/components/app/rol-badge";
 import { StatusBadge } from "@/components/app/status-badge";
 import { InvitarPersona } from "@/components/personal/invitar-persona";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { Link } from "@/i18n/navigation";
 import { requerirPermiso } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
-import { ROLES_ASIGNABLES } from "@/lib/rbac";
+import { usuarioTienePermiso } from "@/lib/rbac";
+import { rolesAsignablesPor } from "@/lib/roles";
 import { equipo } from "@/server/personal/consultas";
 import { Users } from "lucide-react";
 
@@ -37,15 +39,18 @@ export default async function PaginaPersonal({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ estado?: string; q?: string }>;
+  searchParams: Promise<{ estado?: string; q?: string; equipo?: string }>;
 }) {
-  const [{ locale }, { estado, q }] = await Promise.all([params, searchParams]);
-  await requerirPermiso("usuarios.administrar");
+  const [{ locale }, { estado, q, equipo: verEquipo }] = await Promise.all([params, searchParams]);
+  const yo = await requerirPermiso("usuarios.administrar");
+  // Por defecto «Equipo de la fundación» (sin el developer); `?equipo=todos` lo incluye, solo con `tecnico.dev_panel`.
+  const incluirDesarrolladores = verEquipo === "todos" && usuarioTienePermiso(yo, "tecnico.dev_panel");
 
-  const [t, tRoles, gente, mensajes] = await Promise.all([
+  const puedeVerTecnico = usuarioTienePermiso(yo, "tecnico.dev_panel");
+
+  const [t, gente, mensajes] = await Promise.all([
     getTranslations({ locale, namespace: "staff" }),
-    getTranslations({ locale, namespace: "roles" }),
-    equipo(),
+    equipo({ incluirDesarrolladores }),
     mensajesCliente(["staff"]),
   ]);
 
@@ -74,13 +79,25 @@ export default async function PaginaPersonal({
         title={t("title")}
         primaryAction={
           <NextIntlClientProvider messages={mensajes}>
-            <InvitarPersona roles={ROLES_ASIGNABLES} />
+            <InvitarPersona roles={rolesAsignablesPor(yo.rolReal)} />
           </NextIntlClientProvider>
         }
         secondaryActions={
-          <Link href="/reportes/personal" className="text-label text-marca-700 hover:underline">
-            {t("reportsLink")}
-          </Link>
+          <>
+            {/* Solo quien ve lo técnico elige: para el resto el equipo técnico ni existe en la lista. */}
+            {puedeVerTecnico && (
+              <Link
+                href={incluirDesarrolladores ? "/administrativo/personal" : "/administrativo/personal?equipo=todos"}
+                aria-pressed={incluirDesarrolladores}
+                className="text-label text-marca-700 hover:underline"
+              >
+                {incluirDesarrolladores ? t("teamFoundation") : t("includeTech")}
+              </Link>
+            )}
+            <Link href="/reportes/personal" className="text-label text-marca-700 hover:underline">
+              {t("reportsLink")}
+            </Link>
+          </>
         }
       />
 
@@ -114,7 +131,9 @@ export default async function PaginaPersonal({
                       </Link>
                       <span className="text-meta block">{p.email}</span>
                     </td>
-                    <td className="px-4 py-2.5">{tRoles(p.rol)}</td>
+                    <td className="px-4 py-2.5">
+                      <RolBadge rol={p.rol} />
+                    </td>
                     <td className="px-4 py-2.5">
                       <StatusBadge status={e.status} label={e.label} />
                     </td>

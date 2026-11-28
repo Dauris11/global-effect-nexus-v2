@@ -112,17 +112,16 @@ async function medir(page: Page) {
       conAccion: !!el.querySelector("button, a"),
     }));
     const h1 = main.querySelector("h1")?.textContent?.trim() ?? null;
-    const activos = [
-      ...document.querySelectorAll('nav [aria-current="page"], [role=tab][aria-selected="true"]'),
-    ]
-      .filter(visible)
-      .map((e) => {
-        // El distintivo numérico («Solicitudes 6») no es parte del nombre del enlace.
-        const copia = e.cloneNode(true) as Element;
-        copia.querySelectorAll("[data-insignia]").forEach((x) => x.remove());
+    const nombreDe = (e: Element) => {
+      // El distintivo numérico («Solicitudes 6») no es parte del nombre del enlace.
+      const copia = e.cloneNode(true) as Element;
+      copia.querySelectorAll("[data-insignia]").forEach((x) => x.remove());
 
-        return (copia.textContent ?? "").trim();
-      });
+      return (copia.textContent ?? "").trim();
+    };
+    // Módulo = enlace activo del menú; pestaña = la activa dentro del módulo. El título es el módulo, nunca la pestaña.
+    const activos = [...document.querySelectorAll('nav [aria-current="page"]')].filter(visible).map(nombreDe);
+    const pestanasActivas = [...document.querySelectorAll('[role=tab][aria-selected="true"]')].filter(visible).map(nombreDe);
 
     // Vencidas: un chip «Vencidas N» con N>0 exige verlas sin tocar nada.
     const chips = [...document.querySelectorAll("[data-chip],[aria-pressed],[role=tab]")];
@@ -185,7 +184,7 @@ async function medir(page: Page) {
       }
     }
 
-    return { blancos, alturasMalas, secundariosIguales, botonesFuera, variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
+    return { blancos, alturasMalas, secundariosIguales, botonesFuera, variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, pestanasActivas, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
   });
 }
 
@@ -317,11 +316,12 @@ test.describe("ux-guard", () => {
             anotar(rol, href, "acciones-dentro", m.botonesFuera.length === 0, `sobresalen de su tabla: ${m.botonesFuera.slice(0, 4).join(", ")}`);
           });
 
-          await test.step("titulo = menu", async () => {
-            // `/inicio` abre con el saludo («Buenos días, {nombre}»), no con el nombre del menú: es la excepción de diseño.
+          await test.step("titulo = modulo", async () => {
+            // `/inicio` abre con el saludo («Buenos días, {nombre}»), no con el nombre del módulo: es la excepción de diseño.
             if (esInicio(href)) return;
-            const ok = !!m.h1 && m.activos.some((a) => norm(a) === norm(m.h1!));
-            anotar(rol, href, "titulo = menu", ok, `h1="${m.h1}" · activos=${JSON.stringify(m.activos)}`);
+            const esModulo = !!m.h1 && m.activos.some((a) => norm(a) === norm(m.h1!));
+            const igualAPestana = !!m.h1 && m.pestanasActivas.some((a) => norm(a) === norm(m.h1!));
+            anotar(rol, href, "titulo = modulo", esModulo && !igualAPestana, `h1="${m.h1}" · módulo=${JSON.stringify(m.activos)} · pestaña=${JSON.stringify(m.pestanasActivas)}`);
           });
         });
       }

@@ -43,7 +43,11 @@ export const ROLES = [
 
 export type Rol = (typeof ROLES)[number];
 
-/** Los roles con acceso TOTAL (todos los permisos, todos los portales y «Ver como»): owner y developer. */
+/**
+ * Los roles con acceso TOTAL de negocio (pasan cualquier `requerirRol`, todos los portales y «Ver como»): owner y
+ * developer. Ojo: «total» no incluye lo técnico (`tecnico.*`, migración 0144): eso es solo del developer, y se
+ * decide en `usuarioTienePermiso`, nunca por `esRolTotal`.
+ */
 export const ROLES_TOTALES: readonly Rol[] = ["owner", "developer"];
 
 export const esRolTotal = (rol: string | undefined): boolean => rol !== undefined && (ROLES_TOTALES as readonly string[]).includes(rol);
@@ -119,12 +123,26 @@ export const PERMISOS = [
   "reuniones.leer",
   "solicitudes.direccion",
   "solicitudes.gestionar",
+  // Permisos TÉCNICOS (migración 0144): exclusivos del rol `developer`. El owner manda en el negocio, no en la
+  // plataforma: ni la IA, ni la base de conocimiento, ni la actividad/auditoría técnica, ni los parámetros técnicos
+  // ni el panel /dev. Ver `esPermisoTecnico` y `usuarioTienePermiso`.
+  "tecnico.actividad",
+  "tecnico.auditoria",
+  "tecnico.conocimiento",
+  "tecnico.dev_panel",
+  "tecnico.ia",
+  "tecnico.parametros",
   "transporte.gestionar",
   "transporte.operar",
   "usuarios.administrar",
 ] as const;
 
 export type Permiso = (typeof PERMISOS)[number];
+
+/** Los permisos técnicos: solo `developer` los ejerce, venga el permiso de donde venga. */
+export const PERMISOS_TECNICOS: readonly Permiso[] = PERMISOS.filter((p) => p.startsWith("tecnico."));
+
+export const esPermisoTecnico = (permiso: string): boolean => permiso.startsWith("tecnico.");
 
 /** Portal al que se envía a cada rol tras iniciar sesión. */
 export const PORTAL_POR_ROL: Record<Rol, string> = {
@@ -159,7 +177,7 @@ export const GRUPOS_PERMISOS = {
     "reuniones",
     "transporte",
   ],
-  platform: ["ia", "landing", "usuarios"],
+  platform: ["ia", "landing", "tecnico", "usuarios"],
 } as const;
 
 export type GrupoPermiso = keyof typeof GRUPOS_PERMISOS;
@@ -212,10 +230,13 @@ export function esRol(valor: unknown): valor is Rol {
  * aquí, nunca solo aquí.
  */
 export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
-  // owner y developer: TODOS los permisos (decisión de nov 2026: los dueños de la Fundación ven y hacen todo en todos los
-  // portales; antes `owner` no operaba contabilidad ni daba el segundo visto bueno). La separación de funciones entre
-  // personas sigue en las acciones: nadie aprueba lo que él mismo pidió.
-  owner: PERMISOS,
+  // owner: TODO el negocio (decisión de nov 2026: los dueños de la Fundación ven y hacen todo en todos los portales;
+  // antes `owner` no operaba contabilidad ni daba el segundo visto bueno). developer: todo, y además lo técnico
+  // (`tecnico.*`), que es solo suyo. La separación de funciones entre personas sigue en las acciones: nadie aprueba
+  // lo que él mismo pidió.
+  // owner: todo el NEGOCIO, no lo técnico (`tecnico.*` es del developer).
+  // (`ia.administrar` ya no es del owner: la 0144 lo retiró; sus pantallas piden `tecnico.ia`).
+  owner: PERMISOS.filter((p) => !p.startsWith("tecnico.") && p !== "ia.administrar"),
   developer: PERMISOS,
   admin: [
     "academico.escribir",
@@ -359,6 +380,10 @@ export function usuarioTienePermiso(
   usuario: UsuarioConPermisos,
   permiso: Permiso,
 ): boolean {
+  // Lo técnico es EXCLUSIVO del developer: ni una excepción personal ni un reparto editado en `rol_permiso`
+  // se lo dan a otro rol, y el owner (que pasa `requerirRol` por `esRolTotal`) tampoco lo hereda.
+  if (esPermisoTecnico(permiso) && usuario.rol !== "developer") return false;
+
   const excepcion = usuario.excepciones?.find((e) => e.permiso === permiso);
   if (excepcion !== undefined) return excepcion.concedido;
   return (usuario.permisosRol ?? PERMISOS_POR_ROL[usuario.rol]).includes(permiso);

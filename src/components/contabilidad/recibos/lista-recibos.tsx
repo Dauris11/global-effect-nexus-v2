@@ -2,6 +2,7 @@ import { Eye } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { Folio } from "@/components/app/folio";
 import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Monto } from "@/components/contabilidad/comun";
@@ -66,7 +67,7 @@ export async function ListaRecibos({
                     <PanelFila
                       disparador={
                         <span className="block">
-                          <span className="block font-mono font-semibold tabular-nums">{numero(fila)}</span>
+                          <Folio className="block">{numero(fila)}</Folio>
                           <span className="text-meta block">{fechaCorta(fila.fecha, idioma)}</span>
                         </span>
                       }
@@ -152,7 +153,7 @@ export async function ListaRecibos({
               className="flex items-start justify-between gap-3 p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="min-w-0 space-y-1">
-                <span className="block font-mono font-semibold tabular-nums">{numero(fila)}</span>
+                <Folio className="block">{numero(fila)}</Folio>
                 <span className="block truncate text-sm">{fila.concepto}</span>
                 <span className="text-meta block truncate">
                   {fechaCorta(fila.fecha, idioma)} · {fila.cuenta}

@@ -17,16 +17,21 @@ import { useLocale, useTranslations } from "next-intl";
 import { BuscadorComandos } from "@/components/layout/buscador-comandos";
 import { Campana, type AvisoVisible } from "@/components/layout/campana";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { RolBadge } from "@/components/app/rol-badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { VerComo } from "@/components/layout/ver-como";
 import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { menuDe } from "@/lib/nav";
@@ -56,6 +61,7 @@ const sinSuscripcion = () => () => {};
 export function TopBar({
   rol,
   rolReal,
+  suplantando = false,
   nombre,
   foto,
   aviso,
@@ -65,6 +71,8 @@ export function TopBar({
 }: {
   rol: Rol;
   rolReal: Rol;
+  /** Con «Ver como usuario…» activo el control vive en la franja, igual que con un rol prestado. */
+  suplantando?: boolean;
   nombre: string;
   /** URL pública de la foto de perfil, o `null` para dibujar la inicial. */
   foto: string | null;
@@ -81,10 +89,10 @@ export function TopBar({
   onCerrarSesion: () => void;
 }) {
   const t = useTranslations("nav");
-  const tRoles = useTranslations("roles");
   const tAuth = useTranslations("auth");
   const tComun = useTranslations("common");
   const ruta = usePathname();
+  const router = useRouter();
   const idioma = useLocale();
 
   const [buscando, setBuscando] = useState(false);
@@ -187,7 +195,7 @@ export function TopBar({
         )}
 
         {/* Con un rol prestado, el control vive en la franja de arriba. */}
-        {rol === rolReal && (
+        {rol === rolReal && !suplantando && (
           <div className="hidden md:block">
             <VerComo rol={rol} rolReal={rolReal} />
           </div>
@@ -214,9 +222,7 @@ export function TopBar({
                 en la barra, que ya no tiene sitio para lo que no se usa. */}
             <DropdownMenuLabel className="flex flex-col gap-1.5 py-2">
               <span className="truncate text-[15px] font-semibold text-tinta">{nombre}</span>
-              <Badge variant="neutra" className="font-medium">
-                {tRoles(rol)}
-              </Badge>
+              <RolBadge rol={rol} className="self-start" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
@@ -250,22 +256,26 @@ export function TopBar({
             )}
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="texto-meta flex items-center gap-2 font-medium">
-              <Globe2 className="size-4" />
-              {t("language")}
-            </DropdownMenuLabel>
-            {(["es", "en"] as const).map((codigo) => (
-              <DropdownMenuItem key={codigo} asChild>
-                <Link
-                  href={ruta}
-                  locale={codigo}
-                  aria-current={idioma === codigo ? "true" : undefined}
-                  className={cn(idioma === codigo && "font-semibold text-tinta")}
+            {/* Sub-menú: el idioma ocupaba tres filas del menú para algo que se
+                cambia una vez. Un radio deja claro cuál está activo sin depender
+                del peso de la letra. */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Globe2 />
+                {t("languageCurrent", {
+                  actual: idioma === "es" ? t("spanish") : t("english"),
+                })}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={idioma}
+                  onValueChange={(codigo) => router.replace(ruta, { locale: codigo })}
                 >
-                  {codigo === "es" ? t("spanish") : t("english")}
-                </Link>
-              </DropdownMenuItem>
-            ))}
+                  <DropdownMenuRadioItem value="es">{t("spanish")}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="en">{t("english")}</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
 
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onCerrarSesion}>

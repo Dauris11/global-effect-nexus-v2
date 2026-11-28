@@ -183,7 +183,7 @@ export async function usuariosAsignables(): Promise<OpcionOperaciones[]> {
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE u.activo
-        AND r.nombre <> 'estudiante'
+        AND r.nombre NOT IN ('estudiante', 'developer')
       ORDER BY u.nombre`,
   );
 }

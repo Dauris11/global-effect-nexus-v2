@@ -36,6 +36,7 @@ import {
   Sparkles,
   Star,
   UserCog,
+  Wrench,
   FileCheck2,
   Receipt,
   Users,
@@ -403,6 +404,14 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             icono: Home,
             permiso: "contabilidad.leer",
           },
+          // Inicio contable (`/contabilidad`): lo que contabilidad tiene que hacer hoy. Declara el mismo permiso que la
+          // pantalla para que la pestaña del módulo (que toma el acceso de aquí por `href`) se muestre solo a quien entra.
+          {
+            etiqueta: "accountingHome",
+            href: "/contabilidad",
+            icono: Home,
+            permiso: "contabilidad.leer",
+          },
           ...MODULOS_CONTABLES.filter((modulo) => modulo.enAdministracion).map(itemDeModulo),
         ],
       },
@@ -484,6 +493,14 @@ const MENU_ADMINISTRACION: AreaNav[] = [
             href: "/configuracion/landing",
             icono: Megaphone,
             permiso: "landing.administrar",
+          },
+          // Herramientas del equipo de desarrollo. No suma un módulo al sidebar: vive como pestaña dentro de
+          // Configuración (que ya va en el pie) y solo la ve quien tenga el permiso, igual que la pantalla.
+          {
+            etiqueta: "devTools",
+            href: "/dev",
+            icono: Wrench,
+            permiso: "tecnico.dev_panel",
           },
         ],
       },

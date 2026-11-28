@@ -24,6 +24,8 @@ const ESPACIOS_BASE = [
   "auth",
   "portal",
   "roles",
+  // Frase de cada rol en el selector «Ver como».
+  "roleDescriptions",
   // La campana de avisos está en la barra superior, así que su espacio es del
   // armazón y no de ninguna página.
   "notifications",

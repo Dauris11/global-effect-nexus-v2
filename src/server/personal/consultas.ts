@@ -25,6 +25,12 @@ export type PersonaDelEquipo = {
   ultimo_acceso: string | null;
 };
 
+/**
+ * El developer es del equipo técnico, no de la Fundación: sale de las listas y de los conteos salvo que se pida
+ * (filtro «Equipo de la fundación» apagado, solo para quien tenga `tecnico.dev_panel`; el llamador decide).
+ */
+export type OpcionesEquipo = { incluirDesarrolladores?: boolean };
+
 export type CifrasEquipo = {
   total: number;
   activas: number;
@@ -38,7 +44,7 @@ export type CifrasEquipo = {
  * Se excluye el rol `estudiante`: son cientos y no forman parte del equipo, su
  * sitio es el expediente. Esta pantalla es de cuentas de trabajo.
  */
-export async function equipo(): Promise<PersonaDelEquipo[]> {
+export async function equipo(opciones: OpcionesEquipo = {}): Promise<PersonaDelEquipo[]> {
   const filas = await consultar<Omit<PersonaDelEquipo, "ultimo_acceso">>(
     `SELECT u.id,
             u.email::text AS email,
@@ -62,7 +68,9 @@ export async function equipo(): Promise<PersonaDelEquipo[]> {
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
       WHERE r.nombre <> 'estudiante'
+        AND ($1::boolean OR r.nombre <> 'developer')
       ORDER BY u.activo DESC, r.nombre, u.nombre`,
+    [opciones.incluirDesarrolladores === true],
   );
 
   const identidades = await identidadesPorCorreo();
@@ -74,19 +82,21 @@ export async function equipo(): Promise<PersonaDelEquipo[]> {
 }
 
 /** Las cuatro cifras de cabecera, del mismo conjunto que la lista. */
-export async function cifrasEquipo(): Promise<CifrasEquipo> {
+export async function cifrasEquipo(opciones: OpcionesEquipo = {}): Promise<CifrasEquipo> {
   const fila = await consultarUna<Omit<CifrasEquipo, "sin_entrar">>(
     `SELECT count(*)::int AS total,
             count(*) FILTER (WHERE u.activo)::int AS activas,
             count(*) FILTER (WHERE NOT u.activo)::int AS inactivas
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
-      WHERE r.nombre <> 'estudiante'`,
+      WHERE r.nombre <> 'estudiante'
+        AND ($1::boolean OR r.nombre <> 'developer')`,
+    [opciones.incluirDesarrolladores === true],
   );
 
   // "Sin primer acceso" sale de Auth, así que se cuenta sobre la lista ya
   // cruzada en vez de con una segunda consulta a la base.
-  const lista = await equipo();
+  const lista = await equipo(opciones);
 
   return {
     ...(fila ?? { total: 0, activas: 0, inactivas: 0 }),
@@ -95,16 +105,18 @@ export async function cifrasEquipo(): Promise<CifrasEquipo> {
 }
 
 /** Los roles que se pueden asignar, con cuánta gente hay en cada uno. */
-export async function repartoPorRol(): Promise<
-  { rol: string; total: number }[]
-> {
+export async function repartoPorRol(
+  opciones: OpcionesEquipo = {},
+): Promise<{ rol: string; total: number }[]> {
   return consultar<{ rol: string; total: number }>(
     `SELECT r.nombre AS rol,
             count(u.id) FILTER (WHERE u.activo)::int AS total
        FROM rol r
        LEFT JOIN usuario u ON u.rol_id = r.id
       WHERE r.nombre <> 'estudiante'
+        AND ($1::boolean OR r.nombre <> 'developer')
       GROUP BY r.nombre
       ORDER BY r.nombre`,
+    [opciones.incluirDesarrolladores === true],
   );
 }

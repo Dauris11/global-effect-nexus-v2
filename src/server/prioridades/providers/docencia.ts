@@ -30,6 +30,7 @@ export const proveedorDocencia: Proveedor = {
       href: `/portal/profesor/entregas?tarea=${id}`,
       cantidad: g.n,
       grupoClave: g.unidad,
+      contextoGrupo: g.unidad,
       creadoEn: g.masVieja ?? undefined,
       bloquea: true,
       responsableId: userId,

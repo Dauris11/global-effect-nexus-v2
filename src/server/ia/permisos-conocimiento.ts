@@ -4,7 +4,7 @@ import { usuarioTienePermiso } from "@/lib/rbac";
 /**
  * Qué agentes puede alimentar cada persona en la base de conocimiento.
  *
- *   · `ia.administrar`  → todos (`null`).
+ *   · `tecnico.conocimiento` → todos (solo developer) (`null`).
  *   · `contabilidad.configurar` → solo `agente_contabilidad`: es su normativa.
  *   · `ia.conocimiento` → solo `agente_estudiante`: es lo que `admin` mantiene.
  *
@@ -13,7 +13,7 @@ import { usuarioTienePermiso } from "@/lib/rbac";
  * Contabilidad podría pasar un documento al agente de estudiantes.
  */
 export function agentesGestionables(usuario: UsuarioConPermisos): readonly string[] | null {
-  if (usuarioTienePermiso(usuario, "ia.administrar")) return null;
+  if (usuarioTienePermiso(usuario, "tecnico.conocimiento")) return null;
 
   const agentes: string[] = [];
 

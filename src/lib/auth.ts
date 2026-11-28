@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { getLocale } from "next-intl/server";
 
@@ -15,7 +16,18 @@ import {
   type Rol,
   esRolTotal,
 } from "@/lib/rbac";
+import { puedeVerComo } from "@/lib/roles";
+import {
+  COOKIE_SUPLANTACION_CONFIRMADA,
+  COOKIE_VER_COMO_USUARIO,
+  leerSuplantacion,
+  PARAM_SUPLANTACION_BLOQUEADA,
+  PARAM_SUPLANTACION_CONFIRMAR,
+  secretoSuplantacion,
+} from "@/lib/suplantacion";
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { usuarioSesionDe } from "@/server/prioridades/suplantar";
+import { impersonationWriteActivo } from "@/server/parametros/tecnicos";
 
 /**
  * Identidad de quien está usando el sistema.
@@ -42,6 +54,15 @@ export type UsuarioSesion = {
   rol: Rol;
   /** Rol que la cuenta tiene de verdad en la tabla `usuario`. */
   rolReal: Rol;
+  /**
+   * Quién está de verdad detrás de la sesión. Coincide con `id`/`nombre` salvo en «Ver como usuario…»
+   * (`suplantando`), donde `id`, `rol` y permisos son los de la persona suplantada. Toda auditoría de una
+   * escritura debe usar `realId`, no `id`.
+   */
+  realId: string;
+  realNombre: string;
+  /** `true` solo mientras un developer actúa como UNA persona concreta (cookie firmada `ge_ver_como_usuario`). */
+  suplantando: boolean;
   authUserId: string;
   /**
    * RUTA de la foto en el bucket `avatares`, no una URL. Se convierte a URL con
@@ -139,10 +160,29 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
   let excepciones = fila.excepciones;
   let permisosRol = fila.permisos_rol;
 
+  // «Ver como usuario…»: solo un developer REAL, con la cookie firmada para ESTA cuenta y a una persona activa
+  // que no sea otro developer. Gana sobre «Ver como rol»: la sesión es la de la persona, con su rol y permisos.
+  if (rolReal === "developer") {
+    const suplantada = await sesionSuplantada(fila.id);
+
+    if (suplantada) {
+      return {
+        ...suplantada,
+        rolReal,
+        realId: fila.id,
+        realNombre: fila.nombre,
+        // La identidad de acceso es la real: es la que firma el JWT y la que se audita.
+        authUserId: user.id,
+        suplantando: true,
+      };
+    }
+  }
+
   if (esRolTotal(rolReal)) {
     const verComo = (await cookies()).get(COOKIE_VER_COMO)?.value;
 
-    if (esRol(verComo) && !esRolTotal(verComo)) {
+    // `puedeVerComo` es la lista permitida: el owner no se «ve como» owner (ya lo es); el developer sí.
+    if (esRol(verComo) && verComo !== rolReal && puedeVerComo(rolReal, verComo)) {
       rol = verComo;
       // Las excepciones son de la cuenta del administrador, no del rol que se
       // está mirando: mezclarlas enseñaría una pantalla que nadie de ese rol ve.
@@ -163,6 +203,9 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
     idioma: fila.idioma === "en" ? "en" : "es",
     rol,
     rolReal,
+    realId: fila.id,
+    realNombre: fila.nombre,
+    suplantando: false,
     authUserId: user.id,
     fotoUrl: fila.foto_url,
     excepciones: excepcionesValidas,
@@ -173,6 +216,27 @@ async function obtenerUsuarioSinCache(): Promise<UsuarioSesion | null> {
       permisosRol: permisosRolValidos,
     }),
   };
+}
+
+/** La persona a la que el developer `realId` está suplantando, o `null` si no hay cookie válida. */
+async function sesionSuplantada(realId: string): Promise<UsuarioSesion | null> {
+  let carga;
+
+  try {
+    carga = leerSuplantacion((await cookies()).get(COOKIE_VER_COMO_USUARIO)?.value, secretoSuplantacion());
+  } catch {
+    // Sin secreto configurado no se puede validar nada: se trata como si no hubiera cookie.
+    return null;
+  }
+
+  if (!carga || carga.realId !== realId || carga.objetivoId === realId) return null;
+
+  const objetivo = await usuarioSesionDe(carga.objetivoId, { soloActivo: true });
+
+  // Suplantar a otro developer sería escalar a sus permisos técnicos sin ser él.
+  if (!objetivo || objetivo.rol === "developer") return null;
+
+  return objetivo;
 }
 
 /** Permisos que `rol_permiso` concede a un rol (para «ver como»). */
@@ -202,7 +266,69 @@ export async function requerirUsuario(): Promise<UsuarioSesion> {
     redirigir("/login", await getLocale());
   }
 
+  // Punto central de las pantallas y acciones (`requerirPermiso`, `requerirRol`, `requerirDocencia` pasan por
+  // aquí): si un developer suplanta a alguien, una acción que ESCRIBE se bloquea antes de hacer nada.
+  await exigirSinSuplantacion(usuario);
+
   return usuario;
+}
+
+/**
+ * Guard de escritura de «Ver como usuario…». Solo hace algo con `usuario.suplantando`.
+ *
+ * Distingue acción de lectura por la cabecera `next-action` que Next pone en toda invocación de server action
+ * (las pantallas son GET y pasan). Una acción se BLOQUEA y se devuelve a quien la lanzó a la misma página con
+ * `?suplantacion_bloqueada=1` (la UI muestra «Estás actuando como {nombre}: las acciones que escriben están
+ * bloqueadas»); no se lanza un error porque en producción Next oculta su mensaje al navegador.
+ *
+ * Si el parámetro técnico `tecnico.impersonation_write` está activo, la escritura se permite SOLO tras una
+ * confirmación de la sesión (`confirmarEscrituraSuplantada`, cookie de 8 h ligada a la persona suplantada); sin
+ * ella se devuelve con `?suplantacion_confirmar=1`. Cada bloqueo queda en `audit_log` a nombre del developer REAL.
+ *
+ * Cómo adoptarlo: toda acción nueva que escriba debe empezar por `requerirUsuario/requerirPermiso/requerirRol`
+ * (ya lo hace). Las que usan `obtenerUsuarioActual()` a pelo o los route handlers POST/PUT/DELETE NO pasan por
+ * aquí: deben llamar `await exigirSinSuplantacion(usuario)` a mano.
+ */
+export async function exigirSinSuplantacion(usuario: UsuarioSesion): Promise<void> {
+  if (!usuario.suplantando) return;
+
+  const cabeceras = await headers();
+
+  if (!cabeceras.get("next-action")) return;
+
+  const escrituraPermitida = await impersonationWriteActivo();
+  const confirmada = (await cookies()).get(COOKIE_SUPLANTACION_CONFIRMADA)?.value === usuario.id;
+
+  if (escrituraPermitida && confirmada) return;
+
+  const { registrar } = await import("@/lib/auditoria");
+  const referer = cabeceras.get("referer");
+  const motivo = escrituraPermitida ? "sin_confirmar" : "bloqueada";
+  let destino = "/";
+  let desde: string | null = null;
+
+  try {
+    const url = new URL(referer ?? "", `https://${cabeceras.get("host") ?? "localhost"}`);
+
+    desde = url.pathname;
+
+    if (url.host === cabeceras.get("host")) {
+      url.searchParams.set(motivo === "bloqueada" ? PARAM_SUPLANTACION_BLOQUEADA : PARAM_SUPLANTACION_CONFIRMAR, "1");
+      destino = `${url.pathname}${url.search}`;
+    }
+  } catch {
+    // Sin referer válido se cae a la raíz: el middleware de idioma la lleva al inicio.
+  }
+
+  await registrar({
+    usuarioId: usuario.realId,
+    accion: motivo === "bloqueada" ? "sesion.ver_como_escritura_bloqueada" : "sesion.ver_como_escritura_sin_confirmar",
+    entidad: "sesion",
+    entidadId: usuario.id,
+    datos: { suplantado: usuario.id, suplantadoNombre: usuario.nombre, desde },
+  });
+
+  redirect(destino);
 }
 
 /**

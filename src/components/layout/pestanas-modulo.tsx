@@ -33,6 +33,8 @@ export function PestanasModulo() {
   const { activa } = useModuloActual();
 
   if (!activa || !activa.exacta || activa.modulo.pestanasVisibles.length < 2) return null;
+  // Ajustes ya tiene su propio menú lateral (`barra-ajustes`): repetirlo en pestañas era navegación doble.
+  if (activa.modulo.id === "configuracion") return null;
 
   return (
     <Tabs value={activa.pestana.href} className="gap-0">
@@ -55,19 +57,15 @@ export function PestanasModulo() {
 }
 
 /**
- * El título de la página es el del menú (ux-rules §12): en una pantalla de primer nivel del módulo lleva el
- * nombre de su pestaña —o el del módulo, si solo tiene una— y no un nombre propio de cada pantalla. En un
- * detalle, en `/inicio` o fuera del menú queda lo que la página pidió.
+ * El título de la página es el nombre del MÓDULO (ux-rules §12): las pestañas van debajo y llevan el nombre de
+ * la pantalla, así que título y pestaña activa nunca dicen lo mismo. Vale igual para un módulo de una sola
+ * pestaña. En un detalle, en `/inicio` o fuera del menú queda lo que la página pidió.
  */
 export function TituloPagina({ className, children }: { className?: string; children: React.ReactNode }) {
   const t = useTranslations("nav");
   const { ruta, activa } = useModuloActual();
   const propio = activa && activa.exacta && ruta !== "/inicio";
-  const texto = propio
-    ? activa.modulo.pestanasVisibles.length > 1
-      ? t(`tab.${activa.pestana.etiqueta}`)
-      : t(`m.${activa.modulo.etiqueta}`)
-    : null;
+  const texto = propio ? t(`m.${activa.modulo.etiqueta}`) : null;
 
   return <h1 className={className}>{texto ?? children}</h1>;
 }

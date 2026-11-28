@@ -15,6 +15,8 @@ const nextConfig = {
   // cotizaciones de compra) admiten 10 MB: sin esto fallan antes de llegar a
   // la validación de tamaño del servidor, con un error opaco.
   experimental: {
+    // `forbidden()` + `forbidden.tsx`: la pantalla «esto es del equipo de desarrollo» de /dev.
+    authInterrupts: true,
     serverActions: { bodySizeLimit: "12mb" },
     // Volver a una pantalla vista hace menos de 30 s no pide nada al servidor. Las
     // acciones que cambian datos llaman a `updateTag`/`revalidatePath`, que vacían

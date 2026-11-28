@@ -15,6 +15,7 @@ import { proveedorExpedientes } from "./providers/expedientes";
 import { proveedorHabitudes } from "./providers/habitudes";
 import { proveedorProyectos } from "./providers/proyectos";
 import { proveedorSolicitudes } from "./providers/solicitudes";
+import { proveedorTecnico } from "./providers/tecnico";
 import { proveedorTareas } from "./providers/tareas";
 import { diaComoFecha, type ContextoServidor, type ItemCrudo, type Proveedor } from "./tipos";
 
@@ -33,6 +34,7 @@ const PROVEEDORES: readonly Proveedor[] = [
   proveedorEstudiante,
   proveedorHabitudes,
   proveedorContabilidad,
+  proveedorTecnico,
 ];
 
 export const etiquetaDePrioridades = (userId: string) => `prioridades:${userId}`;

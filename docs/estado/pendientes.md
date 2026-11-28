@@ -5,12 +5,25 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Roles owner / developer, capa de datos y seguridad (28 nov 2026), SIN PROBAR en navegador
+
+- [x] Migración `0144`: permisos `tecnico.*` solo del developer, `ia.administrar` fuera del owner, trigger `proteger_ultimo_owner`. `usuarioTienePermiso` niega lo técnico a todo rol que no sea developer. Reglas de asignación y de «Ver como» en `src/lib/roles.ts`; «Ver como usuario…» con cookie firmada (`src/lib/suplantacion.ts`) y guard de escritura en `requerirUsuario`. Pruebas: `npx tsx --test scripts/probar-roles.ts`; e2e escritos en `e2e/roles.spec.ts` (sin correr).
+- [ ] **Hoy NO hay ningún owner activo** (los dos están `activo = false`): el trigger y la regla no pueden protegerlo hasta que se active uno. Decisión de la Fundación.
+- [ ] Falta (UI): `/dev` con 403 amable, selector «Ver como» con `rolesVerComo` y «Ver como usuario…», aviso de `?suplantacion_bloqueada=1`/`?suplantacion_confirmar=1`, pantalla de parámetros técnicos (`guardarParametroTecnico`), filtro «Equipo de la fundación» (`?equipo=todos`), errores de cuenta en los botones activar/reiniciar.
+- [ ] Falta (datos): fuente real para `error_produccion` e `integracion_caida` (no hay tabla de errores ni de salud de integraciones); las acciones que usan `obtenerUsuarioActual()` a pelo y los route handlers de escritura no pasan por el guard de suplantación.
+
 ## Sistema de botones (28 nov 2026), SIN PROBAR en navegador
 
 - [x] **Un solo botón** (`ui/button.tsx` + `button-variantes.ts`, tokens `--btn-*` claro/oscuro): primary, secondary, ghost, danger, danger-solid; `sm` 32 / `md` 36 / `lg` 44 / `icon*`; `loading` sin cambio de ancho; ~60 archivos con alturas o colores propios llevados al sistema; barra superior a 36 px; chips de 30 px. Reglas `altura-botones`, `secundario-visible` y `acciones-dentro` en `e2e/ux-guard.spec.ts`; `/ui-kit` con la matriz completa en claro y oscuro. Documentado en `docs/ux-rules.md`.
 - [x] **Acciones por fila** (`CeldaAcciones`, columna fija a la derecha, un botón + menú ⋯) en 11 listas.
 - [ ] **Falta:** popover de motivo al rechazar (`@radix-ui/react-popover` no está instalado; hoy abre el diálogo de confirmación) con `danger-solid`; ~15 listas sin migrar (comedor, expedientes, donaciones, retenciones…); `DialogoRevertir` de asientos fuera del menú ⋯; toast con «Deshacer» en acciones reversibles; `text-tinta-2` sobre algunos ghost de «volver»; ejecutar `npm run test:ux` con la sesión renovada (no se corrió: la sesión de Playwright caducó) y revisar que `secundario-visible` no falle en tarjetas blancas (secondary blanco sobre tarjeta blanca).
 - [ ] **Rendimiento de navegación (28 nov 2026):** hecho scroll al cambiar de módulo, barra de progreso, esqueleto tras 300 ms, chips en una línea, prefetch al apuntar, `staleTimes` 30 s, región `sfo1` y registro `DB_TIMING=1`. Falta la tabla de consultas por pantalla (necesita sesión: `npm run test:ux:login`), el `Suspense` con el encabezado fuera, esqueletos a medida, los índices y las reglas `carga`/`scroll-reset` del test.
+
+## Correcciones de UX, 20 puntos (28 nov 2026), SIN PROBAR en navegador
+
+- [x] Hechos: vencidas (hasta 5 + «Ver las N restantes», agrupadas por tipo y contexto), Crear rápido sin «Nueva solicitud», aire para el botón de IA, `PageHeader` con `items-end`, Ajustes con una sola navegación, «General» como datos de la institución, sin «Volver a configuración», encabezado de perfil simple, Proyectos con h1 y «Asignar por rol» en ⋯, inicio contable en `/contabilidad`, folios `.folio`, tabla de solicitudes con anchos fijos y sticky, «Por atender» sin aprobadas + chip «Por completar», «Tipo» inline, un solo «Volver al inicio», `Alert` danger, idioma como submenú, h1 = módulo (pestañas renombradas Agenda/Resumen/Directorio).
+- [ ] Parciales: header a 390 px (el primario no se reduce a icono + texto corto: hace falta una prop `primaryActionShort`); «Asignar por rol» es ítem de menú, no botón secondary; año fiscal de solo lectura (no hay parámetro); folios sin aplicar en solicitudes, CxP, cajas y donaciones; las ~15 listas sin patrón de tabla.
+- [ ] Capturas antes/después en claro y oscuro y `npm run test:ux` en verde: pendientes (sesión de Playwright caducada).
 
 ## Modo oscuro (28 nov 2026), probado solo en `/login` y `/ui-kit`
 

@@ -7,6 +7,7 @@ import { registrar } from "@/lib/auditoria";
 import { requerirPermiso } from "@/lib/auth";
 import { consultarUna } from "@/lib/db";
 import { esRol, ROLES_ASIGNABLES } from "@/lib/rbac";
+import { rolesAsignablesPor, validarCambioDeCuenta, type CambioDeCuenta, type ErrorAsignacionRol } from "@/lib/roles";
 import { crearIdentidad, reiniciarContrasena } from "@/lib/supabase/admin";
 
 /**
@@ -38,6 +39,10 @@ export type EstadoCuenta = {
     | "correo_repetido"
     | "nombre_vacio"
     | "rol_invalido"
+    // Reglas de asignación (src/lib/roles.ts → validarCambioDeCuenta).
+    | "solo_developer"
+    | "solo_owner"
+    | "ultimo_owner"
     | "no_encontrada"
     | "error";
   /**
@@ -65,6 +70,45 @@ function contrasenaTemporal(): string {
   return cuerpo.match(/.{1,4}/g)!.join("-");
 }
 
+/**
+ * Valida en el SERVIDOR las reglas de asignación de roles (developer, owner y último owner) contra el estado real
+ * de la base. Devuelve el estado de error o `null` si el cambio procede. Esconder un botón en la UI no cuenta.
+ */
+async function reglaDeAsignacion(
+  actorRol: string,
+  objetivoId: string,
+  cambio: CambioDeCuenta,
+): Promise<{ error: ErrorAsignacionRol | null; objetivo: { rol: string; activo: boolean; email: string } | null }> {
+  const objetivo = await consultarUna<{ rol: string; activo: boolean; email: string }>(
+    `SELECT r.nombre AS rol, u.activo, u.email::text AS email
+       FROM usuario u JOIN rol r ON r.id = u.rol_id
+      WHERE u.id = $1`,
+    [objetivoId],
+  );
+
+  if (!objetivo) return { error: null, objetivo: null };
+
+  const total = await consultarUna<{ n: number }>(
+    `SELECT count(*)::int AS n
+       FROM usuario u JOIN rol r ON r.id = u.rol_id
+      WHERE r.nombre = 'owner' AND u.activo`,
+  );
+
+  return {
+    error: validarCambioDeCuenta({
+      actorRol,
+      objetivoRol: objetivo.rol,
+      objetivoActivo: objetivo.activo,
+      cambio,
+      propietariosActivos: total?.n ?? 0,
+    }),
+    objetivo,
+  };
+}
+
+/** El trigger `proteger_ultimo_owner` (0144) es el respaldo si dos cambios se cruzan: se traduce igual. */
+const esUltimoOwner = (error: unknown): boolean => error instanceof Error && error.message.includes("ultimo_owner");
+
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export async function crearCuenta(
@@ -81,6 +125,9 @@ export async function crearCuenta(
   if (!nombre) return { estado: "nombre_vacio" };
   if (!esRol(rol) || !ROLES_ASIGNABLES.includes(rol)) {
     return { estado: "rol_invalido" };
+  }
+  if (!rolesAsignablesPor(admin.rolReal).includes(rol)) {
+    return { estado: rol === "developer" ? "solo_developer" : "solo_owner" };
   }
 
   const contrasena = contrasenaTemporal();
@@ -159,6 +206,10 @@ export async function cambiarRol(
   }
   if (id === admin.id) return { estado: "no_permitido" };
 
+  const regla = await reglaDeAsignacion(admin.rolReal, id, { tipo: "rol", nuevoRol: rol });
+
+  if (regla.error) return { estado: regla.error };
+
   try {
     const cambiado = await consultarUna<{ id: string; antes: string }>(
       `UPDATE usuario u
@@ -178,9 +229,11 @@ export async function cambiarRol(
       accion: "cuenta.rol_cambiado",
       entidad: "usuario",
       entidadId: cambiado.id,
-      datos: { antes: cambiado.antes, despues: rol },
+      // Quién (usuario_id), cuándo (created_at), valor anterior y nuevo.
+      datos: { antes: cambiado.antes, despues: rol, email: regla.objetivo?.email },
     });
   } catch (error) {
+    if (esUltimoOwner(error)) return { estado: "ultimo_owner" };
     console.error("[personal] no se pudo cambiar el rol", error);
     return { estado: "error" };
   }
@@ -210,6 +263,10 @@ export async function alternarCuenta(
   if (!esUuid(id)) return { estado: "no_encontrada" };
   if (id === admin.id) return { estado: "no_permitido" };
 
+  const regla = await reglaDeAsignacion(admin.rolReal, id, activar ? { tipo: "activar" } : { tipo: "desactivar" });
+
+  if (regla.error) return { estado: regla.error };
+
   try {
     const cambiada = await consultarUna<{ id: string; email: string }>(
       `UPDATE usuario
@@ -230,6 +287,7 @@ export async function alternarCuenta(
       datos: { email: cambiada.email },
     });
   } catch (error) {
+    if (esUltimoOwner(error)) return { estado: "ultimo_owner" };
     console.error("[personal] no se pudo alternar la cuenta", error);
     return { estado: "error" };
   }
@@ -254,6 +312,11 @@ export async function reiniciarAcceso(
   const id = String(datos.get("id") ?? "");
 
   if (!esUuid(id)) return { estado: "no_encontrada" };
+
+  // Reiniciar el acceso es poder entrar como esa persona: a un developer solo lo hace otro developer.
+  const regla = await reglaDeAsignacion(admin.rolReal, id, { tipo: "reiniciar_acceso" });
+
+  if (regla.error) return { estado: regla.error };
 
   const cuenta = await consultarUna<{ auth_user_id: string | null; email: string }>(
     `SELECT auth_user_id, email::text AS email FROM usuario WHERE id = $1`,

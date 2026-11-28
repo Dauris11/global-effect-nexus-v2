@@ -34,7 +34,7 @@ export async function cuentasDelSistema(): Promise<CuentaDelSistema[]> {
     `SELECT u.id, u.nombre, u.email::text AS email, r.nombre AS rol, u.activo
        FROM usuario u
        JOIN rol r ON r.id = u.rol_id
-      WHERE r.nombre <> 'estudiante'
+      WHERE r.nombre NOT IN ('estudiante', 'developer')
       ORDER BY u.activo DESC, r.nombre, u.nombre
       LIMIT 200`,
   );
@@ -58,9 +58,9 @@ export type CifrasDelSistema = {
 export async function cifrasDelSistema(): Promise<CifrasDelSistema> {
   const fila = await consultarUna<CifrasDelSistema>(
     `SELECT (SELECT count(*)::int FROM usuario u JOIN rol r ON r.id = u.rol_id
-              WHERE r.nombre <> 'estudiante') AS cuentas,
+              WHERE r.nombre NOT IN ('estudiante', 'developer')) AS cuentas,
             (SELECT count(*)::int FROM usuario u JOIN rol r ON r.id = u.rol_id
-              WHERE r.nombre <> 'estudiante' AND u.activo) AS activas,
+              WHERE r.nombre NOT IN ('estudiante', 'developer') AND u.activo) AS activas,
             (SELECT count(*)::int FROM estudiante) AS estudiantes,
             (SELECT count(*)::int FROM audit_log) AS eventos`,
   );

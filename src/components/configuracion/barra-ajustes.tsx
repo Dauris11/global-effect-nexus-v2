@@ -11,6 +11,7 @@ import {
   ScrollText,
   SlidersHorizontal,
   UserCog,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -28,6 +29,7 @@ const ICONO: Record<ClaveAjuste, LucideIcon> = {
   knowledge: BookOpen,
   activity: Activity,
   audit: ScrollText,
+  dev: Wrench,
   appearance: Palette,
 };
 

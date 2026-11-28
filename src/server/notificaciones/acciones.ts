@@ -124,7 +124,7 @@ export async function enviarAviso(
          JOIN rol r ON r.id = u.rol_id
         WHERE u.activo
           AND u.id <> $3
-          AND (($4::text IS NULL AND r.nombre <> 'estudiante') OR r.nombre = $4)
+          AND (($4::text IS NULL AND r.nombre NOT IN ('estudiante', 'developer')) OR r.nombre = $4)
        RETURNING id`,
       [titulo, mensaje, usuario.id, rol],
     );

@@ -23,8 +23,8 @@ import {
 import { DetalleSolicitud } from "./detalle-solicitud";
 
 /**
- * Bandeja de solicitudes (patrón Lista, docs/ux-rules.md): tabla densa en pantalla
- * ancha y filas en el móvil. Un clic en la fila abre el panel lateral con el detalle y
+ * Bandeja de solicitudes (patrón Lista, docs/ux-rules.md): tabla densa; en pantalla
+ * estrecha desplaza dentro de su contenedor. Un clic en la fila abre el panel lateral con el detalle y
  * los pasos; aprobar y rechazar se resuelven en la propia fila, con una confirmación
  * que nombra la solicitud.
  *
@@ -59,16 +59,27 @@ export function ListaSolicitudes({
   return (
     <>
       <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
-        {/* ≥ md: tabla densa */}
-        <table className="hidden w-full text-sm md:table">
+        {/* Misma tabla en todos los anchos: en el móvil el contenedor desplaza en horizontal y la
+            columna Solicitud (izquierda) y las acciones (derecha) quedan fijas. `table-fixed` +
+            `colgroup` dan anchos definidos y la columna Solicitud, sin ancho, absorbe el sobrante,
+            así que no queda hueco a la derecha. */}
+        <table className="w-full min-w-[960px] table-fixed text-sm">
+          <colgroup>
+            <col />
+            <col className="w-[150px]" />
+            {mostrarSolicitante && <col className="w-[180px]" />}
+            <col className="w-[110px]" />
+            <col className="w-[110px]" />
+            <col className="w-[190px]" />
+          </colgroup>
           <thead className="text-meta border-b border-linea text-left">
             <tr>
-              <th className="px-4 py-3 font-medium">{l("column.request")}</th>
+              <th className="sticky left-0 z-10 min-w-[320px] bg-card px-4 py-3 font-medium">{l("column.request")}</th>
               <th className="px-4 py-3 font-medium">{l("column.status")}</th>
               {mostrarSolicitante && <th className="px-4 py-3 font-medium">{l("column.requester")}</th>}
               <th className="px-4 py-3 text-right font-medium">{l("column.amount")}</th>
               <th className="px-4 py-3 font-medium">{l("column.date")}</th>
-              <th className="px-4 py-3">
+              <th className="sticky right-0 z-10 bg-card px-4 py-3">
                 <span className="sr-only">{l("column.actions")}</span>
               </th>
             </tr>
@@ -79,17 +90,23 @@ export function ListaSolicitudes({
               const { positiva, puedeRechazar } = accionesEnFila(fila.acciones);
 
               return (
-                <tr key={fila.id} className={`group relative h-[52px] transition-colors hover:bg-muted/50 ${fila.id === resaltarId ? "animate-resaltar" : ""}`}>
-                  <td className="w-80 max-w-80 px-4 py-1.5">
+                <tr
+                  key={fila.id}
+                  // El botón de la primera celda es el control accesible; el clic en el resto de la fila
+                  // hace lo mismo con el ratón (sin él, la capa que cubría la fila no cabe en una celda fija).
+                  onClick={(e) => !(e.target as HTMLElement).closest("button, a") && setAbiertaId(fila.id)}
+                  className={`group h-[52px] cursor-pointer transition-colors hover:bg-muted/50 ${fila.id === resaltarId ? "animate-resaltar" : ""}`}
+                >
+                  <td className="sticky left-0 z-10 min-w-[320px] bg-surface px-4 py-1.5 transition-colors group-hover:bg-muted">
                     <button
                       type="button"
                       onClick={() => setAbiertaId(fila.id)}
                       aria-label={`${l("view")}: ${fila.titulo}`}
-                      className="flex w-full min-w-0 items-center gap-3 text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex w-full min-w-0 items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <FotoEstudiante nombre={persona(fila)} url={null} className="size-9 shrink-0 rounded-full" />
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold">{fila.titulo}</span>
+                        <span className="line-clamp-2 text-sm font-semibold">{fila.titulo}</span>
                         <span className="text-meta block truncate">
                           #{fila.folio} · {t(`type.${fila.tipo}` as never)}
                         </span>
@@ -105,7 +122,7 @@ export function ListaSolicitudes({
                     </span>
                   </td>
                   {mostrarSolicitante && (
-                    <td className="max-w-48 px-4 py-1.5">
+                    <td className="px-4 py-1.5">
                       <span className="block truncate">{fila.solicitante ?? "—"}</span>
                       {fila.estudiante && fila.estudiante !== fila.solicitante && (
                         <span className="text-meta block truncate">{fila.estudiante}</span>
@@ -142,35 +159,6 @@ export function ListaSolicitudes({
             })}
           </tbody>
         </table>
-
-        {/* < md: filas; las acciones van en el panel */}
-        <ul className="divide-y divide-linea md:hidden">
-          {filas.map((fila) => (
-            <li key={fila.id}>
-              <button
-                type="button"
-                onClick={() => setAbiertaId(fila.id)}
-                className="flex w-full items-center gap-3 p-3.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <FotoEstudiante nombre={persona(fila)} url={null} className="size-11 rounded-full" />
-                <span className="min-w-0 flex-1 space-y-1">
-                  <span className="block truncate font-semibold">{fila.titulo}</span>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <StatusBadge status={fila.estado} />
-                    <span className="text-meta">
-                      #{fila.folio} · {t(`type.${fila.tipo}` as never)}
-                    </span>
-                  </span>
-                  <span className="text-meta block truncate">
-                    {[mostrarSolicitante ? fila.solicitante : null, fila.monto !== null ? montoUsd(fila.monto) : null, fecha(fila)]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
       </div>
 
       <Sheet open={abierta !== null} onOpenChange={(a) => !a && setAbiertaId(null)}>

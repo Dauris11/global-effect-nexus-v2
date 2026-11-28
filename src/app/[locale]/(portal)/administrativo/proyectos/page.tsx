@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { UsersRound } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
+import { PageContainer } from "@/components/app/page-container";
+import { PageHeader } from "@/components/app/page-header";
 import { GestionProyectos } from "@/components/operaciones/gestion-proyectos";
-import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirPermiso } from "@/lib/auth";
 import {
@@ -33,7 +36,6 @@ export async function generateMetadata({
  * proyectos de una fundación se cuentan por decenas al año, no por cientos.
  * Añadir un buscador aquí sería resolver un problema que esta lista no tiene.
  */
-import { Link } from "@/i18n/navigation";
 
 export default async function PaginaProyectos({
   params,
@@ -52,17 +54,13 @@ export default async function PaginaProyectos({
   ]);
 
   return (
-    <div className="animate-entrada space-y-6">
-      <EncabezadoPagina
-        titulo={t("projects.title")}
-        acciones={
+    <PageContainer className="space-y-6">
+      <PageHeader
+        title={t("projects.title")}
+        secondaryActions={
+          // «Asignar por rol» es de uso ocasional: va en el menú ⋯ y no como botón junto al título.
           puedeAsignarRoles ? (
-            <Link
-              href="/administrativo/proyectos/roles"
-              className="inline-flex min-h-[44px] items-center rounded-control border border-marca-500/30 bg-marca-50 px-3.5 text-xs font-semibold text-marca-600 hover:bg-marca-100 active:scale-95"
-            >
-              {t("hub.link_role_assignments")}
-            </Link>
+            <MenuMasAcciones acciones={[{ etiqueta: t("hub.link_role_assignments"), icono: <UsersRound />, href: "/administrativo/proyectos/roles" }]} />
           ) : undefined
         }
       />
@@ -73,6 +71,6 @@ export default async function PaginaProyectos({
           puedeEscribir={usuarioTienePermiso(usuario, "operaciones.escribir")}
         />
       </NextIntlClientProvider>
-    </div>
+    </PageContainer>
   );
 }

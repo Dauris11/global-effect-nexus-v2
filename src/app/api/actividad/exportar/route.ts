@@ -1,4 +1,4 @@
-import { esRolTotal } from "@/lib/rbac";
+import { usuarioTienePermiso } from "@/lib/rbac";
 import { NextRequest, NextResponse } from "next/server";
 
 import { registrar } from "@/lib/auditoria";
@@ -8,7 +8,7 @@ import { actividadParaExportar, rangoValido } from "@/server/auditoria/actividad
 /**
  * Descarga de la actividad del equipo en CSV, para guardarla fuera del sistema.
  *
- * Solo `owner`, y la propia descarga queda en el registro: quien se lleva
+ * Solo `tecnico.actividad` (developer), y la propia descarga queda en el registro: quien se lleva
  * el historial de todos también deja constancia de que lo hizo.
  */
 
@@ -31,7 +31,7 @@ function celda(valor: unknown): string {
 export async function GET(peticion: NextRequest) {
   const usuario = await obtenerUsuarioActual();
 
-  if (!usuario || !esRolTotal(usuario.rol)) {
+  if (!usuario || !usuarioTienePermiso(usuario, "tecnico.actividad")) {
     return new NextResponse("No autorizado", { status: 403 });
   }
 

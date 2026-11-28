@@ -14,7 +14,7 @@ import { puedeGestionarAgentes } from "@/server/ia/permisos-conocimiento";
 /**
  * Carga y mantenimiento de la base de conocimiento de los agentes.
  *
- * Quien tiene `ia.administrar` gestiona todos los agentes. Contabilidad, con
+ * Quien tiene `tecnico.conocimiento` (developer) gestiona todos los agentes. Contabilidad, con
  * `contabilidad.configurar`, gestiona solo `agente_contabilidad`: es su
  * normativa y es quien sabe cuándo cambia una ley. `admin`, con
  * `ia.conocimiento`, gestiona solo `agente_estudiante`.

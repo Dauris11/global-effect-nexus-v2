@@ -38,6 +38,7 @@ export const proveedorSolicitudes: Proveedor = {
         creadoEn: new Date(s.creada),
         bloquea: true,
         subtipo: s.tipo,
+        contextoGrupo: s.estudiante ?? s.solicitante ?? undefined,
         montoUsd: s.monto ?? undefined,
         accion: { label: decide === "completar" ? "Completar" : decide === "tomar" ? "Tomar" : "Aprobar", kind: "inline", action: `solicitud:${decide ?? "aprobar"}` },
         accionSecundaria: puedeRechazar ? { label: "Rechazar", action: "solicitud:rechazar" } : undefined,

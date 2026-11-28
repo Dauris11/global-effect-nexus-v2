@@ -28,7 +28,7 @@ import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { FilaChips } from "@/components/ui/fila-chips";
 import { StatCard } from "@/components/ui/stat-card";
 import { Link } from "@/i18n/navigation";
-import { requerirRol } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import { claveI18n, partirAccion } from "@/lib/actividad";
 import { TARJETA } from "@/lib/paleta";
 import {
@@ -78,7 +78,7 @@ export default async function PaginaActividad({
   const { locale } = await params;
   const consulta = await searchParams;
 
-  await requerirRol(["owner"]);
+  await requerirPermiso("tecnico.actividad");
 
   const dias = rangoValido(consulta.dias);
   const usuarioId = consulta.usuario && UUID.test(consulta.usuario) ? consulta.usuario : null;
@@ -135,12 +135,6 @@ export default async function PaginaActividad({
 
   return (
     <div className="animate-entrada space-y-8 pb-10">
-      <Button asChild variant="outline" size="sm">
-        <Link href="/configuracion">
-          <ChevronLeft className="size-4" />
-          {t("back")}
-        </Link>
-      </Button>
 
       <EncabezadoPagina
         titulo={t("title")}

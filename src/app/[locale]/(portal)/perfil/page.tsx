@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Mail, Palette, ShieldCheck, User, UserCheck } from "lucide-react";
+import { Palette, ShieldCheck, User } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { SelectorApariencia } from "@/components/apariencia/selector-apariencia";
 import { FormularioPerfil } from "@/components/perfil/formulario-perfil";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mensajesCliente } from "@/i18n/mensajes-cliente";
 import { requerirUsuario } from "@/lib/auth";
@@ -49,49 +50,29 @@ export default async function PaginaPerfil({
 
   return (
     <div className="animate-entrada space-y-8 pb-10">
-      {/* Banner / Header del Perfil */}
-      <div className="relative overflow-hidden rounded-hoja border border-linea bg-card p-6 sm:p-8 text-tinta shadow-card">
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="relative size-20 sm:size-24 shrink-0 rounded-2xl overflow-hidden ring-1 ring-linea bg-surface-2 flex items-center justify-center text-3xl font-extrabold text-tinta">
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarUrl}
-                alt={usuario.nombre}
-                className="size-full object-cover"
-              />
-            ) : (
-              <span>{usuario.nombre.trim().charAt(0).toUpperCase()}</span>
-            )}
-          </div>
+      {/* Encabezado simple, sin banner: avatar, nombre, rol y correo. */}
+      <header className="flex items-center gap-4">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-2 text-2xl font-semibold text-tinta ring-1 ring-linea">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt={usuario.nombre} className="size-full object-cover" />
+          ) : (
+            <span>{usuario.nombre.trim().charAt(0).toUpperCase()}</span>
+          )}
+        </div>
 
-          <div className="space-y-1.5 min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-marca-50 text-marca-700 border border-linea">
-                <ShieldCheck className="size-3.5" />
-                {rolTraducido}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-surface-2 text-tinta-2 border border-linea">
-                <UserCheck className="size-3" />
-                {t("accountActive")}
-              </span>
-            </div>
-            
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-tinta truncate">
-              {usuario.nombre}
-            </h1>
-            
-            <p className="text-tinta-2 text-xs sm:text-sm font-mono flex items-center gap-2">
-              <Mail className="size-3.5 text-tinta-3 shrink-0" />
-              {/* `truncate` como el nombre de arriba: un correo no tiene
-                  espacios, así que sin esto un correo institucional largo se
-                  salía del banner en móvil sin siquiera puntos suspensivos. */}
-              <span className="truncate">{usuario.email}</span>
-            </p>
+        <div className="min-w-0 space-y-1">
+          <h1 className="truncate text-page font-semibold tracking-tight text-tinta">{usuario.nombre}</h1>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <Badge variant="marca">
+              <ShieldCheck />
+              {rolTraducido}
+            </Badge>
+            {/* `truncate`: un correo no tiene espacios y sin esto se saldría en móvil. */}
+            <span className="truncate text-sm text-tinta-2">{usuario.email}</span>
           </div>
         </div>
-      </div>
-
+      </header>
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Formulario de Edición de Perfil (Ocupa 2 columnas en pantallas medianas+) */}

@@ -312,7 +312,7 @@ export async function listarCandidatosParticipantes(filtro?: {
          -- El estudiante se convoca por su ficha (lista de abajo): por su
          -- cuenta salía dos veces y, elegido así, la reunión no quedaba
          -- ligada a su expediente.
-         AND coalesce(r.nombre, '') <> 'estudiante'
+         AND coalesce(r.nombre, '') NOT IN ('estudiante', 'developer')
        ORDER BY u.nombre ASC`
     ),
     soloPropioEstudiante

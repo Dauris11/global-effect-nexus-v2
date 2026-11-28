@@ -41,7 +41,7 @@ export default defineConfig({
     colorScheme: "light",
     // El portal se audita en español (sin prefijo): sin esto Chromium pide en-US y la app responde en /en.
     locale: "es-DO",
-    storageState: "e2e/.auth/super_admin.json",
+    storageState: "e2e/.auth/owner.json",
     launchOptions: { executablePath: chromiumLocal() },
   },
   webServer: {

@@ -8,7 +8,7 @@ import { esPermiso, esRol, permisosEfectivos } from "@/lib/rbac";
  * endpoint de depuración. Quien la llama comprueba que la sesión real sea owner; nunca se usa
  * para ejecutar acciones en nombre de otra persona.
  */
-export async function usuarioSesionDe(userId: string): Promise<UsuarioSesion | null> {
+export async function usuarioSesionDe(userId: string, opciones: { soloActivo?: boolean } = {}): Promise<UsuarioSesion | null> {
   const f = await consultarUna<{
     id: string; email: string; nombre: string; idioma: string; activo: boolean; foto_url: string | null;
     rol_nombre: string; auth_user_id: string | null;
@@ -23,13 +23,15 @@ export async function usuarioSesionDe(userId: string): Promise<UsuarioSesion | n
   );
 
   if (!f || !esRol(f.rol_nombre)) return null;
+  // «Ver como usuario…» no entra a cuentas desactivadas; la vista de equipo de dirección sí las lee.
+  if (opciones.soloActivo && !f.activo) return null;
 
   const excepciones = f.excepciones.flatMap((e) => (esPermiso(e.permiso) ? [{ permiso: e.permiso, concedido: e.concedido }] : []));
   const permisosRol = f.permisos_rol.filter(esPermiso);
 
   return {
     id: f.id, email: f.email, nombre: f.nombre, idioma: f.idioma === "en" ? "en" : "es",
-    rol: f.rol_nombre, rolReal: f.rol_nombre, authUserId: f.auth_user_id ?? "", fotoUrl: f.foto_url,
+    rol: f.rol_nombre, rolReal: f.rol_nombre, realId: f.id, realNombre: f.nombre, suplantando: false, authUserId: f.auth_user_id ?? "", fotoUrl: f.foto_url,
     excepciones, permisosRol,
     permisos: permisosEfectivos({ rol: f.rol_nombre, excepciones, permisosRol }),
   };

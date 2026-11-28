@@ -50,7 +50,7 @@ export default async function PaginaIA({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const usuario = await requerirPermiso("ia.administrar");
+  const usuario = await requerirPermiso("tecnico.ia");
 
   const [t, tRoles, resumen, porAgente, porModelo, porDia, mayores, listaCuotas, listaPrecios, listaAgentes, acciones, cadena, mensajes] =
     await Promise.all([

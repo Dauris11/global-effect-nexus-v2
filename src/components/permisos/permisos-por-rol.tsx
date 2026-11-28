@@ -1,5 +1,6 @@
 "use client";
 
+import { ROLE_DESCRIPTION } from "@/lib/roles";
 import { esRolTotal } from "@/lib/rbac";
 import { useState, useTransition } from "react";
 import {
@@ -43,6 +44,7 @@ const ICONO_ROL: Record<Rol, LucideIcon> = {
 export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
   const t = useTranslations("permisosAdmin");
   const tRoles = useTranslations("roles");
+  const tRaiz = useTranslations();
   const editables = roles.filter((r) => !esRolTotal(r.rol));
 
   const [seleccionado, setSeleccionado] = useState<Rol>(
@@ -94,6 +96,9 @@ export function PermisosPorRol({ roles }: { roles: PermisosDeRol[] }) {
           />
         ))}
       </FilaChips>
+
+      {/* Qué es el rol, con las mismas palabras de «Ver como» y Personal. */}
+      <p className="texto-meta">{tRaiz(ROLE_DESCRIPTION[seleccionado])}</p>
 
       <VistaModulos rol={seleccionado} permisos={actuales} />
 

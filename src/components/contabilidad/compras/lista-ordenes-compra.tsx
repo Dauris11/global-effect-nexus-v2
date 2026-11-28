@@ -61,7 +61,7 @@ export function ListaOrdenesCompra({
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {ordenes.map((oc) => (
             <tr key={oc.id} className="hover:bg-muted/50 dark:hover:bg-surface-2">
-              <td className="px-4 py-3 font-mono font-medium text-tinta-2 dark:text-tinta-2">
+              <td className="folio px-4 py-3">
                 OC-{String(oc.numero).padStart(5, "0")}
               </td>
               <td className="px-4 py-3 text-xs text-tinta-2 dark:text-tinta-3">{oc.fecha}</td>

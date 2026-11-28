@@ -9,7 +9,7 @@ import { ROLES } from "@/lib/rbac";
 
 /**
  * Escrituras del tablero de Elly AI: cuotas, precios y configuración de agentes.
- * Solo `ia.administrar`, y todo queda en `audit_log`.
+ * Solo `tecnico.ia` (developer), y todo queda en `audit_log`.
  */
 
 export type EstadoIAAdmin = {
@@ -29,7 +29,7 @@ export async function guardarCuota(
   _previo: EstadoIAAdmin,
   datos: FormData,
 ): Promise<EstadoIAAdmin> {
-  const admin = await requerirPermiso("ia.administrar");
+  const admin = await requerirPermiso("tecnico.ia");
 
   const alcance = String(datos.get("alcance") ?? "");
   const quien = String(datos.get("quien") ?? "").trim().toLowerCase();
@@ -87,7 +87,7 @@ export async function guardarCuota(
 
 /** Levanta el tope de una cuota durante N días (la anulación del administrador). */
 export async function anularCuota(datos: FormData): Promise<void> {
-  const admin = await requerirPermiso("ia.administrar");
+  const admin = await requerirPermiso("tecnico.ia");
   const id = String(datos.get("id") ?? "");
   const dias = Math.min(Math.max(Math.trunc(numero(datos.get("dias")) || 7), 1), 90);
 
@@ -111,7 +111,7 @@ export async function anularCuota(datos: FormData): Promise<void> {
 }
 
 export async function eliminarCuota(datos: FormData): Promise<void> {
-  const admin = await requerirPermiso("ia.administrar");
+  const admin = await requerirPermiso("tecnico.ia");
   const id = String(datos.get("id") ?? "");
 
   const fila = await consultarUna<{ id: string }>(
@@ -136,7 +136,7 @@ export async function guardarPrecio(
   _previo: EstadoIAAdmin,
   datos: FormData,
 ): Promise<EstadoIAAdmin> {
-  const admin = await requerirPermiso("ia.administrar");
+  const admin = await requerirPermiso("tecnico.ia");
 
   const modelo = String(datos.get("modelo") ?? "").trim().slice(0, 80);
   const entrada = numero(datos.get("entrada"));
@@ -182,7 +182,7 @@ export async function guardarAgente(
   _previo: EstadoIAAdmin,
   datos: FormData,
 ): Promise<EstadoIAAdmin> {
-  const admin = await requerirPermiso("ia.administrar");
+  const admin = await requerirPermiso("tecnico.ia");
 
   const clave = String(datos.get("clave") ?? "");
   const instrucciones = String(datos.get("instrucciones") ?? "").trim().slice(0, 4000);

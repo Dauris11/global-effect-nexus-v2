@@ -3,8 +3,9 @@
 import { revalidatePath, updateTag } from "next/cache";
 
 import { requerirPermiso, requerirUsuario } from "@/lib/auth";
-import { consultar, enTransaccion } from "@/lib/db";
+import { consultar, consultarUna, enTransaccion } from "@/lib/db";
 import { diaEnRD } from "@/lib/fechas";
+import { TIPOS_TECNICOS } from "@/lib/prioridades/catalogo";
 import { MARCADOR_CONFIGURADO } from "@/lib/prioridades/defaults";
 import { TIPOS_PRIORIDAD } from "@/lib/prioridades/types";
 import { esAccionSolicitud } from "@/lib/solicitudes";
@@ -114,7 +115,18 @@ export async function guardarResponsabilidades(userId: string, tipos: string[]):
   await requerirPermiso("usuarios.administrar");
   if (!UUID.test(userId)) return { ok: false, error: "invalido" };
 
-  const validos = [...new Set(tipos)].filter((t) => (TIPOS_PRIORIDAD as readonly string[]).includes(t));
+  const persona = await consultarUna<{ rol: string }>(
+    `SELECT r.nombre AS rol FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.id = $1`,
+    [userId],
+  );
+  if (!persona) return { ok: false, error: "invalido" };
+
+  // Los tipos técnicos solo se le pueden marcar a un developer.
+  const validos = [...new Set(tipos)].filter(
+    (t) =>
+      (TIPOS_PRIORIDAD as readonly string[]).includes(t) &&
+      (persona.rol === "developer" || !(TIPOS_TECNICOS as readonly string[]).includes(t)),
+  );
 
   await enTransaccion(async (cliente) => {
     await cliente.query(`DELETE FROM responsabilidades_personal WHERE user_id = $1`, [userId]);

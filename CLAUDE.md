@@ -65,6 +65,10 @@ npm run db:seed        # y db:seed:usuarios · db:seed:operaciones · db:seed:po
     en `src/lib/rbac.ts`). Para decidir qué puede una PERSONA usa `usuarioTienePermiso(usuario, …)`, nunca
     `tienePermiso(rol, …)`, que es solo el reparto de fábrica. Las funciones fuera del rol (p. ej. dar clases de 360)
     se controlan por permiso (`docencia.impartir`), no por `rol ===`.
+    Lo TÉCNICO (`tecnico.ia|conocimiento|actividad|auditoria|parametros|dev_panel`, migración `0144`) es solo del
+    `developer`: `usuarioTienePermiso` se lo niega a todo otro rol, owner incluido. Etiquetas, colores y «Ver como» de
+    los roles salen de `src/lib/roles.ts`; las reglas de asignación (solo developer toca developer, siempre un owner
+    activo) de `validarCambioDeCuenta`.
 11. **Git:** todo se commitea y se sube directo a `main`, sin ramas ni PR. Antes
     de empujar, `git pull --rebase origin main` (hay más de una persona
     empujando). La base de Supabase es compartida: una migración y el código

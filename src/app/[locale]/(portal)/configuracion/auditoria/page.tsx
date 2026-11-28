@@ -19,7 +19,7 @@ import { EncabezadoPagina } from "@/components/ui/encabezado-pagina";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { requerirRol } from "@/lib/auth";
+import { requerirPermiso } from "@/lib/auth";
 import { fechaConHora } from "@/lib/fechas";
 import { TARJETA, VACIO } from "@/lib/paleta";
 import {
@@ -88,7 +88,7 @@ export default async function PaginaAuditoria({
     await searchParams;
   const idioma: Locale = locale === "en" ? "en" : "es";
 
-  await requerirRol(["owner"]);
+  await requerirPermiso("tecnico.auditoria");
 
   const t = await getTranslations({ locale, namespace: "audit" });
 
@@ -150,17 +150,6 @@ export default async function PaginaAuditoria({
 
   return (
     <div className="animate-entrada space-y-6">
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        className="transition-transform hover:-translate-x-0.5"
-      >
-        <Link href="/configuracion">
-          <ChevronLeft className="size-4" />
-          {t("back")}
-        </Link>
-      </Button>
 
       <EncabezadoPagina titulo={t("title")} />
 

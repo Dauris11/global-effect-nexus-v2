@@ -111,6 +111,9 @@ export function FilterBar({
     };
   }, [abierto]);
 
+  // Un solo selector no justifica un panel: se pinta en línea junto al buscador («Tipo: Todos»).
+  // Con 2 o más, o con contenido libre, sigue el panel «Más filtros».
+  const enLinea = selectores?.length === 1 && !moreFilters ? selectores[0] : null;
   const hayFiltros = Boolean(texto || hayChipActivo || moreActive > 0);
 
   return (
@@ -128,7 +131,23 @@ export function FilterBar({
           />
         </div>
 
-        {(selectores?.length || moreFilters) && (
+        {enLinea && (
+          <label className="text-label inline-flex items-center gap-2">
+            <span className="text-tinta-2">{enLinea.label}:</span>
+            <select
+              value={parametros.get(enLinea.param) ?? ""}
+              onChange={(e) => escribir(enLinea.param, e.target.value)}
+              className="text-body h-9 max-w-48 rounded-control border border-linea-fuerte bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">{enLinea.todos}</option>
+              {enLinea.opciones.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {!enLinea && (selectores?.length || moreFilters) && (
           <div ref={contenedor} className="relative">
             <button
               type="button"

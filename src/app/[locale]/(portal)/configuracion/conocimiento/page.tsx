@@ -39,7 +39,7 @@ export async function generateMetadata({
 }
 
 /**
- * Base de conocimiento de los agentes. `ia.administrar` ve y carga para todos;
+ * Base de conocimiento de los agentes. `tecnico.conocimiento` (developer) ve y carga para todos;
  * Contabilidad (`contabilidad.configurar`) solo para `agente_contabilidad`, que
  * es su normativa y la que ella sabe cuándo cambia; `admin` (`ia.conocimiento`)
  * solo para `agente_estudiante`.

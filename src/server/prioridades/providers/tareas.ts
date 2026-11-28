@@ -1,4 +1,3 @@
-import { esRolTotal } from "@/lib/rbac";
 import { consultar } from "@/lib/db";
 import type { PrioridadTarea } from "@/lib/prioridades/types";
 
@@ -40,7 +39,7 @@ export const proveedorTareas: Proveedor = {
               )
         ORDER BY t.fecha_limite
         LIMIT 300`,
-      [userId, esRolTotal(rol), hoy],
+      [userId, rol === "owner", hoy],
     );
 
     // Una tarea con varias personas asignadas sale una vez; si una soy yo, gana la mía.
@@ -58,6 +57,7 @@ export const proveedorTareas: Proveedor = {
         titulo: `Terminar «${f.titulo}»`,
         contexto: [f.proyecto ?? "Tarea", mia ? null : f.asignado].filter(Boolean).join(" · "),
         modulo: "tareas",
+        contextoGrupo: f.proyecto ?? undefined,
         href: "/administrativo/tareas",
         venceEn: diaComoFecha(f.limite),
         creadoEn: new Date(f.creada),

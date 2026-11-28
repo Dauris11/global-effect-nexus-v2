@@ -1,4 +1,4 @@
-import { esRolTotal } from "@/lib/rbac";
+import { TIPOS_TECNICOS } from "@/lib/prioridades/catalogo";
 import {
   DIAS_PARA_ESCALAR,
   DIRECCION_VE_DE_TODOS,
@@ -29,14 +29,17 @@ export function esEscalado(item: PrioridadItem, ctx: ContextoPrioridades, diaDe:
  * Regla de visibilidad (una sola, para el motor y para las pruebas). Un ítem aparece si:
  *   (a) `responsableId === userId`; o
  *   (b) su tipo está en MIS responsabilidades y no tiene responsable asignado; o
- *   (c) es escalado y soy owner.
+ *   (c) es escalado y soy owner (el developer NO: no recibe prioridades de negocio).
  * Más dos reglas de alcance: lo universal propio (tareas, mi solicitud respondida) y lo que
  * dirección ve de todas las personas.
  */
 export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: DiaDe): boolean {
+  // Lo técnico es solo del developer, aunque otro rol lo tenga marcado en «Qué atiende».
+  if (TIPOS_TECNICOS.includes(item.tipo)) return ctx.rol === "developer" && ctx.responsabilidades.has(item.tipo);
+
   if (item.responsableId === ctx.userId) return true;
 
-  if (esRolTotal(ctx.rol)) {
+  if (ctx.rol === "owner") {
     if (DIRECCION_VE_DE_TODOS.includes(item.tipo)) return true;
     if (esEscalado(item, ctx, diaDe)) return true;
   }
@@ -46,7 +49,7 @@ export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: 
   if (!ctx.responsabilidades.has(item.tipo)) return false;
 
   // A dirección solo le llegan las compras por pagar de monto alto; el resto es de contabilidad.
-  if (esRolTotal(ctx.rol) && item.tipo === "compra_aprobada_por_pagar") {
+  if (ctx.rol === "owner" && item.tipo === "compra_aprobada_por_pagar") {
     return (item.montoUsd ?? 0) > UMBRAL_COMPRA_DIRECCION_USD;
   }
 
@@ -62,5 +65,5 @@ export function esVisible(item: PrioridadItem, ctx: ContextoPrioridades, diaDe: 
 export function filtrarVisibles(items: readonly PrioridadItem[], ctx: ContextoPrioridades, diaDe: DiaDe): PrioridadItem[] {
   return items
     .filter((i) => esVisible(i, ctx, diaDe))
-    .map((i) => (esRolTotal(ctx.rol) && i.responsableId !== ctx.userId && esEscalado(i, ctx, diaDe) ? { ...i, escalado: true } : i));
+    .map((i) => (ctx.rol === "owner" && i.responsableId !== ctx.userId && esEscalado(i, ctx, diaDe) ? { ...i, escalado: true } : i));
 }

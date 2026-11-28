@@ -60,6 +60,10 @@ export const TIPOS_PRIORIDAD = [
   "evidencia_faltante",
   // transporte
   "viaje_del_turno",
+  // técnicas: SOLO las recibe el developer (módulo «tecnico»)
+  "error_produccion",
+  "job_fallido",
+  "integracion_caida",
 ] as const;
 
 export type TipoPrioridad = (typeof TIPOS_PRIORIDAD)[number];
@@ -103,6 +107,8 @@ export interface PrioridadItem {
   cantidad?: number;
   /** A qué clase/grupo pertenece, para contar grupos distintos. */
   grupoClave?: string;
+  /** Nombre natural de la clase/proyecto/persona al que pertenece el ítem («Liderazgo I»). Solo se agrupa por él; si falta, el ítem va suelto. */
+  contextoGrupo?: string;
   /** Marcado por el motor: ítem de otro responsable con más de 3 días vencido (lo ve dirección). */
   escalado?: boolean;
 }

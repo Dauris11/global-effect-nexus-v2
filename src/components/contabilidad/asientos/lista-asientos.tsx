@@ -2,6 +2,7 @@ import { Eye } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { Folio } from "@/components/app/folio";
 import { StatusBadge } from "@/components/app/status-badge";
 import { DialogoRevertir, BotonProcesar } from "@/components/contabilidad/asientos/acciones";
 import { LineasPanel } from "@/components/contabilidad/asientos/lineas-panel";
@@ -82,7 +83,7 @@ export async function ListaAsientos({
                     <PanelFila
                       disparador={
                         <span className="block">
-                          <span className="block font-mono font-semibold tabular-nums">{numero(fila)}</span>
+                          <Folio className="block">{numero(fila)}</Folio>
                           <span className="text-meta block">{fechaCorta(fila.fecha, idioma)}</span>
                         </span>
                       }
@@ -166,7 +167,7 @@ export async function ListaAsientos({
               className="flex items-start justify-between gap-3 p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="min-w-0 space-y-1">
-                <span className="block font-mono font-semibold tabular-nums">{numero(fila)}</span>
+                <Folio className="block">{numero(fila)}</Folio>
                 <span className="block truncate text-sm">{fila.concepto}</span>
                 <span className="text-meta block truncate">
                   {fechaCorta(fila.fecha, idioma)} · {t(`tipo.${fila.tipo}`)}

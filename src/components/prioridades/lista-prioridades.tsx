@@ -17,6 +17,18 @@ import { deshacerPosponer, posponerPrioridad, resolverPrioridad, type ResultadoP
 const VENTANA_DESHACER_MS = 5000;
 /** Duración de la salida del ítem (docs: 160 ms). */
 const SALIDA_MS = 160;
+/** Vencidas que se muestran abiertas antes de «Ver las N restantes». */
+const MAX_VENCIDAS_VISIBLES = 5;
+/** Tipos que tienen frase natural en `priorities.row.group.*`; los demás nunca se juntan. */
+const TIPOS_AGRUPABLES: ReadonlySet<string> = new Set([
+  "entrega_por_calificar",
+  "tarea_vencida",
+  "tarea_hoy",
+  "tarea_semana",
+  "solicitud_por_decidir",
+  "solicitud_pendiente_direccion",
+  "alta_expediente_por_revisar",
+]);
 
 // El color sale del grupo en el que está el ítem: vencido rojo, hoy ámbar, esta semana marca.
 const TOKEN_DE_GRUPO: Record<GrupoPrioridad, TokenEstado> = { vencido: "danger", hoy: "warning", semana: "info", adelante: "neutral" };
@@ -98,6 +110,44 @@ export function ListaDePrioridades({ lista, soloLectura = false }: { lista: List
   const posponer = (item: PrioridadItem, cuando: "manana" | "semana") =>
     lanzar(item, t("postponedToast", { titulo: item.titulo }), () => posponerPrioridad(item.id, cuando), () => deshacerPosponer(item.id));
 
+  // Una frase natural por bloque: «6 entregas esperando nota en Liderazgo I». Sin frase para el tipo, no se agrupa.
+  const pintarBloque = (bloque: PrioridadItem[], g: GrupoPrioridad) => {
+    if (bloque.length < 2) return bloque.map((i) => pintarFila(i, g));
+    const n = bloque.reduce((suma, i) => suma + (i.cantidad ?? 1), 0);
+
+    return (
+      <li key={`${bloque[0].tipo}:${bloque[0].contextoGrupo}`} className="list-none">
+        <details className="group/bloque">
+          <summary className="text-label flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 hover:bg-muted/50">
+            <ChevronRight aria-hidden className="size-4 transition-transform group-open/bloque:rotate-90" />
+            {t(`row.group.${bloque[0].tipo}`, { n, contexto: bloque[0].contextoGrupo ?? "" })}
+          </summary>
+          <ul className="divide-y divide-linea border-t border-linea">{bloque.map((i) => pintarFila(i, g))}</ul>
+        </details>
+      </li>
+    );
+  };
+
+  // Las vencidas se ven una a una (hasta 5 filas o bloques); el resto espera tras «Ver las N restantes».
+  const pintarBloques = (bloques: PrioridadItem[][], g: GrupoPrioridad) => {
+    if (g !== "vencido" || bloques.length <= MAX_VENCIDAS_VISIBLES) return bloques.map((b) => pintarBloque(b, g));
+    const resto = bloques.slice(MAX_VENCIDAS_VISIBLES);
+    const nResto = resto.reduce((suma, b) => suma + b.length, 0);
+
+    return [
+      ...bloques.slice(0, MAX_VENCIDAS_VISIBLES).map((b) => pintarBloque(b, g)),
+      <li key="vencidas-resto" className="list-none">
+        <details className="group/resto">
+          <summary className="text-label flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 text-marca-600 hover:bg-muted/50 group-open/resto:hidden">
+            <ChevronRight aria-hidden className="size-4" />
+            {t("row.seeRemaining", { n: nResto })}
+          </summary>
+          <ul className="divide-y divide-linea border-t border-linea">{resto.map((b) => pintarBloque(b, g))}</ul>
+        </details>
+      </li>,
+    ];
+  };
+
   const pintarFila = (item: PrioridadItem, grupo?: GrupoPrioridad) => (
     <Fila
       key={item.id}
@@ -126,21 +176,7 @@ export function ListaDePrioridades({ lista, soloLectura = false }: { lista: List
 
         return (
           <Seccion key={g} id={`prio-${g}`} abierta={g !== "adelante"} titulo={t(`groups.${g}`)} cuenta={items.length} token={TOKEN_DE_GRUPO[g]}>
-            {agruparPorTipo(lista.grupos[g]).map((bloque) =>
-              bloque.length >= 3 ? (
-                <li key={bloque[0].tipo} className="list-none">
-                  <details className="group/bloque">
-                    <summary className="text-label flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 hover:bg-muted/50">
-                      <ChevronRight aria-hidden className="size-4 transition-transform group-open/bloque:rotate-90" />
-                      {t("row.groupOf", { n: bloque.filter((i) => !ocultos.has(i.id)).length, tipo: t(`types.${bloque[0].tipo}`) })}
-                    </summary>
-                    <ul className="divide-y divide-linea border-t border-linea">{bloque.map((i) => pintarFila(i, g))}</ul>
-                  </details>
-                </li>
-              ) : (
-                bloque.map((i) => pintarFila(i, g))
-              ),
-            )}
+            {pintarBloques(agruparPorContexto(lista.grupos[g].filter((i) => !ocultos.has(i.id))), g)}
           </Seccion>
         );
       })}
@@ -171,10 +207,16 @@ function Seccion({ id, abierta, titulo, cuenta, token, children }: { id: string;
   );
 }
 
-/** Los ítems del mismo tipo, juntos y en el orden de su primera aparición. */
-function agruparPorTipo(items: readonly PrioridadItem[]): PrioridadItem[][] {
+/**
+ * Junta solo lo del mismo tipo Y del mismo contexto (clase, proyecto, persona), en el orden de su
+ * primera aparición. Sin contexto no se junta nada: «10 tareas vencidas» sin decir de qué no ayuda.
+ */
+function agruparPorContexto(items: readonly PrioridadItem[]): PrioridadItem[][] {
   const mapa = new Map<string, PrioridadItem[]>();
-  for (const i of items) mapa.set(i.tipo, [...(mapa.get(i.tipo) ?? []), i]);
+  items.forEach((i, pos) => {
+    const clave = i.contextoGrupo && TIPOS_AGRUPABLES.has(i.tipo) ? `${i.tipo}\u0000${i.contextoGrupo}` : `suelto\u0000${pos}`;
+    mapa.set(clave, [...(mapa.get(clave) ?? []), i]);
+  });
 
   return [...mapa.values()];
 }
