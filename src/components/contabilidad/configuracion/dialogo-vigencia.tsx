@@ -49,7 +49,7 @@ export function DialogoVigencia({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="min-h-11">
+        <Button variant="outline" size="lg">
           <CalendarPlus className="size-4" />
           {t("abrir")}
         </Button>

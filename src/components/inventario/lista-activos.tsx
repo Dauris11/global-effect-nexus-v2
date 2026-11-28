@@ -17,6 +17,8 @@ import {
 import { useTranslations } from "next-intl";
 
 import { StatusBadge } from "@/components/app/status-badge";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -53,6 +55,7 @@ export function ListaActivos({
 }) {
   const t = useTranslations("admin.inventario");
   const tl = useTranslations("listas");
+  const ta = useTranslations("appUi");
   const router = useRouter();
   const [seleccionado, setSeleccionado] = useState<ActivoInventario | null>(null);
   const [eliminando, setEliminando] = useState(false);
@@ -83,7 +86,7 @@ export function ListaActivos({
 
   return (
     <>
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         {/* ≥ md: tabla densa */}
         <table className="hidden w-full text-sm md:table">
           <thead className="border-b border-linea text-left texto-meta">
@@ -132,19 +135,23 @@ export function ListaActivos({
                   <td className="text-meta max-w-48 truncate px-4 py-1.5">{a.ubicacion}</td>
                   <td className="text-meta max-w-48 truncate px-4 py-1.5">{a.responsableNombre ?? t("sinCustodio")}</td>
                   <td className="px-4 py-1.5 text-right font-mono text-sm tabular-nums">{dinero(a.valorEstimado)}</td>
-                  {/* Acciones al pasar el ratón (o con el foco), por encima del botón que cubre la fila. */}
-                  <td className="relative z-10 w-24 px-2 py-1.5 text-right">
-                    <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                      <Button asChild variant="ghost" size="icon" aria-label={t("verFichaTitulo")}>
-                        <Link href={`/administrativo/inventario/${a.id}`}><Eye /></Link>
-                      </Button>
-                      {puedeEscribir && (
-                        <Button asChild variant="ghost" size="icon" aria-label={t("editarFichaTitulo")}>
-                          <Link href={`/administrativo/inventario/${a.id}/editar`}><PencilLine /></Link>
-                        </Button>
-                      )}
-                    </span>
-                  </td>
+                  <CeldaAcciones>
+                    <Button asChild size="sm" variant="secondary">
+                      <Link href={`/administrativo/inventario/${a.id}`}>{ta("menu.row.view")}</Link>
+                    </Button>
+                    {puedeEscribir && (
+                      <MenuMasAcciones
+                        compacto
+                        acciones={[
+                          {
+                            etiqueta: ta("menu.row.edit"),
+                            icono: <PencilLine />,
+                            href: `/administrativo/inventario/${a.id}/editar`,
+                          },
+                        ]}
+                      />
+                    )}
+                  </CeldaAcciones>
                 </tr>
               );
             })}

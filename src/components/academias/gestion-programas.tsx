@@ -165,7 +165,6 @@ export function GestionProgramas({
             type="button"
             size="sm"
             onClick={() => setEditando("nuevo")}
-            className="transition-transform duration-150 active:scale-95"
           >
             <Plus className="size-3.5" />
             {t("programs.new")}
@@ -275,11 +274,11 @@ function Ficha({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={alEditar}
             title={t("programs.edit")}
             aria-label={t("programs.edit")}
-            className="size-8 shrink-0"
+            className="shrink-0"
           >
             <Pencil className="size-3.5" />
           </Button>
@@ -354,7 +353,6 @@ function DialogoBorrado({ fila }: { fila: AcademiaFila }) {
         variant="ghost"
         size="sm"
         onClick={() => setAbierto(true)}
-        className="transition-transform duration-150 active:scale-95"
       >
         <Trash2 className="size-3.5" />
         {t("programs.delete")}
@@ -581,7 +579,6 @@ function Formulario({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

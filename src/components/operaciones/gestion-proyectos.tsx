@@ -201,11 +201,11 @@ function Tarjeta({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={alEditar}
             title={t("editProject.edit")}
             aria-label={t("editProject.edit")}
-            className="size-7 shrink-0"
+            className="shrink-0"
           >
             <Pencil className="size-3.5" />
           </Button>
@@ -215,11 +215,11 @@ function Tarjeta({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={alEmpujar}
             title={t(`projectStatus.${siguiente}` as never)}
             aria-label={t(`projectStatus.${siguiente}` as never)}
-            className="size-7 shrink-0"
+            className="shrink-0"
           >
             <ChevronRight className="size-3.5" />
           </Button>
@@ -383,7 +383,6 @@ function FormularioProyecto({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

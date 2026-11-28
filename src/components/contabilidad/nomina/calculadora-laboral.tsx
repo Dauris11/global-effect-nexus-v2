@@ -124,7 +124,7 @@ export function CalculadoraLaboral() {
           </label>
         </div>
 
-        <Button type="submit" className="bg-marca-500 hover:bg-marca-600 text-white">
+        <Button type="submit">
           Recalcular liquidación
         </Button>
       </form>

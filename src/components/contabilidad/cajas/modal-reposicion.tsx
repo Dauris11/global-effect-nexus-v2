@@ -135,9 +135,9 @@ export function ModalReposicionCaja({
         }}
       >
         <DialogTrigger asChild>
-          <Button
+          <Button size="md"
             variant="outline"
-            className="h-9 whitespace-nowrap px-3.5 disabled:cursor-not-allowed disabled:opacity-45"
+            className="whitespace-nowrap px-3.5 disabled:cursor-not-allowed disabled:opacity-45"
             disabled={caja.estado !== "activa" || porReponer <= 0}
             title={porReponer <= 0 ? t("sinMontoPorReponer") : undefined}
           >

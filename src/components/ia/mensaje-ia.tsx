@@ -9,6 +9,7 @@ import { TarjetaAccionIA, type TarjetaAccion } from "@/components/ia/tarjeta-acc
 import { AiOrb, type EstadoOrbe } from "@/components/ui/ai-orb";
 import { cn } from "@/lib/utils";
 import type { AccionSugerida, MensajeWidget } from "@/server/ia/asistente-global";
+import { Button } from "@/components/ui/button";
 
 /** Un paso de herramienta que el agente dio mientras respondía. */
 export type PasoVisible = {
@@ -73,14 +74,15 @@ export function MensajeIA({
             <p className="text-tinta-2 text-xs font-medium">
               {t("accionIdentificada")} · {mensaje.accion.etiqueta}
             </p>
-            <button
+            <Button
               type="button"
+              size="lg"
               onClick={() => alNavegar(mensaje.accion!)}
-              className="bg-marca-500 hover:bg-marca-600 focus-visible:ring-ring mt-2 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-control text-sm font-semibold text-white outline-none transition-colors focus-visible:ring-2 active:scale-[0.98]"
+              className="mt-2 w-full"
             >
               {t("abrirPantalla")}
               <ArrowUpRight className="size-4" />
-            </button>
+            </Button>
           </div>
         )}
 

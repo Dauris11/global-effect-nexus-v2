@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { EmptyState } from "@/components/app/empty-state";
 import { StatusBadge } from "@/components/app/status-badge";
 import { BotonNuevoPatrocinador, PanelPatrocinador } from "@/components/patrocinadores/panel-patrocinador";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
@@ -36,6 +38,7 @@ export function ListaPatrocinadores({
   const t = useTranslations("sponsors");
   const tl = useTranslations("listas");
   const tc = useTranslations("sponsorMail");
+  const ta = useTranslations("appUi");
   const [detalle, setDetalle] = useState<PatrocinadorFila | null>(null);
   const [edicion, setEdicion] = useState<PatrocinadorFila | null>(null);
 
@@ -53,7 +56,7 @@ export function ListaPatrocinadores({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         <table className="hidden w-full text-sm md:table">
           <thead className="texto-meta border-b border-linea text-left">
             <tr>
@@ -89,18 +92,17 @@ export function ListaPatrocinadores({
                 <td className="px-4 py-1.5">
                   <StatusBadge status={fila.estado} />
                 </td>
-                <td className="relative z-10 w-24 px-2 py-1.5 text-right">
-                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    <Button asChild variant="ghost" size="icon" aria-label={tl("patrocinadores.verDetalle")}>
-                      <Link href={`/patrocinadores/${fila.id}`}><Eye /></Link>
-                    </Button>
-                    {puedeEscribir && (
-                      <Button type="button" variant="ghost" size="icon" aria-label={t("edit")} onClick={() => setEdicion(fila)}>
-                        <PencilLine />
-                      </Button>
-                    )}
-                  </span>
-                </td>
+                <CeldaAcciones>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/patrocinadores/${fila.id}`}>{ta("menu.row.view")}</Link>
+                  </Button>
+                  {puedeEscribir && (
+                    <MenuMasAcciones
+                      compacto
+                      acciones={[{ etiqueta: ta("menu.row.edit"), icono: <PencilLine />, onClick: () => setEdicion(fila) }]}
+                    />
+                  )}
+                </CeldaAcciones>
               </tr>
             ))}
           </tbody>

@@ -27,6 +27,7 @@ function Button({
   size,
   asChild = false,
   cargando,
+  loading,
   disabled,
   children,
   onClick,
@@ -41,14 +42,21 @@ function Button({
      * el hijo es un enlace.
      */
     cargando?: boolean;
+    /** Nombre en inglés de `cargando` (docs/ux-rules.md): hacen lo mismo. */
+    loading?: boolean;
   }) {
   const Componente = asChild ? Slot : "button";
+
+  // Un botón solo de icono no tiene nombre para un lector de pantalla: es un fallo de accesibilidad.
+  if (process.env.NODE_ENV !== "production" && typeof size === "string" && size.startsWith("icon") && !props["aria-label"] && !props["aria-labelledby"]) {
+    console.warn("[Button] un botón de solo icono necesita `aria-label`.");
+  }
   const { pending: enviando } = useFormStatus();
   const [ocupado, setOcupado] = useState(false);
 
   // Solo el botón que envía se carga con el formulario; los de «Cancelar» (type="button") no.
   const envia = !asChild && (type === "submit" || type === undefined) && enviando;
-  const enCurso = !asChild && (cargando ?? (envia || ocupado));
+  const enCurso = !asChild && ((cargando ?? loading) ?? (envia || ocupado));
 
   const alPulsar = onClick
     ? (evento: React.MouseEvent<HTMLButtonElement>) => {
@@ -65,8 +73,8 @@ function Button({
     <Componente
       data-slot="button"
       // El test de UX (e2e/ux-guard) cuenta botones primarios: `default` es el CTA.
-      data-variant={variant == null || variant === "default" ? "primary" : variant}
-      className={cn(variantesBoton({ variant, size }), enCurso && "[&_svg:not([data-cargando])]:hidden", className)}
+      data-variant={variant == null || variant === "default" ? "primary" : variant === "outline" ? "secondary" : variant === "destructive" ? "danger" : variant}
+      className={cn(variantesBoton({ variant, size }), enCurso && "relative", className)}
       disabled={asChild ? undefined : disabled || enCurso}
       aria-busy={enCurso || undefined}
       type={asChild ? undefined : type}
@@ -75,8 +83,10 @@ function Button({
     >
       {enCurso ? (
         <>
-          <Loader2 data-cargando className="animate-spin" />
-          {children}
+          {/* El contenido sigue ocupando su sitio (invisible) y el spinner de 14 px se pone encima:
+              así el botón no cambia de ancho ni de alto al cargar. */}
+          <span className="invisible inline-flex items-center justify-center gap-2">{children}</span>
+          <Loader2 data-cargando aria-hidden className="absolute size-3.5 animate-spin" />
         </>
       ) : (
         children

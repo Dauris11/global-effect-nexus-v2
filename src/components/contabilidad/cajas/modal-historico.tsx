@@ -121,7 +121,7 @@ export function ModalHistoricoCaja({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="h-9 whitespace-nowrap px-3.5">
+        <Button size="md" variant="outline" className="whitespace-nowrap px-3.5">
           <History className="size-4" />
           {t("historico")}
         </Button>
@@ -133,13 +133,15 @@ export function ModalHistoricoCaja({
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-linea px-5 py-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             <DialogClose asChild>
-              <button
+              <Button
                 type="button"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full text-tinta-2 transition-colors hover:bg-muted hover:text-tinta focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={tCommon("close")}
+                title={tCommon("close")}
               >
                 <X className="size-4" />
-                <span className="sr-only">{tCommon("close")}</span>
-              </button>
+              </Button>
             </DialogClose>
             <DialogTitle className="truncate text-base font-semibold text-tinta">
               {t("historicoTitulo")}
@@ -152,7 +154,7 @@ export function ModalHistoricoCaja({
             size="sm"
             onClick={limpiarFiltros}
             disabled={!hayFiltros}
-            className="shrink-0 text-marca-700 hover:bg-marca-50 hover:text-marca-700 disabled:text-tinta-3"
+            className="shrink-0"
           >
             <RotateCcw className="size-3.5" />
             {t("limpiarFiltros")}

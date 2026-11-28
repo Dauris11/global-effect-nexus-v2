@@ -213,13 +213,9 @@ export function VistaHoy({
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {proyectoFiltro && (
-              <button
-                type="button"
-                onClick={() => setProyectoFiltro(null)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-linea-fuerte bg-card px-2.5 py-1 text-xs font-medium text-tinta-2 shadow-2xs transition-colors hover:bg-muted/50"
-              >
+              <Button type="button" variant="secondary" size="sm" onClick={() => setProyectoFiltro(null)}>
                 {t("clearProgramFilter")}
-              </button>
+              </Button>
             )}
             {proyectosAsignados.map((p) => {
               const activo = proyectoFiltro === p.id;
@@ -282,8 +278,7 @@ export function VistaHoy({
             <DialogTrigger asChild>
               <Button
                 variant="default"
-                size="sm"
-                className="min-h-[42px] bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
+                size="lg"
               >
                 <Plus className="mr-1.5 size-4" />
                 {t("newQuickTask")}
@@ -382,7 +377,6 @@ export function VistaHoy({
                   <Button
                     type="submit"
                     cargando={isPending}
-                    className="bg-marca-500 text-white hover:bg-marca-600"
                   >
                     {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                     {t("saveTask")}
@@ -399,8 +393,7 @@ export function VistaHoy({
             <DialogTrigger asChild>
               <Button
                 variant="outline"
-                size="sm"
-                className="min-h-[42px] border-linea-fuerte bg-card active:scale-95"
+                size="lg"
               >
                 <Clock className="mr-1.5 size-4 text-marca-500" />
                 {t("logActivity")}
@@ -482,7 +475,6 @@ export function VistaHoy({
                   <Button
                     type="submit"
                     cargando={isPending}
-                    className="bg-marca-500 text-white hover:bg-marca-600"
                   >
                     {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                     {t("saveLog")}
@@ -572,48 +564,36 @@ export function VistaHoy({
 
                 {/* Botón de Avance Operativo Táctil (Touch target >= 44px) */}
                 <div className="flex items-center gap-2 pt-2 sm:pt-0">
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon-lg"
                     onClick={() => {
                       setTareaSeleccionadaBitacora(tarea.id);
                       setDialogoBitacoraAbierto(true);
                     }}
                     title={t("logTimeForThis")}
-                    className="flex h-11 min-w-[44px] items-center justify-center rounded-lg border border-linea-fuerte bg-muted/50 px-2.5 text-xs text-tinta/70 hover:bg-muted active:scale-95"
+                    aria-label={t("logTimeForThis")}
                   >
                     <Clock className="size-4" />
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    size="lg"
+                    variant={tarea.estado === "por_hacer" || tarea.estado === "en_progreso" ? "primary" : "secondary"}
                     onClick={() => avanzarEstado(tarea)}
-                    disabled={actualizando}
-                    className={cn(
-                      "flex h-11 min-w-[130px] items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold shadow-xs transition-all active:scale-95",
-                      tarea.estado === "por_hacer" &&
-                        "bg-marca-500 text-white hover:bg-marca-600",
-                      tarea.estado === "en_progreso" &&
-                        "bg-marca-600 text-white hover:bg-marca-700",
-                      tarea.estado === "en_revision" &&
-                        "border border-marca-500 bg-marca-50 text-marca-600 hover:bg-marca-100",
-                      tarea.estado === "completada" &&
-                        "border border-linea-fuerte bg-muted text-tinta/70 hover:bg-muted/80",
-                    )}
+                    cargando={actualizando}
+                    className="min-w-[130px]"
                   >
-                    {actualizando ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <>
-                        <span className="size-2 rounded-full bg-current" />
-                        <span>
-                          {tarea.estado === "por_hacer" && t("statePorHacer")}
-                          {tarea.estado === "en_progreso" && t("stateEnProgreso")}
-                          {tarea.estado === "en_revision" && t("stateEnRevision")}
-                          {tarea.estado === "completada" && t("stateCompletada")}
-                        </span>
-                      </>
-                    )}
-                  </button>
+                    <span className="size-2 rounded-full bg-current" />
+                    <span>
+                      {tarea.estado === "por_hacer" && t("statePorHacer")}
+                      {tarea.estado === "en_progreso" && t("stateEnProgreso")}
+                      {tarea.estado === "en_revision" && t("stateEnRevision")}
+                      {tarea.estado === "completada" && t("stateCompletada")}
+                    </span>
+                  </Button>
                 </div>
               </div>
             );

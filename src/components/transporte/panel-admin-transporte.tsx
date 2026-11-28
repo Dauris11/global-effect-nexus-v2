@@ -134,7 +134,7 @@ export function PanelAdminTransporte({
                       variant={turno.activo ? "outline" : "default"}
                       disabled={cargando}
                       onClick={() => alternarTurno(turno)}
-                      className="h-8 gap-1.5 text-xs"
+                      className="gap-1.5"
                     >
                       {cargando ? (
                         <Loader2 className="size-3.5 animate-spin" />

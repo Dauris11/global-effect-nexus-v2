@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
 import { MAPA_ESTADOS, type TokenEstado } from "@/lib/status-map";
 import { DemoCliente } from "./demo-cliente";
+import { MatrizBotones } from "./matriz-botones";
 
 /**
  * Muestra de los componentes base (docs/ux-rules.md) y de TODOS los estados del mapa
@@ -29,7 +30,7 @@ export default function PaginaUiKit() {
         title="UI kit"
         subtitle="Componentes base y estados del sistema"
         primaryAction={<Button><Plus className="size-4" />Nuevo expediente</Button>}
-        secondaryActions={<Button variant="outline">Exportar</Button>}
+        secondaryActions={<Button variant="secondary">Exportar</Button>}
       />
 
       <section className="space-y-3">
@@ -46,14 +47,8 @@ export default function PaginaUiKit() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-section">Botones</h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm">Pequeño 32</Button>
-          <Button>Normal 36</Button>
-          <Button size="lg">Grande 44</Button>
-          <Button variant="outline">Secundario</Button>
-          <Button variant="ghost">Fantasma</Button>
-        </div>
+        <h2 className="text-section">Botones · variantes × tamaños × estados</h2>
+        <MatrizBotones />
       </section>
 
       <section className="space-y-3">

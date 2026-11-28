@@ -338,7 +338,7 @@ export function EscanearQrActivo() {
               <Button
                 onClick={confirmarAuditoriaInSitu}
                 disabled={registrandoAuditoria}
-                className="flex w-full items-center justify-center gap-2 bg-marca-600 hover:bg-marca-700"
+                className="w-full"
               >
                 {registrandoAuditoria ? (
                   <Loader2 className="size-4 animate-spin" />

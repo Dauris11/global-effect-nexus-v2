@@ -69,21 +69,20 @@ export function UbicacionVisita({ liceo }: { liceo: HabitudesLiceo }) {
   return (
     <div className="space-y-3 rounded-control border border-linea p-3">
       <div className="flex flex-wrap gap-2">
-        <Button asChild variant="secondary" size="sm" className="min-h-11">
+        <Button asChild variant="secondary" size="lg">
           <a href={enlaceComoLlegar(lat, lng)} target="_blank" rel="noopener noreferrer">
             <Navigation />
             {t("comoLlegar")}
           </a>
         </Button>
-        <Button type="button" variant="secondary" size="sm" className="min-h-11" onClick={comprobar} cargando={buscando}>
+        <Button type="button" variant="secondary" size="lg" onClick={comprobar} cargando={buscando}>
           <LocateFixed />
           {t("comprobar")}
         </Button>
         <Button
           type="button"
           variant="ghost"
-          size="sm"
-          className="min-h-11"
+          size="lg"
           aria-expanded={verMapa}
           onClick={() => setVerMapa((v) => !v)}
         >

@@ -28,7 +28,7 @@ export function ContabilizarFila({ id, numero }: { id: string; numero: string })
           {error}
         </span>
       )}
-      <Button type="submit" variant="ghost" size="sm" cargando={enviando} aria-label={`${t("detalle.contabilizar")} ${numero}`}>
+      <Button type="submit" variant="secondary" size="sm" cargando={enviando} aria-label={`${t("detalle.contabilizar")} ${numero}`}>
         {enviando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
         {t("detalle.contabilizar")}
       </Button>

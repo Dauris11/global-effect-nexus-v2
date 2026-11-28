@@ -446,13 +446,13 @@ export function HubReuniones({
         </div>
 
         {puedeAgendar && (
-        <Button
+        <Button size="lg"
           type="button"
           onClick={() => {
               setMensajeError(null);
               setDialogoAgendarAbierto(true);
             }}
-          className="h-11 min-h-[44px] gap-2 bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all shadow-xs shrink-0"
+          className="gap-2 shrink-0"
         >
           <CalendarPlus className="size-4.5" />
           <span>{t("actions.scheduleNew")}</span>
@@ -470,14 +470,14 @@ export function HubReuniones({
             {t("empty.title")}
           </h3>
           {puedeAgendar && (
-          <Button
+          <Button size="lg"
             type="button"
             variant="outline"
             onClick={() => {
               setMensajeError(null);
               setDialogoAgendarAbierto(true);
             }}
-            className="mt-4 gap-2 border-linea min-h-[44px] active:scale-95"
+            className="mt-4 gap-2"
           >
             <CalendarPlus className="size-4" />
             {t("actions.scheduleNew")}
@@ -638,7 +638,7 @@ export function HubReuniones({
                           {esAnfitrionOAdmin && r.estado === "programada" && (
                             <Button
                               type="button"
-                              size="sm"
+                              
                               cargando={isPending}
                               onClick={() => {
                                 startTransition(async () => {
@@ -652,7 +652,7 @@ export function HubReuniones({
                                   }
                                 });
                               }}
-                              className="h-9 min-h-[36px] gap-1.5 text-xs"
+                              className="gap-1.5"
                             >
                               <Video className="size-3.5" />
                               <span>{t("liveRoom.startCall")}</span>
@@ -661,13 +661,13 @@ export function HubReuniones({
 
                           <Button
                             type="button"
-                            size="sm"
+                            
                             variant={r.estado === "en_curso" ? "default" : "outline"}
                             onClick={() => {
                               setSalaActiva(r);
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
-                            className="h-9 min-h-[36px] gap-1.5 text-xs"
+                            className="gap-1.5"
                           >
                             <Video className="size-3.5" />
                             <span>{t("liveRoom.joinInWeb")}</span>
@@ -676,7 +676,7 @@ export function HubReuniones({
                           {esAnfitrionOAdmin && r.estado === "en_curso" && (
                             <Button
                               type="button"
-                              size="sm"
+                              
                               variant="outline"
                               cargando={isPending}
                               onClick={() => {
@@ -691,7 +691,7 @@ export function HubReuniones({
                                   router.refresh();
                                 });
                               }}
-                              className="h-9 min-h-[36px] gap-1.5 text-xs"
+                              className="gap-1.5"
                             >
                               <CheckCircle2 className="size-3.5" />
                               <span>{t("liveRoom.endCall")}</span>
@@ -703,13 +703,13 @@ export function HubReuniones({
                     {esAnfitrionOAdmin && r.estado !== "cancelada" && (
                       <Button
                         type="button"
-                        size="sm"
+                        
                         variant="outline"
                         onClick={() => {
                           setMensajeError(null);
                           abrirModalMinuta(r);
                         }}
-                        className="h-9 min-h-[36px] gap-1.5 text-xs border-linea active:scale-95"
+                        className="gap-1.5"
                       >
                         <FileText className="size-3.5 text-marca-600" />
                         <span>
@@ -721,13 +721,13 @@ export function HubReuniones({
                     {esAnfitrionOAdmin && r.estado === "programada" && (
                       <Button
                         type="button"
-                        size="sm"
+                        
                         variant="ghost"
                         onClick={() => {
                           setMensajeError(null);
                           setReunionParaCancelar(r);
                         }}
-                        className="h-9 min-h-[36px] gap-1.5 text-xs text-tinta-2 hover:text-tinta active:scale-95"
+                        className="gap-1.5 text-tinta-2 hover:text-tinta"
                       >
                         <Ban className="size-3.5" />
                         <span>{t("actions.cancel")}</span>
@@ -982,18 +982,16 @@ export function HubReuniones({
               )}
               <AccionesFormulario>
                 <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
-                  <Button
+                  <Button size="lg"
                     type="button"
                     variant="outline"
                     onClick={() => setDialogoAgendarAbierto(false)}
-                    className="h-10 min-h-[44px] active:scale-95"
                   >
                     {t("actions.cancel")}
                   </Button>
-                  <Button
+                  <Button size="lg"
                     type="submit"
                     cargando={isPending}
-                    className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
                   >
                     {isPending ? t("actions.saving") : t("actions.confirmSchedule")}
                   </Button>
@@ -1105,18 +1103,16 @@ export function HubReuniones({
               </p>
             )}
             <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
-              <Button
+              <Button size="lg"
                 type="button"
                 variant="outline"
                 onClick={() => setReunionParaMinuta(null)}
-                className="h-10 min-h-[44px] active:scale-95"
               >
                 {t("actions.cancel")}
               </Button>
-              <Button
+              <Button size="lg"
                 type="submit"
                 cargando={isPending}
-                className="h-10 min-h-[44px] bg-marca-600 text-white hover:bg-marca-700 active:scale-95 transition-all"
               >
                 {isPending ? t("actions.saving") : t("actions.saveMinuta")}
               </Button>
@@ -1162,18 +1158,16 @@ export function HubReuniones({
               </p>
             )}
             <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-linea">
-              <Button
+              <Button size="lg"
                 type="button"
                 variant="outline"
                 onClick={() => setReunionParaCancelar(null)}
-                className="h-10 min-h-[44px] active:scale-95"
               >
                 {t("actions.back")}
               </Button>
-              <Button
+              <Button size="lg"
                 type="submit"
                 cargando={isPending}
-                className="h-10 min-h-[44px] bg-tinta text-white hover:bg-tinta-2 active:scale-95 transition-all"
               >
                 {isPending ? t("actions.cancelling") : t("actions.confirmCancel")}
               </Button>

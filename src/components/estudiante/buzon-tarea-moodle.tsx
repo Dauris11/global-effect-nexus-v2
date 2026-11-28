@@ -386,19 +386,17 @@ export function BuzonTareaMoodle({
 
               <div className="flex justify-end gap-2 pt-1">
                 {asignacion.entrega_id && (
-                  <Button
+                  <Button size="lg"
                     type="button"
                     variant="outline"
                     onClick={() => setEditandoEntrega(false)}
-                    className="min-h-[42px] border-linea-fuerte"
                   >
                     {t("cancel")}
                   </Button>
                 )}
-                <Button
+                <Button size="lg"
                   type="submit"
                   cargando={isPending}
-                  className="min-h-[42px] bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
                 >
                   {isPending ? (
                     <Loader2 className="mr-2 size-4 animate-spin" />
@@ -446,9 +444,8 @@ export function BuzonTareaMoodle({
                   {asignacion.entrega_estado !== "calificado" && !asignacion.vencida && (
                     <Button
                       variant="outline"
-                      size="sm"
+                      
                       onClick={() => setEditandoEntrega(true)}
-                      className="min-h-[40px] border-marca-500 text-marca-600 hover:bg-marca-50 active:scale-95"
                     >
                       {t("editSubmission")}
                     </Button>

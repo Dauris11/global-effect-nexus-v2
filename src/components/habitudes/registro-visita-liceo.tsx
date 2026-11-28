@@ -225,7 +225,7 @@ export function RegistroVisitaLiceo({
                 size="sm"
                 onClick={detectarLiceoCercano}
                 disabled={detectando}
-                className="h-7 gap-1 px-2 text-xs text-marca-700 hover:text-marca-800"
+                className="gap-1 px-2"
               >
                 {detectando ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -321,27 +321,27 @@ export function RegistroVisitaLiceo({
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => setEstudiantes((prev) => prev + 5)}
-                  className="min-h-11 flex-1 font-semibold text-xs active:scale-95"
+                  className="flex-1"
                 >
                   +5
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => setEstudiantes((prev) => prev + 15)}
-                  className="min-h-11 flex-1 font-semibold text-xs active:scale-95"
+                  className="flex-1"
                 >
                   +15
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => setEstudiantes((prev) => prev + 30)}
-                  className="min-h-11 flex-1 font-semibold text-xs active:scale-95"
+                  className="flex-1"
                 >
                   +30
                 </Button>
@@ -389,13 +389,14 @@ export function RegistroVisitaLiceo({
                         alt={`Evidencia ${idx + 1}`}
                         className="size-full object-cover"
                       />
-                      <button
+                      <Button variant="secondary" size="icon-sm" className="absolute top-1 right-1"
                         type="button"
                         onClick={() => eliminarFoto(idx)}
-                        className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-tinta/80 text-white hover:bg-tinta active:scale-90"
+                        aria-label={t("visitForm.removePhoto", { n: idx + 1 })}
+                        title={t("visitForm.removePhoto", { n: idx + 1 })}
                       >
                         <X className="size-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -433,10 +434,10 @@ export function RegistroVisitaLiceo({
 
           {/* Botón de envío */}
           <AccionesFormulario>
-          <Button
+          <Button size="lg"
             type="submit"
             cargando={isPending}
-            className="w-full min-h-12 gap-2 text-sm font-semibold active:scale-95"
+            className="w-full gap-2 text-sm"
           >
             {isPending ? (
               <Loader2 className="size-4 animate-spin" />

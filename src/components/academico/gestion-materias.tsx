@@ -256,7 +256,6 @@ export function GestionMaterias({
                   type="button"
                   size="sm"
                   onClick={() => setEditando("nueva")}
-                  className="transition-transform duration-150 active:scale-95"
                 >
                   <Plus className="size-3.5" />
                   {t("subjects.new")}
@@ -711,7 +710,6 @@ function FormularioMateria({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

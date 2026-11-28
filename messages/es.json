@@ -1217,7 +1217,12 @@
       "close": "Cerrar"
     },
     "menu": {
-      "more": "Más acciones"
+      "more": "Más acciones",
+      "row": {
+        "view": "Ver",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      }
     }
   },
   "estados": {
@@ -4091,9 +4096,9 @@
       "action": {
         "tomar": "Tomar",
         "aprobar": "Aprobar",
-        "aprobar_direccion": "Aprobar como dirección",
+        "aprobar_direccion": "Visto bueno",
         "rechazar": "Rechazar",
-        "completar": "Marcar como completada",
+        "completar": "Completar",
         "cancelar": "Cancelar solicitud"
       },
       "error": {
@@ -7368,7 +7373,7 @@
     "noVouchersSubtitle": "Los comprobantes rendidos aparecerán aquí para revisión contable y fiscal.",
     "allSubmissionsTitle": "Bandeja de Validación de Comprobantes (DGII)",
     "mySubmissionsTitle": "Mis Rendiciones de Gastos",
-    "reviewVoucher": "Revisar Comprobante",
+    "reviewVoucher": "Revisar",
     "postToAccounting": "Contabilizar",
     "reviewVoucherModalTitle": "Validar Rendición de Gastos (DGII)",
     "rejectReasonOptional": "Motivo del rechazo (obligatorio si rechaza)",

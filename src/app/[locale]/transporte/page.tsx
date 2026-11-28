@@ -53,14 +53,14 @@ export default async function PaginaTransportePublico({
       <div className="animate-entrada mx-auto max-w-4xl space-y-6">
         {/* Barra superior de navegación rápida */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" asChild className="gap-2 text-xs">
+          <Button variant="ghost" size="sm" asChild className="gap-2">
             <Link href="/">
               <ChevronLeft className="size-3.5" />
               {t("backToHome")}
             </Link>
           </Button>
 
-          <Button variant="outline" size="sm" asChild className="gap-2 text-xs">
+          <Button variant="outline" size="sm" asChild className="gap-2">
             <Link href="/login">
               <LogIn className="size-3.5" />
               {t("studentLoginCta")}

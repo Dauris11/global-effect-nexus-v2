@@ -389,7 +389,6 @@ function FormularioVinculo({
           type="submit"
           size="sm"
           cargando={enviando}
-          className="transition-transform duration-150 active:scale-95"
         >
           {enviando ? (
             <Loader2 className="size-3.5 animate-spin" />

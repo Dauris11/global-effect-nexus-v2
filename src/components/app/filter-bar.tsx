@@ -198,12 +198,12 @@ export function FilterBar({
                 // «Todos» quita todos los chips; un chip activo vuelve a apagarse al pulsarlo.
                 onClick={() => (c.value === "" ? escribir(paramsChips[0] ?? chipParam, "", paramsChips) : escribir(paramDe(c), esteActivo ? "" : c.value))}
                 className={cn(
-                  "text-label inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  "inline-flex h-[30px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   esteActivo ? "border-tinta bg-tinta text-background" : "border-linea-fuerte bg-background text-tinta-2 hover:border-tinta hover:text-tinta",
                 )}
               >
                 {c.label}
-                {c.count !== undefined && <span className={cn("tabular-nums", esteActivo ? "text-background/80" : "text-tinta-3")}>{c.count}</span>}
+                {c.count !== undefined && <span className="text-xs font-semibold tabular-nums opacity-70">{c.count}</span>}
               </button>
             );
           })}

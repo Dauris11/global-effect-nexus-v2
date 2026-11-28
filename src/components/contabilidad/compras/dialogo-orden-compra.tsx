@@ -263,8 +263,7 @@ export function DialogoOrdenCompra({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
-                          className="size-7 text-tinta-2 hover:bg-muted hover:text-tinta"
+                          size="icon-sm"
                           onClick={() => eliminarLinea(idx)}
                         >
                           <Trash2 className="size-3.5" />

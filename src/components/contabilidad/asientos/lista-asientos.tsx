@@ -1,6 +1,7 @@
 import { Eye } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { CeldaAcciones } from "@/components/app/celda-acciones";
 import { StatusBadge } from "@/components/app/status-badge";
 import { DialogoRevertir, BotonProcesar } from "@/components/contabilidad/asientos/acciones";
 import { LineasPanel } from "@/components/contabilidad/asientos/lineas-panel";
@@ -37,6 +38,7 @@ export async function ListaAsientos({
   puedeRevertir: boolean;
 }) {
   const t = await getTranslations("contab.asientos");
+  const ta = await getTranslations("appUi");
   const tl = await getTranslations("listas.asientos");
   const numero = (fila: FilaAsiento) => numeroDocumento("AS", fila.numero);
 
@@ -67,20 +69,14 @@ export async function ListaAsientos({
               return (
                 <tr key={fila.id} className="group relative h-[52px] transition-colors hover:bg-muted/50">
                   {elegible && (
-                    <td className="relative z-10 px-4 py-1">
-                      {pendiente && (
-                        // La celda entera es el objetivo táctil, no el cuadrito.
-                        <label className="flex size-11 cursor-pointer items-center justify-center">
-                          <input
-                            type="checkbox"
-                            name="ids"
-                            value={fila.id}
-                            aria-label={t("procesar.elegir", { numero: numero(fila) })}
-                            className="size-5 accent-marca-500"
-                          />
-                        </label>
+                    <CeldaAcciones>
+                      <Button asChild size="sm" variant="secondary" aria-label={`${tl("verDetalle")} ${numero(fila)}`}>
+                        <Link href={`/contabilidad/asientos/${fila.id}`}>{ta("menu.row.view")}</Link>
+                      </Button>
+                      {revertible && (
+                        <DialogoRevertir id={fila.id} numero={numero(fila)} periodoCerrado={fila.periodo_cerrado} compacto />
                       )}
-                    </td>
+                    </CeldaAcciones>
                   )}
                   <td className="px-4 py-1.5 whitespace-nowrap">
                     <PanelFila

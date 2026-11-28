@@ -13,6 +13,7 @@ import {
   deshacerAccionIA,
   rechazarAccionIA,
 } from "@/server/ia/aprobaciones";
+import { Button } from "@/components/ui/button";
 
 /**
  * Tarjeta de una acción que el agente PROPONE. No se ejecuta hasta que la
@@ -84,22 +85,25 @@ export function TarjetaAccionIA({ accionId, resumen }: TarjetaAccion) {
 
       {fase === "propuesta" && (
         <div className="mt-3 flex gap-2">
-          <button
+          <Button
             type="button"
+            size="lg"
             onClick={() => void resolver(aprobarAccionIA, "hecha")}
-            className="bg-marca-500 hover:bg-marca-600 focus-visible:ring-ring flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-control text-sm font-semibold text-white outline-none transition-colors focus-visible:ring-2 active:scale-[0.98]"
+            className="flex-1"
           >
             <Check className="size-4" />
             {t("tarjeta.aprobar")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="lg"
             onClick={() => void resolver(rechazarAccionIA, "rechazada")}
-            className="border-linea-fuerte hover:bg-muted text-tinta focus-visible:ring-ring flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-control border text-sm font-medium outline-none transition-colors focus-visible:ring-2 active:scale-[0.98]"
+            className="flex-1"
           >
             <X className="size-4" />
             {t("tarjeta.rechazar")}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -120,14 +124,15 @@ export function TarjetaAccionIA({ accionId, resumen }: TarjetaAccion) {
           </p>
 
           {fase === "hecha" && reversible && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="lg"
               onClick={() => void resolver(deshacerAccionIA, "deshecha")}
-              className="text-marca-700 flex min-h-11 items-center gap-1.5 px-2 text-sm font-semibold hover:underline"
             >
               <Undo2 className="size-4" />
               {t("tarjeta.deshacer")}
-            </button>
+            </Button>
           )}
         </div>
       )}

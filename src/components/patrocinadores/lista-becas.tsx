@@ -7,6 +7,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { EmptyState } from "@/components/app/empty-state";
 import { SidePanelForm } from "@/components/app/side-panel-form";
 import { StatusBadge } from "@/components/app/status-badge";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +49,7 @@ export function ListaBecas({
 }) {
   const t = useTranslations("sponsors");
   const tl = useTranslations("listas");
+  const ta = useTranslations("appUi");
   const idioma = useLocale() as Locale;
   const [detalle, setDetalle] = useState<BecadoConPatrocinio | null>(null);
   const [vinculando, setVinculando] = useState<BecadoConPatrocinio | null>(null);
@@ -81,7 +84,7 @@ export function ListaBecas({
         </p>
       )}
 
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         <table className="hidden w-full text-sm md:table">
           <thead className="texto-meta border-b border-linea text-left">
             <tr>
@@ -127,24 +130,23 @@ export function ListaBecas({
                 <td className="px-4 py-1.5">
                   <StatusBadge status={estadoDe(fila)} />
                 </td>
-                <td className="relative z-10 w-24 px-2 py-1.5 text-right">
-                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    {puedeVincular && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={fila.asignacion_id ? t("grants.change") : t("grants.assign")}
-                        onClick={() => setVinculando(fila)}
-                      >
-                        <Link2 />
-                      </Button>
-                    )}
-                    <Button asChild variant="ghost" size="icon" aria-label={tl("becas.verExpediente")}>
-                      <Link href={`/expedientes/${fila.estudiante_id}`}><Eye /></Link>
-                    </Button>
-                  </span>
-                </td>
+                <CeldaAcciones>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/expedientes/${fila.estudiante_id}`}>{ta("menu.row.view")}</Link>
+                  </Button>
+                  {puedeVincular && (
+                    <MenuMasAcciones
+                      compacto
+                      acciones={[
+                        {
+                          etiqueta: fila.asignacion_id ? t("grants.change") : t("grants.assign"),
+                          icono: <Link2 />,
+                          onClick: () => setVinculando(fila),
+                        },
+                      ]}
+                    />
+                  )}
+                </CeldaAcciones>
               </tr>
             ))}
           </tbody>

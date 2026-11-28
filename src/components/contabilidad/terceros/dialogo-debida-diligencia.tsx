@@ -70,7 +70,7 @@ export function DialogoDebidaDiligencia({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs">
+        <Button variant="outline" size="sm">
           <ShieldAlert className="mr-1 size-3.5" />
           {t("debidaDiligencia")}
         </Button>

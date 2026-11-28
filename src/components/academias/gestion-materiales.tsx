@@ -116,7 +116,6 @@ export function GestionMateriales({
             type="button"
             size="sm"
             onClick={() => setEditando("nuevo")}
-            className="transition-transform duration-150 active:scale-95"
           >
             <Plus className="size-3.5" />
             {t("materials.new")}
@@ -257,7 +256,6 @@ function Ficha({
               variant="ghost"
               size="sm"
               title={t("materials.download")}
-              className="transition-transform duration-150 active:scale-95"
             >
               <Download className="size-3.5" />
               <span className="hidden sm:inline">
@@ -289,11 +287,10 @@ function Ficha({
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="icon-sm"
               onClick={alEditar}
               title={t("materials.edit")}
               aria-label={t("materials.edit")}
-              className="size-8"
             >
               <Pencil className="size-3.5" />
             </Button>
@@ -324,11 +321,10 @@ function DialogoBorrado({ fila }: { fila: MaterialFila }) {
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         onClick={() => setAbierto(true)}
         title={t("materials.delete")}
         aria-label={t("materials.delete")}
-        className="size-8"
       >
         <Trash2 className="size-3.5" />
       </Button>
@@ -540,7 +536,6 @@ function Formulario({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

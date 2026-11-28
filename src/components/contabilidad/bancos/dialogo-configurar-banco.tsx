@@ -101,7 +101,7 @@ export function DialogoConfigurarCuentaBanco({
           size="icon"
           aria-label={t("boton")}
           title={t("boton")}
-          className="relative size-9 rounded-full text-tinta-2 hover:bg-muted hover:text-tinta"
+          className="relative"
         >
           <Settings className="size-4" />
           {esContabilidad && solicitudesPendientes.length > 0 && (

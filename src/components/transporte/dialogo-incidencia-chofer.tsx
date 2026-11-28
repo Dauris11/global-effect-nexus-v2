@@ -60,9 +60,8 @@ export function DialogoIncidenciaChofer({
                 key={tipo}
                 type="button"
                 variant={tipoIncidencia === tipo ? "default" : "outline"}
-                size="sm"
+                
                 onClick={() => alCambiarTipo(tipo)}
-                className="h-10 text-xs font-semibold"
               >
                 {etiqueta}
               </Button>

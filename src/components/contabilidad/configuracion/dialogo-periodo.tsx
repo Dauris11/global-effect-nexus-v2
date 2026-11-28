@@ -39,7 +39,7 @@ export function DialogoPeriodo({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="min-h-11">
+        <Button variant="outline" size="lg">
           <Icono className="size-4" />
           {modo === "cerrar" ? t("cerrar") : t("reabrir")}
         </Button>

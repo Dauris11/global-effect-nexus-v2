@@ -428,14 +428,13 @@ export function FormularioRendicionGasto({
               {estudianteElegido ? (
                 <div className="mt-1 flex min-h-[44px] items-center justify-between gap-2 rounded-control border border-linea-fuerte bg-marca-50 px-3 text-sm text-marca-700">
                   <span className="truncate font-medium">{estudianteElegido.nombre}</span>
-                  <button
+                  <Button variant="ghost" size="icon-sm"
                     type="button"
                     onClick={() => setEstudianteId("")}
                     aria-label={t("clearStudent")}
-                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-card"
                   >
                     <X className="size-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="mt-1 space-y-2">
@@ -495,10 +494,10 @@ export function FormularioRendicionGasto({
 
           <AccionesFormulario>
           <div className="flex justify-end pt-2">
-            <Button
+            <Button size="lg"
               type="submit"
               disabled={isPending || escaneandoOcr}
-              className="min-h-[44px] w-full sm:w-auto bg-marca-500 text-white hover:bg-marca-600 active:scale-95"
+              className="w-full sm:w-auto"
             >
               {isPending ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />

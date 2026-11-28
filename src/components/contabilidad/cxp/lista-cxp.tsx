@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Monto } from "@/components/contabilidad/comun";
 import { PanelCxp } from "@/components/contabilidad/cxp/panel-cxp";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { senalVencimiento } from "@/lib/contabilidad/cxp";
@@ -19,6 +20,7 @@ import type { FilaCxp } from "@/server/contabilidad/cxp/consultas";
 export function ListaCxp({ cuentas, puedeRegistrar }: { cuentas: FilaCxp[]; puedeRegistrar: boolean }) {
   const t = useTranslations("contab.cxp");
   const tl = useTranslations("listas.cxp");
+  const ta = useTranslations("appUi");
 
   const textoVencimiento = (c: FilaCxp) =>
     c.dias_vencida > 0
@@ -32,7 +34,7 @@ export function ListaCxp({ cuentas, puedeRegistrar }: { cuentas: FilaCxp[]; pued
       .join(" · ");
 
   return (
-    <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+    <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
       <table className="hidden w-full text-sm md:table">
         <thead className="border-b border-linea text-left texto-meta">
           <tr>
@@ -94,13 +96,11 @@ export function ListaCxp({ cuentas, puedeRegistrar }: { cuentas: FilaCxp[]; pued
                 <td className="px-4 py-1.5">
                   <StatusBadge status={c.estado} />
                 </td>
-                <td className="relative z-10 w-16 px-2 py-1.5 text-right">
-                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    <Button asChild variant="ghost" size="icon" aria-label={tl("verCuenta")}>
-                      <Link href={`/contabilidad/cuentas-por-pagar/${c.id}`}><Eye /></Link>
-                    </Button>
-                  </span>
-                </td>
+                <CeldaAcciones>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/contabilidad/cuentas-por-pagar/${c.id}`}>{ta("menu.row.view")}</Link>
+                  </Button>
+                </CeldaAcciones>
               </tr>
             );
           })}

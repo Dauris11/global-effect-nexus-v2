@@ -446,7 +446,6 @@ export function DialogoTasaBcrd({
           size="icon"
           aria-label={t("botonConfig")}
           title={t("botonConfig")}
-          className="size-9 rounded-full text-tinta-2 hover:bg-muted hover:text-tinta"
         >
           <Settings className="size-4" />
         </Button>
@@ -652,7 +651,7 @@ export function DialogoSubirEstado({
   return (
     <Dialog open={abierto} onOpenChange={manejarCambioAbierto}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2 rounded-full px-4 shadow-sm">
+        <Button size="sm" className="gap-2 px-4">
           <CloudUpload className="size-4" />
           {t("boton")}
         </Button>

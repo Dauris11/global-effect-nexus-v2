@@ -122,9 +122,9 @@ export default async function PaginaDetalleCaja({
                         saldoActual: c.saldo,
                       }))}
                   />
-                  <Button
+                  <Button size="md"
                     asChild
-                    className="h-9 whitespace-nowrap px-3.5"
+                    className="whitespace-nowrap px-3.5"
                     disabled={caja.estado !== "activa"}
                   >
                     <Link href={`/contabilidad/cajas/${caja.id}/arqueo`}>

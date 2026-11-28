@@ -157,7 +157,7 @@ export function CabeceraChofer({
               size="lg"
               onClick={alIniciarViaje}
               disabled={cargando || !horarioSeleccionadoId}
-              className="h-14 w-full text-base font-semibold"
+              className="w-full text-base"
             >
               <Play className="mr-2 size-5 fill-current" />
               {t("startTrip")}
@@ -170,7 +170,7 @@ export function CabeceraChofer({
               variant="outline"
               onClick={alFinalizarViaje}
               cargando={cargando}
-              className="h-14 w-full border-linea text-base font-semibold"
+              className="w-full text-base"
             >
               <Square className="mr-2 size-5 fill-current" />
               {t("finishTrip")}
@@ -181,7 +181,7 @@ export function CabeceraChofer({
               variant="destructive"
               onClick={alAbrirIncidencia}
               cargando={cargando}
-              className="h-12 w-full text-sm font-semibold"
+              className="w-full text-sm"
             >
               <AlertTriangle className="mr-2 size-4" />
               {t("reportBreakdownButton")}
@@ -195,7 +195,7 @@ export function CabeceraChofer({
           asChild
           variant="ghost"
           size="sm"
-          className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+          className="justify-center gap-1.5"
         >
           <Link href="/administrativo/solicitudes?tipo=compra">
             <Receipt className="size-3.5" />
@@ -206,7 +206,7 @@ export function CabeceraChofer({
           asChild
           variant="ghost"
           size="sm"
-          className="justify-center gap-1.5 text-xs text-marca-600 hover:text-marca-700"
+          className="justify-center gap-1.5"
         >
           <Link href="/reuniones">
             <CalendarDays className="size-3.5" />

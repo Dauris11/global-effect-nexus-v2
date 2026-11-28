@@ -17,6 +17,8 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
 import { StatusBadge } from "@/components/app/status-badge";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -146,7 +148,7 @@ export function ListaRendiciones({ rendiciones, puedeRevisar }: ListaRendiciones
 
   return (
     <>
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         {/* ≥ md: tabla densa */}
         <table className="hidden w-full text-sm md:table">
           <thead className="text-meta border-b border-linea text-left">
@@ -193,23 +195,26 @@ export function ListaRendiciones({ rendiciones, puedeRevisar }: ListaRendiciones
                 <td className="text-meta px-4 py-1.5 whitespace-nowrap">
                   {fechaCorta(r.fecha_comprobante.slice(0, 10), locale)}
                 </td>
-                {/* Acciones al pasar el ratón o con el foco; por encima del botón que cubre la fila. */}
-                <td className="relative z-10 px-2 py-1.5 text-right">
-                  <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    {puedeValidar(r) && (
-                      <Button type="button" size="sm" variant="outline" onClick={() => abrirRevision(r, "revisar")}>
-                        <FileCheck />
-                        {t("reviewVoucher")}
-                      </Button>
-                    )}
-                    {puedeContabilizar(r) && (
-                      <Button type="button" size="sm" variant="outline" onClick={() => abrirRevision(r, "contabilizar")}>
+                <CeldaAcciones>
+                  {puedeValidar(r) && (
+                    <Button type="button" size="sm" variant="secondary" onClick={() => abrirRevision(r, "revisar")}>
+                      <FileCheck />
+                      {t("reviewVoucher")}
+                    </Button>
+                  )}
+                  {puedeContabilizar(r) &&
+                    (puedeValidar(r) ? (
+                      <MenuMasAcciones
+                        compacto
+                        acciones={[{ etiqueta: t("postToAccounting"), icono: <Check />, onClick: () => abrirRevision(r, "contabilizar") }]}
+                      />
+                    ) : (
+                      <Button type="button" size="sm" variant="secondary" onClick={() => abrirRevision(r, "contabilizar")}>
                         <Check />
                         {t("postToAccounting")}
                       </Button>
-                    )}
-                  </span>
-                </td>
+                    ))}
+                </CeldaAcciones>
               </tr>
             ))}
           </tbody>

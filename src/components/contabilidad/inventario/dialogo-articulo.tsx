@@ -71,7 +71,7 @@ export function DialogoArticulo({
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button className="bg-marca-500 hover:bg-marca-600 text-white">
+        <Button>
           <Plus className="mr-2 h-4 w-4" />
           {t("nuevo")}
         </Button>
@@ -174,7 +174,6 @@ export function DialogoArticulo({
                 <Button
                   type="submit"
                   disabled={cargando || !codigo || !nombre}
-                  className="bg-marca-500 hover:bg-marca-600 text-white"
                 >
                   {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {cargando ? t("procesando") : t("guardar")}

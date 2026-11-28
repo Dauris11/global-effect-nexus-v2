@@ -143,7 +143,7 @@ export function FormularioRecurrente({
         <Button
           onClick={manejarGuardar}
           cargando={cargando}
-          className="gap-2 font-semibold"
+          className="gap-2"
         >
           {guardadoExitoso ? (
             <>
@@ -216,8 +216,7 @@ export function FormularioRecurrente({
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="size-7"
+                      size="icon-sm"
                       title={t("copyToAll")}
                       onClick={() => copiarATodos(dia)}
                     >

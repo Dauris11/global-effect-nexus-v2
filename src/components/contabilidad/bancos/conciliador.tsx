@@ -382,7 +382,7 @@ export function BotonAnularPartida({ id }: { id: string }) {
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-6 px-2 text-[11px] font-medium">
+        <Button variant="outline" size="sm" className="px-2">
           {t("anular")}
         </Button>
       </DialogTrigger>

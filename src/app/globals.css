@@ -133,6 +133,28 @@
   --chart-5: #10b981;
   --chart-6: #94a3b8;
 
+
+  /*
+   * Botones (components/ui/button-variantes.ts). Cada uno trae su valor claro y oscuro: el
+   * componente solo usa estos nombres, nunca `dark:` ni un color suelto.
+   */
+  --btn-primary-bg: var(--brand-600);
+  --btn-primary-fg: #ffffff;
+  --btn-primary-hover: var(--brand-700);
+  --btn-secondary-bg: var(--surface);
+  --btn-secondary-bd: var(--line-strong);
+  --btn-secondary-fg: var(--tinta);
+  --btn-secondary-hover: var(--surface-2);
+  --btn-ghost-fg: var(--brand-700);
+  --btn-ghost-hover: var(--brand-50);
+  --btn-danger-bg: var(--surface);
+  --btn-danger-fg: var(--danger);
+  --btn-danger-bd: var(--danger);
+  --btn-danger-hover: var(--danger-bg);
+  --btn-danger-solid-bg: var(--danger);
+  --btn-danger-solid-fg: #ffffff;
+  --btn-halo: var(--brand-200);
+
   --radius: 12px;
   --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
   --shadow-elevada: 0 4px 14px rgb(16 24 40 / 0.08);
@@ -183,6 +205,23 @@
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.3);
   --shadow-elevada: 0 6px 20px rgb(0 0 0 / 0.45);
+
+  --btn-primary-bg: #2096ba;
+  --btn-primary-fg: #0d0c0c;
+  --btn-primary-hover: #3faacb;
+  --btn-secondary-bg: #181717;
+  --btn-secondary-bd: #535050;
+  --btn-secondary-fg: #f3f2f2;
+  --btn-secondary-hover: #242323;
+  --btn-ghost-fg: #74c5dd;
+  --btn-ghost-hover: rgb(32 150 186 / 0.14);
+  --btn-danger-bg: transparent;
+  --btn-danger-fg: #f87171;
+  --btn-danger-bd: rgb(248 113 113 / 0.4);
+  --btn-danger-hover: rgb(248 113 113 / 0.12);
+  --btn-danger-solid-bg: #f87171;
+  --btn-danger-solid-fg: #0d0c0c;
+  --btn-halo: rgb(63 170 203 / 0.45);
 }
 
 /*

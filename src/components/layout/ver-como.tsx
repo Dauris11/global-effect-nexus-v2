@@ -39,8 +39,8 @@ export function VerComo({ rol, rolReal }: { rol: Rol; rolReal: Rol }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant={viendoOtro ? "secondary" : "outline"}
-          size="sm"
+          variant="secondary"
+          size="md"
           cargando={pendiente}
           className="gap-1.5"
         >

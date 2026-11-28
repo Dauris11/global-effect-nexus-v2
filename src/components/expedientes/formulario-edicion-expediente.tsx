@@ -165,7 +165,7 @@ export function FormularioEdicionExpediente({
                 variant={editando ? "outline" : "default"}
                 size="sm"
                 onClick={() => (editando ? salirDeEdicion() : setEditando(true))}
-                className="h-7 gap-1.5 px-2.5 text-xs transition-transform active:scale-95"
+                className="gap-1.5 px-2.5"
               >
                 {editando ? (
                   <>
@@ -262,7 +262,6 @@ export function FormularioEdicionExpediente({
             variant="outline"
             size="sm"
             onClick={salirDeEdicion}
-            className="transition-transform active:scale-95"
           >
             <X className="size-4" />
             {textos.cancelar}
@@ -272,7 +271,6 @@ export function FormularioEdicionExpediente({
             type="submit"
             size="sm"
             cargando={enviando}
-            className="transition-transform active:scale-95"
           >
             {enviando ? (
               <Loader2 className="size-4 animate-spin" />

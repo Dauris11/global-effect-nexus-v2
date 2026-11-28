@@ -86,7 +86,6 @@ export function AccionesFila({
             size="icon"
             aria-label={t("rowActions.menu")}
             title={t("rowActions.menu")}
-            className="transition-transform duration-150 active:scale-95"
           >
             <MoreHorizontal className="size-4" />
           </Button>

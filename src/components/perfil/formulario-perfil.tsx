@@ -340,7 +340,6 @@ export function FormularioPerfil({
         <Button
           type="submit"
           cargando={enviando}
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-marca-500 px-5 py-2.5 font-medium text-white shadow-xs transition-all hover:bg-marca-600 active:scale-[0.99] active:bg-marca-700"
         >
           {enviando ? (
             <Loader2 className="size-4 animate-spin" />

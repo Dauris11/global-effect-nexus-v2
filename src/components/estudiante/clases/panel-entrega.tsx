@@ -209,14 +209,13 @@ function Contenido({ tarea, onCerrar }: { tarea: TareaVista; onCerrar: () => voi
               {archivo ? (
                 <div className="flex items-center gap-2">
                   <span className="text-label break-all">{archivo.name}</span>
-                  <button
+                  <Button variant="ghost" size="icon-sm"
                     type="button"
                     onClick={() => setArchivo(null)}
                     aria-label={t("panel.removeFile")}
-                    className="inline-flex size-8 items-center justify-center rounded-full hover:bg-muted"
                   >
                     <X aria-hidden className="size-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <>

@@ -305,7 +305,6 @@ export function PanelRevisionComprobante({
                 size="sm"
                 cargando={guardando}
                 onClick={() => handleValidar("observado")}
-                className="text-tinta-2 hover:bg-muted"
               >
                 <AlertCircle className="size-4 mr-1 text-tinta-2" />
                 {t("markObserved")}

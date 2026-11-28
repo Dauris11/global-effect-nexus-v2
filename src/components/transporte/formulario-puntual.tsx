@@ -219,7 +219,7 @@ export function FormularioPuntual({
             type="submit"
             cargando={cargando}
             disabled={!nombre.trim() || mismasParadas}
-            className="w-full gap-2 font-semibold"
+            className="w-full gap-2"
           >
             <Send className="size-4" />
             {t("submitQuickEnroll")}

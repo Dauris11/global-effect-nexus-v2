@@ -150,13 +150,13 @@ export function TopBar({
         <button
           type="button"
           onClick={() => setBuscando(true)}
-          className="flex h-11 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-canvas pr-1.5 pl-5 text-left shadow-card transicion-control duration-(--duracion-media) hover:shadow-elevada active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex h-9 w-full max-w-md items-center gap-3 rounded-full border border-linea bg-canvas pr-1 pl-4 text-left shadow-card transicion-control duration-(--duracion-media) hover:shadow-elevada active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <span className="flex-1 truncate text-[15px] text-tinta-2">{t("commandOpen")}</span>
           <kbd className="texto-meta hidden rounded-md border border-linea px-1.5 py-0.5 font-sans lg:inline">
             {t(esMac ? "commandShortcutMac" : "commandShortcut")}
           </kbd>
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-marca-500 text-white">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-marca-500 text-white">
             <Search className="size-4" />
           </span>
         </button>
@@ -168,9 +168,9 @@ export function TopBar({
           type="button"
           onClick={() => setBuscando(true)}
           aria-label={t("commandOpen")}
-          className="flex size-11 items-center justify-center rounded-full text-tinta transicion-control hover:bg-muted active:scale-95 md:hidden"
+          className="flex size-9 items-center justify-center rounded-full text-tinta transicion-control hover:bg-muted active:translate-y-px md:hidden"
         >
-          <Search className="size-5" />
+          <Search className="size-4" />
         </button>
 
         {/* El aviso es un enlace: quien lo lee quiere ir a elegir sus
@@ -179,7 +179,7 @@ export function TopBar({
           <Link
             href={aviso.href}
             title={aviso.texto}
-            className="inline-flex h-11 max-w-[18rem] items-center gap-1.5 rounded-full bg-marca-50 px-3 text-sm font-semibold text-marca-700 transicion-control hover:bg-marca-100 active:scale-[0.97]"
+            className="inline-flex h-9 max-w-[18rem] items-center gap-1.5 rounded-full bg-marca-50 px-3 text-sm font-semibold text-marca-700 transicion-control hover:bg-marca-100 active:scale-[0.97]"
           >
             <CalendarClock className="size-4 shrink-0" />
             <span className="hidden truncate sm:inline">{aviso.texto}</span>
@@ -198,10 +198,10 @@ export function TopBar({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t("accountMenu")}
-            className="flex h-11 items-center gap-2 rounded-full border border-linea pr-1 pl-3 transicion-control hover:shadow-card active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex h-9 items-center gap-2 rounded-full border border-linea pr-1 pl-3 transicion-control hover:shadow-card active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <Menu className="size-4 text-tinta" />
-            <Avatar className="size-8">
+            <Avatar className="size-7">
               {foto && <AvatarImage src={foto} alt="" />}
               <AvatarFallback className="bg-marca-100 text-marca-800 text-xs font-semibold">
                 {inicial(nombre)}

@@ -23,6 +23,9 @@ import {
 import { useTranslations } from "next-intl";
 
 import { GraficaAnillo, GraficaBarras } from "@/components/dashboard/graficas";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { ActivoInventario, CategoriaActivo, EstadoActivo } from "@/lib/inventario";
@@ -53,6 +56,7 @@ export function TablaActivos({
   puedeEliminar = false,
 }: TablaActivosProps) {
   const t = useTranslations("admin.inventario");
+  const ta = useTranslations("appUi");
   const router = useRouter();
 
   const [busqueda, setBusqueda] = useState("");
@@ -331,7 +335,7 @@ export function TablaActivos({
                 <th className="px-3 py-3">{t("colCustodio")}</th>
                 <th className="px-3 py-3">{t("colEstado")}</th>
                 <th className="px-3 py-3 text-right">{t("colValor")}</th>
-                <th className="py-3 pr-4 pl-3 text-center">{t("colAcciones")}</th>
+                <th className="sticky right-0 bg-muted py-3 pr-4 pl-3 text-center">{t("colAcciones")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-linea">
@@ -345,7 +349,7 @@ export function TablaActivos({
                 filtrados.map((activo) => {
                   const IconoCat = CATEGORIA_ICONOS[activo.categoria] ?? Package;
                   return (
-                    <tr key={activo.id} className="transition-colors hover:bg-muted/30">
+                    <tr key={activo.id} className="group transition-colors hover:bg-muted/30">
                       <td className="py-3 pr-3 pl-4">
                         <div className="flex items-center gap-3">
                           {activo.fotoUrl ? (
@@ -389,41 +393,24 @@ export function TablaActivos({
                       <td className="px-3 py-3 text-right font-mono font-semibold text-tinta">
                         {formatoMoneda(activo.valorEstimado)}
                       </td>
-                      <td className="py-3 pr-4 pl-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Link
-                            href={`/administrativo/inventario/${activo.id}`}
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta"
-                            title={t("verFichaTitulo")}
-                          >
-                            <Eye className="size-4" />
-                          </Link>
-                          {puedeEscribir && (
-                            <Link
-                              href={`/administrativo/inventario/${activo.id}/editar`}
-                              className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta"
-                              title={t("editarFichaTitulo")}
-                            >
-                              <Wrench className="size-4" />
-                            </Link>
-                          )}
-                          {puedeEliminar && (
-                            <button
-                              type="button"
-                              onClick={() => void manejarEliminar(activo)}
-                              disabled={eliminandoId === activo.id}
-                              className="inline-flex size-8 items-center justify-center rounded-lg border border-linea bg-background text-tinta-2 transition-colors hover:bg-muted hover:text-tinta disabled:opacity-50"
-                              title={t("eliminarTitulo")}
-                            >
-                              {eliminandoId === activo.id ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="size-4" />
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                      <CeldaAcciones className="py-3 pr-4 pl-3">
+                        <Button asChild size="sm" variant="secondary">
+                          <Link href={`/administrativo/inventario/${activo.id}`}>{ta("menu.row.view")}</Link>
+                        </Button>
+                        {(puedeEscribir || puedeEliminar) && (
+                          <MenuMasAcciones
+                            compacto
+                            acciones={[
+                              ...(puedeEscribir
+                                ? [{ etiqueta: ta("menu.row.edit"), icono: <Wrench />, href: `/administrativo/inventario/${activo.id}/editar` }]
+                                : []),
+                              ...(puedeEliminar && eliminandoId !== activo.id
+                                ? [{ etiqueta: ta("menu.row.delete"), icono: <Trash2 />, peligro: true, onClick: () => void manejarEliminar(activo) }]
+                                : []),
+                            ]}
+                          />
+                        )}
+                      </CeldaAcciones>
                     </tr>
                   );
                 })

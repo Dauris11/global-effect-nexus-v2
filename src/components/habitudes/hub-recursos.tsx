@@ -165,9 +165,9 @@ export function HubRecursos({
         </div>
 
         {puedeSubir && (
-          <Button
+          <Button size="lg"
             onClick={() => setModalSubirAbierto(true)}
-            className="min-h-11 gap-2 active:scale-95"
+            className="gap-2"
           >
             <Plus className="size-4" />
             <span>{t("uploadResourceButton")}</span>
@@ -362,10 +362,10 @@ export function HubRecursos({
               >
                 {t("cancel")}
               </Button>
-              <Button
+              <Button size="lg"
                 type="submit"
                 cargando={isPending}
-                className="gap-2 min-h-11 px-5 active:scale-95"
+                className="gap-2 px-5"
               >
                 {isPending && <Loader2 className="size-4 animate-spin" />}
                 <span>{t("publishResourceButton")}</span>

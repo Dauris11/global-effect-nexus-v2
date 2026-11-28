@@ -252,11 +252,11 @@ function Tarjeta({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={alEmpujar}
             title={t(`taskStatus.${siguiente}` as never)}
             aria-label={t(`taskStatus.${siguiente}` as never)}
-            className="size-7 shrink-0"
+            className="shrink-0"
           >
             <ChevronRight className="size-3.5" />
           </Button>
@@ -447,7 +447,6 @@ function FormularioTarea({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

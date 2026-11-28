@@ -163,7 +163,7 @@ export function TablaArqueos({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button asChild variant="outline" size="sm" className="h-8 whitespace-nowrap">
+              <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
                 <a
                   href={`/api/contabilidad/cajas/arqueos/${a.id}/pdf`}
                   target="_blank"

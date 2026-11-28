@@ -56,7 +56,7 @@ export function DialogoDepreciacion() {
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-marca-500 text-marca-500 hover:bg-marca-500/10">
+        <Button variant="outline">
           <Play className="mr-2 h-4 w-4" />
           {t("ejecutar")}
         </Button>
@@ -125,7 +125,6 @@ export function DialogoDepreciacion() {
             <Button
               type="submit"
               cargando={cargando}
-              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {cargando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {cargando ? t("procesando") : t("confirmarDepreciacion")}

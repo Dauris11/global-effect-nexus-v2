@@ -107,7 +107,7 @@ export function DialogoDetalleNomina({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 text-marca-500 hover:text-marca-600">
+        <Button variant="ghost" size="sm">
           <FileText className="mr-1 h-3.5 w-3.5" />
           {t("verDetalle")}
         </Button>
@@ -267,7 +267,6 @@ export function DialogoDetalleNomina({
                     onClick={handlePagar}
                     disabled={procesandoAccion}
                     size="sm"
-                    className="bg-marca-500 hover:bg-marca-600 text-white"
                   >
                     <DollarSign className="mr-1 h-3.5 w-3.5" />
                     {t("confirmarPago")}
@@ -296,7 +295,6 @@ export function DialogoDetalleNomina({
                 type="button"
                 onClick={handleAprobar}
                 disabled={procesandoAccion}
-                className="bg-marca-500 hover:bg-marca-600 text-white"
                 size="sm"
               >
                 {procesandoAccion ? (

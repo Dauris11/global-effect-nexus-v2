@@ -1,6 +1,8 @@
 import { Eye } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { CeldaAcciones } from "@/components/app/celda-acciones";
+import { MenuMasAcciones } from "@/components/app/menu-mas-acciones";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Monto } from "@/components/contabilidad/comun";
 import { DatoPanel, PanelFila } from "@/components/contabilidad/panel-fila";
@@ -32,6 +34,7 @@ export async function ListaRecibos({
 }) {
   const t = await getTranslations("contab");
   const tl = await getTranslations("listas.recibos");
+  const ta = await getTranslations("appUi");
   const signo = (fila: FilaRecibo) => (fila.tipo === "egreso" ? `-${fila.monto}` : fila.monto);
   const numero = (fila: FilaRecibo) => numeroDocumento(SERIE_RECIBO[fila.tipo], fila.numero);
 
@@ -119,15 +122,21 @@ export async function ListaRecibos({
                     <Monto valor={signo(fila)} moneda={fila.moneda} conSigno />
                   </td>
                   <td className="px-4 py-1.5">{estado}</td>
-                  {/* Acciones al pasar el ratón o con el foco, por encima del botón que cubre la fila. */}
-                  <td className="relative z-10 px-2 py-1.5 text-right whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                      {borrador && puedeAprobar && <ContabilizarFila id={fila.id} numero={numero(fila)} />}
-                      <Button asChild variant="ghost" size="icon" aria-label={`${tl("verDetalle")} ${numero(fila)}`}>
-                        <Link href={`/contabilidad/recibos/${fila.id}`}><Eye /></Link>
+                  <CeldaAcciones>
+                    {borrador && puedeAprobar ? (
+                      <>
+                        <ContabilizarFila id={fila.id} numero={numero(fila)} />
+                        <MenuMasAcciones
+                          compacto
+                          acciones={[{ etiqueta: ta("menu.row.view"), icono: <Eye />, href: `/contabilidad/recibos/${fila.id}` }]}
+                        />
+                      </>
+                    ) : (
+                      <Button asChild size="sm" variant="secondary" aria-label={`${tl("verDetalle")} ${numero(fila)}`}>
+                        <Link href={`/contabilidad/recibos/${fila.id}`}>{ta("menu.row.view")}</Link>
                       </Button>
-                    </span>
-                  </td>
+                    )}
+                  </CeldaAcciones>
                 </tr>
               );
             })}

@@ -133,7 +133,48 @@ async function medir(page: Page) {
     // El filtro con el que arranca la vista (el chip pulsado) tiene que incluir lo vencido.
     const chipActivo = chips.find((e) => e.getAttribute("aria-pressed") === "true" || e.hasAttribute("data-active"))?.textContent?.trim() ?? "";
 
-    return { variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
+
+    // — Botones (docs/ux-rules.md «un solo botón») —
+    const fondoReal = (e: Element | null): string => {
+      for (let n = e; n; n = n.parentElement) {
+        const c = rgba(getComputedStyle(n).backgroundColor);
+        if (c && c.a > 0.05) return `${c.r},${c.g},${c.b}`;
+      }
+
+      return "255,255,255";
+    };
+    const etiquetaDe = (e: Element) => `${(e.textContent ?? e.getAttribute("aria-label") ?? "").trim().slice(0, 24)}(${Math.round(e.getBoundingClientRect().height)}px)`;
+    // Solo cuentan los botones con caja (el componente Button, o uno con fondo/borde propio): chips, pestañas,
+    // interruptores, filas y controles de mapa son otra cosa y tienen su propia regla.
+    const botones = [...document.querySelectorAll("button")].filter((b) => {
+      if (!visible(b) || b.closest("[data-chip],[role=tab],[role=menuitem],[role=switch],[role=checkbox],[role=combobox],.leaflet-container,[data-barra-lateral],[data-gantt]")) return false;
+      if (b.hasAttribute("data-slot")) return true;
+      const s = getComputedStyle(b);
+
+      return (rgba(s.backgroundColor)?.a ?? 0) > 0.05 || parseFloat(s.borderTopWidth) > 0;
+    });
+    const alturasMalas = botones.filter((b) => ![32, 36, 44].includes(Math.round(b.getBoundingClientRect().height))).map(etiquetaDe);
+    const secundariosIguales = [...document.querySelectorAll("[data-variant=secondary]")]
+      .filter(visible)
+      .filter((b) => fondoReal(b) === fondoReal(b.parentElement))
+      .map(etiquetaDe);
+    const botonesFuera: string[] = [];
+    for (const tabla of document.querySelectorAll("main table")) {
+      if (!visible(tabla)) continue;
+      let caja: Element = tabla;
+      for (let n: Element | null = tabla.parentElement; n && n !== document.body; n = n.parentElement) {
+        const o = getComputedStyle(n).overflowX;
+        if (o === "auto" || o === "scroll" || o === "hidden") { caja = n; break; }
+      }
+      const c = caja.getBoundingClientRect();
+      for (const b of tabla.querySelectorAll("tbody button, tbody [data-slot=button]")) {
+        if (!visible(b)) continue;
+        const r = b.getBoundingClientRect();
+        if (r.right > c.right + 1 || r.left < c.left - 1) botonesFuera.push(etiquetaDe(b));
+      }
+    }
+
+    return { alturasMalas, secundariosIguales, botonesFuera, variables, fondoBody, oscuros, graficos, kpis, listaTop, primarios, prioritarios, h1, activos, nVencidas, vencidasVisibles, tieneChipVencidas: !!chipVencidas, chipActivo };
   });
 }
 
@@ -223,6 +264,18 @@ test.describe("ux-guard", () => {
             const incluyeVencidas = /abiert|todas|vencid|open|all|overdue/i.test(m.chipActivo);
             const ok = m.nVencidas === 0 || m.vencidasVisibles > 0 || incluyeVencidas;
             anotar(rol, href, "vencidas-visibles", ok, `chip Vencidas=${m.tieneChipVencidas ? m.nVencidas : "no existe"}, filtro por defecto="${m.chipActivo}", vencidas visibles=${m.vencidasVisibles}`);
+          });
+
+          await test.step("altura-botones", async () => {
+            anotar(rol, href, "altura-botones", m.alturasMalas.length === 0, `fuera de 32/36/44 px: ${m.alturasMalas.slice(0, 4).join(", ")}`);
+          });
+
+          await test.step("secundario-visible", async () => {
+            anotar(rol, href, "secundario-visible", m.secundariosIguales.length === 0, `mismo fondo que su contenedor: ${m.secundariosIguales.slice(0, 4).join(", ")}`);
+          });
+
+          await test.step("acciones-dentro", async () => {
+            anotar(rol, href, "acciones-dentro", m.botonesFuera.length === 0, `sobresalen de su tabla: ${m.botonesFuera.slice(0, 4).join(", ")}`);
           });
 
           await test.step("titulo = menu", async () => {

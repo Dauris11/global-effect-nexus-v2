@@ -77,11 +77,11 @@ export function BotonBuzonMoodle({ fila }: BotonBuzonMoodleProps) {
 
   return (
     <>
-      <Button
+      <Button size="lg"
         type="button"
         variant={yaEntregada ? "outline" : "default"}
         onClick={() => setAbierto(true)}
-        className="min-h-11 gap-2 active:scale-95 transition-all text-xs font-semibold"
+        className="gap-2"
       >
         {fila.estado_entrega === "calificado" ? (
           <>

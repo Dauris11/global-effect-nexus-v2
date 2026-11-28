@@ -1217,7 +1217,12 @@
       "close": "Close"
     },
     "menu": {
-      "more": "More actions"
+      "more": "More actions",
+      "row": {
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
     }
   },
   "estados": {
@@ -4091,9 +4096,9 @@
       "action": {
         "tomar": "Take",
         "aprobar": "Approve",
-        "aprobar_direccion": "Approve as director",
+        "aprobar_direccion": "Sign off",
         "rechazar": "Reject",
-        "completar": "Mark as completed",
+        "completar": "Complete",
         "cancelar": "Cancel request"
       },
       "error": {
@@ -7368,7 +7373,7 @@
     "noVouchersSubtitle": "Submitted vouchers will appear here for accounting and fiscal review.",
     "allSubmissionsTitle": "Voucher Validation Queue (DGII)",
     "mySubmissionsTitle": "My Expense Submissions",
-    "reviewVoucher": "Review Voucher",
+    "reviewVoucher": "Review",
     "postToAccounting": "Post to Accounting",
     "reviewVoucherModalTitle": "Validate Expense Voucher (DGII)",
     "rejectReasonOptional": "Rejection reason (required if rejecting)",

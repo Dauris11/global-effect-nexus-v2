@@ -273,10 +273,10 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div className="flex items-end">
-              <Button
+              <Button size="md"
                 type="submit"
                 cargando={isPending}
-                className="w-full h-9 text-xs font-semibold"
+                className="w-full"
               >
                 {isPending ? tDir("asignando") : tDir("guardarAsignacion")}
               </Button>
@@ -335,10 +335,10 @@ export function PanelDirectorHabitudes({
             </div>
 
             <div className="flex items-end">
-              <Button
+              <Button size="md"
                 type="submit"
                 cargando={isPending}
-                className="w-full h-9 text-xs font-semibold"
+                className="w-full"
               >
                 {isPending ? tDir("vinculando") : tDir("vincularEstudiante")}
               </Button>

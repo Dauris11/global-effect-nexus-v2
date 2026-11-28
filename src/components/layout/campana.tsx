@@ -56,7 +56,7 @@ export function Campana({ avisos, sinLeer }: { avisos: readonly AvisoVisible[]; 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="relative flex size-11 items-center justify-center rounded-full transicion-control hover:bg-muted active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="relative flex size-9 items-center justify-center rounded-full transicion-control hover:bg-muted active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         aria-label={
           sinLeer > 0 ? t("unread", { count: sinLeer }) : t("title")
         }

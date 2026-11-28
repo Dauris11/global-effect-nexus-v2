@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { StatusBadge } from "@/components/app/status-badge";
 import { LogoUniversidad } from "@/components/universidades/logo-universidad";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
@@ -19,13 +20,14 @@ import type { UniversidadCatalogo } from "@/server/universidades/consultas";
 export function ListaUniversidades({ universidades }: { universidades: UniversidadCatalogo[] }) {
   const t = useTranslations("catalog");
   const tl = useTranslations("listas");
+  const ta = useTranslations("appUi");
   const [seleccionada, setSeleccionada] = useState<UniversidadCatalogo | null>(null);
 
   const estado = (u: UniversidadCatalogo) => (u.activa ? "activa" : "inactiva");
 
   return (
     <>
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         <table className="hidden w-full text-sm md:table">
           <thead className="border-b border-linea text-left texto-meta">
             <tr>
@@ -63,13 +65,11 @@ export function ListaUniversidades({ universidades }: { universidades: Universid
                 <td className="text-meta px-4 py-1.5">{t(`regime.${u.regimen}`)}</td>
                 <td className="text-meta px-4 py-1.5 tabular-nums">{u.carreras}</td>
                 <td className="text-meta px-4 py-1.5 tabular-nums">{u.estudiantes}</td>
-                <td className="relative z-10 w-16 px-2 py-1.5 text-right">
-                  <span className="inline-flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    <Button asChild variant="ghost" size="icon" aria-label={tl("universidades.verDetalle")}>
-                      <Link href={`/academico/universidades/${u.id}`}><Eye /></Link>
-                    </Button>
-                  </span>
-                </td>
+                <CeldaAcciones>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/academico/universidades/${u.id}`}>{ta("menu.row.view")}</Link>
+                  </Button>
+                </CeldaAcciones>
               </tr>
             ))}
           </tbody>

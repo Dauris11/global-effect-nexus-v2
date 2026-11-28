@@ -112,7 +112,6 @@ export function VistaReportes({
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="border-linea"
           >
             <Printer className="mr-2 h-4 w-4" />
             {t("acciones.imprimir")}
@@ -122,7 +121,6 @@ export function VistaReportes({
             variant="outline"
             size="sm"
             onClick={() => setDialogoSnapshotAbierto(true)}
-            className="border-linea"
           >
             <Camera className="mr-2 h-4 w-4" />
             {t("acciones.guardarSnapshot")}
@@ -811,7 +809,6 @@ export function VistaReportes({
             <Button
               onClick={handleGuardarSnapshot}
               disabled={isPending || !tituloSnapshot.trim()}
-              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? t("snapshots.guardando") : t("snapshots.guardar")}
             </Button>

@@ -23,6 +23,7 @@ import { Link } from "@/i18n/navigation";
 import { usePermisos } from "@/components/layout/proveedor-permisos";
 import { tienePermiso, type Permiso, type Rol } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface CajonAccionesRapidasProps {
   abierto: boolean;
@@ -172,14 +173,16 @@ export function CajonAccionesRapidas({
             </div>
             <h2 className="text-sm font-bold text-tinta">{t("title")}</h2>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onCerrar}
-            className="flex size-8 items-center justify-center rounded-full bg-muted text-tinta-2 transicion-control hover:text-tinta active:scale-90"
             aria-label={t("close")}
+            title={t("close")}
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Rejilla de tarjetas de acceso rápido táctiles */}

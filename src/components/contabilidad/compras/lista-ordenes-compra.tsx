@@ -106,20 +106,20 @@ export function ListaOrdenesCompra({
                   {oc.estado === "pendiente_aprobacion" && (
                     <div className="flex justify-end gap-1">
                       <Button
-                        size="sm"
+                        size="icon-sm"
                         variant="outline"
-                        className="h-7 w-7 p-0 text-tinta hover:bg-muted"
                         title={t("aprobar")}
+                        aria-label={t("aprobar")}
                         disabled={procesandoId === oc.id}
                         onClick={() => handleAprobar(oc.id)}
                       >
                         <Check className="size-3.5" />
                       </Button>
                       <Button
-                        size="sm"
+                        size="icon-sm"
                         variant="outline"
-                        className="h-7 w-7 p-0 text-tinta-2 hover:bg-muted hover:text-tinta"
                         title={t("rechazar")}
+                        aria-label={t("rechazar")}
                         disabled={procesandoId === oc.id}
                         onClick={() => handleRechazar(oc.id)}
                       >

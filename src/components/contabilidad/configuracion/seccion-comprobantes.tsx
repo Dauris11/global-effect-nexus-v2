@@ -258,7 +258,7 @@ function BotonDefinirVigencia({ id }: { id: string }) {
   return (
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-6 px-2.5 text-xs font-medium">
+        <Button variant="outline" size="sm" className="px-2.5">
           {t("abrir")}
         </Button>
       </DialogTrigger>

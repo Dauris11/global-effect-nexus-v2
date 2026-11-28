@@ -69,3 +69,24 @@ Cada estado del sistema está en `src/lib/status-map.ts` (valor → token) con s
 | `Badge` + `visualDeEstado` / `ESTADO_VISUAL` / `visualEstado` | `StatusBadge` |
 | Filtros con botón «Aplicar», `FilaChips`/`ChipFiltro` | `FilterBar` |
 | `Dialog` para crear/editar, `FormularioGuiado` | `SidePanelForm` con «Más detalles» |
+
+## Botones (28 nov 2026)
+
+Un solo componente: `src/components/ui/button.tsx` (estilos en `button-variantes.ts`, colores en los
+tokens `--btn-*` de `globals.css`, con su valor claro y oscuro). Prohibido un `<button>` con caja propia.
+
+| Variante | Uso |
+|---|---|
+| `primary` | La acción principal; una por pantalla. |
+| `secondary` | Superficie blanca con borde: el resto de acciones. |
+| `ghost` | Terciaria, sin caja («Ver todo»). |
+| `danger` | Destructiva a la vista, en contorno («Rechazar»). |
+| `danger-solid` | SOLO la confirmación final de algo irreversible. |
+
+- Alturas: `sm` 32 (filas y chips), `md` 36 (por defecto), `lg` 44 (móvil y acción principal del chofer). Radio 8 px, texto 14/600 (sm 13/600), icono de 16 px y gap de 8.
+- Solo icono: `icon`, `icon-sm`, `icon-lg`, cuadrados, **siempre** con `aria-label` y `title`.
+- Estados: hover, active (baja 1 px), foco (halo de 3 px), deshabilitado (50 %, sin hover) y `loading` (spinner de 14 px, mismo ancho, `aria-busy`, sin doble clic). Toda server action usa `loading`.
+- Barra superior: «Ver como», buscador, avisos y cuenta miden 36 px.
+- Filas de tabla: columna de acciones fija a la derecha (`sticky right-0`), un botón `sm` secondary + menú ⋯; «Aprobar» secondary con ✓ y «Rechazar» ghost-peligro que pide el motivo en un popover.
+- Chips de filtro: 30 px, 13/500, radio completo; el activo es tinta sobre fondo; el conteo va en 12/600 con opacidad .7.
+- Muestra viva: `/ui-kit`. Pruebas: reglas `altura-botones`, `secundario-visible` y `acciones-dentro` de `e2e/ux-guard.spec.ts`.

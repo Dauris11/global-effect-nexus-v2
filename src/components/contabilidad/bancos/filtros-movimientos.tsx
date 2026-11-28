@@ -188,11 +188,11 @@ export function FiltrosMovimientosBanco({
         </label>
 
         {hayFiltro && (
-          <Button
+          <Button size="md"
             type="button"
             variant="ghost"
             onClick={limpiar}
-            className="h-9 shrink-0"
+            className="shrink-0"
           >
             <X className="size-4" />
             {t("limpiar")}

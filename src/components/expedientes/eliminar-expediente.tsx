@@ -76,7 +76,6 @@ export function EliminarExpediente({
           type="button"
           variant="destructive"
           size="sm"
-          className="transition-transform active:scale-[0.97]"
         >
           <Trash2 className="size-4" />
           {textos.delete}

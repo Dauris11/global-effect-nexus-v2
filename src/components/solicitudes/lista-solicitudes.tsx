@@ -5,6 +5,7 @@ import { Check, ShieldCheck, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { FotoEstudiante } from "@/components/expedientes/foto-estudiante";
+import { CeldaAcciones } from "@/components/app/celda-acciones";
 import { StatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -57,7 +58,7 @@ export function ListaSolicitudes({
 
   return (
     <>
-      <div className="overflow-hidden rounded-card border border-linea bg-card shadow-card">
+      <div className="overflow-x-auto rounded-card border border-linea bg-card shadow-card">
         {/* ≥ md: tabla densa */}
         <table className="hidden w-full text-sm md:table">
           <thead className="text-meta border-b border-linea text-left">
@@ -115,33 +116,27 @@ export function ListaSolicitudes({
                     {fila.monto !== null ? montoUsd(fila.monto) : <span className="text-meta">—</span>}
                   </td>
                   <td className="text-meta px-4 py-1.5 whitespace-nowrap">{fecha(fila)}</td>
-                  {/* Acciones al pasar el ratón o con el foco; por encima del botón que cubre la fila. */}
-                  <td className="relative z-10 px-2 py-1.5 text-right">
-                    <span className="inline-flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                      {positiva && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setConfirmando({ id: fila.id, accion: positiva })}
-                        >
-                          <Check />
-                          {t(`step.action.${positiva}` as never)}
-                        </Button>
-                      )}
-                      {puedeRechazar && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setConfirmando({ id: fila.id, accion: "rechazar" })}
-                        >
-                          <X />
-                          {t("step.action.rechazar")}
-                        </Button>
-                      )}
-                    </span>
-                  </td>
+                  {/* Rechazar abre el diálogo que nombra la solicitud y pide el motivo (no hay popover de Radix instalado). */}
+                  <CeldaAcciones>
+                    {positiva && (
+                      <Button type="button" size="sm" variant="secondary" onClick={() => setConfirmando({ id: fila.id, accion: positiva })}>
+                        <Check />
+                        {t(`step.action.${positiva}` as never)}
+                      </Button>
+                    )}
+                    {puedeRechazar && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="text-(--btn-danger-fg)"
+                        onClick={() => setConfirmando({ id: fila.id, accion: "rechazar" })}
+                      >
+                        <X />
+                        {t("step.action.rechazar")}
+                      </Button>
+                    )}
+                  </CeldaAcciones>
                 </tr>
               );
             })}

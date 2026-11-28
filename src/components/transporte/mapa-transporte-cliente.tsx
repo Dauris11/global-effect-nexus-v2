@@ -622,7 +622,7 @@ export function MapaTransporteCliente({
                 type="button"
                 variant={seguirGuagua ? "default" : "outline"}
                 size="sm"
-                className="h-8 gap-1.5 text-xs"
+                className="gap-1.5"
                 onClick={() => {
                   const nuevo = !seguirGuagua;
                   setSeguirGuagua(nuevo);
@@ -642,8 +642,7 @@ export function MapaTransporteCliente({
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
-                className="size-8"
+                size="icon-sm"
                 onClick={alternarTamanoMapa}
                 title={ampliado ? t("timob.collapseMap") : t("timob.expandMap")}
                 aria-label={

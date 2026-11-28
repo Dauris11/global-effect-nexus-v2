@@ -32,6 +32,7 @@ import {
   type ModoAgente,
 } from "@/server/ia/asistente-global";
 import { miConsumoIA } from "@/server/ia/aprobaciones";
+import { Button } from "@/components/ui/button";
 
 /** Estado del orbe → clave de `widgetIA.orbe` (next-intl no admite guiones raros en claves). */
 const CLAVE_ORBE: Record<EstadoOrbe, string> = {
@@ -488,24 +489,22 @@ export function WidgetFlotanteIA({
                   {textoOrbe}
                 </p>
               </div>
-              <button
+              <Button variant="ghost" size="icon-lg"
                 type="button"
                 onClick={handleLimpiar}
                 aria-label={t("limpiar")}
                 title={t("limpiar")}
-                className="text-tinta-3 hover:bg-muted hover:text-tinta focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2"
               >
                 <RotateCcw className="size-4" />
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost" size="icon-lg"
                 type="button"
                 onClick={() => setAbierto(false)}
                 aria-label={t("cerrar")}
                 title={t("cerrar")}
-                className="text-tinta-3 hover:bg-muted hover:text-tinta focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             {consumo && <MedidorConsumo consumo={consumo} />}
@@ -648,9 +647,9 @@ export function WidgetFlotanteIA({
                 <div className="bg-muted text-tinta mb-2 flex items-center gap-2 rounded-control px-3 py-2 text-sm">
                   <Paperclip className="size-4 shrink-0" />
                   <span className="min-w-0 flex-1 truncate">{adjunto.name}</span>
-                  <button type="button" onClick={() => { setAdjunto(null); if (entradaAdjunto.current) entradaAdjunto.current.value = ""; }} aria-label={t("quitarAdjunto")} title={t("quitarAdjunto")} className="focus-visible:ring-ring flex size-8 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2">
+                  <Button variant="ghost" size="icon-sm" type="button" onClick={() => { setAdjunto(null); if (entradaAdjunto.current) entradaAdjunto.current.value = ""; }} aria-label={t("quitarAdjunto")} title={t("quitarAdjunto")}>
                     <X className="size-4" />
-                  </button>
+                  </Button>
                 </div>
               )}
               <div className="border-linea-fuerte focus-within:border-marca-500 focus-within:ring-marca-500 flex items-end gap-1 rounded-card border p-1 focus-within:ring-1">
@@ -666,9 +665,9 @@ export function WidgetFlotanteIA({
                 {!esEstudiante && (
                   <>
                     <input ref={entradaAdjunto} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => setAdjunto(e.target.files?.[0] ?? null)} />
-                    <button type="button" onClick={() => entradaAdjunto.current?.click()} aria-label={t("adjuntar")} title={t("adjuntar")} className="text-tinta-2 hover:text-tinta focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2">
+                    <Button variant="ghost" size="icon-lg" type="button" onClick={() => entradaAdjunto.current?.click()} aria-label={t("adjuntar")} title={t("adjuntar")}>
                       <Paperclip className="size-5" />
-                    </button>
+                    </Button>
                   </>
                 )}
 

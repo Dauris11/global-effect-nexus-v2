@@ -56,6 +56,7 @@ import {
   proyectosPorEstado,
   tareasPorEstado,
 } from "@/server/reportes/consultas";
+import { Button } from "@/components/ui/button";
 
 /** Clase del desplegable nativo, la misma del resto del proyecto. */
 const SELECT =
@@ -364,12 +365,9 @@ async function Academico({
           </select>
         </div>
 
-        <button
-          type="submit"
-          className={cn(PILDORA_FILTRO.base, PILDORA_FILTRO.activa)}
-        >
+        <Button type="submit" size="sm">
           {t("academic.apply")}
-        </button>
+        </Button>
       </form>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

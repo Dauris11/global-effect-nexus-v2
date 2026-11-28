@@ -307,7 +307,6 @@ export function FormularioActivo({
                   variant="outline"
                   onClick={() => void manejarEliminar()}
                   disabled={guardando || eliminando}
-                  className="text-xs"
                 >
                   {eliminando ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -324,7 +323,6 @@ export function FormularioActivo({
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={guardando || eliminando}
-                className="text-xs"
               >
                 <X className="size-4" />
                 <span>{t("cancelar")}</span>
@@ -333,7 +331,7 @@ export function FormularioActivo({
               <Button
                 type="submit"
                 disabled={guardando || eliminando}
-                className="flex items-center gap-2 bg-marca-600 text-xs hover:bg-marca-700"
+                className="flex items-center gap-2"
               >
                 {guardando ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                 <span>{esEdicion ? t("guardarCambios") : t("crearActivo")}</span>

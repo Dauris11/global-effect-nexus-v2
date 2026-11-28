@@ -188,12 +188,12 @@ export function GaleriaEvidencias({
                   {puedeAuditar && visita.estado === "completada" && (
                     <Button
                       type="button"
-                      size="sm"
+                      size="lg"
                       variant="outline"
                       cargando={auditando && visitaEnCurso === visita.id}
                       disabled={auditando}
                       onClick={() => auditar(visita.id)}
-                      className="min-h-11 gap-1.5"
+                      className="gap-1.5"
                     >
                       {auditando && visitaEnCurso === visita.id ? (
                         <Loader2 className="size-4 animate-spin" />

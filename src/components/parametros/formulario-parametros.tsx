@@ -82,14 +82,15 @@ export function FormularioParametros({
                     <div className="flex items-center justify-between gap-2">
                       <span className="texto-meta">{t("normal", { valor: campo.porDefecto })}</span>
                       {cambiado && (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setValores((v) => ({ ...v, [campo.clave]: campo.porDefecto }))}
-                          className="text-marca-700 hover:bg-muted flex min-h-9 items-center gap-1 rounded-control px-2 text-xs font-medium"
                         >
                           <RotateCcw className="size-3.5" />
                           {t("restore")}
-                        </button>
+                        </Button>
                       )}
                     </div>
 

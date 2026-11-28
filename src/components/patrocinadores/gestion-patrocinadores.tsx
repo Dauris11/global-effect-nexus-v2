@@ -145,7 +145,6 @@ export function GestionPatrocinadores({
             type="button"
             size="sm"
             onClick={() => setEditando("nuevo")}
-            className="transition-transform duration-150 active:scale-95"
           >
             <Plus className="size-3.5" />
             {t("new")}
@@ -263,11 +262,11 @@ function Ficha({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={alEditar}
             title={t("edit")}
             aria-label={t("edit")}
-            className="size-8 shrink-0"
+            className="shrink-0"
           >
             <Pencil className="size-3.5" />
           </Button>
@@ -493,7 +492,6 @@ function Formulario({
               type="submit"
               size="sm"
               cargando={enviando}
-              className="transition-transform duration-150 active:scale-95"
             >
               {enviando ? (
                 <Loader2 className="size-3.5 animate-spin" />

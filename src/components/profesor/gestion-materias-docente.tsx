@@ -760,7 +760,6 @@ function FilaInscritoMateria({ est }: { est: InscritoEnMateria }) {
               type="button"
               size="sm"
               variant="ghost"
-              className="h-8 text-xs"
               onClick={() => {
                 setNota(String(est.notaPropuesta));
                 setDecisionManual(null);
@@ -789,7 +788,6 @@ function FilaInscritoMateria({ est }: { est: InscritoEnMateria }) {
             type="submit"
             size="sm"
             variant="outline"
-            className="h-8 text-xs"
             cargando={guardando}
           >
             {guardando ? (

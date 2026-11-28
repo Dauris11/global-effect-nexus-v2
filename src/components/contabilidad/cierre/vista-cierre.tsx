@@ -266,7 +266,6 @@ export function VistaCierre({
                           size="sm"
                           disabled={isPending || totalBorradores > 0}
                           onClick={() => handleCerrarMes(p.id)}
-                          className="border-linea text-xs h-7"
                         >
                           <Lock className="mr-1 h-3 w-3 text-marca-700" />
                           {t("cerrarMes")}
@@ -277,7 +276,6 @@ export function VistaCierre({
                           size="sm"
                           disabled={isPending || resumenPreCierreInicial.yaCerrado}
                           onClick={() => setPeriodoParaReabrir(p)}
-                          className="text-xs h-7 text-muted-foreground hover:text-foreground"
                         >
                           <RotateCcw className="mr-1 h-3 w-3" />
                           {t("reabrirMes")}
@@ -305,10 +303,9 @@ export function VistaCierre({
             <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-0">
               {/* Disponible aunque falten meses por cerrar: sirve justo para ver qué se cancelaría. */}
               <BotonAsiento cargar={() => asientoPreviaCierreAnual(ejercicioSeleccionado)} />
-              <Button
+              <Button size="md"
                 disabled={isPending || !resumenPreCierreInicial.todosMesesCerrados}
                 onClick={() => setDialogoCierreAnualAbierto(true)}
-                className="bg-marca-500 hover:bg-marca-600 text-white text-xs h-9"
               >
                 <FileCheck2 className="mr-2 h-4 w-4" />
                 {t("ejecutarCierre")}
@@ -461,7 +458,6 @@ export function VistaCierre({
             <Button
               onClick={handleReabrirMes}
               disabled={isPending || motivoReapertura.trim().length < 10}
-              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? "Reabriendo..." : t("confirmarReabrir")}
             </Button>
@@ -520,7 +516,6 @@ export function VistaCierre({
             <Button
               onClick={handleEjecutarCierreAnual}
               cargando={isPending}
-              className="bg-marca-500 hover:bg-marca-600 text-white"
             >
               {isPending ? t("ejecutando") : t("ejecutarCierre")}
             </Button>

@@ -175,20 +175,16 @@ export function DialogoConfigurarCaja({
     <>
       <Dialog open={abierto} onOpenChange={(v) => { if (esSupervisor) setAbierto(v); }}>
         <DialogTrigger asChild>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="icon-sm"
             disabled={!esSupervisor}
             title={esSupervisor ? t("configurarCaja") : t("soloSupervisorTooltip")}
             aria-label={t("configurarCaja")}
-            className={cn(
-              "inline-flex size-7 items-center justify-center rounded-control border border-linea text-tinta-2 transition-colors",
-              esSupervisor
-                ? "hover:border-tinta hover:bg-muted hover:text-tinta cursor-pointer"
-                : "cursor-not-allowed opacity-45",
-            )}
           >
             <Settings className="size-3.5" />
-          </button>
+          </Button>
         </DialogTrigger>
 
         <DialogContent className="md:max-w-4xl">
@@ -257,7 +253,7 @@ export function DialogoConfigurarCaja({
                 <span className="block text-xs font-medium leading-none text-tinta-2">
                   {t("desglose")}
                 </span>
-                <Button
+                <Button size="md"
                   type="button"
                   variant="outline"
                   onClick={() => {
@@ -269,7 +265,7 @@ export function DialogoConfigurarCaja({
                     setErrorDesglose(null);
                     setAbiertoDesglose(true);
                   }}
-                  className="h-9 w-full justify-between px-3 text-sm font-medium"
+                  className="w-full justify-between px-3 text-sm"
                 >
                   <span className="inline-flex items-center gap-1.5 truncate">
                     <Banknote className="size-4 shrink-0 text-marca-600" />

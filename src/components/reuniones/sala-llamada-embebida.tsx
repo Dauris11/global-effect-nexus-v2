@@ -74,8 +74,7 @@ export function SalaLlamadaEmbebida({
             <Button
               type="button"
               variant="outline"
-              size="icon"
-              className="size-8"
+              size="icon-sm"
               title={expandida ? t("collapse") : t("expand")}
               aria-label={expandida ? t("collapse") : t("expand")}
               onClick={() => setExpandida((v) => !v)}

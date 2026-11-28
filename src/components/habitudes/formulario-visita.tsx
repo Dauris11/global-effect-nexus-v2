@@ -214,14 +214,13 @@ export function FormularioVisita({ liceos, hoy }: { liceos: HabitudesLiceo[]; ho
               <li key={f.vista} className="relative aspect-square overflow-hidden rounded-control bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:), next/image no aplica */}
                 <img src={f.vista} alt={t("photoN", { n: i + 1 })} className="size-full object-cover" />
-                <button
+                <Button variant="secondary" size="icon-sm" className="absolute top-1 right-1"
                   type="button"
                   aria-label={t("removePhoto", { n: i + 1 })}
                   onClick={() => setFotos((p) => p.filter((_, k) => k !== i))}
-                  className="absolute top-1 right-1 flex size-8 items-center justify-center rounded-full bg-tinta text-background"
                 >
                   <X aria-hidden className="size-4" />
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

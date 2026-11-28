@@ -123,7 +123,6 @@ export default async function PaginaAcademicoMaterias({
 
         <Button
           type="submit"
-          className="transition-transform duration-150 active:scale-95"
         >
           <Search className="size-4" />
           {t("apply")}

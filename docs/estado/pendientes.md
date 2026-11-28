@@ -5,6 +5,13 @@ en cada sesión de trabajo: lo que se cierra se tacha o se quita, lo nuevo que
 aparece se agrega. No sustituye a [`docs/estado/progreso.md`](progreso.md) (estado por
 módulo) — esto es solo la cola de pendientes concretos.
 
+## Sistema de botones (28 nov 2026), SIN PROBAR en navegador
+
+- [x] **Un solo botón** (`ui/button.tsx` + `button-variantes.ts`, tokens `--btn-*` claro/oscuro): primary, secondary, ghost, danger, danger-solid; `sm` 32 / `md` 36 / `lg` 44 / `icon*`; `loading` sin cambio de ancho; ~60 archivos con alturas o colores propios llevados al sistema; barra superior a 36 px; chips de 30 px. Reglas `altura-botones`, `secundario-visible` y `acciones-dentro` en `e2e/ux-guard.spec.ts`; `/ui-kit` con la matriz completa en claro y oscuro. Documentado en `docs/ux-rules.md`.
+- [x] **Acciones por fila** (`CeldaAcciones`, columna fija a la derecha, un botón + menú ⋯) en 11 listas.
+- [ ] **Falta:** popover de motivo al rechazar (`@radix-ui/react-popover` no está instalado; hoy abre el diálogo de confirmación) con `danger-solid`; ~15 listas sin migrar (comedor, expedientes, donaciones, retenciones…); `DialogoRevertir` de asientos fuera del menú ⋯; toast con «Deshacer» en acciones reversibles; `text-tinta-2` sobre algunos ghost de «volver»; ejecutar `npm run test:ux` con la sesión renovada (no se corrió: la sesión de Playwright caducó) y revisar que `secundario-visible` no falle en tarjetas blancas (secondary blanco sobre tarjeta blanca).
+- [ ] **Rendimiento de navegación (28 nov 2026):** hecho scroll al cambiar de módulo, barra de progreso, esqueleto tras 300 ms, chips en una línea, prefetch al apuntar, `staleTimes` 30 s, región `sfo1` y registro `DB_TIMING=1`. Falta la tabla de consultas por pantalla (necesita sesión: `npm run test:ux:login`), el `Suspense` con el encabezado fuera, esqueletos a medida, los índices y las reglas `carga`/`scroll-reset` del test.
+
 ## Acceso y correo (28 nov 2026)
 
 - [ ] **Acceso:** Google y correo/contraseña para todos, **solo si ya están registrados** (sin autoregistro). Documentado en [`correo-y-acceso-resend.md`](../referencia/correo-y-acceso-resend.md) §7.4. Falta: desactivar «Allow new users to sign up» en Supabase, probar con un Gmail no registrado, «¿Olvidaste tu contraseña?» y alta con invitación real.
