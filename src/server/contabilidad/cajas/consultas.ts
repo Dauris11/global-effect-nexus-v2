@@ -225,61 +225,56 @@ export async function categoriasGastoCaja(): Promise<CategoriaGastoCaja[]> {
   );
 }
 
-export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoCaja[]> {
-  await requerirPermiso("contabilidad.leer");
+const SELECT_MOVIMIENTOS_CAJA = `
+  SELECT m.id, m.numero, m.caja_id, to_char(m.fecha, 'YYYY-MM-DD') AS fecha,
+         m.tipo, m.monto, m.concepto,
+         m.persona_id, p.nombre AS persona_nombre,
+         m.entregado_a, m.factura_con_comprobante, m.comprobante_numero,
+         m.recibo_id, (m.adjunto_ruta IS NOT NULL) AS tiene_adjunto,
+         m.estado, m.arqueo_id,
+         COALESCE(cg.nombre, ast.cuenta_gasto) AS cuenta_gasto, ast.id AS asiento_id,
+         u.nombre AS creado_por_nombre, m.creado_en
+    FROM contabilidad.caja_movimiento m
+    JOIN public.usuario u ON m.creado_por = u.id
+    LEFT JOIN public.usuario p ON m.persona_id = p.id
+    LEFT JOIN contabilidad.cuenta_contable cg ON cg.id = m.cuenta_gasto_id
+    LEFT JOIN LATERAL (
+      SELECT a.id,
+             (SELECT cc.nombre
+                FROM contabilidad.asiento_linea l
+                JOIN contabilidad.cuenta_contable cc ON cc.id = l.cuenta_id
+               WHERE l.asiento_id = a.id AND l.debe > 0
+               LIMIT 1) AS cuenta_gasto
+        FROM contabilidad.asiento a
+       WHERE a.origen_tabla = 'caja_movimiento' AND a.origen_id = m.id AND NOT a.anulado
+       LIMIT 1
+    ) ast ON true`;
 
-  const filas = await consultar<{
-    id: string;
-    numero: number;
-    caja_id: string;
-    fecha: string;
-    tipo: MovimientoCaja["tipo"];
-    monto: string;
-    concepto: string;
-    persona_id: string | null;
-    persona_nombre: string | null;
-    entregado_a: string | null;
-    factura_con_comprobante: boolean;
-    comprobante_numero: string | null;
-    recibo_id: string | null;
-    tiene_adjunto: boolean;
-    estado: MovimientoCaja["estado"];
-    arqueo_id: string | null;
-    cuenta_gasto: string | null;
-    asiento_id: string | null;
-    creado_por_nombre: string;
-    creado_en: string;
-  }>(
-    `SELECT m.id, m.numero, m.caja_id, to_char(m.fecha, 'YYYY-MM-DD') AS fecha,
-            m.tipo, m.monto, m.concepto,
-            m.persona_id, p.nombre AS persona_nombre,
-            m.entregado_a, m.factura_con_comprobante, m.comprobante_numero,
-            m.recibo_id, (m.adjunto_ruta IS NOT NULL) AS tiene_adjunto,
-            m.estado, m.arqueo_id,
-            COALESCE(cg.nombre, ast.cuenta_gasto) AS cuenta_gasto, ast.id AS asiento_id,
-            u.nombre AS creado_por_nombre, m.creado_en
-       FROM contabilidad.caja_movimiento m
-       JOIN public.usuario u ON m.creado_por = u.id
-       LEFT JOIN public.usuario p ON m.persona_id = p.id
-       LEFT JOIN contabilidad.cuenta_contable cg ON cg.id = m.cuenta_gasto_id
-       LEFT JOIN LATERAL (
-         SELECT a.id,
-                (SELECT cc.nombre
-                   FROM contabilidad.asiento_linea l
-                   JOIN contabilidad.cuenta_contable cc ON cc.id = l.cuenta_id
-                  WHERE l.asiento_id = a.id AND l.debe > 0
-                  LIMIT 1) AS cuenta_gasto
-           FROM contabilidad.asiento a
-          WHERE a.origen_tabla = 'caja_movimiento' AND a.origen_id = m.id AND NOT a.anulado
-          LIMIT 1
-       ) ast ON true
-      WHERE m.caja_id = $1
-      ORDER BY m.fecha DESC, m.numero DESC
-      LIMIT 200`,
-    [cajaId],
-  );
+type FilaMovimientoDb = {
+  id: string;
+  numero: number;
+  caja_id: string;
+  fecha: string;
+  tipo: MovimientoCaja["tipo"];
+  monto: string;
+  concepto: string;
+  persona_id: string | null;
+  persona_nombre: string | null;
+  entregado_a: string | null;
+  factura_con_comprobante: boolean;
+  comprobante_numero: string | null;
+  recibo_id: string | null;
+  tiene_adjunto: boolean;
+  estado: MovimientoCaja["estado"];
+  arqueo_id: string | null;
+  cuenta_gasto: string | null;
+  asiento_id: string | null;
+  creado_por_nombre: string;
+  creado_en: string;
+};
 
-  return filas.map((f) => ({
+function aMovimiento(f: FilaMovimientoDb): MovimientoCaja {
+  return {
     id: f.id,
     numero: f.numero,
     cajaId: f.caja_id,
@@ -300,7 +295,37 @@ export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoC
     asientoId: f.asiento_id,
     creadoPorNombre: f.creado_por_nombre,
     creadoEn: f.creado_en,
-  }));
+  };
+}
+
+/** Movimientos activos (salidas pendientes de reposición). */
+export async function listarMovimientosCaja(cajaId: string): Promise<MovimientoCaja[]> {
+  await requerirPermiso("contabilidad.leer");
+  const filas = await consultar<FilaMovimientoDb>(
+    `${SELECT_MOVIMIENTOS_CAJA}
+      WHERE m.caja_id = $1
+        AND m.tipo = 'gasto'
+        AND m.estado = 'pendiente'
+      ORDER BY m.fecha DESC, m.numero DESC
+      LIMIT 500`,
+    [cajaId],
+  );
+  return filas.map(aMovimiento);
+}
+
+/** Histórico de salidas ya repuestas de una caja. */
+export async function listarHistoricoCaja(cajaId: string): Promise<MovimientoCaja[]> {
+  await requerirPermiso("contabilidad.leer");
+  const filas = await consultar<FilaMovimientoDb>(
+    `${SELECT_MOVIMIENTOS_CAJA}
+      WHERE m.caja_id = $1
+        AND m.tipo = 'gasto'
+        AND m.estado = 'completado'
+      ORDER BY m.fecha DESC, m.numero DESC
+      LIMIT 1000`,
+    [cajaId],
+  );
+  return filas.map(aMovimiento);
 }
 
 /**

@@ -4,6 +4,7 @@ import { ChevronLeft, Calculator } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { DialogoConfigurarCaja } from "@/components/contabilidad/cajas/dialogo-configurar-caja";
+import { ModalHistoricoCaja } from "@/components/contabilidad/cajas/modal-historico";
 import { ModalReposicionCaja } from "@/components/contabilidad/cajas/modal-reposicion";
 import { FormularioMovimientoCaja } from "@/components/contabilidad/cajas/formulario-movimiento";
 import { TablaArqueos, TablaMovimientos } from "@/components/contabilidad/cajas/tablas-caja";
@@ -19,6 +20,7 @@ import { cuentasConSaldo } from "@/server/contabilidad/bancos/consultas";
 import {
   categoriasGastoCaja,
   listarArqueos,
+  listarHistoricoCaja,
   listarMovimientosCaja,
   obtenerCaja,
   proximoComprobanteCaja,
@@ -49,11 +51,12 @@ export default async function PaginaDetalleCaja({
   const usuario = await requerirPermiso("contabilidad.leer");
   if (!esUuid(id)) notFound();
 
-  const [t, caja, movimientos, arqueos, cuentas, personas, categorias, proximoComprobanteB11] =
+  const [t, caja, movimientos, historico, arqueos, cuentas, personas, categorias, proximoComprobanteB11] =
     await Promise.all([
       getTranslations({ locale, namespace: "contab.cajas" }),
       obtenerCaja(id),
       listarMovimientosCaja(id),
+      listarHistoricoCaja(id),
       listarArqueos(id),
       cuentasConSaldo(),
       listarUsuariosSolicitantes(),
@@ -131,8 +134,19 @@ export default async function PaginaDetalleCaja({
                     {t("nuevoArqueo")}
                   </Link>
                 </Button>
+                <ModalHistoricoCaja
+                  movimientos={historico}
+                  moneda={caja.moneda}
+                  categorias={categorias}
+                />
               </>
-            ) : undefined
+            ) : (
+              <ModalHistoricoCaja
+                movimientos={historico}
+                moneda={caja.moneda}
+                categorias={categorias}
+              />
+            )
           }
         />
       </div>

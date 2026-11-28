@@ -83,22 +83,37 @@ export async function asientoPreviaGastoCaja(datos: {
 }
 
 /**
- * Vista previa de la reposición desde banco: la caja entra por débito y el
- * banco elegido sale por crédito (el recibo de egreso lleva la caja como
- * contrapartida, ver `reponerCajaDesdeBancoAction`).
+ * Vista previa de la reposición desde banco:
+ * todas las cuentas contables utilizadas en los gastos pendientes de la caja
+ * en débito (más cualquier faltante si existe) contra la cuenta del banco en crédito.
  */
 export async function asientoPreviaReposicion(datos: {
   cajaId: string;
   cuentaBancoId: string;
-  monto: number;
+  monto?: number;
   concepto: string;
   fecha: string;
 }): Promise<VistaAsiento> {
   await requerirPermiso("contabilidad.leer");
   if (!esUuid(datos.cajaId)) return armarVista([], [], { estado: "previa" });
   return enTransaccion(async (cliente) => {
-    const caja = (await cliente.query<CajaCuenta>(CUENTA_DE_CAJA, [datos.cajaId])).rows[0];
+    const { rows: [caja] } = await cliente.query<{
+      nombre: string;
+      moneda: "DOP" | "USD";
+      fondo_fijo: string;
+      saldo_actual: string;
+      cuenta_id: string | null;
+    }>(
+      `SELECT c.nombre, c.moneda, c.fondo_fijo::text, c.saldo_actual::text,
+              COALESCE(c.cuenta_contable_id,
+                       (SELECT cuenta_id FROM contabilidad.codigo_transaccion WHERE codigo = 'CAJ_CAJA_CHICA'))
+                AS cuenta_id
+         FROM contabilidad.caja c
+        WHERE c.id = $1`,
+      [datos.cajaId],
+    );
     if (!caja) return armarVista([], [], { estado: "previa" });
+
     const banco = esUuid(datos.cuentaBancoId)
       ? (
           await cliente.query<{ cuenta_contable_id: string | null }>(
@@ -107,15 +122,79 @@ export async function asientoPreviaReposicion(datos: {
           )
         ).rows[0]
       : undefined;
-    const monto = Number.isFinite(datos.monto) && datos.monto > 0 ? datos.monto : 0;
+
+    const fecha = esFechaIso(datos.fecha) ? datos.fecha : claveDia();
+    let tasa = 1;
+    if (caja.moneda === "USD") {
+      const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+        `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+        [fecha],
+      );
+      if (tasaRow?.tasa) tasa = Number(tasaRow.tasa);
+    }
+
+    const { rows: gastosPorCuenta } = await cliente.query<{
+      cuenta_id: string | null;
+      total: string;
+    }>(
+      `SELECT m.cuenta_gasto_id AS cuenta_id, sum(m.monto)::text AS total
+         FROM contabilidad.caja_movimiento m
+        WHERE m.caja_id = $1 AND m.tipo = 'gasto' AND m.estado = 'pendiente'
+        GROUP BY m.cuenta_gasto_id
+        ORDER BY sum(m.monto) DESC`,
+      [datos.cajaId],
+    );
+
+    const porReponer = Math.max(
+      0,
+      Math.round((Number(caja.fondo_fijo) - Number(caja.saldo_actual)) * 100) / 100,
+    );
+    const totalGastos = gastosPorCuenta.reduce((acc, g) => acc + Number(g.total), 0);
+    const faltante = Math.max(0, Math.round((porReponer - totalGastos) * 100) / 100);
     const concepto = datos.concepto.trim().slice(0, 200);
+
+    const lineasExtra: { cuenta_id: string | null; debe: number; haber: number; descripcion: string }[] = [];
+    let sumaDebeDop = 0;
+
+    for (const g of gastosPorCuenta) {
+      const mDop = Math.round(Number(g.total) * tasa * 100) / 100;
+      if (mDop <= 0) continue;
+      sumaDebeDop = Math.round((sumaDebeDop + mDop) * 100) / 100;
+      lineasExtra.push({
+        cuenta_id: g.cuenta_id ?? caja.cuenta_id,
+        debe: mDop,
+        haber: 0,
+        descripcion: concepto,
+      });
+    }
+
+    if (faltante > 0.005) {
+      const { rows: [codFaltante] } = await cliente.query<{ cuenta_id: string | null }>(
+        `SELECT cuenta_id FROM contabilidad.codigo_transaccion WHERE codigo = 'CAJ_ARQUEO_FALTANTE'`,
+      );
+      const faltanteDop = Math.round(faltante * tasa * 100) / 100;
+      sumaDebeDop = Math.round((sumaDebeDop + faltanteDop) * 100) / 100;
+      lineasExtra.push({
+        cuenta_id: codFaltante?.cuenta_id ?? caja.cuenta_id,
+        debe: faltanteDop,
+        haber: 0,
+        descripcion: concepto,
+      });
+    }
+
+    if (sumaDebeDop > 0) {
+      lineasExtra.push({
+        cuenta_id: banco?.cuenta_contable_id ?? null,
+        debe: 0,
+        haber: sumaDebeDop,
+        descripcion: concepto,
+      });
+    }
+
     return vistaDeLineasPorCodigo(cliente, [], {
-      descripcion: `CE ${concepto}`,
-      fecha: esFechaIso(datos.fecha) ? datos.fecha : undefined,
-      lineasExtra: [
-        { cuenta_id: caja.cuenta_id, debe: monto, haber: 0, descripcion: "" },
-        { cuenta_id: banco?.cuenta_contable_id ?? null, debe: 0, haber: monto, descripcion: "" },
-      ],
+      descripcion: concepto,
+      fecha,
+      lineasExtra,
     });
   });
 }

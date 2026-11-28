@@ -951,26 +951,28 @@ export async function aprobarArqueoAction(arqueoId: string): Promise<ResultadoCa
 // ---------------------------------------------------------------------------
 
 /**
- * Repone la caja desde banco. Se hace con un comprobante de egreso normal
- * (caja chica contra banco) para que la salida aparezca en el libro de banco
- * y en la conciliación como cualquier otro pago.
+ * Repone la caja desde banco:
+ *   · Monto a reponer = Fondo − Efectivo en caja (calculado en servidor).
+ *   · Asiento contable: todas las cuentas contables utilizadas en los gastos
+ *     pendientes (débito) + faltante si existe (débito) contra el banco (crédito).
+ *   · Movimiento bancario de débito en el banco seleccionado.
+ *   · Marca todas las salidas pendientes como `completado` (pasan a Histórico)
+ *     y restaura `saldo_actual = fondo_fijo`.
  */
 export async function reponerCajaDesdeBancoAction(datos: {
   cajaId: string;
   cuentaBancoId: string;
-  monto: number;
+  monto?: number;
   fecha: string;
   concepto: string;
 }): Promise<ResultadoCaja> {
   const usuario = await requerirPermiso("contabilidad.registrar");
-  const monto = redondear(datos.monto);
   const concepto = datos.concepto.trim().slice(0, 200);
 
   if (
     !esUuid(datos.cajaId) ||
     !esUuid(datos.cuentaBancoId) ||
     !esFechaIso(datos.fecha) ||
-    !(monto > 0) ||
     concepto.length < 3
   ) {
     return { exito: false, error: "datos_invalidos" };
@@ -979,78 +981,152 @@ export async function reponerCajaDesdeBancoAction(datos: {
   try {
     const id = await enTransaccionComo(await contextoDe(usuario), async (cliente) => {
       const caja = await bloquearCaja(cliente, datos.cajaId);
-      if (Number(caja.saldo_actual) + monto > Number(caja.fondo_fijo) + 0.001) {
-        throw new Rechazo("excede_fondo");
-      }
+      const porReponer = Math.max(
+        0,
+        redondear(Number(caja.fondo_fijo) - Number(caja.saldo_actual)),
+      );
+      if (!(porReponer > 0)) throw new Rechazo("datos_invalidos");
 
-      const { rows: cuentas } = await cliente.query<{ moneda: string }>(
-        `SELECT moneda FROM contabilidad.cuenta_bancaria WHERE id = $1 AND estado = 'activa'`,
+      const { rows: [banco] } = await cliente.query<{
+        id: string;
+        moneda: "DOP" | "USD";
+        cuenta_contable_id: string;
+      }>(
+        `SELECT id, moneda, cuenta_contable_id
+           FROM contabilidad.cuenta_bancaria
+          WHERE id = $1 AND estado = 'activa'
+          FOR UPDATE`,
         [datos.cuentaBancoId],
       );
-      if (!cuentas[0]) throw new Rechazo("no_encontrada");
-      if (cuentas[0].moneda !== caja.moneda) throw new Rechazo("moneda_distinta");
+      if (!banco) throw new Rechazo("no_encontrada");
+      if (banco.moneda !== caja.moneda) throw new Rechazo("moneda_distinta");
 
-      // El recibo exige categoría y fondo; la cuenta real del débito la fija
-      // cuenta_contrapartida_id (la caja), no la categoría.
-      const { rows: ref } = await cliente.query<{ categoria: string | null; fondo: string | null }>(
-        `SELECT (SELECT id FROM contabilidad.categoria
-                  WHERE activa AND tipo IN ('egreso', 'ambos')
-                  ORDER BY (nombre ILIKE 'caja chica') DESC, nombre LIMIT 1) AS categoria,
-                (SELECT id FROM contabilidad.fondo
-                  WHERE activo ORDER BY (codigo = 'FND-GENERAL') DESC NULLS LAST, creado_en
-                  LIMIT 1) AS fondo`,
+      let tasa: number | null = null;
+      let factor = 1;
+      if (caja.moneda === "USD") {
+        const { rows: [tasaRow] } = await cliente.query<{ tasa: string | null }>(
+          `SELECT contabilidad.tasa_referencia($1::date)::text AS tasa`,
+          [datos.fecha],
+        );
+        if (!tasaRow?.tasa) throw new Rechazo("datos_invalidos");
+        tasa = Number(tasaRow.tasa);
+        factor = tasa;
+      }
+
+      const { rows: gastosPorCuenta } = await cliente.query<{
+        cuenta_id: string | null;
+        total: string;
+      }>(
+        `SELECT m.cuenta_gasto_id AS cuenta_id, sum(m.monto)::text AS total
+           FROM contabilidad.caja_movimiento m
+          WHERE m.caja_id = $1 AND m.tipo = 'gasto' AND m.estado = 'pendiente'
+          GROUP BY m.cuenta_gasto_id
+          ORDER BY sum(m.monto) DESC`,
+        [datos.cajaId],
       );
-      if (!ref[0]?.categoria || !ref[0]?.fondo) throw new Rechazo("sin_cuenta_contable");
+
+      const totalGastos = redondear(
+        gastosPorCuenta.reduce((acc, g) => acc + Number(g.total), 0),
+      );
+      const faltante = Math.max(0, redondear(porReponer - totalGastos));
+
+      const lineas: { cuenta_id: string; debe?: number; haber?: number; descripcion: string }[] = [];
+      let totalDebeDop = 0;
+
+      for (const g of gastosPorCuenta) {
+        const mDop = redondear(Number(g.total) * factor);
+        if (mDop <= 0) continue;
+        totalDebeDop = redondear(totalDebeDop + mDop);
+        lineas.push({
+          cuenta_id: g.cuenta_id ?? caja.cuenta_id,
+          debe: mDop,
+          descripcion: concepto,
+        });
+      }
+
+      if (faltante > 0.005) {
+        const { rows: [codFaltante] } = await cliente.query<{ cuenta_id: string | null }>(
+          `SELECT cuenta_id FROM contabilidad.codigo_transaccion WHERE codigo = 'CAJ_ARQUEO_FALTANTE'`,
+        );
+        const faltanteDop = redondear(faltante * factor);
+        totalDebeDop = redondear(totalDebeDop + faltanteDop);
+        lineas.push({
+          cuenta_id: codFaltante?.cuenta_id ?? caja.cuenta_id,
+          debe: faltanteDop,
+          descripcion: concepto,
+        });
+      }
+
+      if (lineas.length === 0 || totalDebeDop <= 0) {
+        throw new Rechazo("datos_invalidos");
+      }
+
+      lineas.push({
+        cuenta_id: banco.cuenta_contable_id,
+        haber: totalDebeDop,
+        descripcion: concepto,
+      });
 
       await fijarAccion(cliente, "crear");
-      const { rows: recibo } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.recibo
-           (tipo, numero, fecha, periodo_id, cuenta_bancaria_id, moneda, tasa, monto, concepto,
-            categoria_id, fondo_id, beneficiario, forma_pago, cuenta_contrapartida_id, creado_por)
-         VALUES ('egreso', contabilidad.siguiente_numero('CE'), $1, contabilidad.periodo_para($1::date),
-                 $2, $3, 1, $4, $5, $6, $7, $8, 'transferencia', $9, $10)
-         RETURNING id`,
+      const { rows: [asientoRow] } = await cliente.query<{ id: string }>(
+        `SELECT contabilidad.crear_asiento(
+           $1::date, $2, 'automatico', 'caja_reposicion', $3::uuid, $4::jsonb
+         ) AS id`,
+        [datos.fecha, concepto, datos.cajaId, JSON.stringify(lineas)],
+      );
+
+      await cliente.query(
+        `INSERT INTO contabilidad.movimiento_bancario
+           (numero, cuenta_id, periodo_id, fecha, tipo, monto, moneda, tasa, monto_dop,
+            concepto, origen_tabla, origen_id, creado_por)
+         VALUES (
+           contabilidad.siguiente_numero('MB'),
+           $1,
+           contabilidad.periodo_para($2::date),
+           $2::date,
+           'debito',
+           $3::numeric,
+           $4,
+           $5::numeric,
+           $6::numeric,
+           $7,
+           'caja_reposicion',
+           $8::uuid,
+           $9::uuid
+         )`,
         [
+          banco.id,
           datos.fecha,
-          datos.cuentaBancoId,
+          porReponer.toFixed(2),
           caja.moneda,
-          monto,
+          tasa,
+          totalDebeDop.toFixed(2),
           concepto,
-          ref[0].categoria,
-          ref[0].fondo,
-          caja.nombre,
-          caja.cuenta_id,
+          asientoRow.id,
           usuario.id,
         ],
-      );
-      await fijarAccion(cliente, "aprobar");
-      await cliente.query(`SELECT contabilidad.contabilizar_recibo($1)`, [recibo[0].id]);
-
-      await fijarAccion(cliente, "crear");
-      const { rows: mov } = await cliente.query<{ id: string }>(
-        `INSERT INTO contabilidad.caja_movimiento
-           (numero, caja_id, fecha, periodo_id, tipo, monto, concepto, recibo_id, estado, creado_por)
-         VALUES (contabilidad.siguiente_numero('CJ'), $1, $2, contabilidad.periodo_para($2::date),
-                 'reposicion', $3, $4, $5, 'completado', $6)
-         RETURNING id`,
-        [datos.cajaId, datos.fecha, monto, concepto, recibo[0].id, usuario.id],
       );
 
       await fijarAccion(cliente, "editar");
       await cliente.query(
-        `UPDATE contabilidad.caja_movimiento SET estado = 'completado'
+        `UPDATE contabilidad.caja_movimiento
+            SET estado = 'completado'
           WHERE caja_id = $1 AND tipo = 'gasto' AND estado = 'pendiente'`,
         [datos.cajaId],
       );
       await cliente.query(
-        `UPDATE contabilidad.caja SET saldo_actual = saldo_actual + $1 WHERE id = $2`,
-        [monto, datos.cajaId],
+        `UPDATE contabilidad.caja
+            SET saldo_actual = fondo_fijo
+          WHERE id = $1`,
+        [datos.cajaId],
       );
-      return mov[0].id;
+
+      return asientoRow.id;
     });
 
     refrescar();
     revalidatePath("/[locale]/contabilidad/bancos", "layout");
+    revalidatePath("/[locale]/contabilidad/asientos", "layout");
     return { exito: true, id };
   } catch (error) {
     return fallo(error);
